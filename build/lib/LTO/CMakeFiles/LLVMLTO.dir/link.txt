@@ -1,0 +1,2 @@
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar cq ../libLLVMLTO.a  CMakeFiles/LLVMLTO.dir/LTOModule.cpp.o CMakeFiles/LLVMLTO.dir/LTOCodeGenerator.cpp.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib ../libLLVMLTO.a

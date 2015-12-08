@@ -1,0 +1,2 @@
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar cq ../../../libLLVMXCoreDesc.a  CMakeFiles/LLVMXCoreDesc.dir/XCoreMCTargetDesc.cpp.o CMakeFiles/LLVMXCoreDesc.dir/XCoreMCAsmInfo.cpp.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib ../../../libLLVMXCoreDesc.a

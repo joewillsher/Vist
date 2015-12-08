@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:LLVM_swift/LLVM.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "container:Vist.xcodeproj">
+   </FileRef>
+</Workspace>

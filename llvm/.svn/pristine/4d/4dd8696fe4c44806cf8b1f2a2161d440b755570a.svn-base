@@ -1,0 +1,26 @@
+RUN: llvm-symbolizer -obj="%p/Inputs/test.exe" < "%p/Inputs/test.exe.input" | \
+RUN:    FileCheck %s --check-prefix=CHECK
+RUN: llvm-symbolizer -obj="%p/Inputs/test.exe" -demangle=false < \
+RUN:    "%p/Inputs/test.exe.input" | FileCheck %s --check-prefix=CHECK-NO-DEMANGLE
+
+CHECK: foo(void)
+CHECK-NEXT: test.cpp:10
+CHECK: main
+CHECK-NEXT: test.cpp:13:0
+CHECK: NS::Foo::bar(void)
+CHECK-NEXT: test.cpp:6:0
+CHECK: {{^foo_cdecl$}}
+CHECK: {{^foo_stdcall$}}
+CHECK: {{^foo_fastcall$}}
+CHECK: {{^foo_vectorcall$}}
+
+CHECK-NO-DEMANGLE: ?foo@@YAXXZ
+CHECK-NO-DEMANGLE-NEXT: test.cpp:10
+CHECK-NO-DEMANGLE: _main
+CHECK-NO-DEMANGLE-NEXT: test.cpp:13
+CHECK-NO-DEMANGLE: ?bar@Foo@NS@@QAEXXZ
+CHECK-NO-DEMANGLE-NEXT: test.cpp:6
+CHECK-NO-DEMANGLE: _foo_cdecl
+CHECK-NO-DEMANGLE: _foo_stdcall@0
+CHECK-NO-DEMANGLE: @foo_fastcall@0
+CHECK-NO-DEMANGLE: foo_vectorcall@@0

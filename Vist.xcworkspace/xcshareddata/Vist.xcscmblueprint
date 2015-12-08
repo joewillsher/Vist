@@ -1,0 +1,32 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "1F33CC2181DCB6B52E84BF5C486B81751C5721D6",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+    "4BD75C932C5424A5B785A1AA6753C6815D11E34A" : {
+
+    }
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "4BD75C932C5424A5B785A1AA6753C6815D11E34A" : 0,
+    "1F33CC2181DCB6B52E84BF5C486B81751C5721D6" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "539656EE-3DBC-42E9-A537-060DD7B9B5D3",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "4BD75C932C5424A5B785A1AA6753C6815D11E34A" : "Vist\/llvm\/",
+    "1F33CC2181DCB6B52E84BF5C486B81751C5721D6" : "Vist\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "Vist",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "Vist.xcworkspace",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/bitbucket.org\/Sarjo2222\/vist.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "1F33CC2181DCB6B52E84BF5C486B81751C5721D6"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "http:\/\/llvm.org\/svn\/llvm-project",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Subversion",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "4BD75C932C5424A5B785A1AA6753C6815D11E34A"
+    }
+  ]
+}

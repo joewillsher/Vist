@@ -1,0 +1,2 @@
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar cq ../../../libLLVMXCoreAsmPrinter.a  CMakeFiles/LLVMXCoreAsmPrinter.dir/XCoreInstPrinter.cpp.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib ../../../libLLVMXCoreAsmPrinter.a

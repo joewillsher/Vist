@@ -1,0 +1,2 @@
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar cq ../../libLLVMRuntimeDyld.a  CMakeFiles/LLVMRuntimeDyld.dir/RTDyldMemoryManager.cpp.o CMakeFiles/LLVMRuntimeDyld.dir/RuntimeDyld.cpp.o CMakeFiles/LLVMRuntimeDyld.dir/RuntimeDyldChecker.cpp.o CMakeFiles/LLVMRuntimeDyld.dir/RuntimeDyldCOFF.cpp.o CMakeFiles/LLVMRuntimeDyld.dir/RuntimeDyldELF.cpp.o CMakeFiles/LLVMRuntimeDyld.dir/RuntimeDyldMachO.cpp.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib ../../libLLVMRuntimeDyld.a

@@ -1,0 +1,421 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D44FB8B01C1657E100E6DD33 /* Compile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44FB8AF1C1657E100E6DD33 /* Compile.swift */; };
+		D45E8F151C161E0F00D74430 /* LLVMHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45E8F141C161E0F00D74430 /* LLVMHelp.swift */; };
+		D46AD8831B82174E00C95574 /* Lexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46AD8821B82174E00C95574 /* Lexer.swift */; };
+		D46AD8851B82186600C95574 /* Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46AD8841B82186600C95574 /* Token.swift */; };
+		D46AD8871B8245A000C95574 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46AD8861B8245A000C95574 /* Parser.swift */; };
+		D46AD8891B8246C300C95574 /* Expression.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46AD8881B8246C300C95574 /* Expression.swift */; };
+		D47E66591B88D9A20051D586 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = D47E66581B88D9A20051D586 /* README.md */; };
+		D47FF07E1B812052003F9920 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47FF07D1B812052003F9920 /* main.swift */; };
+		D485DD281C1667E900B72F81 /* VistTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D485DD271C1667E900B72F81 /* VistTest.swift */; };
+		D49410801C1248890029BF3D /* LLVM.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = D494107F1C1248890029BF3D /* LLVM.framework */; };
+		D49410811C12488B0029BF3D /* LLVM.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D494107F1C1248890029BF3D /* LLVM.framework */; };
+		D49410831C124B4E0029BF3D /* Print.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49410821C124B4E0029BF3D /* Print.swift */; };
+		D4C85BCC1BF8E00100731F34 /* CodeGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C85BCB1BF8E00100731F34 /* CodeGen.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		D47FF0781B812052003F9920 /* Copy Files */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+				D49410801C1248890029BF3D /* LLVM.framework in Copy Files */,
+			);
+			name = "Copy Files";
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		D44FB8AF1C1657E100E6DD33 /* Compile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Compile.swift; sourceTree = "<group>"; };
+		D45E8F141C161E0F00D74430 /* LLVMHelp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LLVMHelp.swift; sourceTree = "<group>"; };
+		D46AD87E1B81EAA400C95574 /* Vist-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Vist-Bridging-Header.h"; sourceTree = "<group>"; };
+		D46AD8821B82174E00C95574 /* Lexer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Lexer.swift; sourceTree = "<group>"; };
+		D46AD8841B82186600C95574 /* Token.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Token.swift; sourceTree = "<group>"; };
+		D46AD8861B8245A000C95574 /* Parser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Parser.swift; sourceTree = "<group>"; };
+		D46AD8881B8246C300C95574 /* Expression.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Expression.swift; sourceTree = "<group>"; };
+		D47E66581B88D9A20051D586 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		D47FF07A1B812052003F9920 /* Vist */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Vist; sourceTree = BUILT_PRODUCTS_DIR; };
+		D47FF07D1B812052003F9920 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		D485DD251C1667E900B72F81 /* VistTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VistTest.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D485DD271C1667E900B72F81 /* VistTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VistTest.swift; sourceTree = "<group>"; };
+		D485DD291C1667E900B72F81 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D494107F1C1248890029BF3D /* LLVM.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; name = LLVM.framework; path = "/Users/JoeWillsher/Library/Developer/Xcode/DerivedData/Vist-cwckhyhmncxjmfatbezhvnhiwsqf/Build/Products/Debug/LLVM.framework"; sourceTree = "<absolute>"; };
+		D49410821C124B4E0029BF3D /* Print.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Print.swift; sourceTree = "<group>"; };
+		D4B1AB991B87D73B00E1538D /* example.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vist; path = RUN/example.vist; sourceTree = "<group>"; };
+		D4C85BCB1BF8E00100731F34 /* CodeGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CodeGen.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D47FF0771B812052003F9920 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D49410811C12488B0029BF3D /* LLVM.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D485DD221C1667E900B72F81 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D47FF0711B812052003F9920 = {
+			isa = PBXGroup;
+			children = (
+				D494107F1C1248890029BF3D /* LLVM.framework */,
+				D4B1AB991B87D73B00E1538D /* example.vist */,
+				D47E66581B88D9A20051D586 /* README.md */,
+				D47FF07C1B812052003F9920 /* Vist */,
+				D485DD261C1667E900B72F81 /* VistTest */,
+				D47FF07B1B812052003F9920 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D47FF07B1B812052003F9920 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D47FF07A1B812052003F9920 /* Vist */,
+				D485DD251C1667E900B72F81 /* VistTest.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D47FF07C1B812052003F9920 /* Vist */ = {
+			isa = PBXGroup;
+			children = (
+				D47FF07D1B812052003F9920 /* main.swift */,
+				D44FB8AF1C1657E100E6DD33 /* Compile.swift */,
+				D46AD8841B82186600C95574 /* Token.swift */,
+				D46AD8821B82174E00C95574 /* Lexer.swift */,
+				D46AD8881B8246C300C95574 /* Expression.swift */,
+				D49410821C124B4E0029BF3D /* Print.swift */,
+				D46AD8861B8245A000C95574 /* Parser.swift */,
+				D4C85BCB1BF8E00100731F34 /* CodeGen.swift */,
+				D45E8F141C161E0F00D74430 /* LLVMHelp.swift */,
+				D46AD87E1B81EAA400C95574 /* Vist-Bridging-Header.h */,
+			);
+			path = Vist;
+			sourceTree = "<group>";
+		};
+		D485DD261C1667E900B72F81 /* VistTest */ = {
+			isa = PBXGroup;
+			children = (
+				D485DD271C1667E900B72F81 /* VistTest.swift */,
+				D485DD291C1667E900B72F81 /* Info.plist */,
+			);
+			path = VistTest;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D47FF0791B812052003F9920 /* Vist */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D47FF0811B812052003F9920 /* Build configuration list for PBXNativeTarget "Vist" */;
+			buildPhases = (
+				D47FF0761B812052003F9920 /* Sources */,
+				D47FF0771B812052003F9920 /* Frameworks */,
+				D47FF0781B812052003F9920 /* Copy Files */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Vist;
+			productName = Vist;
+			productReference = D47FF07A1B812052003F9920 /* Vist */;
+			productType = "com.apple.product-type.tool";
+		};
+		D485DD241C1667E900B72F81 /* VistTest */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D485DD2C1C1667E900B72F81 /* Build configuration list for PBXNativeTarget "VistTest" */;
+			buildPhases = (
+				D485DD211C1667E900B72F81 /* Sources */,
+				D485DD221C1667E900B72F81 /* Frameworks */,
+				D485DD231C1667E900B72F81 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = VistTest;
+			productName = VistTest;
+			productReference = D485DD251C1667E900B72F81 /* VistTest.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D47FF0721B812052003F9920 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0710;
+				LastUpgradeCheck = 0700;
+				ORGANIZATIONNAME = vistlang;
+				TargetAttributes = {
+					D47FF0791B812052003F9920 = {
+						CreatedOnToolsVersion = 7.0;
+					};
+					D485DD241C1667E900B72F81 = {
+						CreatedOnToolsVersion = 7.1.1;
+					};
+				};
+			};
+			buildConfigurationList = D47FF0751B812052003F9920 /* Build configuration list for PBXProject "Vist" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = D47FF0711B812052003F9920;
+			productRefGroup = D47FF07B1B812052003F9920 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D47FF0791B812052003F9920 /* Vist */,
+				D485DD241C1667E900B72F81 /* VistTest */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D485DD231C1667E900B72F81 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D47FF0761B812052003F9920 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D46AD8891B8246C300C95574 /* Expression.swift in Sources */,
+				D47FF07E1B812052003F9920 /* main.swift in Sources */,
+				D46AD8831B82174E00C95574 /* Lexer.swift in Sources */,
+				D49410831C124B4E0029BF3D /* Print.swift in Sources */,
+				D46AD8871B8245A000C95574 /* Parser.swift in Sources */,
+				D47E66591B88D9A20051D586 /* README.md in Sources */,
+				D4C85BCC1BF8E00100731F34 /* CodeGen.swift in Sources */,
+				D44FB8B01C1657E100E6DD33 /* Compile.swift in Sources */,
+				D45E8F151C161E0F00D74430 /* LLVMHelp.swift in Sources */,
+				D46AD8851B82186600C95574 /* Token.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D485DD211C1667E900B72F81 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D485DD281C1667E900B72F81 /* VistTest.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		D47FF07F1B812052003F9920 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		D47FF0801B812052003F9920 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		D47FF0821B812052003F9920 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				DEFINES_MODULE = NO;
+				EMBEDDED_CONTENT_CONTAINS_SWIFT = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					__STDC_CONSTANT_MACROS,
+					__STDC_LIMIT_MACROS,
+					__STDC_FORMAT_MACROS,
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/llvm-parsed/include",
+					"$(SRCROOT)/llvm/include",
+					"$(SRCROOT)/llvm-parsed",
+					"$(SRCROOT)/llvm",
+				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "Vist/Vist-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Debug;
+		};
+		D47FF0831B812052003F9920 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				DEFINES_MODULE = NO;
+				EMBEDDED_CONTENT_CONTAINS_SWIFT = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					__STDC_CONSTANT_MACROS,
+					__STDC_LIMIT_MACROS,
+					__STDC_FORMAT_MACROS,
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/llvm-parsed/include",
+					"$(SRCROOT)/llvm/include",
+					"$(SRCROOT)/llvm-parsed",
+					"$(SRCROOT)/llvm",
+				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "Vist/Vist-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Release;
+		};
+		D485DD2A1C1667E900B72F81 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = VistTest/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.Josef-Willsher.VistTest";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		D485DD2B1C1667E900B72F81 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = VistTest/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.Josef-Willsher.VistTest";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D47FF0751B812052003F9920 /* Build configuration list for PBXProject "Vist" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D47FF07F1B812052003F9920 /* Debug */,
+				D47FF0801B812052003F9920 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D47FF0811B812052003F9920 /* Build configuration list for PBXNativeTarget "Vist" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D47FF0821B812052003F9920 /* Debug */,
+				D47FF0831B812052003F9920 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D485DD2C1C1667E900B72F81 /* Build configuration list for PBXNativeTarget "VistTest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D485DD2A1C1667E900B72F81 /* Debug */,
+				D485DD2B1C1667E900B72F81 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D47FF0721B812052003F9920 /* Project object */;
+}

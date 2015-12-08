@@ -1,0 +1,2 @@
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar cq ../../../libLLVMX86AsmPrinter.a  CMakeFiles/LLVMX86AsmPrinter.dir/X86ATTInstPrinter.cpp.o CMakeFiles/LLVMX86AsmPrinter.dir/X86IntelInstPrinter.cpp.o CMakeFiles/LLVMX86AsmPrinter.dir/X86InstComments.cpp.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib ../../../libLLVMX86AsmPrinter.a

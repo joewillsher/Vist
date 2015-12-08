@@ -1,0 +1,2 @@
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar cq ../../libLLVMVectorize.a  CMakeFiles/LLVMVectorize.dir/BBVectorize.cpp.o CMakeFiles/LLVMVectorize.dir/Vectorize.cpp.o CMakeFiles/LLVMVectorize.dir/LoopVectorize.cpp.o CMakeFiles/LLVMVectorize.dir/SLPVectorizer.cpp.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib ../../libLLVMVectorize.a

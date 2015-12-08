@@ -1,0 +1,2 @@
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar cq ../libLLVMAsmParser.a  CMakeFiles/LLVMAsmParser.dir/LLLexer.cpp.o CMakeFiles/LLVMAsmParser.dir/LLParser.cpp.o CMakeFiles/LLVMAsmParser.dir/Parser.cpp.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib ../libLLVMAsmParser.a
