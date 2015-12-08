@@ -129,9 +129,9 @@ extension Assignment {
     
 }
 
-extension Function {
+extension FunctionPrototype {
     func printList() -> [(String?, Printable)]? {
-        return [("name",name), ("type",type), ("decl",decl)]
+        return [("name",name), ("type",type), ("impl",impl)]
     }
 }
 
@@ -150,7 +150,7 @@ extension Tuple {
     }
 }
 
-extension FunctionDeclaration {
+extension FunctionImplementation {
     func printList() -> [(String?, Printable)]? {
         return [("params", params), ("body", body)]
     }

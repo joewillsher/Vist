@@ -177,19 +177,19 @@ struct Assignment: Expression {
 
 
 
-struct Function: Type {
+struct FunctionPrototype: Type {
     let name: String
     let type: FunctionType
-    let decl: FunctionDeclaration?
+    let impl: FunctionImplementation?
     
-    init(name: String, type: FunctionType, decl: FunctionDeclaration?) {
+    init(name: String, type: FunctionType, impl: FunctionImplementation?) {
         self.name = name
         self.type = type
-        self.decl = decl
+        self.impl = impl
     }
 }
 
-struct FunctionDeclaration: Expression {
+struct FunctionImplementation: Expression {
     let params: Tuple
     let body: Expression
 }

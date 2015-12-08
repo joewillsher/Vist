@@ -12,6 +12,7 @@
 do {
     
     try compileDocument(Process.arguments.dropFirst().last!)
+    print("\n")
     
 } catch {
     print(error)

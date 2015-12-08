@@ -307,7 +307,7 @@ struct Parser {
     
     
 
-    private mutating func parseFunctionDeclaration() throws -> Function {
+    private mutating func parseFunctionDeclaration() throws -> FunctionPrototype {
         
         guard case let .Identifier(id) = getNextToken() else { throw ParseError.NoIdentifier(currentPos) }
         guard case .Colon = getNextToken() else { throw ParseError.ExpectedColon(currentPos) }
@@ -316,14 +316,14 @@ struct Parser {
         let type = try parseFunctionType()
         
         guard case .Assign = currentToken else {
-            return Function(name: id, type: type, decl: nil)
+            return FunctionPrototype(name: id, type: type, impl: nil)
         }
         getNextToken() // eat '='
         
-        return Function(name: id, type: type, decl: try parseClosureDeclaration(type: type))
+        return FunctionPrototype(name: id, type: type, impl: try parseClosureDeclaration(type: type))
     }
     
-    private mutating func parseClosureDeclaration(anon anon: Bool = false, type: FunctionType) throws -> FunctionDeclaration {
+    private mutating func parseClosureDeclaration(anon anon: Bool = false, type: FunctionType) throws -> FunctionImplementation {
         let names: [Expression]
         
         if case .Bar = currentToken {
@@ -353,7 +353,7 @@ struct Parser {
         
         guard case .OpenBrace = currentToken else { throw ParseError.ExpectedBrace(currentPos) }
         
-        return FunctionDeclaration(params: Tuple(elements: names), body: try parseExpression(currentToken))
+        return FunctionImplementation(params: Tuple(elements: names), body: try parseExpression(currentToken))
     }
     
     private mutating func parseBraceExpressions() throws -> Scope {
