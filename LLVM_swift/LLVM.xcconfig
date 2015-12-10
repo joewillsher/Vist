@@ -1,6 +1,6 @@
 //  Copyright © 2015 Ben Cochran. All rights reserved.
 
-// Set this to your llvm prefix. I’m sorry.
+
 LLVM_PREFIX = /Users/JoeWillsher/Developer/Vist/llvm
 
 

@@ -32,8 +32,9 @@ func compileDocument(fileName: String) throws {
     
     print("\n\n-----------------LLVM IR------------------\n")
     
-    let a = try ast.codeGen()
+    let module = try ast.ASTGen()
+    LLVMDumpModule(module)
     
-    LLVMDumpValue(a)
+//    LLVMDumpValue(a)
 
 }

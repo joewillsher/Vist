@@ -59,6 +59,7 @@ private extension Token {
         case "let": self = .Let
         case "var": self = .Var
         case "func": self = .Func
+        case "return": self = .Return
         default: self = .Identifier(alpha)
         }
     }

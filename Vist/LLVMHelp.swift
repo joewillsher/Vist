@@ -16,9 +16,11 @@ extension LLVMBool {
 }
 
 //extension LLVMValueRef {
-//    
+//
 //    static var NULL: LLVMValueRef {
 //        return LLVMValueRef(nilLiteral: ())
 //    }
 //
 //}
+
+

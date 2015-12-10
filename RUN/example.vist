@@ -1,8 +1,6 @@
-let a = 3 + 2
-a
-
-func print: (Int) = |a| {
-    //toto tbh
+func double: (Int) -> Int = |a| {
+    return a
 }
 
-print(a)
+let b = double(4)
+let c = b * 2

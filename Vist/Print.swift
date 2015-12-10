@@ -214,3 +214,9 @@ extension Comment {
     }
 }
 
+extension ReturnExpression {
+    func printList() -> [(String?, Printable)]? {
+        return [("expression", expression)]
+    }
+}
+

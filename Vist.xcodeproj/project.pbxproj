@@ -7,8 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D4249F541C19F16A00B15530 /* NameMangle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4249F531C19F16A00B15530 /* NameMangle.swift */; };
 		D44FB8B01C1657E100E6DD33 /* Compile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44FB8AF1C1657E100E6DD33 /* Compile.swift */; };
 		D45E8F151C161E0F00D74430 /* LLVMHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45E8F141C161E0F00D74430 /* LLVMHelp.swift */; };
+		D465C6581C187639001A008C /* Scope.swift in Sources */ = {isa = PBXBuildFile; fileRef = D465C6571C187639001A008C /* Scope.swift */; };
 		D46AD8831B82174E00C95574 /* Lexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46AD8821B82174E00C95574 /* Lexer.swift */; };
 		D46AD8851B82186600C95574 /* Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46AD8841B82186600C95574 /* Token.swift */; };
 		D46AD8871B8245A000C95574 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46AD8861B8245A000C95574 /* Parser.swift */; };
@@ -26,7 +28,7 @@
 		D47FF0781B812052003F9920 /* Copy Files */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
+			dstPath = /usr/share/man/man1;
 			dstSubfolderSpec = 0;
 			files = (
 				D49410801C1248890029BF3D /* LLVM.framework in Copy Files */,
@@ -37,8 +39,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D4249F531C19F16A00B15530 /* NameMangle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NameMangle.swift; sourceTree = "<group>"; };
 		D44FB8AF1C1657E100E6DD33 /* Compile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Compile.swift; sourceTree = "<group>"; };
 		D45E8F141C161E0F00D74430 /* LLVMHelp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LLVMHelp.swift; sourceTree = "<group>"; };
+		D465C6571C187639001A008C /* Scope.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Scope.swift; sourceTree = "<group>"; };
 		D46AD87E1B81EAA400C95574 /* Vist-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Vist-Bridging-Header.h"; sourceTree = "<group>"; };
 		D46AD8821B82174E00C95574 /* Lexer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Lexer.swift; sourceTree = "<group>"; };
 		D46AD8841B82186600C95574 /* Token.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Token.swift; sourceTree = "<group>"; };
@@ -107,6 +111,8 @@
 				D49410821C124B4E0029BF3D /* Print.swift */,
 				D46AD8861B8245A000C95574 /* Parser.swift */,
 				D4C85BCB1BF8E00100731F34 /* CodeGen.swift */,
+				D4249F531C19F16A00B15530 /* NameMangle.swift */,
+				D465C6571C187639001A008C /* Scope.swift */,
 				D45E8F141C161E0F00D74430 /* LLVMHelp.swift */,
 				D46AD87E1B81EAA400C95574 /* Vist-Bridging-Header.h */,
 			);
@@ -218,6 +224,8 @@
 				D47E66591B88D9A20051D586 /* README.md in Sources */,
 				D4C85BCC1BF8E00100731F34 /* CodeGen.swift in Sources */,
 				D44FB8B01C1657E100E6DD33 /* Compile.swift in Sources */,
+				D4249F541C19F16A00B15530 /* NameMangle.swift in Sources */,
+				D465C6581C187639001A008C /* Scope.swift in Sources */,
 				D45E8F151C161E0F00D74430 /* LLVMHelp.swift in Sources */,
 				D46AD8851B82186600C95574 /* Token.swift in Sources */,
 			);
@@ -414,6 +422,7 @@
 				D485DD2B1C1667E900B72F81 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

@@ -204,7 +204,9 @@ struct Tuple: Expression {
     static func void() -> Tuple{ return Tuple(elements: [])}
 }
 
-
+struct ReturnExpression: Expression {
+    let expression: Expression
+}
 
 
 struct ValueType: Type {

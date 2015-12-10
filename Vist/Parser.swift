@@ -378,6 +378,12 @@ struct Parser {
         return Comment(str: str)
     }
     
+    private mutating func parseReturnExpression() throws -> Expression {
+        getNextToken() // eat `return`
+        
+        return ReturnExpression(expression: try parseExpression(currentToken))
+    }
+    
     
     
     /// parses any token, starts new scopes
@@ -389,6 +395,7 @@ struct Parser {
         case     .Let:                 return try parseVariableAssignmentMutable(false)
         case     .Var:                 return try parseVariableAssignmentMutable(true)
         case     .Func:                return try parseFunctionDeclaration()
+        case     .Return:              return try parseReturnExpression()
         case     .OpenParen:           return try parseParenExpression()
         case     .OpenBrace:           return try parseBraceExpressions()
         case let .Identifier(str):     return try parseIdentifierExpression(str)
@@ -415,6 +422,8 @@ struct Parser {
         while let tok = tok() {
             expressions.append(try parseExpression(tok))
         }
+        
+        expressions = expressions.filter { !($0 is EndOfScope) }
         
         return AST(expressions: expressions)
     }
