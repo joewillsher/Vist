@@ -4,5 +4,7 @@ func bar: () -> Int = { return 1 }
 let a = bar()
 
 if a < 3 {
+    let b = 2
     foo()
 }
+

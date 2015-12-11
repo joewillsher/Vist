@@ -370,9 +370,12 @@ extension ConditionalExpression: IRGenerator {
         
         guard let cond = try statement.condition?.codeGen(scope) else { throw IRError.NoBool }
         
+
         let contBlock = LLVMAppendBasicBlock(scope.function, "cont")
         
-        let thenBlock = try statement.bbGen(innerScope: scope, contBlock: contBlock, name: "then")
+        let tScope = Scope(function: scope.function, parentScope: scope)
+        let thenBlock = try statement.bbGen(innerScope: tScope, contBlock: contBlock, name: "then")
+
 //        let elseBlock = try statement.bbGen(innerScope: scope, contBlock: contBlock)
         
         
@@ -414,7 +417,7 @@ extension ElseIfBlock {
         
         LLVMBuildBr(builder, contBlock)
         
-        LLVMPositionBuilderAtEnd(builder, scope.block)
+        LLVMPositionBuilderAtEnd(builder, scope.parentScope!.block)
         
         return basicBlock
     }
