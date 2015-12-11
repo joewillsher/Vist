@@ -278,7 +278,7 @@ struct Parser {
     
     
     private mutating func parseConditionalExpression() throws -> Expression {
-        
+        return EndOfScope()
     }
     
     
@@ -400,7 +400,7 @@ struct Parser {
         return FunctionImplementation(params: Tuple(elements: names), body: try parseExpression(currentToken))
     }
     
-    private mutating func parseBraceExpressions() throws -> Scope {
+    private mutating func parseBraceExpressions() throws -> ScopeExpression {
         getNextToken() // eat '{'
         
         var expressions = [Expression]()

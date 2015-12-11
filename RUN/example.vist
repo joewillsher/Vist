@@ -1,7 +1,6 @@
-let a = 2
-
-if a < 3 {
-    let b = 1.2
-} else {
-    let c = 2.4
+func double: (Int) -> Int = |a| {
+return (a * 2)
 }
+
+let b = double(4)
+let c = b * 5

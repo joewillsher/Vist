@@ -116,7 +116,7 @@ extension Optional: Printable {
     }
 }
 
-extension Scope {
+extension ScopeExpression {
     func printList() -> [(String?, Printable)]? {
         return expressions.map {(nil, $0 as Printable) }
     }

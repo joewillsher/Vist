@@ -11,12 +11,31 @@ import LLVM
 
 class Scope {
     
-    var runtimeVariables: [String: LLVMValueRef]
+    private var runtimeVariables: [String: (LLVMValueRef, LLVMTypeRef)]
     var block: LLVMBasicBlockRef
     
     init(vars: [String: LLVMValueRef], block: LLVMBasicBlockRef) {
-        runtimeVariables = vars
+        self.runtimeVariables = [:]
         self.block = block
+        
+        vars.forEach(addVariable)
+    }
+    
+    convenience init() {
+        self.init(vars: [:], block: nil)
+    }
+    
+    func addVariable(name: String, val: LLVMValueRef) {
+        
+        runtimeVariables[name] = (val, LLVMTypeOf(val))
+    }
+    func variable(name: String) throws -> LLVMValueRef {
+        if let v = runtimeVariables[name] { return v.0 } else {
+            throw IRError.NoVariable(name)
+        }
+    }
+    func variableType(name: String) throws -> LLVMValueRef {
+        if let v = runtimeVariables[name] { return v.1 } else { throw IRError.NoVariable(name) }
     }
 }
 
