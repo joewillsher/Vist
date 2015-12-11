@@ -39,8 +39,8 @@
 #define LLVM_SUPPORT_YAMLPARSER_H
 
 #include "llvm/ADT/StringRef.h"
-#include "llvm/Support/Allocator.h"
-#include "llvm/Support/SMLoc.h"
+#include "Allocator.h"
+#include "SMLoc.h"
 #include <limits>
 #include <map>
 #include <utility>

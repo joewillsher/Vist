@@ -16,7 +16,7 @@
 
 #include "llvm/ADT/iterator_range.h"
 #include "llvm/ADT/STLExtras.h"
-#include "llvm/Support/Compiler.h"
+#include "Compiler.h"
 #include <memory>
 
 namespace llvm {

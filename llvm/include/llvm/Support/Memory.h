@@ -14,7 +14,7 @@
 #ifndef LLVM_SUPPORT_MEMORY_H
 #define LLVM_SUPPORT_MEMORY_H
 
-#include "llvm/Support/DataTypes.h"
+#include "DataTypes.h"
 #include <string>
 #include <system_error>
 

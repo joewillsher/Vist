@@ -14,8 +14,8 @@
 #ifndef LLVM_SUPPORT_RWMUTEX_H
 #define LLVM_SUPPORT_RWMUTEX_H
 
-#include "llvm/Support/Compiler.h"
-#include "llvm/Support/Threading.h"
+#include "Compiler.h"
+#include "Threading.h"
 #include <cassert>
 
 namespace llvm

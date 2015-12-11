@@ -28,9 +28,9 @@
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/Optional.h"
 #include "llvm/Config/llvm-config.h"
-#include "llvm/Support/Allocator.h"
-#include "llvm/Support/DataTypes.h"
-#include "llvm/Support/TimeValue.h"
+#include "Allocator.h"
+#include "DataTypes.h"
+#include "TimeValue.h"
 #include <system_error>
 
 namespace llvm {

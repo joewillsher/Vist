@@ -17,7 +17,7 @@
 #define LLVM_SUPPORT_ERROROR_H
 
 #include "llvm/ADT/PointerIntPair.h"
-#include "llvm/Support/AlignOf.h"
+#include "AlignOf.h"
 #include <cassert>
 #include <system_error>
 #include <type_traits>

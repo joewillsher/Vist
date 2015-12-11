@@ -14,9 +14,9 @@
 #ifndef LLVM_SUPPORT_MACHO_H
 #define LLVM_SUPPORT_MACHO_H
 
-#include "llvm/Support/Compiler.h"
-#include "llvm/Support/DataTypes.h"
-#include "llvm/Support/Host.h"
+#include "Compiler.h"
+#include "DataTypes.h"
+#include "Host.h"
 
 namespace llvm {
   namespace MachO {

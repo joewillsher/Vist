@@ -14,7 +14,7 @@
 #ifndef LLVM_C_SUPPORT_H
 #define LLVM_C_SUPPORT_H
 
-#include "llvm/Support/DataTypes.h"
+#include "DataTypes.h"
 
 #ifdef __cplusplus
 extern "C" {

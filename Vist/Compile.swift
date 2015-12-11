@@ -32,9 +32,14 @@ func compileDocument(fileName: String) throws {
     
     print("\n\n-----------------LLVM IR------------------\n")
     
-    let module = try ast.ASTGen()
-    LLVMDumpModule(module)
+    let module = try ast.IRGen()
     
-//    LLVMDumpValue(a)
+    let ir = String.fromCString(LLVMPrintModuleToString(module))!
+    
+    print(ir)
+    
+    
+//    let pm = LLVMCreatePassManager()
+//    LLVMRunPassManager(pm, module)
 
 }

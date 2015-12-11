@@ -19,10 +19,10 @@
 #ifndef LLVM_SUPPORT_TARGETREGISTRY_H
 #define LLVM_SUPPORT_TARGETREGISTRY_H
 
-#include "llvm-c/Disassembler.h"
+#include "Disassembler.h"
 #include "llvm/ADT/Triple.h"
-#include "llvm/Support/CodeGen.h"
-#include "llvm/Support/FormattedStream.h"
+#include "CodeGen.h"
+#include "FormattedStream.h"
 #include <cassert>
 #include <memory>
 #include <string>

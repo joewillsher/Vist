@@ -14,8 +14,8 @@
 #ifndef LLVM_SUPPORT_REGISTRYPARSER_H
 #define LLVM_SUPPORT_REGISTRYPARSER_H
 
-#include "llvm/Support/CommandLine.h"
-#include "llvm/Support/Registry.h"
+#include "CommandLine.h"
+#include "Registry.h"
 
 namespace llvm {
 

@@ -66,7 +66,7 @@
 #include <sys/types.h>
 
 #ifdef _AIX
-#include "llvm/Support/AIXDataTypesFix.h"
+#include "AIXDataTypesFix.h"
 #endif
 
 /* Handle incorrect definition of uint64_t as u_int64_t */

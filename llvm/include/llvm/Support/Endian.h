@@ -14,9 +14,9 @@
 #ifndef LLVM_SUPPORT_ENDIAN_H
 #define LLVM_SUPPORT_ENDIAN_H
 
-#include "llvm/Support/AlignOf.h"
-#include "llvm/Support/Host.h"
-#include "llvm/Support/SwapByteOrder.h"
+#include "AlignOf.h"
+#include "Host.h"
+#include "SwapByteOrder.h"
 
 namespace llvm {
 namespace support {

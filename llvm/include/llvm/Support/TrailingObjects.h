@@ -53,9 +53,9 @@
 
 #include <new>
 #include <type_traits>
-#include "llvm/Support/AlignOf.h"
-#include "llvm/Support/Compiler.h"
-#include "llvm/Support/type_traits.h"
+#include "AlignOf.h"
+#include "Compiler.h"
+#include "type_traits.h"
 
 namespace llvm {
 

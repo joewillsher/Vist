@@ -16,7 +16,7 @@
 #ifndef LLVM_SUPPORT_PRETTYSTACKTRACE_H
 #define LLVM_SUPPORT_PRETTYSTACKTRACE_H
 
-#include "llvm/Support/Compiler.h"
+#include "Compiler.h"
 
 namespace llvm {
   class raw_ostream;

@@ -25,8 +25,8 @@
 
 #include "llvm/ADT/GraphTraits.h"
 #include "llvm/ADT/Twine.h"
-#include "llvm/Support/DOTGraphTraits.h"
-#include "llvm/Support/raw_ostream.h"
+#include "DOTGraphTraits.h"
+#include "raw_ostream.h"
 #include <vector>
 
 namespace llvm {

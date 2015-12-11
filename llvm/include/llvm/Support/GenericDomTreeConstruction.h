@@ -25,7 +25,7 @@
 #define LLVM_SUPPORT_GENERICDOMTREECONSTRUCTION_H
 
 #include "llvm/ADT/SmallPtrSet.h"
-#include "llvm/Support/GenericDomTree.h"
+#include "GenericDomTree.h"
 
 namespace llvm {
 

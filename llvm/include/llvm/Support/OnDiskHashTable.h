@@ -14,13 +14,13 @@
 #ifndef LLVM_SUPPORT_ONDISKHASHTABLE_H
 #define LLVM_SUPPORT_ONDISKHASHTABLE_H
 
-#include "llvm/Support/AlignOf.h"
-#include "llvm/Support/Allocator.h"
-#include "llvm/Support/DataTypes.h"
-#include "llvm/Support/EndianStream.h"
-#include "llvm/Support/Host.h"
-#include "llvm/Support/MathExtras.h"
-#include "llvm/Support/raw_ostream.h"
+#include "AlignOf.h"
+#include "Allocator.h"
+#include "DataTypes.h"
+#include "EndianStream.h"
+#include "Host.h"
+#include "MathExtras.h"
+#include "raw_ostream.h"
 #include <cassert>
 #include <cstdlib>
 

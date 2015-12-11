@@ -11,7 +11,7 @@
 #define LLVM_SUPPORT_ARMWINEH_H
 
 #include "llvm/ADT/ArrayRef.h"
-#include "llvm/Support/Endian.h"
+#include "Endian.h"
 
 namespace llvm {
 namespace ARM {

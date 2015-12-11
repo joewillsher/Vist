@@ -16,9 +16,9 @@
 
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringRef.h"
-#include "llvm/Support/DataTypes.h"
-#include "llvm/Support/ErrorOr.h"
-#include "llvm/Support/FileSystem.h"
+#include "DataTypes.h"
+#include "ErrorOr.h"
+#include "FileSystem.h"
 
 namespace llvm {
 /// FileOutputBuffer - This interface provides simple way to create an in-memory

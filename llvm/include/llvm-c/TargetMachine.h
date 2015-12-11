@@ -19,8 +19,8 @@
 #ifndef LLVM_C_TARGETMACHINE_H
 #define LLVM_C_TARGETMACHINE_H
 
-#include "llvm-c/Core.h"
-#include "llvm-c/Target.h"
+#include "Core.h"
+#include "Target.h"
 
 #ifdef __cplusplus
 extern "C" {

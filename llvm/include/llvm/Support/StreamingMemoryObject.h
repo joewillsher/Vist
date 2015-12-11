@@ -10,10 +10,10 @@
 #ifndef LLVM_SUPPORT_STREAMINGMEMORYOBJECT_H
 #define LLVM_SUPPORT_STREAMINGMEMORYOBJECT_H
 
-#include "llvm/Support/Compiler.h"
-#include "llvm/Support/DataStream.h"
-#include "llvm/Support/ErrorHandling.h"
-#include "llvm/Support/MemoryObject.h"
+#include "Compiler.h"
+#include "DataStream.h"
+#include "ErrorHandling.h"
+#include "MemoryObject.h"
 #include <memory>
 #include <vector>
 

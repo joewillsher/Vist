@@ -15,7 +15,7 @@
 #define LLVM_SUPPORT_PROGRAM_H
 
 #include "llvm/ADT/ArrayRef.h"
-#include "llvm/Support/ErrorOr.h"
+#include "ErrorOr.h"
 #include <system_error>
 
 namespace llvm {

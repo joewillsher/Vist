@@ -182,7 +182,7 @@ extension Assignment: IRGenerator {
     }
     
     func llvmType(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) throws -> LLVMTypeRef {
-        return LLVMTypeOf(try codeGen(builder, module, bb: bb))
+        return nil
     }
     
 }
@@ -231,9 +231,8 @@ extension BinaryExpression: IRGenerator {
     }
     
     func llvmType(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) throws -> LLVMTypeRef {
-        guard let l = lhs as? IRGenerator, let r = rhs as? IRGenerator else { throw IRError.NotIRGenerator }
-        let a = try l.llvmType(builder, module, bb: bb)
-        let b = try r.llvmType(builder, module, bb: bb)
+        let a = try lhs.llvmType(builder, module, bb: bb)
+        let b = try lhs.llvmType(builder, module, bb: bb)
         
         if a == b { return a } else { throw IRError.MisMatchedTypes }
     }
@@ -252,20 +251,25 @@ extension FunctionCall: IRGenerator {
     
     func codeGen(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) throws -> LLVMValueRef {
         
+        // make function
         let fn = LLVMGetNamedFunction(module, name)
         let argCount = args.elements.count
         
+        // arguments
         let argBuffer = try args.elements.map { try $0.codeGen(builder, module, bb: bb) }.ptr()
-        
+        defer { argBuffer.dealloc(argCount) }
+
         guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else { throw IRError.WrongFunctionApplication(name) }
         
+        // add call to IR
         let call = LLVMBuildCall(builder, fn, argBuffer, UInt32(argCount), name)
         
         return call
     }
     
     func llvmType(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) -> LLVMTypeRef {
-        return nil
+        let fn = LLVMGetNamedFunction(module, name)
+        return LLVMGetReturnType(fn)
     }
     
 }
@@ -286,10 +290,11 @@ extension FunctionPrototype: IRGenerator {
         
         // Set params
         let argBuffer = UnsafeMutablePointer<LLVMTypeRef>.alloc(argCount)
+        defer { argBuffer.dealloc(argCount) }
         
         for i in 0..<argCount {
 //            let argument = args.elements[i]
-            // TODO: set param type to something else and make this loop use the .ptr() method on `CollectionType`
+            // TODO: set param type to something else & use .ptr()
             argBuffer.advancedBy(i).initialize(LLVMInt64Type())
         }
         
@@ -304,7 +309,7 @@ extension FunctionPrototype: IRGenerator {
         for i in 0..<UInt32(argCount) {
             let param = LLVMGetParam(function, i)
             let name = (impl?.params.elements[Int(i)] as? ValueType)?.name ?? ("fn\(self.name)_param\(i)")
-            let type = llvmType(builder, module, bb: bb)
+            let type = LLVMTypeOf(param)
             
             LLVMSetValueName(param, name)
             runtimeVariables[name] = param
@@ -325,7 +330,7 @@ extension FunctionPrototype: IRGenerator {
     func llvmType(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) -> LLVMTypeRef {
         return nil
     }
-
+    
 }
 
 
@@ -344,6 +349,9 @@ extension ReturnExpression: IRGenerator {
 
 
 
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                              Control flow
+//-------------------------------------------------------------------------------------------------------------------------
 
 
 
@@ -360,14 +368,15 @@ extension ReturnExpression: IRGenerator {
 
 
 extension AST {
-    func ASTGen() throws -> LLVMBasicBlockRef {
+    func IRGen() throws -> LLVMBasicBlockRef {
         
         let builder = LLVMCreateBuilder()
         let module = LLVMModuleCreateWithName("vist_module")
         
-        let argBuffer = [LLVMInt64Type()].ptr()
+        let argBuffer = [LLVMInt32Type()].ptr()
+        defer { argBuffer.dealloc(1) }
         
-        let functionType = LLVMFunctionType(LLVMInt64Type(), argBuffer, UInt32(1), LLVMBool(false))
+        let functionType = LLVMFunctionType(LLVMInt32Type(), argBuffer, UInt32(1), LLVMBool(false))
         let mainFunction = LLVMAddFunction(module, "main", functionType)
         
         let programEntryBlock = LLVMAppendBasicBlock(mainFunction, "entry")
@@ -377,12 +386,10 @@ extension AST {
             try exp.codeGen(builder, module, bb: programEntryBlock)
         }
         
+        // TODO: Move main function to the end of funtions
+        
         LLVMPositionBuilderAtEnd(builder, programEntryBlock)
-        LLVMBuildRet(builder, LLVMConstInt(LLVMInt64Type(), 0, LLVMBool(false)))
-        
-        print("\n\n")
-        
-        
+        LLVMBuildRet(builder, LLVMConstInt(LLVMInt32Type(), 0, LLVMBool(false)))
         
         return module
     }

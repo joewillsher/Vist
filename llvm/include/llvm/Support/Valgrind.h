@@ -17,7 +17,7 @@
 #define LLVM_SUPPORT_VALGRIND_H
 
 #include "llvm/Config/llvm-config.h"
-#include "llvm/Support/Compiler.h"
+#include "Compiler.h"
 #include <stddef.h>
 
 namespace llvm {

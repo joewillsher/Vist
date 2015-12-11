@@ -30,7 +30,7 @@
 
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/SmallString.h"
-#include "llvm/Support/DataTypes.h"
+#include "DataTypes.h"
 
 namespace llvm {
 

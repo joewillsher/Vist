@@ -14,8 +14,8 @@
 #ifndef LLVM_SUPPORT_BLOCKFREQUENCY_H
 #define LLVM_SUPPORT_BLOCKFREQUENCY_H
 
-#include "llvm/Support/BranchProbability.h"
-#include "llvm/Support/DataTypes.h"
+#include "BranchProbability.h"
+#include "DataTypes.h"
 
 namespace llvm {
 

@@ -30,9 +30,9 @@
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/Twine.h"
-#include "llvm/Support/DataTypes.h"
-#include "llvm/Support/ErrorHandling.h"
-#include "llvm/Support/TimeValue.h"
+#include "DataTypes.h"
+#include "ErrorHandling.h"
+#include "TimeValue.h"
 #include <ctime>
 #include <iterator>
 #include <stack>

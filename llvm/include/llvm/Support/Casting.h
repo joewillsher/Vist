@@ -15,8 +15,8 @@
 #ifndef LLVM_SUPPORT_CASTING_H
 #define LLVM_SUPPORT_CASTING_H
 
-#include "llvm/Support/Compiler.h"
-#include "llvm/Support/type_traits.h"
+#include "Compiler.h"
+#include "type_traits.h"
 #include <cassert>
 
 namespace llvm {

@@ -11,7 +11,7 @@
 #define LLVM_SUPPORT_TIMER_H
 
 #include "llvm/ADT/StringRef.h"
-#include "llvm/Support/DataTypes.h"
+#include "DataTypes.h"
 #include <cassert>
 #include <string>
 #include <utility>

@@ -14,7 +14,7 @@
 #ifndef LLVM_SUPPORT_CBINDINGWRAPPING_H
 #define LLVM_SUPPORT_CBINDINGWRAPPING_H
 
-#include "llvm/Support/Casting.h"
+#include "Casting.h"
 
 #define DEFINE_SIMPLE_CONVERSION_FUNCTIONS(ty, ref)     \
   inline ty *unwrap(ref P) {                            \

@@ -14,8 +14,8 @@
 #ifndef LLVM_SUPPORT_MATHEXTRAS_H
 #define LLVM_SUPPORT_MATHEXTRAS_H
 
-#include "llvm/Support/Compiler.h"
-#include "llvm/Support/SwapByteOrder.h"
+#include "Compiler.h"
+#include "SwapByteOrder.h"
 #include <cassert>
 #include <cstring>
 #include <type_traits>

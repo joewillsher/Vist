@@ -21,8 +21,8 @@
 #define LLVM_SUPPORT_DWARF_H
 
 #include "llvm/ADT/StringRef.h"
-#include "llvm/Support/Compiler.h"
-#include "llvm/Support/DataTypes.h"
+#include "Compiler.h"
+#include "DataTypes.h"
 
 namespace llvm {
 
@@ -56,7 +56,7 @@ const uint64_t DW64_CIE_ID = UINT64_MAX;
 
 enum Tag : uint16_t {
 #define HANDLE_DW_TAG(ID, NAME) DW_TAG_##NAME = ID,
-#include "llvm/Support/Dwarf.def"
+#include "Dwarf.def"
   DW_TAG_lo_user = 0x4080,
   DW_TAG_hi_user = 0xffff,
   DW_TAG_user_base = 0x1000 // Recommended base for user tags.
@@ -320,14 +320,14 @@ enum Form : uint16_t {
 
 enum LocationAtom {
 #define HANDLE_DW_OP(ID, NAME) DW_OP_##NAME = ID,
-#include "llvm/Support/Dwarf.def"
+#include "Dwarf.def"
   DW_OP_lo_user = 0xe0,
   DW_OP_hi_user = 0xff
 };
 
 enum TypeKind {
 #define HANDLE_DW_ATE(ID, NAME) DW_ATE_##NAME = ID,
-#include "llvm/Support/Dwarf.def"
+#include "Dwarf.def"
   DW_ATE_lo_user = 0x80,
   DW_ATE_hi_user = 0xff
 };
@@ -366,13 +366,13 @@ enum VisibilityAttribute {
 
 enum VirtualityAttribute {
 #define HANDLE_DW_VIRTUALITY(ID, NAME) DW_VIRTUALITY_##NAME = ID,
-#include "llvm/Support/Dwarf.def"
+#include "Dwarf.def"
   DW_VIRTUALITY_max = 0x02
 };
 
 enum SourceLanguage {
 #define HANDLE_DW_LANG(ID, NAME) DW_LANG_##NAME = ID,
-#include "llvm/Support/Dwarf.def"
+#include "Dwarf.def"
   DW_LANG_lo_user = 0x8000,
   DW_LANG_hi_user = 0xffff
 };

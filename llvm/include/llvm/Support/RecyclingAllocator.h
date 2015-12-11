@@ -15,7 +15,7 @@
 #ifndef LLVM_SUPPORT_RECYCLINGALLOCATOR_H
 #define LLVM_SUPPORT_RECYCLINGALLOCATOR_H
 
-#include "llvm/Support/Recycler.h"
+#include "Recycler.h"
 
 namespace llvm {
 

@@ -15,7 +15,7 @@
 #ifndef LLVM_C_CORE_H
 #define LLVM_C_CORE_H
 
-#include "llvm-c/Support.h"
+#include "Support.h"
 
 #ifdef __cplusplus
 extern "C" {

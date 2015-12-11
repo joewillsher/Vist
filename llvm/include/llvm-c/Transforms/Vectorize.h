@@ -20,7 +20,7 @@
 #ifndef LLVM_C_TRANSFORMS_VECTORIZE_H
 #define LLVM_C_TRANSFORMS_VECTORIZE_H
 
-#include "llvm-c/Core.h"
+#include "Core.h"
 
 #ifdef __cplusplus
 extern "C" {

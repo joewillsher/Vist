@@ -18,7 +18,7 @@
 
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/Twine.h"
-#include "llvm/Support/DataTypes.h"
+#include "DataTypes.h"
 #include <iterator>
 
 namespace llvm {

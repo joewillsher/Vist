@@ -18,11 +18,11 @@
 #include "llvm/ADT/StringRef.h"
 #include "llvm/ADT/StringSwitch.h"
 #include "llvm/ADT/Twine.h"
-#include "llvm/Support/Compiler.h"
-#include "llvm/Support/Regex.h"
-#include "llvm/Support/SourceMgr.h"
-#include "llvm/Support/YAMLParser.h"
-#include "llvm/Support/raw_ostream.h"
+#include "Compiler.h"
+#include "Regex.h"
+#include "SourceMgr.h"
+#include "YAMLParser.h"
+#include "raw_ostream.h"
 #include <system_error>
 
 namespace llvm {

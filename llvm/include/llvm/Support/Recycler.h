@@ -16,9 +16,9 @@
 #define LLVM_SUPPORT_RECYCLER_H
 
 #include "llvm/ADT/ilist.h"
-#include "llvm/Support/AlignOf.h"
-#include "llvm/Support/Allocator.h"
-#include "llvm/Support/ErrorHandling.h"
+#include "AlignOf.h"
+#include "Allocator.h"
+#include "ErrorHandling.h"
 #include <cassert>
 
 namespace llvm {
