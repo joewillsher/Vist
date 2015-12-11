@@ -14,11 +14,11 @@ enum IRError: ErrorType {
 }
 
 
-var builder: LLVMBuilderRef = nil
-var module: LLVMModuleRef = nil
+// global builder and module references
+private var builder: LLVMBuilderRef = nil
+private var module: LLVMModuleRef = nil
 
 
-// TODO: split up this protocol
 /// A type which can generate LLVM IR code
 protocol IRGenerator {
     func codeGen(scope: Scope) throws -> LLVMValueRef
@@ -292,6 +292,7 @@ extension FunctionPrototype: IRGenerator {
         let function = LLVMAddFunction(module, name, functionType)
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
         
+        // scope internal to function, needs params setting and then the block should be added *inside* the bbGen function
         let functionScope = Scope()
         
         // set function param names and update table
@@ -357,19 +358,22 @@ extension ReturnExpression: IRGenerator {
 extension AST {
     func IRGen() throws -> LLVMBasicBlockRef {
         
+        // initialise global objects
         builder = LLVMCreateBuilder()
         module = LLVMModuleCreateWithName("vist_module")
         
+        // main arguments
         let argBuffer = [LLVMInt32Type()].ptr()
         defer { argBuffer.dealloc(1) }
         
+        // make main function & add to IR
         let functionType = LLVMFunctionType(LLVMInt32Type(), argBuffer, UInt32(1), LLVMBool(false))
         let mainFunction = LLVMAddFunction(module, "main", functionType)
         
+        // Setup BB & scope
         let programEntryBlock = LLVMAppendBasicBlock(mainFunction, "entry")
         LLVMPositionBuilderAtEnd(builder, programEntryBlock)
-        
-        let scope = Scope(vars: [:], block: programEntryBlock)
+        let scope = Scope(block: programEntryBlock)
         
         for exp in expressions {
             try exp.codeGen(scope)
@@ -390,15 +394,18 @@ extension Block: BasicBlockGenerator {
     
     func bbGen(parentScope parentScope: Scope, functionScope scope: Scope, fn: LLVMValueRef, args: UnsafeMutablePointer<LLVMTypeRef>) throws -> LLVMBasicBlockRef {
         
+        // setup function block
         let entryBlock = LLVMAppendBasicBlock(fn, "entry")
         LLVMPositionBuilderAtEnd(builder, entryBlock)
         
         scope.block = entryBlock
         
+        // code gen for function
         for exp in expressions {
             try exp.codeGen(scope)
         }
         
+        // reset builder head tp parent scope
         LLVMPositionBuilderAtEnd(builder, parentScope.block)
         return entryBlock
     }
