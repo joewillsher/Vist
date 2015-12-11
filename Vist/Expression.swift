@@ -22,26 +22,26 @@ protocol Type: Expression {}
 protocol Literal: Expression {
 }
 
-protocol Scope: Expression {
+protocol ScopeExpression: Expression {
     var expressions: [Expression] { get set }
     var topLevel: Bool { get }
 }
 
-struct AST: Scope {
+struct AST: ScopeExpression {
     var expressions: [Expression]
     var topLevel = true
     init(expressions: [Expression]) {
         self.expressions = expressions
     }
 }
-struct Block: Scope {
+struct Block: ScopeExpression {
     var expressions: [Expression]
     var topLevel = false
     init(expressions: [Expression]) {
         self.expressions = expressions
     }
 }
-struct DefinitionScope: Scope {
+struct DefinitionScope: ScopeExpression {
     var expressions: [Expression]
     var topLevel = false
     init(expressions: [Expression]) {

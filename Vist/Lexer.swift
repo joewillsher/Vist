@@ -54,18 +54,20 @@ private func != (lhs: Character, rhs: String) -> Bool { return !(lhs == rhs) }
 private extension Token {
 
     init(alpha: String) {
-        
+        // Text tokens which are language keywords
         switch alpha {
         case "let": self = .Let
         case "var": self = .Var
         case "func": self = .Func
         case "return": self = .Return
+        case "if": self = .If
+        case "else": self = .Else
         default: self = .Identifier(alpha)
         }
     }
     
     init(numeric: String) {
-        
+        //number literal
         let numberFormatter = NSNumberFormatter()
             numberFormatter.numberStyle = NSNumberFormatterStyle.DecimalStyle
         guard let number = numberFormatter.numberFromString(numeric.stringByReplacingOccurrencesOfString("_", withString: "")) else {
@@ -85,6 +87,8 @@ private extension Token {
     }
 }
 
+
+/// Lexer object which manages token generation
 struct Lexer {
     
     let code: String

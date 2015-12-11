@@ -7,6 +7,10 @@
 //
 
 import XCTest
+import LLVM
+
+
+
 
 class VistTest: XCTestCase {
     

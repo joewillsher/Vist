@@ -9,12 +9,15 @@
 import Foundation
 import LLVM
 
-class ScopeManager {
+class Scope {
     
-    var runtimeVariables: [String: LLVMValueRef] = [:]
+    var runtimeVariables: [String: LLVMValueRef]
+    var block: LLVMBasicBlockRef
     
-    var scopes: [ScopeManager] = []
-    
+    init(vars: [String: LLVMValueRef], block: LLVMBasicBlockRef) {
+        runtimeVariables = vars
+        self.block = block
+    }
 }
 
 

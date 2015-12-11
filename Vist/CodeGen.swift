@@ -17,17 +17,19 @@ enum IRError: ErrorType {
 // TODO: Scope manager
 private var runtimeVariables: [String: LLVMValueRef] = [:]
 private var runtimeVariableTypes: [String: LLVMTypeRef] = [:]
+var builder: LLVMBuilderRef = nil
+var module: LLVMModuleRef = nil
 
 
 // TODO: split up this protocol
 /// A type which can generate LLVM IR code
 protocol IRGenerator {
-    func codeGen(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) throws -> LLVMValueRef
-    func llvmType(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) throws -> LLVMTypeRef
+    func codeGen(bb: LLVMBasicBlockRef) throws -> LLVMValueRef
+    func llvmType(bb: LLVMBasicBlockRef) throws -> LLVMTypeRef
 }
 
 protocol BasicBlockGenerator {
-    func bbGen(builder: LLVMBuilderRef, _ module: LLVMModuleRef, _ bb: LLVMBasicBlockRef, fn: LLVMValueRef, args: UnsafeMutablePointer<LLVMTypeRef>) throws -> LLVMBasicBlockRef
+    func bbGen(bb: LLVMBasicBlockRef, fn: LLVMValueRef, args: UnsafeMutablePointer<LLVMTypeRef>) throws -> LLVMBasicBlockRef
 }
 
 
@@ -56,15 +58,15 @@ private func isFloatType(t: LLVMTypeKind) -> Bool {
 
 private extension Expression {
     
-    func codeGen(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) throws -> LLVMValueRef {
-        if let x = try (self as? IRGenerator)?.codeGen(builder, module, bb: bb) { return x } else { throw IRError.NotIRGenerator }
+    func codeGen(bb: LLVMBasicBlockRef) throws -> LLVMValueRef {
+        if let x = try (self as? IRGenerator)?.codeGen(bb) { return x } else { throw IRError.NotIRGenerator }
     }
-    func llvmType(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) throws -> LLVMTypeRef {
-        if let x = try (self as? IRGenerator)?.llvmType(builder, module, bb: bb) { return x } else { throw IRError.NotIRGenerator }
+    func llvmType(bb: LLVMBasicBlockRef) throws -> LLVMTypeRef {
+        if let x = try (self as? IRGenerator)?.llvmType(bb) { return x } else { throw IRError.NotIRGenerator }
     }
     
-    func bbGen(builder: LLVMBuilderRef, _ module: LLVMModuleRef, _ bb: LLVMBasicBlockRef, fn: LLVMValueRef, args: UnsafeMutablePointer<LLVMTypeRef>) throws -> LLVMBasicBlockRef {
-        if let x = try (self as? BasicBlockGenerator)?.bbGen(builder, module, bb, fn: fn, args: args) { return x } else { throw IRError.NotBBGenerator }
+    func bbGen(bb: LLVMBasicBlockRef, fn: LLVMValueRef, args: UnsafeMutablePointer<LLVMTypeRef>) throws -> LLVMBasicBlockRef {
+        if let x = try (self as? BasicBlockGenerator)?.bbGen(bb, fn: fn, args: args) { return x } else { throw IRError.NotBBGenerator }
     }
 
 }
@@ -108,22 +110,22 @@ private extension CollectionType where
 
 extension IntegerLiteral: IRGenerator {
     
-    func codeGen(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) throws -> LLVMValueRef {
-        return LLVMConstInt(try llvmType(builder, module, bb: bb), UInt64(val), LLVMBool(true))
+    func codeGen(bb: LLVMBasicBlockRef) throws -> LLVMValueRef {
+        return LLVMConstInt(try llvmType(bb), UInt64(val), LLVMBool(true))
     }
     
-    func llvmType(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) throws -> LLVMTypeRef {
+    func llvmType(bb: LLVMBasicBlockRef) throws -> LLVMTypeRef {
         return LLVMIntType(size)
     }
 }
 
 extension FloatingPointLiteral: IRGenerator {
     
-    func codeGen(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) throws -> LLVMValueRef {
-        return LLVMConstReal(try llvmType(builder, module, bb: bb), val)
+    func codeGen(bb: LLVMBasicBlockRef) throws -> LLVMValueRef {
+        return LLVMConstReal(try llvmType(bb), val)
     }
     
-    func llvmType(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) throws -> LLVMTypeRef {
+    func llvmType(bb: LLVMBasicBlockRef) throws -> LLVMTypeRef {
         switch size {
         case 16: return LLVMHalfType()
         case 32: return LLVMFloatType()
@@ -136,10 +138,10 @@ extension FloatingPointLiteral: IRGenerator {
 
 extension BooleanLiteral: IRGenerator {
     
-    func codeGen(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) -> LLVMValueRef {
+    func codeGen(bb: LLVMBasicBlockRef) -> LLVMValueRef {
         return LLVMConstInt(LLVMInt1Type(), UInt64(val.hashValue), LLVMBool(false))
     }
-    func llvmType(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) throws -> LLVMTypeRef {
+    func llvmType(bb: LLVMBasicBlockRef) throws -> LLVMTypeRef {
         return LLVMInt1Type()
     }
 }
@@ -153,20 +155,20 @@ extension BooleanLiteral: IRGenerator {
 
 extension Variable: IRGenerator {
     
-    func codeGen(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) -> LLVMValueRef {
+    func codeGen(bb: LLVMBasicBlockRef) -> LLVMValueRef {
         return runtimeVariables[name!]!
     }
-    func llvmType(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) throws -> LLVMTypeRef {
+    func llvmType(bb: LLVMBasicBlockRef) throws -> LLVMTypeRef {
         return runtimeVariableTypes[name!]!
     }
 }
 
 extension Assignment: IRGenerator {
     
-    func codeGen(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) throws -> LLVMValueRef {
+    func codeGen(bb: LLVMBasicBlockRef) throws -> LLVMValueRef {
         
         // create value
-        let v = try value.codeGen(builder, module, bb: bb)
+        let v = try value.codeGen(bb)
         
         // create ptr
         let type = LLVMTypeOf(v)
@@ -181,7 +183,7 @@ extension Assignment: IRGenerator {
         return stored
     }
     
-    func llvmType(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) throws -> LLVMTypeRef {
+    func llvmType(bb: LLVMBasicBlockRef) throws -> LLVMTypeRef {
         return nil
     }
     
@@ -195,11 +197,11 @@ extension Assignment: IRGenerator {
 
 extension BinaryExpression: IRGenerator {
     
-    func codeGen(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) throws -> LLVMValueRef {
+    func codeGen(bb: LLVMBasicBlockRef) throws -> LLVMValueRef {
         
-        let lIR = try lhs.codeGen(builder, module, bb: bb), rIR = try rhs.codeGen(builder, module, bb: bb)
+        let lIR = try lhs.codeGen(bb), rIR = try rhs.codeGen(bb)
         
-        let type = try llvmType(builder, module, bb: bb)
+        let type = try llvmType(bb)
         if LLVMGetTypeKind(type) == LLVMIntegerTypeKind {
             
             switch op {
@@ -230,9 +232,9 @@ extension BinaryExpression: IRGenerator {
         
     }
     
-    func llvmType(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) throws -> LLVMTypeRef {
-        let a = try lhs.llvmType(builder, module, bb: bb)
-        let b = try lhs.llvmType(builder, module, bb: bb)
+    func llvmType(bb: LLVMBasicBlockRef) throws -> LLVMTypeRef {
+        let a = try lhs.llvmType(bb)
+        let b = try lhs.llvmType(bb)
         
         if a == b { return a } else { throw IRError.MisMatchedTypes }
     }
@@ -249,14 +251,14 @@ extension BinaryExpression: IRGenerator {
 
 extension FunctionCall: IRGenerator {
     
-    func codeGen(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) throws -> LLVMValueRef {
+    func codeGen(bb: LLVMBasicBlockRef) throws -> LLVMValueRef {
         
         // make function
         let fn = LLVMGetNamedFunction(module, name)
         let argCount = args.elements.count
         
         // arguments
-        let argBuffer = try args.elements.map { try $0.codeGen(builder, module, bb: bb) }.ptr()
+        let argBuffer = try args.elements.map { try $0.codeGen(bb) }.ptr()
         defer { argBuffer.dealloc(argCount) }
 
         guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else { throw IRError.WrongFunctionApplication(name) }
@@ -267,7 +269,7 @@ extension FunctionCall: IRGenerator {
         return call
     }
     
-    func llvmType(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) -> LLVMTypeRef {
+    func llvmType(bb: LLVMBasicBlockRef) -> LLVMTypeRef {
         let fn = LLVMGetNamedFunction(module, name)
         return LLVMGetReturnType(fn)
     }
@@ -278,7 +280,7 @@ extension FunctionCall: IRGenerator {
 // function definition
 extension FunctionPrototype: IRGenerator {
     
-    func codeGen(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) throws -> LLVMValueRef {
+    func codeGen(bb: LLVMBasicBlockRef) throws -> LLVMValueRef {
         
         let args = type.args, returns = type.returns, argCount = args.elements.count
         
@@ -318,7 +320,7 @@ extension FunctionPrototype: IRGenerator {
         
         // generate bb for body
         do {
-            try impl?.body.bbGen(builder, module, bb, fn: function, args: argBuffer)
+            try impl?.body.bbGen(bb, fn: function, args: argBuffer)
         } catch {
             LLVMDeleteFunction(function)
             throw error
@@ -327,7 +329,7 @@ extension FunctionPrototype: IRGenerator {
         return function
     }
     
-    func llvmType(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) -> LLVMTypeRef {
+    func llvmType(bb: LLVMBasicBlockRef) -> LLVMTypeRef {
         return nil
     }
     
@@ -336,12 +338,12 @@ extension FunctionPrototype: IRGenerator {
 
 extension ReturnExpression: IRGenerator {
     
-    func codeGen(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) throws -> LLVMValueRef {
-        let v = try expression.codeGen(builder, module, bb: bb)
+    func codeGen(bb: LLVMBasicBlockRef) throws -> LLVMValueRef {
+        let v = try expression.codeGen(bb)
         return LLVMBuildRet(builder, v)
     }
     
-    func llvmType(builder: LLVMBuilderRef, _ module: LLVMModuleRef, bb: LLVMBasicBlockRef) -> LLVMTypeRef {
+    func llvmType(bb: LLVMBasicBlockRef) -> LLVMTypeRef {
         return nil
     }
     
@@ -370,8 +372,8 @@ extension ReturnExpression: IRGenerator {
 extension AST {
     func IRGen() throws -> LLVMBasicBlockRef {
         
-        let builder = LLVMCreateBuilder()
-        let module = LLVMModuleCreateWithName("vist_module")
+        builder = LLVMCreateBuilder()
+        module = LLVMModuleCreateWithName("vist_module")
         
         let argBuffer = [LLVMInt32Type()].ptr()
         defer { argBuffer.dealloc(1) }
@@ -379,11 +381,12 @@ extension AST {
         let functionType = LLVMFunctionType(LLVMInt32Type(), argBuffer, UInt32(1), LLVMBool(false))
         let mainFunction = LLVMAddFunction(module, "main", functionType)
         
+//        LLVMbasicblock
         let programEntryBlock = LLVMAppendBasicBlock(mainFunction, "entry")
         LLVMPositionBuilderAtEnd(builder, programEntryBlock)
         
         for exp in expressions {
-            try exp.codeGen(builder, module, bb: programEntryBlock)
+            try exp.codeGen(programEntryBlock)
         }
         
         // TODO: Move main function to the end of funtions
@@ -399,13 +402,13 @@ extension AST {
 
 extension Block: BasicBlockGenerator {
     
-    func bbGen(builder: LLVMBuilderRef, _ module: LLVMModuleRef, _ bb: LLVMBasicBlockRef, fn: LLVMValueRef, args: UnsafeMutablePointer<LLVMTypeRef>) throws -> LLVMBasicBlockRef {
+    func bbGen(bb: LLVMBasicBlockRef, fn: LLVMValueRef, args: UnsafeMutablePointer<LLVMTypeRef>) throws -> LLVMBasicBlockRef {
         
         let entryBlock = LLVMAppendBasicBlock(fn, "entry")
         LLVMPositionBuilderAtEnd(builder, entryBlock)
         
         for exp in expressions {
-            try exp.codeGen(builder, module, bb: entryBlock)
+            try exp.codeGen(entryBlock)
         }
         
         LLVMPositionBuilderAtEnd(builder, bb)
