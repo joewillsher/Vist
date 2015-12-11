@@ -1,6 +1,8 @@
-func double: (Int) -> Int = |a| {
-return (a * 2)
-}
+func foo: ()
+func bar: () -> Int = { return 1 }
 
-let b = double(4)
-let c = b * 5
+let a = bar()
+
+if a < 3 {
+    foo()
+}

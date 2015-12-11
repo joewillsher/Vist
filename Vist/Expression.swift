@@ -27,21 +27,21 @@ protocol ScopeExpression: Expression {
     var topLevel: Bool { get }
 }
 
-struct AST: ScopeExpression {
+class AST: ScopeExpression {
     var expressions: [Expression]
     var topLevel = true
     init(expressions: [Expression]) {
         self.expressions = expressions
     }
 }
-struct Block: ScopeExpression {
+class Block: ScopeExpression {
     var expressions: [Expression]
     var topLevel = false
     init(expressions: [Expression]) {
         self.expressions = expressions
     }
 }
-struct DefinitionScope: ScopeExpression {
+class DefinitionScope: ScopeExpression {
     var expressions: [Expression]
     var topLevel = false
     init(expressions: [Expression]) {
@@ -110,7 +110,7 @@ struct Comment: Expression {
     let str: String
 }
 
-struct Variable: Expression {
+class Variable: Expression {
     let name: String?
     let isMutable: Bool = false
     
@@ -119,7 +119,7 @@ struct Variable: Expression {
     }
 }
 
-struct BinaryExpression: Expression {
+class BinaryExpression: Expression {
     let op: String
     let lhs: Expression, rhs: Expression
     
@@ -130,7 +130,7 @@ struct BinaryExpression: Expression {
     }
 }
 
-struct PrefixExpression: Expression {
+class PrefixExpression: Expression {
     let op: String
     let expr: Expression
     
@@ -140,7 +140,7 @@ struct PrefixExpression: Expression {
     }
 }
 
-struct PostfixExpression: Expression {
+class PostfixExpression: Expression {
     let op: String
     let expr: Expression
     
@@ -150,7 +150,7 @@ struct PostfixExpression: Expression {
     }
 }
 
-struct FunctionCall: Expression {
+class FunctionCall: Expression {
     let name: String
     let args: Tuple
     
@@ -160,7 +160,7 @@ struct FunctionCall: Expression {
     }
 }
 
-struct Assignment: Expression {
+class Assignment: Expression {
     let name: String
     let type: String?
     let isMutable: Bool
@@ -177,7 +177,7 @@ struct Assignment: Expression {
 
 
 
-struct FunctionPrototype: Type {
+class FunctionPrototype: Type {
     let name: String
     let type: FunctionType
     let impl: FunctionImplementation?
@@ -189,12 +189,17 @@ struct FunctionPrototype: Type {
     }
 }
 
-struct FunctionImplementation: Expression {
+class FunctionImplementation: Expression {
     let params: Tuple
-    let body: Expression
+    let body: Block
+    
+    init(params: Tuple, body: Block) {
+        self.params = params
+        self.body = body
+    }
 }
 
-struct Tuple: Expression {
+class Tuple: Expression {
     let elements: [Expression]
     
     init(elements: [Expression]) {
@@ -204,12 +209,16 @@ struct Tuple: Expression {
     static func void() -> Tuple{ return Tuple(elements: [])}
 }
 
-struct ReturnExpression: Expression {
+class ReturnExpression: Expression {
     let expression: Expression
+    
+    init(expression: Expression) {
+        self.expression = expression
+    }
 }
 
 
-struct ValueType: Type {
+class ValueType: Type {
     var name: String
     
     init(name: String) {
@@ -218,7 +227,7 @@ struct ValueType: Type {
     
 }
 
-struct FunctionType: Type {
+class FunctionType: Type {
     let args: Tuple
     let returns: Tuple
     
@@ -233,6 +242,51 @@ struct FunctionType: Type {
         return params + " -> " + ret
     }
 }
+
+
+
+
+
+
+class ElseIfBlock: Expression {
+    let condition: Expression?
+    let block: ScopeExpression
+    
+    init(condition: Expression?, block: ScopeExpression) {
+        self.condition = condition
+        self.block = block
+    }
+}
+
+
+class ConditionalExpression: Expression {
+    let statements: [ElseIfBlock]
+    
+    init(statements: [(condition: Expression?, block: ScopeExpression)]) throws {
+        var p: [ElseIfBlock] = []
+        
+        for (index, path) in statements.enumerate() {
+            
+            p.append(ElseIfBlock(path))
+            
+            // nil condition here is an else block, if there is anything after an else block then throw
+            // either because there is more than 1 else or expressions after an else
+            guard let _ = path.condition else {
+                if index == statements.count-1 { break }
+                else { self.statements = []; throw ParseError.InvalidIfStatement }}
+        }
+        
+        self.statements = p
+    }
+}
+
+
+
+
+
+
+
+
 
 
 

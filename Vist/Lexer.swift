@@ -40,7 +40,7 @@ private extension Character {
     }
     
     func isSymbol() -> Bool {
-        return operators.keys.reduce("", combine: +).characters.contains(self)
+        return (isblank(value()) != 1) && operators.keys.reduce("", combine: +).characters.contains(self)
     }
 }
 
@@ -160,7 +160,7 @@ struct Lexer {
     private mutating func addChar() {
         charsInContext.append(currentChar)
     }
-
+    
     
     private mutating func addContext() throws {
 
@@ -191,7 +191,10 @@ struct Lexer {
     }
     
     mutating private func lexSymbol() throws {
-        try lexWhilePredicate({$0.isSymbol()})
+        try lexWhilePredicate {
+            if let _ = operators[String(self.charsInContext)] { return false }
+            else { return $0.isSymbol() }
+        }
     }
     
     // TODO: Implement funciton versions for comments and string literals
@@ -204,7 +207,7 @@ struct Lexer {
 //    }
     
     mutating private func lexWhilePredicate(p: Character -> Bool) throws {
-        loop: while p(currentChar) {
+        while p(currentChar) {
             addChar()
             if index<chars.count { try consumeChar() } else { break }
         }
@@ -216,7 +219,6 @@ struct Lexer {
     ///
     /// [Detailed here](http://llvm.org/docs/tutorial/LangImpl1.html#language)
     mutating func getTokens() throws -> [(Token, SourceLoc)] {
-        
         
         while index<chars.count {
             

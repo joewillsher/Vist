@@ -22,6 +22,7 @@ enum ParseError: ErrorType {
     case ExpectedBrace(Pos)
     case NoOperator(Pos)
     case MismatchedType((String, Pos), (String, Pos))
+    case InvalidIfStatement
 }
 
 private extension Array {
@@ -53,6 +54,7 @@ struct Parser {
     
     private let precedences: [String: Int] = [
         "<": 10,
+        ">": 10,
         "+": 20,
         "-": 20,
         "*": 40,
@@ -278,10 +280,38 @@ struct Parser {
     
     
     private mutating func parseConditionalExpression() throws -> Expression {
-        return EndOfScope()
+        
+        getNextToken() // eat `if`
+        let condition = try parseOperatorExpression()
+        
+        // list of blocks
+        var blocks: [(condition: Expression?, block: ScopeExpression)] = []
+        
+        // get if block & append
+        guard case .OpenBrace = currentToken else { throw ParseError.ExpectedBrace(currentPos) }
+        let block = try parseBraceExpressions()
+        blocks.append((condition, block))
+        
+        while case .Else? = inspectNextToken() {
+            getNextToken()
+            
+            var condition: Expression? = nil
+            
+            if case .If = getNextToken() {
+                // `else if` statement
+                getNextToken()
+                condition = try parseOperatorExpression()
+            }
+            guard case .OpenBrace = currentToken else { throw ParseError.ExpectedBrace(currentPos) }
+            let block = try parseBraceExpressions()
+            
+            blocks.append((condition, block))
+        }
+        
+        return try ConditionalExpression(statements: blocks)
     }
     
-    
+
     
     
     
@@ -309,7 +339,8 @@ struct Parser {
         let type = explicitType ?? ((value as? Typed)?.type as? ValueType)?.name
         if let a = type, let b = explicitType where a != b { throw ParseError.MismatchedType((a, inspectNextPos(-1)!), (b, inspectNextPos(-3)!)) }
         
-        if let ex = explicitType, var sized = value as? Sized  { // if explicit assignment defines size
+        // if explicit assignment defines size, add info about this size to object
+        if let ex = explicitType, var sized = value as? Sized  {
             let s = ex.componentsSeparatedByCharactersInSet(NSCharacterSet.decimalDigitCharacterSet().invertedSet).joinWithSeparator("")
             if let n = UInt32(s) {
                 sized.size = n
@@ -317,7 +348,7 @@ struct Parser {
                 print(n)
             }
         }
-
+        
         return Assignment(name: id, type: type, isMutable: mutable, value: value)
     }
     
@@ -397,23 +428,21 @@ struct Parser {
         
         guard case .OpenBrace = currentToken else { throw ParseError.ExpectedBrace(currentPos) }
         
-        return FunctionImplementation(params: Tuple(elements: names), body: try parseExpression(currentToken))
+        return FunctionImplementation(params: Tuple(elements: names), body: try parseBraceExpressions())
     }
     
-    private mutating func parseBraceExpressions() throws -> ScopeExpression {
+    private mutating func parseBraceExpressions() throws -> Block {
         getNextToken() // eat '{'
-        
+
         var expressions = [Expression]()
         
         while true {
             if case .CloseBrace = currentToken { break }
             
-            do {
-                expressions.append(try parseExpression(currentToken))
-            } catch ParseError.NoToken(.CloseParen, _) {
-                break
-            }
+            do { expressions.append(try parseExpression(currentToken)) }
+            catch ParseError.NoToken(.CloseParen, _) { break }
         }
+        
         return Block(expressions: expressions)
     }
     

@@ -10,7 +10,7 @@ import Foundation
 import LLVM
 
 enum IRError: ErrorType {
-    case NotIRGenerator, NotBBGenerator, NoOperator, MisMatchedTypes, NoLLVMFloat(UInt32), WrongFunctionApplication(String), NoLLVMType, NoBody, InvalidFunction, NoVariable(String)
+    case NotIRGenerator, NotBBGenerator, NoOperator, MisMatchedTypes, NoLLVMFloat(UInt32), WrongFunctionApplication(String), NoLLVMType, NoBody, InvalidFunction, NoVariable(String), NoBool
 }
 
 
@@ -26,7 +26,7 @@ protocol IRGenerator {
 }
 
 protocol BasicBlockGenerator {
-    func bbGen(parentScope parentScope: Scope, functionScope scope: Scope, fn: LLVMValueRef, args: UnsafeMutablePointer<LLVMTypeRef>) throws -> LLVMBasicBlockRef
+    func bbGen(innerScope scope: Scope, fn: LLVMValueRef) throws -> LLVMBasicBlockRef
 }
 
 
@@ -43,17 +43,19 @@ private func isFloatType(t: LLVMTypeKind) -> Bool {
     return [LLVMFloatTypeKind, LLVMDoubleTypeKind, LLVMHalfTypeKind, LLVMFP128TypeKind].contains(t)
 }
 
-private extension Expression {
+extension Expression {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
-        if let x = try (self as? IRGenerator)?.codeGen(scope) { return x } else { throw IRError.NotIRGenerator }
+        if let x = try (self as? IRGenerator)?.codeGen(scope) { return x } else {
+            
+            throw IRError.NotIRGenerator }
     }
     func llvmType(scope: Scope) throws -> LLVMTypeRef {
         if let x = try (self as? IRGenerator)?.llvmType(scope) { return x } else { throw IRError.NotIRGenerator }
     }
     
-    func bbGen(parentScope parentScope: Scope, functionScope scope: Scope, fn: LLVMValueRef, args: UnsafeMutablePointer<LLVMTypeRef>) throws -> LLVMBasicBlockRef {
-        if let x = try (self as? BasicBlockGenerator)?.bbGen(parentScope: parentScope, functionScope: scope, fn: fn, args: args) { return x } else { throw IRError.NotBBGenerator }
+    func bbGen(innerScope scope: Scope, fn: LLVMValueRef) throws -> LLVMBasicBlockRef {
+        if let x = try (self as? BasicBlockGenerator)?.bbGen(innerScope: scope, fn: fn) { return x } else { throw IRError.NotBBGenerator }
     }
 }
 
@@ -190,24 +192,30 @@ extension BinaryExpression: IRGenerator {
         if LLVMGetTypeKind(type) == LLVMIntegerTypeKind {
             
             switch op {
-            case "+": return LLVMBuildAdd(builder, lIR, rIR, "addtmp")
-            case "-": return LLVMBuildSub(builder, lIR, rIR, "subtmp")
-            case "*": return LLVMBuildMul(builder, lIR, rIR, "multmp")
-            case "/": return LLVMBuildUDiv(builder, lIR, rIR, "divtmp")
-            case "%": return LLVMBuildURem(builder, lIR, rIR, "remftmp")
-            case "&&": return LLVMBuildAnd(builder, lIR, rIR, "andtmp")
-            case "||": return LLVMBuildOr(builder, lIR, rIR, "ortmp")
+            case "+": return LLVMBuildAdd(builder, lIR, rIR, "add_res")
+            case "-": return LLVMBuildSub(builder, lIR, rIR, "sub_res")
+            case "*": return LLVMBuildMul(builder, lIR, rIR, "mul_res")
+            case "/": return LLVMBuildUDiv(builder, lIR, rIR, "div_res")
+            case "%": return LLVMBuildURem(builder, lIR, rIR, "rem_res")
+            case "&&": return LLVMBuildAnd(builder, lIR, rIR, "and_res")
+            case "||": return LLVMBuildOr(builder, lIR, rIR, "or_res")
+            case "<": return LLVMBuildICmp(builder, LLVMIntSLT, lIR, rIR, "cmp_lt_res")
+            case ">": return LLVMBuildICmp(builder, LLVMIntSGT, lIR, rIR, "cmp_gt_res")
             default: throw IRError.NoOperator
             }
+            
+            // TODO: ==, !=, >=, <=
 
         } else if isFloatType(LLVMGetTypeKind(type)) {
             
             switch op {
-            case "+": return LLVMBuildFAdd(builder, lIR, rIR, "addftmp")
-            case "-": return LLVMBuildFSub(builder, lIR, rIR, "subftmp")
-            case "*": return LLVMBuildFMul(builder, lIR, rIR, "mulftmp")
-            case "/": return LLVMBuildFDiv(builder, lIR, rIR, "divftmp")
-            case "%": return LLVMBuildFRem(builder, lIR, rIR, "remftmp")
+            case "+": return LLVMBuildFAdd(builder, lIR, rIR, "fadd_res")
+            case "-": return LLVMBuildFSub(builder, lIR, rIR, "fsub_res")
+            case "*": return LLVMBuildFMul(builder, lIR, rIR, "fmul_res")
+            case "/": return LLVMBuildFDiv(builder, lIR, rIR, "fdiv_res")
+            case "%": return LLVMBuildFRem(builder, lIR, rIR, "frem_res")
+            case "<": return LLVMBuildFCmp(builder, LLVMRealOLT, lIR, rIR, "fcmp_lt_res")
+            case ">": return LLVMBuildFCmp(builder, LLVMRealOGT, lIR, rIR, "fcmp_gt_res")
             default: throw IRError.NoOperator
             }
 
@@ -293,7 +301,7 @@ extension FunctionPrototype: IRGenerator {
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
         
         // scope internal to function, needs params setting and then the block should be added *inside* the bbGen function
-        let functionScope = Scope()
+        let functionScope = Scope(function: function, parentScope: scope)
         
         // set function param names and update table
         for i in 0..<UInt32(argCount) {
@@ -306,7 +314,7 @@ extension FunctionPrototype: IRGenerator {
         
         // generate bb for body
         do {
-            try impl?.body.bbGen(parentScope: scope, functionScope: functionScope, fn: function, args: argBuffer)
+            try impl?.body.bbGen(innerScope: functionScope, fn: function)
         } catch {
             LLVMDeleteFunction(function)
             throw error
@@ -342,7 +350,76 @@ extension ReturnExpression: IRGenerator {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
+private func ifBBID(n n: Int, ex: ElseIfBlock) -> String? {
+    return ex.condition == nil ? "\(n)else_bb" : "\(n)then_bb"
+}
 
+extension ConditionalExpression: IRGenerator {
+    
+    func codeGen(scope: Scope) throws -> LLVMValueRef {
+        
+        let entryBlock = scope.block
+        
+        let statement = statements[0]
+        
+        
+        
+        
+        
+        
+        guard let cond = try statement.condition?.codeGen(scope) else { throw IRError.NoBool }
+        
+        let contBlock = LLVMAppendBasicBlock(scope.function, "cont")
+        
+        let thenBlock = try statement.bbGen(innerScope: scope, contBlock: contBlock, name: "then")
+//        let elseBlock = try statement.bbGen(innerScope: scope, contBlock: contBlock)
+        
+        
+        
+        LLVMPositionBuilderAtEnd(builder, entryBlock)
+
+        LLVMBuildCondBr(builder, cond, thenBlock, contBlock)
+        
+        
+        LLVMPositionBuilderAtEnd(builder, contBlock)
+
+        scope.block = contBlock
+        
+        return nil
+    }
+    
+    
+    
+    func llvmType(scope: Scope) throws -> LLVMTypeRef {
+        return nil
+    }
+}
+
+
+extension ElseIfBlock {
+    
+    private func bbGen(innerScope scope: Scope, contBlock: LLVMBasicBlockRef, name: String) throws -> LLVMBasicBlockRef {
+        
+        let basicBlock = LLVMAppendBasicBlock(scope.function, name)
+        LLVMPositionBuilderAtEnd(builder, basicBlock)
+
+        
+        for exp in block.expressions {
+            try exp.codeGen(scope)
+        }
+        
+        
+        // move to cont block
+        
+        LLVMBuildBr(builder, contBlock)
+        
+        LLVMPositionBuilderAtEnd(builder, scope.block)
+        
+        return basicBlock
+    }
+    
+    
+}
 
 
 
@@ -373,7 +450,7 @@ extension AST {
         // Setup BB & scope
         let programEntryBlock = LLVMAppendBasicBlock(mainFunction, "entry")
         LLVMPositionBuilderAtEnd(builder, programEntryBlock)
-        let scope = Scope(block: programEntryBlock)
+        let scope = Scope(block: programEntryBlock, function: mainFunction)
         
         for exp in expressions {
             try exp.codeGen(scope)
@@ -381,7 +458,6 @@ extension AST {
         
         // TODO: Move main function to the end of funtions
         
-        LLVMPositionBuilderAtEnd(builder, programEntryBlock)
         LLVMBuildRet(builder, LLVMConstInt(LLVMInt32Type(), 0, LLVMBool(false)))
         
         return module
@@ -392,7 +468,7 @@ extension AST {
 
 extension Block: BasicBlockGenerator {
     
-    func bbGen(parentScope parentScope: Scope, functionScope scope: Scope, fn: LLVMValueRef, args: UnsafeMutablePointer<LLVMTypeRef>) throws -> LLVMBasicBlockRef {
+    func bbGen(innerScope scope: Scope, fn: LLVMValueRef) throws -> LLVMBasicBlockRef {
         
         // setup function block
         let entryBlock = LLVMAppendBasicBlock(fn, "entry")
@@ -406,7 +482,7 @@ extension Block: BasicBlockGenerator {
         }
         
         // reset builder head tp parent scope
-        LLVMPositionBuilderAtEnd(builder, parentScope.block)
+        LLVMPositionBuilderAtEnd(builder, scope.parentScope!.block)
         return entryBlock
     }
     

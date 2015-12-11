@@ -220,3 +220,24 @@ extension ReturnExpression {
     }
 }
 
+
+
+private func ifStr(n n: Int, ex: ElseIfBlock) -> String? {
+    return ex.condition == nil ? "else" : n == 0 ? "if" : "if else"
+}
+
+extension ConditionalExpression {
+    
+    func printList() -> [(String?, Printable)]? {
+        return statements.enumerate().map { (ifStr(n: $0, ex: $1), $1) }
+    }
+}
+
+extension ElseIfBlock {
+    
+    func printList() -> [(String?, Printable)]? {
+        return [("cond", condition), ("then", block)]
+    }
+}
+
+
