@@ -363,8 +363,9 @@ extension ConditionalExpression: IRGenerator {
         let statement = statements[0]
         
         
-        
-        
+        // TODO: else block
+        // TODO: chaining ifs
+        // TODO: reorder bbs
         
         
         guard let cond = try statement.condition?.codeGen(scope) else { throw IRError.NoBool }
