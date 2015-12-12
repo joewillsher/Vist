@@ -5,6 +5,9 @@ let a = bar()
 
 if a < 3 {
     let b = 2
-    foo()
+} else if a > 4 {
+    let c = 3
+} else {
+    let d = 4
 }
 

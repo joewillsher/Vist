@@ -46,9 +46,7 @@ private func isFloatType(t: LLVMTypeKind) -> Bool {
 extension Expression {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
-        if let x = try (self as? IRGenerator)?.codeGen(scope) { return x } else {
-            
-            throw IRError.NotIRGenerator }
+        if let x = try (self as? IRGenerator)?.codeGen(scope) { return x } else { throw IRError.NotIRGenerator }
     }
     func llvmType(scope: Scope) throws -> LLVMTypeRef {
         if let x = try (self as? IRGenerator)?.llvmType(scope) { return x } else { throw IRError.NotIRGenerator }
@@ -64,6 +62,7 @@ private extension CollectionType where
     Index == Int,
     Index.Distance == Int {
     
+    /// get a ptr to the memory of the collection
     func ptr() -> UnsafeMutablePointer<Generator.Element> {
         
         let p = UnsafeMutablePointer<Generator.Element>.alloc(count)
@@ -253,7 +252,7 @@ extension FunctionCall: IRGenerator {
         // arguments
         let argBuffer = try args.elements.map { try $0.codeGen(scope) }.ptr()
         defer { argBuffer.dealloc(argCount) }
-
+        
         guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else { throw IRError.WrongFunctionApplication(name) }
         
         // add call to IR
@@ -350,44 +349,46 @@ extension ReturnExpression: IRGenerator {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-private func ifBBID(n n: Int, ex: ElseIfBlock) -> String? {
-    return ex.condition == nil ? "\(n)else_bb" : "\(n)then_bb"
+private func ifBBID(n n: Int, ex: ElseIfBlock) -> String {
+    return ex.condition == nil ? "else\(n)" : "then\(n)"
 }
 
 extension ConditionalExpression: IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
-        let entryBlock = scope.block
-        
-        let statement = statements[0]
-        
-        
-        // TODO: else block
-        // TODO: chaining ifs
         // TODO: reorder bbs
+        // TODO: if cond is true/fasle at compile remove jump
         
+        // block leading into and out of current if block
+        var ifIn: LLVMBasicBlockRef = scope.block
+        var ifOut: LLVMBasicBlockRef = nil
         
-        guard let cond = try statement.condition?.codeGen(scope) else { throw IRError.NoBool }
+        for (i, statement) in statements.enumerate() {
+            
+            LLVMPositionBuilderAtEnd(builder, ifIn)
+            
+            // `if` block
+            let cond = try statement.condition?.codeGen(scope)
+            ifOut = LLVMAppendBasicBlock(scope.function, "cont\(i)")
+            
+            // then block and associated scope
+            let tScope = Scope(function: scope.function, parentScope: scope)
+            let block = try statement.bbGen(innerScope: tScope, contBlock: ifOut, name: ifBBID(n: i, ex: statement))
+            
+            LLVMPositionBuilderAtEnd(builder, ifIn)
+            
+            if let cond = cond { //if statement
+                LLVMBuildCondBr(builder, cond, block, ifOut)
+            } else {
+                LLVMBuildBr(builder, block)
+            }
+            
+            ifIn = ifOut
+        }
         
-
-        let contBlock = LLVMAppendBasicBlock(scope.function, "cont")
-        
-        let tScope = Scope(function: scope.function, parentScope: scope)
-        let thenBlock = try statement.bbGen(innerScope: tScope, contBlock: contBlock, name: "then")
-
-//        let elseBlock = try statement.bbGen(innerScope: scope, contBlock: contBlock)
-        
-        
-        
-        LLVMPositionBuilderAtEnd(builder, entryBlock)
-
-        LLVMBuildCondBr(builder, cond, thenBlock, contBlock)
-        
-        
-        LLVMPositionBuilderAtEnd(builder, contBlock)
-
-        scope.block = contBlock
+        LLVMPositionBuilderAtEnd(builder, ifOut)
+        scope.block = ifOut
         
         return nil
     }
@@ -404,20 +405,18 @@ extension ElseIfBlock {
     
     private func bbGen(innerScope scope: Scope, contBlock: LLVMBasicBlockRef, name: String) throws -> LLVMBasicBlockRef {
         
+        // add block
         let basicBlock = LLVMAppendBasicBlock(scope.function, name)
         LLVMPositionBuilderAtEnd(builder, basicBlock)
-
         
+        // parse code
         for exp in block.expressions {
             try exp.codeGen(scope)
         }
         
-        
         // move to cont block
-        
         LLVMBuildBr(builder, contBlock)
-        
-        LLVMPositionBuilderAtEnd(builder, scope.parentScope!.block)
+        LLVMPositionBuilderAtEnd(builder, contBlock)
         
         return basicBlock
     }
