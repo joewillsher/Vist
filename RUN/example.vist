@@ -5,6 +5,4 @@ let a = bar(2)
 
 if (a < 3) && (a == 1) {
     let b = 2
-} else {
-    let b = 3
 }

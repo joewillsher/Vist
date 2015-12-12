@@ -517,6 +517,36 @@ extension AST {
         
         LLVMBuildRet(builder, LLVMConstInt(LLVMInt32Type(), 0, LLVMBool(false)))
         
+        
+        
+        
+        
+        
+        
+        
+        /*
+        
+        let engine = UnsafeMutablePointer<LLVMExecutionEngineRef>.alloc(alignof(LLVMExecutionEngineRef))
+        var error =  UnsafeMutablePointer<UnsafeMutablePointer<Int8>>.alloc(alignof(UnsafeMutablePointer<Int8>))
+        
+        LLVMLinkInInterpreter()
+        
+        if LLVMCreateInterpreterForModule(engine, module, error) != 0 {
+            print("can't initialize engine: \(String.fromCString(error.memory)!)")
+            // TODO: cleanup all allocated memory ;)
+            exit(1)
+        }
+        
+        let arg = [LLVMConstInt(LLVMInt32Type(), 1, LLVMBool(false))].ptr()
+
+        LLVMRunFunction(COpaquePointer(engine), mainFunction, 1, arg)
+        
+        
+        */
+        
+        
+        
+        
         return module
     }
 }

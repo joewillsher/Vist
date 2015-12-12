@@ -41,7 +41,11 @@ func compileDocument(filePath: String) throws {
     
     print(filePath)
 
-    try ir.writeToFile("example.ir", atomically: true, encoding: NSUTF8StringEncoding)
+    try ir.writeToFile("example.ll", atomically: true, encoding: NSUTF8StringEncoding)
+    
+    
+
+    
     
     
 }
