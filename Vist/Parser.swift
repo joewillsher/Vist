@@ -427,7 +427,7 @@ struct Parser {
             names = nms.map{ ValueType.init(name: $0) }
             
         } else {
-            names = (0..<type.args.elements.count).map{"$0\($0)"}.map{ ValueType.init(name: $0) }
+            names = (0..<type.args.elements.count).map{"$\($0)"}.map{ ValueType.init(name: $0) }
         }
         
         guard case .OpenBrace = currentToken else { throw ParseError.ExpectedBrace(currentPos) }

@@ -207,6 +207,10 @@ class Tuple: Expression {
     }
     
     static func void() -> Tuple{ return Tuple(elements: [])}
+    
+    func mapAs<T>(t: T.Type) -> [T] {
+        return elements.flatMap { $0 as? T }
+    }
 }
 
 class ReturnExpression: Expression {

@@ -1,7 +1,7 @@
 func foo: ()
-func bar: () -> Int = { return 1 }
+func bar: (Int) -> Int = { return $0 }
 
-let a = bar()
+let a = bar(2)
 
 if (a < 3) && (a == 1) {
     let b = 2

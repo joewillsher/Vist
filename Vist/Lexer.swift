@@ -71,7 +71,7 @@ private extension Token {
         let numberFormatter = NSNumberFormatter()
             numberFormatter.numberStyle = NSNumberFormatterStyle.DecimalStyle
         guard let number = numberFormatter.numberFromString(numeric.stringByReplacingOccurrencesOfString("_", withString: "")) else {
-            self = .Str(numeric)
+            self = .Identifier(numeric)
             return
         }
         
@@ -191,6 +191,11 @@ struct Lexer {
         try lexWhilePredicate { $0.isNumOr_() }
         try resetContext()
     }
+
+    mutating private func lexInteger() throws {
+        try lexWhilePredicate { $0.isNum() }
+        try resetContext()
+    }
     
     mutating private func lexSymbol() throws {
         
@@ -238,6 +243,13 @@ struct Lexer {
         while index<chars.count {
             
             switch (context, currentChar) {
+                
+            case (_, "$"):
+                context = .Alpha
+                addChar()
+                try consumeChar()
+                try lexNumber()
+                continue
                 
             case (.Comment?, let n) where n == "\n" || n == "\r": // comment end
                 try resetContext()

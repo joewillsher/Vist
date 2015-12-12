@@ -10,7 +10,7 @@ import Foundation
 import LLVM
 
 enum IRError: ErrorType {
-    case NotIRGenerator, NotBBGenerator, NoOperator, MisMatchedTypes, NoLLVMFloat(UInt32), WrongFunctionApplication(String), NoLLVMType, NoBody, InvalidFunction, NoVariable(String), NoBool
+    case NotIRGenerator, NotBBGenerator, NoOperator, MisMatchedTypes, NoLLVMFloat(UInt32), WrongFunctionApplication(String), NoLLVMType, NoBody, InvalidFunction, NoVariable(String), NoBool, TypeNotFound
 }
 
 
@@ -29,7 +29,17 @@ protocol BasicBlockGenerator {
     func bbGen(innerScope scope: Scope, fn: LLVMValueRef) throws -> LLVMBasicBlockRef
 }
 
-
+private var typeDict: [String: LLVMTypeRef] = [
+    "Int": LLVMInt64Type(),
+    "Int64": LLVMInt64Type(),
+    "Int32": LLVMInt32Type(),
+    "Int16": LLVMInt16Type(),
+    "Int8": LLVMInt8Type(),
+    "Bool": LLVMInt1Type(),
+    "Double": LLVMDoubleType(),
+    "Float": LLVMFloatType(),
+    "Void": LLVMVoidType(),
+]
 
 
 
@@ -274,13 +284,30 @@ extension FunctionCall: IRGenerator {
     
 }
 
+extension FunctionType {
+    
+    
+    func params() throws -> [LLVMTypeRef] {
+        let res = args.mapAs(ValueType).flatMap { typeDict[$0.name] }
+        if res.count == args.elements.count { return res } else { throw IRError.TypeNotFound }
+    }
+    
+    func returnType() throws -> LLVMTypeRef {
+        let res = returns.mapAs(ValueType).flatMap { typeDict[$0.name] }
+        if res.count == args.elements.count && res.count == 0 { return LLVMVoidType() }
+        if let f = res.first where res.count == args.elements.count { return f } else { throw IRError.TypeNotFound }
+    }
+    
+}
+
+
 
 // function definition
 extension FunctionPrototype: IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
-        let args = type.args, returns = type.returns, argCount = args.elements.count
+        let args = type.args, argCount = args.elements.count
         
         // If existing function definition
         let _fn = LLVMGetNamedFunction(module, name)
@@ -289,19 +316,13 @@ extension FunctionPrototype: IRGenerator {
         }
         
         // Set params
-        let argBuffer = UnsafeMutablePointer<LLVMTypeRef>.alloc(argCount)
+        let argBuffer = try type.params().ptr()
         defer { argBuffer.dealloc(argCount) }
-        
-        for i in 0..<argCount {
-//            let argument = args.elements[i]
-            // TODO: set param type to something else & use .ptr()
-            argBuffer.advancedBy(i).initialize(LLVMInt64Type())
-        }
         
         // make function
         
         // TODO: set return type to something else
-        let functionType = LLVMFunctionType(LLVMInt64Type(), argBuffer, UInt32(argCount), LLVMBool(false))
+        let functionType = LLVMFunctionType(try type.returnType(), argBuffer, UInt32(argCount), LLVMBool(false))
         let function = LLVMAddFunction(module, name, functionType)
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
         
@@ -309,9 +330,9 @@ extension FunctionPrototype: IRGenerator {
         let functionScope = Scope(function: function, parentScope: scope)
         
         // set function param names and update table
-        for i in 0..<UInt32(argCount) {
-            let param = LLVMGetParam(function, i)
-            let name = (impl?.params.elements[Int(i)] as? ValueType)?.name ?? ("fn\(self.name)_param\(i)")
+        for i in 0..<argCount {
+            let param = LLVMGetParam(function, UInt32(i))
+            let name = (impl?.params.elements[i] as? ValueType)?.name ?? ("$\(i)")
             
             LLVMSetValueName(param, name)
             functionScope.addVariable(name, val: param)

@@ -136,8 +136,8 @@ extension FunctionPrototype {
 }
 
 extension FunctionType {
-    func printList() -> [(String?, Printable)]? {
-        return [("args", args), ("returns", returns)]
+    func printVal() -> String? {
+        return desc()
     }
 }
 
