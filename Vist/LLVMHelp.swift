@@ -14,13 +14,3 @@ extension LLVMBool {
         self.init(b ? 1 : 0)
     }
 }
-
-//extension LLVMValueRef {
-//
-//    static var NULL: LLVMValueRef {
-//        return LLVMValueRef(nilLiteral: ())
-//    }
-//
-//}
-
-

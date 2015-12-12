@@ -55,12 +55,16 @@ struct Parser {
     private let precedences: [String: Int] = [
         "<": 10,
         ">": 10,
+        "<=": 10,
+        ">=": 10,
         "+": 20,
         "-": 20,
         "*": 40,
         "/": 40,
         "||": 5,
-        "&&": 5
+        "&&": 5,
+        "==": 5,
+        "!=": 5
     ]
     
     private mutating func getNextToken() -> Token {

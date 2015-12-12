@@ -200,10 +200,12 @@ extension BinaryExpression: IRGenerator {
             case "||": return LLVMBuildOr(builder, lIR, rIR, "or_res")
             case "<": return LLVMBuildICmp(builder, LLVMIntSLT, lIR, rIR, "cmp_lt_res")
             case ">": return LLVMBuildICmp(builder, LLVMIntSGT, lIR, rIR, "cmp_gt_res")
+            case "<=": return LLVMBuildICmp(builder, LLVMIntSLE, lIR, rIR, "cmp_lte_res")
+            case ">=": return LLVMBuildICmp(builder, LLVMIntSGE, lIR, rIR, "cmp_gte_res")
+            case "==": return LLVMBuildICmp(builder, LLVMIntEQ, lIR, rIR, "cmp_eq_res")
+            case "!=": return LLVMBuildICmp(builder, LLVMIntNE, lIR, rIR, "cmp_neq_res")
             default: throw IRError.NoOperator
             }
-            
-            // TODO: ==, !=, >=, <=
 
         } else if isFloatType(LLVMGetTypeKind(type)) {
             
@@ -215,6 +217,10 @@ extension BinaryExpression: IRGenerator {
             case "%": return LLVMBuildFRem(builder, lIR, rIR, "frem_res")
             case "<": return LLVMBuildFCmp(builder, LLVMRealOLT, lIR, rIR, "fcmp_lt_res")
             case ">": return LLVMBuildFCmp(builder, LLVMRealOGT, lIR, rIR, "fcmp_gt_res")
+            case "<=": return LLVMBuildFCmp(builder, LLVMRealOLE, lIR, rIR, "cmp_lte_res")
+            case ">=": return LLVMBuildFCmp(builder, LLVMRealOGE, lIR, rIR, "cmp_gte_res")
+            case "==": return LLVMBuildFCmp(builder, LLVMRealOEQ, lIR, rIR, "cmp_eq_res")
+            case "!=": return LLVMBuildFCmp(builder, LLVMRealONE, lIR, rIR, "cmp_neq_res")
             default: throw IRError.NoOperator
             }
 
@@ -344,6 +350,33 @@ extension ReturnExpression: IRGenerator {
 
 
 
+extension Block: BasicBlockGenerator {
+    
+    func bbGen(innerScope scope: Scope, fn: LLVMValueRef) throws -> LLVMBasicBlockRef {
+        
+        // setup function block
+        let entryBlock = LLVMAppendBasicBlock(fn, "entry")
+        LLVMPositionBuilderAtEnd(builder, entryBlock)
+        
+        scope.block = entryBlock
+        
+        // code gen for function
+        for exp in expressions {
+            try exp.codeGen(scope)
+        }
+        
+        // reset builder head tp parent scope
+        LLVMPositionBuilderAtEnd(builder, scope.parentScope!.block)
+        return entryBlock
+    }
+    
+}
+
+
+
+
+
+
 //-------------------------------------------------------------------------------------------------------------------------
 //  MARK:                                              Control flow
 //-------------------------------------------------------------------------------------------------------------------------
@@ -357,7 +390,6 @@ extension ConditionalExpression: IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
-        // TODO: reorder bbs
         // TODO: if cond is true/fasle at compile remove jump
         
         // block leading into and out of current if block
@@ -368,20 +400,22 @@ extension ConditionalExpression: IRGenerator {
             
             LLVMPositionBuilderAtEnd(builder, ifIn)
             
-            // `if` block
+            // condition
             let cond = try statement.condition?.codeGen(scope)
             ifOut = LLVMAppendBasicBlock(scope.function, "cont\(i)")
             
-            // then block and associated scope
+            // block and associated scope
             let tScope = Scope(function: scope.function, parentScope: scope)
             let block = try statement.bbGen(innerScope: tScope, contBlock: ifOut, name: ifBBID(n: i, ex: statement))
             
+            // move builder to in scope
             LLVMPositionBuilderAtEnd(builder, ifIn)
             
-            if let cond = cond { //if statement
+            if let cond = cond { //if statement, make conditonal jump
                 LLVMBuildCondBr(builder, cond, block, ifOut)
-            } else {
+            } else { // else statement, uncondtional jump
                 LLVMBuildBr(builder, block)
+                break
             }
             
             ifIn = ifOut
@@ -403,6 +437,7 @@ extension ConditionalExpression: IRGenerator {
 
 extension ElseIfBlock {
     
+    /// Create the basic block for the if expression
     private func bbGen(innerScope scope: Scope, contBlock: LLVMBasicBlockRef, name: String) throws -> LLVMBasicBlockRef {
         
         // add block
@@ -431,7 +466,7 @@ extension ElseIfBlock {
 
 
 //-------------------------------------------------------------------------------------------------------------------------
-//  MARK:                                                 BB Gen
+//  MARK:                                                 AST Gen
 //-------------------------------------------------------------------------------------------------------------------------
 
 
@@ -465,30 +500,6 @@ extension AST {
         
         return module
     }
-}
-
-
-
-extension Block: BasicBlockGenerator {
-    
-    func bbGen(innerScope scope: Scope, fn: LLVMValueRef) throws -> LLVMBasicBlockRef {
-        
-        // setup function block
-        let entryBlock = LLVMAppendBasicBlock(fn, "entry")
-        LLVMPositionBuilderAtEnd(builder, entryBlock)
-        
-        scope.block = entryBlock
-        
-        // code gen for function
-        for exp in expressions {
-            try exp.codeGen(scope)
-        }
-        
-        // reset builder head tp parent scope
-        LLVMPositionBuilderAtEnd(builder, scope.parentScope!.block)
-        return entryBlock
-    }
-    
 }
 
 

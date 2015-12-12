@@ -40,7 +40,7 @@ private extension Character {
     }
     
     func isSymbol() -> Bool {
-        return (isblank(value()) != 1) && operators.keys.reduce("", combine: +).characters.contains(self)
+        return (isblank(value()) != 1) && operators.keys.reduce("", combine: +).characters.contains(self) || stdlibOperators.reduce("", combine: +).characters.contains(self)
     }
 }
 
@@ -183,18 +183,34 @@ struct Lexer {
     }
     
     mutating private func lexString() throws {
-        try lexWhilePredicate({$0.isAlNumOr_()})
+        try lexWhilePredicate { $0.isAlNumOr_() }
+        try resetContext()
     }
     
     mutating private func lexNumber() throws {
-        try lexWhilePredicate({$0.isNumOr_()})
+        try lexWhilePredicate { $0.isNumOr_() }
+        try resetContext()
     }
     
     mutating private func lexSymbol() throws {
+        
+        let start = index
+        
+        try lexWhilePredicate { return $0.isSymbol() }
+
+        if operators.keys.contains(String(charsInContext)) || stdlibOperators.contains(String(charsInContext)) {
+            try resetContext()
+            return // is an expression, return it lexed
+        }
+        
+        index = start
+        charsInContext = []
+        
         try lexWhilePredicate {
-            if let _ = operators[String(self.charsInContext)] { return false }
+            if operators.keys.contains(String(self.charsInContext)) || stdlibOperators.contains(String(self.charsInContext)) { return false }
             else { return $0.isSymbol() }
         }
+        try resetContext()
     }
     
     // TODO: Implement funciton versions for comments and string literals
@@ -206,12 +222,11 @@ struct Lexer {
 //        try lexWhilePredicate({$0.isSymbol()})
 //    }
     
-    mutating private func lexWhilePredicate(p: Character -> Bool) throws {
-        while p(currentChar) {
+    mutating private func lexWhilePredicate(p: (Character) throws -> Bool) throws {
+        while try p(currentChar) {
             addChar()
             if index<chars.count { try consumeChar() } else { break }
         }
-        try resetContext()
     }
     
     

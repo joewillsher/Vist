@@ -34,7 +34,7 @@ enum Token {
     case Char(Character), Str(String), Comment(String), StringLiteral(String)
 }
 
-let operators: [String: Token?] = [
+let operators: [String: Token] = [
     "=": .Assign,
     "[": .SqbrOpen,
     "]": .SqrbrClose,
@@ -47,6 +47,7 @@ let operators: [String: Token?] = [
     "->": .Returns,
     "|": .Bar,
     "}": .CloseBrace,
-    "{": .OpenBrace,
-    "<>/+-*": nil
+    "{": .OpenBrace
 ]
+
+let stdlibOperators: [String] = ["<", ">", "<=", ">=", "/", "+", "-", "*", "&&", "||", "...", "==", "!="]
