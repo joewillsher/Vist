@@ -366,7 +366,7 @@ class TypedInit : public Init {
 
 protected:
   explicit TypedInit(InitKind K, RecTy *T) : Init(K), Ty(T) {}
-  ~TypedInit() override {
+  ~TypedInit() {
     // If this is a DefInit we need to delete the RecordRecTy.
     if (getKind() == IK_DefInit)
       delete Ty;
@@ -547,7 +547,7 @@ public:
 class StringInit : public TypedInit {
   std::string Value;
 
-  explicit StringInit(StringRef V)
+  explicit StringInit(const std::string &V)
     : TypedInit(IK_StringInit, StringRecTy::get()), Value(V) {}
 
   StringInit(const StringInit &Other) = delete;
@@ -836,6 +836,8 @@ public:
 class VarInit : public TypedInit {
   Init *VarName;
 
+  explicit VarInit(const std::string &VN, RecTy *T)
+      : TypedInit(IK_VarInit, T), VarName(StringInit::get(VN)) {}
   explicit VarInit(Init *VN, RecTy *T)
       : TypedInit(IK_VarInit, T), VarName(VN) {}
 
@@ -1587,6 +1589,6 @@ Init *QualifyName(Record &CurRec, MultiClass *CurMultiClass,
 Init *QualifyName(Record &CurRec, MultiClass *CurMultiClass,
                   const std::string &Name, const std::string &Scoper);
 
-} // end llvm namespace
+} // End llvm namespace
 
-#endif // LLVM_TABLEGEN_RECORD_H
+#endif

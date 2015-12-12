@@ -93,7 +93,7 @@ FunctionPass *createBitTrackingDCEPass();
 //
 // SROA - Replace aggregates or pieces of aggregates with scalar SSA values.
 //
-FunctionPass *createSROAPass();
+FunctionPass *createSROAPass(bool RequiresDomTree = true);
 
 //===----------------------------------------------------------------------===//
 //
@@ -161,8 +161,7 @@ Pass *createLoopStrengthReducePass();
 // It can also be configured to focus on size optimizations only.
 //
 Pass *createGlobalMergePass(const TargetMachine *TM, unsigned MaximalOffset,
-                            bool OnlyOptimizeForSize = false,
-                            bool MergeExternalByDefault = false);
+                            bool OnlyOptimizeForSize = false);
 
 //===----------------------------------------------------------------------===//
 //
@@ -408,6 +407,13 @@ FunctionPass *createPartiallyInlineLibCallsPass();
 
 //===----------------------------------------------------------------------===//
 //
+// SampleProfilePass - Loads sample profile data from disk and generates
+// IR metadata to reflect the profile.
+FunctionPass *createSampleProfileLoaderPass();
+FunctionPass *createSampleProfileLoaderPass(StringRef Name);
+
+//===----------------------------------------------------------------------===//
+//
 // ScalarizerPass - Converts vector operations into scalar operations
 //
 FunctionPass *createScalarizerPass();
@@ -479,12 +485,6 @@ FunctionPass *createNaryReassociatePass();
 // LoopDistribute - Distribute loops.
 //
 FunctionPass *createLoopDistributePass();
-
-//===----------------------------------------------------------------------===//
-//
-// LoopLoadElimination - Perform loop-aware load elimination.
-//
-FunctionPass *createLoopLoadEliminationPass();
 
 } // End llvm namespace
 

@@ -21,7 +21,8 @@
 
 namespace llvm {
 
-template <typename NodeTy> class SymbolTableListTraits;
+template<typename ValueSubClass, typename ItemParentClass>
+  class SymbolTableListTraits;
 
 /// \brief LLVM Argument representation
 ///
@@ -35,7 +36,7 @@ class Argument : public Value, public ilist_node<Argument> {
   virtual void anchor();
   Function *Parent;
 
-  friend class SymbolTableListTraits<Argument>;
+  friend class SymbolTableListTraits<Argument, Function>;
   void setParent(Function *parent);
 
 public:
@@ -63,8 +64,8 @@ public:
   /// containing function, return the number of bytes known to be
   /// dereferenceable. Otherwise, zero is returned.
   uint64_t getDereferenceableBytes() const;
-
-  /// \brief If this argument has the dereferenceable_or_null attribute on
+  
+  /// \brief If this argument has the dereferenceable_or_null attribute on 
   /// it in its containing function, return the number of bytes known to be
   /// dereferenceable. Otherwise, zero is returned.
   uint64_t getDereferenceableOrNullBytes() const;

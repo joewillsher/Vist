@@ -590,7 +590,7 @@ public:
   /// formed with a vector or array of the specified element type.
   /// ConstantDataArray only works with normal float and int types that are
   /// stored densely in memory, not with things like i42 or x86_f80.
-  static bool isElementTypeCompatible(Type *Ty);
+  static bool isElementTypeCompatible(const Type *Ty);
 
   /// getElementAsInteger - If this is a sequential container of integers (of
   /// any size), return the specified element in the low bits of a uint64_t.
@@ -795,32 +795,7 @@ public:
   }
 };
 
-//===----------------------------------------------------------------------===//
-/// ConstantTokenNone - a constant token which is empty
-///
-class ConstantTokenNone : public Constant {
-  void *operator new(size_t, unsigned) = delete;
-  ConstantTokenNone(const ConstantTokenNone &) = delete;
 
-  friend class Constant;
-  void destroyConstantImpl();
-  Value *handleOperandChangeImpl(Value *From, Value *To, Use *U);
-
-protected:
-  explicit ConstantTokenNone(LLVMContext &Context)
-      : Constant(Type::getTokenTy(Context), ConstantTokenNoneVal, nullptr, 0) {}
-  // allocate space for exactly zero operands
-  void *operator new(size_t s) { return User::operator new(s, 0); }
-
-public:
-  /// Return the ConstantTokenNone.
-  static ConstantTokenNone *get(LLVMContext &Context);
-
-  /// @brief Methods to support type inquiry through isa, cast, and dyn_cast.
-  static bool classof(const Value *V) {
-    return V->getValueID() == ConstantTokenNoneVal;
-  }
-};
 
 /// BlockAddress - The address of a basic block.
 ///
@@ -1200,8 +1175,7 @@ public:
   /// gets constant-folded, the type changes, or the expression is otherwise
   /// canonicalized.  This parameter should almost always be \c false.
   Constant *getWithOperands(ArrayRef<Constant *> Ops, Type *Ty,
-                            bool OnlyIfReduced = false,
-                            Type *SrcTy = nullptr) const;
+                            bool OnlyIfReduced = false) const;
 
   /// getAsInstruction - Returns an Instruction which implements the same
   /// operation as this ConstantExpr. The instruction is not linked to any basic

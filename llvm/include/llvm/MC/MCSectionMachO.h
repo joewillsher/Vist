@@ -20,18 +20,19 @@
 
 namespace llvm {
 
-/// This represents a section on a Mach-O system (used by Mac OS X).  On a Mac
-/// system, these are also described in /usr/include/mach-o/loader.h.
-class MCSectionMachO final : public MCSection {
+/// MCSectionMachO - This represents a section on a Mach-O system (used by
+/// Mac OS X).  On a Mac system, these are also described in
+/// /usr/include/mach-o/loader.h.
+class MCSectionMachO : public MCSection {
   char SegmentName[16];  // Not necessarily null terminated!
   char SectionName[16];  // Not necessarily null terminated!
 
-  /// This is the SECTION_TYPE and SECTION_ATTRIBUTES field of a section, drawn
-  /// from the enums below.
+  /// TypeAndAttributes - This is the SECTION_TYPE and SECTION_ATTRIBUTES
+  /// field of a section, drawn from the enums below.
   unsigned TypeAndAttributes;
 
-  /// The 'reserved2' field of a section, used to represent the size of stubs,
-  /// for example.
+  /// Reserved2 - The 'reserved2' field of a section, used to represent the
+  /// size of stubs, for example.
   unsigned Reserved2;
 
   MCSectionMachO(StringRef Segment, StringRef Section, unsigned TAA,
@@ -63,12 +64,12 @@ public:
     return (TypeAndAttributes & Value) != 0;
   }
 
-  /// Parse the section specifier indicated by "Spec". This is a string that can
-  /// appear after a .section directive in a mach-o flavored .s file.  If
-  /// successful, this fills in the specified Out parameters and returns an
-  /// empty string.  When an invalid section specifier is present, this returns
-  /// a string indicating the problem. If no TAA was parsed, TAA is not altered,
-  /// and TAAWasSet becomes false.
+  /// ParseSectionSpecifier - Parse the section specifier indicated by "Spec".
+  /// This is a string that can appear after a .section directive in a mach-o
+  /// flavored .s file.  If successful, this fills in the specified Out
+  /// parameters and returns an empty string.  When an invalid section
+  /// specifier is present, this returns a string indicating the problem.
+  /// If no TAA was parsed, TAA is not altered, and TAAWasSet becomes false.
   static std::string ParseSectionSpecifier(StringRef Spec,       // In.
                                            StringRef &Segment,   // Out.
                                            StringRef &Section,   // Out.

@@ -11,7 +11,6 @@
 #define LLVM_ADT_UNIQUEVECTOR_H
 
 #include <cassert>
-#include <cstddef>
 #include <map>
 #include <vector>
 

@@ -48,7 +48,6 @@ class SmallPtrSetIteratorImpl;
 ///
 class SmallPtrSetImplBase {
   friend class SmallPtrSetIteratorImpl;
-
 protected:
   /// SmallArray - Points to a fixed size set of buckets, used in 'small mode'.
   const void **SmallArray;
@@ -134,7 +133,6 @@ private:
   void Grow(unsigned NewSize);
 
   void operator=(const SmallPtrSetImplBase &RHS) = delete;
-
 protected:
   /// swap - Swaps the elements of two sets.
   /// Note: This method assumes that both sets have the same small size.
@@ -150,7 +148,6 @@ class SmallPtrSetIteratorImpl {
 protected:
   const void *const *Bucket;
   const void *const *End;
-
 public:
   explicit SmallPtrSetIteratorImpl(const void *const *BP, const void*const *E)
     : Bucket(BP), End(E) {
@@ -181,14 +178,14 @@ protected:
 template<typename PtrTy>
 class SmallPtrSetIterator : public SmallPtrSetIteratorImpl {
   typedef PointerLikeTypeTraits<PtrTy> PtrTraits;
-
+  
 public:
   typedef PtrTy                     value_type;
   typedef PtrTy                     reference;
   typedef PtrTy                     pointer;
   typedef std::ptrdiff_t            difference_type;
   typedef std::forward_iterator_tag iterator_category;
-
+  
   explicit SmallPtrSetIterator(const void *const *BP, const void *const *E)
     : SmallPtrSetIteratorImpl(BP, E) {}
 
@@ -234,6 +231,7 @@ template<unsigned N>
 struct RoundUpToPowerOfTwo {
   enum { Val = RoundUpToPowerOfTwoH<N, (N&(N-1)) == 0>::Val };
 };
+  
 
 /// \brief A templated base class for \c SmallPtrSet which provides the
 /// typesafe interface that is common across all small sizes.
@@ -244,8 +242,7 @@ template <typename PtrType>
 class SmallPtrSetImpl : public SmallPtrSetImplBase {
   typedef PointerLikeTypeTraits<PtrType> PtrTraits;
 
-  SmallPtrSetImpl(const SmallPtrSetImpl &) = delete;
-
+  SmallPtrSetImpl(const SmallPtrSetImpl&) = delete;
 protected:
   // Constructors that forward to the base.
   SmallPtrSetImpl(const void **SmallStorage, const SmallPtrSetImpl &that)
@@ -306,7 +303,6 @@ class SmallPtrSet : public SmallPtrSetImpl<PtrType> {
   enum { SmallSizePowTwo = RoundUpToPowerOfTwo<SmallSize>::Val };
   /// SmallStorage - Fixed size storage used in 'small mode'.
   const void *SmallStorage[SmallSizePowTwo];
-
 public:
   SmallPtrSet() : BaseT(SmallStorage, SmallSizePowTwo) {}
   SmallPtrSet(const SmallPtrSet &that) : BaseT(SmallStorage, that) {}
@@ -337,6 +333,7 @@ public:
     SmallPtrSetImplBase::swap(RHS);
   }
 };
+
 }
 
 namespace std {

@@ -15,7 +15,7 @@
 #ifndef LLVM_SUPPORT_MUTEXGUARD_H
 #define LLVM_SUPPORT_MUTEXGUARD_H
 
-#include "Mutex.h"
+#include "llvm/Support/Mutex.h"
 
 namespace llvm {
   /// Instances of this class acquire a given Mutex Lock when constructed and

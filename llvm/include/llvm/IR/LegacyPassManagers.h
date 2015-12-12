@@ -118,7 +118,6 @@ class PassManagerPrettyStackEntry : public PrettyStackTraceEntry {
   Pass *P;
   Value *V;
   Module *M;
-
 public:
   explicit PassManagerPrettyStackEntry(Pass *p)
     : P(p), V(nullptr), M(nullptr) {}  // When P is releaseMemory'd.
@@ -130,6 +129,7 @@ public:
   /// print - Emit information about this stack frame to OS.
   void print(raw_ostream &OS) const override;
 };
+
 
 //===----------------------------------------------------------------------===//
 // PMStack
@@ -157,6 +157,7 @@ public:
 private:
   std::vector<PMDataManager *> S;
 };
+
 
 //===----------------------------------------------------------------------===//
 // PMTopLevelManager
@@ -203,7 +204,10 @@ public:
   virtual ~PMTopLevelManager();
 
   /// Add immutable pass and initialize it.
-  void addImmutablePass(ImmutablePass *P);
+  inline void addImmutablePass(ImmutablePass *P) {
+    P->initializePass();
+    ImmutablePasses.push_back(P);
+  }
 
   inline SmallVectorImpl<ImmutablePass *>& getImmutablePasses() {
     return ImmutablePasses;
@@ -227,10 +231,12 @@ public:
   PMStack activeStack;
 
 protected:
+
   /// Collection of pass managers
   SmallVector<PMDataManager *, 8> PassManagers;
 
 private:
+
   /// Collection of pass managers that are not directly maintained
   /// by this pass manager
   SmallVector<PMDataManager *, 8> IndirectPassManagers;
@@ -247,9 +253,6 @@ private:
   /// Immutable passes are managed by top level manager.
   SmallVector<ImmutablePass *, 16> ImmutablePasses;
 
-  /// Map from ID to immutable passes.
-  SmallDenseMap<AnalysisID, ImmutablePass *, 8> ImmutablePassMap;
-
   DenseMap<Pass *, AnalysisUsage *> AnUsageMap;
 
   /// Collection of PassInfo objects found via analysis IDs and in this top
@@ -259,6 +262,8 @@ private:
   mutable DenseMap<AnalysisID, const PassInfo *> AnalysisPassInfos;
 };
 
+
+
 //===----------------------------------------------------------------------===//
 // PMDataManager
 
@@ -266,6 +271,7 @@ private:
 /// used by pass managers.
 class PMDataManager {
 public:
+
   explicit PMDataManager() : TPM(nullptr), Depth(0) {
     initializeAnalysisInfo();
   }
@@ -313,12 +319,13 @@ public:
   // passes that are managed by this manager.
   bool preserveHigherLevelAnalysis(Pass *P);
 
-  /// Populate UsedPasses with analysis pass that are used or required by pass
-  /// P and are available. Populate ReqPassNotAvailable with analysis pass that
-  /// are required by pass P but are not available.
-  void collectRequiredAndUsedAnalyses(
-      SmallVectorImpl<Pass *> &UsedPasses,
-      SmallVectorImpl<AnalysisID> &ReqPassNotAvailable, Pass *P);
+
+  /// Populate RequiredPasses with analysis pass that are required by
+  /// pass P and are available. Populate ReqPassNotAvailable with analysis
+  /// pass that are required by pass P but are not available.
+  void collectRequiredAnalysis(SmallVectorImpl<Pass *> &RequiredPasses,
+                               SmallVectorImpl<AnalysisID> &ReqPassNotAvailable,
+                               Pass *P);
 
   /// All Required analyses should be available to the pass as it runs!  Here
   /// we fill in the AnalysisImpls member of the pass so that it can
@@ -344,7 +351,6 @@ public:
                     enum PassDebuggingString S2, StringRef Msg);
   void dumpRequiredSet(const Pass *P) const;
   void dumpPreservedSet(const Pass *P) const;
-  void dumpUsedSet(const Pass *P) const;
 
   unsigned getNumContainedPasses() const {
     return (unsigned)PassVector.size();
@@ -368,6 +374,7 @@ public:
   }
 
 protected:
+
   // Top level manager.
   PMTopLevelManager *TPM;
 
@@ -432,9 +439,9 @@ public:
 
   /// doFinalization - Overrides ModulePass doFinalization for global
   /// finalization tasks
-  ///
+  /// 
   using ModulePass::doFinalization;
-
+  
   /// doFinalization - Run all of the finalizers for the function passes.
   ///
   bool doFinalization(Module &M) override;
@@ -466,6 +473,7 @@ public:
 };
 
 Timer *getPassTimer(Pass *);
+
 }
 
 #endif

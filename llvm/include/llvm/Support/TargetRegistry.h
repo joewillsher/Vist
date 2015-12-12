@@ -19,10 +19,10 @@
 #ifndef LLVM_SUPPORT_TARGETREGISTRY_H
 #define LLVM_SUPPORT_TARGETREGISTRY_H
 
-#include "Disassembler.h"
+#include "llvm-c/Disassembler.h"
 #include "llvm/ADT/Triple.h"
-#include "CodeGen.h"
-#include "FormattedStream.h"
+#include "llvm/Support/CodeGen.h"
+#include "llvm/Support/FormattedStream.h"
 #include <cassert>
 #include <memory>
 #include <string>
@@ -115,7 +115,7 @@ public:
                                               const MCRegisterInfo &MRI,
                                               const Triple &TT, StringRef CPU);
   typedef MCTargetAsmParser *(*MCAsmParserCtorTy)(
-      const MCSubtargetInfo &STI, MCAsmParser &P, const MCInstrInfo &MII,
+      MCSubtargetInfo &STI, MCAsmParser &P, const MCInstrInfo &MII,
       const MCTargetOptions &Options);
   typedef MCDisassembler *(*MCDisassemblerCtorTy)(const Target &T,
                                                   const MCSubtargetInfo &STI,
@@ -382,7 +382,7 @@ public:
   ///
   /// \param Parser The target independent parser implementation to use for
   /// parsing and lexing.
-  MCTargetAsmParser *createMCAsmParser(const MCSubtargetInfo &STI,
+  MCTargetAsmParser *createMCAsmParser(MCSubtargetInfo &STI,
                                        MCAsmParser &Parser,
                                        const MCInstrInfo &MII,
                                        const MCTargetOptions &Options) const {
@@ -1133,8 +1133,8 @@ template <class MCAsmParserImpl> struct RegisterMCAsmParser {
   }
 
 private:
-  static MCTargetAsmParser *Allocator(const MCSubtargetInfo &STI,
-                                      MCAsmParser &P, const MCInstrInfo &MII,
+  static MCTargetAsmParser *Allocator(MCSubtargetInfo &STI, MCAsmParser &P,
+                                      const MCInstrInfo &MII,
                                       const MCTargetOptions &Options) {
     return new MCAsmParserImpl(STI, P, MII, Options);
   }

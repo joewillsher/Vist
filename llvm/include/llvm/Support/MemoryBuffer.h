@@ -14,11 +14,11 @@
 #ifndef LLVM_SUPPORT_MEMORYBUFFER_H
 #define LLVM_SUPPORT_MEMORYBUFFER_H
 
-#include "Support.h"
+#include "llvm-c/Support.h"
 #include "llvm/ADT/Twine.h"
-#include "CBindingWrapping.h"
-#include "DataTypes.h"
-#include "ErrorOr.h"
+#include "llvm/Support/CBindingWrapping.h"
+#include "llvm/Support/DataTypes.h"
+#include "llvm/Support/ErrorOr.h"
 #include <memory>
 
 namespace llvm {
@@ -122,8 +122,7 @@ public:
   /// Open the specified file as a MemoryBuffer, or open stdin if the Filename
   /// is "-".
   static ErrorOr<std::unique_ptr<MemoryBuffer>>
-  getFileOrSTDIN(const Twine &Filename, int64_t FileSize = -1,
-                 bool RequiresNullTerminator = true);
+  getFileOrSTDIN(const Twine &Filename, int64_t FileSize = -1);
 
   /// Map a subrange of the specified file as a MemoryBuffer.
   static ErrorOr<std::unique_ptr<MemoryBuffer>>
@@ -152,8 +151,6 @@ class MemoryBufferRef {
 
 public:
   MemoryBufferRef() {}
-  MemoryBufferRef(MemoryBuffer& Buffer)
-      : Buffer(Buffer.getBuffer()), Identifier(Buffer.getBufferIdentifier()) {}
   MemoryBufferRef(StringRef Buffer, StringRef Identifier)
       : Buffer(Buffer), Identifier(Identifier) {}
 

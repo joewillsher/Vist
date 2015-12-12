@@ -15,7 +15,7 @@
 #ifndef LLVM_SUPPORT_UNIQUE_LOCK_H
 #define LLVM_SUPPORT_UNIQUE_LOCK_H
 
-#include "Mutex.h"
+#include "llvm/Support/Mutex.h"
 
 namespace llvm {
   /// A pared-down imitation of std::unique_lock from C++11. Contrary to the

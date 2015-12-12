@@ -25,8 +25,8 @@
 
 #include "llvm/ADT/GraphTraits.h"
 #include "llvm/ADT/Twine.h"
-#include "DOTGraphTraits.h"
-#include "raw_ostream.h"
+#include "llvm/Support/DOTGraphTraits.h"
+#include "llvm/Support/raw_ostream.h"
 #include <vector>
 
 namespace llvm {
@@ -175,9 +175,8 @@ public:
       O << DOT::EscapeString(DTraits.getNodeLabel(Node, G));
 
       // If we should include the address of the node in the label, do so now.
-      std::string Id = DTraits.getNodeIdentifierLabel(Node, G);
-      if (!Id.empty())
-        O << "|" << DOT::EscapeString(Id);
+      if (DTraits.hasNodeAddressLabel(Node, G))
+        O << "|" << static_cast<const void*>(Node);
 
       std::string NodeDesc = DTraits.getNodeDescription(Node, G);
       if (!NodeDesc.empty())
@@ -200,9 +199,8 @@ public:
       O << DOT::EscapeString(DTraits.getNodeLabel(Node, G));
 
       // If we should include the address of the node in the label, do so now.
-      std::string Id = DTraits.getNodeIdentifierLabel(Node, G);
-      if (!Id.empty())
-        O << "|" << DOT::EscapeString(Id);
+      if (DTraits.hasNodeAddressLabel(Node, G))
+        O << "|" << static_cast<const void*>(Node);
 
       std::string NodeDesc = DTraits.getNodeDescription(Node, G);
       if (!NodeDesc.empty())

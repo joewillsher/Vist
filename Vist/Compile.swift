@@ -7,12 +7,12 @@
 //
 
 import Foundation
-import LLVM
+//import LLVM
 
 
-func compileDocument(fileName: String) throws {
+func compileDocument(filePath: String) throws {
     
-    let doc = try! String(contentsOfFile: fileName, encoding: NSUTF8StringEncoding)
+    let doc = try! String(contentsOfFile: filePath, encoding: NSUTF8StringEncoding)
     print("------------------SOURCE-------------------\n\n\(doc)\n\n\n-------------------TOKS--------------------\n")
     
     // http://llvm.org/docs/tutorial/LangImpl1.html#language
@@ -39,7 +39,9 @@ func compileDocument(fileName: String) throws {
     print(ir)
     
     
-//    let pm = LLVMCreatePassManager()
-//    LLVMRunPassManager(pm, module)
+    print(filePath)
 
+    try ir.writeToFile("example.ir", atomically: true, encoding: NSUTF8StringEncoding)
+    
+    
 }

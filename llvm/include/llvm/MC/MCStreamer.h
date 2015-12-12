@@ -134,7 +134,7 @@ public:
   /// Callback used to implement the ldr= pseudo.
   /// Add a new entry to the constant pool for the current section and return an
   /// MCExpr that can be used to refer to the constant pool location.
-  const MCExpr *addConstantPoolEntry(const MCExpr *, SMLoc Loc);
+  const MCExpr *addConstantPoolEntry(const MCExpr *);
 
   /// Callback used to implemnt the .ltorg directive.
   /// Emit contents of constant pool for the current section.
@@ -358,7 +358,7 @@ public:
   ///
   /// Each emitted symbol will be tracked in the ordering table,
   /// so we can sort on them later.
-  void AssignFragment(MCSymbol *Symbol, MCFragment *Fragment);
+  void AssignSection(MCSymbol *Symbol, MCSection *Section);
 
   /// \brief Emit a label for \p Symbol into the current section.
   ///
@@ -522,9 +522,10 @@ public:
   /// match a native machine width.
   /// \param Loc - The location of the expression for error reporting.
   virtual void EmitValueImpl(const MCExpr *Value, unsigned Size,
-                             SMLoc Loc = SMLoc());
+                             const SMLoc &Loc = SMLoc());
 
-  void EmitValue(const MCExpr *Value, unsigned Size, SMLoc Loc = SMLoc());
+  void EmitValue(const MCExpr *Value, unsigned Size,
+                 const SMLoc &Loc = SMLoc());
 
   /// \brief Special case of EmitValue that avoids the client having
   /// to pass in a MCExpr for constant integers.
@@ -567,7 +568,7 @@ public:
 
   /// \brief Emit NumBytes worth of zeros.
   /// This function properly handles data in virtual sections.
-  void EmitZeros(uint64_t NumBytes);
+  virtual void EmitZeros(uint64_t NumBytes);
 
   /// \brief Emit some number of copies of \p Value until the byte alignment \p
   /// ByteAlignment is reached.
@@ -611,7 +612,9 @@ public:
   /// \param Offset - The offset to reach. This may be an expression, but the
   /// expression must be associated with the current section.
   /// \param Value - The value to use when filling bytes.
-  virtual void emitValueToOffset(const MCExpr *Offset, unsigned char Value = 0);
+  /// \return false on success, true if the offset was invalid.
+  virtual bool EmitValueToOffset(const MCExpr *Offset,
+                                 unsigned char Value = 0);
 
   /// @}
 
@@ -659,7 +662,6 @@ public:
   virtual void EmitCFIRelOffset(int64_t Register, int64_t Offset);
   virtual void EmitCFIAdjustCfaOffset(int64_t Adjustment);
   virtual void EmitCFIEscape(StringRef Values);
-  virtual void EmitCFIGnuArgsSize(int64_t Size);
   virtual void EmitCFISignalFrame();
   virtual void EmitCFIUndefined(int64_t Register);
   virtual void EmitCFIRegister(int64_t Register1, int64_t Register2);
@@ -679,16 +681,6 @@ public:
 
   virtual void EmitWinEHHandler(const MCSymbol *Sym, bool Unwind, bool Except);
   virtual void EmitWinEHHandlerData();
-
-  virtual void EmitSyntaxDirective();
-
-  /// \brief Emit a .reloc directive.
-  /// Returns true if the relocation could not be emitted because Name is not
-  /// known.
-  virtual bool EmitRelocDirective(const MCExpr &Offset, StringRef Name,
-                                  const MCExpr *Expr, SMLoc Loc) {
-    return true;
-  }
 
   /// \brief Emit the given \p Instruction into the current section.
   virtual void EmitInstruction(const MCInst &Inst, const MCSubtargetInfo &STI);
@@ -711,6 +703,9 @@ public:
   /// specified string in the output .s file.  This capability is indicated by
   /// the hasRawTextSupport() predicate.  By default this aborts.
   void EmitRawText(const Twine &String);
+
+  /// \brief Causes any cached state to be written out.
+  virtual void Flush() {}
 
   /// \brief Streamer specific finalization.
   virtual void FinishImpl();

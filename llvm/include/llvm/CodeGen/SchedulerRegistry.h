@@ -52,6 +52,12 @@ public:
   static RegisterScheduler *getList() {
     return (RegisterScheduler *)Registry.getList();
   }
+  static FunctionPassCtor getDefault() {
+    return (FunctionPassCtor)Registry.getDefault();
+  }
+  static void setDefault(FunctionPassCtor C) {
+    Registry.setDefault((MachinePassCtor)C);
+  }
   static void setListener(MachinePassRegistryListener *L) {
     Registry.setListener(L);
   }

@@ -32,16 +32,28 @@ namespace llvm {
 
 class FunctionType;
 class LLVMContext;
-class DISubprogram;
 
-template <>
-struct SymbolTableListSentinelTraits<Argument>
-    : public ilist_half_embedded_sentinel_traits<Argument> {};
+template<> struct ilist_traits<Argument>
+  : public SymbolTableListTraits<Argument, Function> {
+
+  Argument *createSentinel() const {
+    return static_cast<Argument*>(&Sentinel);
+  }
+  static void destroySentinel(Argument*) {}
+
+  Argument *provideInitialHead() const { return createSentinel(); }
+  Argument *ensureHead(Argument*) const { return createSentinel(); }
+  static void noteHead(Argument*, Argument*) {}
+
+  static ValueSymbolTable *getSymTab(Function *ItemParent);
+private:
+  mutable ilist_half_node<Argument> Sentinel;
+};
 
 class Function : public GlobalObject, public ilist_node<Function> {
 public:
-  typedef SymbolTableList<Argument> ArgumentListType;
-  typedef SymbolTableList<BasicBlock> BasicBlockListType;
+  typedef iplist<Argument> ArgumentListType;
+  typedef iplist<BasicBlock> BasicBlockListType;
 
   // BasicBlock iterators...
   typedef BasicBlockListType::iterator iterator;
@@ -61,12 +73,10 @@ private:
   /*
    * Value::SubclassData
    *
-   * bit 0      : HasLazyArguments
-   * bit 1      : HasPrefixData
-   * bit 2      : HasPrologueData
-   * bit 3      : [reserved]
-   * bits 4-13  : CallingConvention
-   * bits 14-15 : [reserved]
+   * bit 0  : HasLazyArguments
+   * bit 1  : HasPrefixData
+   * bit 2  : HasPrologueData
+   * bit 3-6: CallingConvention
    */
 
   /// Bits from GlobalObject::GlobalObjectSubclassData.
@@ -80,7 +90,7 @@ private:
                                 (Value ? Mask : 0u));
   }
 
-  friend class SymbolTableListTraits<Function>;
+  friend class SymbolTableListTraits<Function, Module>;
 
   void setParent(Module *parent);
 
@@ -160,13 +170,11 @@ public:
   /// calling convention of this function.  The enum values for the known
   /// calling conventions are defined in CallingConv.h.
   CallingConv::ID getCallingConv() const {
-    return static_cast<CallingConv::ID>((getSubclassDataFromValue() >> 4) &
-                                        CallingConv::MaxID);
+    return static_cast<CallingConv::ID>(getSubclassDataFromValue() >> 3);
   }
   void setCallingConv(CallingConv::ID CC) {
-    auto ID = static_cast<unsigned>(CC);
-    assert(!(ID & ~CallingConv::MaxID) && "Unsupported calling convention");
-    setValueSubclassData((getSubclassDataFromValue() & 0xc00f) | (ID << 4));
+    setValueSubclassData((getSubclassDataFromValue() & 7) |
+                         (static_cast<unsigned>(CC) << 3));
   }
 
   /// @brief Return the attribute list for this Function.
@@ -259,13 +267,13 @@ public:
   uint64_t getDereferenceableBytes(unsigned i) const {
     return AttributeSets.getDereferenceableBytes(i);
   }
-
+  
   /// @brief Extract the number of dereferenceable_or_null bytes for a call or
   /// parameter (0=unknown).
   uint64_t getDereferenceableOrNullBytes(unsigned i) const {
     return AttributeSets.getDereferenceableOrNullBytes(i);
   }
-
+  
   /// @brief Determine if the function does not access memory.
   bool doesNotAccessMemory() const {
     return AttributeSets.hasAttribute(AttributeSet::FunctionIndex,
@@ -291,8 +299,10 @@ public:
     return AttributeSets.hasAttribute(AttributeSet::FunctionIndex,
                                       Attribute::ArgMemOnly);
   }
-  void setOnlyAccessesArgMemory() { addFnAttr(Attribute::ArgMemOnly); }
-
+  void setOnlyAccessesArgMemory() {
+    addFnAttr(Attribute::ArgMemOnly);
+  }
+  
   /// @brief Determine if the function cannot return.
   bool doesNotReturn() const {
     return AttributeSets.hasAttribute(AttributeSet::FunctionIndex,
@@ -329,15 +339,6 @@ public:
     addFnAttr(Attribute::Convergent);
   }
 
-  /// Determine if the function is known not to recurse, directly or
-  /// indirectly.
-  bool doesNotRecurse() const {
-    return AttributeSets.hasAttribute(AttributeSet::FunctionIndex,
-                                      Attribute::NoRecurse);
-  }
-  void setDoesNotRecurse() {
-    addFnAttr(Attribute::NoRecurse);
-  }  
 
   /// @brief True if the ABI mandates (or the user requested) that this
   /// function be in a unwind table.
@@ -361,8 +362,7 @@ public:
            AttributeSets.hasAttribute(2, Attribute::StructRet);
   }
 
-  /// @brief Determine if the parameter or return value is marked with NoAlias
-  /// attribute.
+  /// @brief Determine if the parameter does not alias other parameters.
   /// @param n The parameter to check. 1 is the first parameter, 0 is the return
   bool doesNotAlias(unsigned n) const {
     return AttributeSets.hasAttribute(n, Attribute::NoAlias);
@@ -395,14 +395,6 @@ public:
     addAttribute(n, Attribute::ReadOnly);
   }
 
-  /// Optimize this function for minimum size (-Oz).
-  bool optForMinSize() const { return hasFnAttribute(Attribute::MinSize); };
-
-  /// Optimize this function for size (-Os) or minimum size (-Oz).
-  bool optForSize() const {
-    return hasFnAttribute(Attribute::OptimizeForSize) || optForMinSize();
-  }
-
   /// copyAttributesFrom - copy all additional attributes (those not needed to
   /// create a Function) from the Function Src to this one.
   void copyAttributesFrom(const GlobalValue *Src) override;
@@ -425,6 +417,7 @@ public:
   ///
   void eraseFromParent() override;
 
+
   /// Get the underlying elements of the Function... the basic block list is
   /// empty for external functions.
   ///
@@ -436,13 +429,13 @@ public:
     CheckLazyArguments();
     return ArgumentList;
   }
-  static ArgumentListType Function::*getSublistAccess(Argument*) {
+  static iplist<Argument> Function::*getSublistAccess(Argument*) {
     return &Function::ArgumentList;
   }
 
   const BasicBlockListType &getBasicBlockList() const { return BasicBlocks; }
         BasicBlockListType &getBasicBlockList()       { return BasicBlocks; }
-  static BasicBlockListType Function::*getSublistAccess(BasicBlock*) {
+  static iplist<BasicBlock> Function::*getSublistAccess(BasicBlock*) {
     return &Function::BasicBlocks;
   }
 
@@ -456,6 +449,7 @@ public:
   ///
   inline       ValueSymbolTable &getValueSymbolTable()       { return *SymTab; }
   inline const ValueSymbolTable &getValueSymbolTable() const { return *SymTab; }
+
 
   //===--------------------------------------------------------------------===//
   // BasicBlock iterator forwarding functions
@@ -518,6 +512,10 @@ public:
 
   Constant *getPrologueData() const;
   void setPrologueData(Constant *PrologueData);
+
+  /// Print the function to an output stream with an optional
+  /// AssemblyAnnotationWriter.
+  void print(raw_ostream &OS, AssemblyAnnotationWriter *AAW = nullptr) const;
 
   /// viewCFG - This function is meant for use from the debugger.  You can just
   /// say 'call F->viewCFG()' and a ghostview window should pop up from the
@@ -598,17 +596,6 @@ public:
   /// Drop all metadata from \c this not included in \c KnownIDs.
   void dropUnknownMetadata(ArrayRef<unsigned> KnownIDs);
 
-  /// \brief Set the attached subprogram.
-  ///
-  /// Calls \a setMetadata() with \a LLVMContext::MD_dbg.
-  void setSubprogram(DISubprogram *SP);
-
-  /// \brief Get the attached subprogram.
-  ///
-  /// Calls \a getMetadata() with \a LLVMContext::MD_dbg and casts the result
-  /// to \a DISubprogram.
-  DISubprogram *getSubprogram() const;
-
 private:
   // Shadow Value::setValueSubclassData with a private forwarding method so that
   // subclasses cannot accidentally use it.
@@ -625,6 +612,16 @@ private:
 
   void clearMetadata();
 };
+
+inline ValueSymbolTable *
+ilist_traits<BasicBlock>::getSymTab(Function *F) {
+  return F ? &F->getValueSymbolTable() : nullptr;
+}
+
+inline ValueSymbolTable *
+ilist_traits<Argument>::getSymTab(Function *F) {
+  return F ? &F->getValueSymbolTable() : nullptr;
+}
 
 template <>
 struct OperandTraits<Function> : public OptionalOperandTraits<Function> {};

@@ -34,7 +34,7 @@ namespace llvm {
 class BasicBlock;
 template <class T> class DomTreeNodeBase;
 typedef DomTreeNodeBase<BasicBlock> DomTreeNode;
-template <class T> class DominatorTreeBase;
+class DominatorTree;
 
 /// \brief Determine the iterated dominance frontier, given a set of defining
 /// blocks, and optionally, a set of live-in blocks.
@@ -47,7 +47,7 @@ template <class T> class DominatorTreeBase;
 class IDFCalculator {
 
 public:
-  IDFCalculator(DominatorTreeBase<BasicBlock> &DT) : DT(DT), useLiveIn(false) {}
+  IDFCalculator(DominatorTree &DT) : DT(DT), useLiveIn(false) {}
 
   /// \brief Give the IDF calculator the set of blocks in which the value is
   /// defined.  This is equivalent to the set of starting blocks it should be
@@ -85,7 +85,7 @@ public:
   void calculate(SmallVectorImpl<BasicBlock *> &IDFBlocks);
 
 private:
-  DominatorTreeBase<BasicBlock> &DT;
+  DominatorTree &DT;
   bool useLiveIn;
   DenseMap<DomTreeNode *, unsigned> DomLevels;
   const SmallPtrSetImpl<BasicBlock *> *LiveInBlocks;

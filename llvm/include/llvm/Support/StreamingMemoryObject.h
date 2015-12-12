@@ -10,10 +10,10 @@
 #ifndef LLVM_SUPPORT_STREAMINGMEMORYOBJECT_H
 #define LLVM_SUPPORT_STREAMINGMEMORYOBJECT_H
 
-#include "Compiler.h"
-#include "DataStream.h"
-#include "ErrorHandling.h"
-#include "MemoryObject.h"
+#include "llvm/Support/Compiler.h"
+#include "llvm/Support/DataStream.h"
+#include "llvm/Support/ErrorHandling.h"
+#include "llvm/Support/MemoryObject.h"
 #include <memory>
 #include <vector>
 
@@ -50,10 +50,8 @@ public:
   /// starts (although it can be called anytime).
   void setKnownObjectSize(size_t size);
 
-  /// The number of bytes read at a time from the data streamer.
-  static const uint32_t kChunkSize = 4096 * 4;
-
 private:
+  const static uint32_t kChunkSize = 4096 * 4;
   mutable std::vector<unsigned char> Bytes;
   std::unique_ptr<DataStreamer> Streamer;
   mutable size_t BytesRead;   // Bytes read from stream

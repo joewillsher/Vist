@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		D4249F541C19F16A00B15530 /* NameMangle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4249F531C19F16A00B15530 /* NameMangle.swift */; };
 		D4249F561C1AF9B200B15530 /* fn.vist in Resources */ = {isa = PBXBuildFile; fileRef = D4249F551C1AF9B200B15530 /* fn.vist */; };
-		D4249F571C1AFA7600B15530 /* LLVM.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D494107F1C1248890029BF3D /* LLVM.framework */; };
 		D44FB8B01C1657E100E6DD33 /* Compile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44FB8AF1C1657E100E6DD33 /* Compile.swift */; };
 		D45E8F151C161E0F00D74430 /* LLVMHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45E8F141C161E0F00D74430 /* LLVMHelp.swift */; };
 		D465C6581C187639001A008C /* Scope.swift in Sources */ = {isa = PBXBuildFile; fileRef = D465C6571C187639001A008C /* Scope.swift */; };
@@ -20,8 +19,6 @@
 		D47E66591B88D9A20051D586 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = D47E66581B88D9A20051D586 /* README.md */; };
 		D47FF07E1B812052003F9920 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47FF07D1B812052003F9920 /* main.swift */; };
 		D485DD281C1667E900B72F81 /* VistTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D485DD271C1667E900B72F81 /* VistTest.swift */; };
-		D49410801C1248890029BF3D /* LLVM.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = D494107F1C1248890029BF3D /* LLVM.framework */; };
-		D49410811C12488B0029BF3D /* LLVM.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D494107F1C1248890029BF3D /* LLVM.framework */; };
 		D49410831C124B4E0029BF3D /* Print.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49410821C124B4E0029BF3D /* Print.swift */; };
 		D4C85BCC1BF8E00100731F34 /* CodeGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C85BCB1BF8E00100731F34 /* CodeGen.swift */; };
 /* End PBXBuildFile section */
@@ -33,7 +30,6 @@
 			dstPath = /usr/share/man/man1;
 			dstSubfolderSpec = 0;
 			files = (
-				D49410801C1248890029BF3D /* LLVM.framework in Copy Files */,
 			);
 			name = "Copy Files";
 			runOnlyForDeploymentPostprocessing = 1;
@@ -41,6 +37,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D4066A371C1C881E006D6A04 /* example.ir */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = example.ir; path = RUN/example.ir; sourceTree = "<group>"; };
 		D4249F531C19F16A00B15530 /* NameMangle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NameMangle.swift; sourceTree = "<group>"; };
 		D4249F551C1AF9B200B15530 /* fn.vist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = fn.vist; sourceTree = "<group>"; };
 		D44FB8AF1C1657E100E6DD33 /* Compile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Compile.swift; sourceTree = "<group>"; };
@@ -57,7 +54,6 @@
 		D485DD251C1667E900B72F81 /* VistTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VistTest.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D485DD271C1667E900B72F81 /* VistTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VistTest.swift; sourceTree = "<group>"; };
 		D485DD291C1667E900B72F81 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		D494107F1C1248890029BF3D /* LLVM.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; name = LLVM.framework; path = "/Users/JoeWillsher/Library/Developer/Xcode/DerivedData/Vist-cwckhyhmncxjmfatbezhvnhiwsqf/Build/Products/Debug/LLVM.framework"; sourceTree = "<absolute>"; };
 		D49410821C124B4E0029BF3D /* Print.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Print.swift; sourceTree = "<group>"; };
 		D4B1AB991B87D73B00E1538D /* example.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vist; path = RUN/example.vist; sourceTree = "<group>"; };
 		D4C85BCB1BF8E00100731F34 /* CodeGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CodeGen.swift; sourceTree = "<group>"; };
@@ -68,7 +64,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D49410811C12488B0029BF3D /* LLVM.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -76,7 +71,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D4249F571C1AFA7600B15530 /* LLVM.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -86,8 +80,8 @@
 		D47FF0711B812052003F9920 = {
 			isa = PBXGroup;
 			children = (
-				D494107F1C1248890029BF3D /* LLVM.framework */,
 				D4B1AB991B87D73B00E1538D /* example.vist */,
+				D4066A371C1C881E006D6A04 /* example.ir */,
 				D47E66581B88D9A20051D586 /* README.md */,
 				D47FF07C1B812052003F9920 /* Vist */,
 				D485DD261C1667E900B72F81 /* VistTest */,
@@ -336,14 +330,20 @@
 					__STDC_CONSTANT_MACROS,
 					__STDC_LIMIT_MACROS,
 					__STDC_FORMAT_MACROS,
+					_GNU_SOURCE,
 				);
-				HEADER_SEARCH_PATHS = (
-					"$(SRCROOT)/llvm-parsed/include",
-					"$(SRCROOT)/llvm/include",
-					"$(SRCROOT)/llvm-parsed",
-					"$(SRCROOT)/llvm",
-				);
+				HEADER_SEARCH_PATHS = /Users/JoeWillsher/Developer/Vist/llvm/include;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = /Users/JoeWillsher/Developer/Vist/llvm/lib;
+				OTHER_LDFLAGS = (
+					"-lLLVMCore",
+					"-lLLVMSupport",
+					"-lz",
+					"-lpthread",
+					"-ledit",
+					"-lcurses",
+					"-lm",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Vist/Vist-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -361,14 +361,20 @@
 					__STDC_CONSTANT_MACROS,
 					__STDC_LIMIT_MACROS,
 					__STDC_FORMAT_MACROS,
+					_GNU_SOURCE,
 				);
-				HEADER_SEARCH_PATHS = (
-					"$(SRCROOT)/llvm-parsed/include",
-					"$(SRCROOT)/llvm/include",
-					"$(SRCROOT)/llvm-parsed",
-					"$(SRCROOT)/llvm",
-				);
+				HEADER_SEARCH_PATHS = /Users/JoeWillsher/Developer/Vist/llvm/include;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = /Users/JoeWillsher/Developer/Vist/llvm/lib;
+				OTHER_LDFLAGS = (
+					"-lLLVMCore",
+					"-lLLVMSupport",
+					"-lz",
+					"-lpthread",
+					"-ledit",
+					"-lcurses",
+					"-lm",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Vist/Vist-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";

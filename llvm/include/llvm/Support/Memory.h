@@ -1,4 +1,4 @@
-//===- llvm/Support/Memory.h - Memory Support -------------------*- C++ -*-===//
+//===- llvm/Support/Memory.h - Memory Support --------------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -14,7 +14,7 @@
 #ifndef LLVM_SUPPORT_MEMORY_H
 #define LLVM_SUPPORT_MEMORY_H
 
-#include "DataTypes.h"
+#include "llvm/Support/DataTypes.h"
 #include <string>
 #include <system_error>
 
@@ -32,7 +32,6 @@ namespace sys {
     MemoryBlock(void *addr, size_t size) : Address(addr), Size(size) { }
     void *base() const { return Address; }
     size_t size() const { return Size; }
-
   private:
     void *Address;    ///< Address of first byte of memory area
     size_t Size;      ///< Size, in bytes of the memory area
@@ -71,7 +70,7 @@ namespace sys {
     /// If the address following \p NearBlock is not so aligned, it will be
     /// rounded up to the next allocation granularity boundary.
     ///
-    /// \r a non-null MemoryBlock if the function was successful,
+    /// \r a non-null MemoryBlock if the function was successful, 
     /// otherwise a null MemoryBlock is with \p EC describing the error.
     ///
     /// @brief Allocate mapped memory.
@@ -87,7 +86,7 @@ namespace sys {
     ///
     /// \r error_success if the function was successful, or an error_code
     /// describing the failure if an error occurred.
-    ///
+    /// 
     /// @brief Release mapped memory.
     static std::error_code releaseMappedMemory(MemoryBlock &Block);
 
@@ -132,6 +131,7 @@ namespace sys {
     /// @brief Release Read/Write/Execute memory.
     static bool ReleaseRWX(MemoryBlock &block, std::string *ErrMsg = nullptr);
 
+
     /// InvalidateInstructionCache - Before the JIT can run a block of code
     /// that has been emitted it must invalidate the instruction cache on some
     /// platforms.
@@ -155,31 +155,6 @@ namespace sys {
     /// as writable.
     static bool setRangeWritable(const void *Addr, size_t Size);
   };
-
-  /// Owning version of MemoryBlock.
-  class OwningMemoryBlock {
-  public:
-    OwningMemoryBlock() = default;
-    explicit OwningMemoryBlock(MemoryBlock M) : M(M) {}
-    OwningMemoryBlock(OwningMemoryBlock &&Other) {
-      M = Other.M;
-      Other.M = MemoryBlock();
-    }
-    OwningMemoryBlock& operator=(OwningMemoryBlock &&Other) {
-      M = Other.M;
-      Other.M = MemoryBlock();
-      return *this;
-    }
-    ~OwningMemoryBlock() {
-      Memory::releaseMappedMemory(M);
-    }
-    void *base() const { return M.base(); }
-    size_t size() const { return M.size(); }
-    MemoryBlock getMemoryBlock() const { return M; }
-  private:
-    MemoryBlock M;
-  };
-
 }
 }
 

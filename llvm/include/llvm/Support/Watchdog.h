@@ -14,7 +14,7 @@
 #ifndef LLVM_SUPPORT_WATCHDOG_H
 #define LLVM_SUPPORT_WATCHDOG_H
 
-#include "Compiler.h"
+#include "llvm/Support/Compiler.h"
 
 namespace llvm {
   namespace sys {

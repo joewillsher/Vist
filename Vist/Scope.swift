@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import LLVM
+//import LLVM
 
 class Scope {
     

@@ -57,25 +57,12 @@ class DIInliningInfo {
     assert(Index < Frames.size());
     return Frames[Index];
   }
-  DILineInfo *getMutableFrame(unsigned Index) {
-    assert(Index < Frames.size());
-    return &Frames[Index];
-  }
   uint32_t getNumberOfFrames() const {
     return Frames.size();
   }
   void addFrame(const DILineInfo &Frame) {
     Frames.push_back(Frame);
   }
-};
-
-/// DIGlobal - container for description of a global variable.
-struct DIGlobal {
-  std::string Name;
-  uint64_t Start;
-  uint64_t Size;
-
-  DIGlobal() : Name("<invalid>"), Start(0), Size(0) {}
 };
 
 /// A DINameKind is passed to name search methods to specify a
@@ -112,7 +99,6 @@ enum DIDumpType {
   DIDT_LineDwo,
   DIDT_Loc,
   DIDT_LocDwo,
-  DIDT_Macro,
   DIDT_Ranges,
   DIDT_Pubnames,
   DIDT_Pubtypes,
@@ -124,9 +110,7 @@ enum DIDumpType {
   DIDT_AppleNames,
   DIDT_AppleTypes,
   DIDT_AppleNamespaces,
-  DIDT_AppleObjC,
-  DIDT_CUIndex,
-  DIDT_TUIndex,
+  DIDT_AppleObjC
 };
 
 class DIContext {
@@ -156,21 +140,17 @@ private:
 /// to be used by the DIContext implementations when applying relocations
 /// on the fly.
 class LoadedObjectInfo {
-protected:
-  LoadedObjectInfo(const LoadedObjectInfo &) = default;
-  LoadedObjectInfo() = default;
-
 public:
   virtual ~LoadedObjectInfo() = default;
 
-  /// Obtain the Load Address of a section by SectionRef.
+  /// Obtain the Load Address of a section by Name.
   ///
-  /// Calculate the address of the given section.
+  /// Calculate the address of the section identified by the passed in Name.
   /// The section need not be present in the local address space. The addresses
   /// need to be consistent with the addresses used to query the DIContext and
   /// the output of this function should be deterministic, i.e. repeated calls with
-  /// the same Sec should give the same address.
-  virtual uint64_t getSectionLoadAddress(const object::SectionRef &Sec) const = 0;
+  /// the same Name should give the same address.
+  virtual uint64_t getSectionLoadAddress(StringRef Name) const = 0;
 
   /// If conveniently available, return the content of the given Section.
   ///
@@ -182,8 +162,7 @@ public:
   /// local (unrelocated) object file and applied on the fly. Note that this method
   /// is used purely for optimzation purposes in the common case of JITting in the
   /// local address space, so returning false should always be correct.
-  virtual bool getLoadedSectionContents(const object::SectionRef &Sec,
-                                        StringRef &Data) const {
+  virtual bool getLoadedSectionContents(StringRef Name, StringRef &Data) const {
     return false;
   }
 

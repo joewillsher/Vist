@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import LLVM
+//import LLVM
 
 enum IRError: ErrorType {
     case NotIRGenerator, NotBBGenerator, NoOperator, MisMatchedTypes, NoLLVMFloat(UInt32), WrongFunctionApplication(String), NoLLVMType, NoBody, InvalidFunction, NoVariable(String), NoBool, TypeNotFound
@@ -320,8 +320,6 @@ extension FunctionPrototype: IRGenerator {
         defer { argBuffer.dealloc(argCount) }
         
         // make function
-        
-        // TODO: set return type to something else
         let functionType = LLVMFunctionType(try type.returnType(), argBuffer, UInt32(argCount), LLVMBool(false))
         let function = LLVMAddFunction(module, name, functionType)
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)

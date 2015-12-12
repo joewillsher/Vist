@@ -17,7 +17,7 @@
 #ifndef LLVM_SUPPORT_PLUGINLOADER_H
 #define LLVM_SUPPORT_PLUGINLOADER_H
 
-#include "CommandLine.h"
+#include "llvm/Support/CommandLine.h"
 
 namespace llvm {
   struct PluginLoader {

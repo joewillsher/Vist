@@ -14,7 +14,7 @@
 #ifndef LLVM_SUPPORT_COMPRESSION_H
 #define LLVM_SUPPORT_COMPRESSION_H
 
-#include "DataTypes.h"
+#include "llvm/Support/DataTypes.h"
 
 namespace llvm {
 template <typename T> class SmallVectorImpl;

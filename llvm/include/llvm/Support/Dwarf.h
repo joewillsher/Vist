@@ -21,8 +21,8 @@
 #define LLVM_SUPPORT_DWARF_H
 
 #include "llvm/ADT/StringRef.h"
-#include "Compiler.h"
-#include "DataTypes.h"
+#include "llvm/Support/Compiler.h"
+#include "llvm/Support/DataTypes.h"
 
 namespace llvm {
 
@@ -40,7 +40,6 @@ enum LLVMConstants : uint32_t {
   // LLVM mock tags (see also llvm/Support/Dwarf.def).
   DW_TAG_invalid = ~0U,        // Tag for invalid results.
   DW_VIRTUALITY_invalid = ~0U, // Virtuality for invalid results.
-  DW_MACINFO_invalid = ~0U,    // Macinfo type for invalid results.
 
   // Other constants.
   DWARF_VERSION = 4,       // Default dwarf version we output.
@@ -56,7 +55,7 @@ const uint64_t DW64_CIE_ID = UINT64_MAX;
 
 enum Tag : uint16_t {
 #define HANDLE_DW_TAG(ID, NAME) DW_TAG_##NAME = ID,
-#include "Dwarf.def"
+#include "llvm/Support/Dwarf.def"
   DW_TAG_lo_user = 0x4080,
   DW_TAG_hi_user = 0xffff,
   DW_TAG_user_base = 0x1000 // Recommended base for user tags.
@@ -239,26 +238,6 @@ enum Attribute : uint16_t {
   DW_AT_GNU_addr_base = 0x2133,
   DW_AT_GNU_pubnames = 0x2134,
   DW_AT_GNU_pubtypes = 0x2135,
-  DW_AT_GNU_discriminator = 0x2136,
-
-  // Borland extensions.
-  DW_AT_BORLAND_property_read = 0x3b11,
-  DW_AT_BORLAND_property_write = 0x3b12,
-  DW_AT_BORLAND_property_implements = 0x3b13,
-  DW_AT_BORLAND_property_index = 0x3b14,
-  DW_AT_BORLAND_property_default = 0x3b15,
-  DW_AT_BORLAND_Delphi_unit = 0x3b20,
-  DW_AT_BORLAND_Delphi_class = 0x3b21,
-  DW_AT_BORLAND_Delphi_record = 0x3b22,
-  DW_AT_BORLAND_Delphi_metaclass = 0x3b23,
-  DW_AT_BORLAND_Delphi_constructor = 0x3b24,
-  DW_AT_BORLAND_Delphi_destructor = 0x3b25,
-  DW_AT_BORLAND_Delphi_anonymous_method = 0x3b26,
-  DW_AT_BORLAND_Delphi_interface = 0x3b27,
-  DW_AT_BORLAND_Delphi_ABI = 0x3b28,
-  DW_AT_BORLAND_Delphi_return = 0x3b29,
-  DW_AT_BORLAND_Delphi_frameptr = 0x3b30,
-  DW_AT_BORLAND_closure = 0x3b31,
 
   // LLVM project extensions.
   DW_AT_LLVM_include_path = 0x3e00,
@@ -320,14 +299,14 @@ enum Form : uint16_t {
 
 enum LocationAtom {
 #define HANDLE_DW_OP(ID, NAME) DW_OP_##NAME = ID,
-#include "Dwarf.def"
+#include "llvm/Support/Dwarf.def"
   DW_OP_lo_user = 0xe0,
   DW_OP_hi_user = 0xff
 };
 
 enum TypeKind {
 #define HANDLE_DW_ATE(ID, NAME) DW_ATE_##NAME = ID,
-#include "Dwarf.def"
+#include "llvm/Support/Dwarf.def"
   DW_ATE_lo_user = 0x80,
   DW_ATE_hi_user = 0xff
 };
@@ -366,13 +345,13 @@ enum VisibilityAttribute {
 
 enum VirtualityAttribute {
 #define HANDLE_DW_VIRTUALITY(ID, NAME) DW_VIRTUALITY_##NAME = ID,
-#include "Dwarf.def"
+#include "llvm/Support/Dwarf.def"
   DW_VIRTUALITY_max = 0x02
 };
 
 enum SourceLanguage {
 #define HANDLE_DW_LANG(ID, NAME) DW_LANG_##NAME = ID,
-#include "Dwarf.def"
+#include "llvm/Support/Dwarf.def"
   DW_LANG_lo_user = 0x8000,
   DW_LANG_hi_user = 0xffff
 };
@@ -391,14 +370,6 @@ enum CallingConvention {
   DW_CC_program = 0x02,
   DW_CC_nocall = 0x03,
   DW_CC_lo_user = 0x40,
-  DW_CC_GNU_borland_fastcall_i386 = 0x41,
-  DW_CC_BORLAND_safecall = 0xb0,
-  DW_CC_BORLAND_stdcall = 0xb1,
-  DW_CC_BORLAND_pascal = 0xb2,
-  DW_CC_BORLAND_msfastcall = 0xb3,
-  DW_CC_BORLAND_msreturn = 0xb4,
-  DW_CC_BORLAND_thiscall = 0xb5,
-  DW_CC_BORLAND_fastcall = 0xb6,
   DW_CC_hi_user = 0xff
 };
 
@@ -639,7 +610,7 @@ unsigned getAttributeEncoding(StringRef EncodingString);
 const char *AttributeValueString(uint16_t Attr, unsigned Val);
 
 /// \brief Decsribes an entry of the various gnu_pub* debug sections.
-///
+/// 
 /// The gnu_pub* kind looks like:
 ///
 /// 0-3  reserved
@@ -670,6 +641,7 @@ private:
     LINKAGE_MASK = 1 << LINKAGE_OFFSET
   };
 };
+
 
 } // End of namespace dwarf
 

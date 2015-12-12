@@ -37,7 +37,7 @@ struct ArchiveMemberHeader {
   llvm::StringRef getName() const;
 
   /// Members are not larger than 4GB.
-  ErrorOr<uint32_t> getSize() const;
+  uint32_t getSize() const;
 
   sys::fs::perms getAccessMode() const;
   sys::TimeValue getLastModified() const;
@@ -52,7 +52,6 @@ class Archive : public Binary {
   virtual void anchor();
 public:
   class Child {
-    friend Archive;
     const Archive *Parent;
     /// \brief Includes header but not padding byte.
     StringRef Data;
@@ -63,19 +62,19 @@ public:
       return reinterpret_cast<const ArchiveMemberHeader *>(Data.data());
     }
 
-    bool isThinMember() const;
-
   public:
-    Child(const Archive *Parent, const char *Start, std::error_code *EC);
-    Child(const Archive *Parent, StringRef Data, uint16_t StartOfFile);
+    Child(const Archive *Parent, const char *Start);
 
     bool operator ==(const Child &other) const {
       assert(Parent == other.Parent);
       return Data.begin() == other.Data.begin();
     }
 
-    const Archive *getParent() const { return Parent; }
-    ErrorOr<Child> getNext() const;
+    bool operator <(const Child &other) const {
+      return Data.begin() < other.Data.begin();
+    }
+
+    Child getNext() const;
 
     ErrorOr<StringRef> getName() const;
     StringRef getRawName() const { return getHeader()->getName(); }
@@ -91,9 +90,9 @@ public:
       return getHeader()->getAccessMode();
     }
     /// \return the size of the archive member without the header or padding.
-    ErrorOr<uint64_t> getSize() const;
+    uint64_t getSize() const;
     /// \return the size in the archive header for this member.
-    ErrorOr<uint64_t> getRawSize() const;
+    uint64_t getRawSize() const;
 
     ErrorOr<StringRef> getBuffer() const;
     uint64_t getChildOffset() const;
@@ -105,32 +104,28 @@ public:
   };
 
   class child_iterator {
-    ErrorOr<Child> child;
+    Child child;
 
   public:
-    child_iterator() : child(Child(nullptr, nullptr, nullptr)) {}
+    child_iterator() : child(Child(nullptr, nullptr)) {}
     child_iterator(const Child &c) : child(c) {}
-    child_iterator(std::error_code EC) : child(EC) {}
-    const ErrorOr<Child> *operator->() const { return &child; }
-    const ErrorOr<Child> &operator*() const { return child; }
+    const Child *operator->() const { return &child; }
+    const Child &operator*() const { return child; }
 
     bool operator==(const child_iterator &other) const {
-      // We ignore error states so that comparisions with end() work, which
-      // allows range loops.
-      if (child.getError() || other.child.getError())
-        return false;
-      return *child == *other.child;
+      return child == other.child;
     }
 
     bool operator!=(const child_iterator &other) const {
       return !(*this == other);
     }
 
-    // Code in loops with child_iterators must check for errors on each loop
-    // iteration.  And if there is an error break out of the loop.
+    bool operator<(const child_iterator &other) const {
+      return child < other.child;
+    }
+
     child_iterator &operator++() { // Preincrement
-      assert(child && "Can't increment iterator with error");
-      child = child->getNext();
+      child = child.getNext();
       return *this;
     }
   };
@@ -150,7 +145,7 @@ public:
       , SymbolIndex(symi)
       , StringIndex(stri) {}
     StringRef getName() const;
-    ErrorOr<Child> getMember() const;
+    ErrorOr<child_iterator> getMember() const;
     Symbol getNext() const;
   };
 
@@ -210,17 +205,18 @@ public:
   child_iterator findSym(StringRef name) const;
 
   bool hasSymbolTable() const;
-  StringRef getSymbolTable() const { return SymbolTable; }
+  child_iterator getSymbolTableChild() const { return SymbolTable; }
+  StringRef getSymbolTable() const {
+    // We know that the symbol table is not an external file,
+    // so we just assert there is no error.
+    return *SymbolTable->getBuffer();
+  }
   uint32_t getNumberOfSymbols() const;
 
 private:
-  StringRef SymbolTable;
-  StringRef StringTable;
-
-  StringRef FirstRegularData;
-  uint16_t FirstRegularStartOfFile = -1;
-  void setFirstRegular(const Child &C);
-
+  child_iterator SymbolTable;
+  child_iterator StringTable;
+  child_iterator FirstRegular;
   unsigned Format : 2;
   unsigned IsThin : 1;
   mutable std::vector<std::unique_ptr<MemoryBuffer>> ThinBuffers;

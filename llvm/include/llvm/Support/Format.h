@@ -25,7 +25,7 @@
 
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/StringRef.h"
-#include "DataTypes.h"
+#include "llvm/Support/DataTypes.h"
 #include <cassert>
 #include <cstdio>
 #include <tuple>
@@ -118,7 +118,6 @@ class FormattedString {
   unsigned Width;
   bool RightJustify;
   friend class raw_ostream;
-
 public:
     FormattedString(StringRef S, unsigned W, bool R)
       : Str(S), Width(W), RightJustify(R) { }
@@ -147,7 +146,6 @@ class FormattedNumber {
   bool Upper;
   bool HexPrefix;
   friend class raw_ostream;
-
 public:
   FormattedNumber(uint64_t HV, int64_t DV, unsigned W, bool H, bool U,
                   bool Prefix)
@@ -180,7 +178,7 @@ inline FormattedNumber format_hex_no_prefix(uint64_t N, unsigned Width,
   return FormattedNumber(N, 0, Width, true, Upper, false);
 }
 
-/// format_decimal - Output \p N as a right justified, fixed-width decimal. If
+/// format_decimal - Output \p N as a right justified, fixed-width decimal. If 
 /// number will not fit in width, full number is still printed.  Examples:
 ///   OS << format_decimal(0, 5)     => "    0"
 ///   OS << format_decimal(255, 5)   => "  255"
@@ -189,6 +187,7 @@ inline FormattedNumber format_hex_no_prefix(uint64_t N, unsigned Width,
 inline FormattedNumber format_decimal(int64_t N, unsigned Width) {
   return FormattedNumber(0, N, Width, false, false, false);
 }
+
 
 } // end namespace llvm
 

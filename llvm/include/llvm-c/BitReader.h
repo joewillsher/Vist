@@ -19,7 +19,7 @@
 #ifndef LLVM_C_BITREADER_H
 #define LLVM_C_BITREADER_H
 
-#include "Core.h"
+#include "llvm-c/Core.h"
 
 #ifdef __cplusplus
 extern "C" {

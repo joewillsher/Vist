@@ -15,7 +15,7 @@
 #ifndef LLVM_C_CORE_H
 #define LLVM_C_CORE_H
 
-#include "Support.h"
+#include "llvm-c/Support.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -248,14 +248,8 @@ typedef enum {
 
   /* Exception Handling Operators */
   LLVMResume         = 58,
-  LLVMLandingPad     = 59,
-  LLVMCleanupRet     = 61,
-  LLVMCatchRet       = 62,
-  LLVMCatchPad       = 63,
-  LLVMTerminatePad   = 64,
-  LLVMCleanupPad     = 65,
-  LLVMCatchEndPad    = 66,
-  LLVMCleanupEndPad  = 67
+  LLVMLandingPad     = 59
+
 } LLVMOpcode;
 
 typedef enum {
@@ -274,8 +268,7 @@ typedef enum {
   LLVMPointerTypeKind,     /**< Pointers */
   LLVMVectorTypeKind,      /**< SIMD 'packed' format, or other vector type */
   LLVMMetadataTypeKind,    /**< Metadata */
-  LLVMX86_MMXTypeKind,     /**< X86 MMX */
-  LLVMTokenTypeKind        /**< Tokens */
+  LLVMX86_MMXTypeKind      /**< X86 MMX */
 } LLVMTypeKind;
 
 typedef enum {
@@ -434,6 +427,7 @@ void LLVMInitializeCore(LLVMPassRegistryRef R);
     @see llvm::llvm_shutdown
     @see ManagedStatic */
 void LLVMShutdown(void);
+
 
 /*===-- Error handling ----------------------------------------------------===*/
 
@@ -814,7 +808,6 @@ LLVMTypeRef LLVMInt8TypeInContext(LLVMContextRef C);
 LLVMTypeRef LLVMInt16TypeInContext(LLVMContextRef C);
 LLVMTypeRef LLVMInt32TypeInContext(LLVMContextRef C);
 LLVMTypeRef LLVMInt64TypeInContext(LLVMContextRef C);
-LLVMTypeRef LLVMInt128TypeInContext(LLVMContextRef C);
 LLVMTypeRef LLVMIntTypeInContext(LLVMContextRef C, unsigned NumBits);
 
 /**
@@ -826,7 +819,6 @@ LLVMTypeRef LLVMInt8Type(void);
 LLVMTypeRef LLVMInt16Type(void);
 LLVMTypeRef LLVMInt32Type(void);
 LLVMTypeRef LLVMInt64Type(void);
-LLVMTypeRef LLVMInt128Type(void);
 LLVMTypeRef LLVMIntType(unsigned NumBits);
 unsigned LLVMGetIntTypeWidth(LLVMTypeRef IntegerTy);
 
@@ -1030,6 +1022,7 @@ LLVMBool LLVMIsOpaqueStruct(LLVMTypeRef StructTy);
  * @}
  */
 
+
 /**
  * @defgroup LLVMCCoreTypeSequential Sequential Types
  *
@@ -1185,7 +1178,6 @@ LLVMTypeRef LLVMX86MMXType(void);
       macro(ConstantInt)                    \
       macro(ConstantPointerNull)            \
       macro(ConstantStruct)                 \
-      macro(ConstantTokenNone)              \
       macro(ConstantVector)                 \
       macro(GlobalValue)                    \
         macro(GlobalAlias)                  \
@@ -1211,7 +1203,6 @@ LLVMTypeRef LLVMX86MMXType(void);
       macro(InsertElementInst)              \
       macro(InsertValueInst)                \
       macro(LandingPadInst)                 \
-      macro(CleanupPadInst)                 \
       macro(PHINode)                        \
       macro(SelectInst)                     \
       macro(ShuffleVectorInst)              \
@@ -1224,12 +1215,6 @@ LLVMTypeRef LLVMX86MMXType(void);
         macro(SwitchInst)                   \
         macro(UnreachableInst)              \
         macro(ResumeInst)                   \
-        macro(CleanupReturnInst)            \
-        macro(CatchReturnInst)              \
-        macro(CatchPadInst)                 \
-        macro(TerminatePadInst)             \
-        macro(CatchEndPadInst)              \
-        macro(CleanupEndPadInst)            \
       macro(UnaryInstruction)               \
         macro(AllocaInst)                   \
         macro(CastInst)                     \
@@ -1965,7 +1950,7 @@ void LLVMSetGC(LLVMValueRef Fn, const char *Name);
 void LLVMAddFunctionAttr(LLVMValueRef Fn, LLVMAttribute PA);
 
 /**
- * Add a target-dependent attribute to a function
+ * Add a target-dependent attribute to a fuction
  * @see llvm::AttrBuilder::addAttribute()
  */
 void LLVMAddTargetDependentFunctionAttr(LLVMValueRef Fn, const char *A,
@@ -2690,8 +2675,7 @@ LLVMValueRef LLVMBuildInvoke(LLVMBuilderRef, LLVMValueRef Fn,
                              LLVMBasicBlockRef Then, LLVMBasicBlockRef Catch,
                              const char *Name);
 LLVMValueRef LLVMBuildLandingPad(LLVMBuilderRef B, LLVMTypeRef Ty,
-                                 LLVMValueRef PersFn, unsigned NumClauses,
-                                 const char *Name);
+                                 unsigned NumClauses, const char *Name);
 LLVMValueRef LLVMBuildResume(LLVMBuilderRef B, LLVMValueRef Exn);
 LLVMValueRef LLVMBuildUnreachable(LLVMBuilderRef);
 
@@ -2795,8 +2779,6 @@ LLVMValueRef LLVMBuildGlobalStringPtr(LLVMBuilderRef B, const char *Str,
                                       const char *Name);
 LLVMBool LLVMGetVolatile(LLVMValueRef MemoryAccessInst);
 void LLVMSetVolatile(LLVMValueRef MemoryAccessInst, LLVMBool IsVolatile);
-LLVMAtomicOrdering LLVMGetOrdering(LLVMValueRef MemoryAccessInst);
-void LLVMSetOrdering(LLVMValueRef MemoryAccessInst, LLVMAtomicOrdering Ordering);
 
 /* Casts */
 LLVMValueRef LLVMBuildTrunc(LLVMBuilderRef, LLVMValueRef Val,
@@ -3037,6 +3019,6 @@ LLVMBool LLVMIsMultithreaded(void);
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* !defined(__cplusplus) */
 
-#endif /* LLVM_C_CORE_H */
+#endif /* !defined(LLVM_C_CORE_H) */

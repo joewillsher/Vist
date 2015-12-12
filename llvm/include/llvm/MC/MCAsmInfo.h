@@ -414,15 +414,6 @@ public:
   /// syntactically correct.
   virtual bool isValidUnquotedName(StringRef Name) const;
 
-  /// Return true if the .section directive should be omitted when
-  /// emitting \p SectionName.  For example:
-  ///
-  /// shouldOmitSectionDirective(".text")
-  ///
-  /// returns false => .section .text,#alloc,#execinstr
-  /// returns true  => .text
-  virtual bool shouldOmitSectionDirective(StringRef SectionName) const;
-
   bool usesSunStyleELFSectionSwitchSyntax() const {
     return SunStyleELFSectionSwitchSyntax;
   }

@@ -42,7 +42,6 @@ class DenseSet {
   static_assert(sizeof(typename MapTy::value_type) == sizeof(ValueT),
                 "DenseMap buckets unexpectedly large!");
   MapTy TheMap;
-
 public:
   typedef ValueT key_type;
   typedef ValueT value_type;
@@ -80,7 +79,6 @@ public:
   class Iterator {
     typename MapTy::iterator I;
     friend class DenseSet;
-
   public:
     typedef typename MapTy::iterator::difference_type difference_type;
     typedef ValueT value_type;
@@ -101,7 +99,6 @@ public:
   class ConstIterator {
     typename MapTy::const_iterator I;
     friend class DenseSet;
-
   public:
     typedef typename MapTy::const_iterator::difference_type difference_type;
     typedef ValueT value_type;
@@ -151,7 +148,7 @@ public:
     detail::DenseSetEmpty Empty;
     return TheMap.insert(std::make_pair(V, Empty));
   }
-
+  
   // Range insertion of values.
   template<typename InputIt>
   void insert(InputIt I, InputIt E) {

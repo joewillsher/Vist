@@ -15,8 +15,8 @@
 #ifndef LLVM_SUPPORT_CODEGEN_H
 #define LLVM_SUPPORT_CODEGEN_H
 
-#include "TargetMachine.h"
-#include "ErrorHandling.h"
+#include "llvm-c/TargetMachine.h"
+#include "llvm/Support/ErrorHandling.h"
 
 namespace llvm {
 

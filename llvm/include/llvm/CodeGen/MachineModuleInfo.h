@@ -35,7 +35,7 @@
 #include "llvm/ADT/PointerIntPair.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/SmallVector.h"
-#include "llvm/Analysis/EHPersonalities.h"
+#include "llvm/Analysis/LibCallSemantics.h"
 #include "llvm/IR/DebugLoc.h"
 #include "llvm/IR/Metadata.h"
 #include "llvm/IR/ValueHandle.h"
@@ -59,6 +59,7 @@ class MachineFunction;
 class Module;
 class PointerType;
 class StructType;
+struct WinEHFuncInfo;
 
 struct SEHHandler {
   // Filter or finally function. Null indicates a catch-all.
@@ -78,10 +79,13 @@ struct LandingPadInfo {
   SmallVector<MCSymbol *, 1> EndLabels;    // Labels after invoke.
   SmallVector<SEHHandler, 1> SEHHandlers;  // SEH handlers active at this lpad.
   MCSymbol *LandingPadLabel;               // Label at beginning of landing pad.
+  const Function *Personality;             // Personality function.
   std::vector<int> TypeIds;               // List of type ids (filters negative).
+  int WinEHState;                         // WinEH specific state number.
 
   explicit LandingPadInfo(MachineBasicBlock *MBB)
-      : LandingPadBlock(MBB), LandingPadLabel(nullptr) {}
+      : LandingPadBlock(MBB), LandingPadLabel(nullptr), Personality(nullptr),
+        WinEHState(-1) {}
 };
 
 //===----------------------------------------------------------------------===//
@@ -159,7 +163,6 @@ class MachineModuleInfo : public ImmutablePass {
 
   bool CallsEHReturn;
   bool CallsUnwindInit;
-  bool HasEHFunclets;
 
   /// DbgInfoAvailable - True if debugging information is available
   /// in this module.
@@ -178,6 +181,8 @@ class MachineModuleInfo : public ImmutablePass {
   bool UsesMorestackAddr;
 
   EHPersonality PersonalityTypeCache;
+
+  DenseMap<const Function *, std::unique_ptr<WinEHFuncInfo>> FuncInfoMap;
 
 public:
   static char ID; // Pass identification, replacement for typeid
@@ -215,6 +220,12 @@ public:
   void setModule(const Module *M) { TheModule = M; }
   const Module *getModule() const { return TheModule; }
 
+  const Function *getWinEHParent(const Function *F) const;
+  WinEHFuncInfo &getWinEHFuncInfo(const Function *F);
+  bool hasWinEHFuncInfo(const Function *F) const {
+    return FuncInfoMap.count(getWinEHParent(F)) > 0;
+  }
+
   /// getInfo - Keep track of various per-function pieces of information for
   /// backends that would like to do so.
   ///
@@ -235,19 +246,11 @@ public:
   bool hasDebugInfo() const { return DbgInfoAvailable; }
   void setDebugInfoAvailability(bool avail) { DbgInfoAvailable = avail; }
 
-  // Returns true if we need to generate precise CFI. Currently
-  // this is equivalent to hasDebugInfo(), but if we ever implement
-  // async EH, it will require precise CFI as well.
-  bool usePreciseUnwindInfo() const { return hasDebugInfo(); }
-
   bool callsEHReturn() const { return CallsEHReturn; }
   void setCallsEHReturn(bool b) { CallsEHReturn = b; }
 
   bool callsUnwindInit() const { return CallsUnwindInit; }
   void setCallsUnwindInit(bool b) { CallsUnwindInit = b; }
-
-  bool hasEHFunclets() const { return HasEHFunclets; }
-  void setHasEHFunclets(bool V) { HasEHFunclets = V; }
 
   bool usesVAFloatArgument() const {
     return UsesVAFloatArgument;
@@ -315,7 +318,15 @@ public:
 
   /// addPersonality - Provide the personality function for the exception
   /// information.
+  void addPersonality(MachineBasicBlock *LandingPad,
+                      const Function *Personality);
   void addPersonality(const Function *Personality);
+
+  void addWinEHState(MachineBasicBlock *LandingPad, int State);
+
+  /// getPersonalityIndex - Get index of the current personality function inside
+  /// Personalitites array
+  unsigned getPersonalityIndex() const;
 
   /// getPersonalities - Return array of personality functions ever seen.
   const std::vector<const Function *>& getPersonalities() const {
@@ -414,6 +425,13 @@ public:
   const std::vector<unsigned> &getFilterIds() const {
     return FilterIds;
   }
+
+  /// getPersonality - Return a personality function if available.  The presence
+  /// of one is required to emit exception handling info.
+  const Function *getPersonality() const;
+
+  /// Classify the personality function amongst known EH styles.
+  EHPersonality getPersonalityType();
 
   /// setVariableDbgInfo - Collect information used to emit debugging
   /// information of a variable.

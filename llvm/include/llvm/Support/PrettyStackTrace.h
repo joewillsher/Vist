@@ -16,7 +16,7 @@
 #ifndef LLVM_SUPPORT_PRETTYSTACKTRACE_H
 #define LLVM_SUPPORT_PRETTYSTACKTRACE_H
 
-#include "Compiler.h"
+#include "llvm/Support/Compiler.h"
 
 namespace llvm {
   class raw_ostream;
@@ -65,18 +65,6 @@ namespace llvm {
     }
     void print(raw_ostream &OS) const override;
   };
-
-  /// Returns the topmost element of the "pretty" stack state.
-  const void* SavePrettyStackState();
-
-  /// Restores the topmost element of the "pretty" stack state to State, which
-  /// should come from a previous call to SavePrettyStackState().  This is
-  /// useful when using a CrashRecoveryContext in code that also uses
-  /// PrettyStackTraceEntries, to make sure the stack that's printed if a crash
-  /// happens after a crash that's been recovered by CrashRecoveryContext
-  /// doesn't have frames on it that were added in code unwound by the
-  /// CrashRecoveryContext.
-  void RestorePrettyStackState(const void* State);
 
 } // end namespace llvm
 

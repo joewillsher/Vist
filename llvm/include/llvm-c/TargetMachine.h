@@ -19,8 +19,8 @@
 #ifndef LLVM_C_TARGETMACHINE_H
 #define LLVM_C_TARGETMACHINE_H
 
-#include "Core.h"
-#include "Target.h"
+#include "llvm-c/Core.h"
+#include "llvm-c/Target.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -115,7 +115,7 @@ char *LLVMGetTargetMachineCPU(LLVMTargetMachineRef T);
   LLVMDisposeMessage. */
 char *LLVMGetTargetMachineFeatureString(LLVMTargetMachineRef T);
 
-/** Returns the llvm::DataLayout used for this llvm:TargetMachine. */
+/** Deprecated: use LLVMGetDataLayout(LLVMModuleRef M) instead. */
 LLVMTargetDataRef LLVMGetTargetMachineData(LLVMTargetMachineRef T);
 
 /** Set the target machine's ASM verbosity. */

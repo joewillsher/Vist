@@ -15,7 +15,7 @@
 #ifndef LLVM_SUPPORT_FORMATTEDSTREAM_H
 #define LLVM_SUPPORT_FORMATTEDSTREAM_H
 
-#include "raw_ostream.h"
+#include "llvm/Support/raw_ostream.h"
 #include <utility>
 
 namespace llvm {

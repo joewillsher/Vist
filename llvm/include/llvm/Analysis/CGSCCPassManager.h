@@ -358,7 +358,7 @@ private:
 /// returned PreservedAnalysis set.
 class CGSCCAnalysisManagerFunctionProxy {
 public:
-  /// \brief Result proxy object for \c CGSCCAnalysisManagerFunctionProxy.
+  /// \brief Result proxy object for \c ModuleAnalysisManagerFunctionProxy.
   class Result {
   public:
     explicit Result(const CGSCCAnalysisManager &CGAM) : CGAM(&CGAM) {}

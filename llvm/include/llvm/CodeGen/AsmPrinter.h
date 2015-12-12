@@ -165,9 +165,6 @@ public:
   /// Return information about data layout.
   const DataLayout &getDataLayout() const;
 
-  /// Return the pointer size from the TargetMachine
-  unsigned getPointerSize() const;
-
   /// Return information about subtarget.
   const MCSubtargetInfo &getSubtargetInfo() const;
 
@@ -236,12 +233,7 @@ public:
   /// Print assembly representations of the jump tables used by the current
   /// function to the current output stream.
   ///
-  virtual void EmitJumpTableInfo();
-
-  /// Emit the control variable for an emulated TLS variable.
-  virtual void EmitEmulatedTLSControlVariable(const GlobalVariable *GV,
-                                              MCSymbol *EmittedSym,
-                                              bool AllZeroInitValue);
+  void EmitJumpTableInfo();
 
   /// Emit the specified global variable to the .s file.
   virtual void EmitGlobalVariable(const GlobalVariable *GV);
@@ -262,7 +254,7 @@ public:
   const MCExpr *lowerConstant(const Constant *CV);
 
   /// \brief Print a general LLVM constant to the .s file.
-  void EmitGlobalConstant(const DataLayout &DL, const Constant *CV);
+  void EmitGlobalConstant(const Constant *CV);
 
   /// \brief Unnamed constant global variables solely contaning a pointer to
   /// another globals variable act like a global variable "proxy", or GOT
@@ -325,9 +317,7 @@ public:
 
   /// Targets can override this to change how global constants that are part of
   /// a C++ static/global constructor list are emitted.
-  virtual void EmitXXStructor(const DataLayout &DL, const Constant *CV) {
-    EmitGlobalConstant(DL, CV);
-  }
+  virtual void EmitXXStructor(const Constant *CV) { EmitGlobalConstant(CV); }
 
   /// Return true if the basic block has exactly one predecessor and the control
   /// transfer mechanism between the predecessor and this block is a
@@ -414,6 +404,9 @@ public:
   void EmitULEB128(uint64_t Value, const char *Desc = nullptr,
                    unsigned PadTo = 0) const;
 
+  /// Emit a .byte 42 directive for a DW_CFA_xxx value.
+  void EmitCFAByte(unsigned Val) const;
+
   /// Emit a .byte 42 directive that corresponds to an encoding.  If verbose
   /// assembly output is enabled, we output comments describing the encoding.
   /// Desc is a string saying what the encoding is specifying (e.g. "LSDA").
@@ -453,16 +446,7 @@ public:
   void emitCFIInstruction(const MCCFIInstruction &Inst) const;
 
   /// \brief Emit Dwarf abbreviation table.
-  template <typename T> void emitDwarfAbbrevs(const T &Abbrevs) const {
-    // For each abbreviation.
-    for (const auto &Abbrev : Abbrevs)
-      emitDwarfAbbrev(*Abbrev);
-
-    // Mark end of abbreviations.
-    EmitULEB128(0, "EOM(3)");
-  }
-
-  void emitDwarfAbbrev(const DIEAbbrev &Abbrev) const;
+  void emitDwarfAbbrevs(const std::vector<DIEAbbrev *>& Abbrevs) const;
 
   /// \brief Recursively emit Dwarf DIE tree.
   void emitDwarfDIE(const DIE &Die) const;
@@ -548,8 +532,7 @@ private:
   void EmitLLVMUsedList(const ConstantArray *InitList);
   /// Emit llvm.ident metadata in an '.ident' directive.
   void EmitModuleIdents(Module &M);
-  void EmitXXStructorList(const DataLayout &DL, const Constant *List,
-                          bool isCtor);
+  void EmitXXStructorList(const Constant *List, bool isCtor);
   GCMetadataPrinter *GetOrCreateGCPrinter(GCStrategy &C);
 };
 }

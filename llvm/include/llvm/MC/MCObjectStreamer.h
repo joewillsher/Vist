@@ -92,7 +92,7 @@ public:
   void EmitLabel(MCSymbol *Symbol) override;
   void EmitAssignment(MCSymbol *Symbol, const MCExpr *Value) override;
   void EmitValueImpl(const MCExpr *Value, unsigned Size,
-                     SMLoc Loc = SMLoc()) override;
+                     const SMLoc &Loc = SMLoc()) override;
   void EmitULEB128Value(const MCExpr *Value) override;
   void EmitSLEB128Value(const MCExpr *Value) override;
   void EmitWeakReference(MCSymbol *Alias, const MCSymbol *Symbol) override;
@@ -112,7 +112,7 @@ public:
                             unsigned MaxBytesToEmit = 0) override;
   void EmitCodeAlignment(unsigned ByteAlignment,
                          unsigned MaxBytesToEmit = 0) override;
-  void emitValueToOffset(const MCExpr *Offset, unsigned char Value) override;
+  bool EmitValueToOffset(const MCExpr *Offset, unsigned char Value) override;
   void EmitDwarfLocDirective(unsigned FileNo, unsigned Line,
                              unsigned Column, unsigned Flags,
                              unsigned Isa, unsigned Discriminator,
@@ -124,9 +124,8 @@ public:
                                  const MCSymbol *Label);
   void EmitGPRel32Value(const MCExpr *Value) override;
   void EmitGPRel64Value(const MCExpr *Value) override;
-  bool EmitRelocDirective(const MCExpr &Offset, StringRef Name,
-                          const MCExpr *Expr, SMLoc Loc) override;
   void EmitFill(uint64_t NumBytes, uint8_t FillValue) override;
+  void EmitZeros(uint64_t NumBytes) override;
   void FinishImpl() override;
 
   /// Emit the absolute difference between two symbols if possible.

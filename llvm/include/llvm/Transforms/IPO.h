@@ -16,7 +16,6 @@
 #define LLVM_TRANSFORMS_IPO_H
 
 #include "llvm/ADT/ArrayRef.h"
-#include "llvm/ADT/StringRef.h"
 
 namespace llvm {
 
@@ -209,12 +208,6 @@ ModulePass *createBarrierNoopPass();
 /// \brief This pass lowers bitset metadata and the llvm.bitset.test intrinsic
 /// to bitsets.
 ModulePass *createLowerBitSetsPass();
-
-//===----------------------------------------------------------------------===//
-// SampleProfilePass - Loads sample profile data from disk and generates
-// IR metadata to reflect the profile.
-ModulePass *createSampleProfileLoaderPass();
-ModulePass *createSampleProfileLoaderPass(StringRef Name);
 
 } // End llvm namespace
 

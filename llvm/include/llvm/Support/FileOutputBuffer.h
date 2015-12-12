@@ -16,9 +16,8 @@
 
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringRef.h"
-#include "DataTypes.h"
-#include "ErrorOr.h"
-#include "FileSystem.h"
+#include "llvm/Support/DataTypes.h"
+#include "llvm/Support/FileSystem.h"
 
 namespace llvm {
 /// FileOutputBuffer - This interface provides simple way to create an in-memory
@@ -38,8 +37,9 @@ public:
   /// Factory method to create an OutputBuffer object which manages a read/write
   /// buffer of the specified size. When committed, the buffer will be written
   /// to the file at the specified path.
-  static ErrorOr<std::unique_ptr<FileOutputBuffer>>
-  create(StringRef FilePath, size_t Size, unsigned Flags = 0);
+  static std::error_code create(StringRef FilePath, size_t Size,
+                                std::unique_ptr<FileOutputBuffer> &Result,
+                                unsigned Flags = 0);
 
   /// Returns a pointer to the start of the buffer.
   uint8_t *getBufferStart() {

@@ -15,7 +15,7 @@
 #define LLVM_SUPPORT_PROGRAM_H
 
 #include "llvm/ADT/ArrayRef.h"
-#include "ErrorOr.h"
+#include "llvm/Support/ErrorOr.h"
 #include <system_error>
 
 namespace llvm {
@@ -67,7 +67,8 @@ struct ProcessInfo {
   /// \returns The fully qualified path to the first \p Name in \p Paths if it
   ///   exists. \p Name if \p Name has slashes in it. Otherwise an error.
   ErrorOr<std::string>
-  findProgramByName(StringRef Name, ArrayRef<StringRef> Paths = None);
+  findProgramByName(StringRef Name,
+                    ArrayRef<StringRef> Paths = ArrayRef<StringRef>());
 
   // These functions change the specified standard stream (stdin or stdout) to
   // binary mode. They return errc::success if the specified stream

@@ -24,7 +24,7 @@
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/ADT/Twine.h"
-#include "Compiler.h"
+#include "llvm/Support/Compiler.h"
 #include <cassert>
 #include <climits>
 #include <cstdarg>
@@ -33,6 +33,7 @@
 
 namespace llvm {
 
+class BumpPtrStringSaver;
 class StringSaver;
 
 /// cl Namespace - This namespace contains all of the command line option
@@ -205,9 +206,9 @@ class Option {
   unsigned AdditionalVals; // Greater than 0 for multi-valued option.
 
 public:
-  StringRef ArgStr;   // The argument string itself (ex: "help", "o")
-  StringRef HelpStr;  // The descriptive text message for -help
-  StringRef ValueStr; // String describing what the value of this option is
+  const char *ArgStr;   // The argument string itself (ex: "help", "o")
+  const char *HelpStr;  // The descriptive text message for -help
+  const char *ValueStr; // String describing what the value of this option is
   OptionCategory *Category; // The Category this option belongs to
   bool FullyInitialized;    // Has addArguemnt been called?
 
@@ -228,14 +229,14 @@ public:
   inline unsigned getNumAdditionalVals() const { return AdditionalVals; }
 
   // hasArgStr - Return true if the argstr != ""
-  bool hasArgStr() const { return !ArgStr.empty(); }
+  bool hasArgStr() const { return ArgStr[0] != 0; }
 
   //-------------------------------------------------------------------------===
   // Accessor functions set by OptionModifiers
   //
-  void setArgStr(StringRef S);
-  void setDescription(StringRef S) { HelpStr = S; }
-  void setValueStr(StringRef S) { ValueStr = S; }
+  void setArgStr(const char *S);
+  void setDescription(const char *S) { HelpStr = S; }
+  void setValueStr(const char *S) { ValueStr = S; }
   void setNumOccurrencesFlag(enum NumOccurrencesFlag Val) { Occurrences = Val; }
   void setValueExpectedFlag(enum ValueExpected Val) { Value = Val; }
   void setHiddenFlag(enum OptionHidden Val) { HiddenFlag = Val; }
@@ -275,7 +276,7 @@ public:
 
   virtual void printOptionValue(size_t GlobalWidth, bool Force) const = 0;
 
-  virtual void getExtraOptionNames(SmallVectorImpl<StringRef> &) {}
+  virtual void getExtraOptionNames(SmallVectorImpl<const char *> &) {}
 
   // addOccurrence - Wrapper around handleOccurrence that enforces Flags.
   //
@@ -605,7 +606,7 @@ public:
 
   void initialize() {}
 
-  void getExtraOptionNames(SmallVectorImpl<StringRef> &OptionNames) {
+  void getExtraOptionNames(SmallVectorImpl<const char *> &OptionNames) {
     // If there has been no argstr specified, that means that we need to add an
     // argument for every possible option.  This ensures that our options are
     // vectored to us.
@@ -714,14 +715,14 @@ public:
 //
 class basic_parser_impl { // non-template implementation of basic_parser<t>
 public:
-  basic_parser_impl(Option &) {}
+  basic_parser_impl(Option &O) {}
 
 
   enum ValueExpected getValueExpectedFlagDefault() const {
     return ValueRequired;
   }
 
-  void getExtraOptionNames(SmallVectorImpl<StringRef> &) {}
+  void getExtraOptionNames(SmallVectorImpl<const char *> &) {}
 
   void initialize() {}
 
@@ -1205,7 +1206,8 @@ class opt : public Option,
   enum ValueExpected getValueExpectedFlagDefault() const override {
     return Parser.getValueExpectedFlagDefault();
   }
-  void getExtraOptionNames(SmallVectorImpl<StringRef> &OptionNames) override {
+  void
+  getExtraOptionNames(SmallVectorImpl<const char *> &OptionNames) override {
     return Parser.getExtraOptionNames(OptionNames);
   }
 
@@ -1366,7 +1368,8 @@ class list : public Option, public list_storage<DataType, StorageClass> {
   enum ValueExpected getValueExpectedFlagDefault() const override {
     return Parser.getValueExpectedFlagDefault();
   }
-  void getExtraOptionNames(SmallVectorImpl<StringRef> &OptionNames) override {
+  void
+  getExtraOptionNames(SmallVectorImpl<const char *> &OptionNames) override {
     return Parser.getExtraOptionNames(OptionNames);
   }
 
@@ -1505,7 +1508,8 @@ class bits : public Option, public bits_storage<DataType, Storage> {
   enum ValueExpected getValueExpectedFlagDefault() const override {
     return Parser.getValueExpectedFlagDefault();
   }
-  void getExtraOptionNames(SmallVectorImpl<StringRef> &OptionNames) override {
+  void
+  getExtraOptionNames(SmallVectorImpl<const char *> &OptionNames) override {
     return Parser.getExtraOptionNames(OptionNames);
   }
 

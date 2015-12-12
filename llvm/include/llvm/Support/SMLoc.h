@@ -22,7 +22,6 @@ namespace llvm {
 /// Represents a location in source code.
 class SMLoc {
   const char *Ptr;
-
 public:
   SMLoc() : Ptr(nullptr) {}
 
@@ -54,10 +53,11 @@ public:
     assert(Start.isValid() == End.isValid() &&
            "Start and end should either both be valid or both be invalid!");
   }
-
+  
   bool isValid() const { return Start.isValid(); }
 };
-
+  
 } // end namespace llvm
 
 #endif
+

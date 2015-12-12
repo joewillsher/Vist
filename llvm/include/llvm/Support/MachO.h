@@ -14,9 +14,9 @@
 #ifndef LLVM_SUPPORT_MACHO_H
 #define LLVM_SUPPORT_MACHO_H
 
-#include "Compiler.h"
-#include "DataTypes.h"
-#include "Host.h"
+#include "llvm/Support/Compiler.h"
+#include "llvm/Support/DataTypes.h"
+#include "llvm/Support/Host.h"
 
 namespace llvm {
   namespace MachO {
@@ -132,9 +132,7 @@ namespace llvm {
       LC_DYLIB_CODE_SIGN_DRS  = 0x0000002Bu,
       LC_ENCRYPTION_INFO_64   = 0x0000002Cu,
       LC_LINKER_OPTION        = 0x0000002Du,
-      LC_LINKER_OPTIMIZATION_HINT = 0x0000002Eu,
-      LC_VERSION_MIN_TVOS     = 0x0000002Fu,
-      LC_VERSION_MIN_WATCHOS  = 0x00000030u,
+      LC_LINKER_OPTIMIZATION_HINT = 0x0000002Eu
     };
 
     enum : uint32_t {
@@ -143,6 +141,7 @@ namespace llvm {
       SG_FVMLIB              = 0x2u,
       SG_NORELOC             = 0x4u,
       SG_PROTECTED_VERSION_1 = 0x8u,
+
 
       // Constant masks for the "flags" field in llvm::MachO::section and
       // llvm::MachO::section_64
@@ -335,6 +334,7 @@ namespace llvm {
       EXPORT_SYMBOL_FLAGS_KIND_ABSOLUTE       = 0x02u
     };
 
+
     enum {
       // Constant masks for the "n_type" field in llvm::MachO::nlist and
       // llvm::MachO::nlist_64
@@ -385,7 +385,7 @@ namespace llvm {
       SELF_LIBRARY_ORDINAL   = 0x0,
       MAX_LIBRARY_ORDINAL    = 0xfd,
       DYNAMIC_LOOKUP_ORDINAL = 0xfe,
-      EXECUTABLE_ORDINAL     = 0xff
+      EXECUTABLE_ORDINAL     = 0xff 
     };
 
     enum StabType {
@@ -506,6 +506,7 @@ namespace llvm {
       // Must be followed by ARM64_RELOC_PAGE21 or ARM64_RELOC_PAGEOFF12.
       ARM64_RELOC_ADDEND              = 10,
 
+
       // Constant values for the r_type field in an x86_64 architecture
       // llvm::MachO::relocation_info or llvm::MachO::scattered_relocation_info
       // structure
@@ -528,6 +529,7 @@ namespace llvm {
       VM_PROT_WRITE   = 0x2,
       VM_PROT_EXECUTE = 0x4
     };
+
 
     // Structs from <mach-o/loader.h>
 
@@ -782,6 +784,7 @@ namespace llvm {
                flags:8;
     };
 
+
     struct twolevel_hints_command {
       uint32_t cmd;
       uint32_t cmdsize;
@@ -921,6 +924,7 @@ namespace llvm {
       uint64_t stacksize;
     };
 
+
     // Structs from <mach-o/fat.h>
     struct fat_header {
       uint32_t magic;
@@ -990,6 +994,7 @@ namespace llvm {
       uint16_t n_desc;
       uint64_t n_value;
     };
+
 
     // Byte order swapping functions for MachO structs
 

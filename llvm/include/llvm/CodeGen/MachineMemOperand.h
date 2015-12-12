@@ -27,7 +27,6 @@ namespace llvm {
 class FoldingSetNodeID;
 class MDNode;
 class raw_ostream;
-class MachineFunction;
 class ModuleSlotTracker;
 
 /// MachinePointerInfo - This class contains a discriminated union of
@@ -63,23 +62,22 @@ struct MachinePointerInfo {
 
   /// getConstantPool - Return a MachinePointerInfo record that refers to the
   /// constant pool.
-  static MachinePointerInfo getConstantPool(MachineFunction &MF);
+  static MachinePointerInfo getConstantPool();
 
   /// getFixedStack - Return a MachinePointerInfo record that refers to the
   /// the specified FrameIndex.
-  static MachinePointerInfo getFixedStack(MachineFunction &MF, int FI,
-                                          int64_t Offset = 0);
+  static MachinePointerInfo getFixedStack(int FI, int64_t offset = 0);
 
   /// getJumpTable - Return a MachinePointerInfo record that refers to a
   /// jump table entry.
-  static MachinePointerInfo getJumpTable(MachineFunction &MF);
+  static MachinePointerInfo getJumpTable();
 
   /// getGOT - Return a MachinePointerInfo record that refers to a
   /// GOT entry.
-  static MachinePointerInfo getGOT(MachineFunction &MF);
+  static MachinePointerInfo getGOT();
 
   /// getStack - stack pointer relative access.
-  static MachinePointerInfo getStack(MachineFunction &MF, int64_t Offset);
+  static MachinePointerInfo getStack(int64_t Offset);
 };
 
 

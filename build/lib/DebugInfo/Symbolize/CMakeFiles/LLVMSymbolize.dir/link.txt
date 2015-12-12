@@ -1,2 +1,0 @@
-/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar cq ../../libLLVMSymbolize.a  CMakeFiles/LLVMSymbolize.dir/DIPrinter.cpp.o CMakeFiles/LLVMSymbolize.dir/SymbolizableObjectFile.cpp.o CMakeFiles/LLVMSymbolize.dir/Symbolize.cpp.o
-/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib ../../libLLVMSymbolize.a

@@ -15,8 +15,8 @@
 #ifndef LLVM_SUPPORT_SWAPBYTEORDER_H
 #define LLVM_SUPPORT_SWAPBYTEORDER_H
 
-#include "Compiler.h"
-#include "DataTypes.h"
+#include "llvm/Support/Compiler.h"
+#include "llvm/Support/DataTypes.h"
 #include <cstddef>
 #include <limits>
 

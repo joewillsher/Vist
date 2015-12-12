@@ -14,7 +14,7 @@
 #ifndef LLVM_SUPPORT_ATOMIC_H
 #define LLVM_SUPPORT_ATOMIC_H
 
-#include "DataTypes.h"
+#include "llvm/Support/DataTypes.h"
 
 namespace llvm {
   namespace sys {

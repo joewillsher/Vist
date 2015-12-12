@@ -15,7 +15,6 @@
 #define LLVM_TRANSFORMS_UTILS_MODULEUTILS_H
 
 #include "llvm/ADT/ArrayRef.h"
-#include "llvm/ADT/StringRef.h"
 #include <utility> // for std::pair
 
 namespace llvm {
@@ -57,8 +56,7 @@ Function *checkSanitizerInterfaceFunction(Constant *FuncOrBitcast);
 /// respectively.
 std::pair<Function *, Function *> createSanitizerCtorAndInitFunctions(
     Module &M, StringRef CtorName, StringRef InitName,
-    ArrayRef<Type *> InitArgTypes, ArrayRef<Value *> InitArgs,
-    StringRef VersionCheckName = StringRef());
+    ArrayRef<Type *> InitArgTypes, ArrayRef<Value *> InitArgs);
 } // End llvm namespace
 
 #endif //  LLVM_TRANSFORMS_UTILS_MODULEUTILS_H

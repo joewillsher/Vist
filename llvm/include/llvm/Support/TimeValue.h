@@ -14,7 +14,7 @@
 #ifndef LLVM_SUPPORT_TIMEVALUE_H
 #define LLVM_SUPPORT_TIMEVALUE_H
 
-#include "DataTypes.h"
+#include "llvm/Support/DataTypes.h"
 #include <string>
 
 namespace llvm {

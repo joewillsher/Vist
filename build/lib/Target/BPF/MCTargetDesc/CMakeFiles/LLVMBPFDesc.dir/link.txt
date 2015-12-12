@@ -1,2 +1,0 @@
-/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar cq ../../../libLLVMBPFDesc.a  CMakeFiles/LLVMBPFDesc.dir/BPFMCTargetDesc.cpp.o CMakeFiles/LLVMBPFDesc.dir/BPFAsmBackend.cpp.o CMakeFiles/LLVMBPFDesc.dir/BPFMCCodeEmitter.cpp.o CMakeFiles/LLVMBPFDesc.dir/BPFELFObjectWriter.cpp.o
-/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib ../../../libLLVMBPFDesc.a

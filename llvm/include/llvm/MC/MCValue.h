@@ -35,6 +35,10 @@ class raw_ostream;
 /// relocation modifiers apply to the closest symbol or the whole
 /// expression.
 ///
+/// In the general form, SymbolB can only be defined if SymbolA is, and both
+/// must be in the same (non-external) section. The latter constraint is not
+/// enforced, since a symbol's section may not be known at construction.
+///
 /// Note that this class must remain a simple POD value class, because we need
 /// it to live in unions etc.
 class MCValue {
@@ -63,6 +67,7 @@ public:
                      const MCSymbolRefExpr *SymB = nullptr,
                      int64_t Val = 0, uint32_t RefKind = 0) {
     MCValue R;
+    assert((!SymB || SymA) && "Invalid relocatable MCValue!");
     R.Cst = Val;
     R.SymA = SymA;
     R.SymB = SymB;

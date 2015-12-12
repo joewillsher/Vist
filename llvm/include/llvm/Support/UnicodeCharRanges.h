@@ -11,11 +11,11 @@
 
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/SmallPtrSet.h"
-#include "Compiler.h"
-#include "Debug.h"
-#include "Mutex.h"
-#include "MutexGuard.h"
-#include "raw_ostream.h"
+#include "llvm/Support/Compiler.h"
+#include "llvm/Support/Debug.h"
+#include "llvm/Support/Mutex.h"
+#include "llvm/Support/MutexGuard.h"
+#include "llvm/Support/raw_ostream.h"
 #include <algorithm>
 
 namespace llvm {
@@ -51,11 +51,6 @@ public:
   /// the constructor, so it makes sense to create as few UnicodeCharSet
   /// instances per each array of ranges, as possible.
 #ifdef NDEBUG
-
-  // FIXME: This could use constexpr + static_assert. This way we
-  // may get rid of NDEBUG in this header. Unfortunately there are some
-  // problems to get this working with MSVC 2013. Change this when
-  // the support for MSVC 2013 is dropped.
   LLVM_CONSTEXPR UnicodeCharSet(CharRanges Ranges) : Ranges(Ranges) {}
 #else
   UnicodeCharSet(CharRanges Ranges) : Ranges(Ranges) {

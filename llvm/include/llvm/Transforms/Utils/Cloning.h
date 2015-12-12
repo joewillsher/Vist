@@ -20,11 +20,9 @@
 
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/Twine.h"
-#include "llvm/Analysis/AliasAnalysis.h"
 #include "llvm/IR/ValueHandle.h"
 #include "llvm/IR/ValueMap.h"
 #include "llvm/Transforms/Utils/ValueMapper.h"
-#include <functional>
 
 namespace llvm {
 
@@ -45,6 +43,7 @@ class DataLayout;
 class Loop;
 class LoopInfo;
 class AllocaInst;
+class AliasAnalysis;
 class AssumptionCacheTracker;
 class DominatorTree;
 
@@ -52,14 +51,6 @@ class DominatorTree;
 ///
 Module *CloneModule(const Module *M);
 Module *CloneModule(const Module *M, ValueToValueMapTy &VMap);
-
-/// Return a copy of the specified module. The ShouldCloneDefinition function
-/// controls whether a specific GlobalValue's definition is cloned. If the
-/// function returns false, the module copy will contain an external reference
-/// in place of the global definition.
-Module *
-CloneModule(const Module *M, ValueToValueMapTy &VMap,
-            std::function<bool(const GlobalValue *)> ShouldCloneDefinition);
 
 /// ClonedCodeInfo - This struct can be used to capture information about code
 /// being cloned, while it is being cloned.
@@ -73,10 +64,6 @@ struct ClonedCodeInfo {
   /// the entry block or they are in the entry block but are not a constant
   /// size.
   bool ContainsDynamicAllocas;
-
-  /// All cloned call sites that have operand bundles attached are appended to
-  /// this vector.
-  std::vector<AssertingVH<Instruction>> OperandBundleCallSites;
 
   ClonedCodeInfo() : ContainsCalls(false), ContainsDynamicAllocas(false) {}
 };
@@ -206,12 +193,14 @@ void CloneAndPruneFunctionInto(Function *NewFunc, const Function *OldFunc,
 class InlineFunctionInfo {
 public:
   explicit InlineFunctionInfo(CallGraph *cg = nullptr,
+                              AliasAnalysis *AA = nullptr,
                               AssumptionCacheTracker *ACT = nullptr)
-      : CG(cg), ACT(ACT) {}
+      : CG(cg), AA(AA), ACT(ACT) {}
 
   /// CG - If non-null, InlineFunction will update the callgraph to reflect the
   /// changes it makes.
   CallGraph *CG;
+  AliasAnalysis *AA;
   AssumptionCacheTracker *ACT;
 
   /// StaticAllocas - InlineFunction fills this in with all static allocas that
@@ -239,11 +228,11 @@ public:
 /// function by one level.
 ///
 bool InlineFunction(CallInst *C, InlineFunctionInfo &IFI,
-                    AAResults *CalleeAAR = nullptr, bool InsertLifetime = true);
+                    bool InsertLifetime = true);
 bool InlineFunction(InvokeInst *II, InlineFunctionInfo &IFI,
-                    AAResults *CalleeAAR = nullptr, bool InsertLifetime = true);
+                    bool InsertLifetime = true);
 bool InlineFunction(CallSite CS, InlineFunctionInfo &IFI,
-                    AAResults *CalleeAAR = nullptr, bool InsertLifetime = true);
+                    bool InsertLifetime = true);
 
 /// \brief Clones a loop \p OrigLoop.  Returns the loop and the blocks in \p
 /// Blocks.

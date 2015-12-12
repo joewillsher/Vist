@@ -39,8 +39,8 @@
 #define LLVM_SUPPORT_YAMLPARSER_H
 
 #include "llvm/ADT/StringRef.h"
-#include "Allocator.h"
-#include "SMLoc.h"
+#include "llvm/Support/Allocator.h"
+#include "llvm/Support/SMLoc.h"
 #include <limits>
 #include <map>
 #include <utility>
@@ -145,12 +145,11 @@ public:
   unsigned int getType() const { return TypeID; }
 
   void *operator new(size_t Size, BumpPtrAllocator &Alloc,
-                     size_t Alignment = 16) LLVM_NOEXCEPT {
+                     size_t Alignment = 16) throw() {
     return Alloc.Allocate(Size, Alignment);
   }
 
-  void operator delete(void *Ptr, BumpPtrAllocator &Alloc,
-                       size_t Size) LLVM_NOEXCEPT {
+  void operator delete(void *Ptr, BumpPtrAllocator &Alloc, size_t Size) throw() {
     Alloc.Deallocate(Ptr, Size);
   }
 
@@ -158,7 +157,7 @@ protected:
   std::unique_ptr<Document> &Doc;
   SMRange SourceRange;
 
-  void operator delete(void *) LLVM_NOEXCEPT = delete;
+  void operator delete(void *) throw() {}
 
   ~Node() = default;
 

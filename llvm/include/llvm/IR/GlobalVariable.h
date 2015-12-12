@@ -29,10 +29,11 @@ namespace llvm {
 
 class Module;
 class Constant;
-template <typename ValueSubClass> class SymbolTableListTraits;
+template<typename ValueSubClass, typename ItemParentClass>
+  class SymbolTableListTraits;
 
 class GlobalVariable : public GlobalObject, public ilist_node<GlobalVariable> {
-  friend class SymbolTableListTraits<GlobalVariable>;
+  friend class SymbolTableListTraits<GlobalVariable, Module>;
   void *operator new(size_t, unsigned) = delete;
   void operator=(const GlobalVariable &) = delete;
   GlobalVariable(const GlobalVariable &) = delete;

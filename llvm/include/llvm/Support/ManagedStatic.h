@@ -14,9 +14,9 @@
 #ifndef LLVM_SUPPORT_MANAGEDSTATIC_H
 #define LLVM_SUPPORT_MANAGEDSTATIC_H
 
-#include "Atomic.h"
-#include "Compiler.h"
-#include "Threading.h"
+#include "llvm/Support/Atomic.h"
+#include "llvm/Support/Threading.h"
+#include "llvm/Support/Valgrind.h"
 
 namespace llvm {
 

@@ -22,6 +22,7 @@
 
 namespace llvm {
 
+class AliasAnalysis;
 class MemoryDependenceAnalysis;
 class DominatorTree;
 class LoopInfo;
@@ -39,7 +40,7 @@ void DeleteDeadBlock(BasicBlock *BB);
 /// any single-entry PHI nodes in it, fold them away.  This handles the case
 /// when all entries to the PHI nodes in a block are guaranteed equal, such as
 /// when the block has exactly one predecessor.
-void FoldSingleEntryPHINodes(BasicBlock *BB,
+void FoldSingleEntryPHINodes(BasicBlock *BB, AliasAnalysis *AA = nullptr,
                              MemoryDependenceAnalysis *MemDep = nullptr);
 
 /// DeleteDeadPHIs - Examine each PHI in the given block and delete it if it
@@ -53,6 +54,7 @@ bool DeleteDeadPHIs(BasicBlock *BB, const TargetLibraryInfo *TLI = nullptr);
 /// if possible.  The return value indicates success or failure.
 bool MergeBlockIntoPredecessor(BasicBlock *BB, DominatorTree *DT = nullptr,
                                LoopInfo *LI = nullptr,
+                               AliasAnalysis *AA = nullptr,
                                MemoryDependenceAnalysis *MemDep = nullptr);
 
 // ReplaceInstWithValue - Replace all uses of an instruction (specified by BI)
@@ -80,15 +82,27 @@ void ReplaceInstWithInst(Instruction *From, Instruction *To);
 /// This provides a builder interface for overriding the default options used
 /// during critical edge splitting.
 struct CriticalEdgeSplittingOptions {
+  AliasAnalysis *AA;
   DominatorTree *DT;
   LoopInfo *LI;
   bool MergeIdenticalEdges;
   bool DontDeleteUselessPHIs;
   bool PreserveLCSSA;
 
-  CriticalEdgeSplittingOptions(DominatorTree *DT = nullptr,
+  CriticalEdgeSplittingOptions()
+      : AA(nullptr), DT(nullptr), LI(nullptr), MergeIdenticalEdges(false),
+        DontDeleteUselessPHIs(false), PreserveLCSSA(false) {}
+
+  /// \brief Basic case of setting up all the analysis.
+  CriticalEdgeSplittingOptions(AliasAnalysis *AA, DominatorTree *DT = nullptr,
                                LoopInfo *LI = nullptr)
-      : DT(DT), LI(LI), MergeIdenticalEdges(false),
+      : AA(AA), DT(DT), LI(LI), MergeIdenticalEdges(false),
+        DontDeleteUselessPHIs(false), PreserveLCSSA(false) {}
+
+  /// \brief A common pattern is to preserve the dominator tree and loop
+  /// info but not care about AA.
+  CriticalEdgeSplittingOptions(DominatorTree *DT, LoopInfo *LI)
+      : AA(nullptr), DT(DT), LI(LI), MergeIdenticalEdges(false),
         DontDeleteUselessPHIs(false), PreserveLCSSA(false) {}
 
   CriticalEdgeSplittingOptions &setMergeIdenticalEdges() {
@@ -200,13 +214,15 @@ BasicBlock *SplitBlock(BasicBlock *Old, Instruction *SplitPt,
 /// It will have Suffix+".split_lp". See SplitLandingPadPredecessors for more
 /// details on this case.
 ///
-/// This currently updates the LLVM IR, DominatorTree, LoopInfo, and LCCSA but
-/// no other analyses. In particular, it does not preserve LoopSimplify
-/// (because it's complicated to handle the case where one of the edges being
-/// split is an exit of a loop with other exits).
+/// This currently updates the LLVM IR, AliasAnalysis, DominatorTree,
+/// DominanceFrontier, LoopInfo, and LCCSA but no other analyses.
+/// In particular, it does not preserve LoopSimplify (because it's
+/// complicated to handle the case where one of the edges being split
+/// is an exit of a loop with other exits).
 ///
 BasicBlock *SplitBlockPredecessors(BasicBlock *BB, ArrayRef<BasicBlock *> Preds,
                                    const char *Suffix,
+                                   AliasAnalysis *AA = nullptr,
                                    DominatorTree *DT = nullptr,
                                    LoopInfo *LI = nullptr,
                                    bool PreserveLCSSA = false);
@@ -218,15 +234,17 @@ BasicBlock *SplitBlockPredecessors(BasicBlock *BB, ArrayRef<BasicBlock *> Preds,
 /// OrigBB is clone into both of the new basic blocks. The new blocks are given
 /// the suffixes 'Suffix1' and 'Suffix2', and are returned in the NewBBs vector.
 ///
-/// This currently updates the LLVM IR, DominatorTree, LoopInfo, and LCCSA but
-/// no other analyses. In particular, it does not preserve LoopSimplify
-/// (because it's complicated to handle the case where one of the edges being
-/// split is an exit of a loop with other exits).
+/// This currently updates the LLVM IR, AliasAnalysis, DominatorTree,
+/// DominanceFrontier, LoopInfo, and LCCSA but no other analyses. In particular,
+/// it does not preserve LoopSimplify (because it's complicated to handle the
+/// case where one of the edges being split is an exit of a loop with other
+/// exits).
 ///
 void SplitLandingPadPredecessors(BasicBlock *OrigBB,
                                  ArrayRef<BasicBlock *> Preds,
                                  const char *Suffix, const char *Suffix2,
                                  SmallVectorImpl<BasicBlock *> &NewBBs,
+                                 AliasAnalysis *AA = nullptr,
                                  DominatorTree *DT = nullptr,
                                  LoopInfo *LI = nullptr,
                                  bool PreserveLCSSA = false);

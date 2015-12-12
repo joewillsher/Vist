@@ -85,6 +85,8 @@ public:
     ModuleSetHandleT H =
       BaseLayer.addObjectSet(Objects, std::move(MemMgr), std::move(Resolver));
 
+    BaseLayer.takeOwnershipOfBuffers(H, std::move(Buffers));
+
     return H;
   }
 

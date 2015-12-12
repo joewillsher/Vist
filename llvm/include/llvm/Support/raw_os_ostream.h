@@ -14,7 +14,7 @@
 #ifndef LLVM_SUPPORT_RAW_OS_OSTREAM_H
 #define LLVM_SUPPORT_RAW_OS_OSTREAM_H
 
-#include "raw_ostream.h"
+#include "llvm/Support/raw_ostream.h"
 #include <iosfwd>
 
 namespace llvm {

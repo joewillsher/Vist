@@ -17,7 +17,6 @@ namespace llvm {
 class Module;
 class Function;
 class SlotTracker;
-class Value;
 
 /// Manage lifetime of a slot tracker for printing IR.
 ///
@@ -62,13 +61,6 @@ public:
   /// Purge the currently incorporated function and incorporate \c F.  If \c F
   /// is currently incorporated, this is a no-op.
   void incorporateFunction(const Function &F);
-
-  /// Return the slot number of the specified local value.
-  ///
-  /// A function that defines this value should be incorporated prior to calling
-  /// this method.
-  /// Return -1 if the value is not in the function's SlotTracker.
-  int getLocalSlot(const Value *V);
 };
 
 } // end namespace llvm

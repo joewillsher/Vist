@@ -336,8 +336,8 @@ public:
 
   /// \brief Return true if this instruction is convergent.
   ///
-  /// Convergent instructions may not be made control-dependent on any
-  /// additional values.
+  /// Convergent instructions may only be moved to locations that are
+  /// control-equivalent to their original positions.
   bool isConvergent() const { return Flags & (1 << MCID::Convergent); }
 
   //===--------------------------------------------------------------------===//
