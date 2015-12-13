@@ -257,6 +257,12 @@ extension Void: IRGenerator {
     }
 }
 
+extension Comment: IRGenerator {
+    func codeGen(scope: Scope) throws -> LLVMValueRef {
+        return nil
+    }
+}
+
 
 //-------------------------------------------------------------------------------------------------------------------------
 //  MARK:                                                 Functions
@@ -394,6 +400,10 @@ extension Block: BasicBlockGenerator {
             try exp.codeGen(scope)
         }
         
+        if expressions.isEmpty {
+            LLVMBuildRetVoid(builder)
+        }
+        
         // reset builder head tp parent scope
         LLVMPositionBuilderAtEnd(builder, scope.parentScope!.block)
         return entryBlock
@@ -524,61 +534,8 @@ extension AST {
         for exp in expressions {
             try exp.codeGen(scope)
         }
-        
-        // TODO: Move main function to the end of funtions
-        
+                
         LLVMBuildRet(builder, LLVMConstInt(LLVMInt32Type(), 0, LLVMBool(false)))
-        
-        
-        
-//        
-//        let engine = UnsafeMutablePointer<LLVMExecutionEngineRef>.alloc(alignof(LLVMExecutionEngineRef))
-//        var error =  UnsafeMutablePointer<UnsafeMutablePointer<Int8>>.alloc(alignof(UnsafeMutablePointer<Int8>))
-//        
-//        LLVMLinkInInterpreter()
-//        
-//        if LLVMCreateInterpreterForModule(engine, module, error) != 0 {
-//            print("can't initialize engine: \(String.fromCString(error.memory)!)")
-//            // TODO: cleanup all allocated memory ;)
-//            exit(1)
-//        }
-//        
-//        let x: UInt64 = 10
-//        let y: UInt64 = 25
-//        
-//        let argsRef = [LLVMTypeRef]().ptr()
-//        defer { argsRef.dealloc(0) }
-//        
-//        let result = LLVMRunFunction(engine.memory, mainFunction, UInt32(1), argsRef)
-//        
-//        print("\(x) + \(y) = \(LLVMGenericValueToInt(result, 0))")
-//        
-//
-        
-        
-        
-        /*
-        
-        let engine = UnsafeMutablePointer<LLVMExecutionEngineRef>.alloc(alignof(LLVMExecutionEngineRef))
-        var error =  UnsafeMutablePointer<UnsafeMutablePointer<Int8>>.alloc(alignof(UnsafeMutablePointer<Int8>))
-        
-        LLVMLinkInInterpreter()
-        
-        if LLVMCreateInterpreterForModule(engine, module, error) != 0 {
-            print("can't initialize engine: \(String.fromCString(error.memory)!)")
-            // TODO: cleanup all allocated memory ;)
-            exit(1)
-        }
-        
-        let arg = [LLVMConstInt(LLVMInt32Type(), 1, LLVMBool(false))].ptr()
-
-        LLVMRunFunction(COpaquePointer(engine), mainFunction, 1, arg)
-        
-        
-        */
-        
-        
-        
         
         return (module, mainFunction)
     }

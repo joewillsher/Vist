@@ -1,8 +1,10 @@
-let a = 2
-
-func foo: () = { return Void }
+func foo: () = { }
 func bar: () -> Int = { return 1 }
 
-foo()
 let b = bar()
-//print()
+
+if b < 0 {
+    print()
+} else {
+    foo()
+}

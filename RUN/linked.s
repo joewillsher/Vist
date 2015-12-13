@@ -34,11 +34,14 @@ Ltmp4:
 Ltmp5:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
-	movq	$2, -8(%rbp)
-	callq	_foo
 	callq	_bar
-	movq	%rax, -16(%rbp)
+	movq	%rax, -8(%rbp)
+	testq	%rax, %rax
+	jns	LBB1_2
+## BB#1:                                ## %then0
 	callq	_print
+LBB1_2:                                 ## %cont1
+	callq	_foo
 	xorl	%eax, %eax
 	addq	$16, %rsp
 	popq	%rbp

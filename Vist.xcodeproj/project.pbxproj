@@ -50,7 +50,7 @@
 		D46AD8861B8245A000C95574 /* Parser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Parser.swift; sourceTree = "<group>"; };
 		D46AD8881B8246C300C95574 /* Expression.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Expression.swift; sourceTree = "<group>"; };
 		D47E66581B88D9A20051D586 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		D47FF07A1B812052003F9920 /* Vist */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Vist; sourceTree = BUILT_PRODUCTS_DIR; };
+		D47FF07A1B812052003F9920 /* vist */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = vist; sourceTree = BUILT_PRODUCTS_DIR; };
 		D47FF07D1B812052003F9920 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		D485DD251C1667E900B72F81 /* VistTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VistTest.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D485DD271C1667E900B72F81 /* VistTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VistTest.swift; sourceTree = "<group>"; };
@@ -101,7 +101,7 @@
 		D47FF07B1B812052003F9920 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D47FF07A1B812052003F9920 /* Vist */,
+				D47FF07A1B812052003F9920 /* vist */,
 				D485DD251C1667E900B72F81 /* VistTest.xctest */,
 			);
 			name = Products;
@@ -162,9 +162,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		D47FF0791B812052003F9920 /* Vist */ = {
+		D47FF0791B812052003F9920 /* vist */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D47FF0811B812052003F9920 /* Build configuration list for PBXNativeTarget "Vist" */;
+			buildConfigurationList = D47FF0811B812052003F9920 /* Build configuration list for PBXNativeTarget "vist" */;
 			buildPhases = (
 				D47FF0761B812052003F9920 /* Sources */,
 				D47FF0771B812052003F9920 /* Frameworks */,
@@ -174,9 +174,9 @@
 			);
 			dependencies = (
 			);
-			name = Vist;
+			name = vist;
 			productName = Vist;
-			productReference = D47FF07A1B812052003F9920 /* Vist */;
+			productReference = D47FF07A1B812052003F9920 /* vist */;
 			productType = "com.apple.product-type.tool";
 		};
 		D485DD241C1667E900B72F81 /* VistTest */ = {
@@ -226,7 +226,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D47FF0791B812052003F9920 /* Vist */,
+				D47FF0791B812052003F9920 /* vist */,
 				D485DD241C1667E900B72F81 /* VistTest */,
 			);
 		};
@@ -479,7 +479,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D47FF0811B812052003F9920 /* Build configuration list for PBXNativeTarget "Vist" */ = {
+		D47FF0811B812052003F9920 /* Build configuration list for PBXNativeTarget "vist" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D47FF0821B812052003F9920 /* Debug */,

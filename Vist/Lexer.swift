@@ -310,7 +310,7 @@ struct Lexer {
         
         do {
             try resetContext()
-        } catch { print(error) }
+        } catch { }
         
         return tokens + [(Token.EOF, SourceLoc.zero())]
     }
