@@ -1,8 +1,8 @@
 	.section	__TEXT,__text,regular,pure_instructions
 	.macosx_version_min 10, 11
-	.globl	__Z5printv
+	.globl	_print
 	.align	4, 0x90
-__Z5printv:                             ## @_Z5printv
+_print:                                 ## @print
 	.cfi_startproc
 ## BB#0:
 	pushq	%rbp
@@ -38,7 +38,7 @@ Ltmp5:
 	callq	_foo
 	callq	_bar
 	movq	%rax, -16(%rbp)
-	callq	__Z5printv
+	callq	_print
 	xorl	%eax, %eax
 	addq	$16, %rsp
 	popq	%rbp

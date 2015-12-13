@@ -5,7 +5,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 @.str = private unnamed_addr constant [9 x i8] c"sup meme\00", align 1
 
 ; Function Attrs: ssp uwtable
-define void @_Z5printv() #0 {
+define void @print() #0 {
   %1 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([9 x i8]* @.str, i32 0, i32 0))
   ret void
 }

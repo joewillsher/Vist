@@ -1,6 +1,6 @@
 ; ModuleID = 'vist_module'
 
-declare void @_Z5printv()
+declare void @print()
 
 define i32 @main() {
 entry:
@@ -10,7 +10,7 @@ entry:
   %0 = call i64 @bar()
   %b = alloca i64
   store i64 %0, i64* %b
-  call void @_Z5printv()
+  call void @print()
   ret i32 0
 }
 

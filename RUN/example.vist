@@ -5,4 +5,4 @@ func bar: () -> Int = { return 1 }
 
 foo()
 let b = bar()
-_Z5printv()
+//print()

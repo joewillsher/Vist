@@ -16,7 +16,9 @@ func linkModule(inout module: LLVMModuleRef, withFile: String) {
     
     // for now just add the print function
     let t = LLVMFunctionType(LLVMVoidType(), [LLVMTypeRef]().ptr(), 0, LLVMBool(false))
-    LLVMAddFunction(module, "_Z5printv", t)
+    LLVMAddFunction(module, "print", t)
+    
+    
     
     
 }

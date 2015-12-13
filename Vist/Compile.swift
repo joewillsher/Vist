@@ -73,11 +73,11 @@ func compileDocument(fileName: String) throws {
     compileIRTask.launch()
     compileIRTask.waitUntilExit()
     
-    
     let asm = try! String(contentsOfFile: "linked.s", encoding: NSUTF8StringEncoding)
     print(asm)
 
-    print("\n\n------------------BUILD------------------\n")
+    
+    
     
     let compileASMTask = NSTask()
     compileASMTask.currentDirectoryPath = "\(SRCROOT)/RUN"
@@ -96,8 +96,6 @@ func compileDocument(fileName: String) throws {
     
     runTask.launch()
     runTask.waitUntilExit()
-
-    print("\n\n-------------------END-------------------\n")
     
 }
 

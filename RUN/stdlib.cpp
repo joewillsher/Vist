@@ -8,7 +8,11 @@
 
 #include <stdio.h>
 
-void print()
-{
-    printf("sup meme");
-};
+extern "C" {
+    
+    void print()
+    {
+        printf("sup meme");
+    };
+    
+}
