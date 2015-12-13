@@ -110,6 +110,8 @@ struct Comment: Expression {
     let str: String
 }
 
+struct Void: Expression {}
+
 class Variable: Expression {
     let name: String?
     let isMutable: Bool = false

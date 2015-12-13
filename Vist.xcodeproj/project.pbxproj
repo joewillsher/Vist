@@ -21,8 +21,8 @@
 		D485DD281C1667E900B72F81 /* VistTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D485DD271C1667E900B72F81 /* VistTest.swift */; };
 		D49410831C124B4E0029BF3D /* Print.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49410821C124B4E0029BF3D /* Print.swift */; };
 		D4C85BCC1BF8E00100731F34 /* CodeGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C85BCB1BF8E00100731F34 /* CodeGen.swift */; };
-		D4DB9D181C1CABAD00503153 /* example.ll in Sources */ = {isa = PBXBuildFile; fileRef = D4DB9D171C1CABAD00503153 /* example.ll */; };
-		D4DB9D1A1C1CABB300503153 /* example.s in Sources */ = {isa = PBXBuildFile; fileRef = D4DB9D191C1CABB300503153 /* example.s */; };
+		D4DB9D611C1DED5C00503153 /* Link.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4DB9D601C1DED5C00503153 /* Link.swift */; };
+		D4DB9D631C1DF10A00503153 /* Run.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4DB9D621C1DF10A00503153 /* Run.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -58,8 +58,14 @@
 		D49410821C124B4E0029BF3D /* Print.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Print.swift; sourceTree = "<group>"; };
 		D4B1AB991B87D73B00E1538D /* example.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vist; path = RUN/example.vist; sourceTree = "<group>"; };
 		D4C85BCB1BF8E00100731F34 /* CodeGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CodeGen.swift; sourceTree = "<group>"; };
-		D4DB9D171C1CABAD00503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; };
-		D4DB9D191C1CABB300503153 /* example.s */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; name = example.s; path = RUN/example.s; sourceTree = "<group>"; };
+		D4DB9D5D1C1DDA1A00503153 /* stdlib.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = stdlib.cpp; path = RUN/stdlib.cpp; sourceTree = SOURCE_ROOT; };
+		D4DB9D601C1DED5C00503153 /* Link.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Link.swift; sourceTree = "<group>"; };
+		D4DB9D621C1DF10A00503153 /* Run.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Run.swift; sourceTree = "<group>"; };
+		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; };
+		D4DB9D681C1DFFCC00503153 /* stdlib.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib.ll; path = RUN/stdlib.ll; sourceTree = "<group>"; };
+		D4DB9D691C1DFFDA00503153 /* linked.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = linked.ll; path = RUN/linked.ll; sourceTree = "<group>"; };
+		D4DB9D6A1C1DFFE400503153 /* linked.s */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; name = linked.s; path = RUN/linked.s; sourceTree = "<group>"; };
+		D4DB9D6C1C1E01D600503153 /* exec */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = exec; path = RUN/exec; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,9 +89,8 @@
 		D47FF0711B812052003F9920 = {
 			isa = PBXGroup;
 			children = (
-				D4B1AB991B87D73B00E1538D /* example.vist */,
-				D4DB9D171C1CABAD00503153 /* example.ll */,
-				D4DB9D191C1CABB300503153 /* example.s */,
+				D4DB9D641C1DFB8700503153 /* Source */,
+				D4DB9D651C1DFF9B00503153 /* Compile pipeline */,
 				D47E66581B88D9A20051D586 /* README.md */,
 				D47FF07C1B812052003F9920 /* Vist */,
 				D485DD261C1667E900B72F81 /* VistTest */,
@@ -114,6 +119,8 @@
 				D46AD8861B8245A000C95574 /* Parser.swift */,
 				D4C85BCB1BF8E00100731F34 /* CodeGen.swift */,
 				D465C6571C187639001A008C /* Scope.swift */,
+				D4DB9D601C1DED5C00503153 /* Link.swift */,
+				D4DB9D621C1DF10A00503153 /* Run.swift */,
 				D4249F531C19F16A00B15530 /* NameMangle.swift */,
 				D45E8F141C161E0F00D74430 /* LLVMHelp.swift */,
 				D46AD87E1B81EAA400C95574 /* Vist-Bridging-Header.h */,
@@ -129,6 +136,27 @@
 				D485DD291C1667E900B72F81 /* Info.plist */,
 			);
 			path = VistTest;
+			sourceTree = "<group>";
+		};
+		D4DB9D641C1DFB8700503153 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				D4DB9D5D1C1DDA1A00503153 /* stdlib.cpp */,
+				D4B1AB991B87D73B00E1538D /* example.vist */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		D4DB9D651C1DFF9B00503153 /* Compile pipeline */ = {
+			isa = PBXGroup;
+			children = (
+				D4DB9D661C1DFFB300503153 /* example.ll */,
+				D4DB9D681C1DFFCC00503153 /* stdlib.ll */,
+				D4DB9D691C1DFFDA00503153 /* linked.ll */,
+				D4DB9D6A1C1DFFE400503153 /* linked.s */,
+				D4DB9D6C1C1E01D600503153 /* exec */,
+			);
+			name = "Compile pipeline";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -221,6 +249,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D46AD8891B8246C300C95574 /* Expression.swift in Sources */,
+				D4DB9D611C1DED5C00503153 /* Link.swift in Sources */,
 				D47FF07E1B812052003F9920 /* main.swift in Sources */,
 				D46AD8831B82174E00C95574 /* Lexer.swift in Sources */,
 				D49410831C124B4E0029BF3D /* Print.swift in Sources */,
@@ -228,11 +257,10 @@
 				D47E66591B88D9A20051D586 /* README.md in Sources */,
 				D4C85BCC1BF8E00100731F34 /* CodeGen.swift in Sources */,
 				D44FB8B01C1657E100E6DD33 /* Compile.swift in Sources */,
-				D4DB9D181C1CABAD00503153 /* example.ll in Sources */,
 				D4249F541C19F16A00B15530 /* NameMangle.swift in Sources */,
-				D4DB9D1A1C1CABB300503153 /* example.s in Sources */,
 				D465C6581C187639001A008C /* Scope.swift in Sources */,
 				D45E8F151C161E0F00D74430 /* LLVMHelp.swift in Sources */,
+				D4DB9D631C1DF10A00503153 /* Run.swift in Sources */,
 				D46AD8851B82186600C95574 /* Token.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -336,24 +364,35 @@
 					__STDC_CONSTANT_MACROS,
 					__STDC_LIMIT_MACROS,
 					__STDC_FORMAT_MACROS,
-					_GNU_SOURCE,
 				);
-				HEADER_SEARCH_PATHS = /Users/JoeWillsher/Developer/Vist/llvm/include;
+				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
+				"LD_MAP_FILE_PATH[arch=*]" = "$(TARGET_TEMP_DIR)/$(PRODUCT_NAME)-LinkMap-$(CURRENT_VARIANT)-$(CURRENT_ARCH).txt";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				LIBRARY_SEARCH_PATHS = (
-					/Users/JoeWillsher/Developer/Vist/llvm/lib,
-					/Users/JoeWillsher/Developer/Vist/build/lib,
-				);
+				LIBRARY_SEARCH_PATHS = /usr/local/opt/llvm/lib;
 				OTHER_LDFLAGS = (
+					"-lLLVMInterpreter",
+					"-lLLVMExecutionEngine",
+					"-lLLVMRuntimeDyld",
+					"-lLLVMObject",
+					"-lLLVMMCParser",
+					"-lLLVMCodeGen",
+					"-lLLVMTarget",
+					"-lLLVMScalarOpts",
+					"-lLLVMInstCombine",
+					"-lLLVMInstrumentation",
+					"-lLLVMTransformUtils",
+					"-lLLVMMC",
+					"-lLLVMBitWriter",
+					"-lLLVMBitReader",
+					"-lLLVMAnalysis",
 					"-lLLVMCore",
 					"-lLLVMSupport",
-					"-lz",
-					"-lpthread",
-					"-ledit",
+					"-lc++",
 					"-lcurses",
-					"-lm",
 				);
+				PRELINK_LIBS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REEXPORTED_LIBRARY_NAMES = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Vist/Vist-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				USER_HEADER_SEARCH_PATHS = "";
@@ -370,24 +409,34 @@
 					__STDC_CONSTANT_MACROS,
 					__STDC_LIMIT_MACROS,
 					__STDC_FORMAT_MACROS,
-					_GNU_SOURCE,
 				);
-				HEADER_SEARCH_PATHS = /Users/JoeWillsher/Developer/Vist/llvm/include;
+				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				LIBRARY_SEARCH_PATHS = (
-					/Users/JoeWillsher/Developer/Vist/llvm/lib,
-					/Users/JoeWillsher/Developer/Vist/build/lib,
-				);
+				LIBRARY_SEARCH_PATHS = /usr/local/opt/llvm/lib;
 				OTHER_LDFLAGS = (
+					"-lLLVMInterpreter",
+					"-lLLVMExecutionEngine",
+					"-lLLVMRuntimeDyld",
+					"-lLLVMObject",
+					"-lLLVMMCParser",
+					"-lLLVMCodeGen",
+					"-lLLVMTarget",
+					"-lLLVMScalarOpts",
+					"-lLLVMInstCombine",
+					"-lLLVMInstrumentation",
+					"-lLLVMTransformUtils",
+					"-lLLVMMC",
+					"-lLLVMBitWriter",
+					"-lLLVMBitReader",
+					"-lLLVMAnalysis",
 					"-lLLVMCore",
 					"-lLLVMSupport",
-					"-lz",
-					"-lpthread",
-					"-ledit",
+					"-lc++",
 					"-lcurses",
-					"-lm",
 				);
+				PRELINK_LIBS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REEXPORTED_LIBRARY_NAMES = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Vist/Vist-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				USER_HEADER_SEARCH_PATHS = "";

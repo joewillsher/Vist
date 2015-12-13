@@ -27,7 +27,7 @@ struct SourceLoc {
 enum Token {
     case Let, Var, Func, Return//, _method
     case EOF
-    case If, Else
+    case If, Else, Void
     case Assign, SqbrOpen, SqrbrClose, Comma, Period, Colon, Semicolon, OpenParen, CloseParen, Returns, Bar, OpenBrace, CloseBrace
     case InfixOperator(String), PrefixOperator(String), PostfixOperator(String)
     case Identifier(String), FloatingPoint(Double), Integer(Int), Boolean(Bool)

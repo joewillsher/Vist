@@ -35,7 +35,6 @@ private extension Array {
 
 
 
-
 //-------------------------------------------------------------------------------------------------------------------------
 //  MARK: -                                            Parser
 //-------------------------------------------------------------------------------------------------------------------------
@@ -496,6 +495,7 @@ struct Parser {
         case let .Integer(i):           return parseIntExpression(i)
         case let .FloatingPoint(x):     return parseFloatingPointExpression(x)
         case let .Str(str):             return parseStringExpression(str)
+        case     .Void:                 index++; return Void()
         case     .EOF, .CloseBrace:     index++; return EndOfScope()
         default:                        throw ParseError.NoToken(token, currentPos)
         }

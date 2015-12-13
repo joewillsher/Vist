@@ -62,6 +62,7 @@ private extension Token {
         case "return": self = .Return
         case "if": self = .If
         case "else": self = .Else
+            case "Void": self = .Void
         default: self = .Identifier(alpha)
         }
     }

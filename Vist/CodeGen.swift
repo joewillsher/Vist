@@ -56,7 +56,9 @@ private func isFloatType(t: LLVMTypeKind) -> Bool {
 extension Expression {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
-        if let x = try (self as? IRGenerator)?.codeGen(scope) { return x } else { throw IRError.NotIRGenerator }
+        if let x = try (self as? IRGenerator)?.codeGen(scope) { return x } else {
+            
+            throw IRError.NotIRGenerator }
     }
     func llvmType(scope: Scope) throws -> LLVMTypeRef {
         if let x = try (self as? IRGenerator)?.llvmType(scope) { return x } else { throw IRError.NotIRGenerator }
@@ -67,7 +69,7 @@ extension Expression {
     }
 }
 
-private extension CollectionType where
+extension CollectionType where
     Generator.Element == COpaquePointer,
     Index == Int,
     Index.Distance == Int {
@@ -249,7 +251,11 @@ extension BinaryExpression: IRGenerator {
     
 }
 
-
+extension Void: IRGenerator {
+    func llvmType(scope: Scope) throws -> LLVMTypeRef {
+        return LLVMVoidType()
+    }
+}
 
 
 //-------------------------------------------------------------------------------------------------------------------------
@@ -270,16 +276,15 @@ extension FunctionCall: IRGenerator {
         defer { argBuffer.dealloc(argCount) }
         
         guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else { throw IRError.WrongFunctionApplication(name) }
-        
+                
         // add call to IR
-        let call = LLVMBuildCall(builder, fn, argBuffer, UInt32(argCount), name)
-        
-        return call
+        return LLVMBuildCall(builder, fn, argBuffer, UInt32(argCount), "")
     }
     
     func llvmType(scope: Scope) -> LLVMTypeRef {
         let fn = LLVMGetNamedFunction(module, name)
-        return LLVMGetReturnType(fn)
+        let ty = LLVMTypeOf(fn)
+        return LLVMGetReturnType(ty)
     }
     
 }
@@ -294,8 +299,8 @@ extension FunctionType {
     
     func returnType() throws -> LLVMTypeRef {
         let res = returns.mapAs(ValueType).flatMap { typeDict[$0.name] }
-        if res.count == args.elements.count && res.count == 0 { return LLVMVoidType() }
-        if let f = res.first where res.count == args.elements.count { return f } else { throw IRError.TypeNotFound }
+        if res.count == returns.elements.count && res.count == 0 { return LLVMVoidType() }
+        if let f = res.first where res.count == returns.elements.count { return f } else { throw IRError.TypeNotFound }
     }
     
 }
@@ -357,6 +362,11 @@ extension FunctionPrototype: IRGenerator {
 extension ReturnExpression: IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
+        
+        if try expression.llvmType(scope) == LLVMVoidType() {
+            return LLVMBuildRetVoid(builder)
+        }
+        
         let v = try expression.codeGen(scope)
         return LLVMBuildRet(builder, v)
     }
@@ -490,18 +500,20 @@ extension ElseIfBlock {
 
 
 extension AST {
-    func IRGen() throws -> LLVMBasicBlockRef {
+    func IRGen() throws -> (LLVMModuleRef, LLVMValueRef) {
         
         // initialise global objects
         builder = LLVMCreateBuilder()
         module = LLVMModuleCreateWithName("vist_module")
         
+        linkModule(&module, withFile: "")
+        
         // main arguments
-        let argBuffer = [LLVMInt32Type()].ptr()
-        defer { argBuffer.dealloc(1) }
+        let argBuffer = [LLVMTypeRef]().ptr()
+        defer { argBuffer.dealloc(0) }
         
         // make main function & add to IR
-        let functionType = LLVMFunctionType(LLVMInt32Type(), argBuffer, UInt32(1), LLVMBool(false))
+        let functionType = LLVMFunctionType(LLVMInt32Type(), argBuffer, UInt32(0), LLVMBool(false))
         let mainFunction = LLVMAddFunction(module, "main", functionType)
         
         // Setup BB & scope
@@ -519,8 +531,29 @@ extension AST {
         
         
         
-        
-        
+//        
+//        let engine = UnsafeMutablePointer<LLVMExecutionEngineRef>.alloc(alignof(LLVMExecutionEngineRef))
+//        var error =  UnsafeMutablePointer<UnsafeMutablePointer<Int8>>.alloc(alignof(UnsafeMutablePointer<Int8>))
+//        
+//        LLVMLinkInInterpreter()
+//        
+//        if LLVMCreateInterpreterForModule(engine, module, error) != 0 {
+//            print("can't initialize engine: \(String.fromCString(error.memory)!)")
+//            // TODO: cleanup all allocated memory ;)
+//            exit(1)
+//        }
+//        
+//        let x: UInt64 = 10
+//        let y: UInt64 = 25
+//        
+//        let argsRef = [LLVMTypeRef]().ptr()
+//        defer { argsRef.dealloc(0) }
+//        
+//        let result = LLVMRunFunction(engine.memory, mainFunction, UInt32(1), argsRef)
+//        
+//        print("\(x) + \(y) = \(LLVMGenericValueToInt(result, 0))")
+//        
+//
         
         
         
@@ -547,7 +580,7 @@ extension AST {
         
         
         
-        return module
+        return (module, mainFunction)
     }
 }
 
