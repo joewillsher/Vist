@@ -8,12 +8,10 @@
 
 import Foundation
 
-func runModule(module: LLVMModuleRef, mainFn: LLVMValueRef) {
+func configModule(module: LLVMModuleRef) {
     
     let target = UnsafeMutablePointer<LLVMTargetRef>.alloc(1)
     LLVMGetTargetFromTriple("x86_64-apple-macosx10.11.0", target, nil)
-    
-    
     
 }
 

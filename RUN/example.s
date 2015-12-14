@@ -20,11 +20,11 @@ Ltmp2:
 	retq
 	.cfi_endproc
 
-	.globl	_main
+	.globl	_printNum
 	.align	4, 0x90
-_main:                                  ## @main
+_printNum:                              ## @printNum
 	.cfi_startproc
-## BB#0:                                ## %entry
+## BB#0:
 	pushq	%rbp
 Ltmp3:
 	.cfi_def_cfa_offset 16
@@ -34,25 +34,22 @@ Ltmp4:
 Ltmp5:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
-	callq	_bar
-	movq	%rax, -8(%rbp)
-	testq	%rax, %rax
-	jns	LBB1_2
-## BB#1:                                ## %then0
-	callq	_print
-LBB1_2:                                 ## %cont1
-	callq	_foo
+	movq	%rdi, %rcx
+	movq	%rcx, -8(%rbp)
+	leaq	L_.str1(%rip), %rdi
 	xorl	%eax, %eax
+	movq	%rcx, %rsi
+	callq	_printf
 	addq	$16, %rsp
 	popq	%rbp
 	retq
 	.cfi_endproc
 
-	.globl	_foo
+	.globl	_main
 	.align	4, 0x90
-_foo:                                   ## @foo
+_main:                                  ## @main
 	.cfi_startproc
-## BB#0:                                ## %entry
+## BB#0:                                ## %cont
 	pushq	%rbp
 Ltmp6:
 	.cfi_def_cfa_offset 16
@@ -61,31 +58,23 @@ Ltmp7:
 	movq	%rsp, %rbp
 Ltmp8:
 	.cfi_def_cfa_register %rbp
-	popq	%rbp
-	retq
-	.cfi_endproc
-
-	.globl	_bar
-	.align	4, 0x90
-_bar:                                   ## @bar
-	.cfi_startproc
-## BB#0:                                ## %entry
-	pushq	%rbp
-Ltmp9:
-	.cfi_def_cfa_offset 16
-Ltmp10:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-Ltmp11:
-	.cfi_def_cfa_register %rbp
-	movl	$1, %eax
+	subq	$16, %rsp
+	movq	$3, -8(%rbp)
+	movl	$3, %edi
+	callq	_printNum
+	callq	_print
+	xorl	%eax, %eax
+	addq	$16, %rsp
 	popq	%rbp
 	retq
 	.cfi_endproc
 
 	.section	__TEXT,__cstring,cstring_literals
 L_.str:                                 ## @.str
-	.asciz	"sup meme"
+	.asciz	"sup meme\n"
+
+L_.str1:                                ## @.str1
+	.asciz	"%llu\n"
 
 
 .subsections_via_symbols

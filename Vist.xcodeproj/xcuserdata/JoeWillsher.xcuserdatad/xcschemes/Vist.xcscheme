@@ -64,11 +64,11 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "example.vist"
+            argument = "-v"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "-v"
+            argument = "example.vist"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

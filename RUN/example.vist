@@ -1,10 +1,8 @@
-func foo: () = { }
-func bar: () -> Int = { return 1 }
+let a = 3
 
-let b = bar()
-
-if b < 0 {
+if a > 2 {
+    printNum(a)
     print()
 } else {
-    foo()
+    printNum(11)
 }

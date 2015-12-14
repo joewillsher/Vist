@@ -11,16 +11,23 @@ import Foundation
 
 do {
     
-    let args = Process.arguments.dropFirst()
-    let doc = args.first!
-    let verbose = args.dropFirst().contains("-v")
+    let a = Process.arguments.dropFirst()
+    let doc = a.last!
+    let args = a.dropLast()
+    let verbose = args.contains("-verbose") || args.contains("-v")
+    let ir = args.contains("-emit-ir")
+    let asm = args.contains("-emit-asm")
+    let b = args.contains("-build-only") || args.contains("-b")
     
-    try compileDocument(doc, verbose: verbose)
-    
-    // http://llvm.org/releases/2.6/docs/tutorial/JITTutorial1.html
-    
-    // do implemetation of this here to get IR Gen going
-    print("\n")
+    if a.contains("-h") || a.contains("-help") {
+        
+        print("USAGE:  vist [options] <input.vist>\n\nOPTIONS:\n  -help -h\t\t- Print help\n  -verbose -v\t\t- Print all stages of the compile\n  -emit-ir\t\t- Only generate LLVM IR file\n  -emit-asm\t\t- Only generate assembly code\n  -build-only -b\t- Do not run the program")
+        
+    } else {
+        
+        try compileDocument(doc, verbose: verbose, irOnly: ir, asmOnly: asm, buildOnly: b)
+        print("\n")
+    }
     
     
 } catch {

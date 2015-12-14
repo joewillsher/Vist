@@ -56,9 +56,7 @@ private func isFloatType(t: LLVMTypeKind) -> Bool {
 extension Expression {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
-        if let x = try (self as? IRGenerator)?.codeGen(scope) { return x } else {
-            
-            throw IRError.NotIRGenerator }
+        if let x = try (self as? IRGenerator)?.codeGen(scope) { return x } else { throw IRError.NotIRGenerator }
     }
     func llvmType(scope: Scope) throws -> LLVMTypeRef {
         if let x = try (self as? IRGenerator)?.llvmType(scope) { return x } else { throw IRError.NotIRGenerator }
@@ -88,6 +86,11 @@ extension CollectionType where
     
 }
 
+extension LLVMBool {
+    init(_ b: Bool) {
+        self.init(b ? 1 : 0)
+    }
+}
 
 
 
@@ -435,17 +438,23 @@ extension ConditionalExpression: IRGenerator {
         var ifIn: LLVMBasicBlockRef = scope.block
         var ifOut: LLVMBasicBlockRef = nil
         
+        let leaveIf = LLVMAppendBasicBlock(scope.function, "cont")
+        
         for (i, statement) in statements.enumerate() {
             
             LLVMPositionBuilderAtEnd(builder, ifIn)
             
             // condition
             let cond = try statement.condition?.codeGen(scope)
-            ifOut = LLVMAppendBasicBlock(scope.function, "cont\(i)")
+            if i < statements.count-1 {
+                ifOut = LLVMAppendBasicBlock(scope.function, "cont\(i)")
+            } else {
+                ifOut = leaveIf
+            }
             
             // block and associated scope
             let tScope = Scope(function: scope.function, parentScope: scope)
-            let block = try statement.bbGen(innerScope: tScope, contBlock: ifOut, name: ifBBID(n: i, ex: statement))
+            let block = try statement.bbGen(innerScope: tScope, contBlock: leaveIf, name: ifBBID(n: i, ex: statement))
             
             // move builder to in scope
             LLVMPositionBuilderAtEnd(builder, ifIn)
@@ -460,7 +469,7 @@ extension ConditionalExpression: IRGenerator {
             ifIn = ifOut
         }
         
-        LLVMPositionBuilderAtEnd(builder, ifOut)
+        LLVMPositionBuilderAtEnd(builder, leaveIf)
         scope.block = ifOut
         
         return nil
@@ -510,13 +519,11 @@ extension ElseIfBlock {
 
 
 extension AST {
-    func IRGen() throws -> (LLVMModuleRef, LLVMValueRef) {
+    func IRGen(module m: LLVMModuleRef) throws {
         
         // initialise global objects
         builder = LLVMCreateBuilder()
-        module = LLVMModuleCreateWithName("vist_module")
-        
-        linkModule(&module, withFile: "")
+        module = m
         
         // main arguments
         let argBuffer = [LLVMTypeRef]().ptr()
@@ -536,8 +543,6 @@ extension AST {
         }
                 
         LLVMBuildRet(builder, LLVMConstInt(LLVMInt32Type(), 0, LLVMBool(false)))
-        
-        return (module, mainFunction)
     }
 }
 
