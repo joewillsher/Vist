@@ -31,11 +31,7 @@ func compileDocument(fileName: String, verbose: Bool = true, irOnly: Bool = fals
         .map {"\($0.0): \t\t\t\t\t\($0.1.range.start)--\($0.1.range.end)"}
         .forEach { print($0) } }
     
-    
-    
-    
-    
-    
+        
     
     
     if verbose { print("\n\n--------------------AST---------------------\n") }
@@ -90,11 +86,10 @@ func compileDocument(fileName: String, verbose: Bool = true, irOnly: Bool = fals
     
     // print and write to file
     let ir = String.fromCString(LLVMPrintModuleToString(module))!
-    if verbose { print(ir) }
     try ir.writeToFile("\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
     
-    if irOnly { return }
-    
+    if irOnly { print(ir); return }
+    if verbose { print(ir) }
     
     
     
@@ -110,9 +105,10 @@ func compileDocument(fileName: String, verbose: Bool = true, irOnly: Bool = fals
     compileIRtoASMTask.waitUntilExit()
     
     let asm = try String(contentsOfFile: "\(file).s", encoding: NSUTF8StringEncoding)
+
+    if asmOnly { print(asm); return }
     if verbose { print(asm) }
 
-    if asmOnly { return }
     
     
     /// Compile IR Code task
@@ -125,7 +121,6 @@ func compileDocument(fileName: String, verbose: Bool = true, irOnly: Bool = fals
     compileTask.waitUntilExit()
     
     if buildOnly { return }
-    
     
     
     

@@ -295,8 +295,7 @@ struct Parser {
         let block = try parseBraceExpressions()
         blocks.append((condition, block))
         
-        while case .Else? = inspectNextToken() {
-            getNextToken()
+        while case .Else = currentToken {
             
             var condition: Expression? = nil
             
@@ -445,7 +444,7 @@ struct Parser {
             do { expressions.append(try parseExpression(currentToken)) }
             catch ParseError.NoToken(.CloseParen, _) { break }
         }
-        
+        getNextToken() // eat '}'
         return Block(expressions: expressions)
     }
     

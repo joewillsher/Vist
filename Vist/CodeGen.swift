@@ -290,10 +290,10 @@ extension FunctionCall: IRGenerator {
         return LLVMBuildCall(builder, fn, argBuffer, UInt32(argCount), "")
     }
     
-    func llvmType(scope: Scope) -> LLVMTypeRef {
-        let fn = LLVMGetNamedFunction(module, name)
-        let ty = LLVMTypeOf(fn)
-        return LLVMGetReturnType(ty)
+    func llvmType(scope: Scope) throws -> LLVMTypeRef {
+//        let fn = LLVMGetNamedFunction(module, name)
+//        let ty = LLVMTypeOf(fn)
+        return LLVMGetReturnType(try scope.functionType(name))
     }
     
 }
@@ -337,6 +337,9 @@ extension FunctionPrototype: IRGenerator {
         let functionType = LLVMFunctionType(try type.returnType(), argBuffer, UInt32(argCount), LLVMBool(false))
         let function = LLVMAddFunction(module, name, functionType)
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
+        
+        // Add function type to scope table
+        scope.addFunctionType(name, val: functionType)
         
         // scope internal to function, needs params setting and then the block should be added *inside* the bbGen function
         let functionScope = Scope(function: function, parentScope: scope)
@@ -444,17 +447,28 @@ extension ConditionalExpression: IRGenerator {
             
             LLVMPositionBuilderAtEnd(builder, ifIn)
             
+            /// States whether the block being appended returns from the current scope
+            let returnsFromScope = statement.block.expressions.contains { $0 is ReturnExpression }
+            
             // condition
             let cond = try statement.condition?.codeGen(scope)
             if i < statements.count-1 {
+                
                 ifOut = LLVMAppendBasicBlock(scope.function, "cont\(i)")
-            } else {
+                
+            } else { //else or final else-if statement
+                
                 ifOut = leaveIf
+                
+                // If the block returns from the current scope, remove the cont block
+                if returnsFromScope && ifOut != nil {
+                    LLVMRemoveBasicBlockFromParent(ifOut)
+                }
             }
             
-            // block and associated scope
+            // block and associated scope - the then / else block
             let tScope = Scope(function: scope.function, parentScope: scope)
-            let block = try statement.bbGen(innerScope: tScope, contBlock: leaveIf, name: ifBBID(n: i, ex: statement))
+            let block = try statement.bbGen(innerScope: tScope, contBlock: ifOut, name: ifBBID(n: i, ex: statement))
             
             // move builder to in scope
             LLVMPositionBuilderAtEnd(builder, ifIn)
@@ -488,6 +502,8 @@ extension ElseIfBlock {
     /// Create the basic block for the if expression
     private func bbGen(innerScope scope: Scope, contBlock: LLVMBasicBlockRef, name: String) throws -> LLVMBasicBlockRef {
         
+        
+
         // add block
         let basicBlock = LLVMAppendBasicBlock(scope.function, name)
         LLVMPositionBuilderAtEnd(builder, basicBlock)
@@ -496,10 +512,15 @@ extension ElseIfBlock {
         for exp in block.expressions {
             try exp.codeGen(scope)
         }
-        
+
         // move to cont block
-        LLVMBuildBr(builder, contBlock)
-        LLVMPositionBuilderAtEnd(builder, contBlock)
+        
+        // if the block does continues to the contBlock, move the builder there
+        let returnsFromScope = block.expressions.contains { $0 is ReturnExpression }
+        if !returnsFromScope {
+            LLVMBuildBr(builder, contBlock)
+            LLVMPositionBuilderAtEnd(builder, contBlock)
+        }
         
         return basicBlock
     }

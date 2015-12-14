@@ -1,8 +1,15 @@
-let a = 3
+func foo: (Int) -> Int = |a| { return a }
 
-if a > 2 {
-    printNum(a)
-    print()
-} else {
-    printNum(11)
+func bar: () -> Int = {
+
+    if foo(5) < 3 {
+        return 1
+    } else if foo(1) < 0 {
+        return 0
+    } else {
+        return 2
+    }
 }
+
+let c = bar()
+printNum(c)
