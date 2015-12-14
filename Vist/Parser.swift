@@ -171,8 +171,19 @@ struct Parser {
     
     private mutating func parseIdentifierExpression(token: String) throws -> Expression {
         
-        guard case .OpenParen = getNextToken() else { return Variable(name: token) }       // simple variable name
-        getNextToken() // eat '('
+        guard case .OpenParen? = inspectNextToken() else {
+            
+            if case .Assign = getNextToken() {
+                getNextToken() // eat '='
+                
+                let exp = try parseOperatorExpression()
+                
+                return Mutation(name: token, value: exp)
+            }
+            
+            return Variable(name: token)
+        }       // simple variable name
+        getNextToken(); getNextToken() // eat 'identifier + ('
         
         if case .CloseParen = currentToken {   // simple itentifier() call
             getNextToken()

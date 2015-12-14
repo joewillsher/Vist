@@ -11,12 +11,12 @@
 
 extern "C" {
     
-    void print()
+    void printStr()
     {
         printf("sup meme\n");
     };
     
-    void printNum(int64_t i)
+    void print(int64_t i)
     {
         printf("%llu\n", i);
     };

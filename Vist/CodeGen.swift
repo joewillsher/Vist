@@ -10,7 +10,7 @@ import Foundation
 //import LLVM
 
 enum IRError: ErrorType {
-    case NotIRGenerator, NotBBGenerator, NoOperator, MisMatchedTypes, NoLLVMFloat(UInt32), WrongFunctionApplication(String), NoLLVMType, NoBody, InvalidFunction, NoVariable(String), NoBool, TypeNotFound
+    case NotIRGenerator, NotBBGenerator, NoOperator, MisMatchedTypes, NoLLVMFloat(UInt32), WrongFunctionApplication(String), NoLLVMType, NoBody, InvalidFunction, NoVariable(String), NoBool, TypeNotFound, NotMutable, CannotAssignToVoid
 }
 
 
@@ -158,10 +158,10 @@ extension BooleanLiteral: IRGenerator {
 extension Variable: IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
-        return try scope.variable(name ?? "")
+        return try scope.variable(name ?? "").variable
     }
     func llvmType(scope: Scope) throws -> LLVMTypeRef {
-        return try scope.variableType(name ?? "")
+        return try scope.variable(name ?? "").type
     }
 }
 
@@ -174,14 +174,16 @@ extension Assignment: IRGenerator {
         
         // create ptr
         let type = LLVMTypeOf(v)
+        guard type != LLVMVoidType() else { throw IRError.CannotAssignToVoid }
         let ptr = LLVMBuildAlloca(builder, type, name)
         // Load in memory
         let stored = LLVMBuildStore(builder, v, ptr)
         
         // update scope variables
-        scope.addVariable(name, val: v)
+        let stv = StackVariable(variable: v, type: type, mutable: isMutable, ptr: ptr)
+        scope.addVariable(name, val: stv)
         
-        return stored
+        return v
     }
     
     func llvmType(scope: Scope) throws -> LLVMTypeRef {
@@ -190,6 +192,25 @@ extension Assignment: IRGenerator {
     
 }
 
+extension Mutation: IRGenerator {
+    
+    func codeGen(scope: Scope) throws -> LLVMValueRef {
+        
+        let new = try value.codeGen(scope)
+        
+        let old = try scope.variable(name)
+        
+        if let ptr = old.ptr where old.mutable {
+            LLVMBuildStore(builder, new, ptr)
+            old.variable = new
+        } else {
+            throw IRError.NotMutable
+        }
+        
+        return nil
+    }
+    
+}
 
 
 //-------------------------------------------------------------------------------------------------------------------------
@@ -281,19 +302,22 @@ extension FunctionCall: IRGenerator {
         let argCount = args.elements.count
         
         // arguments
-        let argBuffer = try args.elements.map { try $0.codeGen(scope) }.ptr()
+        let a = try args.elements.map { try $0.codeGen(scope) }
+        let argBuffer = a.ptr()
         defer { argBuffer.dealloc(argCount) }
         
         guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else { throw IRError.WrongFunctionApplication(name) }
-                
+        
+        // TODO: Check if return is nil and name otheriwse
+        
         // add call to IR
         return LLVMBuildCall(builder, fn, argBuffer, UInt32(argCount), "")
     }
     
     func llvmType(scope: Scope) throws -> LLVMTypeRef {
-//        let fn = LLVMGetNamedFunction(module, name)
-//        let ty = LLVMTypeOf(fn)
-        return LLVMGetReturnType(try scope.functionType(name))
+        let fn = LLVMGetNamedFunction(module, name)
+        let ty = LLVMTypeOf(fn)
+        return LLVMGetReturnType(ty)
     }
     
 }
@@ -334,7 +358,8 @@ extension FunctionPrototype: IRGenerator {
         defer { argBuffer.dealloc(argCount) }
         
         // make function
-        let functionType = LLVMFunctionType(try type.returnType(), argBuffer, UInt32(argCount), LLVMBool(false))
+        let returnType = try type.returnType()
+        let functionType = LLVMFunctionType(returnType, argBuffer, UInt32(argCount), LLVMBool(false))
         let function = LLVMAddFunction(module, name, functionType)
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
         
@@ -349,13 +374,14 @@ extension FunctionPrototype: IRGenerator {
             let param = LLVMGetParam(function, UInt32(i))
             let name = (impl?.params.elements[i] as? ValueType)?.name ?? ("$\(i)")
             
+            let s = StackVariable(variable: param, type: LLVMTypeOf(param), mutable: false, ptr: nil)
             LLVMSetValueName(param, name)
-            functionScope.addVariable(name, val: param)
+            functionScope.addVariable(name, val: s)
         }
         
         // generate bb for body
         do {
-            try impl?.body.bbGen(innerScope: functionScope, fn: function)
+            try impl?.body.bbGen(innerScope: functionScope, fn: function, ret: returnType)
         } catch {
             LLVMDeleteFunction(function)
             throw error
@@ -393,7 +419,7 @@ extension ReturnExpression: IRGenerator {
 
 extension Block: BasicBlockGenerator {
     
-    func bbGen(innerScope scope: Scope, fn: LLVMValueRef) throws -> LLVMBasicBlockRef {
+    func bbGen(innerScope scope: Scope, fn: LLVMValueRef, ret: LLVMValueRef) throws -> LLVMBasicBlockRef {
         
         // setup function block
         let entryBlock = LLVMAppendBasicBlock(fn, "entry")
@@ -406,7 +432,7 @@ extension Block: BasicBlockGenerator {
             try exp.codeGen(scope)
         }
         
-        if expressions.isEmpty {
+        if expressions.isEmpty || ret == LLVMVoidType() {
             LLVMBuildRetVoid(builder)
         }
         
@@ -435,13 +461,12 @@ extension ConditionalExpression: IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
-        // TODO: if cond is true/fasle at compile remove jump
-        
         // block leading into and out of current if block
         var ifIn: LLVMBasicBlockRef = scope.block
         var ifOut: LLVMBasicBlockRef = nil
         
         let leaveIf = LLVMAppendBasicBlock(scope.function, "cont")
+        var rets = true // whether all blocks return
         
         for (i, statement) in statements.enumerate() {
             
@@ -449,6 +474,7 @@ extension ConditionalExpression: IRGenerator {
             
             /// States whether the block being appended returns from the current scope
             let returnsFromScope = statement.block.expressions.contains { $0 is ReturnExpression }
+            rets = rets && returnsFromScope
             
             // condition
             let cond = try statement.condition?.codeGen(scope)
@@ -457,18 +483,18 @@ extension ConditionalExpression: IRGenerator {
                 ifOut = LLVMAppendBasicBlock(scope.function, "cont\(i)")
                 
             } else { //else or final else-if statement
+
+                // If the block returns from the current scope, remove the cont block
+                if rets {
+                    LLVMRemoveBasicBlockFromParent(leaveIf)
+                }
                 
                 ifOut = leaveIf
-                
-                // If the block returns from the current scope, remove the cont block
-                if returnsFromScope && ifOut != nil {
-                    LLVMRemoveBasicBlockFromParent(ifOut)
-                }
             }
             
             // block and associated scope - the then / else block
             let tScope = Scope(function: scope.function, parentScope: scope)
-            let block = try statement.bbGen(innerScope: tScope, contBlock: ifOut, name: ifBBID(n: i, ex: statement))
+            let block = try statement.bbGen(innerScope: tScope, contBlock: leaveIf, name: ifBBID(n: i, ex: statement))
             
             // move builder to in scope
             LLVMPositionBuilderAtEnd(builder, ifIn)
@@ -485,7 +511,7 @@ extension ConditionalExpression: IRGenerator {
         
         LLVMPositionBuilderAtEnd(builder, leaveIf)
         scope.block = ifOut
-        
+                
         return nil
     }
     

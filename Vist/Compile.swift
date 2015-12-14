@@ -69,6 +69,7 @@ func compileDocument(fileName: String, verbose: Bool = true, irOnly: Bool = fals
     // Create vist program module and link against the helper bytecode
     var module = LLVMModuleCreateWithName("vist_module")
     linkModule(&module, withFile: "helper.bc")
+    configModule(module)
     
     
     

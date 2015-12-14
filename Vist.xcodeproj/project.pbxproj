@@ -20,7 +20,7 @@
 		D49410831C124B4E0029BF3D /* Print.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49410821C124B4E0029BF3D /* Print.swift */; };
 		D4C85BCC1BF8E00100731F34 /* CodeGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C85BCB1BF8E00100731F34 /* CodeGen.swift */; };
 		D4DB9D611C1DED5C00503153 /* Link.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4DB9D601C1DED5C00503153 /* Link.swift */; };
-		D4DB9D631C1DF10A00503153 /* Run.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4DB9D621C1DF10A00503153 /* Run.swift */; };
+		D4DB9D631C1DF10A00503153 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4DB9D621C1DF10A00503153 /* Config.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -59,7 +59,7 @@
 		D4C85BCB1BF8E00100731F34 /* CodeGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CodeGen.swift; sourceTree = "<group>"; };
 		D4DB9D5D1C1DDA1A00503153 /* helper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = helper.cpp; path = RUN/helper.cpp; sourceTree = SOURCE_ROOT; };
 		D4DB9D601C1DED5C00503153 /* Link.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Link.swift; sourceTree = "<group>"; };
-		D4DB9D621C1DF10A00503153 /* Run.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Run.swift; sourceTree = "<group>"; };
+		D4DB9D621C1DF10A00503153 /* Config.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; };
 		D4DB9D681C1DFFCC00503153 /* helper.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = helper.ll; path = RUN/helper.ll; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -116,7 +116,7 @@
 				D4C85BCB1BF8E00100731F34 /* CodeGen.swift */,
 				D465C6571C187639001A008C /* Scope.swift */,
 				D4DB9D601C1DED5C00503153 /* Link.swift */,
-				D4DB9D621C1DF10A00503153 /* Run.swift */,
+				D4DB9D621C1DF10A00503153 /* Config.swift */,
 				D46AD87E1B81EAA400C95574 /* Vist-Bridging-Header.h */,
 			);
 			path = Vist;
@@ -252,7 +252,7 @@
 				D4C85BCC1BF8E00100731F34 /* CodeGen.swift in Sources */,
 				D44FB8B01C1657E100E6DD33 /* Compile.swift in Sources */,
 				D465C6581C187639001A008C /* Scope.swift in Sources */,
-				D4DB9D631C1DF10A00503153 /* Run.swift in Sources */,
+				D4DB9D631C1DF10A00503153 /* Config.swift in Sources */,
 				D46AD8851B82186600C95574 /* Token.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

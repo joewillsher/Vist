@@ -1,8 +1,8 @@
 	.section	__TEXT,__text,regular,pure_instructions
 	.macosx_version_min 10, 11
-	.globl	_print
+	.globl	_printStr
 	.align	4, 0x90
-_print:                                 ## @print
+_printStr:                              ## @printStr
 	.cfi_startproc
 ## BB#0:
 	pushq	%rbp
@@ -20,9 +20,9 @@ Ltmp2:
 	retq
 	.cfi_endproc
 
-	.globl	_printNum
+	.globl	_print
 	.align	4, 0x90
-_printNum:                              ## @printNum
+_print:                                 ## @print
 	.cfi_startproc
 ## BB#0:
 	pushq	%rbp
@@ -58,13 +58,12 @@ Ltmp7:
 	movq	%rsp, %rbp
 Ltmp8:
 	.cfi_def_cfa_register %rbp
-	subq	$16, %rsp
-	callq	_bar
-	movq	%rax, -8(%rbp)
+	movl	$1, %edi
+	callq	_foo
 	movq	%rax, %rdi
-	callq	_printNum
+	callq	_print
+	callq	_bar
 	xorl	%eax, %eax
-	addq	$16, %rsp
 	popq	%rbp
 	retq
 	.cfi_endproc
@@ -82,7 +81,31 @@ Ltmp10:
 	movq	%rsp, %rbp
 Ltmp11:
 	.cfi_def_cfa_register %rbp
-	movq	%rdi, %rax
+	pushq	%rbx
+	pushq	%rax
+Ltmp12:
+	.cfi_offset %rbx, -24
+	movq	%rdi, %rbx
+	cmpq	$3, %rbx
+	jge	LBB3_1
+## BB#5:                                ## %then0
+	movq	%rbx, %rdi
+	callq	_print
+	movq	%rbx, %rax
+	jmp	LBB3_4
+LBB3_1:                                 ## %cont0
+	cmpq	$5, %rbx
+	jle	LBB3_3
+## BB#2:                                ## %then1
+	movl	$2, %edi
+	callq	_print
+	movl	$2, %eax
+	jmp	LBB3_4
+LBB3_3:                                 ## %else2
+	movl	$3, %eax
+LBB3_4:                                 ## %else2
+	addq	$8, %rsp
+	popq	%rbx
 	popq	%rbp
 	retq
 	.cfi_endproc
@@ -91,25 +114,17 @@ Ltmp11:
 	.align	4, 0x90
 _bar:                                   ## @bar
 	.cfi_startproc
-## BB#0:                                ## %cont0
+## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp12:
-	.cfi_def_cfa_offset 16
 Ltmp13:
+	.cfi_def_cfa_offset 16
+Ltmp14:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp14:
+Ltmp15:
 	.cfi_def_cfa_register %rbp
-	movl	$1, %edi
-	callq	_foo
-	testq	%rax, %rax
-	js	LBB4_1
-## BB#2:                                ## %else2
-	movl	$2, %eax
-	popq	%rbp
-	retq
-LBB4_1:                                 ## %then1
-	xorl	%eax, %eax
+	movl	$7, %edi
+	callq	_print
 	popq	%rbp
 	retq
 	.cfi_endproc

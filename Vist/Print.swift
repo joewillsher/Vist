@@ -239,5 +239,11 @@ extension ElseIfBlock {
         return [("cond", condition), ("then", block)]
     }
 }
+extension Mutation {
+    
+    func printList() -> [(String?, Printable)]? {
+        return [("name", name), ("val", value)]
+    }
+}
 
 

@@ -6,7 +6,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 @.str1 = private unnamed_addr constant [6 x i8] c"%llu\0A\00", align 1
 
 ; Function Attrs: ssp uwtable
-define void @print() #0 {
+define void @printStr() #0 {
   %1 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([10 x i8]* @.str, i32 0, i32 0))
   ret void
 }
@@ -14,7 +14,7 @@ define void @print() #0 {
 declare i32 @printf(i8*, ...) #1
 
 ; Function Attrs: ssp uwtable
-define void @printNum(i64 %i) #0 {
+define void @print(i64 %i) #0 {
   %1 = alloca i64, align 8
   store i64 %i, i64* %1, align 8
   %2 = load i64* %1, align 8

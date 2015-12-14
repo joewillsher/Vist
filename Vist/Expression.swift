@@ -176,6 +176,15 @@ class Assignment: Expression {
     }
 }
 
+class Mutation: Expression {
+    let name: String
+    let value: Expression
+    
+    init(name: String, value: Expression) {
+        self.name = name
+        self.value = value
+    }
+}
 
 
 
