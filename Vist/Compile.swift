@@ -9,7 +9,7 @@
 import Foundation
 
 
-func compileDocument(fileName: String, verbose: Bool = true, irOnly: Bool = false, asmOnly: Bool = false, buildOnly: Bool = false) throws {
+func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = false, irOnly: Bool = false, asmOnly: Bool = false, buildOnly: Bool = false) throws {
     
     let file = fileName.stringByReplacingOccurrencesOfString(".vist", withString: "")
     let currentDirectory = NSTask().currentDirectoryPath
@@ -39,8 +39,8 @@ func compileDocument(fileName: String, verbose: Bool = true, irOnly: Bool = fals
     // parse tokens & generate AST
     var parser = Parser(tokens: tokens)
     let ast = try parser.parse()
+    if dumpAST { print(ast.description()); return }
     if verbose { print(ast.description()) }
-    
     
     
     

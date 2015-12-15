@@ -65,6 +65,9 @@ private extension Token {
         case "Void": self = .Void
         case "true": self = .Boolean(true)
         case "false": self = .Boolean(false)
+        case "for": self = .For
+        case "in": self = .In
+        case "do": self = .Do
         default: self = .Identifier(alpha)
         }
     }
@@ -225,7 +228,7 @@ struct Lexer {
 //    mutating private func lexComment() throws {
 //        try lexWhilePredicate({$0.isSymbol()})
 //    }
-//    
+//
 //    mutating private func lexStringLiteral() throws {
 //        try lexWhilePredicate({$0.isSymbol()})
 //    }

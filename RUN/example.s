@@ -58,12 +58,19 @@ Ltmp7:
 	movq	%rsp, %rbp
 Ltmp8:
 	.cfi_def_cfa_register %rbp
+	subq	$16, %rsp
 	movl	$1, %edi
 	callq	_foo
+	movq	%rax, -8(%rbp)
 	movq	%rax, %rdi
 	callq	_print
-	callq	_bar
+	movl	$2, %edi
+	callq	_foo
+	movq	%rax, -8(%rbp)
+	movq	%rax, %rdi
+	callq	_print
 	xorl	%eax, %eax
+	addq	$16, %rsp
 	popq	%rbp
 	retq
 	.cfi_endproc
@@ -81,50 +88,7 @@ Ltmp10:
 	movq	%rsp, %rbp
 Ltmp11:
 	.cfi_def_cfa_register %rbp
-	pushq	%rbx
-	pushq	%rax
-Ltmp12:
-	.cfi_offset %rbx, -24
-	movq	%rdi, %rbx
-	cmpq	$3, %rbx
-	jge	LBB3_1
-## BB#5:                                ## %then0
-	movq	%rbx, %rdi
-	callq	_print
-	movq	%rbx, %rax
-	jmp	LBB3_4
-LBB3_1:                                 ## %cont0
-	cmpq	$5, %rbx
-	jle	LBB3_3
-## BB#2:                                ## %then1
-	movl	$2, %edi
-	callq	_print
-	movl	$2, %eax
-	jmp	LBB3_4
-LBB3_3:                                 ## %else2
-	movl	$3, %eax
-LBB3_4:                                 ## %else2
-	addq	$8, %rsp
-	popq	%rbx
-	popq	%rbp
-	retq
-	.cfi_endproc
-
-	.globl	_bar
-	.align	4, 0x90
-_bar:                                   ## @bar
-	.cfi_startproc
-## BB#0:                                ## %entry
-	pushq	%rbp
-Ltmp13:
-	.cfi_def_cfa_offset 16
-Ltmp14:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-Ltmp15:
-	.cfi_def_cfa_register %rbp
-	movl	$7, %edi
-	callq	_print
+	movq	%rdi, %rax
 	popq	%rbp
 	retq
 	.cfi_endproc

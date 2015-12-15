@@ -10,7 +10,8 @@ import Foundation
 //import LLVM
 
 enum IRError: ErrorType {
-    case NotIRGenerator, NotBBGenerator, NoOperator, MisMatchedTypes, NoLLVMFloat(UInt32), WrongFunctionApplication(String), NoLLVMType, NoBody, InvalidFunction, NoVariable(String), NoBool, TypeNotFound, NotMutable, CannotAssignToVoid
+    case NotIRGenerator, NotBBGenerator, NoOperator, MisMatchedTypes, NoLLVMFloat(UInt32), WrongFunctionApplication(String), NoLLVMType, NoBody, InvalidFunction, NoVariable(String), NoBool, TypeNotFound, NotMutable
+    case CannotAssignToVoid, CannotAssignToType(Expression.Type)
 }
 
 
@@ -172,12 +173,17 @@ extension Assignment: IRGenerator {
         // create value
         let v = try value.codeGen(scope)
         
-        // create ptr
+        // checks
+        guard v != nil else { throw IRError.CannotAssignToType(value.dynamicType) }
         let type = LLVMTypeOf(v)
         guard type != LLVMVoidType() else { throw IRError.CannotAssignToVoid }
+        
+        
+        
+        // create ptr
         let ptr = LLVMBuildAlloca(builder, type, name)
         // Load in memory
-        let stored = LLVMBuildStore(builder, v, ptr)
+        LLVMBuildStore(builder, v, ptr)
         
         // update scope variables
         let stv = StackVariable(variable: v, type: type, mutable: isMutable, ptr: ptr)
@@ -511,7 +517,7 @@ extension ConditionalExpression: IRGenerator {
         
         LLVMPositionBuilderAtEnd(builder, leaveIf)
         scope.block = ifOut
-                
+        
         return nil
     }
     
@@ -549,6 +555,20 @@ extension ElseIfBlock {
         }
         
         return basicBlock
+    }
+    
+    
+}
+
+extension ForInLoopExpression : IRGenerator {
+    
+    
+    func codeGen(scope: Scope) throws -> LLVMValueRef {
+        
+        
+        
+        
+        return nil
     }
     
     

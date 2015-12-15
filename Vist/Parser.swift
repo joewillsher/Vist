@@ -23,6 +23,8 @@ enum ParseError: ErrorType {
     case NoOperator(Pos)
     case MismatchedType((String, Pos), (String, Pos))
     case InvalidIfStatement
+    case ExpectedIn(Pos), ExpectedDo(Pos)
+    case NotIterator(Pos)
 }
 
 private extension Array {
@@ -63,7 +65,8 @@ struct Parser {
         "||": 5,
         "&&": 5,
         "==": 5,
-        "!=": 5
+        "!=": 5,
+        "...": 15
     ]
     
     private mutating func getNextToken() -> Token {
@@ -169,6 +172,11 @@ struct Parser {
     //  MARK:                                      Identifier and operators
     //-------------------------------------------------------------------------------------------------------------------------
     
+    private mutating func parseTextExpression() throws -> Variable {
+        guard case .Identifier(let i) = currentToken else { throw ParseError.NoIdentifier(currentPos) }
+        return Variable(name: i)
+    }
+    
     private mutating func parseIdentifierExpression(token: String) throws -> Expression {
         
         guard case .OpenParen? = inspectNextToken() else {
@@ -220,6 +228,7 @@ struct Parser {
             
         case .OpenParen:
             return try parseParenExpression()
+            
         default:
             throw ParseError.NoIdentifier(currentPos)
         }
@@ -286,6 +295,17 @@ struct Parser {
         }
     }
     
+    private mutating func parseLoopOperator() throws -> RangeIteratorExpression {
+        
+        guard
+            let o = try parseOperatorExpression() as? BinaryExpression,
+            let lhs = o.lhs as? IntegerType,
+            let rhs = o.rhs as? IntegerType
+            else { throw ParseError.NotIterator(currentPos) }
+        
+        return RangeIteratorExpression(s: lhs.val, e: rhs.val)
+    }
+    
     
     
     //-------------------------------------------------------------------------------------------------------------------------
@@ -293,7 +313,7 @@ struct Parser {
     //-------------------------------------------------------------------------------------------------------------------------
     
     
-    private mutating func parseConditionalExpression() throws -> Expression {
+    private mutating func parseIfExpression() throws -> Expression {
         
         getNextToken() // eat `if`
         let condition = try parseOperatorExpression()
@@ -324,7 +344,25 @@ struct Parser {
         return try ConditionalExpression(statements: blocks)
     }
     
-
+    
+    private mutating func parseForInDoLoopExpression() throws -> Expression {
+        
+        getNextToken() // eat 'for'
+        let itentifier = try parseTextExpression() // bind loop label
+        guard case .In = getNextToken() else { throw ParseError.ExpectedIn(currentPos) }
+        getNextToken() // eat 'in'
+        
+        let loop = try parseLoopOperator()
+        guard case .Do = currentToken else { throw ParseError.ExpectedDo(currentPos) }
+        getNextToken() // eat 'do'
+        let block = try parseBraceExpressions()
+        
+        // TODO: Braceless expressions
+        
+        return ForInLoopExpression(identifier: itentifier, loop: loop, block: block)
+    }
+    
+    
     
     
     
@@ -501,7 +539,8 @@ struct Parser {
         case let .Identifier(str):      return try parseIdentifierExpression(str)
         case     .InfixOperator:        return try parseOperatorExpression()
         case let .Comment(str):         return try parseCommentExpression(str)
-        case     .If:                   return try parseConditionalExpression()
+        case     .If:                   return try parseIfExpression()
+        case     .For:                  return try parseForInDoLoopExpression()
         case let .Integer(i):           return parseIntExpression(i)
         case let .FloatingPoint(x):     return parseFloatingPointExpression(x)
         case let .Str(str):             return parseStringExpression(str)

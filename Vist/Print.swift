@@ -246,4 +246,20 @@ extension Mutation {
     }
 }
 
+extension ForInLoopExpression {
+    
+    func printList() -> [(String?, Printable)]? {
+        return [("for", binded), ("in", loop), ("do", block)]
+    }
+    
+}
+
+extension RangeIteratorExpression {
+    func printList() -> [(String?, Printable)]? {
+        return [("start", start), ("end", end)]
+    }
+    func inline() -> Bool {
+        return true
+    }
+}
 

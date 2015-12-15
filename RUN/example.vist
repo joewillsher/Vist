@@ -1,24 +1,4 @@
 
-
-func foo: (Int) -> Int = |a| {
-    if a < 3 {
-        print(a)
-        return a
-    } else if a > 5 {
-        print(2)
-        return 2
-    } else {
-        return 3
-    }
+for i in 0 ... 10 do {
+    print(i)
 }
-
-
-print(foo(1))
-
-func bar: () = {
-    print(7)
-}
-
-bar()
-
-

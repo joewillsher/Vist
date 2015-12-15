@@ -242,7 +242,7 @@ class ValueType: Type {
     
 }
 
-class FunctionType: Type {
+class FunctionType : Type {
     let args: Tuple
     let returns: Tuple
     
@@ -263,7 +263,7 @@ class FunctionType: Type {
 
 
 
-class ElseIfBlock: Expression {
+class ElseIfBlock : Expression {
     let condition: Expression?
     let block: ScopeExpression
     
@@ -274,7 +274,7 @@ class ElseIfBlock: Expression {
 }
 
 
-class ConditionalExpression: Expression {
+class ConditionalExpression : Expression {
     let statements: [ElseIfBlock]
     
     init(statements: [(condition: Expression?, block: ScopeExpression)]) throws {
@@ -295,10 +295,56 @@ class ConditionalExpression: Expression {
     }
 }
 
+class ForInLoopExpression<Identifier : Expression, Iterator : IteratorExpression> : Expression {
+    
+    let binded: Identifier
+    let loop: Iterator
+    let block: Block
+    
+    init(identifier: Identifier, loop: Iterator, block: Block) {
+        binded = identifier
+        self.loop = loop
+        self.block = block
+    }
+    
+    
+}
+
+
+protocol IteratorExpression : Expression {
+    
+    typealias GeneratorType: Expression
+    
+    func next() -> GeneratorType
+    
+    
+}
+
+class RangeIteratorExpression : IteratorExpression {
+    
+    typealias GeneratorType = IntegerLiteral
+    
+    let start: Int, end: Int
+    
+    init(s: Int, e: Int) {
+        start = s
+        end = e
+        c = start
+    }
+    
+    private var c: Int
+    
+    func next() -> GeneratorType {
+        defer { c+=1 }
+        return IntegerLiteral(val: c)
+    }
+}
 
 
 
 
+
+// TODO: Implement more generic expressions
 
 
 
