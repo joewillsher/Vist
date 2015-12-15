@@ -12,6 +12,7 @@ import Foundation
 enum IRError: ErrorType {
     case NotIRGenerator, NotBBGenerator, NoOperator, MisMatchedTypes, NoLLVMFloat(UInt32), WrongFunctionApplication(String), NoLLVMType, NoBody, InvalidFunction, NoVariable(String), NoBool, TypeNotFound, NotMutable
     case CannotAssignToVoid, CannotAssignToType(Expression.Type)
+    case ForLoopIteratorNotInt
 }
 
 
@@ -159,7 +160,14 @@ extension BooleanLiteral: IRGenerator {
 extension Variable: IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
-        return try scope.variable(name ?? "").variable
+        let obj = try scope.variable(name ?? "")
+        
+        if let ptr = obj.ptr where ptr != nil {
+            return LLVMBuildLoad(builder, ptr, name ?? "")
+        } else {
+            return obj.variable
+        }
+        
     }
     func llvmType(scope: Scope) throws -> LLVMTypeRef {
         return try scope.variable(name ?? "").type
@@ -438,7 +446,7 @@ extension Block: BasicBlockGenerator {
             try exp.codeGen(scope)
         }
         
-        if expressions.isEmpty || ret == LLVMVoidType() {
+        if expressions.isEmpty || (ret != nil && ret == LLVMVoidType()) {
             LLVMBuildRetVoid(builder)
         }
         
@@ -534,8 +542,6 @@ extension ElseIfBlock {
     /// Create the basic block for the if expression
     private func bbGen(innerScope scope: Scope, contBlock: LLVMBasicBlockRef, name: String) throws -> LLVMBasicBlockRef {
         
-        
-
         // add block
         let basicBlock = LLVMAppendBasicBlock(scope.function, name)
         LLVMPositionBuilderAtEnd(builder, basicBlock)
@@ -560,19 +566,73 @@ extension ElseIfBlock {
     
 }
 
+
 extension ForInLoopExpression : IRGenerator {
-    
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
+        // generate loop and termination blocks
+        let loop = LLVMAppendBasicBlock(scope.function, "loop")
+        let afterLoop = LLVMAppendBasicBlock(scope.function, "afterloop")
+        
+        // move into loop block
+        LLVMBuildBr(builder, loop)
+        LLVMPositionBuilderAtEnd(builder, loop)
+        
+        // define variable phi node
+        let name = binded.name ?? ""
+        let i = LLVMBuildPhi(builder, LLVMInt64Type(), name)
+        
+        guard let rangeIterator = iterator as? RangeIteratorExpression else { throw IRError.ForLoopIteratorNotInt }
+
+        // add incoming value to phi node
+        let start = LLVMConstInt(LLVMInt64Type(), UInt64(rangeIterator.start), LLVMBool(false))
+        LLVMAddIncoming(i, [start].ptr(), [scope.block].ptr(), 1)
+        
+        
+        // iterate and add phi incoming
+        let one = LLVMConstInt(LLVMInt64Type(), UInt64(1), LLVMBool(false))
+        let next = LLVMBuildAdd(builder, one, i, "next\(name)")
+        LLVMAddIncoming(i, [next].ptr(), [loop].ptr(), 1)
+        
+        
+        // gen the IR for the inner block
+        let lv = StackVariable(variable: i, type: LLVMTypeOf(i), mutable: false, ptr: nil)
+        let loopScope = Scope(vars: [name: lv], function: scope.function, parentScope: scope)
+        try block.bbGenInline(scope: loopScope)
+        
+        // conditional break
+        let end = LLVMConstInt(LLVMInt64Type(), UInt64(rangeIterator.end), LLVMBool(false))
+        let comp = LLVMBuildICmp(builder, LLVMIntSLE, next, end, "looptest")
+        LLVMBuildCondBr(builder, comp, loop, afterLoop)
         
         
         
+        LLVMPositionBuilderAtEnd(builder, afterLoop)
         return nil
     }
     
     
 }
+
+extension Block {
+    
+    func bbGenInline(scope scope: Scope) throws {
+        
+        // code gen for function
+        for exp in expressions {
+            try exp.codeGen(scope)
+        }
+        
+    }
+    
+}
+
+//extension RangeIteratorExpression {
+//    
+//    func add
+//    
+//}
 
 
 

@@ -24,6 +24,22 @@ define void @print(i64 %i) #0 {
 
 define i32 @main() {
 entry:
+  %a = alloca i64
+  store i64 1, i64* %a
+  br label %loop
+
+loop:                                             ; preds = %loop, %entry
+  %i = phi i64 [ 1, %entry ], [ %nexti, %loop ]
+  %nexti = add i64 1, %i
+  %a1 = load i64* %a
+  %mul_res = mul i64 %a1, %i
+  store i64 %mul_res, i64* %a
+  %a2 = load i64* %a
+  call void @print(i64 %a2)
+  %looptest = icmp sle i64 %nexti, 10
+  br i1 %looptest, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %loop
   ret i32 0
 }
 

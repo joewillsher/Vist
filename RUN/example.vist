@@ -1,4 +1,7 @@
 
-for i in 0 ... 10 do {
-    print(i)
+var a = 1
+
+for i in 1 ... 10 do {
+    a = a * i
+    print(a)
 }

@@ -295,15 +295,15 @@ class ConditionalExpression : Expression {
     }
 }
 
-class ForInLoopExpression<Identifier : Expression, Iterator : IteratorExpression> : Expression {
+class ForInLoopExpression<Iterator : IteratorExpression> : Expression {
     
-    let binded: Identifier
-    let loop: Iterator
+    let binded: Variable
+    let iterator: Iterator
     let block: Block
     
-    init(identifier: Identifier, loop: Iterator, block: Block) {
+    init(identifier: Variable, loop: Iterator, block: Block) {
         binded = identifier
-        self.loop = loop
+        self.iterator = loop
         self.block = block
     }
     
@@ -313,16 +313,16 @@ class ForInLoopExpression<Identifier : Expression, Iterator : IteratorExpression
 
 protocol IteratorExpression : Expression {
     
-    typealias GeneratorType: Expression
+    typealias IteratorType: Expression
     
-    func next() -> GeneratorType
+    func next() -> IteratorType?
     
     
 }
 
 class RangeIteratorExpression : IteratorExpression {
     
-    typealias GeneratorType = IntegerLiteral
+    typealias IteratorType = IntegerLiteral
     
     let start: Int, end: Int
     
@@ -334,11 +334,26 @@ class RangeIteratorExpression : IteratorExpression {
     
     private var c: Int
     
-    func next() -> GeneratorType {
+    func next() -> IteratorType? {
         defer { c+=1 }
         return IntegerLiteral(val: c)
     }
 }
+
+//class WhileIteratorExpression : IteratorExpression {
+//    
+//    typealias IteratorType = BooleanLiteral
+//    
+//    private var cond: Bool = true
+//    
+//    // provide method for
+//    
+//    
+//    func next() -> GeneratorType? {
+//        return BooleanLiteral(val: true)
+//    }
+//    
+//}
 
 
 

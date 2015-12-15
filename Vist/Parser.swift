@@ -345,7 +345,7 @@ struct Parser {
     }
     
     
-    private mutating func parseForInDoLoopExpression() throws -> Expression {
+    private mutating func parseForInDoLoopExpression() throws -> ForInLoopExpression<RangeIteratorExpression> {
         
         getNextToken() // eat 'for'
         let itentifier = try parseTextExpression() // bind loop label
