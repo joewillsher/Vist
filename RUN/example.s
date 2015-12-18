@@ -45,11 +45,11 @@ Ltmp5:
 	retq
 	.cfi_endproc
 
-	.globl	_main
+	.globl	_printd
 	.align	4, 0x90
-_main:                                  ## @main
+_printd:                                ## @printd
 	.cfi_startproc
-## BB#0:                                ## %entry
+## BB#0:
 	pushq	%rbp
 Ltmp6:
 	.cfi_def_cfa_offset 16
@@ -58,22 +58,48 @@ Ltmp7:
 	movq	%rsp, %rbp
 Ltmp8:
 	.cfi_def_cfa_register %rbp
+	subq	$16, %rsp
+	movsd	%xmm0, -8(%rbp)
+	leaq	L_.str2(%rip), %rdi
+	movb	$1, %al
+	callq	_printf
+	addq	$16, %rsp
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	_main
+	.align	4, 0x90
+_main:                                  ## @main
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp9:
+	.cfi_def_cfa_offset 16
+Ltmp10:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp11:
+	.cfi_def_cfa_register %rbp
 	pushq	%rbx
 	pushq	%rax
-Ltmp9:
+Ltmp12:
 	.cfi_offset %rbx, -24
-	movq	$1, -16(%rbp)
-	movl	$1, %ebx
+	movq	$4, -16(%rbp)
+	movl	$4, %edi
+	callq	_print
+	movq	$3, -16(%rbp)
+	movl	$3, %edi
+	callq	_print
+	movl	$2, %ebx
 	.align	4, 0x90
-LBB2_1:                                 ## %loop
+LBB3_1:                                 ## %loop
                                         ## =>This Inner Loop Header: Depth=1
-	movq	-16(%rbp), %rdi
-	imulq	%rbx, %rdi
-	movq	%rdi, -16(%rbp)
+	movq	%rbx, %rdi
 	callq	_print
 	incq	%rbx
-	cmpq	$11, %rbx
-	jl	LBB2_1
+	cmpq	$5, %rbx
+	jl	LBB3_1
 ## BB#2:                                ## %afterloop
 	xorl	%eax, %eax
 	addq	$8, %rsp
@@ -88,6 +114,9 @@ L_.str:                                 ## @.str
 
 L_.str1:                                ## @.str1
 	.asciz	"%llu\n"
+
+L_.str2:                                ## @.str2
+	.asciz	"%f\n"
 
 
 .subsections_via_symbols

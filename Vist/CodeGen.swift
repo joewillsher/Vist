@@ -160,15 +160,11 @@ extension BooleanLiteral: IRGenerator {
 extension Variable: IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
-        let obj = try scope.variable(name ?? "")
+        let variable = try scope.variable(name ?? "")
         
-        if let ptr = obj.ptr where ptr != nil {
-            return LLVMBuildLoad(builder, ptr, name ?? "")
-        } else {
-            return obj.variable
-        }
-        
+        return variable.ir(builder, name: name ?? "")
     }
+    
     func llvmType(scope: Scope) throws -> LLVMTypeRef {
         return try scope.variable(name ?? "").type
     }
@@ -187,15 +183,14 @@ extension Assignment: IRGenerator {
         guard type != LLVMVoidType() else { throw IRError.CannotAssignToVoid }
         
         
+        // create variable
+        let variable = ReferenceVariable.alloc(builder, type: type, name: name ?? "", mutable: isMutable)
         
-        // create ptr
-        let ptr = LLVMBuildAlloca(builder, type, name)
         // Load in memory
-        LLVMBuildStore(builder, v, ptr)
+        variable.store(builder, val: v)
         
         // update scope variables
-        let stv = StackVariable(variable: v, type: type, mutable: isMutable, ptr: ptr)
-        scope.addVariable(name, val: stv)
+        scope.addVariable(name, val: variable)
         
         return v
     }
@@ -206,7 +201,7 @@ extension Assignment: IRGenerator {
     
 }
 
-extension Mutation: IRGenerator {
+extension Mutation : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
@@ -214,12 +209,8 @@ extension Mutation: IRGenerator {
         
         let old = try scope.variable(name)
         
-        if let ptr = old.ptr where old.mutable {
-            LLVMBuildStore(builder, new, ptr)
-            old.variable = new
-        } else {
-            throw IRError.NotMutable
-        }
+        guard let v = old as? ReferenceVariable where v.mutable else { throw IRError.NotMutable }
+        v.store(builder, val: new)
         
         return nil
     }
@@ -387,9 +378,9 @@ extension FunctionPrototype: IRGenerator {
         for i in 0..<argCount {
             let param = LLVMGetParam(function, UInt32(i))
             let name = (impl?.params.elements[i] as? ValueType)?.name ?? ("$\(i)")
-            
-            let s = StackVariable(variable: param, type: LLVMTypeOf(param), mutable: false, ptr: nil)
             LLVMSetValueName(param, name)
+
+            let s = RawStackVariable(val: param)
             functionScope.addVariable(name, val: s)
         }
         
@@ -593,12 +584,10 @@ extension ForInLoopExpression : IRGenerator {
         // iterate and add phi incoming
         let one = LLVMConstInt(LLVMInt64Type(), UInt64(1), LLVMBool(false))
         let next = LLVMBuildAdd(builder, one, i, "next\(name)")
-        LLVMAddIncoming(i, [next].ptr(), [loop].ptr(), 1)
-        
         
         // gen the IR for the inner block
-        let lv = StackVariable(variable: i, type: LLVMTypeOf(i), mutable: false, ptr: nil)
-        let loopScope = Scope(vars: [name: lv], function: scope.function, parentScope: scope)
+        let lv = RawStackVariable(val: i)
+        let loopScope = Scope(block: loop, vars: [name: lv], function: scope.function, parentScope: scope)
         try block.bbGenInline(scope: loopScope)
         
         // conditional break
@@ -607,6 +596,7 @@ extension ForInLoopExpression : IRGenerator {
         LLVMBuildCondBr(builder, comp, loop, afterLoop)
         
         
+        LLVMAddIncoming(i, [next].ptr(), [loopScope.block].ptr(), 1)
         
         LLVMPositionBuilderAtEnd(builder, afterLoop)
         return nil

@@ -21,4 +21,9 @@ extern "C" {
         printf("%llu\n", i);
     };
     
+    void printd(double d)
+    {
+        printf("%f\n", d);
+    };
+    
 }

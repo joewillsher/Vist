@@ -4,6 +4,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 
 @.str = private unnamed_addr constant [10 x i8] c"sup meme\0A\00", align 1
 @.str1 = private unnamed_addr constant [6 x i8] c"%llu\0A\00", align 1
+@.str2 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
 
 ; Function Attrs: ssp uwtable
 define void @printStr() #0 {
@@ -22,21 +23,31 @@ define void @print(i64 %i) #0 {
   ret void
 }
 
+; Function Attrs: ssp uwtable
+define void @printd(double %d) #0 {
+  %1 = alloca double, align 8
+  store double %d, double* %1, align 8
+  %2 = load double* %1, align 8
+  %3 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str2, i32 0, i32 0), double %2)
+  ret void
+}
+
 define i32 @main() {
 entry:
   %a = alloca i64
-  store i64 1, i64* %a
+  store i64 4, i64* %a
+  %a1 = load i64* %a
+  call void @print(i64 %a1)
+  store i64 3, i64* %a
+  %a2 = load i64* %a
+  call void @print(i64 %a2)
   br label %loop
 
 loop:                                             ; preds = %loop, %entry
-  %i = phi i64 [ 1, %entry ], [ %nexti, %loop ]
+  %i = phi i64 [ 2, %entry ], [ %nexti, %loop ]
   %nexti = add i64 1, %i
-  %a1 = load i64* %a
-  %mul_res = mul i64 %a1, %i
-  store i64 %mul_res, i64* %a
-  %a2 = load i64* %a
-  call void @print(i64 %a2)
-  %looptest = icmp sle i64 %nexti, 10
+  call void @print(i64 %i)
+  %looptest = icmp sle i64 %nexti, 4
   br i1 %looptest, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %loop
@@ -49,5 +60,5 @@ attributes #1 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "n
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}
 
-!0 = !{!"Apple LLVM version 7.0.0 (clang-700.1.76)"}
+!0 = !{!"Apple LLVM version 7.0.2 (clang-700.1.81)"}
 !1 = !{i32 1, !"PIC Level", i32 2}

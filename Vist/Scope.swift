@@ -9,19 +9,15 @@
 import Foundation
 //import LLVM
 
-class StackVariable {
-    var variable: LLVMValueRef
-    var type: LLVMTypeRef
-    let mutable: Bool
-    var ptr: LLVMValueRef?
-    
-    init(variable: LLVMValueRef, type: LLVMTypeRef, mutable: Bool, ptr: LLVMValueRef?) {
-        self.variable = variable
-        self.type = type
-        self.mutable = mutable
-        self.ptr = ptr
-    }
-}
+
+
+
+
+// TODO: Seperate types for vars
+// make a common protocol which defines different interfaces
+// 2 types, one for reference vals, and one for immutable shit
+// make the runtimeVariables object in `Scope` a heterogeneous dict of these
+// make this object responsible for generating the LLVM IR code for its getting and setting to make the `variable.codeGen(...)` function call a method on the protocol
 
 
 class Scope {
@@ -52,10 +48,10 @@ class Scope {
     
     func variable(name: String) throws -> StackVariable {
         
-        if let v = runtimeVariables[name] { return v }
+        if let v = runtimeVariables[name] where v.isValid() { return v }
         
         let inParent = try parentScope?.variable(name)
-        if let p = inParent where p.variable != nil { return p }
+        if let p = inParent where p.isValid() { return p }
         
         throw IRError.NoVariable(name)
     }
