@@ -1,4 +1,4 @@
-; ModuleID = 'vist_module'
+; ModuleID = 'example.ll'
 target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-macosx10.11.0"
 
@@ -14,8 +14,8 @@ define void @printStr() #0 {
 
 declare i32 @printf(i8*, ...) #1
 
-; Function Attrs: ssp uwtable
-define void @print(i64 %i) #0 {
+; Function Attrs: alwaysinline ssp uwtable
+define void @print(i64 %i) #2 {
   %1 = alloca i64, align 8
   store i64 %i, i64* %1, align 8
   %2 = load i64* %1, align 8
@@ -34,26 +34,19 @@ define void @printd(double %d) #0 {
 
 define i32 @main() {
 entry:
-  %a = alloca i64
-  store i64 0, i64* %a
-  br label %loop
-
-loop:                                             ; preds = %loop, %entry
-  %a1 = load i64* %a
-  %cmp_lt_res = icmp slt i64 %a1, 10
-  %a2 = load i64* %a
-  call void @print(i64 %a2)
-  %a3 = load i64* %a
-  %add_res = add i64 %a3, 1
-  store i64 %add_res, i64* %a
-  br i1 %cmp_lt_res, label %loop, label %afterloop
-
-afterloop:                                        ; preds = %loop
+  call void @foo()
   ret i32 0
+}
+
+define void @foo() {
+entry:
+  call void @print(i64 1)
+  ret void
 }
 
 attributes #0 = { ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { alwaysinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}

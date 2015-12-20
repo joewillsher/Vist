@@ -549,8 +549,6 @@ extension ElseIfBlock {
         for exp in block.expressions {
             try exp.codeGen(scope)
         }
-
-        // move to cont block
         
         // if the block does continues to the contBlock, move the builder there
         let returnsFromScope = block.expressions.contains { $0 is ReturnExpression }
@@ -615,29 +613,32 @@ extension ForInLoopExpression : IRGenerator {
     
 }
 
+// TODO: Break statements and passing break-to bb in scope
 
 extension WhileLoopExpression : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
+        
+        guard try iterator.condition.llvmType(scope) == LLVMInt1Type() else { throw IRError.NotBoolCondition }
+        
         // generate loop and termination blocks
         let loop = LLVMAppendBasicBlock(scope.function, "loop")
         let afterLoop = LLVMAppendBasicBlock(scope.function, "afterloop")
         
-        // move into loop block
-        LLVMBuildBr(builder, loop)
-        LLVMPositionBuilderAtEnd(builder, loop)
+        // whether to enter the while, first while check
+        let initialCond = try iterator.condition.codeGen(scope)
         
-        let cond = try iterator.condition.codeGen(scope)
-        let t = try iterator.condition.llvmType(scope)
-        LLVMDumpType(t)
-        guard try iterator.condition.llvmType(scope) == LLVMInt1Type() else { throw IRError.NotBoolCondition }
+        // move into loop block
+        LLVMBuildCondBr(builder, initialCond, loop, afterLoop)
+        LLVMPositionBuilderAtEnd(builder, loop)
         
         // gen the IR for the inner block
         let loopScope = Scope(block: loop, function: scope.function, parentScope: scope)
         try block.bbGenInline(scope: loopScope)
         
         // conditional break
-        LLVMBuildCondBr(builder, cond, loop, afterLoop)
+        let conditionalRepeat = try iterator.condition.codeGen(scope)
+        LLVMBuildCondBr(builder, conditionalRepeat, loop, afterLoop)
         
         // move back to loop / end loop
         LLVMPositionBuilderAtEnd(builder, afterLoop)

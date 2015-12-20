@@ -90,6 +90,16 @@ func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = fal
     let ir = String.fromCString(LLVMPrintModuleToString(module))!
     try ir.writeToFile("\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
     
+    
+    // Optimiser
+    let optimTask = NSTask()
+    optimTask.currentDirectoryPath = currentDirectory
+    optimTask.launchPath = "/usr/local/Cellar/llvm/3.6.2/bin/opt"
+    optimTask.arguments = ["-S", "-o", "\(file).ll", "\(file).ll"]
+    
+    optimTask.launch()
+    optimTask.waitUntilExit()
+    
     if irOnly { print(ir); return }
     if verbose { print(ir) }
     
@@ -110,7 +120,7 @@ func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = fal
 
     if asmOnly { print(asm); return }
     if verbose { print(asm) }
-
+    
     
     
     /// Compile IR Code task

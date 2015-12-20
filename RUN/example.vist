@@ -1,9 +1,5 @@
 
-var a = 0
 
-while a < 10 {
+func foo: () = do print(1)
 
-    print(a)
-    a = a + 1
-
-}
+foo()

@@ -22,5 +22,13 @@ func linkModule(inout module: LLVMModuleRef, withFile file: String) {
     LLVMGetBitcodeModule(buffer.memory, &helperModule, str)
     
     LLVMLinkModules(module, helperModule, LLVMLinkerDestroySource, str)
-        
+    
+    
+    
+    // Special cases for helper functions
+    
+//    let print = LLVMGetNamedFunction(module, "print")
+//    
+//    LLVMAddFunctionAttr(print, LLVMAlwaysInlineAttribute)
+//    
 }
