@@ -25,6 +25,7 @@ enum ParseError: ErrorType {
     case InvalidIfStatement
     case ExpectedIn(Pos), ExpectedDo(Pos)
     case NotIterator(Pos)
+    case NotBlock(Pos)
 }
 
 private extension Array {
@@ -33,7 +34,17 @@ private extension Array {
     }
 }
 
-
+private extension Token {
+    func isControlToken() -> Bool {
+        switch self {
+        case .Do, .OpenBrace: return true
+        default: return false
+        }
+    }
+    func isBrace() -> Bool {
+        if case .OpenBrace = self { return true } else { return false }
+    }
+}
 
 
 
@@ -321,22 +332,27 @@ struct Parser {
         // list of blocks
         var blocks: [(condition: Expression?, block: ScopeExpression)] = []
         
+        let usesBraces = currentToken.isBrace()
         // get if block & append
-        guard case .OpenBrace = currentToken else { throw ParseError.ExpectedBrace(currentPos) }
-        let block = try parseBraceExpressions()
+        guard currentToken.isControlToken() else { throw ParseError.ExpectedBrace(currentPos) }
+        let block = try parseBlockExpression()
         blocks.append((condition, block))
         
         while case .Else = currentToken {
             
             var condition: Expression? = nil
-            
-            if case .If = getNextToken() {
+
+            if case .If? = inspectNextToken() {
                 // `else if` statement
-                getNextToken()
+                getNextToken(); getNextToken()
                 condition = try parseOperatorExpression()
+                
+                if usesBraces {
+                    guard currentToken.isControlToken() else { throw ParseError.ExpectedBrace(currentPos) }
+                }
             }
-            guard case .OpenBrace = currentToken else { throw ParseError.ExpectedBrace(currentPos) }
-            let block = try parseBraceExpressions()
+            
+            let block = try parseBlockExpression()
             
             blocks.append((condition, block))
         }
@@ -345,7 +361,7 @@ struct Parser {
     }
     
     
-    private mutating func parseForInDoLoopExpression() throws -> ForInLoopExpression<RangeIteratorExpression> {
+    private mutating func parseForInLoopExpression() throws -> ForInLoopExpression<RangeIteratorExpression> {
         
         getNextToken() // eat 'for'
         let itentifier = try parseTextExpression() // bind loop label
@@ -353,11 +369,7 @@ struct Parser {
         getNextToken() // eat 'in'
         
         let loop = try parseLoopOperator()
-        guard case .Do = currentToken else { throw ParseError.ExpectedDo(currentPos) }
-        getNextToken() // eat 'do'
-        let block = try parseBraceExpressions()
-        
-        // TODO: Braceless expressions
+        let block = try parseBlockExpression()
         
         return ForInLoopExpression(identifier: itentifier, loop: loop, block: block)
     }
@@ -461,7 +473,7 @@ struct Parser {
                     nms.append(name)
                 }
                 
-                if case .Comma = getNextToken() {            // more params
+                if case .Comma = getNextToken() {   // more params
                     getNextToken()  // eat ','
                     continue        // move to next arg
                 }
@@ -503,6 +515,29 @@ struct Parser {
         return ReturnExpression(expression: try parseExpression(currentToken))
     }
     
+    private mutating func parseBracelessDoExpression() throws -> Block {
+        getNextToken() // eat 'do'
+        
+        let ex = try parseExpression(currentToken)
+        
+        return Block(expressions: [ex])
+    }
+    
+    private mutating func parseBlockExpression() throws -> Block {
+        
+        switch currentToken {
+            
+        case .OpenBrace:
+            return try parseBraceExpressions()
+            
+        case .Do, .Else:
+            return try parseBracelessDoExpression()
+            
+        default:
+            throw ParseError.NotBlock(currentPos)
+        }
+        
+    }
     
     
     
@@ -540,7 +575,8 @@ struct Parser {
         case     .InfixOperator:        return try parseOperatorExpression()
         case let .Comment(str):         return try parseCommentExpression(str)
         case     .If:                   return try parseIfExpression()
-        case     .For:                  return try parseForInDoLoopExpression()
+        case     .For:                  return try parseForInLoopExpression()
+        case     .Do:                   return try parseBracelessDoExpression()
         case let .Integer(i):           return parseIntExpression(i)
         case let .FloatingPoint(x):     return parseFloatingPointExpression(x)
         case let .Str(str):             return parseStringExpression(str)

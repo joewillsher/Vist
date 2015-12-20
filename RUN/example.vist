@@ -1,9 +1,4 @@
 
-var a = 4
-print(a)
-a = 3
-print(a)
 
-for i in 2 ... 4 do {
-    print(i)
-}
+let a = 2
+if a == 2 { print(a) } else if a == 3 { print(11) }

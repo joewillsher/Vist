@@ -621,8 +621,19 @@ extension Block {
 //extension RangeIteratorExpression {
 //    
 //    func add
-//    
+//
 //}
+
+
+
+
+
+// TODO: Change syntax
+// if x == 1 do fn else do gn
+// if x == 1 { fn } else { gn }
+// 2 different ways of doing expressions
+// make sure this code is generic across different brace expressions
+
 
 
 

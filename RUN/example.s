@@ -81,29 +81,24 @@ Ltmp10:
 	movq	%rsp, %rbp
 Ltmp11:
 	.cfi_def_cfa_register %rbp
-	pushq	%rbx
-	pushq	%rax
-Ltmp12:
-	.cfi_offset %rbx, -24
-	movq	$4, -16(%rbp)
-	movl	$4, %edi
+	subq	$16, %rsp
+	movq	$2, -8(%rbp)
+	movb	$1, %al
+	testb	%al, %al
+	je	LBB3_1
+## BB#3:                                ## %then0
+	movq	-8(%rbp), %rdi
 	callq	_print
-	movq	$3, -16(%rbp)
-	movl	$3, %edi
+	jmp	LBB3_2
+LBB3_1:                                 ## %cont0
+	cmpq	$3, -8(%rbp)
+	jne	LBB3_2
+## BB#4:                                ## %then1
+	movl	$11, %edi
 	callq	_print
-	movl	$2, %ebx
-	.align	4, 0x90
-LBB3_1:                                 ## %loop
-                                        ## =>This Inner Loop Header: Depth=1
-	movq	%rbx, %rdi
-	callq	_print
-	incq	%rbx
-	cmpq	$5, %rbx
-	jl	LBB3_1
-## BB#2:                                ## %afterloop
+LBB3_2:                                 ## %cont
 	xorl	%eax, %eax
-	addq	$8, %rsp
-	popq	%rbx
+	addq	$16, %rsp
 	popq	%rbp
 	retq
 	.cfi_endproc

@@ -11,15 +11,6 @@ import Foundation
 
 
 
-
-
-// TODO: Seperate types for vars
-// make a common protocol which defines different interfaces
-// 2 types, one for reference vals, and one for immutable shit
-// make the runtimeVariables object in `Scope` a heterogeneous dict of these
-// make this object responsible for generating the LLVM IR code for its getting and setting to make the `variable.codeGen(...)` function call a method on the protocol
-
-
 class Scope {
     
     private var runtimeVariables: [String: StackVariable]
@@ -55,23 +46,6 @@ class Scope {
         
         throw IRError.NoVariable(name)
     }
-    
-//    func variableType(name: String) throws -> LLVMTypeRef {
-//        if let v = runtimeVariables[name] { return v.1 }
-//        
-//        let inParent = try parentScope?.variableType(name)
-//        if let p = inParent where p != nil { return p }
-//        
-//        throw IRError.NoVariable(name)
-//    }
-//    func variableMutable(name: String) throws -> Bool {
-//        if let v = runtimeVariables[name] { return v.2 }
-//        
-//        let inParent = try parentScope?.variableMutable(name)
-//        if let p = inParent { return p }
-//        
-//        throw IRError.NoVariable(name)
-//    }
 
     func functionType(name: String) throws -> LLVMValueRef {
         if let v = functionTypes[name] { return v }
@@ -81,18 +55,7 @@ class Scope {
         
         throw IRError.NoVariable(name)
     }
-    
-//    func mutateVariable(name: String, setValue val: LLVMValueRef) throws {
-//        
-//        var ref = try variable(name), type = try variableType(name)
-//        
-//        guard try variableMutable(name) else { throw IRError.NotMutable }
-//        guard type == LLVMTypeOf(val) else { throw IRError.MisMatchedTypes }
-//        
-//        ref = val
-//    }
-//    
-    
+        
 }
 
 
