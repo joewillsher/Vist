@@ -76,11 +76,15 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "-b"
+            argument = "-build-only"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "-v"
+            argument = "-verbose"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-profile"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument

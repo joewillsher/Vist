@@ -306,17 +306,6 @@ struct Parser {
         }
     }
     
-    private mutating func parseLoopOperator() throws -> RangeIteratorExpression {
-        
-        guard
-            let o = try parseOperatorExpression() as? BinaryExpression,
-            let lhs = o.lhs as? IntegerType,
-            let rhs = o.rhs as? IntegerType
-            else { throw ParseError.NotIterator(currentPos) }
-        
-        return RangeIteratorExpression(s: lhs.val, e: rhs.val)
-    }
-    
     
     
     //-------------------------------------------------------------------------------------------------------------------------
@@ -369,14 +358,40 @@ struct Parser {
         guard case .In = getNextToken() else { throw ParseError.ExpectedIn(currentPos) }
         getNextToken() // eat 'in'
         
-        let loop = try parseLoopOperator()
+        let loop = try parseForInIterator()
         let block = try parseBlockExpression()
         
-        return ForInLoopExpression(identifier: itentifier, loop: loop, block: block)
+        return ForInLoopExpression(identifier: itentifier, iterator: loop, block: block)
     }
     
+    private mutating func parseWhileLoopExpression() throws -> WhileLoopExpression<WhileIteratorExpression> {
+        
+        getNextToken() // eat 'while'
+        
+        let iterator = try parseWhileIterator()
+        let block = try parseBlockExpression()
+        
+        return WhileLoopExpression(iterator: iterator, block: block)
+    }
+
     
+    private mutating func parseForInIterator() throws -> RangeIteratorExpression {
+        
+        guard
+            let o = try parseOperatorExpression() as? BinaryExpression,
+            let lhs = o.lhs as? IntegerType,
+            let rhs = o.rhs as? IntegerType
+            else { throw ParseError.NotIterator(currentPos) }
+        
+        return RangeIteratorExpression(s: lhs.val, e: rhs.val)
+    }
     
+    private mutating func parseWhileIterator() throws -> WhileIteratorExpression {
+
+        let cond = try parseOperatorExpression()
+        
+        return WhileIteratorExpression(condition: cond)
+    }
     
     
     
@@ -490,9 +505,9 @@ struct Parser {
             names = (0..<type.args.elements.count).map{"$\($0)"}.map{ ValueType.init(name: $0) }
         }
         
-        guard case .OpenBrace = currentToken else { throw ParseError.ExpectedBrace(currentPos) }
+        guard currentToken.isControlToken() else { throw ParseError.ExpectedBrace(currentPos) }
         
-        return FunctionImplementation(params: Tuple(elements: names), body: try parseBraceExpressions())
+        return FunctionImplementation(params: Tuple(elements: names), body: try parseBlockExpression())
     }
     
     private mutating func parseBraceExpressions() throws -> Block {
@@ -527,15 +542,9 @@ struct Parser {
     private mutating func parseBlockExpression() throws -> Block {
         
         switch currentToken {
-            
-        case .OpenBrace:
-            return try parseBraceExpressions()
-            
-        case .Do, .Else:
-            return try parseBracelessDoExpression()
-            
-        default:
-            throw ParseError.NotBlock(currentPos)
+        case .OpenBrace:    return try parseBraceExpressions()
+        case .Do, .Else:    return try parseBracelessDoExpression()
+        default:            throw ParseError.NotBlock(currentPos)
         }
         
     }
@@ -578,6 +587,7 @@ struct Parser {
         case     .If:                   return try parseIfExpression()
         case     .For:                  return try parseForInLoopExpression()
         case     .Do:                   return try parseBracelessDoExpression()
+        case     .While:                return try parseWhileLoopExpression()
         case let .Integer(i):           return parseIntExpression(i)
         case let .FloatingPoint(x):     return parseFloatingPointExpression(x)
         case let .Str(str):             return parseStringExpression(str)

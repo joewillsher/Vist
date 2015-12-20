@@ -295,65 +295,64 @@ class ConditionalExpression : Expression {
     }
 }
 
-class ForInLoopExpression<Iterator : IteratorExpression> : Expression {
+protocol LoopExpression : Expression {
+    
+    typealias Iterator: IteratorExpression
+    
+    var iterator: Iterator { get }
+    var block: Block { get }
+}
+
+
+class ForInLoopExpression<Iterator : IteratorExpression> : LoopExpression {
     
     let binded: Variable
     let iterator: Iterator
     let block: Block
     
-    init(identifier: Variable, loop: Iterator, block: Block) {
-        binded = identifier
-        self.iterator = loop
+    init(identifier: Variable, iterator: Iterator, block: Block) {
+        self.binded = identifier
+        self.iterator = iterator
         self.block = block
     }
     
+}
+
+class WhileLoopExpression<Iterator : IteratorExpression> : LoopExpression {
+    
+    let iterator: WhileIteratorExpression
+    let block: Block
+    
+    init(iterator: WhileIteratorExpression, block: Block) {
+        self.iterator = iterator
+        self.block = block
+    }
     
 }
 
 
 protocol IteratorExpression : Expression {
-    
-    typealias IteratorType: Expression
-    
-    func next() -> IteratorType?
-    
-    
 }
 
 class RangeIteratorExpression : IteratorExpression {
-    
-    typealias IteratorType = IntegerLiteral
     
     let start: Int, end: Int
     
     init(s: Int, e: Int) {
         start = s
         end = e
-        c = start
-    }
-    
-    private var c: Int
-    
-    func next() -> IteratorType? {
-        defer { c+=1 }
-        return IntegerLiteral(val: c)
     }
 }
 
-//class WhileIteratorExpression : IteratorExpression {
-//    
-//    typealias IteratorType = BooleanLiteral
-//    
-//    private var cond: Bool = true
-//    
-//    // provide method for
-//    
-//    
-//    func next() -> GeneratorType? {
-//        return BooleanLiteral(val: true)
-//    }
-//    
-//}
+class WhileIteratorExpression : IteratorExpression {
+    
+    let condition: Expression
+    
+    init(condition: Expression) {
+        self.condition = condition
+    }
+    
+}
 
 
 

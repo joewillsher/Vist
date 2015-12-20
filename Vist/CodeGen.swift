@@ -12,7 +12,7 @@ import Foundation
 enum IRError: ErrorType {
     case NotIRGenerator, NotBBGenerator, NoOperator, MisMatchedTypes, NoLLVMFloat(UInt32), WrongFunctionApplication(String), NoLLVMType, NoBody, InvalidFunction, NoVariable(String), NoBool, TypeNotFound, NotMutable
     case CannotAssignToVoid, CannotAssignToType(Expression.Type)
-    case ForLoopIteratorNotInt
+    case ForLoopIteratorNotInt, NotBoolCondition
 }
 
 
@@ -22,12 +22,12 @@ private var module: LLVMModuleRef = nil
 
 
 /// A type which can generate LLVM IR code
-protocol IRGenerator {
+private protocol IRGenerator {
     func codeGen(scope: Scope) throws -> LLVMValueRef
     func llvmType(scope: Scope) throws -> LLVMTypeRef
 }
 
-protocol BasicBlockGenerator {
+private protocol BasicBlockGenerator {
     func bbGen(innerScope scope: Scope, fn: LLVMValueRef) throws -> LLVMBasicBlockRef
 }
 
@@ -272,10 +272,18 @@ extension BinaryExpression: IRGenerator {
     }
     
     func llvmType(scope: Scope) throws -> LLVMTypeRef {
-        let a = try lhs.llvmType(scope)
-        let b = try lhs.llvmType(scope)
         
-        if a == b { return a } else { throw IRError.MisMatchedTypes }
+        switch op {
+        case "<", ">", "==", "!=", ">=", "<=":
+            return LLVMInt1Type()
+            
+        default:
+            let a = try lhs.llvmType(scope)
+            let b = try lhs.llvmType(scope)
+            
+            if a == b { return a } else { throw IRError.MisMatchedTypes }
+        }
+        
     }
     
 }
@@ -607,6 +615,41 @@ extension ForInLoopExpression : IRGenerator {
     
 }
 
+
+extension WhileLoopExpression : IRGenerator {
+    
+    func codeGen(scope: Scope) throws -> LLVMValueRef {
+        // generate loop and termination blocks
+        let loop = LLVMAppendBasicBlock(scope.function, "loop")
+        let afterLoop = LLVMAppendBasicBlock(scope.function, "afterloop")
+        
+        // move into loop block
+        LLVMBuildBr(builder, loop)
+        LLVMPositionBuilderAtEnd(builder, loop)
+        
+        let cond = try iterator.condition.codeGen(scope)
+        let t = try iterator.condition.llvmType(scope)
+        LLVMDumpType(t)
+        guard try iterator.condition.llvmType(scope) == LLVMInt1Type() else { throw IRError.NotBoolCondition }
+        
+        // gen the IR for the inner block
+        let loopScope = Scope(block: loop, function: scope.function, parentScope: scope)
+        try block.bbGenInline(scope: loopScope)
+        
+        // conditional break
+        LLVMBuildCondBr(builder, cond, loop, afterLoop)
+        
+        // move back to loop / end loop
+        LLVMPositionBuilderAtEnd(builder, afterLoop)
+        scope.block = afterLoop
+        
+        return nil
+    }
+    
+}
+
+
+
 extension Block {
     
     func bbGenInline(scope scope: Scope) throws {
@@ -619,26 +662,6 @@ extension Block {
     }
     
 }
-
-//extension RangeIteratorExpression {
-//    
-//    func add
-//
-//}
-
-
-
-
-
-// TODO: Change syntax
-// if x == 1 do fn else do gn
-// if x == 1 { fn } else { gn }
-// 2 different ways of doing expressions
-// make sure this code is generic across different brace expressions
-
-
-
-
 
 
 

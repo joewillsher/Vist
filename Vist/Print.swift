@@ -263,3 +263,18 @@ extension RangeIteratorExpression {
     }
 }
 
+extension WhileLoopExpression {
+    
+    func printList() -> [(String?, Printable)]? {
+        return [("while", iterator), ("do", block)]
+    }
+    
+}
+
+extension WhileIteratorExpression {
+    
+    func printList() -> [(String?, Printable)]? {
+        return [("cond", condition)]
+    }
+}
+

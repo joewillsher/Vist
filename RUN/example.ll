@@ -34,29 +34,22 @@ define void @printd(double %d) #0 {
 
 define i32 @main() {
 entry:
+  %a = alloca i64
+  store i64 0, i64* %a
   br label %loop
 
 loop:                                             ; preds = %loop, %entry
-  %i = phi i64 [ 0, %entry ], [ %nexti, %loop ]
-  %nexti = add i64 1, %i
-  call void @print(i64 %i)
-  %looptest = icmp sle i64 %nexti, 10
-  br i1 %looptest, label %loop, label %afterloop
-
-afterloop:                                        ; preds = %loop
-  %a = alloca i64
-  store i64 2, i64* %a
   %a1 = load i64* %a
-  %cmp_eq_res = icmp eq i64 %a1, 2
-  br i1 %cmp_eq_res, label %then0, label %cont
-
-cont:                                             ; preds = %afterloop, %then0
-  ret i32 0
-
-then0:                                            ; preds = %afterloop
+  %cmp_lt_res = icmp slt i64 %a1, 10
   %a2 = load i64* %a
   call void @print(i64 %a2)
-  br label %cont
+  %a3 = load i64* %a
+  %add_res = add i64 %a3, 1
+  store i64 %add_res, i64* %a
+  br i1 %cmp_lt_res, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %loop
+  ret i32 0
 }
 
 attributes #0 = { ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

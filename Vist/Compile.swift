@@ -9,7 +9,7 @@
 import Foundation
 
 
-func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = false, irOnly: Bool = false, asmOnly: Bool = false, buildOnly: Bool = false) throws {
+func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = false, irOnly: Bool = false, asmOnly: Bool = false, buildOnly: Bool = false, profile: Bool = true) throws {
     
     let file = fileName.stringByReplacingOccurrencesOfString(".vist", withString: "")
     let currentDirectory = NSTask().currentDirectoryPath
@@ -71,6 +71,7 @@ func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = fal
     linkModule(&module, withFile: "helper.bc")
     configModule(module)
     
+    if verbose { LLVMDumpModule(module) }
     
     
     
@@ -134,9 +135,16 @@ func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = fal
     runTask.currentDirectoryPath = currentDirectory
     runTask.launchPath = "\(currentDirectory)/\(file)"
     
+    let t0 = CFAbsoluteTimeGetCurrent()
+    
     runTask.launch()
     runTask.waitUntilExit()
     
+    if profile {
+        let t = CFAbsoluteTimeGetCurrent() - t0
+        print("\n--------\nTime elapsed: \(t)s")
+    }
+
 }
 
 

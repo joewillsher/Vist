@@ -85,29 +85,19 @@ Ltmp11:
 	pushq	%rax
 Ltmp12:
 	.cfi_offset %rbx, -24
-	xorl	%ebx, %ebx
+	movq	$0, -16(%rbp)
 	.align	4, 0x90
 LBB3_1:                                 ## %loop
                                         ## =>This Inner Loop Header: Depth=1
+	movq	-16(%rbp), %rbx
 	movq	%rbx, %rdi
 	callq	_print
-	incq	%rbx
-	cmpq	$11, %rbx
+	incq	-16(%rbp)
+	cmpq	$10, %rbx
 	jl	LBB3_1
 ## BB#2:                                ## %afterloop
-	movq	%rsp, %rcx
-	leaq	-16(%rcx), %rax
-	movq	%rax, %rsp
-	movq	$2, -16(%rcx)
-	movb	$1, %cl
-	testb	%cl, %cl
-	je	LBB3_4
-## BB#3:                                ## %then0
-	movq	(%rax), %rdi
-	callq	_print
-LBB3_4:                                 ## %cont
 	xorl	%eax, %eax
-	leaq	-8(%rbp), %rsp
+	addq	$8, %rsp
 	popq	%rbx
 	popq	%rbp
 	retq

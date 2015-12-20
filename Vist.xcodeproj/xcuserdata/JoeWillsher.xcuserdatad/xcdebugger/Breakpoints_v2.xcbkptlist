@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/CodeGen.swift"
-            timestampString = "472135627.750814"
+            timestampString = "472336781.087471"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "335"
-            endingLineNumber = "335"
+            startingLineNumber = "344"
+            endingLineNumber = "344"
             landmarkName = "params()"
             landmarkType = "5">
          </BreakpointContent>
@@ -26,11 +26,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/CodeGen.swift"
-            timestampString = "472330851.75179"
+            timestampString = "472336781.087471"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "655"
-            endingLineNumber = "655"
+            startingLineNumber = "700"
+            endingLineNumber = "700"
             landmarkName = "IRGen(module:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -47,7 +47,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "64"
             endingLineNumber = "64"
-            landmarkName = "compileDocument(_:verbose:dumpAST:irOnly:asmOnly:buildOnly:)"
+            landmarkName = "compileDocument(_:verbose:dumpAST:irOnly:asmOnly:buildOnly:profile:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -58,12 +58,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Compile.swift"
-            timestampString = "471796353.13477"
+            timestampString = "472333599.826905"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "74"
-            endingLineNumber = "74"
-            landmarkName = "compileDocument(_:verbose:dumpAST:irOnly:asmOnly:buildOnly:)"
+            startingLineNumber = "75"
+            endingLineNumber = "75"
+            landmarkName = "compileDocument(_:verbose:dumpAST:irOnly:asmOnly:buildOnly:profile:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -79,7 +79,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "68"
             endingLineNumber = "68"
-            landmarkName = "compileDocument(_:verbose:dumpAST:irOnly:asmOnly:buildOnly:)"
+            landmarkName = "compileDocument(_:verbose:dumpAST:irOnly:asmOnly:buildOnly:profile:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -90,12 +90,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Compile.swift"
-            timestampString = "471796353.13477"
+            timestampString = "472333599.826905"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "85"
-            endingLineNumber = "85"
-            landmarkName = "compileDocument(_:verbose:dumpAST:irOnly:asmOnly:buildOnly:)"
+            startingLineNumber = "86"
+            endingLineNumber = "86"
+            landmarkName = "compileDocument(_:verbose:dumpAST:irOnly:asmOnly:buildOnly:profile:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -106,12 +106,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Compile.swift"
-            timestampString = "471796353.13477"
+            timestampString = "472333599.826905"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "91"
-            endingLineNumber = "91"
-            landmarkName = "compileDocument(_:verbose:dumpAST:irOnly:asmOnly:buildOnly:)"
+            startingLineNumber = "92"
+            endingLineNumber = "92"
+            landmarkName = "compileDocument(_:verbose:dumpAST:irOnly:asmOnly:buildOnly:profile:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -122,11 +122,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Parser.swift"
-            timestampString = "472329884.893913"
+            timestampString = "472335802.844544"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "515"
-            endingLineNumber = "515"
+            startingLineNumber = "530"
+            endingLineNumber = "530"
             landmarkName = "parseReturnExpression()"
             landmarkType = "5">
          </BreakpointContent>
@@ -138,11 +138,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Parser.swift"
-            timestampString = "472329884.893913"
+            timestampString = "472335802.844544"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "507"
-            endingLineNumber = "507"
+            startingLineNumber = "522"
+            endingLineNumber = "522"
             landmarkName = "parseBraceExpressions()"
             landmarkType = "5">
          </BreakpointContent>
@@ -154,11 +154,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Parser.swift"
-            timestampString = "472329884.893913"
+            timestampString = "472335556.067402"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "360"
-            endingLineNumber = "360"
+            startingLineNumber = "349"
+            endingLineNumber = "349"
             landmarkName = "parseIfExpression()"
             landmarkType = "5">
          </BreakpointContent>
@@ -170,11 +170,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Parser.swift"
-            timestampString = "472329884.893913"
+            timestampString = "472335802.844544"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "505"
-            endingLineNumber = "505"
+            startingLineNumber = "520"
+            endingLineNumber = "520"
             landmarkName = "parseBraceExpressions()"
             landmarkType = "5">
          </BreakpointContent>
@@ -202,11 +202,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Parser.swift"
-            timestampString = "472329884.893913"
+            timestampString = "472335802.844544"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "509"
-            endingLineNumber = "509"
+            startingLineNumber = "524"
+            endingLineNumber = "524"
             landmarkName = "parseBraceExpressions()"
             landmarkType = "5">
          </BreakpointContent>
@@ -218,11 +218,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Parser.swift"
-            timestampString = "472329884.893913"
+            timestampString = "472335802.844544"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "508"
-            endingLineNumber = "508"
+            startingLineNumber = "523"
+            endingLineNumber = "523"
             landmarkName = "parseBraceExpressions()"
             landmarkType = "5">
          </BreakpointContent>
@@ -282,12 +282,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Parser.swift"
-            timestampString = "472329487.843847"
+            timestampString = "472335841.219451"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "317"
-            endingLineNumber = "317"
-            landmarkName = "parseLoopOperator()"
+            startingLineNumber = "415"
+            endingLineNumber = "415"
+            landmarkName = "parseVariableAssignmentMutable(_:)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -298,12 +298,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Parser.swift"
-            timestampString = "472329487.843847"
+            timestampString = "472335855.990371"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "316"
-            endingLineNumber = "316"
-            landmarkName = "parseLoopOperator()"
+            startingLineNumber = "265"
+            endingLineNumber = "265"
+            landmarkName = "parseOperationRHS(_:lhs:)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -314,12 +314,44 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Parser.swift"
-            timestampString = "472329487.843847"
+            timestampString = "472335894.578347"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "315"
-            endingLineNumber = "315"
-            landmarkName = "parseLoopOperator()"
+            startingLineNumber = "305"
+            endingLineNumber = "305"
+            landmarkName = "parseOperationRHS(_:lhs:)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Vist/Parser.swift"
+            timestampString = "472335910.271936"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "417"
+            endingLineNumber = "417"
+            landmarkName = "parseVariableAssignmentMutable(_:)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Vist/Parser.swift"
+            timestampString = "472335932.659686"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "611"
+            endingLineNumber = "611"
+            landmarkName = "parse()"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

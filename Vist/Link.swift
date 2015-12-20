@@ -22,7 +22,5 @@ func linkModule(inout module: LLVMModuleRef, withFile file: String) {
     LLVMGetBitcodeModule(buffer.memory, &helperModule, str)
     
     LLVMLinkModules(module, helperModule, LLVMLinkerDestroySource, str)
-    
-    LLVMDumpModule(module)
-    
+        
 }
