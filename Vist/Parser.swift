@@ -340,8 +340,8 @@ struct Parser {
         
         while case .Else = currentToken {
             
-            var condition: Expression? = nil
-
+            var condition: Expression?
+            
             if case .If? = inspectNextToken() {
                 // `else if` statement
                 getNextToken(); getNextToken()
@@ -350,7 +350,8 @@ struct Parser {
                 if usesBraces {
                     guard currentToken.isControlToken() else { throw ParseError.ExpectedBrace(currentPos) }
                 }
-            }
+                
+            } else { condition = nil }
             
             let block = try parseBlockExpression()
             

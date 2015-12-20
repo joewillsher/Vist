@@ -595,10 +595,12 @@ extension ForInLoopExpression : IRGenerator {
         let comp = LLVMBuildICmp(builder, LLVMIntSLE, next, end, "looptest")
         LLVMBuildCondBr(builder, comp, loop, afterLoop)
         
-        
+        // move back to loop / end loop
         LLVMAddIncoming(i, [next].ptr(), [loopScope.block].ptr(), 1)
         
         LLVMPositionBuilderAtEnd(builder, afterLoop)
+        scope.block = afterLoop
+        
         return nil
     }
     

@@ -34,27 +34,28 @@ define void @printd(double %d) #0 {
 
 define i32 @main() {
 entry:
+  br label %loop
+
+loop:                                             ; preds = %loop, %entry
+  %i = phi i64 [ 0, %entry ], [ %nexti, %loop ]
+  %nexti = add i64 1, %i
+  call void @print(i64 %i)
+  %looptest = icmp sle i64 %nexti, 10
+  br i1 %looptest, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %loop
   %a = alloca i64
   store i64 2, i64* %a
   %a1 = load i64* %a
   %cmp_eq_res = icmp eq i64 %a1, 2
-  br i1 %cmp_eq_res, label %then0, label %cont0
+  br i1 %cmp_eq_res, label %then0, label %cont
 
-cont:                                             ; preds = %cont0, %then1, %then0
+cont:                                             ; preds = %afterloop, %then0
   ret i32 0
 
-cont0:                                            ; preds = %entry
-  %a3 = load i64* %a
-  %cmp_eq_res4 = icmp eq i64 %a3, 3
-  br i1 %cmp_eq_res4, label %then1, label %cont
-
-then0:                                            ; preds = %entry
+then0:                                            ; preds = %afterloop
   %a2 = load i64* %a
   call void @print(i64 %a2)
-  br label %cont
-
-then1:                                            ; preds = %cont0
-  call void @print(i64 11)
   br label %cont
 }
 
