@@ -72,7 +72,7 @@ Ltmp10:
 Ltmp11:
 	.cfi_def_cfa_register %rbp
 	leaq	L_.str1(%rip), %rdi
-	movl	$3, %esi
+	movl	$13, %esi
 	xorl	%eax, %eax
 	callq	_printf
 	xorl	%eax, %eax
@@ -111,14 +111,7 @@ Ltmp16:
 	movq	%rsp, %rbp
 Ltmp17:
 	.cfi_def_cfa_register %rbp
-	cmpq	$11, %rdi
-	jl	LBB5_2
-## BB#1:                                ## %then0
-	movl	$3, %eax
-	popq	%rbp
-	retq
-LBB5_2:                                 ## %else1
-	movl	$1, %eax
+	leaq	(%rdi,%rsi), %rax
 	popq	%rbp
 	retq
 	.cfi_endproc

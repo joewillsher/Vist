@@ -34,7 +34,7 @@ define void @printd(double %d) #0 {
 
 define i32 @main() {
 entry:
-  %0 = call i64 @bar(i64 11)
+  %0 = call i64 @bar(i64 11, i64 2)
   call void @print(i64 %0)
   ret i32 0
 }
@@ -45,19 +45,10 @@ entry:
   ret i64 %add_res
 }
 
-define i64 @bar(i64 %"$0") {
+define i64 @bar(i64 %a, i64 %b) {
 entry:
-  %cmp_gt_res = icmp sgt i64 %"$0", 10
-  br i1 %cmp_gt_res, label %then0, label %cont0
-
-cont0:                                            ; preds = %entry
-  br label %else1
-
-then0:                                            ; preds = %entry
-  ret i64 3
-
-else1:                                            ; preds = %cont0
-  ret i64 1
+  %add_res = add i64 %a, %b
+  ret i64 %add_res
 }
 
 attributes #0 = { ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

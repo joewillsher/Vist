@@ -2,12 +2,13 @@
 
 
 func foo: (Int) -> Int = do return $0 + 1
+// TODO: make return an actiony keyword too
 
 
-func bar: (Int) -> Int = do if $0 > 10 do return 3 else return 1
+func bar: (Int, Int) -> Int = |a, b| { return a + b }
 
 
-print(bar(11))
+print(bar(11, 2))
 
 
 
