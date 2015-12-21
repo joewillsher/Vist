@@ -13,11 +13,9 @@ Ltmp1:
 	movq	%rsp, %rbp
 Ltmp2:
 	.cfi_def_cfa_register %rbp
-	leaq	L_.str(%rip), %rdi
-	xorl	%eax, %eax
-	callq	_printf
+	leaq	L_str(%rip), %rdi
 	popq	%rbp
-	retq
+	jmp	_puts                   ## TAILCALL
 	.cfi_endproc
 
 	.globl	_print
@@ -33,16 +31,12 @@ Ltmp4:
 	movq	%rsp, %rbp
 Ltmp5:
 	.cfi_def_cfa_register %rbp
-	subq	$16, %rsp
 	movq	%rdi, %rcx
-	movq	%rcx, -8(%rbp)
 	leaq	L_.str1(%rip), %rdi
 	xorl	%eax, %eax
 	movq	%rcx, %rsi
-	callq	_printf
-	addq	$16, %rsp
 	popq	%rbp
-	retq
+	jmp	_printf                 ## TAILCALL
 	.cfi_endproc
 
 	.globl	_printd
@@ -58,14 +52,10 @@ Ltmp7:
 	movq	%rsp, %rbp
 Ltmp8:
 	.cfi_def_cfa_register %rbp
-	subq	$16, %rsp
-	movsd	%xmm0, -8(%rbp)
 	leaq	L_.str2(%rip), %rdi
 	movb	$1, %al
-	callq	_printf
-	addq	$16, %rsp
 	popq	%rbp
-	retq
+	jmp	_printf                 ## TAILCALL
 	.cfi_endproc
 
 	.globl	_main
@@ -81,27 +71,36 @@ Ltmp10:
 	movq	%rsp, %rbp
 Ltmp11:
 	.cfi_def_cfa_register %rbp
-	callq	_foo
-	xorl	%eax, %eax
-	popq	%rbp
-	retq
-	.cfi_endproc
-
-	.globl	_foo
-	.align	4, 0x90
-_foo:                                   ## @foo
-	.cfi_startproc
-## BB#0:                                ## %entry
-	pushq	%rbp
+	pushq	%r15
+	pushq	%r14
+	pushq	%rbx
+	pushq	%rax
 Ltmp12:
-	.cfi_def_cfa_offset 16
+	.cfi_offset %rbx, -40
 Ltmp13:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
+	.cfi_offset %r14, -32
 Ltmp14:
-	.cfi_def_cfa_register %rbp
-	movl	$1, %edi
-	callq	_print
+	.cfi_offset %r15, -24
+	movl	$1, %r15d
+	movl	$7, %ebx
+	leaq	L_.str1(%rip), %r14
+	.align	4, 0x90
+LBB3_1:                                 ## %loop
+                                        ## =>This Inner Loop Header: Depth=1
+	incq	%r15
+	xorl	%eax, %eax
+	movq	%r14, %rdi
+	movq	%rbx, %rsi
+	callq	_printf
+	addq	$7, %rbx
+	cmpq	$100001, %r15           ## imm = 0x186A1
+	jl	LBB3_1
+## BB#2:                                ## %afterloop
+	xorl	%eax, %eax
+	addq	$8, %rsp
+	popq	%rbx
+	popq	%r14
+	popq	%r15
 	popq	%rbp
 	retq
 	.cfi_endproc
@@ -115,6 +114,9 @@ L_.str1:                                ## @.str1
 
 L_.str2:                                ## @.str2
 	.asciz	"%f\n"
+
+L_str:                                  ## @str
+	.asciz	"sup meme"
 
 
 .subsections_via_symbols

@@ -1,5 +1,13 @@
 
 
-func foo: () = do print(1)
+func foo: (Int) -> Int = do return $0
 
-foo()
+
+func bar: (Int) -> Int = do if $0 > 10 do return 3 else return 1
+
+
+print(bar(11))
+
+
+
+// TODO: multi line comments

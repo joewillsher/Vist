@@ -275,7 +275,7 @@ struct Parser {
             getNextToken()
             
             // Error handling
-            let rhs = try parsePrimary()
+            let rhs = try parseOperatorExpression()
             
             // Get next operator
             guard case let .InfixOperator(nextOp) = currentToken else { return BinaryExpression(op: op, lhs: lhs, rhs: rhs) }
@@ -321,6 +321,7 @@ struct Parser {
         // list of blocks
         var blocks: [(condition: Expression?, block: ScopeExpression)] = []
         
+        print(currentToken)
         let usesBraces = currentToken.isBrace()
         // get if block & append
         guard currentToken.isControlToken() else { throw ParseError.ExpectedBrace(currentPos) }
@@ -341,6 +342,10 @@ struct Parser {
                 }
                 
             } else { condition = nil }
+            
+            if usesBraces {
+                getNextToken()
+            }
             
             let block = try parseBlockExpression()
             

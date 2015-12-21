@@ -20,6 +20,7 @@ do {
     let asm = args.contains("-emit-asm")
     let b = args.contains("-build-only") || args.contains("-b")
     let profile = args.contains("-profile") || args.contains("-p")
+    let o = args.contains("-O")
     
     if a.contains("-h") || a.contains("-help") {
         
@@ -27,7 +28,7 @@ do {
         
     } else {
         
-        try compileDocument(doc, verbose: verbose, dumpAST: ast, irOnly: ir, asmOnly: asm, buildOnly: b, profile: profile)
+        try compileDocument(doc, verbose: verbose, dumpAST: ast, irOnly: ir, asmOnly: asm, buildOnly: b, profile: profile, optim: o)
         
         print("\n")
     }

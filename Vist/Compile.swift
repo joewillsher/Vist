@@ -9,7 +9,7 @@
 import Foundation
 
 
-func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = false, irOnly: Bool = false, asmOnly: Bool = false, buildOnly: Bool = false, profile: Bool = true) throws {
+func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = false, irOnly: Bool = false, asmOnly: Bool = false, buildOnly: Bool = false, profile: Bool = true, optim: Bool = true) throws {
     
     let file = fileName.stringByReplacingOccurrencesOfString(".vist", withString: "")
     let currentDirectory = NSTask().currentDirectoryPath
@@ -18,7 +18,7 @@ func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = fal
     
     
     let doc = try String(contentsOfFile: fileName, encoding: NSUTF8StringEncoding)
-    if verbose { print("------------------SOURCE-------------------\n\n\(doc)\n\n\n-------------------TOKS--------------------\n") }
+    if verbose { print("----------------------------SOURCE-----------------------------\n\n\(doc)\n\n\n-----------------------------TOKS------------------------------\n") }
     
     // http://llvm.org/docs/tutorial/LangImpl1.html#language
     
@@ -34,7 +34,7 @@ func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = fal
         
     
     
-    if verbose { print("\n\n--------------------AST---------------------\n") }
+    if verbose { print("\n\n------------------------------AST-------------------------------\n") }
 
     // parse tokens & generate AST
     var parser = Parser(tokens: tokens)
@@ -45,7 +45,7 @@ func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = fal
     
     
     
-    if verbose { print("\n\n-------------------LINK--------------------\n") }
+    if verbose { print("\n\n-----------------------------LINK------------------------------\n") }
 
     /// Generate LLVM IR File for the helper c++ code
     let helperIRGenTask = NSTask()
@@ -71,7 +71,7 @@ func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = fal
     linkModule(&module, withFile: "helper.bc")
     configModule(module)
     
-    if verbose { LLVMDumpModule(module) }
+//    if verbose { LLVMDumpModule(module) }
     
     
     
@@ -79,7 +79,7 @@ func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = fal
     
     
     
-    if verbose { print("\n\n-----------------LLVM IR------------------\n") }
+    if verbose { print("\n\n---------------------------LLVM IR----------------------------\n") }
     
     // Generate LLVM IR code for program
     try ast.IRGen(module: module)
@@ -90,22 +90,47 @@ func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = fal
     let ir = String.fromCString(LLVMPrintModuleToString(module))!
     try ir.writeToFile("\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
     
-    
-    // Optimiser
-    let optimTask = NSTask()
-    optimTask.currentDirectoryPath = currentDirectory
-    optimTask.launchPath = "/usr/local/Cellar/llvm/3.6.2/bin/opt"
-    optimTask.arguments = ["-S", "-o", "\(file).ll", "\(file).ll"]
-    
-    optimTask.launch()
-    optimTask.waitUntilExit()
-    
-    if irOnly { print(ir); return }
     if verbose { print(ir) }
     
     
+    if optim {
+        
+        let flags = [
+            "-mem2reg",
+            "-loop-unroll",
+            "-constprop",
+            "-correlated-propagation",
+            "-consthoist",
+            "-inline",
+            "-instcombine",
+            "-instsimplify",
+            "-load-combine",
+            "-loop-reduce",
+            "-loop-vectorize",
+            "-tailcallelim"
+        ]
+        
+        // Optimiser
+        let optimTask = NSTask()
+        optimTask.currentDirectoryPath = currentDirectory
+        optimTask.launchPath = "/usr/local/Cellar/llvm/3.6.2/bin/opt"
+        optimTask.arguments = ["-S"] + flags + ["-o", "\(file).ll", "\(file).ll"]
+        
+        optimTask.launch()
+        optimTask.waitUntilExit()
+        
+        if verbose { print("\n\n----------------------------OPTIM----------------------------\n") }
+        let ir = try String(contentsOfFile: "\(file).ll")
+        if irOnly { print(ir); return }
+        if verbose { print(ir) }
+    }
     
-    if verbose { print("\n\n-------------------ASM-------------------\n") }
+    if irOnly { return }
+
+    
+    
+    
+    if verbose { print("\n\n-----------------------------ASM-----------------------------\n") }
 
     /// compiles the LLVM IR to assembly
     let compileIRtoASMTask = NSTask()
@@ -138,7 +163,7 @@ func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = fal
     
     
     
-    if verbose { print("\n\n-------------------RUN-------------------\n") }
+    if verbose { print("\n\n-----------------------------RUN-----------------------------\n") }
     
     /// Run the program
     let runTask = NSTask()
