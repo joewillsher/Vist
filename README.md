@@ -16,7 +16,7 @@ brew install homebrew/versions/llvm-gcc28
 
 ##Examples
 
-```
+```swift
 func foo: (Int) -> Int = do return $0 + 1
 func bar: (Int, Int) -> Int = |a, b| { return a + b }
 ```
