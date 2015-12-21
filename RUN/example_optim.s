@@ -71,36 +71,36 @@ Ltmp10:
 	movq	%rsp, %rbp
 Ltmp11:
 	.cfi_def_cfa_register %rbp
-	pushq	%r15
-	pushq	%r14
-	pushq	%rbx
-	pushq	%rax
-Ltmp12:
-	.cfi_offset %rbx, -40
-Ltmp13:
-	.cfi_offset %r14, -32
-Ltmp14:
-	.cfi_offset %r15, -24
-	movl	$1, %r15d
-	movl	$7, %ebx
-	leaq	L_.str1(%rip), %r14
-	.align	4, 0x90
-LBB3_1:                                 ## %loop
-                                        ## =>This Inner Loop Header: Depth=1
-	incq	%r15
+	leaq	L_.str1(%rip), %rdi
+	movl	$3, %esi
 	xorl	%eax, %eax
-	movq	%r14, %rdi
-	movq	%rbx, %rsi
 	callq	_printf
-	addq	$7, %rbx
-	cmpq	$100001, %r15           ## imm = 0x186A1
-	jl	LBB3_1
-## BB#2:                                ## %afterloop
 	xorl	%eax, %eax
-	addq	$8, %rsp
-	popq	%rbx
-	popq	%r14
-	popq	%r15
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	_bar
+	.align	4, 0x90
+_bar:                                   ## @bar
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp12:
+	.cfi_def_cfa_offset 16
+Ltmp13:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp14:
+	.cfi_def_cfa_register %rbp
+	cmpq	$11, %rdi
+	jl	LBB4_2
+## BB#1:                                ## %then0
+	movl	$3, %eax
+	popq	%rbp
+	retq
+LBB4_2:                                 ## %else1
+	movl	$1, %eax
 	popq	%rbp
 	retq
 	.cfi_endproc

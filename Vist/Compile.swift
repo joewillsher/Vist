@@ -114,13 +114,13 @@ func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = fal
         let optimTask = NSTask()
         optimTask.currentDirectoryPath = currentDirectory
         optimTask.launchPath = "/usr/local/Cellar/llvm/3.6.2/bin/opt"
-        optimTask.arguments = ["-S"] + flags + ["-o", "\(file).ll", "\(file).ll"]
+        optimTask.arguments = ["-S"] + flags + ["-o", "\(file)_optim.ll", "\(file).ll"]
         
         optimTask.launch()
         optimTask.waitUntilExit()
         
         if verbose { print("\n\n----------------------------OPTIM----------------------------\n") }
-        let ir = try String(contentsOfFile: "\(file).ll")
+        let ir = try String(contentsOfFile: "\(file)_optim.ll")
         if irOnly { print(ir); return }
         if verbose { print(ir) }
     }
@@ -136,12 +136,12 @@ func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = fal
     let compileIRtoASMTask = NSTask()
     compileIRtoASMTask.currentDirectoryPath = currentDirectory
     compileIRtoASMTask.launchPath = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/bin/llc"
-    compileIRtoASMTask.arguments = ["\(file).ll"]
+    compileIRtoASMTask.arguments = ["\(file)_optim.ll"]
     
     compileIRtoASMTask.launch()
     compileIRtoASMTask.waitUntilExit()
     
-    let asm = try String(contentsOfFile: "\(file).s", encoding: NSUTF8StringEncoding)
+    let asm = try String(contentsOfFile: "\(file)_optim.s", encoding: NSUTF8StringEncoding)
 
     if asmOnly { print(asm); return }
     if verbose { print(asm) }
@@ -152,7 +152,7 @@ func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = fal
     let compileTask = NSTask()
     compileTask.currentDirectoryPath = currentDirectory
     compileTask.launchPath = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/bin/clang"
-    compileTask.arguments = ["\(file).ll", "-o", "\(file)"]
+    compileTask.arguments = ["\(file)_optim.ll", "-o", "\(file)"]
     
     compileTask.launch()
     compileTask.waitUntilExit()

@@ -50,11 +50,12 @@
 		D47FF07A1B812052003F9920 /* vist */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = vist; sourceTree = BUILT_PRODUCTS_DIR; };
 		D47FF07D1B812052003F9920 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		D4851F451C2434D90009233E /* StackVariable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StackVariable.swift; sourceTree = "<group>"; };
+		D4851F471C277EF70009233E /* example_optim.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = example_optim.ll; path = RUN/example_optim.ll; sourceTree = "<group>"; };
+		D4851F481C277EFE0009233E /* example_optim.s */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; name = example_optim.s; path = RUN/example_optim.s; sourceTree = "<group>"; };
 		D485DD251C1667E900B72F81 /* VistTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VistTest.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D485DD271C1667E900B72F81 /* VistTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VistTest.swift; sourceTree = "<group>"; };
 		D485DD291C1667E900B72F81 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D489F3BD1C1E392D00254FFC /* example.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vist; path = RUN/example.vist; sourceTree = "<group>"; };
-		D489F3BF1C1E396700254FFC /* example.s */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; name = example.s; path = RUN/example.s; sourceTree = "<group>"; };
 		D489F3C01C1E396E00254FFC /* example */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = example; path = RUN/example; sourceTree = "<group>"; };
 		D489F3C11C1E397700254FFC /* helper.bc */ = {isa = PBXFileReference; lastKnownFileType = file; name = helper.bc; path = RUN/helper.bc; sourceTree = "<group>"; };
 		D49410821C124B4E0029BF3D /* Print.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Print.swift; sourceTree = "<group>"; };
@@ -150,7 +151,8 @@
 				D4DB9D681C1DFFCC00503153 /* helper.ll */,
 				D489F3C11C1E397700254FFC /* helper.bc */,
 				D4DB9D661C1DFFB300503153 /* example.ll */,
-				D489F3BF1C1E396700254FFC /* example.s */,
+				D4851F471C277EF70009233E /* example_optim.ll */,
+				D4851F481C277EFE0009233E /* example_optim.s */,
 				D489F3C01C1E396E00254FFC /* example */,
 			);
 			name = "Compile pipeline";

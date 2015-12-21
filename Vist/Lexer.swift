@@ -45,7 +45,7 @@ private extension Character {
 }
 
 private enum Context {
-    case Alpha, Numeric, NewLine, Symbol, WhiteSpace, Comment, StringLiteral
+    case Alpha, Numeric, NewLine, Symbol, WhiteSpace, Comment(Bool), StringLiteral
 }
 
 private func == (lhs: Character, rhs: String) -> Bool { return lhs == Character(rhs) }
@@ -251,23 +251,33 @@ struct Lexer {
             
             switch (context, currentChar) {
                 
+                
+            case (.Comment(let multiLine)?, let n): // comment end
+                
+                if (multiLine && (n == "/" && charPtrSafe(-1) == "*")) || (!multiLine && (n == "\n" || n == "\r")) {
+                    
+                    try resetContext()
+                }
+                try consumeChar()
+                continue
+                
+            case (.Comment?, _):
+                break
+                
             case (_, "$"):
                 context = .Alpha
                 addChar()
                 try consumeChar()
                 try lexNumber()
                 continue
-                
-            case (.Comment?, let n) where n == "\n" || n == "\r": // comment end
-                try resetContext()
-                try consumeChar()
-                continue
 
-            case (.Comment?, _):
-                break
-                
             case (_, "/") where charPtrSafe(+1) == "/": // new comment
-                context = .Comment
+                context = .Comment(false)
+                try consumeChar(2)
+                continue
+                
+            case (_, "/") where charPtrSafe(+1) == "*": // new multi line comment
+                context = .Comment(true)
                 try consumeChar(2)
                 continue
                 
