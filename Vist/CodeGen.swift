@@ -112,7 +112,7 @@ extension LLVMBool {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-extension IntegerLiteral: IRGenerator {
+extension IntegerLiteral : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         return LLVMConstInt(try llvmType(scope), UInt64(val), LLVMBool(true))
@@ -123,7 +123,7 @@ extension IntegerLiteral: IRGenerator {
     }
 }
 
-extension FloatingPointLiteral: IRGenerator {
+extension FloatingPointLiteral : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         return LLVMConstReal(try llvmType(scope), val)
@@ -140,7 +140,7 @@ extension FloatingPointLiteral: IRGenerator {
     }
 }
 
-extension BooleanLiteral: IRGenerator {
+extension BooleanLiteral : IRGenerator {
     
     func codeGen(scope: Scope) -> LLVMValueRef {
         return LLVMConstInt(LLVMInt1Type(), UInt64(val.hashValue), LLVMBool(false))
@@ -157,7 +157,7 @@ extension BooleanLiteral: IRGenerator {
 //  MARK:                                                 Variables
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension Variable: IRGenerator {
+extension Variable : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         let variable = try scope.variable(name ?? "")
@@ -170,7 +170,7 @@ extension Variable: IRGenerator {
     }
 }
 
-extension Assignment: IRGenerator {
+extension Assignment : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
@@ -222,7 +222,7 @@ extension Mutation : IRGenerator {
 //  MARK:                                                 Expressions
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension BinaryExpression: IRGenerator {
+extension BinaryExpression : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
@@ -288,13 +288,13 @@ extension BinaryExpression: IRGenerator {
     
 }
 
-extension Void: IRGenerator {
+extension Void : IRGenerator {
     func llvmType(scope: Scope) throws -> LLVMTypeRef {
         return LLVMVoidType()
     }
 }
 
-extension Comment: IRGenerator {
+extension Comment : IRGenerator {
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         return nil
     }
@@ -306,7 +306,7 @@ extension Comment: IRGenerator {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-extension FunctionCall: IRGenerator {
+extension FunctionCall : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
@@ -335,7 +335,7 @@ extension FunctionCall: IRGenerator {
     
 }
 
-extension FunctionType {
+private extension FunctionType {
     
     
     func params() throws -> [LLVMTypeRef] {
@@ -354,7 +354,7 @@ extension FunctionType {
 
 
 // function definition
-extension FunctionPrototype: IRGenerator {
+extension FunctionPrototype : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
@@ -388,7 +388,7 @@ extension FunctionPrototype: IRGenerator {
             let name = (impl?.params.elements[i] as? ValueType)?.name ?? ("$\(i)")
             LLVMSetValueName(param, name)
 
-            let s = RawStackVariable(val: param)
+            let s = StackVariable(val: param)
             functionScope.addVariable(name, val: s)
         }
         
@@ -410,7 +410,7 @@ extension FunctionPrototype: IRGenerator {
 }
 
 
-extension ReturnExpression: IRGenerator {
+extension ReturnExpression : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
@@ -430,7 +430,7 @@ extension ReturnExpression: IRGenerator {
 
 
 
-extension Block: BasicBlockGenerator {
+extension Block : BasicBlockGenerator {
     
     func bbGen(innerScope scope: Scope, fn: LLVMValueRef, ret: LLVMValueRef) throws -> LLVMBasicBlockRef {
         
@@ -470,7 +470,7 @@ private func ifBBID(n n: Int, ex: ElseIfBlock) -> String {
     return ex.condition == nil ? "else\(n)" : "then\(n)"
 }
 
-extension ConditionalExpression: IRGenerator {
+extension ConditionalExpression : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
@@ -536,7 +536,7 @@ extension ConditionalExpression: IRGenerator {
 }
 
 
-extension ElseIfBlock {
+private extension ElseIfBlock {
     
     /// Create the basic block for the if expression
     private func bbGen(innerScope scope: Scope, contBlock: LLVMBasicBlockRef, name: String) throws -> LLVMBasicBlockRef {
@@ -546,9 +546,7 @@ extension ElseIfBlock {
         LLVMPositionBuilderAtEnd(builder, basicBlock)
         
         // parse code
-        for exp in block.expressions {
-            try exp.codeGen(scope)
-        }
+        try block.bbGenInline(scope: scope)
         
         // if the block does continues to the contBlock, move the builder there
         let returnsFromScope = block.expressions.contains { $0 is ReturnExpression }
@@ -592,7 +590,7 @@ extension ForInLoopExpression : IRGenerator {
         let next = LLVMBuildAdd(builder, one, i, "next\(name)")
         
         // gen the IR for the inner block
-        let lv = RawStackVariable(val: i)
+        let lv = StackVariable(val: i)
         let loopScope = Scope(block: loop, vars: [name: lv], function: scope.function, parentScope: scope)
         try block.bbGenInline(scope: loopScope)
         
@@ -651,7 +649,7 @@ extension WhileLoopExpression : IRGenerator {
 
 
 
-extension Block {
+private extension ScopeExpression {
     
     func bbGenInline(scope scope: Scope) throws {
         

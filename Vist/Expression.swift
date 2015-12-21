@@ -8,50 +8,50 @@
 
 import Foundation
 
-protocol Expression: Printable {
+protocol Expression : Printable {
 }
 
 protocol Typed {
     var type: Type { get }
 }
-protocol Sized: Expression {
+protocol Sized : Expression {
     var size: UInt32 { get set }
 }
-protocol Type: Expression {}
+protocol Type : Expression {}
 
-protocol Literal: Expression {
+protocol Literal : Expression {
 }
 
-protocol ScopeExpression: Expression {
+protocol ScopeExpression : Expression {
     var expressions: [Expression] { get set }
     var topLevel: Bool { get }
 }
 
-class AST: ScopeExpression {
+class AST : ScopeExpression {
     var expressions: [Expression]
     var topLevel = true
     init(expressions: [Expression]) {
         self.expressions = expressions
     }
 }
-class Block: ScopeExpression {
+class Block : ScopeExpression {
     var expressions: [Expression]
     var topLevel = false
     init(expressions: [Expression]) {
         self.expressions = expressions
     }
 }
-class DefinitionScope: ScopeExpression {
+class DefinitionScope : ScopeExpression {
     var expressions: [Expression]
     var topLevel = false
     init(expressions: [Expression]) {
         self.expressions = expressions
     }
 }
-struct EndOfScope: Expression {}
+struct EndOfScope : Expression {}
 
 
-struct BooleanLiteral: Literal, Typed, BooleanType {
+struct BooleanLiteral : Literal, Typed, BooleanType {
     let val: Bool
     var type: Type = ValueType(name: "Bool")
     
@@ -71,7 +71,7 @@ protocol BooleanType {
 }
 
 
-struct FloatingPointLiteral: Literal, Typed, FloatingPointType, Sized {
+struct FloatingPointLiteral : Literal, Typed, FloatingPointType, Sized {
     let val: Double
     var size: UInt32 = 64
     var type: Type {
@@ -83,7 +83,7 @@ struct FloatingPointLiteral: Literal, Typed, FloatingPointType, Sized {
     }
 }
 
-struct IntegerLiteral: Literal, Typed, IntegerType, Sized {
+struct IntegerLiteral : Literal, Typed, IntegerType, Sized {
     let val: Int
     var size: UInt32
     var type: Type {
@@ -96,7 +96,7 @@ struct IntegerLiteral: Literal, Typed, IntegerType, Sized {
     }
 
 }
-struct StringLiteral: Literal, Typed {
+struct StringLiteral : Literal, Typed {
     let str: String
     var type: Type
     
@@ -106,13 +106,13 @@ struct StringLiteral: Literal, Typed {
     }
 }
 
-struct Comment: Expression {
+struct Comment : Expression {
     let str: String
 }
 
-struct Void: Expression {}
+struct Void : Expression {}
 
-class Variable: Expression {
+class Variable : Expression {
     let name: String?
     let isMutable: Bool = false
     
@@ -121,7 +121,7 @@ class Variable: Expression {
     }
 }
 
-class BinaryExpression: Expression {
+class BinaryExpression : Expression {
     let op: String
     let lhs: Expression, rhs: Expression
     
@@ -132,7 +132,7 @@ class BinaryExpression: Expression {
     }
 }
 
-class PrefixExpression: Expression {
+class PrefixExpression : Expression {
     let op: String
     let expr: Expression
     
@@ -142,7 +142,7 @@ class PrefixExpression: Expression {
     }
 }
 
-class PostfixExpression: Expression {
+class PostfixExpression : Expression {
     let op: String
     let expr: Expression
     
@@ -152,7 +152,7 @@ class PostfixExpression: Expression {
     }
 }
 
-class FunctionCall: Expression {
+class FunctionCall : Expression {
     let name: String
     let args: Tuple
     
@@ -162,7 +162,7 @@ class FunctionCall: Expression {
     }
 }
 
-class Assignment: Expression {
+class Assignment : Expression {
     let name: String
     let type: String?
     let isMutable: Bool
@@ -176,7 +176,7 @@ class Assignment: Expression {
     }
 }
 
-class Mutation: Expression {
+class Mutation : Expression {
     let name: String
     let value: Expression
     
@@ -188,7 +188,7 @@ class Mutation: Expression {
 
 
 
-class FunctionPrototype: Type {
+class FunctionPrototype : Type {
     let name: String
     let type: FunctionType
     let impl: FunctionImplementation?
@@ -200,7 +200,7 @@ class FunctionPrototype: Type {
     }
 }
 
-class FunctionImplementation: Expression {
+class FunctionImplementation : Expression {
     let params: Tuple
     let body: Block
     
@@ -210,7 +210,7 @@ class FunctionImplementation: Expression {
     }
 }
 
-class Tuple: Expression {
+class Tuple : Expression {
     let elements: [Expression]
     
     init(elements: [Expression]) {
@@ -224,7 +224,7 @@ class Tuple: Expression {
     }
 }
 
-class ReturnExpression: Expression {
+class ReturnExpression : Expression {
     let expression: Expression
     
     init(expression: Expression) {
@@ -233,7 +233,7 @@ class ReturnExpression: Expression {
 }
 
 
-class ValueType: Type {
+class ValueType : Type {
     var name: String
     
     init(name: String) {

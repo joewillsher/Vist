@@ -9,7 +9,7 @@
 import Foundation
 
 
-protocol StackVariable {
+protocol RuntimeVariable {
     var type: LLVMTypeRef { get }
     
     func ir(builder: LLVMBuilderRef, name: String) -> LLVMValueRef
@@ -18,7 +18,7 @@ protocol StackVariable {
 
 /// A variable type passed by reference
 /// Instances are called in IR using `load` and `store`
-class ReferenceVariable : StackVariable {
+class ReferenceVariable : RuntimeVariable {
     var type: LLVMTypeRef
     var ptr: LLVMValueRef
     let mutable: Bool
@@ -53,7 +53,7 @@ class ReferenceVariable : StackVariable {
 
 /// A variable type passed by value
 /// Instances use SSA
-class RawStackVariable : StackVariable {
+class StackVariable : RuntimeVariable {
     var type: LLVMTypeRef
     var val: LLVMValueRef
     

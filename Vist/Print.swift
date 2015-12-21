@@ -59,38 +59,38 @@ extension Printable {
 }
 
 
-extension String: Printable {
+extension String : Printable {
     func printDirectly() -> String? {
         return "\"\(self)\""
     }
 }
-extension Int: Printable {
+extension Int : Printable {
     func printDirectly() -> String? {
         return "\(self)"
     }
 }
-extension UInt32: Printable {
+extension UInt32 : Printable {
     func printDirectly() -> String? {
         return "\(self)"
     }
 }
-extension Float: Printable {
+extension Float : Printable {
     func printDirectly() -> String? {
         return "\(self)"
     }
 }
-extension Double: Printable {
+extension Double : Printable {
     func printDirectly() -> String? {
         return "\(self)"
     }
 }
-extension Bool: Printable {
+extension Bool : Printable {
     func printDirectly() -> String? {
         return "\(self)"
     }
 }
 
-extension Optional: Printable {
+extension Optional : Printable {
     func printDirectly() -> String? {
         switch self {
         case .None: return "nil"

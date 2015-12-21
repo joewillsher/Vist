@@ -197,6 +197,8 @@ struct Lexer {
     mutating private func lexNumber() throws {
         try lexWhilePredicate { $0.isNumOr_() }
         try resetContext()
+        
+        // TODO: infix ... operator not conflict with float’s .
     }
 
     mutating private func lexInteger() throws {
@@ -261,9 +263,6 @@ struct Lexer {
                 try consumeChar()
                 continue
                 
-            case (.Comment?, _):
-                break
-                
             case (_, "$"):
                 context = .Alpha
                 addChar()
@@ -285,7 +284,6 @@ struct Lexer {
                 context = .StringLiteral
                 try consumeChar()
                 continue
-                
                 
             case (.StringLiteral?, "\"") where charPtrSafe(-1) != "\\": // comment end
                 try resetContext()

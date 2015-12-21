@@ -13,12 +13,12 @@ import Foundation
 
 class Scope {
     
-    private var runtimeVariables: [String: StackVariable]
+    private var runtimeVariables: [String: RuntimeVariable]
     private var functionTypes: [String: LLVMTypeRef]
     var block: LLVMBasicBlockRef, function: LLVMValueRef
     var parentScope: Scope?
     
-    init(vars: [String: StackVariable] = [:], functionTypes: [String: LLVMTypeRef] = [:], block: LLVMBasicBlockRef = nil, function: LLVMValueRef = nil, parentScope: Scope? = nil) {
+    init(vars: [String: RuntimeVariable] = [:], functionTypes: [String: LLVMTypeRef] = [:], block: LLVMBasicBlockRef = nil, function: LLVMValueRef = nil, parentScope: Scope? = nil) {
         self.runtimeVariables = [:]
         self.functionTypes = [:]
         self.block = block
@@ -29,7 +29,7 @@ class Scope {
         vars.forEach { addVariable($0.0, val: $0.1) }
     }
     
-    func addVariable(name: String, val: StackVariable) {
+    func addVariable(name: String, val: RuntimeVariable) {
         runtimeVariables[name] = val
     }
     func addFunctionType(name: String, val: LLVMValueRef) {
@@ -37,7 +37,7 @@ class Scope {
     }
     
     
-    func variable(name: String) throws -> StackVariable {
+    func variable(name: String) throws -> RuntimeVariable {
         
         if let v = runtimeVariables[name] where v.isValid() { return v }
         
