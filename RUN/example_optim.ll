@@ -34,6 +34,12 @@ entry:
   ret i32 0
 }
 
+define i64 @foo(i64 %"$0") {
+entry:
+  %add_res = add i64 %"$0", 1
+  ret i64 %add_res
+}
+
 define i64 @bar(i64 %"$0") {
 entry:
   %cmp_gt_res = icmp sgt i64 %"$0", 10

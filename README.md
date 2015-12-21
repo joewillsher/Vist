@@ -13,3 +13,7 @@ brew install llvm
 brew install llvm36
 brew install homebrew/versions/llvm-gcc28
 ``` 
+
+##Examples
+
+func foo: (Int) -> Int = do return ($0 + 1)

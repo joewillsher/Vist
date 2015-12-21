@@ -80,9 +80,9 @@ Ltmp11:
 	retq
 	.cfi_endproc
 
-	.globl	_bar
+	.globl	_foo
 	.align	4, 0x90
-_bar:                                   ## @bar
+_foo:                                   ## @foo
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
@@ -93,13 +93,31 @@ Ltmp13:
 	movq	%rsp, %rbp
 Ltmp14:
 	.cfi_def_cfa_register %rbp
+	leaq	1(%rdi), %rax
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	_bar
+	.align	4, 0x90
+_bar:                                   ## @bar
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp15:
+	.cfi_def_cfa_offset 16
+Ltmp16:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp17:
+	.cfi_def_cfa_register %rbp
 	cmpq	$11, %rdi
-	jl	LBB4_2
+	jl	LBB5_2
 ## BB#1:                                ## %then0
 	movl	$3, %eax
 	popq	%rbp
 	retq
-LBB4_2:                                 ## %else1
+LBB5_2:                                 ## %else1
 	movl	$1, %eax
 	popq	%rbp
 	retq

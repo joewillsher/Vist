@@ -200,7 +200,7 @@ struct Parser {
                 return Mutation(name: token, value: exp)
             }
             
-            return Variable(name: token)
+            return try parseOperatorExpression(Variable(name: token))
         }       // simple variable name
         getNextToken(); getNextToken() // eat 'identifier + ('
         
@@ -212,11 +212,11 @@ struct Parser {
         return FunctionCall(name: token, args: try parseTupleExpression())
     }
     
-    
-    private mutating func parseOperatorExpression() throws -> Expression {
-        return try parseOperationRHS(lhs: try parsePrimary())
+    /// Function called on `return a + 1` and `if a < 3`
+    /// exp can be optionally defined as a known lhs operand to give more info to the parser
+    private mutating func parseOperatorExpression(exp: Expression? = nil) throws -> Expression {
+        return try parseOperationRHS(lhs: exp ?? (try parsePrimary()))
     }
-    
     
     private mutating func parsePrimary() throws -> Expression {
         

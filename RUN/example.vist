@@ -1,8 +1,8 @@
 
 
-/*
-func foo: (Int) -> Int = do return $0
-*/
+
+func foo: (Int) -> Int = do return $0 + 1
+
 
 func bar: (Int) -> Int = do if $0 > 10 do return 3 else return 1
 
