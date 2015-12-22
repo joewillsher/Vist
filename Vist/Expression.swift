@@ -354,6 +354,17 @@ class WhileIteratorExpression : IteratorExpression {
     
 }
 
+class ArrayExpression : Expression {
+    
+    let arr: [Expression]
+    
+    init(arr: [Expression]) {
+        self.arr = arr
+    }
+    
+}
+
+
 
 
 

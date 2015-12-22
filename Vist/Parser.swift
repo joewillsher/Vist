@@ -10,6 +10,7 @@ import Foundation
 
 enum ParseError: ErrorType {
     case ExpectedParen(Pos)
+    case ExpectedCloseBracket(Pos)
     case NoToken(Token, Pos)
     case ExpectedComma(Pos)
     case InvalidOperator(Pos)
@@ -239,6 +240,9 @@ struct Parser {
             
         case .OpenParen:
             return try parseParenExpression()
+            
+        case .SqbrOpen:
+            return try parseArrayExpression()
             
         default:
             throw ParseError.NoIdentifier(currentPos)
@@ -555,6 +559,34 @@ struct Parser {
     }
     
     
+    //-------------------------------------------------------------------------------------------------------------------------
+    //  MARK:                                              Array
+    //-------------------------------------------------------------------------------------------------------------------------
+
+    
+    private mutating func parseArrayExpression() throws -> Expression {
+        
+        getNextToken() // eat '['
+        
+        var elements = [Expression]()
+        while true {
+            
+            switch currentToken {
+            case .Comma:
+                getNextToken()  // eat ','
+                
+            case .SqrbrClose:
+                getNextToken() // eat ']'
+                return ArrayExpression(arr: elements)
+                
+            default:
+                
+                let element = try parseOperatorExpression()
+                elements.append(element)    // param
+            }
+        }
+        
+    }
     
     
     //-------------------------------------------------------------------------------------------------------------------------
@@ -593,6 +625,7 @@ struct Parser {
         case     .For:                  return try parseForInLoopExpression()
         case     .Do:                   return try parseBracelessDoExpression()
         case     .While:                return try parseWhileLoopExpression()
+        case     .SqbrOpen:             return try parseArrayExpression()
         case let .Integer(i):           return parseIntExpression(i)
         case let .FloatingPoint(x):     return parseFloatingPointExpression(x)
         case let .Str(str):             return parseStringExpression(str)
@@ -601,6 +634,9 @@ struct Parser {
         default:                        throw ParseError.NoToken(token, currentPos)
         }
     }
+    
+    // TODO: if statements have return type
+    // TODO: Implicit return if a block only has 1 expression
     
     private func tok() -> Token? { return index < tokens.count ? tokens[index] : nil }
     

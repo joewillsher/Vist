@@ -14,6 +14,8 @@
 		D46AD8851B82186600C95574 /* Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46AD8841B82186600C95574 /* Token.swift */; };
 		D46AD8871B8245A000C95574 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46AD8861B8245A000C95574 /* Parser.swift */; };
 		D46AD8891B8246C300C95574 /* Expression.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46AD8881B8246C300C95574 /* Expression.swift */; };
+		D46DA5F01C2976E8006AF1BE /* Sema.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46DA5EF1C2976E8006AF1BE /* Sema.swift */; };
+		D46DA5F21C2977C2006AF1BE /* InterfaceGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46DA5F11C2977C2006AF1BE /* InterfaceGen.swift */; };
 		D47E66591B88D9A20051D586 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = D47E66581B88D9A20051D586 /* README.md */; };
 		D47FF07E1B812052003F9920 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47FF07D1B812052003F9920 /* main.swift */; };
 		D4851F461C2434D90009233E /* RuntimeVariable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4851F451C2434D90009233E /* RuntimeVariable.swift */; };
@@ -46,6 +48,8 @@
 		D46AD8841B82186600C95574 /* Token.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Token.swift; sourceTree = "<group>"; };
 		D46AD8861B8245A000C95574 /* Parser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Parser.swift; sourceTree = "<group>"; };
 		D46AD8881B8246C300C95574 /* Expression.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Expression.swift; sourceTree = "<group>"; };
+		D46DA5EF1C2976E8006AF1BE /* Sema.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Sema.swift; path = VistTest/Sema.swift; sourceTree = SOURCE_ROOT; };
+		D46DA5F11C2977C2006AF1BE /* InterfaceGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InterfaceGen.swift; path = ../InterfaceGen.swift; sourceTree = "<group>"; };
 		D47E66581B88D9A20051D586 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		D47FF07A1B812052003F9920 /* vist */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = vist; sourceTree = BUILT_PRODUCTS_DIR; };
 		D47FF07D1B812052003F9920 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
@@ -85,6 +89,47 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		D46DA5F31C297AB9006AF1BE /* AST */ = {
+			isa = PBXGroup;
+			children = (
+				D46AD8881B8246C300C95574 /* Expression.swift */,
+				D46AD8861B8245A000C95574 /* Parser.swift */,
+				D46DA5EF1C2976E8006AF1BE /* Sema.swift */,
+			);
+			name = AST;
+			sourceTree = "<group>";
+		};
+		D46DA5F41C297AC5006AF1BE /* Lexer */ = {
+			isa = PBXGroup;
+			children = (
+				D46AD8841B82186600C95574 /* Token.swift */,
+				D46AD8821B82174E00C95574 /* Lexer.swift */,
+			);
+			name = Lexer;
+			sourceTree = "<group>";
+		};
+		D46DA5F51C297ADA006AF1BE /* IR */ = {
+			isa = PBXGroup;
+			children = (
+				D4C85BCB1BF8E00100731F34 /* CodeGen.swift */,
+				D46DA5F11C2977C2006AF1BE /* InterfaceGen.swift */,
+				D465C6571C187639001A008C /* Scope.swift */,
+				D4851F451C2434D90009233E /* RuntimeVariable.swift */,
+			);
+			name = IR;
+			sourceTree = "<group>";
+		};
+		D46DA5F61C297AED006AF1BE /* Helper */ = {
+			isa = PBXGroup;
+			children = (
+				D4DB9D601C1DED5C00503153 /* Link.swift */,
+				D4DB9D621C1DF10A00503153 /* Config.swift */,
+				D49410821C124B4E0029BF3D /* Print.swift */,
+				D46AD87E1B81EAA400C95574 /* Vist-Bridging-Header.h */,
+			);
+			name = Helper;
+			sourceTree = "<group>";
+		};
 		D47FF0711B812052003F9920 = {
 			isa = PBXGroup;
 			children = (
@@ -111,17 +156,10 @@
 			children = (
 				D47FF07D1B812052003F9920 /* main.swift */,
 				D44FB8AF1C1657E100E6DD33 /* Compile.swift */,
-				D46AD8841B82186600C95574 /* Token.swift */,
-				D46AD8821B82174E00C95574 /* Lexer.swift */,
-				D46AD8881B8246C300C95574 /* Expression.swift */,
-				D49410821C124B4E0029BF3D /* Print.swift */,
-				D46AD8861B8245A000C95574 /* Parser.swift */,
-				D4C85BCB1BF8E00100731F34 /* CodeGen.swift */,
-				D465C6571C187639001A008C /* Scope.swift */,
-				D4851F451C2434D90009233E /* RuntimeVariable.swift */,
-				D4DB9D601C1DED5C00503153 /* Link.swift */,
-				D4DB9D621C1DF10A00503153 /* Config.swift */,
-				D46AD87E1B81EAA400C95574 /* Vist-Bridging-Header.h */,
+				D46DA5F41C297AC5006AF1BE /* Lexer */,
+				D46DA5F31C297AB9006AF1BE /* AST */,
+				D46DA5F51C297ADA006AF1BE /* IR */,
+				D46DA5F61C297AED006AF1BE /* Helper */,
 			);
 			path = Vist;
 			sourceTree = "<group>";
@@ -248,8 +286,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				D46AD8891B8246C300C95574 /* Expression.swift in Sources */,
+				D46DA5F21C2977C2006AF1BE /* InterfaceGen.swift in Sources */,
 				D4DB9D611C1DED5C00503153 /* Link.swift in Sources */,
 				D47FF07E1B812052003F9920 /* main.swift in Sources */,
+				D46DA5F01C2976E8006AF1BE /* Sema.swift in Sources */,
 				D46AD8831B82174E00C95574 /* Lexer.swift in Sources */,
 				D49410831C124B4E0029BF3D /* Print.swift in Sources */,
 				D46AD8871B8245A000C95574 /* Parser.swift in Sources */,

@@ -1,6 +1,12 @@
-func double: (Int) -> Int = |a| {
-    return (a * 2)
+func fact: (Int) -> Int = {
+if $0 <= 1 do return 1 else return $0 * fact($0 - 1)
 }
 
-let b = double(4)
-let c = b * 5
+
+for i in 0 ... 30000 {
+
+for x in 0 ... 21 {
+print(fact(x))
+}
+
+}

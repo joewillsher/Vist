@@ -278,3 +278,11 @@ extension WhileIteratorExpression {
     }
 }
 
+extension ArrayExpression {
+    
+    func printList() -> [(String?, Printable)]? {
+        return arr.enumerate().map { (String($0), $1) }
+    }
+    
+}
+
