@@ -1,14 +1,13 @@
 
+func fact: (Int) -> Int = {
+    if $0 <= 1 do return 1 else return $0 * fact($0 - 1)
+}
 
 
-func foo: (Int) -> Int = do return $0 + 1
-// TODO: make return an actiony keyword too
+for i in 0 ... 30000 {
 
+    for x in 0 ... 21 {
+        print(fact(x))
+    }
 
-func bar: (Int, Int) -> Int = |a, b| { return a + b }
-
-
-print(bar(11, 2))
-
-
-
+}

@@ -92,6 +92,10 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "-preserve"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "example.vist"
             isEnabled = "YES">
          </CommandLineArgument>

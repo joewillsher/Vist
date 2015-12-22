@@ -16,7 +16,7 @@
 		D46AD8891B8246C300C95574 /* Expression.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46AD8881B8246C300C95574 /* Expression.swift */; };
 		D47E66591B88D9A20051D586 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = D47E66581B88D9A20051D586 /* README.md */; };
 		D47FF07E1B812052003F9920 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47FF07D1B812052003F9920 /* main.swift */; };
-		D4851F461C2434D90009233E /* StackVariable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4851F451C2434D90009233E /* StackVariable.swift */; };
+		D4851F461C2434D90009233E /* RuntimeVariable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4851F451C2434D90009233E /* RuntimeVariable.swift */; };
 		D485DD281C1667E900B72F81 /* VistTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D485DD271C1667E900B72F81 /* VistTest.swift */; };
 		D49410831C124B4E0029BF3D /* Print.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49410821C124B4E0029BF3D /* Print.swift */; };
 		D4C85BCC1BF8E00100731F34 /* CodeGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C85BCB1BF8E00100731F34 /* CodeGen.swift */; };
@@ -49,9 +49,9 @@
 		D47E66581B88D9A20051D586 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		D47FF07A1B812052003F9920 /* vist */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = vist; sourceTree = BUILT_PRODUCTS_DIR; };
 		D47FF07D1B812052003F9920 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		D4851F451C2434D90009233E /* StackVariable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StackVariable.swift; sourceTree = "<group>"; };
-		D4851F471C277EF70009233E /* example_optim.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = example_optim.ll; path = RUN/example_optim.ll; sourceTree = "<group>"; };
-		D4851F481C277EFE0009233E /* example_optim.s */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; name = example_optim.s; path = RUN/example_optim.s; sourceTree = "<group>"; };
+		D4851F451C2434D90009233E /* RuntimeVariable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RuntimeVariable.swift; sourceTree = "<group>"; };
+		D4851F491C28A0820009233E /* example_.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = example_.ll; path = RUN/example_.ll; sourceTree = "<group>"; };
+		D4851F4A1C28A08A0009233E /* example.s */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; name = example.s; path = RUN/example.s; sourceTree = "<group>"; };
 		D485DD251C1667E900B72F81 /* VistTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VistTest.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D485DD271C1667E900B72F81 /* VistTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VistTest.swift; sourceTree = "<group>"; };
 		D485DD291C1667E900B72F81 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -118,7 +118,7 @@
 				D46AD8861B8245A000C95574 /* Parser.swift */,
 				D4C85BCB1BF8E00100731F34 /* CodeGen.swift */,
 				D465C6571C187639001A008C /* Scope.swift */,
-				D4851F451C2434D90009233E /* StackVariable.swift */,
+				D4851F451C2434D90009233E /* RuntimeVariable.swift */,
 				D4DB9D601C1DED5C00503153 /* Link.swift */,
 				D4DB9D621C1DF10A00503153 /* Config.swift */,
 				D46AD87E1B81EAA400C95574 /* Vist-Bridging-Header.h */,
@@ -150,9 +150,9 @@
 			children = (
 				D4DB9D681C1DFFCC00503153 /* helper.ll */,
 				D489F3C11C1E397700254FFC /* helper.bc */,
+				D4851F491C28A0820009233E /* example_.ll */,
 				D4DB9D661C1DFFB300503153 /* example.ll */,
-				D4851F471C277EF70009233E /* example_optim.ll */,
-				D4851F481C277EFE0009233E /* example_optim.s */,
+				D4851F4A1C28A08A0009233E /* example.s */,
 				D489F3C01C1E396E00254FFC /* example */,
 			);
 			name = "Compile pipeline";
@@ -255,7 +255,7 @@
 				D46AD8871B8245A000C95574 /* Parser.swift in Sources */,
 				D47E66591B88D9A20051D586 /* README.md in Sources */,
 				D4C85BCC1BF8E00100731F34 /* CodeGen.swift in Sources */,
-				D4851F461C2434D90009233E /* StackVariable.swift in Sources */,
+				D4851F461C2434D90009233E /* RuntimeVariable.swift in Sources */,
 				D44FB8B01C1657E100E6DD33 /* Compile.swift in Sources */,
 				D465C6581C187639001A008C /* Scope.swift in Sources */,
 				D4DB9D631C1DF10A00503153 /* Config.swift in Sources */,

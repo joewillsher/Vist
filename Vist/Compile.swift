@@ -9,7 +9,7 @@
 import Foundation
 
 
-func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = false, irOnly: Bool = false, asmOnly: Bool = false, buildOnly: Bool = false, profile: Bool = true, optim: Bool = true) throws {
+public func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = false, irOnly: Bool = false, asmOnly: Bool = false, buildOnly: Bool = false, profile: Bool = true, optim: Bool = true, preserve: Bool = false) throws {
     
     let file = fileName.stringByReplacingOccurrencesOfString(".vist", withString: "")
     let currentDirectory = NSTask().currentDirectoryPath
@@ -88,7 +88,7 @@ func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = fal
     
     // print and write to file
     let ir = String.fromCString(LLVMPrintModuleToString(module))!
-    try ir.writeToFile("\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
+    try ir.writeToFile("\(file)_.ll", atomically: true, encoding: NSUTF8StringEncoding)
     
     if verbose { print(ir) }
     
@@ -96,33 +96,46 @@ func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = fal
     if optim {
         
         let flags = [
-            "-mem2reg",
-            "-loop-unroll",
-            "-constprop",
-            "-correlated-propagation",
-            "-consthoist",
-            "-inline",
-            "-instcombine",
-            "-instsimplify",
-            "-load-combine",
-            "-loop-reduce",
-            "-loop-vectorize",
-            "-tailcallelim"
+            "-mem2reg",                 // promotes `load` and `store` IR stack operations to registers
+            "-loop-unroll",             // Loop unrolling
+            "-constprop",               // constant propagation
+            "-correlated-propagation",  // value propagation
+            "-consthoist",              // constant hoisting
+            "-inline",                  // function inlining
+            "-instcombine",             // combine redundant instructions
+            "-instsimplify",            // remove redundant instructions
+            "-dce",                     // dead code elimination
+            "-load-combine",            // combine adjacent loops
+            "-loop-reduce",             // loop strength reduction —— https://en.wikipedia.org/wiki/Strength_reduction
+            "-loop-vectorize",          // parallelise loops
+            "-tailcallelim"             // eliminate tail calls —— https://en.wikipedia.org/wiki/Tail_call
         ]
         
         // Optimiser
         let optimTask = NSTask()
         optimTask.currentDirectoryPath = currentDirectory
         optimTask.launchPath = "/usr/local/Cellar/llvm/3.6.2/bin/opt"
-        optimTask.arguments = ["-S"] + flags + ["-o", "\(file)_optim.ll", "\(file).ll"]
+        optimTask.arguments = ["-S"] + flags + ["-o", "\(file).ll", "\(file)_.ll"]
         
         optimTask.launch()
         optimTask.waitUntilExit()
         
         if verbose { print("\n\n----------------------------OPTIM----------------------------\n") }
-        let ir = try String(contentsOfFile: "\(file)_optim.ll")
+        let ir = try String(contentsOfFile: "\(file).ll")
         if irOnly { print(ir); return }
         if verbose { print(ir) }
+        
+    } else {
+        
+        let fileTask = NSTask()
+        fileTask.currentDirectoryPath = currentDirectory
+        fileTask.launchPath = "/usr/bin/touch"
+        fileTask.arguments = ["\(file).ll"]
+        
+        fileTask.launch()
+        fileTask.waitUntilExit()
+        
+        try ir.writeToFile("\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
     }
     
     if irOnly { return }
@@ -131,17 +144,18 @@ func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = fal
     
     
     if verbose { print("\n\n-----------------------------ASM-----------------------------\n") }
-
+    
+    
     /// compiles the LLVM IR to assembly
     let compileIRtoASMTask = NSTask()
     compileIRtoASMTask.currentDirectoryPath = currentDirectory
     compileIRtoASMTask.launchPath = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/bin/llc"
-    compileIRtoASMTask.arguments = ["\(file)_optim.ll"]
+    compileIRtoASMTask.arguments = ["\(file).ll"]
     
     compileIRtoASMTask.launch()
     compileIRtoASMTask.waitUntilExit()
     
-    let asm = try String(contentsOfFile: "\(file)_optim.s", encoding: NSUTF8StringEncoding)
+    let asm = try String(contentsOfFile: "\(file).s", encoding: NSUTF8StringEncoding)
 
     if asmOnly { print(asm); return }
     if verbose { print(asm) }
@@ -152,7 +166,7 @@ func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = fal
     let compileTask = NSTask()
     compileTask.currentDirectoryPath = currentDirectory
     compileTask.launchPath = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/bin/clang"
-    compileTask.arguments = ["\(file)_optim.ll", "-o", "\(file)"]
+    compileTask.arguments = ["\(file).ll", "-o", "\(file)"]
     
     compileTask.launch()
     compileTask.waitUntilExit()
@@ -161,6 +175,19 @@ func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = fal
     
     
     
+    // remove files
+    if !preserve {
+        for file in ["\(file).ll", "\(file)_.ll", "\(file).s", "helper.bc", "helper.ll"] {
+            
+            let rmTask = NSTask()
+            rmTask.currentDirectoryPath = currentDirectory
+            rmTask.launchPath = "/bin/rm"
+            rmTask.arguments = [file]
+            
+            rmTask.launch()
+            rmTask.waitUntilExit()
+        }
+    }
     
     
     if verbose { print("\n\n-----------------------------RUN-----------------------------\n") }
@@ -179,7 +206,8 @@ func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = fal
         let t = CFAbsoluteTimeGetCurrent() - t0
         print("\n--------\nTime elapsed: \(t)s")
     }
-
+    
+    
 }
 
 

@@ -4,7 +4,7 @@
 
 
 #import "llvm-c/Core.h"
-//#import "llvm-c/Support.h"
+#import "llvm-c/Support.h"
 #import "llvm-c/ExecutionEngine.h"
 #import "llvm-c/Analysis.h"
 #import "llvm-c/BitReader.h"

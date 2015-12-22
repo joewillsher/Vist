@@ -7,10 +7,11 @@
 //
 
 import Foundation
-//import LLVM
 
 enum IRError : ErrorType {
-    case NotIRGenerator, NotBBGenerator, NoOperator, MisMatchedTypes, NoLLVMFloat(UInt32), WrongFunctionApplication(String), NoLLVMType, NoBody, InvalidFunction, NoVariable(String), NoBool, TypeNotFound, NotMutable
+    case NotIRGenerator, NotBBGenerator, NoOperator
+    case MisMatchedTypes, NoLLVMFloat(UInt32), WrongFunctionApplication(String), NoLLVMType
+    case NoBody, InvalidFunction, NoVariable(String), NoBool, TypeNotFound, NotMutable
     case CannotAssignToVoid, CannotAssignToType(Expression.Type)
     case ForLoopIteratorNotInt, NotBoolCondition
 }
@@ -682,7 +683,7 @@ extension AST {
         defer { argBuffer.dealloc(0) }
         
         // make main function & add to IR
-        let functionType = LLVMFunctionType(LLVMInt32Type(), argBuffer, UInt32(0), LLVMBool(false))
+        let functionType = LLVMFunctionType(LLVMInt64Type(), argBuffer, UInt32(0), LLVMBool(false))
         let mainFunction = LLVMAddFunction(module, "main", functionType)
         
         // Setup BB & scope
@@ -694,7 +695,7 @@ extension AST {
             try exp.codeGen(scope)
         }
                 
-        LLVMBuildRet(builder, LLVMConstInt(LLVMInt32Type(), 0, LLVMBool(false)))
+        LLVMBuildRet(builder, LLVMConstInt(LLVMInt64Type(), 0, LLVMBool(false)))
     }
 }
 

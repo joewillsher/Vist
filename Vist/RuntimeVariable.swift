@@ -1,5 +1,5 @@
 //
-//  StackVariable.swift
+//  RuntimeVariable.swift
 //  Vist
 //
 //  Created by Josef Willsher on 18/12/2015.
@@ -18,6 +18,7 @@ protocol RuntimeVariable {
 
 /// A variable type passed by reference
 /// Instances are called in IR using `load` and `store`
+/// mem2reg optimisation pass moves these down to SSA register vars
 class ReferenceVariable : RuntimeVariable {
     var type: LLVMTypeRef
     var ptr: LLVMValueRef
