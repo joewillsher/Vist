@@ -222,6 +222,12 @@ extension Mutation : IRGenerator {
             let newArray = try new.arrInstance(scope)
             arr.assignFrom(builder, arr: newArray)
             
+            
+            let ex = ArraySubscriptExpression(arr: Variable(name: "a"), index: 1)
+            let fn = FunctionCall(name: "print", args: Tuple(elements: [ex]))
+            try fn.codeGen(scope)
+            
+            
         } else {
             
             let new = try value.codeGen(scope)
@@ -683,7 +689,7 @@ private extension ScopeExpression {
 //  MARK:                                                 Arrays
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension ArrayExpression {
+extension ArrayExpression : IRGenerator {
     
     func arrInstance(scope: Scope) throws -> ArrayVariable {
         
@@ -701,9 +707,38 @@ extension ArrayExpression {
         return variable
     }
     
+    func codeGen(scope: Scope) throws -> LLVMValueRef {
+        return try arrInstance(scope).base
+    }
+    
 }
 
+extension ArrayVariable {
+    
+    func elementAtIndex(index: Int) -> LLVMValueRef {
+        
+        let index = [LLVMConstInt(LLVMInt64Type(), UInt64(index), LLVMBool(false))].ptr()
+        let el = LLVMBuildGEP(builder, base, index, 1, "ptr\(index)")
+        
+        return LLVMBuildLoad(builder, el, "element\(index)")
+    }
 
+}
+
+extension ArraySubscriptExpression : IRGenerator {
+    
+    func codeGen(scope: Scope) throws -> LLVMValueRef {
+        
+        let a = try (arr as! Variable).codeGen(scope)
+        
+        let i = [LLVMConstInt(LLVMInt64Type(), UInt64(index), LLVMBool(false))].ptr()
+        let el = LLVMBuildGEP(builder, a, i, 1, "ptr\(index)")
+        
+        return LLVMBuildLoad(builder, el, "element\(index)")
+        
+        
+    }
+}
 
 
 

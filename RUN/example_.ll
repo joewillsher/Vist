@@ -71,11 +71,16 @@ entry:
   store i64 64, i64* %el2
   %a = alloca i64*
   store i64* %base, i64** %a
-  %arr1 = alloca [1 x i64]
-  %base2 = bitcast [1 x i64]* %arr1 to i64*
+  %arr1 = alloca [2 x i64]
+  %base2 = bitcast [2 x i64]* %arr1 to i64*
   %el03 = getelementptr i64* %base2, i64 0
-  store i64 10, i64* %el03
+  store i64 1, i64* %el03
+  %el14 = getelementptr i64* %base2, i64 1
+  store i64 2, i64* %el14
   store i64* %base2, i64** %a
+  %ptr1 = getelementptr i64* %base2, i64 1
+  %element1 = load i64* %ptr1
+  call void @print(i64 %element1)
   ret i64 0
 }
 

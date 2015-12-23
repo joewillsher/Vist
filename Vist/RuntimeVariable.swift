@@ -90,7 +90,7 @@ class ArrayVariable : RuntimeVariable {
     }
     
     func load(builder: LLVMBuilderRef, name: String = "") -> LLVMValueRef {
-        return LLVMBuildLoad(builder, ptr, name)
+        return base
     }
     
     func isValid() -> Bool {
@@ -103,7 +103,7 @@ class ArrayVariable : RuntimeVariable {
         
         LLVMBuildStore(builder, arr.base, ptr)
         count = arr.count
-        
+        base = arr.base
     }
     
     init(name: String = "arrhead", ptr: LLVMValueRef, elType: LLVMTypeRef, builder: LLVMBuilderRef, vars: [LLVMValueRef]) {
@@ -136,6 +136,7 @@ class ArrayVariable : RuntimeVariable {
         LLVMBuildStore(builder, base, self.ptr)
     }
     
+        
 }
 
 

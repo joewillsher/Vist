@@ -115,6 +115,10 @@ Ltmp17:
 	movq	%rsp, %rbp
 Ltmp18:
 	.cfi_def_cfa_register %rbp
+	leaq	L_.str1(%rip), %rdi
+	movl	$2, %esi
+	xorl	%eax, %eax
+	callq	_printf
 	xorl	%eax, %eax
 	popq	%rbp
 	retq

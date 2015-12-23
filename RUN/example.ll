@@ -42,8 +42,10 @@ define i8* @memcpy(i8* %a, i8* %b, i64 %s) #2 {
   ret i8* %a
 }
 
-define i64 @main() {
+; Function Attrs: ssp
+define i64 @main() #4 {
 entry:
+  %0 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str1, i64 0, i64 0), i64 2)
   ret i64 0
 }
 
@@ -54,6 +56,7 @@ attributes #0 = { ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-eli
 attributes #1 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #2 = { nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #3 = { nounwind }
+attributes #4 = { ssp }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}
