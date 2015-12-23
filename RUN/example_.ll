@@ -101,9 +101,9 @@ afterloop3:                                       ; preds = %loop2
   ret i64 0
 }
 
-define i64 @fact(i64 %"$0") {
+define i64 @fact(i64 %a) {
 entry:
-  %cmp_lte_res = icmp sle i64 %"$0", 1
+  %cmp_lte_res = icmp sle i64 %a, 1
   br i1 %cmp_lte_res, label %then0, label %cont0
 
 cont0:                                            ; preds = %entry
@@ -113,9 +113,9 @@ then0:                                            ; preds = %entry
   ret i64 1
 
 else1:                                            ; preds = %cont0
-  %sub_res = sub i64 %"$0", 1
+  %sub_res = sub i64 %a, 1
   %0 = call i64 @fact(i64 %sub_res)
-  %mul_res = mul i64 %"$0", %0
+  %mul_res = mul i64 %a, %0
   ret i64 %mul_res
 }
 

@@ -65,13 +65,13 @@ loop:                                             ; preds = %entry
 
 tailrecurse.i:                                    ; preds = %cont0.i, %loop
   %accumulator.tr.i = phi i64 [ 1, %loop ], [ %mul_res.i, %cont0.i ]
-  %"$0.tr.i" = phi i64 [ 0, %loop ], [ %sub_res.i, %cont0.i ]
-  %cmp_lte_res.i = icmp slt i64 %"$0.tr.i", 2
+  %a.tr.i = phi i64 [ 0, %loop ], [ %sub_res.i, %cont0.i ]
+  %cmp_lte_res.i = icmp slt i64 %a.tr.i, 2
   br i1 %cmp_lte_res.i, label %fact.exit, label %cont0.i
 
 cont0.i:                                          ; preds = %tailrecurse.i
-  %sub_res.i = add i64 %"$0.tr.i", -1
-  %mul_res.i = mul i64 %accumulator.tr.i, %"$0.tr.i"
+  %sub_res.i = add i64 %a.tr.i, -1
+  %mul_res.i = mul i64 %accumulator.tr.i, %a.tr.i
   br label %tailrecurse.i
 
 fact.exit:                                        ; preds = %tailrecurse.i
@@ -82,13 +82,13 @@ fact.exit:                                        ; preds = %tailrecurse.i
 
 tailrecurse.i4:                                   ; preds = %cont0.i5, %fact.exit
   %accumulator.tr.i1 = phi i64 [ 1, %fact.exit ], [ %mul_res.i7, %cont0.i5 ]
-  %"$0.tr.i2" = phi i64 [ 1, %fact.exit ], [ %sub_res.i6, %cont0.i5 ]
-  %cmp_lte_res.i3 = icmp slt i64 %"$0.tr.i2", 2
+  %a.tr.i2 = phi i64 [ 1, %fact.exit ], [ %sub_res.i6, %cont0.i5 ]
+  %cmp_lte_res.i3 = icmp slt i64 %a.tr.i2, 2
   br i1 %cmp_lte_res.i3, label %fact.exit8, label %cont0.i5
 
 cont0.i5:                                         ; preds = %tailrecurse.i4
-  %sub_res.i6 = add i64 %"$0.tr.i2", -1
-  %mul_res.i7 = mul i64 %accumulator.tr.i1, %"$0.tr.i2"
+  %sub_res.i6 = add i64 %a.tr.i2, -1
+  %mul_res.i7 = mul i64 %accumulator.tr.i1, %a.tr.i2
   br label %tailrecurse.i4
 
 fact.exit8:                                       ; preds = %tailrecurse.i4
@@ -99,13 +99,13 @@ fact.exit8:                                       ; preds = %tailrecurse.i4
 
 tailrecurse.i12:                                  ; preds = %cont0.i13, %fact.exit8
   %accumulator.tr.i9 = phi i64 [ 1, %fact.exit8 ], [ %mul_res.i15, %cont0.i13 ]
-  %"$0.tr.i10" = phi i64 [ 2, %fact.exit8 ], [ %sub_res.i14, %cont0.i13 ]
-  %cmp_lte_res.i11 = icmp slt i64 %"$0.tr.i10", 2
+  %a.tr.i10 = phi i64 [ 2, %fact.exit8 ], [ %sub_res.i14, %cont0.i13 ]
+  %cmp_lte_res.i11 = icmp slt i64 %a.tr.i10, 2
   br i1 %cmp_lte_res.i11, label %fact.exit16, label %cont0.i13
 
 cont0.i13:                                        ; preds = %tailrecurse.i12
-  %sub_res.i14 = add i64 %"$0.tr.i10", -1
-  %mul_res.i15 = mul i64 %accumulator.tr.i9, %"$0.tr.i10"
+  %sub_res.i14 = add i64 %a.tr.i10, -1
+  %mul_res.i15 = mul i64 %accumulator.tr.i9, %a.tr.i10
   br label %tailrecurse.i12
 
 fact.exit16:                                      ; preds = %tailrecurse.i12
@@ -116,13 +116,13 @@ fact.exit16:                                      ; preds = %tailrecurse.i12
 
 tailrecurse.i20:                                  ; preds = %cont0.i21, %fact.exit16
   %accumulator.tr.i17 = phi i64 [ 1, %fact.exit16 ], [ %mul_res.i23, %cont0.i21 ]
-  %"$0.tr.i18" = phi i64 [ 3, %fact.exit16 ], [ %sub_res.i22, %cont0.i21 ]
-  %cmp_lte_res.i19 = icmp slt i64 %"$0.tr.i18", 2
+  %a.tr.i18 = phi i64 [ 3, %fact.exit16 ], [ %sub_res.i22, %cont0.i21 ]
+  %cmp_lte_res.i19 = icmp slt i64 %a.tr.i18, 2
   br i1 %cmp_lte_res.i19, label %fact.exit24, label %cont0.i21
 
 cont0.i21:                                        ; preds = %tailrecurse.i20
-  %sub_res.i22 = add i64 %"$0.tr.i18", -1
-  %mul_res.i23 = mul i64 %accumulator.tr.i17, %"$0.tr.i18"
+  %sub_res.i22 = add i64 %a.tr.i18, -1
+  %mul_res.i23 = mul i64 %accumulator.tr.i17, %a.tr.i18
   br label %tailrecurse.i20
 
 fact.exit24:                                      ; preds = %tailrecurse.i20
@@ -133,13 +133,13 @@ fact.exit24:                                      ; preds = %tailrecurse.i20
 
 tailrecurse.i28:                                  ; preds = %cont0.i29, %fact.exit24
   %accumulator.tr.i25 = phi i64 [ 1, %fact.exit24 ], [ %mul_res.i31, %cont0.i29 ]
-  %"$0.tr.i26" = phi i64 [ 4, %fact.exit24 ], [ %sub_res.i30, %cont0.i29 ]
-  %cmp_lte_res.i27 = icmp slt i64 %"$0.tr.i26", 2
+  %a.tr.i26 = phi i64 [ 4, %fact.exit24 ], [ %sub_res.i30, %cont0.i29 ]
+  %cmp_lte_res.i27 = icmp slt i64 %a.tr.i26, 2
   br i1 %cmp_lte_res.i27, label %fact.exit32, label %cont0.i29
 
 cont0.i29:                                        ; preds = %tailrecurse.i28
-  %sub_res.i30 = add i64 %"$0.tr.i26", -1
-  %mul_res.i31 = mul i64 %accumulator.tr.i25, %"$0.tr.i26"
+  %sub_res.i30 = add i64 %a.tr.i26, -1
+  %mul_res.i31 = mul i64 %accumulator.tr.i25, %a.tr.i26
   br label %tailrecurse.i28
 
 fact.exit32:                                      ; preds = %tailrecurse.i28
@@ -150,13 +150,13 @@ fact.exit32:                                      ; preds = %tailrecurse.i28
 
 tailrecurse.i36:                                  ; preds = %cont0.i37, %fact.exit32
   %accumulator.tr.i33 = phi i64 [ 1, %fact.exit32 ], [ %mul_res.i39, %cont0.i37 ]
-  %"$0.tr.i34" = phi i64 [ 5, %fact.exit32 ], [ %sub_res.i38, %cont0.i37 ]
-  %cmp_lte_res.i35 = icmp slt i64 %"$0.tr.i34", 2
+  %a.tr.i34 = phi i64 [ 5, %fact.exit32 ], [ %sub_res.i38, %cont0.i37 ]
+  %cmp_lte_res.i35 = icmp slt i64 %a.tr.i34, 2
   br i1 %cmp_lte_res.i35, label %fact.exit40, label %cont0.i37
 
 cont0.i37:                                        ; preds = %tailrecurse.i36
-  %sub_res.i38 = add i64 %"$0.tr.i34", -1
-  %mul_res.i39 = mul i64 %accumulator.tr.i33, %"$0.tr.i34"
+  %sub_res.i38 = add i64 %a.tr.i34, -1
+  %mul_res.i39 = mul i64 %accumulator.tr.i33, %a.tr.i34
   br label %tailrecurse.i36
 
 fact.exit40:                                      ; preds = %tailrecurse.i36
@@ -167,13 +167,13 @@ fact.exit40:                                      ; preds = %tailrecurse.i36
 
 tailrecurse.i44:                                  ; preds = %cont0.i45, %fact.exit40
   %accumulator.tr.i41 = phi i64 [ 1, %fact.exit40 ], [ %mul_res.i47, %cont0.i45 ]
-  %"$0.tr.i42" = phi i64 [ 6, %fact.exit40 ], [ %sub_res.i46, %cont0.i45 ]
-  %cmp_lte_res.i43 = icmp slt i64 %"$0.tr.i42", 2
+  %a.tr.i42 = phi i64 [ 6, %fact.exit40 ], [ %sub_res.i46, %cont0.i45 ]
+  %cmp_lte_res.i43 = icmp slt i64 %a.tr.i42, 2
   br i1 %cmp_lte_res.i43, label %fact.exit48, label %cont0.i45
 
 cont0.i45:                                        ; preds = %tailrecurse.i44
-  %sub_res.i46 = add i64 %"$0.tr.i42", -1
-  %mul_res.i47 = mul i64 %accumulator.tr.i41, %"$0.tr.i42"
+  %sub_res.i46 = add i64 %a.tr.i42, -1
+  %mul_res.i47 = mul i64 %accumulator.tr.i41, %a.tr.i42
   br label %tailrecurse.i44
 
 fact.exit48:                                      ; preds = %tailrecurse.i44
@@ -184,13 +184,13 @@ fact.exit48:                                      ; preds = %tailrecurse.i44
 
 tailrecurse.i52:                                  ; preds = %cont0.i53, %fact.exit48
   %accumulator.tr.i49 = phi i64 [ 1, %fact.exit48 ], [ %mul_res.i55, %cont0.i53 ]
-  %"$0.tr.i50" = phi i64 [ 7, %fact.exit48 ], [ %sub_res.i54, %cont0.i53 ]
-  %cmp_lte_res.i51 = icmp slt i64 %"$0.tr.i50", 2
+  %a.tr.i50 = phi i64 [ 7, %fact.exit48 ], [ %sub_res.i54, %cont0.i53 ]
+  %cmp_lte_res.i51 = icmp slt i64 %a.tr.i50, 2
   br i1 %cmp_lte_res.i51, label %fact.exit56, label %cont0.i53
 
 cont0.i53:                                        ; preds = %tailrecurse.i52
-  %sub_res.i54 = add i64 %"$0.tr.i50", -1
-  %mul_res.i55 = mul i64 %accumulator.tr.i49, %"$0.tr.i50"
+  %sub_res.i54 = add i64 %a.tr.i50, -1
+  %mul_res.i55 = mul i64 %accumulator.tr.i49, %a.tr.i50
   br label %tailrecurse.i52
 
 fact.exit56:                                      ; preds = %tailrecurse.i52
@@ -201,13 +201,13 @@ fact.exit56:                                      ; preds = %tailrecurse.i52
 
 tailrecurse.i60:                                  ; preds = %cont0.i61, %fact.exit56
   %accumulator.tr.i57 = phi i64 [ 1, %fact.exit56 ], [ %mul_res.i63, %cont0.i61 ]
-  %"$0.tr.i58" = phi i64 [ 8, %fact.exit56 ], [ %sub_res.i62, %cont0.i61 ]
-  %cmp_lte_res.i59 = icmp slt i64 %"$0.tr.i58", 2
+  %a.tr.i58 = phi i64 [ 8, %fact.exit56 ], [ %sub_res.i62, %cont0.i61 ]
+  %cmp_lte_res.i59 = icmp slt i64 %a.tr.i58, 2
   br i1 %cmp_lte_res.i59, label %fact.exit64, label %cont0.i61
 
 cont0.i61:                                        ; preds = %tailrecurse.i60
-  %sub_res.i62 = add i64 %"$0.tr.i58", -1
-  %mul_res.i63 = mul i64 %accumulator.tr.i57, %"$0.tr.i58"
+  %sub_res.i62 = add i64 %a.tr.i58, -1
+  %mul_res.i63 = mul i64 %accumulator.tr.i57, %a.tr.i58
   br label %tailrecurse.i60
 
 fact.exit64:                                      ; preds = %tailrecurse.i60
@@ -245,14 +245,14 @@ loop2:                                            ; preds = %fact.exit64
   ret i64 0
 }
 
-define i64 @fact(i64 %"$0") {
+define i64 @fact(i64 %a) {
 entry:
   br label %tailrecurse
 
 tailrecurse:                                      ; preds = %else1, %entry
   %accumulator.tr = phi i64 [ 1, %entry ], [ %mul_res, %else1 ]
-  %"$0.tr" = phi i64 [ %"$0", %entry ], [ %sub_res, %else1 ]
-  %cmp_lte_res = icmp slt i64 %"$0.tr", 2
+  %a.tr = phi i64 [ %a, %entry ], [ %sub_res, %else1 ]
+  %cmp_lte_res = icmp slt i64 %a.tr, 2
   br i1 %cmp_lte_res, label %then0, label %cont0
 
 cont0:                                            ; preds = %tailrecurse
@@ -262,8 +262,8 @@ then0:                                            ; preds = %tailrecurse
   ret i64 %accumulator.tr
 
 else1:                                            ; preds = %cont0
-  %sub_res = add i64 %"$0.tr", -1
-  %mul_res = mul i64 %accumulator.tr, %"$0.tr"
+  %sub_res = add i64 %a.tr, -1
+  %mul_res = mul i64 %accumulator.tr, %a.tr
   br label %tailrecurse
 }
 

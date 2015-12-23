@@ -122,14 +122,14 @@ extension ScopeExpression {
     }
 }
 
-extension Assignment {
+extension AssignmentExpression {
     func printList() -> [(String?, Printable)]? {
         return [("name", name), ("type", type), ("value", value)]
     }
     
 }
 
-extension FunctionPrototype {
+extension FunctionPrototypeExpression {
     func printList() -> [(String?, Printable)]? {
         return [("name",name), ("type",type), ("impl",impl)]
     }
@@ -141,7 +141,7 @@ extension FunctionType {
     }
 }
 
-extension Tuple {
+extension TupleExpression {
     func printList() -> [(String?, Printable)]? {
         return elements.isEmpty ? [("Void","()")] : elements.enumerate().map { (Optional(String($0.0)), $0.1 as Printable) }
     }
@@ -150,7 +150,7 @@ extension Tuple {
     }
 }
 
-extension FunctionImplementation {
+extension FunctionImplementationExpression {
     func printList() -> [(String?, Printable)]? {
         return [("params", params), ("body", body)]
     }
@@ -196,7 +196,7 @@ extension Variable {
     }
 }
 
-extension FunctionCall {
+extension FunctionCallExpression {
     func printList() -> [(String?, Printable)]? {
         return [("name", name), ("args", args)]
     }
@@ -208,7 +208,7 @@ extension EndOfScope {
     }
 }
 
-extension Comment {
+extension CommentExpression {
     func printVal() -> String? {
         return "\"\(str)\""
     }
@@ -222,7 +222,7 @@ extension ReturnExpression {
 
 
 
-private func ifStr(n n: Int, ex: ElseIfBlock) -> String? {
+private func ifStr(n n: Int, ex: ElseIfBlockExpression) -> String? {
     return ex.condition == nil ? "else" : n == 0 ? "if" : "if else"
 }
 
@@ -233,13 +233,13 @@ extension ConditionalExpression {
     }
 }
 
-extension ElseIfBlock {
+extension ElseIfBlockExpression {
     
     func printList() -> [(String?, Printable)]? {
         return [("cond", condition), ("then", block)]
     }
 }
-extension Mutation {
+extension MutationExpression {
     
     func printList() -> [(String?, Printable)]? {
         return [("object", object), ("val", value)]

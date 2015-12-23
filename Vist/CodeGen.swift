@@ -173,7 +173,7 @@ extension Variable : IRGenerator {
     }
 }
 
-extension Assignment : IRGenerator {
+extension AssignmentExpression : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
@@ -225,7 +225,7 @@ extension Assignment : IRGenerator {
     
 }
 
-extension Mutation : IRGenerator {
+extension MutationExpression : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
@@ -346,7 +346,7 @@ extension Void : IRGenerator {
     }
 }
 
-extension Comment : IRGenerator {
+extension CommentExpression : IRGenerator {
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         return nil
     }
@@ -358,7 +358,7 @@ extension Comment : IRGenerator {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-extension FunctionCall : IRGenerator {
+extension FunctionCallExpression : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
@@ -406,7 +406,7 @@ private extension FunctionType {
 
 
 // function definition
-extension FunctionPrototype : IRGenerator {
+extension FunctionPrototypeExpression : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
@@ -482,7 +482,7 @@ extension ReturnExpression : IRGenerator {
 
 
 
-extension Block : BasicBlockGenerator {
+extension BlockExpression : BasicBlockGenerator {
     
     func bbGen(innerScope scope: Scope, fn: LLVMValueRef, ret: LLVMValueRef) throws -> LLVMBasicBlockRef {
         
@@ -518,7 +518,7 @@ extension Block : BasicBlockGenerator {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-private func ifBBID(n n: Int, ex: ElseIfBlock) -> String {
+private func ifBBID(n n: Int, ex: ElseIfBlockExpression) -> String {
     return ex.condition == nil ? "else\(n)" : "then\(n)"
 }
 
@@ -588,7 +588,7 @@ extension ConditionalExpression : IRGenerator {
 }
 
 
-private extension ElseIfBlock {
+private extension ElseIfBlockExpression {
     
     /// Create the basic block for the if expression
     private func bbGen(innerScope scope: Scope, contBlock: LLVMBasicBlockRef, name: String) throws -> LLVMBasicBlockRef {

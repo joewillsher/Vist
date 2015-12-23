@@ -34,7 +34,7 @@ class AST : ScopeExpression {
         self.expressions = expressions
     }
 }
-class Block : ScopeExpression {
+class BlockExpression : ScopeExpression {
     var expressions: [Expression]
     var topLevel = false
     init(expressions: [Expression]) {
@@ -106,7 +106,7 @@ struct StringLiteral : Literal, Typed {
     }
 }
 
-struct Comment : Expression {
+struct CommentExpression : Expression {
     let str: String
 }
 
@@ -155,17 +155,17 @@ class PostfixExpression : Expression {
     }
 }
 
-class FunctionCall : Expression {
+class FunctionCallExpression : Expression {
     let name: String
-    let args: Tuple
+    let args: TupleExpression
     
-    init(name: String, args: Tuple) {
+    init(name: String, args: TupleExpression) {
         self.name = name
         self.args = args
     }
 }
 
-class Assignment : Expression {
+class AssignmentExpression : Expression {
     let name: String
     let type: String?
     let isMutable: Bool
@@ -179,7 +179,7 @@ class Assignment : Expression {
     }
 }
 
-class Mutation : Expression {
+class MutationExpression : Expression {
     let object: AssignableExpression
     let value: Expression
     
@@ -191,36 +191,36 @@ class Mutation : Expression {
 
 
 
-class FunctionPrototype : Type {
+class FunctionPrototypeExpression : Type {
     let name: String
     let type: FunctionType
-    let impl: FunctionImplementation?
+    let impl: FunctionImplementationExpression?
     
-    init(name: String, type: FunctionType, impl: FunctionImplementation?) {
+    init(name: String, type: FunctionType, impl: FunctionImplementationExpression?) {
         self.name = name
         self.type = type
         self.impl = impl
     }
 }
 
-class FunctionImplementation : Expression {
-    let params: Tuple
-    let body: Block
+class FunctionImplementationExpression : Expression {
+    let params: TupleExpression
+    let body: BlockExpression
     
-    init(params: Tuple, body: Block) {
+    init(params: TupleExpression, body: BlockExpression) {
         self.params = params
         self.body = body
     }
 }
 
-class Tuple : Expression {
+class TupleExpression : Expression {
     let elements: [Expression]
     
     init(elements: [Expression]) {
         self.elements = elements
     }
     
-    static func void() -> Tuple{ return Tuple(elements: [])}
+    static func void() -> TupleExpression{ return TupleExpression(elements: [])}
     
     func mapAs<T>(t: T.Type) -> [T] {
         return elements.flatMap { $0 as? T }
@@ -246,10 +246,10 @@ class ValueType : Type {
 }
 
 class FunctionType : Type {
-    let args: Tuple
-    let returns: Tuple
+    let args: TupleExpression
+    let returns: TupleExpression
     
-    init(args: Tuple, returns: Tuple) {
+    init(args: TupleExpression, returns: TupleExpression) {
         self.args = args
         self.returns = returns
     }
@@ -266,7 +266,7 @@ class FunctionType : Type {
 
 
 
-class ElseIfBlock : Expression {
+class ElseIfBlockExpression : Expression {
     let condition: Expression?
     let block: ScopeExpression
     
@@ -278,14 +278,14 @@ class ElseIfBlock : Expression {
 
 
 class ConditionalExpression : Expression {
-    let statements: [ElseIfBlock]
+    let statements: [ElseIfBlockExpression]
     
     init(statements: [(condition: Expression?, block: ScopeExpression)]) throws {
-        var p: [ElseIfBlock] = []
+        var p: [ElseIfBlockExpression] = []
         
         for (index, path) in statements.enumerate() {
             
-            p.append(ElseIfBlock(path))
+            p.append(ElseIfBlockExpression(path))
             
             // nil condition here is an else block, if there is anything after an else block then throw
             // either because there is more than 1 else or expressions after an else
@@ -303,7 +303,7 @@ protocol LoopExpression : Expression {
     typealias Iterator: IteratorExpression
     
     var iterator: Iterator { get }
-    var block: Block { get }
+    var block: BlockExpression { get }
 }
 
 
@@ -311,9 +311,9 @@ class ForInLoopExpression<Iterator : IteratorExpression> : LoopExpression {
     
     let binded: Variable
     let iterator: Iterator
-    let block: Block
+    let block: BlockExpression
     
-    init(identifier: Variable, iterator: Iterator, block: Block) {
+    init(identifier: Variable, iterator: Iterator, block: BlockExpression) {
         self.binded = identifier
         self.iterator = iterator
         self.block = block
@@ -324,9 +324,9 @@ class ForInLoopExpression<Iterator : IteratorExpression> : LoopExpression {
 class WhileLoopExpression<Iterator : IteratorExpression> : LoopExpression {
     
     let iterator: WhileIteratorExpression
-    let block: Block
+    let block: BlockExpression
     
-    init(iterator: WhileIteratorExpression, block: Block) {
+    init(iterator: WhileIteratorExpression, block: BlockExpression) {
         self.iterator = iterator
         self.block = block
     }

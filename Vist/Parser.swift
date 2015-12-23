@@ -126,11 +126,11 @@ struct Parser {
     
     
     //-------------------------------------------------------------------------------------------------------------------------
-    //  MARK:                                              Tuple
+    //  MARK:                                                   Tuple
     //-------------------------------------------------------------------------------------------------------------------------
     
     ///parses expression like (Int, String), of type (_identifier, _identifier)
-    private mutating func parseTypeTupleExpression() throws -> Tuple {
+    private mutating func parseTypeTupleExpression() throws -> TupleExpression {
         
         var elements = [Expression]()
         while true {
@@ -145,7 +145,7 @@ struct Parser {
                 
             case .CloseParen:
                 getNextToken()
-                return Tuple(elements: elements)
+                return TupleExpression(elements: elements)
                 
             default:
                 throw ParseError.ExpectedParen(currentPos)
@@ -153,7 +153,7 @@ struct Parser {
         }
     }
     
-    private mutating func parseTupleExpression() throws -> Tuple {
+    private mutating func parseTupleExpression() throws -> TupleExpression {
         
         var elements = [Expression]()
         while true {
@@ -166,7 +166,7 @@ struct Parser {
                 
             case .CloseParen:
                 getNextToken()
-                return Tuple(elements: elements)
+                return TupleExpression(elements: elements)
                 
             default:
                 throw ParseError.ExpectedParen(currentPos)
@@ -194,10 +194,10 @@ struct Parser {
             
             if case .CloseParen = currentToken {   // simple itentifier() call
                 getNextToken() // eat ')'
-                return FunctionCall(name: token, args: Tuple(elements: []))
+                return FunctionCallExpression(name: token, args: TupleExpression(elements: []))
             }
             
-            return FunctionCall(name: token, args: try parseTupleExpression())
+            return FunctionCallExpression(name: token, args: try parseTupleExpression())
 
         case .SqbrOpen?: // subscript
             getNextToken(); getNextToken() // eat 'identifier['
@@ -214,14 +214,14 @@ struct Parser {
             
             let exp = try parseOperatorExpression()
             // if assigning to subscripted value
-            return Mutation(object: ArraySubscriptExpression(arr: Variable(name: token), index: subscpipt), value: exp)
+            return MutationExpression(object: ArraySubscriptExpression(arr: Variable(name: token), index: subscpipt), value: exp)
             
         case .Assign?: // mutation
             getNextToken(); getNextToken() // eat 'identifier ='
             
             let exp = try parseOperatorExpression()
             
-            return Mutation(object: Variable(name: token), value: exp)
+            return MutationExpression(object: Variable(name: token), value: exp)
             
         default: // just identifier
             defer { getNextToken() }
@@ -426,7 +426,9 @@ struct Parser {
     
     private mutating func parseVariableAssignmentMutable(mutable: Bool) throws -> Expression {
 
-        guard case let .Identifier(id) = getNextToken() else { throw ParseError.NoIdentifier(currentPos) }
+        guard case let .Identifier(id) = getNextToken() else {
+            throw ParseError.NoIdentifier(currentPos)
+        }
 
         var explicitType: String?
         if case .Colon = getNextToken(), case let .Identifier(t) = getNextToken() {
@@ -452,7 +454,7 @@ struct Parser {
             }
         }
         
-        return Assignment(name: id, type: type, isMutable: mutable, value: value)
+        return AssignmentExpression(name: id, type: type, isMutable: mutable, value: value)
     }
     
     
@@ -467,7 +469,7 @@ struct Parser {
         let params = try parseTypeTupleExpression()
         
         guard case .Returns = currentToken else {
-            return FunctionType(args: params, returns: Tuple.void())
+            return FunctionType(args: params, returns: TupleExpression.void())
         }
         
         getNextToken()
@@ -477,7 +479,7 @@ struct Parser {
             
         } else if case let .Identifier(type) = currentToken {
             getNextToken()
-            return FunctionType(args: params, returns: Tuple(elements: [ValueType(name: type)]))
+            return FunctionType(args: params, returns: TupleExpression(elements: [ValueType(name: type)]))
             
         } else {
             throw ParseError.NoReturnType(currentPos)
@@ -485,7 +487,7 @@ struct Parser {
     }
 
     
-    private mutating func parseFunctionDeclaration() throws -> FunctionPrototype {
+    private mutating func parseFunctionDeclaration() throws -> FunctionPrototypeExpression {
         
         guard case let .Identifier(id) = getNextToken() else { throw ParseError.NoIdentifier(currentPos) }
         guard case .Colon = getNextToken() else { throw ParseError.ExpectedColon(currentPos) }
@@ -494,14 +496,14 @@ struct Parser {
         let type = try parseFunctionType()
         
         guard case .Assign = currentToken else {
-            return FunctionPrototype(name: id, type: type, impl: nil)
+            return FunctionPrototypeExpression(name: id, type: type, impl: nil)
         }
         getNextToken() // eat '='
         
-        return FunctionPrototype(name: id, type: type, impl: try parseClosureDeclaration(type: type))
+        return FunctionPrototypeExpression(name: id, type: type, impl: try parseClosureDeclaration(type: type))
     }
     
-    private mutating func parseClosureDeclaration(anon anon: Bool = false, type: FunctionType) throws -> FunctionImplementation {
+    private mutating func parseClosureDeclaration(anon anon: Bool = false, type: FunctionType) throws -> FunctionImplementationExpression {
         let names: [Expression]
         
         if case .Bar = currentToken {
@@ -531,10 +533,10 @@ struct Parser {
         
         guard currentToken.isControlToken() else { throw ParseError.ExpectedBrace(currentPos) }
         
-        return FunctionImplementation(params: Tuple(elements: names), body: try parseBlockExpression())
+        return FunctionImplementationExpression(params: TupleExpression(elements: names), body: try parseBlockExpression())
     }
     
-    private mutating func parseBraceExpressions() throws -> Block {
+    private mutating func parseBraceExpressions() throws -> BlockExpression {
         getNextToken() // eat '{'
 
         var expressions = [Expression]()
@@ -546,24 +548,24 @@ struct Parser {
             catch ParseError.NoToken(.CloseParen, _) { break }
         }
         getNextToken() // eat '}'
-        return Block(expressions: expressions)
+        return BlockExpression(expressions: expressions)
     }
     
     private mutating func parseReturnExpression() throws -> Expression {
         getNextToken() // eat `return`
         
-        return ReturnExpression(expression: try parseExpression(currentToken))
+        return ReturnExpression(expression: try parseOperatorExpression())
     }
     
-    private mutating func parseBracelessDoExpression() throws -> Block {
+    private mutating func parseBracelessDoExpression() throws -> BlockExpression {
         getNextToken() // eat 'do'
         
         let ex = try parseExpression(currentToken)
         
-        return Block(expressions: [ex])
+        return BlockExpression(expressions: [ex])
     }
     
-    private mutating func parseBlockExpression() throws -> Block {
+    private mutating func parseBlockExpression() throws -> BlockExpression {
         
         switch currentToken {
         case .OpenBrace:    return try parseBraceExpressions()
@@ -609,9 +611,9 @@ struct Parser {
     
     private mutating func parseCommentExpression(str: String) throws -> Expression {
         getNextToken() //eat comment
-        return Comment(str: str)
+        return CommentExpression(str: str)
     }
-
+    
     
     
     
