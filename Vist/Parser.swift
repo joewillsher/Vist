@@ -137,13 +137,12 @@ struct Parser {
         
         var elements = [Expression]()
         while true {
-            if case let .Identifier(id) = currentToken {
-                elements.append(ValueType(name: id))    // param
-                getNextToken()
-                continue
-            }
             
             switch currentToken {
+            case let .Identifier(id):
+                elements.append(ValueType(name: id))    // param
+                getNextToken()
+
             case .Comma:
                 getNextToken()  // eat ','
                 

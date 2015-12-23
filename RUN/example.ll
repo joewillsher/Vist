@@ -39,7 +39,14 @@ declare void @llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i
 ; Function Attrs: ssp
 define i64 @main() #4 {
 entry:
-  %0 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str1, i64 0, i64 0), i64 2)
+  %arr11 = alloca [2 x i64], align 8
+  %arr11.sub = getelementptr inbounds [2 x i64]* %arr11, i64 0, i64 0
+  store i64 1, i64* %arr11.sub, align 8
+  %el14 = getelementptr [2 x i64]* %arr11, i64 0, i64 1
+  store i64 2, i64* %el14, align 8
+  %"elementIntegerLiteral(val: 0, size: 64)" = load i64* %arr11.sub, align 8
+  %add_res = add i64 %"elementIntegerLiteral(val: 0, size: 64)", 2
+  %0 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str1, i64 0, i64 0), i64 %add_res)
   ret i64 0
 }
 

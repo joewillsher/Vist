@@ -71,7 +71,10 @@ entry:
   store i64* %base2, i64** %a
   %"ptrIntegerLiteral(val: 1, size: 64)" = getelementptr i64* %base2, i64 1
   %"elementIntegerLiteral(val: 1, size: 64)" = load i64* %"ptrIntegerLiteral(val: 1, size: 64)"
-  call void @print(i64 %"elementIntegerLiteral(val: 1, size: 64)")
+  %"ptrIntegerLiteral(val: 0, size: 64)" = getelementptr i64* %base2, i64 0
+  %"elementIntegerLiteral(val: 0, size: 64)" = load i64* %"ptrIntegerLiteral(val: 0, size: 64)"
+  %add_res = add i64 %"elementIntegerLiteral(val: 1, size: 64)", %"elementIntegerLiteral(val: 0, size: 64)"
+  call void @print(i64 %add_res)
   ret i64 0
 }
 

@@ -113,10 +113,10 @@ struct Comment : Expression {
 struct Void : Expression {}
 
 class Variable : Expression {
-    let name: String?
+    let name: String
     let isMutable: Bool = false
     
-    init(name: String?, isMutable: Bool = false) {
+    init(name: String, isMutable: Bool = false) {
         self.name = name
     }
 }

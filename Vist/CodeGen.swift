@@ -13,7 +13,7 @@ enum IRError : ErrorType {
     case MisMatchedTypes, NoLLVMFloat(UInt32), WrongFunctionApplication(String), NoLLVMType
     case NoBody, InvalidFunction, NoVariable(String), NoBool, TypeNotFound, NotMutable
     case CannotAssignToVoid, CannotAssignToType(Expression.Type)
-    case ForLoopIteratorNotInt, NotBoolCondition
+    case ForLoopIteratorNotInt, NotBoolCondition, SubscriptingNonVariableTypeNotAllowed, SubscriptingNonArrayType
 }
 
 
@@ -696,13 +696,18 @@ extension ArrayExpression : IRGenerator {
         
         // obj
         let vars = try arr.map { try $0.codeGen(scope) }
-        let variable = ArrayVariable(ptr: a, elType: elementType, builder: builder, vars: vars)
+        let variable = ArrayVariable(ptr: a, elType: elementType, arrType: arrayType, builder: builder, vars: vars)
         
         return variable
     }
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         return try arrInstance(scope).base
+    }
+    
+    func llvmType(scope: Scope) throws -> LLVMTypeRef {
+        let elementType = try arr.first!.llvmType(scope)
+        return LLVMArrayType(elementType, UInt32(arr.count))
     }
     
 }
@@ -719,6 +724,13 @@ extension ArraySubscriptExpression : IRGenerator {
         let el = LLVMBuildGEP(builder, a, i, 1, "ptr\(index)")
         
         return LLVMBuildLoad(builder, el, "element\(index)")
+    }
+    
+    func llvmType(scope: Scope) throws -> LLVMTypeRef {
+        guard let v = arr as? Variable else { throw IRError.SubscriptingNonVariableTypeNotAllowed }
+        guard let array = try scope.variable(v.name) as? ArrayVariable else { throw IRError.SubscriptingNonArrayType }
+        
+        return array.elementType
     }
 }
 

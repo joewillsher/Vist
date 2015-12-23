@@ -79,6 +79,8 @@ class StackVariable : RuntimeVariable {
 
 class ArrayVariable : RuntimeVariable {
     var elementType: LLVMTypeRef    // ty Type
+    var arrayType: LLVMTypeRef // [sz x ty] Type
+    
     var ptr: LLVMValueRef   // ty*
     var arr: LLVMValueRef   // [sz x ty]*
     var base: LLVMValueRef  // ty*
@@ -104,9 +106,10 @@ class ArrayVariable : RuntimeVariable {
         LLVMBuildStore(builder, arr.base, ptr)
         count = arr.count
         base = arr.base
+        arrayType = arr.arrayType
     }
     
-    init(ptr: LLVMValueRef, elType: LLVMTypeRef, builder: LLVMBuilderRef, vars: [LLVMValueRef]) {
+    init(ptr: LLVMValueRef, elType: LLVMTypeRef, arrType: LLVMTypeRef, builder: LLVMBuilderRef, vars: [LLVMValueRef]) {
         
         let pt = LLVMPointerType(elType, 0)
         // case array as ptr to get base pointer
@@ -126,6 +129,7 @@ class ArrayVariable : RuntimeVariable {
         self.base = base
         self.arr = ptr
         self.count = vars.count
+        self.arrayType = arrType
         self.mutable = false
         self.ptr = nil
     }
