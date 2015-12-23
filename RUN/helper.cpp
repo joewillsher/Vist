@@ -26,4 +26,14 @@ extern "C" {
         printf("%f\n", d);
     };
     
+    void meme()
+    {
+        int a [5] = { 1, 2, 3, 4, 5 };
+//        auto b = a;
+    };
+    
+    void *memcpy(void * a, const void * b, size_t s)
+    {
+        return memcpy(a, b, s);
+    };
 }

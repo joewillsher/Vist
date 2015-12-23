@@ -581,8 +581,7 @@ struct Parser {
                 
             default:
                 
-                let element = try parseOperatorExpression()
-                elements.append(element)    // param
+                elements.append(try parseOperatorExpression())    // param
             }
         }
         
@@ -637,6 +636,8 @@ struct Parser {
     
     // TODO: if statements have return type
     // TODO: Implicit return if a block only has 1 expression
+    // TODO: Method calls
+    
     
     private func tok() -> Token? { return index < tokens.count ? tokens[index] : nil }
     

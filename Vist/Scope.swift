@@ -9,6 +9,7 @@
 import Foundation
 
 
+/// A stack frame, used by irgen to lookup variables, function types and return pointers (via function)
 class Scope {
     
     private var runtimeVariables: [String: RuntimeVariable]
@@ -34,7 +35,8 @@ class Scope {
         functionTypes[name] = val
     }
     
-    
+    /// Return a variable
+    /// If not in this scope, parent scopes are recursively searched
     func variable(name: String) throws -> RuntimeVariable {
         
         if let v = runtimeVariables[name] where v.isValid() { return v }

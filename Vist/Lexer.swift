@@ -180,12 +180,12 @@ struct Lexer {
     
     private mutating func formToken(str: String) throws -> Token {
         switch context {
-        case .Alpha?:       return Token(alpha: str)
-        case .Numeric?:     return Token(numeric: str)
-        case .Symbol?:      return Token(symbol: str)
-        case .StringLiteral?: return .StringLiteral(str)
-        case .Comment?:      return .Comment(str)
-        default: throw LexerError.NoToken
+        case .Alpha?:           return Token(alpha: str)
+        case .Numeric?:         return Token(numeric: str)
+        case .Symbol?:          return Token(symbol: str)
+        case .StringLiteral?:   return .StringLiteral(str)
+        case .Comment?:         return .Comment(str)
+        default:                throw LexerError.NoToken
         }
     }
     
@@ -195,12 +195,16 @@ struct Lexer {
     }
     
     mutating private func lexNumber() throws {
-        try lexWhilePredicate { $0.isNumOr_() }
+        try lexWhilePredicate {
+            
+            $0.isNumOr_()
+        
+        }
         try resetContext()
         
-        // TODO: infix ... operator not conflict with float’s .
+        // TODO: lookahead for . in number -- if not a number then return
     }
-
+    
     mutating private func lexInteger() throws {
         try lexWhilePredicate { $0.isNum() }
         try resetContext()

@@ -163,7 +163,7 @@ extension Variable : IRGenerator {
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         let variable = try scope.variable(name ?? "")
         
-        return variable.ir(builder, name: name ?? "")
+        return variable.load(builder, name: name ?? "")
     }
     
     func llvmType(scope: Scope) throws -> LLVMTypeRef {
@@ -175,25 +175,34 @@ extension Assignment : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
-        // create value
-        let v = try value.codeGen(scope)
-        
-        // checks
-        guard v != nil else { throw IRError.CannotAssignToType(value.dynamicType) }
-        let type = LLVMTypeOf(v)
-        guard type != LLVMVoidType() else { throw IRError.CannotAssignToVoid }
-        
-        
-        // create variable
-        let variable = ReferenceVariable.alloc(builder, type: type, name: name ?? "", mutable: isMutable)
-        
-        // Load in memory
-        variable.store(builder, val: v)
-        
-        // update scope variables
-        scope.addVariable(name, val: variable)
-        
-        return v
+        if let arr = value as? ArrayExpression {
+            
+            let a = try arr.arrInstance(scope)
+            a.allocHead(builder, name: name, mutable: isMutable)
+            scope.addVariable(name, val: a)
+            
+            return a.ptr
+            
+        } else {
+            
+            // create value
+            let v = try value.codeGen(scope)
+            
+            // checks
+            guard v != nil else { throw IRError.CannotAssignToType(value.dynamicType) }
+            let type = LLVMTypeOf(v)
+            guard type != LLVMVoidType() else { throw IRError.CannotAssignToVoid }
+            
+            // create variable
+            let variable = ReferenceVariable.alloc(builder, type: type, name: name ?? "", mutable: isMutable)
+            
+            // Load in memory
+            variable.store(builder, val: v)
+            
+            // update scope variables
+            scope.addVariable(name, val: variable)
+            return v
+        }
     }
     
     func llvmType(scope: Scope) throws -> LLVMTypeRef {
@@ -206,13 +215,19 @@ extension Mutation : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
-        let new = try value.codeGen(scope)
-        
         let old = try scope.variable(name)
-        
-        guard let v = old as? ReferenceVariable where v.mutable else { throw IRError.NotMutable }
-        v.store(builder, val: new)
-        
+
+        if let arr = old as? ArrayVariable, new = value as? ArrayExpression {
+            
+            let newArray = try new.arrInstance(scope)
+            arr.assignFrom(builder, arr: newArray)
+            
+        } else {
+            
+            let new = try value.codeGen(scope)
+            guard let v = old as? MutableVariable where v.mutable else { throw IRError.NotMutable }
+            v.store(builder, val: new)
+        }
         return nil
     }
     
@@ -662,6 +677,35 @@ private extension ScopeExpression {
     }
     
 }
+
+
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                                 Arrays
+//-------------------------------------------------------------------------------------------------------------------------
+
+extension ArrayExpression {
+    
+    func arrInstance(scope: Scope) throws -> ArrayVariable {
+        
+        // assume homogeneous
+        let elementType = try arr.first!.llvmType(scope)
+        let arrayType = LLVMArrayType(elementType, UInt32(arr.count))
+        
+        // allocate memory for arr
+        let a = LLVMBuildArrayAlloca(builder, arrayType, nil, "arr")
+        
+        // obj
+        let vars = try arr.map { try $0.codeGen(scope) }
+        let variable = ArrayVariable(ptr: a, elType: elementType, builder: builder, vars: vars)
+        
+        return variable
+    }
+    
+}
+
+
+
+
 
 
 

@@ -7,3 +7,9 @@
 //
 
 import Foundation
+
+// TODO: Generate the interface of an AST
+
+func generateInterface(ast: AST) -> LLVMModuleRef {
+    return nil
+}
