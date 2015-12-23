@@ -103,9 +103,6 @@ struct Parser {
     //  MARK:                                              Literals
     //-------------------------------------------------------------------------------------------------------------------------
     
-    // whenever there is a lone object, check to see if the next token is an operator
-    // when hit a (, check after )
-    // parens should be objects containing only 1 expression,
     
     private mutating func parseIntExpression(token: Int) -> IntegerLiteral {
         getNextToken()
@@ -209,14 +206,22 @@ struct Parser {
 
             getNextToken() // eat ']'
 
-            return ArraySubscriptExpression(arr: Variable(name: token), index: subscpipt)
+            
+            guard case .Assign = currentToken else { // if call
+                return ArraySubscriptExpression(arr: Variable(name: token), index: subscpipt)
+            }
+            getNextToken() // eat '='
+            
+            let exp = try parseOperatorExpression()
+            // if assigning to subscripted value
+            return Mutation(object: ArraySubscriptExpression(arr: Variable(name: token), index: subscpipt), value: exp)
             
         case .Assign?: // mutation
             getNextToken(); getNextToken() // eat 'identifier ='
             
             let exp = try parseOperatorExpression()
             
-            return Mutation(name: token, value: exp)
+            return Mutation(object: Variable(name: token), value: exp)
             
         default: // just identifier
             defer { getNextToken() }
@@ -336,7 +341,6 @@ struct Parser {
         // list of blocks
         var blocks: [(condition: Expression?, block: ScopeExpression)] = []
         
-        print(currentToken)
         let usesBraces = currentToken.isBrace()
         // get if block & append
         guard currentToken.isControlToken() else { throw ParseError.ExpectedBrace(currentPos) }
@@ -358,10 +362,10 @@ struct Parser {
                 
             } else { condition = nil }
             
-            if usesBraces {
+//            if usesBraces {
                 getNextToken()
-            }
-            
+//            }
+
             let block = try parseBlockExpression()
             
             blocks.append((condition, block))

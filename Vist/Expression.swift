@@ -112,7 +112,10 @@ struct Comment : Expression {
 
 struct Void : Expression {}
 
-class Variable : Expression {
+
+protocol AssignableExpression : Expression {}
+
+class Variable : AssignableExpression {
     let name: String
     let isMutable: Bool = false
     
@@ -177,11 +180,11 @@ class Assignment : Expression {
 }
 
 class Mutation : Expression {
-    let name: String
+    let object: AssignableExpression
     let value: Expression
     
-    init(name: String, value: Expression) {
-        self.name = name
+    init(object: AssignableExpression, value: Expression) {
+        self.object = object
         self.value = value
     }
 }
@@ -354,7 +357,7 @@ class WhileIteratorExpression : IteratorExpression {
     
 }
 
-class ArrayExpression : Expression {
+class ArrayExpression : Expression, AssignableExpression {
     
     let arr: [Expression]
     
@@ -364,7 +367,7 @@ class ArrayExpression : Expression {
     
 }
 
-class ArraySubscriptExpression : Expression {
+class ArraySubscriptExpression : Expression, AssignableExpression {
     let arr: Expression
     let index: Expression
     

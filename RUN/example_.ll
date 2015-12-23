@@ -52,30 +52,71 @@ declare void @llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i
 
 define i64 @main() {
 entry:
-  %arr = alloca [3 x i64]
-  %base = bitcast [3 x i64]* %arr to i64*
+  %arr = alloca [9 x i64]
+  %base = bitcast [9 x i64]* %arr to i64*
   %el0 = getelementptr i64* %base, i64 0
-  store i64 10, i64* %el0
+  store i64 0, i64* %el0
   %el1 = getelementptr i64* %base, i64 1
-  store i64 22, i64* %el1
+  store i64 1, i64* %el1
   %el2 = getelementptr i64* %base, i64 2
-  store i64 64, i64* %el2
-  %a = alloca i64*
-  store i64* %base, i64** %a
-  %arr1 = alloca [2 x i64]
-  %base2 = bitcast [2 x i64]* %arr1 to i64*
-  %el03 = getelementptr i64* %base2, i64 0
-  store i64 1, i64* %el03
-  %el14 = getelementptr i64* %base2, i64 1
-  store i64 2, i64* %el14
-  store i64* %base2, i64** %a
-  %"ptrIntegerLiteral(val: 1, size: 64)" = getelementptr i64* %base2, i64 1
-  %"elementIntegerLiteral(val: 1, size: 64)" = load i64* %"ptrIntegerLiteral(val: 1, size: 64)"
-  %"ptrIntegerLiteral(val: 0, size: 64)" = getelementptr i64* %base2, i64 0
-  %"elementIntegerLiteral(val: 0, size: 64)" = load i64* %"ptrIntegerLiteral(val: 0, size: 64)"
-  %add_res = add i64 %"elementIntegerLiteral(val: 1, size: 64)", %"elementIntegerLiteral(val: 0, size: 64)"
-  call void @print(i64 %add_res)
+  store i64 2, i64* %el2
+  %el3 = getelementptr i64* %base, i64 3
+  store i64 3, i64* %el3
+  %el4 = getelementptr i64* %base, i64 4
+  store i64 4, i64* %el4
+  %el5 = getelementptr i64* %base, i64 5
+  store i64 5, i64* %el5
+  %el6 = getelementptr i64* %base, i64 6
+  store i64 6, i64* %el6
+  %el7 = getelementptr i64* %base, i64 7
+  store i64 7, i64* %el7
+  %el8 = getelementptr i64* %base, i64 8
+  store i64 8, i64* %el8
+  %arr1 = alloca i64*
+  store i64* %base, i64** %arr1
+  br label %loop
+
+loop:                                             ; preds = %loop, %entry
+  %i = phi i64 [ 0, %entry ], [ %nexti, %loop ]
+  %nexti = add i64 1, %i
+  %ptr = getelementptr i64* %base, i64 %i
+  %0 = call i64 @fact(i64 %i)
+  store i64 %0, i64* %ptr
+  %looptest = icmp sle i64 %nexti, 8
+  br i1 %looptest, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %loop
+  br label %loop2
+
+loop2:                                            ; preds = %loop2, %afterloop
+  %i4 = phi i64 [ 0, %afterloop ], [ %nexti5, %loop2 ]
+  %nexti5 = add i64 1, %i4
+  %ptr6 = getelementptr i64* %base, i64 %i4
+  %element = load i64* %ptr6
+  call void @print(i64 %element)
+  %looptest7 = icmp sle i64 %nexti5, 8
+  br i1 %looptest7, label %loop2, label %afterloop3
+
+afterloop3:                                       ; preds = %loop2
   ret i64 0
+}
+
+define i64 @fact(i64 %"$0") {
+entry:
+  %cmp_lte_res = icmp sle i64 %"$0", 1
+  br i1 %cmp_lte_res, label %then0, label %cont0
+
+cont0:                                            ; preds = %entry
+  br label %else1
+
+then0:                                            ; preds = %entry
+  ret i64 1
+
+else1:                                            ; preds = %cont0
+  %sub_res = sub i64 %"$0", 1
+  %0 = call i64 @fact(i64 %sub_res)
+  %mul_res = mul i64 %"$0", %0
+  ret i64 %mul_res
 }
 
 attributes #0 = { ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

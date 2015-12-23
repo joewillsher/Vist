@@ -12,12 +12,12 @@ import Foundation
 protocol RuntimeVariable {
     var type: LLVMTypeRef { get }
     
-    func load(builder: LLVMBuilderRef, name: String) -> LLVMValueRef
+    func load(name: String) -> LLVMValueRef
     func isValid() -> Bool
 }
 
 protocol MutableVariable {
-    func store(builder: LLVMBuilderRef, val: LLVMValueRef)
+    func store(val: LLVMValueRef)
     var mutable: Bool { get }
 }
 
@@ -29,13 +29,16 @@ class ReferenceVariable : RuntimeVariable, MutableVariable {
     var ptr: LLVMValueRef
     let mutable: Bool
     
-    init(type: LLVMTypeRef, ptr: LLVMValueRef, mutable: Bool) {
+    var builder: LLVMBuilderRef
+    
+    init(type: LLVMTypeRef, ptr: LLVMValueRef, mutable: Bool, builder: LLVMBuilderRef) {
         self.type = type
         self.mutable = mutable
         self.ptr = ptr
+        self.builder = builder
     }
     
-    func load(builder: LLVMBuilderRef, name: String = "") -> LLVMValueRef {
+    func load(name: String = "") -> LLVMValueRef {
         return LLVMBuildLoad(builder, ptr, name)
     }
     
@@ -46,10 +49,10 @@ class ReferenceVariable : RuntimeVariable, MutableVariable {
     /// returns pointer to allocated memory
     class func alloc(builder: LLVMBuilderRef, type: LLVMTypeRef, name: String = "", mutable: Bool) -> ReferenceVariable {
         let ptr = LLVMBuildAlloca(builder, type, name)
-        return ReferenceVariable(type: type, ptr: ptr, mutable: mutable)
+        return ReferenceVariable(type: type, ptr: ptr, mutable: mutable, builder: builder)
     }
     
-    func store(builder: LLVMBuilderRef, val: LLVMValueRef) {
+    func store(val: LLVMValueRef) {
         LLVMBuildStore(builder, val, ptr)
     }
     
@@ -62,13 +65,15 @@ class ReferenceVariable : RuntimeVariable, MutableVariable {
 class StackVariable : RuntimeVariable {
     var type: LLVMTypeRef
     var val: LLVMValueRef
+    var builder: LLVMBuilderRef
     
-    init(val: LLVMValueRef) {
+    init(val: LLVMValueRef, builder: LLVMBuilderRef) {
         self.type = LLVMTypeOf(val)
         self.val = val
+        self.builder = builder
     }
     
-    func load(builder: LLVMBuilderRef, name: String = "") -> LLVMValueRef {
+    func load(name: String = "") -> LLVMValueRef {
         return val
     }
     
@@ -87,11 +92,13 @@ class ArrayVariable : RuntimeVariable {
     var count: Int
     var mutable: Bool
     
+    var builder: LLVMBuilderRef
+    
     var type: LLVMTypeRef {
         return LLVMArrayType(elementType, UInt32(count))
     }
     
-    func load(builder: LLVMBuilderRef, name: String = "") -> LLVMValueRef {
+    func load(name: String = "") -> LLVMValueRef {
         return base
     }
     
@@ -125,6 +132,8 @@ class ArrayVariable : RuntimeVariable {
             LLVMBuildStore(builder, vars[n], el)
         }
         
+        // TODO: Initialisation is O(n), make O(1)
+        
         self.elementType = elType
         self.base = base
         self.arr = ptr
@@ -132,12 +141,20 @@ class ArrayVariable : RuntimeVariable {
         self.arrayType = arrType
         self.mutable = false
         self.ptr = nil
+        self.builder = builder
     }
     
     func allocHead(builder: LLVMBuilderRef, name: String, mutable: Bool) {
         let pt = LLVMPointerType(elementType, 0)
         self.ptr = LLVMBuildAlloca(builder, pt, name)
         LLVMBuildStore(builder, base, self.ptr)
+    }
+    
+    
+    func ptrToElementAtIndex(i: LLVMValueRef) -> LLVMValueRef {
+        
+        return LLVMBuildGEP(builder, base, [i].ptr(), 1, "ptr")
+        
     }
     
         

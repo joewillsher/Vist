@@ -59,10 +59,12 @@ private func isFloatType(t: LLVMTypeKind) -> Bool {
 extension Expression {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
-        if let x = try (self as? IRGenerator)?.codeGen(scope) { return x } else { throw IRError.NotIRGenerator }
+        if let x = try (self as? IRGenerator)?.codeGen(scope) { return x }
+        else { throw IRError.NotIRGenerator }
     }
     func llvmType(scope: Scope) throws -> LLVMTypeRef {
-        if let x = try (self as? IRGenerator)?.llvmType(scope) { return x } else { throw IRError.NotIRGenerator }
+        if let x = try (self as? IRGenerator)?.llvmType(scope) { return x }
+        else { throw IRError.NotIRGenerator }
     }
     
     func bbGen(innerScope scope: Scope, fn: LLVMValueRef) throws -> LLVMBasicBlockRef {
@@ -163,7 +165,7 @@ extension Variable : IRGenerator {
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         let variable = try scope.variable(name ?? "")
         
-        return variable.load(builder, name: name ?? "")
+        return variable.load(name ?? "")
     }
     
     func llvmType(scope: Scope) throws -> LLVMTypeRef {
@@ -183,6 +185,18 @@ extension Assignment : IRGenerator {
             
             return a.ptr
             
+        } else if let sub = value as? ArraySubscriptExpression {
+            
+            let arr = try sub.backingArrayVariable(scope)
+            let idx = try sub.index.codeGen(scope) // assume int type
+            let ptr = arr.ptrToElementAtIndex(idx)
+            
+            let v = try sub.codeGen(scope)
+            
+            LLVMBuildStore(builder, v, ptr)
+            
+            return v
+            
         } else {
             
             // create value
@@ -197,7 +211,7 @@ extension Assignment : IRGenerator {
             let variable = ReferenceVariable.alloc(builder, type: type, name: name ?? "", mutable: isMutable)
             
             // Load in memory
-            variable.store(builder, val: v)
+            variable.store(v)
             
             // update scope variables
             scope.addVariable(name, val: variable)
@@ -215,19 +229,41 @@ extension Mutation : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
-        let old = try scope.variable(name)
-
-        if let arr = old as? ArrayVariable, new = value as? ArrayExpression {
+        
+        
+        if let object = object as? Variable {
+            // object = newValue
             
-            let newArray = try new.arrInstance(scope)
-            arr.assignFrom(builder, arr: newArray)
-                        
-        } else {
+            let variable = try scope.variable(object.name)
             
-            let new = try value.codeGen(scope)
-            guard let v = old as? MutableVariable where v.mutable else { throw IRError.NotMutable }
-            v.store(builder, val: new)
+            
+            if let arrayVariable = variable as? ArrayVariable, arrayExpression = value as? ArrayExpression {
+                
+                let newArray = try arrayExpression.arrInstance(scope)
+                arrayVariable.assignFrom(builder, arr: newArray)
+                
+            } else {
+                
+                
+                let new = try value.codeGen(scope)
+                
+                guard let v = variable as? MutableVariable where v.mutable else { throw IRError.NotMutable }
+                v.store(new)
+                
+            }
+        
+        } else if let sub = object as? ArraySubscriptExpression {
+            
+            let arr = try sub.backingArrayVariable(scope)
+            
+            let i = try sub.index.codeGen(scope)
+            let ptr = arr.ptrToElementAtIndex(i)
+            
+            let val = try value.codeGen(scope)
+            
+            LLVMBuildStore(builder, val, ptr)
         }
+        
         return nil
     }
     
@@ -404,7 +440,7 @@ extension FunctionPrototype : IRGenerator {
             let name = (impl?.params.elements[i] as? ValueType)?.name ?? ("$\(i)")
             LLVMSetValueName(param, name)
 
-            let s = StackVariable(val: param)
+            let s = StackVariable(val: param, builder: builder)
             functionScope.addVariable(name, val: s)
         }
         
@@ -606,7 +642,7 @@ extension ForInLoopExpression : IRGenerator {
         let next = LLVMBuildAdd(builder, one, i, "next\(name)")
         
         // gen the IR for the inner block
-        let lv = StackVariable(val: i)
+        let lv = StackVariable(val: i, builder: builder)
         let loopScope = Scope(block: loop, vars: [name: lv], function: scope.function, parentScope: scope)
         try block.bbGenInline(scope: loopScope)
         
@@ -715,16 +751,24 @@ extension ArrayExpression : IRGenerator {
 extension ArraySubscriptExpression : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
+
+        let arr = try backingArrayVariable(scope)
         
-        let a = try (arr as! Variable).codeGen(scope)
-        
+        // asssume int object
         let idx = try index.codeGen(scope)
         
-        let i = [idx].ptr()
-        let el = LLVMBuildGEP(builder, a, i, 1, "ptr\(index)")
+        let ptr = arr.ptrToElementAtIndex(idx)
         
-        return LLVMBuildLoad(builder, el, "element\(index)")
+        return LLVMBuildLoad(builder, ptr, "element")
     }
+    
+    func backingArrayVariable(scope: Scope) throws -> ArrayVariable {
+        guard let v = arr as? Variable else { throw IRError.SubscriptingNonVariableTypeNotAllowed }
+        guard let arr = try scope.variable(v.name) as? ArrayVariable else { throw IRError.SubscriptingNonVariableTypeNotAllowed }
+        
+        return arr
+    }
+    
     
     func llvmType(scope: Scope) throws -> LLVMTypeRef {
         guard let v = arr as? Variable else { throw IRError.SubscriptingNonVariableTypeNotAllowed }

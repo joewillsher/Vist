@@ -62,7 +62,7 @@ extension Printable {
 extension String : Printable {
     func printDirectly() -> String? {
         return "\"\(self)\""
-    }
+    }   
 }
 extension Int : Printable {
     func printDirectly() -> String? {
@@ -242,7 +242,7 @@ extension ElseIfBlock {
 extension Mutation {
     
     func printList() -> [(String?, Printable)]? {
-        return [("name", name), ("val", value)]
+        return [("object", object), ("val", value)]
     }
 }
 
@@ -282,6 +282,14 @@ extension ArrayExpression {
     
     func printList() -> [(String?, Printable)]? {
         return arr.enumerate().map { (String($0), $1) }
+    }
+    
+}
+
+extension ArraySubscriptExpression {
+    
+    func printList() -> [(String?, Printable)]? {
+        return [("arr", arr), ("index", index)]
     }
     
 }
