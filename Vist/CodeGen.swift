@@ -221,13 +221,7 @@ extension Mutation : IRGenerator {
             
             let newArray = try new.arrInstance(scope)
             arr.assignFrom(builder, arr: newArray)
-            
-            
-            let ex = ArraySubscriptExpression(arr: Variable(name: "a"), index: 1)
-            let fn = FunctionCall(name: "print", args: Tuple(elements: [ex]))
-            try fn.codeGen(scope)
-            
-            
+                        
         } else {
             
             let new = try value.codeGen(scope)
@@ -713,30 +707,18 @@ extension ArrayExpression : IRGenerator {
     
 }
 
-extension ArrayVariable {
-    
-    func elementAtIndex(index: Int) -> LLVMValueRef {
-        
-        let index = [LLVMConstInt(LLVMInt64Type(), UInt64(index), LLVMBool(false))].ptr()
-        let el = LLVMBuildGEP(builder, base, index, 1, "ptr\(index)")
-        
-        return LLVMBuildLoad(builder, el, "element\(index)")
-    }
-
-}
-
 extension ArraySubscriptExpression : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
         let a = try (arr as! Variable).codeGen(scope)
         
-        let i = [LLVMConstInt(LLVMInt64Type(), UInt64(index), LLVMBool(false))].ptr()
+        let idx = try index.codeGen(scope)
+        
+        let i = [idx].ptr()
         let el = LLVMBuildGEP(builder, a, i, 1, "ptr\(index)")
         
         return LLVMBuildLoad(builder, el, "element\(index)")
-        
-        
     }
 }
 

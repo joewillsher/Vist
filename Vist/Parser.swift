@@ -27,6 +27,7 @@ enum ParseError: ErrorType {
     case ExpectedIn(Pos), ExpectedDo(Pos)
     case NotIterator(Pos)
     case NotBlock(Pos)
+    case SubscriptNotIntegerType(Pos)
 }
 
 private extension Array {
@@ -161,7 +162,7 @@ struct Parser {
         var elements = [Expression]()
         while true {
             
-            elements.append(try parseExpression(currentToken))
+            elements.append(try parseOperatorExpression())
             
             switch currentToken {
             case .Comma:
@@ -191,26 +192,37 @@ struct Parser {
     
     private mutating func parseIdentifierExpression(token: String) throws -> Expression {
         
-        guard case .OpenParen? = inspectNextToken() else {
+        switch inspectNextToken() {
+        case .OpenParen?: // call
+            getNextToken(); getNextToken() // eat 'identifier('
             
-            if case .Assign = getNextToken() {
-                getNextToken() // eat '='
-                
-                let exp = try parseOperatorExpression()
-                
-                return Mutation(name: token, value: exp)
+            if case .CloseParen = currentToken {   // simple itentifier() call
+                getNextToken() // eat ')'
+                return FunctionCall(name: token, args: Tuple(elements: []))
             }
             
+            return FunctionCall(name: token, args: try parseTupleExpression())
+
+        case .SqbrOpen?: // subscript
+            getNextToken(); getNextToken() // eat 'identifier['
+            
+            let subscpipt = try parseOperatorExpression()
+
+            getNextToken() // eat ']'
+
+            return ArraySubscriptExpression(arr: Variable(name: token), index: subscpipt)
+            
+        case .Assign?: // mutation
+            getNextToken(); getNextToken() // eat 'identifier ='
+            
+            let exp = try parseOperatorExpression()
+            
+            return Mutation(name: token, value: exp)
+            
+        default: // just identifier
+            defer { getNextToken() }
             return try parseOperatorExpression(Variable(name: token))
-        }       // simple variable name
-        getNextToken(); getNextToken() // eat 'identifier + ('
-        
-        if case .CloseParen = currentToken {   // simple itentifier() call
-            getNextToken()
-            return FunctionCall(name: token, args: Tuple(elements: []))
         }
-        
-        return FunctionCall(name: token, args: try parseTupleExpression())
     }
     
     /// Function called on `return a + 1` and `if a < 3`

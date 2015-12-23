@@ -5,7 +5,6 @@ target triple = "x86_64-apple-macosx10.11.0"
 @.str = private unnamed_addr constant [10 x i8] c"sup meme\0A\00", align 1
 @.str1 = private unnamed_addr constant [6 x i8] c"%llu\0A\00", align 1
 @.str2 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
-@_ZZ4memeE1a = private unnamed_addr constant [5 x i32] [i32 1, i32 2, i32 3, i32 4, i32 5], align 16
 
 ; Function Attrs: ssp uwtable
 define void @printStr() #0 {
@@ -34,17 +33,6 @@ define void @printd(double %d) #0 {
 }
 
 ; Function Attrs: nounwind ssp uwtable
-define void @meme() #2 {
-  %a = alloca [5 x i32], align 16
-  %1 = bitcast [5 x i32]* %a to i8*
-  call void @llvm.memcpy.p0i8.p0i8.i64(i8* %1, i8* bitcast ([5 x i32]* @_ZZ4memeE1a to i8*), i64 20, i32 16, i1 false)
-  ret void
-}
-
-; Function Attrs: nounwind
-declare void @llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1) #3
-
-; Function Attrs: nounwind ssp uwtable
 define i8* @memcpy(i8* %a, i8* %b, i64 %s) #2 {
   %1 = alloca i8*, align 8
   %2 = alloca i8*, align 8
@@ -58,6 +46,9 @@ define i8* @memcpy(i8* %a, i8* %b, i64 %s) #2 {
   call void @llvm.memcpy.p0i8.p0i8.i64(i8* %4, i8* %5, i64 %6, i32 1, i1 false)
   ret i8* %4
 }
+
+; Function Attrs: nounwind
+declare void @llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1) #3
 
 define i64 @main() {
 entry:
@@ -78,9 +69,9 @@ entry:
   %el14 = getelementptr i64* %base2, i64 1
   store i64 2, i64* %el14
   store i64* %base2, i64** %a
-  %ptr1 = getelementptr i64* %base2, i64 1
-  %element1 = load i64* %ptr1
-  call void @print(i64 %element1)
+  %"ptrIntegerLiteral(val: 1, size: 64)" = getelementptr i64* %base2, i64 1
+  %"elementIntegerLiteral(val: 1, size: 64)" = load i64* %"ptrIntegerLiteral(val: 1, size: 64)"
+  call void @print(i64 %"elementIntegerLiteral(val: 1, size: 64)")
   ret i64 0
 }
 

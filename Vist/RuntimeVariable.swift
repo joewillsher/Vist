@@ -106,7 +106,7 @@ class ArrayVariable : RuntimeVariable {
         base = arr.base
     }
     
-    init(name: String = "arrhead", ptr: LLVMValueRef, elType: LLVMTypeRef, builder: LLVMBuilderRef, vars: [LLVMValueRef]) {
+    init(ptr: LLVMValueRef, elType: LLVMTypeRef, builder: LLVMBuilderRef, vars: [LLVMValueRef]) {
         
         let pt = LLVMPointerType(elType, 0)
         // case array as ptr to get base pointer

@@ -366,9 +366,9 @@ class ArrayExpression : Expression {
 
 class ArraySubscriptExpression : Expression {
     let arr: Expression
-    let index: Int
+    let index: Expression
     
-    init(arr: Expression, index: Int) {
+    init(arr: Expression, index: Expression) {
         self.arr = arr
         self.index = index
     }

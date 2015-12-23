@@ -58,9 +58,9 @@ Ltmp8:
 	jmp	_printf                 ## TAILCALL
 	.cfi_endproc
 
-	.globl	_meme
+	.globl	_memcpy
 	.align	4, 0x90
-_meme:                                  ## @meme
+_memcpy:                                ## @memcpy
 	.cfi_startproc
 ## BB#0:
 	pushq	%rbp
@@ -71,26 +71,9 @@ Ltmp10:
 	movq	%rsp, %rbp
 Ltmp11:
 	.cfi_def_cfa_register %rbp
-	popq	%rbp
-	retq
-	.cfi_endproc
-
-	.globl	_memcpy
-	.align	4, 0x90
-_memcpy:                                ## @memcpy
-	.cfi_startproc
-## BB#0:
-	pushq	%rbp
-Ltmp12:
-	.cfi_def_cfa_offset 16
-Ltmp13:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-Ltmp14:
-	.cfi_def_cfa_register %rbp
 	pushq	%rbx
 	pushq	%rax
-Ltmp15:
+Ltmp12:
 	.cfi_offset %rbx, -24
 	movq	%rdi, %rbx
                                         ## kill: RDI<def> RBX<kill>
@@ -108,12 +91,12 @@ _main:                                  ## @main
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp16:
+Ltmp13:
 	.cfi_def_cfa_offset 16
-Ltmp17:
+Ltmp14:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp18:
+Ltmp15:
 	.cfi_def_cfa_register %rbp
 	leaq	L_.str1(%rip), %rdi
 	movl	$2, %esi
@@ -134,16 +117,6 @@ L_.str1:                                ## @.str1
 L_.str2:                                ## @.str2
 	.asciz	"%f\n"
 
-	.section	__TEXT,__const
-	.align	4                       ## @_ZZ4memeE1a
-l__ZZ4memeE1a:
-	.long	1                       ## 0x1
-	.long	2                       ## 0x2
-	.long	3                       ## 0x3
-	.long	4                       ## 0x4
-	.long	5                       ## 0x5
-
-	.section	__TEXT,__cstring,cstring_literals
 L_str:                                  ## @str
 	.asciz	"sup meme"
 
