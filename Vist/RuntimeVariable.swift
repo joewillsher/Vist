@@ -132,7 +132,7 @@ class ArrayVariable : RuntimeVariable {
             LLVMBuildStore(builder, vars[n], el)
         }
         
-        // TODO: Initialisation is O(n), make O(1)
+        // FIXME: Initialisation is O(n), make O(1)
         
         self.elementType = elType
         self.base = base
@@ -154,7 +154,6 @@ class ArrayVariable : RuntimeVariable {
     func ptrToElementAtIndex(i: LLVMValueRef) -> LLVMValueRef {
         
         return LLVMBuildGEP(builder, base, [i].ptr(), 1, "ptr")
-        
     }
     
         

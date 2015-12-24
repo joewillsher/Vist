@@ -178,6 +178,7 @@ extension AssignmentExpression : IRGenerator {
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
         if let arr = value as? ArrayExpression {
+            //if asigning to array
             
             let a = try arr.arrInstance(scope)
             a.allocHead(builder, name: name, mutable: isMutable)
@@ -185,19 +186,8 @@ extension AssignmentExpression : IRGenerator {
             
             return a.ptr
             
-        } else if let sub = value as? ArraySubscriptExpression {
-            
-            let arr = try sub.backingArrayVariable(scope)
-            let idx = try sub.index.codeGen(scope) // assume int type
-            let ptr = arr.ptrToElementAtIndex(idx)
-            
-            let v = try sub.codeGen(scope)
-            
-            LLVMBuildStore(builder, v, ptr)
-            
-            return v
-            
         } else {
+            // all other types
             
             // create value
             let v = try value.codeGen(scope)
