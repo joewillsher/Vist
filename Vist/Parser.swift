@@ -634,7 +634,6 @@ struct Parser {
             }
             
             if case .CloseBrace = currentToken { break }
-            
         }
         
         return StructExpression(name: name, properties: properties, methods: methods)

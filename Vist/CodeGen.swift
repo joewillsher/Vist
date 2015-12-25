@@ -738,6 +738,13 @@ extension ArrayExpression : IRGenerator {
 
 extension ArraySubscriptExpression : IRGenerator {
     
+    private func backingArrayVariable(scope: Scope) throws -> ArrayVariable {
+        guard let v = arr as? Variable else { throw IRError.SubscriptingNonVariableTypeNotAllowed }
+        guard let arr = try scope.variable(v.name) as? ArrayVariable else { throw IRError.SubscriptingNonVariableTypeNotAllowed }
+        
+        return arr
+    }
+
     func codeGen(scope: Scope) throws -> LLVMValueRef {
 
         let arr = try backingArrayVariable(scope)
@@ -746,14 +753,6 @@ extension ArraySubscriptExpression : IRGenerator {
         
         return LLVMBuildLoad(builder, ptr, "element")
     }
-    
-    func backingArrayVariable(scope: Scope) throws -> ArrayVariable {
-        guard let v = arr as? Variable else { throw IRError.SubscriptingNonVariableTypeNotAllowed }
-        guard let arr = try scope.variable(v.name) as? ArrayVariable else { throw IRError.SubscriptingNonVariableTypeNotAllowed }
-        
-        return arr
-    }
-    
     
     func llvmType(scope: Scope) throws -> LLVMTypeRef {
         return try backingArrayVariable(scope).elementType
