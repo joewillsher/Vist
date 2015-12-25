@@ -22,6 +22,9 @@ protocol Type : Expression {}
 protocol Literal : Expression {
 }
 
+
+
+
 protocol ScopeExpression : Expression {
     var expressions: [Expression] { get set }
     var topLevel: Bool { get }
@@ -165,7 +168,7 @@ class FunctionCallExpression : Expression {
     }
 }
 
-class AssignmentExpression : Expression {
+class AssignmentExpression : Expression, StructMember {
     let name: String
     let type: String?
     let isMutable: Bool
@@ -191,7 +194,7 @@ class MutationExpression : Expression {
 
 
 
-class FunctionPrototypeExpression : Type {
+class FunctionPrototypeExpression : Expression, StructMember {
     let name: String
     let type: FunctionType
     let impl: FunctionImplementationExpression?
@@ -377,6 +380,30 @@ class ArraySubscriptExpression : Expression, AssignableExpression {
     }
     
 }
+
+
+
+
+
+
+protocol StructMember {
+}
+
+
+class StructExpression : Expression {
+    
+    let name: String
+    let properties: [AssignmentExpression]
+    let methods: [FunctionPrototypeExpression]
+    
+    init(name: String, properties: [AssignmentExpression], methods: [FunctionPrototypeExpression]) {
+        self.name = name
+        self.properties = properties
+        self.methods = methods
+    }
+    
+}
+
 
 
 

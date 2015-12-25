@@ -90,6 +90,23 @@ extension Bool : Printable {
     }
 }
 
+extension Array : Printable {
+    
+    func printList() -> [(String?, Printable)]? {
+        
+        var list: [Printable] = []
+        
+        for el in self where el is Printable {
+            let p = el as! Printable
+            
+            list.append(p)
+        }
+        
+        return list.enumerate().map { (String?("\($0)"), $1) }
+    }
+    
+}
+
 extension Optional : Printable {
     func printDirectly() -> String? {
         switch self {
@@ -291,6 +308,12 @@ extension ArraySubscriptExpression {
     func printList() -> [(String?, Printable)]? {
         return [("arr", arr), ("index", index)]
     }
+}
+
+extension StructExpression {
     
+    func printList() -> [(String?, Printable)]? {
+        return [("name", name), ("properties", properties), ("methods", methods)]
+    }
 }
 

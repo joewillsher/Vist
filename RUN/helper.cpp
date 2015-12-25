@@ -26,9 +26,9 @@ extern "C" {
         printf("%f\n", d);
     };
         
-    void *memcpy(void * a, const void * b, size_t s)
-    {
-        return memcpy(a, b, s);
-    };
-    
+//    void *memcpy(void * a, const void * b, size_t s)
+//    {
+//        return memcpy(a, b, s);
+//    };
+//    
 }

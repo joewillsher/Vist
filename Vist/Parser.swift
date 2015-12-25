@@ -9,18 +9,12 @@
 import Foundation
 
 enum ParseError: ErrorType {
-    case ExpectedParen(Pos)
-    case ExpectedCloseBracket(Pos)
-    case NoToken(Token, Pos)
-    case ExpectedComma(Pos)
-    case InvalidOperator(Pos)
-    case InvalidCall(String, Pos) // cant call (*2) or (.print())
+    case ExpectedParen(Pos),  ExpectedCloseBracket(Pos), NoToken(Token, Pos), ExpectedComma(Pos), ExpectedBrace(Pos)
+    case InvalidOperator(Pos), InvalidCall(String, Pos) // cant call (*2) or (.print())
     case NoIdentifier(Pos)
-    case ExpectedColon(Pos)
-    case NoReturnType(Pos)
+    case ExpectedColon(Pos), NoReturnType(Pos)
     case ExpectedAssignment(Pos)
     case NoExpression(Pos)
-    case ExpectedBrace(Pos)
     case NoOperator(Pos)
     case MismatchedType((String, Pos), (String, Pos))
     case InvalidIfStatement
@@ -28,6 +22,7 @@ enum ParseError: ErrorType {
     case NotIterator(Pos)
     case NotBlock(Pos)
     case SubscriptNotIntegerType(Pos)
+    case ObjectNotAllowedInTopLevelOfTypeImpl(Pos), NoTypeName(Pos)
 }
 
 private extension Array {
@@ -424,7 +419,7 @@ struct Parser {
     //-------------------------------------------------------------------------------------------------------------------------
     
     
-    private mutating func parseVariableAssignmentMutable(mutable: Bool) throws -> Expression {
+    private mutating func parseVariableAssignmentMutable(mutable: Bool) throws -> AssignmentExpression {
 
         guard case let .Identifier(id) = getNextToken() else {
             throw ParseError.NoIdentifier(currentPos)
@@ -605,6 +600,58 @@ struct Parser {
     }
     
     
+    
+    //-------------------------------------------------------------------------------------------------------------------------
+    //  MARK:                                              Other
+    //-------------------------------------------------------------------------------------------------------------------------
+
+    
+    private mutating func parseTypeExpression(byRef byRef: Bool) throws -> StructExpression {
+        getNextToken() // eat 'type'
+        
+        guard case .Identifier(let name) = currentToken else { throw ParseError.NoTypeName(currentPos) }
+        getNextToken() // eat name
+        guard case .OpenBrace = currentToken else { throw ParseError.ExpectedBrace(currentPos) }
+        getNextToken() // eat '{'
+        
+        var properties: [AssignmentExpression] = [], methods: [FunctionPrototypeExpression] = []
+        
+        while true {
+            
+            switch currentToken {
+                
+            case .Var:
+                properties.append(try parseVariableAssignmentMutable(true))
+                
+            case .Let:
+                properties.append(try parseVariableAssignmentMutable(true))
+                
+            case .Func:
+                methods.append(try parseFunctionDeclaration())
+                
+            default:
+                throw ParseError.ObjectNotAllowedInTopLevelOfTypeImpl(currentPos)
+            }
+            
+            if case .CloseBrace = currentToken { break }
+            
+        }
+        
+        return StructExpression(name: name, properties: properties, methods: methods)
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     //-------------------------------------------------------------------------------------------------------------------------
     //  MARK:                                              Other
     //-------------------------------------------------------------------------------------------------------------------------
@@ -642,6 +689,8 @@ struct Parser {
         case     .Do:                   return try parseBracelessDoExpression()
         case     .While:                return try parseWhileLoopExpression()
         case     .SqbrOpen:             return try parseArrayExpression()
+        case     .Type:                 return try parseTypeExpression(byRef: false)
+        case     .Reference:            getNextToken(); return try parseTypeExpression(byRef: true)
         case let .Integer(i):           return parseIntExpression(i)
         case let .FloatingPoint(x):     return parseFloatingPointExpression(x)
         case let .Str(str):             return parseStringExpression(str)

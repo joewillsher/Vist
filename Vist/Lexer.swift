@@ -69,6 +69,7 @@ private extension Token {
         case "in": self = .In
         case "do": self = .Do
         case "while": self = .While
+        case "type": self = .Type
         default: self = .Identifier(alpha)
         }
     }

@@ -82,6 +82,7 @@ class StackVariable : RuntimeVariable {
     }
 }
 
+
 class ArrayVariable : RuntimeVariable {
     var elementType: LLVMTypeRef    // ty Type
     var arrayType: LLVMTypeRef // [sz x ty] Type
@@ -132,8 +133,6 @@ class ArrayVariable : RuntimeVariable {
             LLVMBuildStore(builder, vars[n], el)
         }
         
-        // FIXME: Initialisation is O(n), make O(1)
-        
         self.elementType = elType
         self.base = base
         self.arr = ptr
@@ -158,5 +157,18 @@ class ArrayVariable : RuntimeVariable {
     
         
 }
+
+
+// TODO: Initially allocate a wider buffer than required if I can see it can change size in the future, use sema pass to add information about immutable arrays/strings etc.
+
+// TODO: Eagerly deallocate the original array in a mutation
+
+// TODO: Implement storage of array size inline, currently the runtime gets no information about array size, that’s all worked out by the compiler statically
+
+
+
+
+
+
 
 

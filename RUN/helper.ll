@@ -32,28 +32,8 @@ define void @printd(double %d) #0 {
   ret void
 }
 
-; Function Attrs: nounwind ssp uwtable
-define i8* @memcpy(i8* %a, i8* %b, i64 %s) #2 {
-  %1 = alloca i8*, align 8
-  %2 = alloca i8*, align 8
-  %3 = alloca i64, align 8
-  store i8* %a, i8** %1, align 8
-  store i8* %b, i8** %2, align 8
-  store i64 %s, i64* %3, align 8
-  %4 = load i8** %1, align 8
-  %5 = load i8** %2, align 8
-  %6 = load i64* %3, align 8
-  call void @llvm.memcpy.p0i8.p0i8.i64(i8* %4, i8* %5, i64 %6, i32 1, i1 false)
-  ret i8* %4
-}
-
-; Function Attrs: nounwind
-declare void @llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1) #3
-
 attributes #0 = { ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #2 = { nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #3 = { nounwind }
 
 !llvm.module.flags = !{!0}
 !llvm.ident = !{!1}

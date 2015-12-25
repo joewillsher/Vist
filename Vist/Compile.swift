@@ -45,7 +45,7 @@ public func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Boo
     
     
     
-    if verbose { print("\n\n-----------------------------LINK------------------------------\n") }
+    if verbose { print("\n\n-----------------------------LINK------------------------------") }
 
     /// Generate LLVM IR File for the helper c++ code
     let helperIRGenTask = NSTask()
@@ -79,7 +79,7 @@ public func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Boo
     
     
     
-    if verbose { print("\n\n---------------------------LLVM IR----------------------------\n") }
+    if verbose { print("\n---------------------------LLVM IR----------------------------\n") }
     
     // Generate LLVM IR code for program
     try ast.IRGen(module: module)
