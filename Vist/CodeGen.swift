@@ -13,7 +13,7 @@ enum IRError : ErrorType {
     case MisMatchedTypes, NoLLVMFloat(UInt32), WrongFunctionApplication(String), NoLLVMType
     case NoBody, InvalidFunction, NoVariable(String), NoBool, TypeNotFound, NotMutable
     case CannotAssignToVoid, CannotAssignToType(Expression.Type)
-    case ForLoopIteratorNotInt, NotBoolCondition, SubscriptingNonVariableTypeNotAllowed, SubscriptingNonArrayType
+    case ForLoopIteratorNotInt, NotBoolCondition, SubscriptingNonVariableTypeNotAllowed, SubscriptingNonArrayType, SubscriptOutOfBounds
 }
 
 
@@ -741,10 +741,7 @@ extension ArraySubscriptExpression : IRGenerator {
     func codeGen(scope: Scope) throws -> LLVMValueRef {
 
         let arr = try backingArrayVariable(scope)
-        
-        // asssume int object
         let idx = try index.expressionCodeGen(scope)
-        
         let ptr = arr.ptrToElementAtIndex(idx)
         
         return LLVMBuildLoad(builder, ptr, "element")
@@ -759,10 +756,7 @@ extension ArraySubscriptExpression : IRGenerator {
     
     
     func llvmType(scope: Scope) throws -> LLVMTypeRef {
-        guard let v = arr as? Variable else { throw IRError.SubscriptingNonVariableTypeNotAllowed }
-        guard let array = try scope.variable(v.name) as? ArrayVariable else { throw IRError.SubscriptingNonArrayType }
-        
-        return array.elementType
+        return try backingArrayVariable(scope).elementType
     }
 }
 
@@ -775,6 +769,12 @@ extension ArraySubscriptExpression : IRGenerator {
 extension StructExpression : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
+        
+        
+        
+        
+        
+        
         
         return nil
     }
