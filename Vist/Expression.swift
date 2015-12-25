@@ -342,9 +342,9 @@ protocol IteratorExpression : Expression {
 
 class RangeIteratorExpression : IteratorExpression {
     
-    let start: Int, end: Int
+    let start: Expression, end: Expression
     
-    init(s: Int, e: Int) {
+    init(s: Expression, e: Expression) {
         start = s
         end = e
     }

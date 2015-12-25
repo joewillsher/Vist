@@ -43,23 +43,20 @@ private struct StructVariable {
 
 
 
-class StructVariable : RuntimeVariable {
-    
-    var type: LLVMTypeRef = nil
-    
-    
-    
-    
-    
-    func load(name: String) -> LLVMValueRef {
-        
-    }
-    
-    func isValid() -> Bool {
-        
-    }
-    
-}
+//class StructVariable : RuntimeVariable {
+//    
+//    var type: LLVMTypeRef = nil
+//    
+//    
+//    func load(name: String) -> LLVMValueRef {
+//        
+//    }
+//    
+//    func isValid() -> Bool {
+//        
+//    }
+//    
+//}
 
 
 

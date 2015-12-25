@@ -71,52 +71,7 @@ Ltmp10:
 	movq	%rsp, %rbp
 Ltmp11:
 	.cfi_def_cfa_register %rbp
-	movl	$5, %eax
-	movl	$1, %esi
-	jmp	LBB3_1
-	.align	4, 0x90
-LBB3_2:                                 ## %cont0.i
-                                        ##   in Loop: Header=BB3_1 Depth=1
-	imulq	%rax, %rsi
-	decq	%rax
-LBB3_1:                                 ## %tailrecurse.i
-                                        ## =>This Inner Loop Header: Depth=1
-	cmpq	$2, %rax
-	jge	LBB3_2
-## BB#3:                                ## %fact.exit
-	leaq	L_.str1(%rip), %rdi
 	xorl	%eax, %eax
-	callq	_printf
-	xorl	%eax, %eax
-	popq	%rbp
-	retq
-	.cfi_endproc
-
-	.globl	_fact
-	.align	4, 0x90
-_fact:                                  ## @fact
-	.cfi_startproc
-## BB#0:                                ## %entry
-	pushq	%rbp
-Ltmp12:
-	.cfi_def_cfa_offset 16
-Ltmp13:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-Ltmp14:
-	.cfi_def_cfa_register %rbp
-	movl	$1, %eax
-	jmp	LBB4_1
-	.align	4, 0x90
-LBB4_3:                                 ## %else1
-                                        ##   in Loop: Header=BB4_1 Depth=1
-	imulq	%rdi, %rax
-	decq	%rdi
-LBB4_1:                                 ## %tailrecurse
-                                        ## =>This Inner Loop Header: Depth=1
-	cmpq	$1, %rdi
-	jg	LBB4_3
-## BB#2:                                ## %then0
 	popq	%rbp
 	retq
 	.cfi_endproc

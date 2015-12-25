@@ -36,6 +36,8 @@ private var typeDict: [String: LLVMTypeRef] = [
     "Int": LLVMInt64Type(),
     "Int64": LLVMInt64Type(),
     "Int32": LLVMInt32Type(),
+//    "Int128": LLVMIntType(128), // no support in swift for literals of this size
+//    "Int256": LLVMIntType(256),
     "Int16": LLVMInt16Type(),
     "Int8": LLVMInt8Type(),
     "Bool": LLVMInt1Type(),
@@ -621,8 +623,10 @@ extension ForInLoopExpression : IRGenerator {
         
         guard let rangeIterator = iterator as? RangeIteratorExpression else { throw IRError.ForLoopIteratorNotInt }
 
+        let start = try rangeIterator.start.expressionCodeGen(scope)
+        let end = try rangeIterator.end.expressionCodeGen(scope)
+        
         // add incoming value to phi node
-        let start = LLVMConstInt(LLVMInt64Type(), UInt64(rangeIterator.start), LLVMBool(false))
         LLVMAddIncoming(i, [start].ptr(), [scope.block].ptr(), 1)
         
         
@@ -636,7 +640,6 @@ extension ForInLoopExpression : IRGenerator {
         try block.bbGenInline(scope: loopScope)
         
         // conditional break
-        let end = LLVMConstInt(LLVMInt64Type(), UInt64(rangeIterator.end), LLVMBool(false))
         let comp = LLVMBuildICmp(builder, LLVMIntSLE, next, end, "looptest")
         LLVMBuildCondBr(builder, comp, loop, afterLoop)
         

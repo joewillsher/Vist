@@ -397,12 +397,12 @@ struct Parser {
     private mutating func parseForInIterator() throws -> RangeIteratorExpression {
         
         guard
-            let o = try parseOperatorExpression() as? BinaryExpression,
-            let lhs = o.lhs as? IntegerType,
-            let rhs = o.rhs as? IntegerType
+            let o = try parseOperatorExpression() as? BinaryExpression//,
+//            let lhs = o.lhs as? IntegerType,
+//            let rhs = o.rhs as? IntegerType
             else { throw ParseError.NotIterator(currentPos) }
         
-        return RangeIteratorExpression(s: lhs.val, e: rhs.val)
+        return RangeIteratorExpression(s: o.lhs, e: o.rhs)
     }
     
     private mutating func parseWhileIterator() throws -> WhileIteratorExpression {
@@ -445,7 +445,6 @@ struct Parser {
             if let n = UInt32(s) {
                 sized.size = n
                 value = sized
-                print(n)
             }
         }
         

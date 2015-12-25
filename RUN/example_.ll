@@ -34,27 +34,9 @@ define void @printd(double %d) #0 {
 
 define i64 @main() {
 entry:
-  %0 = call i64 @fact(i64 5)
-  call void @print(i64 %0)
+  %i = alloca i128
+  store i128 0, i128* %i
   ret i64 0
-}
-
-define i64 @fact(i64 %a) {
-entry:
-  %cmp_lte_res = icmp sle i64 %a, 1
-  br i1 %cmp_lte_res, label %then0, label %cont0
-
-cont0:                                            ; preds = %entry
-  br label %else1
-
-then0:                                            ; preds = %entry
-  ret i64 1
-
-else1:                                            ; preds = %cont0
-  %sub_res = sub i64 %a, 1
-  %0 = call i64 @fact(i64 %sub_res)
-  %mul_res = mul i64 %a, %0
-  ret i64 %mul_res
 }
 
 attributes #0 = { ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
