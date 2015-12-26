@@ -6,12 +6,13 @@
 
 * Semantic analysis
     - Type and variable/function reliability checking
-    - Adding information into AST about
-    - Interface gen (for linking)
+    - Adding information into AST about the types it is going to lower to -- move a lot of the checks from IRGen into this
+    - Interface gen (for linking files) (after Sema pass)
 
 * Struct IR Gen
-    - Properties and methods
-    - concepts and dynamic methods
+    - Properties and padding (incl improving current equal-width impl)
+    - Method implementation -- sema pass getting info about functions and associating them with the object
+    - Concepts and dynamic methods -- need to work out type model
 
 * Arrays
     - Implement append by hooking into a compiler-magic function to modify array buffer size
@@ -20,11 +21,9 @@
 
 * Standard library
     - need to invesitgate how I can let this interact with the compiler
-
-* Linking with other vist files
+    - write stdlib int and array types
 
 * Strings
 
-* Concepts & generics -- parsing & IR
 
 
