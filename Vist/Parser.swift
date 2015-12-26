@@ -72,9 +72,9 @@ struct Parser {
         "/": 100,
         "%": 70,
         "||": 10,
-        "&&": 20,
-        "==": 10,
-        "!=": 10,
+        "&&": 10,
+        "==": 20,
+        "!=": 20,
         "...": 40
     ]
     
@@ -290,11 +290,12 @@ struct Parser {
             // Get next operand
             getNextToken()
             
+            print(lhs, currentToken)
             // Error handling
-            let rhs = try parseOperatorExpression(prec: tokenPrecedence)
+            let rhs = try parsePrimary()
             
             // Get next operator
-            guard case let .InfixOperator(nextOp) = currentToken else { return BinaryExpression(op: op, lhs: lhs, rhs: rhs) }
+            guard case .InfixOperator(let nextOp) = currentToken else { return BinaryExpression(op: op, lhs: lhs, rhs: rhs) }
             guard let nextTokenPrecedence = precedences[nextOp] else { throw ParseError.NoOperator(currentPos) }
             
             let newRhs = try parseOperationRHS(tokenPrecedence, lhs: rhs)

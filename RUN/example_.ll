@@ -35,14 +35,15 @@ loop:                                             ; preds = %cont, %entry
   %i = phi i64 [ 0, %entry ], [ %nexti, %cont ]
   %nexti = add i64 1, %i
   %rem_res = urem i64 %i, 3
+  %cmp_eq_res = icmp eq i64 %rem_res, 0
   %rem_res1 = urem i64 %i, 5
-  %or_res = or i64 0, %rem_res1
-  %cmp_eq_res = icmp eq i64 %rem_res, %or_res
-  br i1 %cmp_eq_res, label %then0, label %cont
+  %cmp_eq_res2 = icmp eq i64 %rem_res1, 0
+  %or_res = or i1 %cmp_eq_res, %cmp_eq_res2
+  br i1 %or_res, label %then0, label %cont
 
 afterloop:                                        ; preds = %cont
-  %tot3 = load i64* %tot
-  call void @print(i64 %tot3)
+  %tot4 = load i64* %tot
+  call void @print(i64 %tot4)
   ret i64 0
 
 cont:                                             ; preds = %loop, %then0
@@ -50,8 +51,8 @@ cont:                                             ; preds = %loop, %then0
   br i1 %looptest, label %loop, label %afterloop
 
 then0:                                            ; preds = %loop
-  %tot2 = load i64* %tot
-  %add_res = add i64 %tot2, %i
+  %tot3 = load i64* %tot
+  %add_res = add i64 %tot3, %i
   store i64 %add_res, i64* %tot
   br label %cont
 }

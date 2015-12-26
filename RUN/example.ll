@@ -42,25 +42,29 @@ vector.body:                                      ; preds = %vector.body, %vecto
   %1 = add i64 %induction2, 1
   %2 = urem i64 %induction, 3
   %3 = urem i64 %induction2, 3
-  %4 = urem i64 %induction, 5
-  %5 = urem i64 %induction2, 5
-  %6 = icmp eq i64 %2, %4
-  %7 = icmp eq i64 %3, %5
-  %8 = add i64 %induction, %vec.phi
-  %9 = add i64 %induction2, %vec.phi1
-  %10 = or i1 false, %6
-  %11 = or i1 false, %7
-  %12 = select i1 %10, i64 %8, i64 %8
-  %13 = select i1 %11, i64 %9, i64 %9
-  %14 = xor i1 %6, true
-  %15 = xor i1 %7, true
-  %predphi = select i1 %14, i64 %vec.phi, i64 %12
-  %predphi3 = select i1 %15, i64 %vec.phi1, i64 %13
-  %16 = icmp slt i64 %0, 100000001
-  %17 = icmp slt i64 %1, 100000001
+  %4 = icmp eq i64 %2, 0
+  %5 = icmp eq i64 %3, 0
+  %6 = urem i64 %induction, 5
+  %7 = urem i64 %induction2, 5
+  %8 = icmp eq i64 %6, 0
+  %9 = icmp eq i64 %7, 0
+  %10 = or i1 %4, %8
+  %11 = or i1 %5, %9
+  %12 = add i64 %induction, %vec.phi
+  %13 = add i64 %induction2, %vec.phi1
+  %14 = or i1 false, %10
+  %15 = or i1 false, %11
+  %16 = select i1 %14, i64 %12, i64 %12
+  %17 = select i1 %15, i64 %13, i64 %13
+  %18 = xor i1 %10, true
+  %19 = xor i1 %11, true
+  %predphi = select i1 %18, i64 %vec.phi, i64 %16
+  %predphi3 = select i1 %19, i64 %vec.phi1, i64 %17
+  %20 = icmp slt i64 %0, 100000001
+  %21 = icmp slt i64 %1, 100000001
   %index.next = add i64 %index, 2
-  %18 = icmp eq i64 %index.next, 100000000
-  br i1 %18, label %middle.block, label %vector.body, !llvm.loop !2
+  %22 = icmp eq i64 %index.next, 100000000
+  br i1 %22, label %middle.block, label %vector.body, !llvm.loop !2
 
 middle.block:                                     ; preds = %vector.body, %overflow.checked
   %resume.val = phi i64 [ 0, %overflow.checked ], [ 100000000, %vector.body ]
@@ -82,22 +86,24 @@ loop:                                             ; preds = %cont, %scalar.ph
   %i = phi i64 [ %bc.trunc.resume.val, %scalar.ph ], [ %nexti, %cont ]
   %nexti = add i64 %i, 1
   %rem_res = urem i64 %i, 3
+  %cmp_eq_res = icmp eq i64 %rem_res, 0
   %rem_res1 = urem i64 %i, 5
-  %cmp_eq_res = icmp eq i64 %rem_res, %rem_res1
-  br i1 %cmp_eq_res, label %then0, label %cont
+  %cmp_eq_res2 = icmp eq i64 %rem_res1, 0
+  %or_res = or i1 %cmp_eq_res, %cmp_eq_res2
+  br i1 %or_res, label %then0, label %cont
 
 afterloop:                                        ; preds = %middle.block, %cont
   %tot.1.lcssa = phi i64 [ %tot.1, %cont ], [ %bin.rdx, %middle.block ]
-  %19 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str, i64 0, i64 0), i64 %tot.1.lcssa)
+  %23 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str, i64 0, i64 0), i64 %tot.1.lcssa)
   ret i64 0
 
 cont:                                             ; preds = %then0, %loop
-  %tot.1 = phi i64 [ %20, %then0 ], [ %tot.0, %loop ]
+  %tot.1 = phi i64 [ %24, %then0 ], [ %tot.0, %loop ]
   %looptest = icmp slt i64 %nexti, 100000001
   br i1 %looptest, label %loop, label %afterloop, !llvm.loop !5
 
 then0:                                            ; preds = %loop
-  %20 = add i64 %i, %tot.0
+  %24 = add i64 %i, %tot.0
   br label %cont
 }
 

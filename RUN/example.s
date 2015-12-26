@@ -73,16 +73,20 @@ Ltmp10:
 LBB2_2:                                 ## %vector.body
                                         ## =>This Inner Loop Header: Depth=1
 	movq	%rsi, %r10
-	movq	%rax, %rdi
+	movq	%rax, %r11
 	leaq	1(%rcx), %rsi
 	movq	%rcx, %rax
 	mulq	%r8
 	shrq	%rdx
-	leaq	(%rdx,%rdx,2), %r11
+	leaq	(%rdx,%rdx,2), %rdi
 	movq	%rsi, %rax
 	mulq	%r8
 	shrq	%rdx
-	leaq	(%rdx,%rdx,2), %r14
+	leaq	(%rdx,%rdx,2), %rax
+	cmpq	%rdi, %rcx
+	setne	%dil
+	cmpq	%rax, %rsi
+	setne	%r14b
 	movq	%rcx, %rax
 	mulq	%r9
 	shrq	$2, %rdx
@@ -90,12 +94,16 @@ LBB2_2:                                 ## %vector.body
 	movq	%rsi, %rax
 	mulq	%r9
 	shrq	$2, %rdx
-	leaq	(%rdx,%rdx,4), %rdx
-	leaq	(%rcx,%rdi), %rax
+	leaq	(%rdx,%rdx,4), %rax
+	cmpq	%rbx, %rcx
+	setne	%dl
+	cmpq	%rax, %rsi
+	setne	%bl
+	leaq	(%rcx,%r11), %rax
 	leaq	1(%rcx,%r10), %rsi
-	cmpq	%rbx, %r11
-	cmovneq	%rdi, %rax
-	cmpq	%rdx, %r14
+	testb	%dl, %dil
+	cmovneq	%r11, %rax
+	testb	%bl, %r14b
 	cmovneq	%r10, %rsi
 	addq	$2, %rcx
 	cmpq	$100000000, %rcx        ## imm = 0x5F5E100
@@ -105,7 +113,7 @@ LBB2_2:                                 ## %vector.body
 	movl	$100000000, %ecx        ## imm = 0x5F5E100
 	xorl	%eax, %eax
 	testb	%al, %al
-	jne	LBB2_6
+	jne	LBB2_7
 	.align	4, 0x90
 LBB2_4:                                 ## %loop
                                         ## =>This Inner Loop Header: Depth=1
@@ -118,19 +126,24 @@ LBB2_4:                                 ## %loop
 	movabsq	$-3689348814741910323, %rdx ## imm = 0xCCCCCCCCCCCCCCCD
 	movq	%rcx, %rax
 	mulq	%rdx
+	cmpq	%rbx, %rcx
+	je	LBB2_8
+## BB#5:                                ## %loop
+                                        ##   in Loop: Header=BB2_4 Depth=1
 	shrq	$2, %rdx
 	leaq	(%rdx,%rdx,4), %rax
-	cmpq	%rax, %rbx
-	jne	LBB2_5
-## BB#7:                                ## %then0
+	movq	%rcx, %rdx
+	subq	%rax, %rdx
+	jne	LBB2_6
+LBB2_8:                                 ## %then0
                                         ##   in Loop: Header=BB2_4 Depth=1
 	addq	%rcx, %rsi
-LBB2_5:                                 ## %cont
+LBB2_6:                                 ## %cont
                                         ##   in Loop: Header=BB2_4 Depth=1
 	cmpq	$100000001, %rdi        ## imm = 0x5F5E101
 	movq	%rdi, %rcx
 	jl	LBB2_4
-LBB2_6:                                 ## %afterloop
+LBB2_7:                                 ## %afterloop
 	leaq	L_.str(%rip), %rdi
 	xorl	%eax, %eax
 	callq	_printf
