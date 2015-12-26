@@ -1,11 +1,19 @@
 
 
-type Meme {
+/*type Meme {
     let a = 3
     let b = 4
 
     func foo: ()
 }
+*/
 
+var tot = 0
+
+for i in 0 ... 100000000 do
+    if i % 3 == 0 || i % 5 == 0 do
+        tot = tot + i
+
+print(tot)
 
 

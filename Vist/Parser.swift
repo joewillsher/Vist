@@ -62,19 +62,20 @@ struct Parser {
     private var currentPos: Pos     { return tokensWithPos.map{$0.1.range.start}[index] }
     
     private let precedences: [String: Int] = [
-        "<": 10,
-        ">": 10,
-        "<=": 10,
-        ">=": 10,
-        "+": 20,
-        "-": 20,
-        "*": 40,
-        "/": 40,
-        "||": 5,
-        "&&": 5,
-        "==": 5,
-        "!=": 5,
-        "...": 15
+        "<": 30,
+        ">": 30,
+        "<=": 30,
+        ">=": 30,
+        "+": 80,
+        "-": 80,
+        "*": 100,
+        "/": 100,
+        "%": 70,
+        "||": 10,
+        "&&": 20,
+        "==": 10,
+        "!=": 10,
+        "...": 40
     ]
     
     private mutating func getNextToken() -> Token {
@@ -226,8 +227,8 @@ struct Parser {
     
     /// Function called on `return a + 1` and `if a < 3`
     /// exp can be optionally defined as a known lhs operand to give more info to the parser
-    private mutating func parseOperatorExpression(exp: Expression? = nil) throws -> Expression {
-        return try parseOperationRHS(lhs: exp ?? (try parsePrimary()))
+    private mutating func parseOperatorExpression(exp: Expression? = nil, prec: Int = 0) throws -> Expression {
+        return try parseOperationRHS(prec, lhs: exp ?? (try parsePrimary()))
     }
     
     private mutating func parsePrimary() throws -> Expression {
@@ -290,7 +291,7 @@ struct Parser {
             getNextToken()
             
             // Error handling
-            let rhs = try parseOperatorExpression()
+            let rhs = try parseOperatorExpression(prec: tokenPrecedence)
             
             // Get next operator
             guard case let .InfixOperator(nextOp) = currentToken else { return BinaryExpression(op: op, lhs: lhs, rhs: rhs) }

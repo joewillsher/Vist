@@ -694,13 +694,13 @@ extension WhileLoopExpression : IRGenerator {
 
 private extension ScopeExpression {
     
+    /// Generates children’s code directly into the current scope & block
     func bbGenInline(scope scope: Scope) throws {
         
         // code gen for function
         for exp in expressions {
             try exp.expressionCodeGen(scope)
         }
-        
     }
     
 }

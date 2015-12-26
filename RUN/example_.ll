@@ -27,7 +27,33 @@ define void @printd(double %d) #0 {
 
 define i64 @main() {
 entry:
+  %tot = alloca i64
+  store i64 0, i64* %tot
+  br label %loop
+
+loop:                                             ; preds = %cont, %entry
+  %i = phi i64 [ 0, %entry ], [ %nexti, %cont ]
+  %nexti = add i64 1, %i
+  %rem_res = urem i64 %i, 3
+  %rem_res1 = urem i64 %i, 5
+  %or_res = or i64 0, %rem_res1
+  %cmp_eq_res = icmp eq i64 %rem_res, %or_res
+  br i1 %cmp_eq_res, label %then0, label %cont
+
+afterloop:                                        ; preds = %cont
+  %tot3 = load i64* %tot
+  call void @print(i64 %tot3)
   ret i64 0
+
+cont:                                             ; preds = %loop, %then0
+  %looptest = icmp sle i64 %nexti, 100000000
+  br i1 %looptest, label %loop, label %afterloop
+
+then0:                                            ; preds = %loop
+  %tot2 = load i64* %tot
+  %add_res = add i64 %tot2, %i
+  store i64 %add_res, i64* %tot
+  br label %cont
 }
 
 attributes #0 = { ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

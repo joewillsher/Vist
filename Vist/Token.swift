@@ -51,4 +51,4 @@ let operators: [String: Token] = [
     "{": .OpenBrace
 ]
 
-let stdlibOperators: [String] = ["<", ">", "<=", ">=", "/", "+", "-", "*", "&&", "||", "...", "==", "!="]
+let stdlibOperators: [String] = ["<", ">", "<=", ">=", "/", "+", "-", "*", "%", "&&", "||", "...", "==", "!="]
