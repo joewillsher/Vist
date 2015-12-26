@@ -1,8 +1,8 @@
 	.section	__TEXT,__text,regular,pure_instructions
 	.macosx_version_min 10, 11
-	.globl	_printStr
+	.globl	_print
 	.align	4, 0x90
-_printStr:                              ## @printStr
+_print:                                 ## @print
 	.cfi_startproc
 ## BB#0:
 	pushq	%rbp
@@ -13,26 +13,8 @@ Ltmp1:
 	movq	%rsp, %rbp
 Ltmp2:
 	.cfi_def_cfa_register %rbp
-	leaq	L_str(%rip), %rdi
-	popq	%rbp
-	jmp	_puts                   ## TAILCALL
-	.cfi_endproc
-
-	.globl	_print
-	.align	4, 0x90
-_print:                                 ## @print
-	.cfi_startproc
-## BB#0:
-	pushq	%rbp
-Ltmp3:
-	.cfi_def_cfa_offset 16
-Ltmp4:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-Ltmp5:
-	.cfi_def_cfa_register %rbp
 	movq	%rdi, %rcx
-	leaq	L_.str1(%rip), %rdi
+	leaq	L_.str(%rip), %rdi
 	xorl	%eax, %eax
 	movq	%rcx, %rsi
 	popq	%rbp
@@ -45,14 +27,14 @@ _printd:                                ## @printd
 	.cfi_startproc
 ## BB#0:
 	pushq	%rbp
-Ltmp6:
+Ltmp3:
 	.cfi_def_cfa_offset 16
-Ltmp7:
+Ltmp4:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp8:
+Ltmp5:
 	.cfi_def_cfa_register %rbp
-	leaq	L_.str2(%rip), %rdi
+	leaq	L_.str1(%rip), %rdi
 	movb	$1, %al
 	popq	%rbp
 	jmp	_printf                 ## TAILCALL
@@ -64,12 +46,12 @@ _main:                                  ## @main
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp9:
+Ltmp6:
 	.cfi_def_cfa_offset 16
-Ltmp10:
+Ltmp7:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp11:
+Ltmp8:
 	.cfi_def_cfa_register %rbp
 	xorl	%eax, %eax
 	popq	%rbp
@@ -78,16 +60,10 @@ Ltmp11:
 
 	.section	__TEXT,__cstring,cstring_literals
 L_.str:                                 ## @.str
-	.asciz	"sup meme\n"
-
-L_.str1:                                ## @.str1
 	.asciz	"%llu\n"
 
-L_.str2:                                ## @.str2
+L_.str1:                                ## @.str1
 	.asciz	"%f\n"
-
-L_str:                                  ## @str
-	.asciz	"sup meme"
 
 
 .subsections_via_symbols

@@ -11,11 +11,6 @@
 
 extern "C" {
     
-    void printStr()
-    {
-        printf("sup meme\n");
-    };
-    
     void print(int64_t i)
     {
         printf("%llu\n", i);

@@ -699,9 +699,7 @@ struct Parser {
     }
     
     // TODO: if statements have return type
-    // TODO: Implicit return if a block only has 1 expression
-    // TODO: Method calls
-    
+    // TODO: Implicit return if a block only has 1 expression    
     
     private func tok() -> Token? { return index < tokens.count ? tokens[index] : nil }
     
