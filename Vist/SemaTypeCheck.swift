@@ -65,6 +65,9 @@ func variableTypeSema<ScopeType : ScopeExpression>(inout forScope scope: ScopeTy
         }
         
         
+        //-------------------------------
+        // TODO: Parse all function declarations first, then go in to define them and everything else
+        //-------------------------------
     }
     
 }

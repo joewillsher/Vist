@@ -367,7 +367,11 @@ extension FunctionPrototypeExpression : IRGenerator {
         // If existing function definition
         let _fn = LLVMGetNamedFunction(module, name)
         if _fn != nil && LLVMCountParams(_fn) == UInt32(argCount) && LLVMCountBasicBlocks(_fn) != 0 {
-            return _fn
+            
+            guard LLVMGetEntryBasicBlock(_fn) == nil else { return _fn }
+            
+            
+            
         }
         
         // Set params

@@ -100,7 +100,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "meme.vist"
+            argument = "second.vist"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

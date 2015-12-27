@@ -1,35 +1,11 @@
 
-
-/*type Meme {
-    let a = 3
-    let b = 4
-
-    func foo: ()
-}
-*/
-
-func fact: (Int) -> Int = |a| do
-    if a <= 1 do
-        return 1
-    else do
-        return a * fact(a - 1)
-
-
 let y = fact(100)
 print(y)
 
-
 var tot = 0
 
-for i in 0 ... 100000000 do
+for i in 0 ... 1000 do
     if i % 3 == 0 || i % 5 == 0 do
         tot = tot + i
 
 print(tot)
-
-
-while tot > 1 {
-    tot = tot / 2
-    print(tot)
-}
-

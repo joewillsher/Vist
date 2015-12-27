@@ -23,8 +23,36 @@ func interfaceASTGen(ast: AST) throws -> AST {
             interface.expressions.append(fun)
                         
         }
+        
+        // TODO: Structs / concepts etc need to be exposed in the interface
     }
     
     return interface
 }
+
+func interFileInterfaceASTGen(ast: AST) throws -> AST {
+    
+    let interface = AST(expressions: [])
+    
+    
+    for exp in ast.expressions {
+        
+        if let e = exp as? AssignmentExpression {
+            interface.expressions.append(e)
+            
+        } else if let f = exp as? FunctionPrototypeExpression {
+            
+            let fun = FunctionPrototypeExpression(name: f.name, type: f.fnType, impl: f.impl)
+            fun.type = f.type
+            interface.expressions.append(fun)
+            
+        }
+        
+        // TODO: Structs / concepts etc need to be exposed in the interface
+    }
+    
+    return interface
+}
+
+
 
