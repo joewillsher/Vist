@@ -61,14 +61,11 @@ public func compileDocuments(fileNames: [String],
             if let h = head {
                 head = try astLink(h, other: [ast])
             }
-            
 
             if index == 0 {
-                
                 head = ast
                 
             } else {
-                
                 all.append(ast)
             }
         }
@@ -76,12 +73,7 @@ public func compileDocuments(fileNames: [String],
         if verbose { print("\n------------------------SEMA & LINK AST----------------------------\n") }
         
         guard let main = head else { fatalError("No main file supplied") }
-        
-        
-        
-
-        
-        var ast = try astLink(main, other: all)
+        var ast = main
         
         print(ast.description())
         
