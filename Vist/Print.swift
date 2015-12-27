@@ -317,3 +317,9 @@ extension LLVMType : Printable {
     }
 }
 
+extension ValueType : Printable {
+    
+    func printVal() -> String? {
+        return name
+    }
+}

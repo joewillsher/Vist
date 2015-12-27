@@ -75,10 +75,8 @@ public func compileDocuments(fileNames: [String],
         guard let main = head else { fatalError("No main file supplied") }
         var ast = main
         
-        print(ast.description())
-        
-        
         try sema(&ast)
+        print(ast.description())
 
         
         let file = fileNames.first!.stringByReplacingOccurrencesOfString(".vist", withString: "")

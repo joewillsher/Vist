@@ -41,7 +41,6 @@ func sema(inout ast: AST) throws {
     
     try variableTypeSema(forScope: &ast, v: nil, f: fnTable)
     
-    print(ast.description())
     
 }
 
