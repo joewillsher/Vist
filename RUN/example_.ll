@@ -44,7 +44,9 @@ loop:                                             ; preds = %cont, %entry
 afterloop:                                        ; preds = %cont
   %tot4 = load i64* %tot
   call void @print(i64 %tot4)
-  ret i64 0
+  %tot7 = load i64* %tot
+  %cmp_gt_res = icmp sgt i64 %tot7, 1
+  br i1 %cmp_gt_res, label %loop5, label %afterloop6
 
 cont:                                             ; preds = %loop, %then0
   %looptest = icmp sle i64 %nexti, 100000000
@@ -55,6 +57,19 @@ then0:                                            ; preds = %loop
   %add_res = add i64 %tot3, %i
   store i64 %add_res, i64* %tot
   br label %cont
+
+loop5:                                            ; preds = %loop5, %afterloop
+  %tot8 = load i64* %tot
+  %div_res = udiv i64 %tot8, 2
+  store i64 %div_res, i64* %tot
+  %tot9 = load i64* %tot
+  call void @print(i64 %tot9)
+  %tot10 = load i64* %tot
+  %cmp_gt_res11 = icmp sgt i64 %tot10, 1
+  br i1 %cmp_gt_res11, label %loop5, label %afterloop6
+
+afterloop6:                                       ; preds = %loop5, %afterloop
+  ret i64 0
 }
 
 attributes #0 = { ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

@@ -17,3 +17,9 @@ for i in 0 ... 100000000 do
 
 print(tot)
 
+
+while tot > 1 {
+    tot = tot / 2
+    print(tot)
+}
+

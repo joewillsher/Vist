@@ -11,10 +11,10 @@ import Foundation
 // TODO: Semantic analyser
 
 // Should walk the ast and:
-// - ensure type correctness for functions
-// - ensure variables and functions are availiable
+// - ✅ ensure type correctness for functions
+// - ✅ ensure variables and functions are availiable
 // - generate the interface for a file to allow it to be linked with other files
-// - add metadata about return types, array member types
+// - ✅ add metadata about return types, array member types
 // - specialise types to generic versions
 
 enum SemaError : ErrorType {
@@ -24,92 +24,25 @@ enum SemaError : ErrorType {
     case WrongApplication, NotTypeProvider
     case HeterogenousArray(String), EmptyArray
     case NotVariableType, CannotSubscriptNonArrayVariable
-    case NonBooleanCondition
+    case NonBooleanCondition, RangeWithInconsistentTypes, DifferentTypeForMutation
 }
 
 func sema(inout ast: AST) throws {
-    
+
+    // add helper functions to ast tables
     let fnTable = SemaScope<LLVMFnType>(parent: nil)
     let pt = LLVMFnType(params: [LLVMType.Int(size: 64)], returns: LLVMType.Void)
     fnTable["print"] = pt
+    let ptd = LLVMFnType(params: [LLVMType.Float(size: 64)], returns: LLVMType.Void)
+    fnTable["printd"] = ptd
+    
+    
+    
     
     try semaVariableSpecialisation(&ast, v: nil, f: fnTable)
     
     print(ast.description())
     
 }
-
-
-
-/// Adds type information to ast nodes and checks type signatures of functions, returns, & operators
-func semaVariableSpecialisation<ScopeType : ScopeExpression>(inout scope: ScopeType, v: SemaScope<LLVMType>? = nil, f: SemaScope<LLVMFnType>? = nil) throws {
-    
-    let vars = v ?? SemaScope<LLVMType>(parent: nil)
-    let functions = f ?? SemaScope<LLVMFnType>(parent: nil)
-    
-    for exp in scope.expressions {
-        
-        if let e = exp as? AssignmentExpression {
-            
-            // handle redeclaration
-            if let _ = vars.variables[e.name] { throw SemaError.InvalidRedeclaration(e.name, e.value) }
-            
-            // get val type
-            let inferredType = try e.value.llvmType(vars, fns: functions)
-            
-            vars[e.name] = inferredType
-            
-        } else if let fn = exp as? FunctionPrototypeExpression {
-            
-            let t = fn.fnType
-            
-            let ty = LLVMFnType(params: try t.params(), returns: try t.returnType())
-            // update function table
-            functions[fn.name] = ty
-            
-            guard var functionScopeExpression = fn.impl?.body else { continue }
-            // if body construct scope and parse inside it
-            
-            let fnVarsScope = SemaScope(parent: vars), fnFunctionsScope = SemaScope(parent: functions)
-            
-            for (i, v)  in (fn.impl?.params.elements ?? []).enumerate() {
-                
-                let n = (v as? ValueType)?.name ?? "$\(i)"
-                let t = try t.params()[i]
-                
-                fnVarsScope[n] = t
-            }
-            
-            try semaVariableSpecialisation(&functionScopeExpression, v: fnVarsScope, f: fnFunctionsScope)
-            
-
-        } else {
-            
-            try exp.llvmType(vars, fns: functions)
-            
-        }
-        
-        
-    }
-    
-}
-
-
-private extension FunctionType {
-    
-    
-    func params() throws -> [LLVMType] {
-        let res = args.mapAs(ValueType).flatMap { LLVMType($0.name) }
-        if res.count == args.elements.count { return res } else { throw IRError.TypeNotFound }
-    }
-    
-    func returnType() throws -> LLVMType {
-        let res = returns.mapAs(ValueType).flatMap { LLVMType($0.name) }
-        if res.count == returns.elements.count && res.count == 0 { return LLVMType.Void }
-        if let f = res.first where res.count == returns.elements.count { return f } else { throw IRError.TypeNotFound }
-    }
-    
-}
-
 
 

@@ -95,7 +95,11 @@ loop:                                             ; preds = %cont, %scalar.ph
 afterloop:                                        ; preds = %middle.block, %cont
   %tot.1.lcssa = phi i64 [ %tot.1, %cont ], [ %bin.rdx, %middle.block ]
   %23 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str, i64 0, i64 0), i64 %tot.1.lcssa)
-  ret i64 0
+  %cmp_gt_res = icmp sgt i64 %tot.1.lcssa, 1
+  br i1 %cmp_gt_res, label %loop5.preheader, label %afterloop6
+
+loop5.preheader:                                  ; preds = %afterloop
+  br label %loop5
 
 cont:                                             ; preds = %then0, %loop
   %tot.1 = phi i64 [ %24, %then0 ], [ %tot.0, %loop ]
@@ -105,6 +109,19 @@ cont:                                             ; preds = %then0, %loop
 then0:                                            ; preds = %loop
   %24 = add i64 %i, %tot.0
   br label %cont
+
+loop5:                                            ; preds = %loop5.preheader, %loop5
+  %tot.2 = phi i64 [ %div_res, %loop5 ], [ %tot.1.lcssa, %loop5.preheader ]
+  %div_res = lshr i64 %tot.2, 1
+  %25 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str, i64 0, i64 0), i64 %div_res)
+  %cmp_gt_res11 = icmp ugt i64 %tot.2, 3
+  br i1 %cmp_gt_res11, label %loop5, label %afterloop6.loopexit
+
+afterloop6.loopexit:                              ; preds = %loop5
+  br label %afterloop6
+
+afterloop6:                                       ; preds = %afterloop6.loopexit, %afterloop
+  ret i64 0
 }
 
 attributes #0 = { ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

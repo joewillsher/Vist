@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		D4249F561C1AF9B200B15530 /* fn.vist in Resources */ = {isa = PBXBuildFile; fileRef = D4249F551C1AF9B200B15530 /* fn.vist */; };
+		D44DB8801C3081CD00EBCD9F /* TypeProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44DB87F1C3081CD00EBCD9F /* TypeProvider.swift */; };
+		D44DB8821C3084EE00EBCD9F /* ASTInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44DB8811C3084EE00EBCD9F /* ASTInterface.swift */; };
 		D44FB8B01C1657E100E6DD33 /* Compile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44FB8AF1C1657E100E6DD33 /* Compile.swift */; };
 		D465C6581C187639001A008C /* Scope.swift in Sources */ = {isa = PBXBuildFile; fileRef = D465C6571C187639001A008C /* Scope.swift */; };
 		D46AD8831B82174E00C95574 /* Lexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46AD8821B82174E00C95574 /* Lexer.swift */; };
@@ -47,6 +49,8 @@
 
 /* Begin PBXFileReference section */
 		D4249F551C1AF9B200B15530 /* fn.vist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = fn.vist; sourceTree = "<group>"; };
+		D44DB87F1C3081CD00EBCD9F /* TypeProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TypeProvider.swift; sourceTree = "<group>"; };
+		D44DB8811C3084EE00EBCD9F /* ASTInterface.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASTInterface.swift; sourceTree = "<group>"; };
 		D44FB8AF1C1657E100E6DD33 /* Compile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Compile.swift; sourceTree = "<group>"; };
 		D465C6571C187639001A008C /* Scope.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Scope.swift; sourceTree = "<group>"; };
 		D46AD87E1B81EAA400C95574 /* Vist-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Vist-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -198,6 +202,8 @@
 				D4B1FA091C304027001E7BCC /* SemaScope.swift */,
 				D4B1FA0B1C304049001E7BCC /* TypeLowering.swift */,
 				D4B1FA051C3027E1001E7BCC /* SemaTypeCheck.swift */,
+				D44DB87F1C3081CD00EBCD9F /* TypeProvider.swift */,
+				D44DB8811C3084EE00EBCD9F /* ASTInterface.swift */,
 			);
 			name = Sema;
 			sourceTree = "<group>";
@@ -323,6 +329,7 @@
 				D46DA5F01C2976E8006AF1BE /* Sema.swift in Sources */,
 				D46AD8831B82174E00C95574 /* Lexer.swift in Sources */,
 				D49410831C124B4E0029BF3D /* Print.swift in Sources */,
+				D44DB8821C3084EE00EBCD9F /* ASTInterface.swift in Sources */,
 				D46AD8871B8245A000C95574 /* Parser.swift in Sources */,
 				D4BF843E1C29E242005B0910 /* InterfaceGen.swift in Sources */,
 				D4B1FA061C3027E1001E7BCC /* SemaTypeCheck.swift in Sources */,
@@ -333,6 +340,7 @@
 				D44FB8B01C1657E100E6DD33 /* Compile.swift in Sources */,
 				D465C6581C187639001A008C /* Scope.swift in Sources */,
 				D4DB9D631C1DF10A00503153 /* Config.swift in Sources */,
+				D44DB8801C3081CD00EBCD9F /* TypeProvider.swift in Sources */,
 				D46AD8851B82186600C95574 /* Token.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
