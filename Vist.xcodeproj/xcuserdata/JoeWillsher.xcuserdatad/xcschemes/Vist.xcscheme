@@ -103,6 +103,10 @@
             argument = "second.vist"
             isEnabled = "YES">
          </CommandLineArgument>
+         <CommandLineArgument
+            argument = "third.vist"
+            isEnabled = "YES">
+         </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>
       </AdditionalOptions>

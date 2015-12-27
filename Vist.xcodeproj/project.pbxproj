@@ -53,6 +53,7 @@
 		D44DB8811C3084EE00EBCD9F /* ASTInterface.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASTInterface.swift; sourceTree = "<group>"; };
 		D44DB8831C30A90200EBCD9F /* LinkAST.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LinkAST.swift; sourceTree = "<group>"; };
 		D44DB8851C30ABFF00EBCD9F /* second.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = second.vist; path = RUN/second.vist; sourceTree = "<group>"; };
+		D44DB8861C30B1D000EBCD9F /* third.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = third.vist; path = RUN/third.vist; sourceTree = "<group>"; };
 		D44FB8AF1C1657E100E6DD33 /* Compile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Compile.swift; sourceTree = "<group>"; };
 		D465C6571C187639001A008C /* Scope.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Scope.swift; sourceTree = "<group>"; };
 		D46AD87E1B81EAA400C95574 /* Vist-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Vist-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -215,6 +216,7 @@
 				D4DB9D5D1C1DDA1A00503153 /* helper.cpp */,
 				D489F3BD1C1E392D00254FFC /* example.vist */,
 				D44DB8851C30ABFF00EBCD9F /* second.vist */,
+				D44DB8861C30B1D000EBCD9F /* third.vist */,
 			);
 			name = Source;
 			sourceTree = "<group>";

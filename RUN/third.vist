@@ -1,0 +1,4 @@
+
+
+func foo: (Int, Int) -> Int = |a, b| do
+    return a + b
