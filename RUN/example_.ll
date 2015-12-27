@@ -27,20 +27,38 @@ define void @printd(double %d) #0 {
 
 define i64 @main() {
 entry:
-  %arr = alloca [3 x i64]
-  %base = bitcast [3 x i64]* %arr to i64*
+  %a = alloca i64
+  store i64 3, i64* %a
+  %a1 = load i64* %a
+  %add_res = add i64 1, %a1
+  %b = alloca i64
+  store i64 %add_res, i64* %b
+  %0 = call i64 @foo(i64 1)
+  %c = alloca i64
+  store i64 %0, i64* %c
+  %arr = alloca [2 x i64]
+  %base = bitcast [2 x i64]* %arr to i64*
   %el0 = getelementptr i64* %base, i64 0
   store i64 1, i64* %el0
   %el1 = getelementptr i64* %base, i64 1
   store i64 2, i64* %el1
-  %el2 = getelementptr i64* %base, i64 2
-  store i64 3, i64* %el2
-  %a = alloca i64*
-  store i64* %base, i64** %a
+  %d = alloca i64*
+  store i64* %base, i64** %d
   %ptr = getelementptr i64* %base, i64 1
   %element = load i64* %ptr
-  call void @print(i64 %element)
+  %add_res2 = add i64 %element, 21
+  call void @print(i64 %add_res2)
+  %c3 = load i64* %c
+  %b4 = load i64* %b
+  %add_res5 = add i64 %c3, %b4
+  call void @print(i64 %add_res5)
   ret i64 0
+}
+
+define i64 @foo(i64 %"$0") {
+entry:
+  %add_res = add i64 %"$0", 11
+  ret i64 %add_res
 }
 
 attributes #0 = { ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

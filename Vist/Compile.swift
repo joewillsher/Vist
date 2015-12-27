@@ -31,14 +31,14 @@ public func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Boo
         .map {"\($0.0): \t\t\t\t\t\($0.1.range.start)--\($0.1.range.end)"}
         .forEach { print($0) } }
     
-        
+    
     
     
     if verbose { print("\n\n------------------------------AST-------------------------------\n") }
 
     // parse tokens & generate AST
     var parser = Parser(tokens: tokens)
-    let ast = try parser.parse()
+    var ast = try parser.parse()
     if dumpAST { print(ast.description()); return }
     if verbose { print(ast.description()) }
     
@@ -73,8 +73,11 @@ public func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Boo
     
 //    if verbose { LLVMDumpModule(module) }
     
+    if verbose { print("\n----------------------------SEMA------------------------------\n") }
+
     
     
+    try sema(&ast)
     
     
     

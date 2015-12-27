@@ -25,7 +25,6 @@ private var module: LLVMModuleRef = nil
 /// A type which can generate LLVM IR code
 private protocol IRGenerator {
     func codeGen(scope: Scope) throws -> LLVMValueRef
-    func llvmType(scope: Scope) throws -> LLVMTypeRef
 }
 
 private protocol BasicBlockGenerator {
@@ -64,11 +63,6 @@ extension Expression {
         if let x = try (self as? IRGenerator)?.codeGen(scope) { return x }
         else { throw IRError.NotIRGenerator }
     }
-    func expressionllvmType(scope: Scope) throws -> LLVMTypeRef {
-        if let x = try (self as? IRGenerator)?.llvmType(scope) { return x }
-        else { throw IRError.NotIRGenerator }
-    }
-    
     func expressionbbGen(innerScope scope: Scope, fn: LLVMValueRef) throws -> LLVMBasicBlockRef {
         if let x = try (self as? BasicBlockGenerator)?.bbGen(innerScope: scope, fn: fn) { return x } else { throw IRError.NotBBGenerator }
     }
@@ -126,11 +120,7 @@ extension LLVMBool {
 extension IntegerLiteral : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
-        return LLVMConstInt(try llvmType(scope), UInt64(val), LLVMBool(true))
-    }
-    
-    func llvmType(scope: Scope) throws -> LLVMTypeRef {
-        return LLVMIntType(size)
+        return LLVMConstInt(try type!.ir(), UInt64(val), LLVMBool(false))
     }
 }
 
@@ -139,25 +129,12 @@ extension FloatingPointLiteral : IRGenerator {
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         return LLVMConstReal(try llvmType(scope), val)
     }
-    
-    func llvmType(scope: Scope) throws -> LLVMTypeRef {
-        switch size {
-        case 16: return LLVMHalfType()
-        case 32: return LLVMFloatType()
-        case 64: return LLVMDoubleType()
-        case 128: return LLVMPPCFP128Type()
-        default: throw IRError.NoLLVMFloat(size)
-        }
-    }
 }
 
 extension BooleanLiteral : IRGenerator {
     
     func codeGen(scope: Scope) -> LLVMValueRef {
         return LLVMConstInt(LLVMInt1Type(), UInt64(val.hashValue), LLVMBool(false))
-    }
-    func llvmType(scope: Scope) throws -> LLVMTypeRef {
-        return LLVMInt1Type()
     }
 }
 
@@ -174,10 +151,6 @@ extension Variable : IRGenerator {
         let variable = try scope.variable(name ?? "")
         
         return variable.load(name ?? "")
-    }
-    
-    func llvmType(scope: Scope) throws -> LLVMTypeRef {
-        return try scope.variable(name ?? "").type
     }
 }
 
@@ -271,7 +244,7 @@ extension BinaryExpression : IRGenerator {
         
         let lIR = try lhs.expressionCodeGen(scope), rIR = try rhs.expressionCodeGen(scope)
         
-        let type = try llvmType(scope)
+        guard let type = try self.type?.ir() else { throw IRError.TypeNotFound }
         if LLVMGetTypeKind(type) == LLVMIntegerTypeKind {
             
             switch op {
@@ -312,23 +285,7 @@ extension BinaryExpression : IRGenerator {
             throw IRError.MisMatchedTypes
         }
         
-    }
-    
-    func llvmType(scope: Scope) throws -> LLVMTypeRef {
-        
-        switch op {
-        case "<", ">", "==", "!=", ">=", "<=":
-            return LLVMInt1Type()
-            
-        default:
-            let a = try lhs.expressionllvmType(scope)
-            let b = try lhs.expressionllvmType(scope)
-            
-            if a == b { return a } else { throw IRError.MisMatchedTypes }
-        }
-        
-    }
-    
+    }    
 }
 
 extension Void : IRGenerator {
@@ -405,7 +362,7 @@ extension FunctionPrototypeExpression : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
-        let args = type.args, argCount = args.elements.count
+        let args = fnType.args, argCount = args.elements.count
         
         // If existing function definition
         let _fn = LLVMGetNamedFunction(module, name)
@@ -414,11 +371,11 @@ extension FunctionPrototypeExpression : IRGenerator {
         }
         
         // Set params
-        let argBuffer = try type.params().ptr()
+        let argBuffer = try fnType.params().ptr()
         defer { argBuffer.dealloc(argCount) }
         
         // make function
-        let returnType = try type.returnType()
+        let returnType = try fnType.returnType()
         let functionType = LLVMFunctionType(returnType, argBuffer, UInt32(argCount), LLVMBool(false))
         let function = LLVMAddFunction(module, name, functionType)
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
@@ -434,7 +391,7 @@ extension FunctionPrototypeExpression : IRGenerator {
             let param = LLVMGetParam(function, UInt32(i))
             let name = (impl?.params.elements[i] as? ValueType)?.name ?? ("$\(i)")
             LLVMSetValueName(param, name)
-
+            
             let s = StackVariable(val: param, builder: builder)
             functionScope.addVariable(name, val: s)
         }
@@ -461,7 +418,7 @@ extension ReturnExpression : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
-        if try expression.expressionllvmType(scope) == LLVMVoidType() {
+        if try expression.type?.ir() == LLVMVoidType() {
             return LLVMBuildRetVoid(builder)
         }
         
@@ -660,7 +617,7 @@ extension WhileLoopExpression : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
-        guard try iterator.condition.expressionllvmType(scope) == LLVMInt1Type() else { throw IRError.NotBoolCondition }
+        guard try iterator.condition.type?.ir() == LLVMInt1Type() else { throw IRError.NotBoolCondition }
         
         // generate loop and termination blocks
         let loop = LLVMAppendBasicBlock(scope.function, "loop")
@@ -715,7 +672,7 @@ extension ArrayExpression : IRGenerator {
     func arrInstance(scope: Scope) throws -> ArrayVariable {
         
         // assume homogeneous
-        let elementType = try arr.first!.expressionllvmType(scope)
+        guard let elementType = try elType?.ir() else { throw IRError.TypeNotFound }
         let arrayType = LLVMArrayType(elementType, UInt32(arr.count))
         
         // allocate memory for arr
@@ -727,14 +684,13 @@ extension ArrayExpression : IRGenerator {
         
         return variable
     }
-    
+
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         return try arrInstance(scope).base
     }
     
     func llvmType(scope: Scope) throws -> LLVMTypeRef {
-        let elementType = try arr.first!.expressionllvmType(scope)
-        return LLVMArrayType(elementType, UInt32(arr.count))
+        return LLVMArrayType(try elType!.ir(), UInt32(arr.count))
     }
     
 }

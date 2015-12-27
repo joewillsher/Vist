@@ -199,9 +199,9 @@ struct Parser {
             getNextToken(); getNextToken() // eat 'identifier['
             
             let subscpipt = try parseOperatorExpression()
-
+            
             getNextToken() // eat ']'
-
+            
             
             guard case .Assign = currentToken else { // if call
                 return ArraySubscriptExpression(arr: Variable<AnyExpression>(name: token), index: subscpipt)
@@ -437,7 +437,7 @@ struct Parser {
         
         var value = try parseOperatorExpression()
         
-        let type = explicitType ?? ((value as? Typed)?.type as? ValueType)?.name
+        let type = explicitType ?? (value as? ExplicitlyTyped)?.explicitType
         if let a = type, let b = explicitType where a != b { throw ParseError.MismatchedType((a, inspectNextPos(-1)!), (b, inspectNextPos(-3)!)) }
         
         // if explicit assignment defines size, add info about this size to object

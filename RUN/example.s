@@ -54,29 +54,41 @@ Ltmp7:
 Ltmp8:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
-	subq	$40, %rsp
+	pushq	%rax
 Ltmp9:
 	.cfi_offset %rbx, -24
-	movq	___stack_chk_guard@GOTPCREL(%rip), %rbx
-	movq	(%rbx), %rbx
-	movq	%rbx, -16(%rbp)
-	movq	$1, -40(%rbp)
-	movq	$2, -32(%rbp)
-	movq	$3, -24(%rbp)
-	movq	-32(%rbp), %rsi
-	leaq	L_.str(%rip), %rdi
+	leaq	L_.str(%rip), %rbx
+	movl	$23, %esi
 	xorl	%eax, %eax
+	movq	%rbx, %rdi
 	callq	_printf
-	cmpq	-16(%rbp), %rbx
-	jne	LBB2_2
-## BB#1:                                ## %entry
+	movl	$16, %esi
 	xorl	%eax, %eax
-	addq	$40, %rsp
+	movq	%rbx, %rdi
+	callq	_printf
+	xorl	%eax, %eax
+	addq	$8, %rsp
 	popq	%rbx
 	popq	%rbp
 	retq
-LBB2_2:                                 ## %entry
-	callq	___stack_chk_fail
+	.cfi_endproc
+
+	.globl	_foo
+	.align	4, 0x90
+_foo:                                   ## @foo
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp10:
+	.cfi_def_cfa_offset 16
+Ltmp11:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp12:
+	.cfi_def_cfa_register %rbp
+	leaq	11(%rdi), %rax
+	popq	%rbp
+	retq
 	.cfi_endproc
 
 	.section	__TEXT,__cstring,cstring_literals

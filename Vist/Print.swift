@@ -141,7 +141,7 @@ extension ScopeExpression {
 
 extension AssignmentExpression {
     func printList() -> [(String?, Printable)]? {
-        return [("name", name), ("type", type), ("value", value)]
+        return [("name", name), ("type", aType), ("value", value)]
     }
     
 }
@@ -176,15 +176,6 @@ extension FunctionImplementationExpression {
 extension BinaryExpression {
     func printList() -> [(String?, Printable)]? {
         return [("operator", op), ("lhs", lhs), ("rhs", rhs)]
-    }
-}
-
-extension ValueType {
-    func printList() -> [(String?, Printable)]? {
-        return [("name", name)]
-    }
-    func inline() -> Bool {
-        return true
     }
 }
 

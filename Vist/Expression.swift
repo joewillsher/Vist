@@ -8,18 +8,23 @@
 
 import Foundation
 
-protocol Expression : Printable {}
+protocol Expression : Printable, LLVMTypeProvider, Typed {}
 
 protocol Typed {
-    var type: Type { get }
+    var type: LLVMType? { get set }
 }
 
-struct AnyExpression : Expression {}
+struct AnyExpression : Expression {
+    var type: LLVMType? = nil
+}
 
 protocol Sized : Expression {
     var size: UInt32 { get set }
 }
-protocol Type : Expression {}
+
+protocol ExplicitlyTyped {
+    var explicitType: String { get }
+}
 
 protocol Literal : Expression {
 }
@@ -36,6 +41,8 @@ class AST : ScopeExpression {
     init(expressions: [Expression]) {
         self.expressions = expressions
     }
+    
+    var type: LLVMType? = nil
 }
 class BlockExpression : ScopeExpression {
     var expressions: [Expression]
@@ -43,16 +50,19 @@ class BlockExpression : ScopeExpression {
     init(expressions: [Expression]) {
         self.expressions = expressions
     }
+    
+    var type: LLVMType? = nil
 }
 
 
-struct BooleanLiteral : Literal, Typed, BooleanType {
+struct BooleanLiteral : Literal, BooleanType {
     let val: Bool
-    var type: Type = ValueType(name: "Bool")
     
     init(val: Bool) {
         self.val = val
     }
+    
+    var type: LLVMType? = nil
 }
 
 protocol FloatingPointType {
@@ -66,46 +76,56 @@ protocol BooleanType {
 }
 
 
-struct FloatingPointLiteral : Literal, Typed, FloatingPointType, Sized {
+class FloatingPointLiteral : Literal, ExplicitlyTyped, FloatingPointType, Sized {
     let val: Double
     var size: UInt32 = 64
-    var type: Type {
-        return ValueType(name: size == 32 ? "Float" : size == 64 ? "Double" : "Float\(size)")
+    var explicitType: String {
+        return size == 32 ? "Float" : size == 64 ? "Double" : "Float\(size)"
     }
     
     init(val: Double, size: UInt32 = 64) {
         self.val = val
     }
+    
+    var type: LLVMType? = nil
 }
 
-struct IntegerLiteral : Literal, Typed, IntegerType, Sized {
+class IntegerLiteral : Literal, ExplicitlyTyped, IntegerType, Sized {
     let val: Int
     var size: UInt32
-    var type: Type {
-        return ValueType(name: size == 32 ? "Int" : "Int\(size)")
+    var explicitType: String {
+        return size == 32 ? "Int" : "Int\(size)"
     }
     
     init(val: Int, size: UInt32 = 64) {
         self.val = val
         self.size = size
     }
-
+    
+    var type: LLVMType? = nil
 }
 struct StringLiteral : Literal, Typed {
     let str: String
-    var type: Type
     
     init(str: String) {
         self.str = str
-        self.type = ValueType(name: "String")
     }
+    
+    var type: LLVMType? = nil
 }
 
 struct CommentExpression : Expression {
     let str: String
+    init(str: String) {
+        self.str = str
+        self.type = nil
+    }
+    var type: LLVMType? = nil
 }
 
-struct Void : Expression {}
+struct Void : Expression {
+    var type: LLVMType? = nil
+}
 
 
 protocol AssignableExpression : Expression {}
@@ -119,6 +139,8 @@ class Variable <T : Expression> : AssignableExpression {
     init(name: String) {
         self.name = name
     }
+    
+    var type: LLVMType? = nil
 }
 
 class BinaryExpression : Expression {
@@ -130,6 +152,8 @@ class BinaryExpression : Expression {
         self.lhs = lhs
         self.rhs = rhs
     }
+    
+    var type: LLVMType? = nil
 }
 
 class PrefixExpression : Expression {
@@ -140,6 +164,8 @@ class PrefixExpression : Expression {
         self.op = op
         self.expr = expr
     }
+    
+    var type: LLVMType? = nil
 }
 
 class PostfixExpression : Expression {
@@ -150,6 +176,8 @@ class PostfixExpression : Expression {
         self.op = op
         self.expr = expr
     }
+    
+    var type: LLVMType? = nil
 }
 
 class FunctionCallExpression : Expression {
@@ -160,20 +188,24 @@ class FunctionCallExpression : Expression {
         self.name = name
         self.args = args
     }
+    
+    var type: LLVMType? = nil
 }
 
 class AssignmentExpression : Expression, StructMember {
     let name: String
-    let type: String?
+    let aType: String?
     let isMutable: Bool
     let value: Expression
     
     init(name: String, type: String?, isMutable: Bool, value: Expression) {
         self.name = name
-        self.type = type
+        self.aType = type
         self.isMutable = isMutable
         self.value = value
     }
+    
+    var type: LLVMType? = nil
 }
 
 class MutationExpression : Expression {
@@ -184,20 +216,24 @@ class MutationExpression : Expression {
         self.object = object
         self.value = value
     }
+    
+    var type: LLVMType? = nil
 }
 
 
 
 class FunctionPrototypeExpression : Expression, StructMember {
     let name: String
-    let type: FunctionType
+    let fnType: FunctionType
     let impl: FunctionImplementationExpression?
     
     init(name: String, type: FunctionType, impl: FunctionImplementationExpression?) {
         self.name = name
-        self.type = type
+        self.fnType = type
         self.impl = impl
     }
+    
+    var type: LLVMType? = nil
 }
 
 class FunctionImplementationExpression : Expression {
@@ -208,6 +244,8 @@ class FunctionImplementationExpression : Expression {
         self.params = params
         self.body = body
     }
+    
+    var type: LLVMType? = nil
 }
 
 class TupleExpression : Expression {
@@ -222,6 +260,8 @@ class TupleExpression : Expression {
     func mapAs<T>(t: T.Type) -> [T] {
         return elements.flatMap { $0 as? T }
     }
+    
+    var type: LLVMType? = nil
 }
 
 class ReturnExpression : Expression {
@@ -230,19 +270,22 @@ class ReturnExpression : Expression {
     init(expression: Expression) {
         self.expression = expression
     }
+    
+    var type: LLVMType? = nil
 }
 
 
-class ValueType : Type {
+class ValueType : Expression {
     var name: String
     
     init(name: String) {
         self.name = name
     }
     
+    var type: LLVMType? = nil
 }
 
-class FunctionType : Type {
+class FunctionType : Expression {
     let args: TupleExpression
     let returns: TupleExpression
     
@@ -256,6 +299,8 @@ class FunctionType : Type {
         let ret = returns.elements.isEmpty ? "Void" : (returns.elements.count > 1 ? "(" : "") + "\(returns.elements[0])" + returns.elements.dropFirst().reduce("") { "\($0), \($1)" }  + (returns.elements.count > 1 ? ")" : "")
         return params + " -> " + ret
     }
+    
+    var type: LLVMType? = nil
 }
 
 
@@ -271,6 +316,8 @@ class ElseIfBlockExpression : Expression {
         self.condition = condition
         self.block = block
     }
+    
+    var type: LLVMType? = nil
 }
 
 
@@ -293,6 +340,8 @@ class ConditionalExpression : Expression {
         
         self.statements = p
     }
+    
+    var type: LLVMType? = nil
 }
 
 protocol LoopExpression : Expression {
@@ -319,6 +368,7 @@ class ForInLoopExpression
         self.block = block
     }
     
+    var type: LLVMType? = nil
 }
 
 class WhileLoopExpression<Iterator : IteratorExpression> : LoopExpression {
@@ -331,6 +381,7 @@ class WhileLoopExpression<Iterator : IteratorExpression> : LoopExpression {
         self.block = block
     }
     
+    var type: LLVMType? = nil
 }
 
 
@@ -345,6 +396,8 @@ class RangeIteratorExpression : IteratorExpression {
         start = s
         end = e
     }
+    
+    var type: LLVMType? = nil
 }
 
 class WhileIteratorExpression : IteratorExpression {
@@ -355,6 +408,8 @@ class WhileIteratorExpression : IteratorExpression {
         self.condition = condition
     }
     
+    
+    var type: LLVMType? = nil
 }
 
 class ArrayExpression : Expression, AssignableExpression {
@@ -365,6 +420,8 @@ class ArrayExpression : Expression, AssignableExpression {
         self.arr = arr
     }
     
+    var elType: LLVMType?
+    var type: LLVMType? = nil
 }
 
 class ArraySubscriptExpression : Expression, AssignableExpression {
@@ -376,6 +433,7 @@ class ArraySubscriptExpression : Expression, AssignableExpression {
         self.index = index
     }
     
+    var type: LLVMType? = nil
 }
 
 
@@ -399,14 +457,13 @@ class StructExpression : Expression {
         self.methods = methods
     }
     
+    var type: LLVMType? = nil
 }
 
 
 
 
 
-
-// TODO: Implement more generic expressions
 
 
 
