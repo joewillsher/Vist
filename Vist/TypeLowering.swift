@@ -6,12 +6,12 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-protocol LLVMTypedIR {
+protocol LLVMTyped {
     func ir() throws -> LLVMTypeRef
 }
 
 
-enum LLVMType : LLVMTypedIR {
+enum LLVMType : LLVMTyped {
     case Null, Void
     case Int(size: UInt32), Float(size: UInt32), Bool
     indirect case Array(el: LLVMType, size: UInt32), Pointer(to: LLVMType)
@@ -50,7 +50,7 @@ enum LLVMType : LLVMTypedIR {
     }
 }
 
-struct LLVMFnType : LLVMTypedIR {
+struct LLVMFnType : LLVMTyped {
     let params: [LLVMType]
     let returns: LLVMType
     

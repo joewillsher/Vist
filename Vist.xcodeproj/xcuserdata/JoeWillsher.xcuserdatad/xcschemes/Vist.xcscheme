@@ -99,6 +99,10 @@
             argument = "example.vist"
             isEnabled = "YES">
          </CommandLineArgument>
+         <CommandLineArgument
+            argument = "meme.vist"
+            isEnabled = "YES">
+         </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>
       </AdditionalOptions>

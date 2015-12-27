@@ -11,11 +11,11 @@ import Foundation
 protocol Expression : Printable, TypeProvider, Typed {}
 
 protocol Typed {
-    var type: LLVMType? { get set }
+    var type: LLVMTyped? { get set }
 }
 
 struct AnyExpression : Expression {
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 protocol Sized : Expression {
@@ -42,7 +42,7 @@ class AST : ScopeExpression {
         self.expressions = expressions
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 class BlockExpression : ScopeExpression {
     var expressions: [Expression]
@@ -51,7 +51,7 @@ class BlockExpression : ScopeExpression {
         self.expressions = expressions
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 
@@ -62,7 +62,7 @@ class BooleanLiteral : Literal, BooleanType {
         self.val = val
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 protocol FloatingPointType {
@@ -87,7 +87,7 @@ class FloatingPointLiteral : Literal, ExplicitlyTyped, FloatingPointType, Sized 
         self.val = val
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 class IntegerLiteral : Literal, ExplicitlyTyped, IntegerType, Sized {
@@ -102,7 +102,7 @@ class IntegerLiteral : Literal, ExplicitlyTyped, IntegerType, Sized {
         self.size = size
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 struct StringLiteral : Literal, Typed {
     let str: String
@@ -111,7 +111,7 @@ struct StringLiteral : Literal, Typed {
         self.str = str
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 struct CommentExpression : Expression {
@@ -120,11 +120,11 @@ struct CommentExpression : Expression {
         self.str = str
         self.type = nil
     }
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 class Void : Expression {
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 
@@ -140,7 +140,7 @@ class Variable <T : Expression> : AssignableExpression {
         self.name = name
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 class BinaryExpression : Expression {
@@ -153,7 +153,7 @@ class BinaryExpression : Expression {
         self.rhs = rhs
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 class PrefixExpression : Expression {
@@ -165,7 +165,7 @@ class PrefixExpression : Expression {
         self.expr = expr
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 class PostfixExpression : Expression {
@@ -177,7 +177,7 @@ class PostfixExpression : Expression {
         self.expr = expr
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 class FunctionCallExpression : Expression {
@@ -189,7 +189,7 @@ class FunctionCallExpression : Expression {
         self.args = args
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 class AssignmentExpression : Expression, StructMember {
@@ -205,7 +205,7 @@ class AssignmentExpression : Expression, StructMember {
         self.value = value
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 class MutationExpression : Expression {
@@ -217,7 +217,7 @@ class MutationExpression : Expression {
         self.value = value
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 
@@ -232,8 +232,8 @@ class FunctionPrototypeExpression : Expression, StructMember {
         self.fnType = type
         self.impl = impl
     }
-    
-    var type: LLVMType? = nil
+        
+    var type: LLVMTyped? = nil
 }
 
 class FunctionImplementationExpression : Expression {
@@ -245,7 +245,7 @@ class FunctionImplementationExpression : Expression {
         self.body = body
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 class TupleExpression : Expression {
@@ -261,7 +261,7 @@ class TupleExpression : Expression {
         return elements.flatMap { $0 as? T }
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 class ReturnExpression : Expression {
@@ -271,7 +271,7 @@ class ReturnExpression : Expression {
         self.expression = expression
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 
@@ -282,7 +282,7 @@ class ValueType : Expression {
         self.name = name
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 class FunctionType : Expression {
@@ -300,7 +300,7 @@ class FunctionType : Expression {
         return params + " -> " + ret
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 
@@ -317,7 +317,7 @@ class ElseIfBlockExpression<BlockType : ScopeExpression> : Expression {
         self.block = block
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 
@@ -341,7 +341,7 @@ class ConditionalExpression<BlockType : ScopeExpression> : Expression {
         self.statements = p
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 protocol LoopExpression : Expression {
@@ -370,7 +370,7 @@ class ForInLoopExpression
         self.block = block
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 class WhileLoopExpression
@@ -386,7 +386,7 @@ class WhileLoopExpression
         self.block = block
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 
@@ -402,7 +402,7 @@ class RangeIteratorExpression : IteratorExpression {
         end = e
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 class WhileIteratorExpression : IteratorExpression {
@@ -414,7 +414,7 @@ class WhileIteratorExpression : IteratorExpression {
     }
     
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 class ArrayExpression : Expression, AssignableExpression {
@@ -425,8 +425,8 @@ class ArrayExpression : Expression, AssignableExpression {
         self.arr = arr
     }
     
-    var elType: LLVMType?
-    var type: LLVMType? = nil
+    var elType: LLVMTyped?
+    var type: LLVMTyped? = nil
 }
 
 class ArraySubscriptExpression : Expression, AssignableExpression {
@@ -438,7 +438,7 @@ class ArraySubscriptExpression : Expression, AssignableExpression {
         self.index = index
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 
@@ -462,7 +462,7 @@ class StructExpression : Expression {
         self.methods = methods
     }
     
-    var type: LLVMType? = nil
+    var type: LLVMTyped? = nil
 }
 
 

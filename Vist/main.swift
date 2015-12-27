@@ -10,9 +10,18 @@ import Foundation
 
 
 do {
+    let ar = Process.arguments
+    var a = Process.arguments.dropFirst()
     
-    let a = Process.arguments.dropFirst()
-    let doc = a.last!
+    let c = a.count
+    var i = c
+    while let head = a.last where head.containsString("vist") {
+        a = a.dropLast()
+        i -= 1
+    }
+    let r = i...(c-1)
+    let files = Array(ar[(i+1)...c])
+    
     let args = a.dropLast()
     let verbose = args.contains("-verbose") || args.contains("-v")
     let ast = args.contains("-dump-ast")
@@ -29,7 +38,7 @@ do {
         
     } else {
         
-        try compileDocument(doc,
+        try compileDocuments(files,
             verbose: verbose,
             dumpAST: ast,
             irOnly: ir,

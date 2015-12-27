@@ -28,23 +28,25 @@ extension TypeProvider {
 extension IntegerLiteral : TypeProvider {
     
     func llvmType(vars: SemaScope<LLVMType>, fns: SemaScope<LLVMFnType>) throws -> LLVMType {
-        self.type = .Int(size: size)
-        return type!
+        let ty = LLVMType.Int(size: size)
+        self.type = ty
+        return ty
     }
 }
 
 extension FloatingPointLiteral : TypeProvider {
     
     func llvmType(vars: SemaScope<LLVMType>, fns: SemaScope<LLVMFnType>) throws -> LLVMType {
-        self.type = .Float(size: size)
-        return .Float(size: size)
+        let ty = LLVMType.Float(size: size)
+        self.type = ty
+        return ty
     }
 }
 
 extension BooleanLiteral : TypeProvider {
     
     func llvmType(vars: SemaScope<LLVMType>, fns: SemaScope<LLVMFnType>) throws -> LLVMType {
-        self.type = .Bool
+        self.type = LLVMType.Bool
         return LLVMType.Bool
     }
 }
@@ -71,7 +73,8 @@ extension BinaryExpression : TypeProvider {
         case "<", ">", "==", "!=", ">=", "<=":
             try lhs.llvmType(vars, fns: fns)
             try rhs.llvmType(vars, fns: fns)
-            self.type = .Bool
+            
+            self.type = LLVMType.Bool
             return LLVMType.Bool
             
         default:
@@ -94,7 +97,7 @@ extension BinaryExpression : TypeProvider {
 extension Void : TypeProvider {
     
     func llvmType(vars: SemaScope<LLVMType>, fns: SemaScope<LLVMFnType>) throws -> LLVMType {
-        self.type = .Void
+        self.type = LLVMType.Void
         return .Void
     }
 }
@@ -171,7 +174,7 @@ extension ReturnExpression : TypeProvider {
         
         try expression.llvmType(vars, fns: fns)
         
-        self.type = .Null
+        self.type = LLVMType.Null
         return .Null
     }
     
@@ -188,7 +191,7 @@ extension RangeIteratorExpression : TypeProvider {
         // make sure range has same start and end types
         guard try e.ir() == s.ir() else { throw SemaError.RangeWithInconsistentTypes }
         
-        self.type = .Null
+        self.type = LLVMType.Null
         return .Null
     }
     
@@ -209,7 +212,7 @@ extension ForInLoopExpression : TypeProvider {
         try iterator.llvmType(vars, fns: fns)
         
         // parse inside of loop in loop scope
-        try semaVariableSpecialisation(&block, v: loopVarScope, f: loopFnScope)
+        try variableTypeSema(forScope: &block, v: loopVarScope, f: loopFnScope)
         
         return .Null
     }
@@ -229,9 +232,9 @@ extension WhileLoopExpression : TypeProvider {
         guard try it.ir() == LLVMInt1Type() else { throw SemaError.NonBooleanCondition }
         
         // parse inside of loop in loop scope
-        try semaVariableSpecialisation(&block, v: loopVarScope, f: loopFnScope)
+        try variableTypeSema(forScope: &block, v: loopVarScope, f: loopFnScope)
         
-        type = .Null
+        type = LLVMType.Null
         return .Null
     }
 }
@@ -243,7 +246,7 @@ extension WhileIteratorExpression : TypeProvider {
         let t = try condition.llvmType(vars, fns: fns)
         guard try t.ir() == LLVMInt1Type() else { throw SemaError.NonBooleanCondition }
         
-        type = .Bool
+        type = LLVMType.Bool
         return .Bool
     }
 }
@@ -262,7 +265,7 @@ extension ConditionalExpression : TypeProvider {
             try statement.llvmType(ifVarScope, fns: ifFnScope)
         }
         
-        type = .Null
+        type = LLVMType.Null
         return .Null
     }
 }
@@ -273,12 +276,12 @@ extension ElseIfBlockExpression : TypeProvider {
         
         // get condition type
         let cond = try condition?.llvmType(vars, fns: fns)
-        guard try cond?.ir() == LLVMInt1Type() else { throw SemaError.NonBooleanCondition }
+        guard try cond?.ir() == LLVMInt1Type() || cond == nil else { throw SemaError.NonBooleanCondition }
         
         // gen types for cond block
-        try semaVariableSpecialisation(&block, v: vars, f: fns)
+        try variableTypeSema(forScope: &block, v: vars, f: fns)
         
-        self.type = .Null
+        self.type = LLVMType.Null
         return .Null
     }
     

@@ -39,7 +39,7 @@ func sema(inout ast: AST) throws {
     
     
     
-    try semaVariableSpecialisation(&ast, v: nil, f: fnTable)
+    try variableTypeSema(forScope: &ast, v: nil, f: fnTable)
     
     print(ast.description())
     

@@ -141,7 +141,7 @@ extension ScopeExpression {
 
 extension AssignmentExpression {
     func printList() -> [(String?, Printable)]? {
-        return [("name", name), ("type", aType), ("value", value)]
+        return [("name", name), ("explicitType", aType), ("type",type), ("value", value)]
     }
     
 }
@@ -300,6 +300,20 @@ extension StructExpression {
     
     func printList() -> [(String?, Printable)]? {
         return [("name", name), ("properties", properties), ("methods", methods)]
+    }
+}
+
+extension LLVMFnType : Printable {
+    
+    func printList() -> [(String?, Printable)]? {
+        return [("params", params), ("returns", returns)]
+    }
+}
+
+extension LLVMType : Printable {
+    
+    func printVal() -> String? {
+        return "\(self)"
     }
 }
 

@@ -10,12 +10,14 @@ import Foundation
 
 
 /// Adds type information to ast nodes and checks type signatures of functions, returns, & operators
-func semaVariableSpecialisation<ScopeType : ScopeExpression>(inout scope: ScopeType, v: SemaScope<LLVMType>? = nil, f: SemaScope<LLVMFnType>? = nil) throws {
+func variableTypeSema<ScopeType : ScopeExpression>(inout forScope scope: ScopeType, v: SemaScope<LLVMType>? = nil, f: SemaScope<LLVMFnType>? = nil) throws {
     
     let vars = v ?? SemaScope<LLVMType>(parent: nil)
     let functions = f ?? SemaScope<LLVMFnType>(parent: nil)
     
-    for exp in scope.expressions {
+    for (i, exp) in scope.expressions.enumerate() {
+        
+        // if top level expression is assignment or
         
         if let e = exp as? AssignmentExpression {
             
@@ -25,7 +27,10 @@ func semaVariableSpecialisation<ScopeType : ScopeExpression>(inout scope: ScopeT
             // get val type
             let inferredType = try e.value.llvmType(vars, fns: functions)
             
+            scope.expressions[i].type = inferredType
+            
             vars[e.name] = inferredType
+            
             
         } else if let fn = exp as? FunctionPrototypeExpression {
             
@@ -40,7 +45,7 @@ func semaVariableSpecialisation<ScopeType : ScopeExpression>(inout scope: ScopeT
             
             let fnVarsScope = SemaScope(parent: vars), fnFunctionsScope = SemaScope(parent: functions)
             
-            for (i, v)  in (fn.impl?.params.elements ?? []).enumerate() {
+            for (i, v) in (fn.impl?.params.elements ?? []).enumerate() {
                 
                 let n = (v as? ValueType)?.name ?? "$\(i)"
                 let t = try t.params()[i]
@@ -48,11 +53,13 @@ func semaVariableSpecialisation<ScopeType : ScopeExpression>(inout scope: ScopeT
                 fnVarsScope[n] = t
             }
             
-            try semaVariableSpecialisation(&functionScopeExpression, v: fnVarsScope, f: fnFunctionsScope)
+            try variableTypeSema(forScope: &functionScopeExpression, v: fnVarsScope, f: fnFunctionsScope)
             
+            scope.expressions[i].type = ty
             
         } else {
             
+            // handle all other cases by generating their (and their children's) types
             try exp.llvmType(vars, fns: functions)
             
         }

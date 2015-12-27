@@ -9,7 +9,18 @@
 import Foundation
 
 
-public func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Bool = false, irOnly: Bool = false, asmOnly: Bool = false, buildOnly: Bool = false, profile: Bool = true, optim: Bool = true, preserve: Bool = false) throws {
+public func compileDocuments(fileNames: [String],
+    verbose: Bool = true,
+    dumpAST: Bool = false,
+    irOnly: Bool = false,
+    asmOnly: Bool = false,
+    buildOnly: Bool = false,
+    profile: Bool = true,
+    optim: Bool = true,
+    preserve: Bool = false)
+    throws {
+    
+    let fileName = fileNames.first!
     
     let file = fileName.stringByReplacingOccurrencesOfString(".vist", withString: "")
     let currentDirectory = NSTask().currentDirectoryPath
@@ -45,6 +56,23 @@ public func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Boo
     
     
     
+    
+    if verbose { print("\n----------------------------SEMA------------------------------\n") }
+    
+    
+    
+    try sema(&ast)
+    
+    let interface = try interfaceASTGen(ast)
+    
+    print(interface.description())
+    
+    
+    
+    
+    
+    
+    
     if verbose { print("\n\n-----------------------------LINK------------------------------") }
 
     /// Generate LLVM IR File for the helper c++ code
@@ -70,15 +98,6 @@ public func compileDocument(fileName: String, verbose: Bool = true, dumpAST: Boo
     var module = LLVMModuleCreateWithName("vist_module")
     linkModule(&module, withFile: "helper.bc")
     configModule(module)
-    
-//    if verbose { LLVMDumpModule(module) }
-    
-    if verbose { print("\n----------------------------SEMA------------------------------\n") }
-
-    
-    
-    try sema(&ast)
-    
     
     
     

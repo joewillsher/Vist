@@ -29,7 +29,7 @@
 		D4B1FA0A1C304027001E7BCC /* SemaScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4B1FA091C304027001E7BCC /* SemaScope.swift */; };
 		D4B1FA0C1C304049001E7BCC /* TypeLowering.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4B1FA0B1C304049001E7BCC /* TypeLowering.swift */; };
 		D4BF843E1C29E242005B0910 /* InterfaceGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4BF843D1C29E242005B0910 /* InterfaceGen.swift */; };
-		D4C85BCC1BF8E00100731F34 /* CodeGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C85BCB1BF8E00100731F34 /* CodeGen.swift */; };
+		D4C85BCC1BF8E00100731F34 /* IRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C85BCB1BF8E00100731F34 /* IRGen.swift */; };
 		D4DB9D611C1DED5C00503153 /* Link.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4DB9D601C1DED5C00503153 /* Link.swift */; };
 		D4DB9D631C1DF10A00503153 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4DB9D621C1DF10A00503153 /* Config.swift */; };
 /* End PBXBuildFile section */
@@ -80,7 +80,7 @@
 		D4B1FA091C304027001E7BCC /* SemaScope.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SemaScope.swift; sourceTree = "<group>"; };
 		D4B1FA0B1C304049001E7BCC /* TypeLowering.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TypeLowering.swift; sourceTree = "<group>"; };
 		D4BF843D1C29E242005B0910 /* InterfaceGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InterfaceGen.swift; sourceTree = "<group>"; };
-		D4C85BCB1BF8E00100731F34 /* CodeGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CodeGen.swift; sourceTree = "<group>"; };
+		D4C85BCB1BF8E00100731F34 /* IRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IRGen.swift; sourceTree = "<group>"; };
 		D4DB9D5D1C1DDA1A00503153 /* helper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = helper.cpp; path = RUN/helper.cpp; sourceTree = SOURCE_ROOT; };
 		D4DB9D601C1DED5C00503153 /* Link.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Link.swift; sourceTree = "<group>"; };
 		D4DB9D621C1DF10A00503153 /* Config.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
@@ -128,7 +128,7 @@
 		D46DA5F51C297ADA006AF1BE /* IR */ = {
 			isa = PBXGroup;
 			children = (
-				D4C85BCB1BF8E00100731F34 /* CodeGen.swift */,
+				D4C85BCB1BF8E00100731F34 /* IRGen.swift */,
 				D465C6571C187639001A008C /* Scope.swift */,
 				D4AD08251C2DEB1200BE7D86 /* ArrayVariable.swift */,
 				D4AD08271C2DEB2D00BE7D86 /* StructVariable.swift */,
@@ -335,7 +335,7 @@
 				D4B1FA061C3027E1001E7BCC /* SemaTypeCheck.swift in Sources */,
 				D4AD08281C2DEB2D00BE7D86 /* StructVariable.swift in Sources */,
 				D47E66591B88D9A20051D586 /* README.md in Sources */,
-				D4C85BCC1BF8E00100731F34 /* CodeGen.swift in Sources */,
+				D4C85BCC1BF8E00100731F34 /* IRGen.swift in Sources */,
 				D4851F461C2434D90009233E /* RuntimeVariable.swift in Sources */,
 				D44FB8B01C1657E100E6DD33 /* Compile.swift in Sources */,
 				D465C6581C187639001A008C /* Scope.swift in Sources */,
