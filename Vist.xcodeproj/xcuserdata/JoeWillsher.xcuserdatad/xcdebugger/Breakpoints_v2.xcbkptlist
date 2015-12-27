@@ -10,7 +10,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/CodeGen.swift"
-            timestampString = "472932196.358781"
+            timestampString = "472938871.771346"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "345"
@@ -26,11 +26,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/CodeGen.swift"
-            timestampString = "472932196.358781"
+            timestampString = "472938871.771346"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "750"
-            endingLineNumber = "750">
+            startingLineNumber = "754"
+            endingLineNumber = "754">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -520,11 +520,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/CodeGen.swift"
-            timestampString = "472932196.358781"
+            timestampString = "472938871.771346"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "716"
-            endingLineNumber = "716"
+            startingLineNumber = "720"
+            endingLineNumber = "720"
             landmarkName = "llvmType(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -552,11 +552,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/CodeGen.swift"
-            timestampString = "472932196.358781"
+            timestampString = "472938871.771346"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "716"
-            endingLineNumber = "716"
+            startingLineNumber = "720"
+            endingLineNumber = "720"
             landmarkName = "llvmType(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -568,11 +568,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/CodeGen.swift"
-            timestampString = "472932196.358781"
+            timestampString = "472938871.771346"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "716"
-            endingLineNumber = "716"
+            startingLineNumber = "720"
+            endingLineNumber = "720"
             landmarkName = "llvmType(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -664,11 +664,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "VistTest/Sema.swift"
-            timestampString = "472931700.580185"
+            timestampString = "472940631.954906"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "97"
-            endingLineNumber = "97"
+            startingLineNumber = "92"
+            endingLineNumber = "92"
             landmarkName = "semaVariableSpecialisation(_:v:f:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -680,11 +680,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "VistTest/Sema.swift"
-            timestampString = "472931700.580185"
+            timestampString = "472940631.954906"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "50"
-            endingLineNumber = "50"
+            startingLineNumber = "51"
+            endingLineNumber = "51"
             landmarkName = "semaVariableSpecialisation(_:v:f:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -696,11 +696,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "VistTest/Sema.swift"
-            timestampString = "472931700.580185"
+            timestampString = "472940631.954906"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "62"
-            endingLineNumber = "62"
+            startingLineNumber = "63"
+            endingLineNumber = "63"
             landmarkName = "semaVariableSpecialisation(_:v:f:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -712,59 +712,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "VistTest/Sema.swift"
-            timestampString = "472931700.580185"
+            timestampString = "472940631.954906"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "100"
-            endingLineNumber = "100"
-            landmarkName = "semaVariableSpecialisation(_:v:f:)"
-            landmarkType = "7">
-            <Locations>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "vist.semaVariableSpecialisation &lt;A where A: vist.ScopeExpression&gt; (inout A, v : Swift.Optional&lt;vist.SemaScope&lt;vist.LLVMType&gt;&gt;, f : Swift.Optional&lt;vist.SemaScope&lt;vist.LLVMFnType&gt;&gt;) throws -&gt; ()"
-                  moduleName = "vist"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/JoeWillsher/Developer/Vist/VistTest/Sema.swift"
-                  timestampString = "472929974.111011"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "87"
-                  endingLineNumber = "87"
-                  offsetFromSymbolStart = "8103">
-               </Location>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "vist.(semaVariableSpecialisation &lt;A where A: vist.ScopeExpression&gt; (inout A, v : Swift.Optional&lt;vist.SemaScope&lt;vist.LLVMType&gt;&gt;, f : Swift.Optional&lt;vist.SemaScope&lt;vist.LLVMFnType&gt;&gt;) throws -&gt; ()).(closure #1)"
-                  moduleName = "vist"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/JoeWillsher/Developer/Vist/VistTest/Sema.swift"
-                  timestampString = "472929974.111348"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "87"
-                  endingLineNumber = "87"
-                  offsetFromSymbolStart = "19">
-               </Location>
-            </Locations>
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "VistTest/Sema.swift"
-            timestampString = "472931700.580185"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "73"
-            endingLineNumber = "73"
+            startingLineNumber = "74"
+            endingLineNumber = "74"
             landmarkName = "semaVariableSpecialisation(_:v:f:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -776,134 +728,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "VistTest/Sema.swift"
-            timestampString = "472931700.580185"
+            timestampString = "472940631.954906"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "104"
-            endingLineNumber = "104"
-            landmarkName = "semaVariableSpecialisation(_:v:f:)"
-            landmarkType = "7">
-            <Locations>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "vist.semaVariableSpecialisation &lt;A where A: vist.ScopeExpression&gt; (inout A, v : Swift.Optional&lt;vist.SemaScope&lt;vist.LLVMType&gt;&gt;, f : Swift.Optional&lt;vist.SemaScope&lt;vist.LLVMFnType&gt;&gt;) throws -&gt; ()"
-                  moduleName = "vist"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/JoeWillsher/Developer/Vist/VistTest/Sema.swift"
-                  timestampString = "472931013.199717"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "103"
-                  endingLineNumber = "103"
-                  offsetFromSymbolStart = "2245">
-               </Location>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "vist.semaVariableSpecialisation &lt;A where A: vist.ScopeExpression&gt; (inout A, v : Swift.Optional&lt;vist.SemaScope&lt;vist.LLVMType&gt;&gt;, f : Swift.Optional&lt;vist.SemaScope&lt;vist.LLVMFnType&gt;&gt;) throws -&gt; ()"
-                  moduleName = "vist"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/JoeWillsher/Developer/Vist/VistTest/Sema.swift"
-                  timestampString = "472931013.200059"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "103"
-                  endingLineNumber = "103"
-                  offsetFromSymbolStart = "9138">
-               </Location>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "vist.semaVariableSpecialisation &lt;A where A: vist.ScopeExpression&gt; (inout A, v : Swift.Optional&lt;vist.SemaScope&lt;vist.LLVMType&gt;&gt;, f : Swift.Optional&lt;vist.SemaScope&lt;vist.LLVMFnType&gt;&gt;) throws -&gt; ()"
-                  moduleName = "vist"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/JoeWillsher/Developer/Vist/VistTest/Sema.swift"
-                  timestampString = "472931013.200172"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "103"
-                  endingLineNumber = "103"
-                  offsetFromSymbolStart = "9299">
-               </Location>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "vist.semaVariableSpecialisation &lt;A where A: vist.ScopeExpression&gt; (inout A, v : Swift.Optional&lt;vist.SemaScope&lt;vist.LLVMType&gt;&gt;, f : Swift.Optional&lt;vist.SemaScope&lt;vist.LLVMFnType&gt;&gt;) throws -&gt; ()"
-                  moduleName = "vist"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/JoeWillsher/Developer/Vist/VistTest/Sema.swift"
-                  timestampString = "472931013.200383"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "103"
-                  endingLineNumber = "103"
-                  offsetFromSymbolStart = "9414">
-               </Location>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "vist.semaVariableSpecialisation &lt;A where A: vist.ScopeExpression&gt; (inout A, v : Swift.Optional&lt;vist.SemaScope&lt;vist.LLVMType&gt;&gt;, f : Swift.Optional&lt;vist.SemaScope&lt;vist.LLVMFnType&gt;&gt;) throws -&gt; ()"
-                  moduleName = "vist"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/JoeWillsher/Developer/Vist/VistTest/Sema.swift"
-                  timestampString = "472931013.200551"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "103"
-                  endingLineNumber = "103"
-                  offsetFromSymbolStart = "9680">
-               </Location>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "vist.semaVariableSpecialisation &lt;A where A: vist.ScopeExpression&gt; (inout A, v : Swift.Optional&lt;vist.SemaScope&lt;vist.LLVMType&gt;&gt;, f : Swift.Optional&lt;vist.SemaScope&lt;vist.LLVMFnType&gt;&gt;) throws -&gt; ()"
-                  moduleName = "vist"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/JoeWillsher/Developer/Vist/VistTest/Sema.swift"
-                  timestampString = "472931013.200724"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "103"
-                  endingLineNumber = "103"
-                  offsetFromSymbolStart = "10306">
-               </Location>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "vist.semaVariableSpecialisation &lt;A where A: vist.ScopeExpression&gt; (inout A, v : Swift.Optional&lt;vist.SemaScope&lt;vist.LLVMType&gt;&gt;, f : Swift.Optional&lt;vist.SemaScope&lt;vist.LLVMFnType&gt;&gt;) throws -&gt; ()"
-                  moduleName = "vist"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/JoeWillsher/Developer/Vist/VistTest/Sema.swift"
-                  timestampString = "472931013.200877"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "103"
-                  endingLineNumber = "103"
-                  offsetFromSymbolStart = "10421">
-               </Location>
-            </Locations>
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "VistTest/Sema.swift"
-            timestampString = "472931700.580185"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "103"
-            endingLineNumber = "103"
+            startingLineNumber = "94"
+            endingLineNumber = "94"
             landmarkName = "semaVariableSpecialisation(_:v:f:)"
             landmarkType = "7">
             <Locations>
@@ -1018,17 +847,129 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "VistTest/Sema.swift"
+            timestampString = "472940631.954906"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "39"
+            endingLineNumber = "39"
+            landmarkName = "sema(_:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "VistTest/Sema.swift"
-            timestampString = "472931700.580185"
+            timestampString = "472940631.954906"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "38"
-            endingLineNumber = "38"
-            landmarkName = "sema(_:)"
-            landmarkType = "7">
+            startingLineNumber = "103"
+            endingLineNumber = "103"
+            landmarkName = "params()"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Vist/CodeGen.swift"
+            timestampString = "472938871.771346"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "347"
+            endingLineNumber = "347"
+            landmarkName = "params()"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Vist/CodeGen.swift"
+            timestampString = "472938871.771346"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "353"
+            endingLineNumber = "353"
+            landmarkName = "returnType()"
+            landmarkType = "5">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "vist.FunctionType.(returnType in _E7EBD1856020A911D6BCC493354D807A) (vist.FunctionType)() throws -&gt; Swift.COpaquePointer"
+                  moduleName = "vist"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/JoeWillsher/Developer/Vist/Vist/CodeGen.swift"
+                  timestampString = "472940633.368313"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "353"
+                  endingLineNumber = "353"
+                  offsetFromSymbolStart = "735">
+               </Location>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "vist.FunctionType.(returnType in _E7EBD1856020A911D6BCC493354D807A) (vist.FunctionType)() throws -&gt; Swift.COpaquePointer"
+                  moduleName = "vist"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/JoeWillsher/Developer/Vist/Vist/CodeGen.swift"
+                  timestampString = "472940633.368428"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "353"
+                  endingLineNumber = "353"
+                  offsetFromSymbolStart = "1400">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Vist/SemaTypeCheck.swift"
+            timestampString = "472940631.954906"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "242"
+            endingLineNumber = "242"
+            landmarkName = "llvmType(_:fns:)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Vist/SemaTypeCheck.swift"
+            timestampString = "472940631.954906"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "239"
+            endingLineNumber = "239"
+            landmarkName = "llvmType(_:fns:)"
+            landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

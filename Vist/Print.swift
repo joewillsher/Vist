@@ -225,7 +225,7 @@ extension ReturnExpression {
 
 
 
-private func ifStr(n n: Int, ex: ElseIfBlockExpression) -> String? {
+private func ifStr<BlockType>(n n: Int, ex: ElseIfBlockExpression<BlockType>) -> String? {
     return ex.condition == nil ? "else" : n == 0 ? "if" : "if else"
 }
 

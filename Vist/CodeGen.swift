@@ -470,8 +470,12 @@ extension BlockExpression {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-private func ifBBID(n n: Int, ex: ElseIfBlockExpression) -> String {
-    return ex.condition == nil ? "else\(n)" : "then\(n)"
+
+extension ElseIfBlockExpression {
+    
+    private func ifBBID(n n: Int) -> String {
+        return condition == nil ? "else\(n)" : "then\(n)"
+    }
 }
 
 extension ConditionalExpression : IRGenerator {
@@ -511,7 +515,7 @@ extension ConditionalExpression : IRGenerator {
             
             // block and associated scope - the then / else block
             let tScope = Scope(function: scope.function, parentScope: scope)
-            let block = try statement.bbGen(innerScope: tScope, contBlock: leaveIf, name: ifBBID(n: i, ex: statement))
+            let block = try statement.bbGen(innerScope: tScope, contBlock: leaveIf, name: statement.ifBBID(n: i))
             
             // move builder to in scope
             LLVMPositionBuilderAtEnd(builder, ifIn)
@@ -632,7 +636,7 @@ extension WhileLoopExpression : IRGenerator {
         
         // gen the IR for the inner block
         let loopScope = Scope(block: loop, function: scope.function, parentScope: scope)
-        try block.bbGenInline(scope: loopScope)
+        try block.bbGenInline(scope: scope)
         
         // conditional break
         let conditionalRepeat = try iterator.condition.expressionCodeGen(scope)

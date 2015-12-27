@@ -335,7 +335,7 @@ struct Parser {
         let condition = try parseOperatorExpression()
         
         // list of blocks
-        var blocks: [(condition: Expression?, block: ScopeExpression)] = []
+        var blocks: [(condition: Expression?, block: BlockExpression)] = []
         
         let usesBraces = currentToken.isBrace()
         // get if block & append
@@ -367,11 +367,11 @@ struct Parser {
             blocks.append((condition, block))
         }
         
-        return try ConditionalExpression(statements: blocks)
+        return try ConditionalExpression<BlockExpression>(statements: blocks)
     }
     
     
-    private mutating func parseForInLoopExpression() throws -> ForInLoopExpression<RangeIteratorExpression, AnyExpression> {
+    private mutating func parseForInLoopExpression() throws -> ForInLoopExpression<RangeIteratorExpression, AnyExpression, BlockExpression> {
         
         getNextToken() // eat 'for'
         let itentifier = try parseTextExpression() // bind loop label
@@ -384,7 +384,7 @@ struct Parser {
         return ForInLoopExpression(identifier: itentifier, iterator: loop, block: block)
     }
     
-    private mutating func parseWhileLoopExpression() throws -> WhileLoopExpression<WhileIteratorExpression> {
+    private mutating func parseWhileLoopExpression() throws -> WhileLoopExpression<WhileIteratorExpression, BlockExpression> {
         
         getNextToken() // eat 'while'
         

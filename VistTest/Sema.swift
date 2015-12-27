@@ -24,6 +24,7 @@ enum SemaError : ErrorType {
     case WrongApplication, NotTypeProvider
     case HeterogenousArray(String), EmptyArray
     case NotVariableType, CannotSubscriptNonArrayVariable
+    case NonBooleanCondition
 }
 
 func sema(inout ast: AST) throws {
@@ -46,7 +47,7 @@ func semaVariableSpecialisation<ScopeType : ScopeExpression>(inout scope: ScopeT
     let vars = v ?? SemaScope<LLVMType>(parent: nil)
     let functions = f ?? SemaScope<LLVMFnType>(parent: nil)
     
-    for (i, exp) in scope.expressions.enumerate() {
+    for exp in scope.expressions {
         
         if let e = exp as? AssignmentExpression {
             
@@ -65,7 +66,7 @@ func semaVariableSpecialisation<ScopeType : ScopeExpression>(inout scope: ScopeT
             let ty = LLVMFnType(params: try t.params(), returns: try t.returnType())
             // update function table
             functions[fn.name] = ty
-
+            
             guard var functionScopeExpression = fn.impl?.body else { continue }
             // if body construct scope and parse inside it
             
@@ -76,33 +77,22 @@ func semaVariableSpecialisation<ScopeType : ScopeExpression>(inout scope: ScopeT
                 let n = (v as? ValueType)?.name ?? "$\(i)"
                 let t = try t.params()[i]
                 
-                fnVarsScope.addVariable(t, name: n)
+                fnVarsScope[n] = t
             }
             
             try semaVariableSpecialisation(&functionScopeExpression, v: fnVarsScope, f: fnFunctionsScope)
             
-            
-        } else if let f = exp as? FunctionCallExpression {
-            
-            let x = try f.llvmType(vars, fns: functions)
-            
+
         } else {
             
-            
-            let type = try exp.llvmType(vars, fns: functions)
-            scope.expressions[i].type = type
+            try exp.llvmType(vars, fns: functions)
             
         }
         
         
     }
     
-    
-    print(scope.expressions.map {$0.type})
-    
-    
 }
-
 
 
 private extension FunctionType {

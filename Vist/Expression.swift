@@ -8,7 +8,7 @@
 
 import Foundation
 
-protocol Expression : Printable, LLVMTypeProvider, Typed {}
+protocol Expression : Printable, TypeProvider, Typed {}
 
 protocol Typed {
     var type: LLVMType? { get set }
@@ -30,7 +30,7 @@ protocol Literal : Expression {
 }
 
 
-protocol ScopeExpression : Expression {
+protocol ScopeExpression : Expression, TypeProvider {
     var expressions: [Expression] { get set }
     var topLevel: Bool { get }
 }
@@ -308,11 +308,11 @@ class FunctionType : Expression {
 
 
 
-class ElseIfBlockExpression : Expression {
-    let condition: Expression?
-    let block: ScopeExpression
+class ElseIfBlockExpression<BlockType : ScopeExpression> : Expression {
+    var condition: Expression?
+    var block: BlockType
     
-    init(condition: Expression?, block: ScopeExpression) {
+    init(condition: Expression?, block: BlockType) {
         self.condition = condition
         self.block = block
     }
@@ -321,15 +321,15 @@ class ElseIfBlockExpression : Expression {
 }
 
 
-class ConditionalExpression : Expression {
-    let statements: [ElseIfBlockExpression]
+class ConditionalExpression<BlockType : ScopeExpression> : Expression {
+    let statements: [ElseIfBlockExpression<BlockType> ]
     
-    init(statements: [(condition: Expression?, block: ScopeExpression)]) throws {
-        var p: [ElseIfBlockExpression] = []
+    init(statements: [(condition: Expression?, block: BlockType)]) throws {
+        var p: [ElseIfBlockExpression<BlockType>] = []
         
         for (index, path) in statements.enumerate() {
             
-            p.append(ElseIfBlockExpression(path))
+            p.append(ElseIfBlockExpression<BlockType>(condition: path.0, block: path.1))
             
             // nil condition here is an else block, if there is anything after an else block then throw
             // either because there is more than 1 else or expressions after an else
@@ -347,22 +347,24 @@ class ConditionalExpression : Expression {
 protocol LoopExpression : Expression {
     
     typealias Iterator: IteratorExpression
+    typealias BlockType: ScopeExpression
     
     var iterator: Iterator { get }
-    var block: BlockExpression { get }
+    var block: BlockType { get }
 }
 
 
 class ForInLoopExpression
     <Iterator : IteratorExpression,
-    BoundType : Expression>
+    BoundType : Expression,
+    BlockType : ScopeExpression>
     : LoopExpression {
     
     let binded: Variable<BoundType>
     let iterator: Iterator
-    let block: BlockExpression
+    var block: BlockType
     
-    init(identifier: Variable<BoundType>, iterator: Iterator, block: BlockExpression) {
+    init(identifier: Variable<BoundType>, iterator: Iterator, block: BlockType) {
         self.binded = identifier
         self.iterator = iterator
         self.block = block
@@ -371,12 +373,15 @@ class ForInLoopExpression
     var type: LLVMType? = nil
 }
 
-class WhileLoopExpression<Iterator : IteratorExpression> : LoopExpression {
+class WhileLoopExpression
+    <Iterator : IteratorExpression,
+    BlockType : ScopeExpression>
+    : LoopExpression {
     
     let iterator: WhileIteratorExpression
-    let block: BlockExpression
+    var block: BlockType
     
-    init(iterator: WhileIteratorExpression, block: BlockExpression) {
+    init(iterator: WhileIteratorExpression, block: BlockType) {
         self.iterator = iterator
         self.block = block
     }

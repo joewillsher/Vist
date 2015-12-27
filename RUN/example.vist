@@ -8,7 +8,7 @@
 }
 */
 
-/*
+
 var tot = 0
 
 for i in 0 ... 100000000 do
@@ -16,21 +16,4 @@ for i in 0 ... 100000000 do
         tot = tot + i
 
 print(tot)
-*/
 
-let a = 1 + 2
-
-let b = 1 + a
-
-func foo: (Int) -> Int = do return $0 + 11
-
-let c = foo(1)
-
-let d = [1,2]
-
-print(d[1] + 7 * 3)
-print(c + b)
-
-//let a = [1,2,3]
-
-//print(a[1])

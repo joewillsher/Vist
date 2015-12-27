@@ -20,11 +20,7 @@ class SemaScope<VarType> {
             variables[name] = newValue
         }
     }
-    
-    func addVariable(type: VarType, name: String) {
-        variables[name] = type
-    }
-    
+        
     init(parent: SemaScope?) {
         self.parent = parent
         self.variables = [:]
