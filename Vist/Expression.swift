@@ -55,7 +55,7 @@ class BlockExpression : ScopeExpression {
 }
 
 
-struct BooleanLiteral : Literal, BooleanType {
+class BooleanLiteral : Literal, BooleanType {
     let val: Bool
     
     init(val: Bool) {
@@ -123,7 +123,7 @@ struct CommentExpression : Expression {
     var type: LLVMType? = nil
 }
 
-struct Void : Expression {
+class Void : Expression {
     var type: LLVMType? = nil
 }
 

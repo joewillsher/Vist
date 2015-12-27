@@ -10,6 +10,11 @@ import Foundation
 
 
 protocol LLVMTypeProvider {
+    /// Function used to traverse AST and get type information for all its objects
+    ///
+    /// Each implementation of this function should **call `.llvmType` on all of its sub expressions**
+    ///
+    /// The function implementation **should assign the result type to self** as well as returning it
     func llvmType(vars: SemaScope<LLVMType>, fns: SemaScope<LLVMFnType>) throws -> LLVMType
 }
 
@@ -30,13 +35,15 @@ extension IntegerLiteral : LLVMTypeProvider {
 extension FloatingPointLiteral : LLVMTypeProvider {
     
     func llvmType(vars: SemaScope<LLVMType>, fns: SemaScope<LLVMFnType>) throws -> LLVMType {
-        return LLVMType.Float(size: size)
+        self.type = .Float(size: size)
+        return .Float(size: size)
     }
 }
 
 extension BooleanLiteral : LLVMTypeProvider {
     
     func llvmType(vars: SemaScope<LLVMType>, fns: SemaScope<LLVMFnType>) throws -> LLVMType {
+        self.type = .Bool
         return LLVMType.Bool
     }
 }
@@ -76,7 +83,8 @@ extension BinaryExpression : LLVMTypeProvider {
 extension Void : LLVMTypeProvider {
     
     func llvmType(vars: SemaScope<LLVMType>, fns: SemaScope<LLVMFnType>) throws -> LLVMType {
-        return LLVMType.Void
+        self.type = .Void
+        return .Void
     }
 }
 
@@ -84,9 +92,12 @@ extension FunctionCallExpression : LLVMTypeProvider {
     
     func llvmType(vars: SemaScope<LLVMType>, fns: SemaScope<LLVMFnType>) throws -> LLVMType {
         
-        try args.elements.map { try $0.llvmType(vars, fns: fns) }
+        for arg in args.elements {
+            try arg.llvmType(vars, fns: fns)
+        }
         guard let fn = fns[name] else { throw SemaError.NoFunction(name) }
         
+        self.type = fn.returns
         return fn.returns
     }
 }
@@ -102,7 +113,6 @@ extension ArrayExpression : LLVMTypeProvider {
         for i in 0..<arr.count {
             var el = arr[i]
             let t = try el.llvmType(vars, fns: fns)
-            el.type = t
             types.append(t)
         }
         guard Set(try types.map { try $0.ir() }).count == 1 else { throw SemaError.HeterogenousArray(self.description()) }
@@ -140,7 +150,8 @@ extension ReturnExpression : LLVMTypeProvider {
     func llvmType(vars: SemaScope<LLVMType>, fns: SemaScope<LLVMFnType>) throws -> LLVMType {
         
         _ = try expression.llvmType(vars, fns: fns)
-        
+
+        self.type = .Null
         return .Null
     }
     
