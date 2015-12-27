@@ -27,34 +27,20 @@ define void @printd(double %d) #0 {
 
 define i64 @main() {
 entry:
-  %tot = alloca i64
-  store i64 0, i64* %tot
-  br label %loop
-
-loop:                                             ; preds = %cont, %entry
-  %i = phi i64 [ 0, %entry ], [ %nexti, %cont ]
-  %nexti = add i64 1, %i
-  %rem_res = urem i64 %i, 3
-  %cmp_eq_res = icmp eq i64 %rem_res, 0
-  %rem_res1 = urem i64 %i, 5
-  %cmp_eq_res2 = icmp eq i64 %rem_res1, 0
-  %or_res = or i1 %cmp_eq_res, %cmp_eq_res2
-  br i1 %or_res, label %then0, label %cont
-
-afterloop:                                        ; preds = %cont
-  %tot4 = load i64* %tot
-  call void @print(i64 %tot4)
+  %arr = alloca [3 x i64]
+  %base = bitcast [3 x i64]* %arr to i64*
+  %el0 = getelementptr i64* %base, i64 0
+  store i64 1, i64* %el0
+  %el1 = getelementptr i64* %base, i64 1
+  store i64 2, i64* %el1
+  %el2 = getelementptr i64* %base, i64 2
+  store i64 3, i64* %el2
+  %a = alloca i64*
+  store i64* %base, i64** %a
+  %ptr = getelementptr i64* %base, i64 1
+  %element = load i64* %ptr
+  call void @print(i64 %element)
   ret i64 0
-
-cont:                                             ; preds = %loop, %then0
-  %looptest = icmp sle i64 %nexti, 100000000
-  br i1 %looptest, label %loop, label %afterloop
-
-then0:                                            ; preds = %loop
-  %tot3 = load i64* %tot
-  %add_res = add i64 %tot3, %i
-  store i64 %add_res, i64* %tot
-  br label %cont
 }
 
 attributes #0 = { ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

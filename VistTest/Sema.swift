@@ -15,4 +15,4 @@ import Foundation
 // - ensure variables and functions are availiable
 // - generate the interface for a file to allow it to be linked with other files
 // - add metadata about return types, array member types
-
+// - specialise types to generic versions

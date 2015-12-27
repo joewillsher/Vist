@@ -222,7 +222,7 @@ extension MutationExpression : IRGenerator {
     
     func codeGen(scope: Scope) throws -> LLVMValueRef {
         
-        if let object = object as? Variable {
+        if let object = object as? Variable<AnyExpression> {
             // object = newValue
             
             let variable = try scope.variable(object.name)
@@ -742,7 +742,7 @@ extension ArrayExpression : IRGenerator {
 extension ArraySubscriptExpression : IRGenerator {
     
     private func backingArrayVariable(scope: Scope) throws -> ArrayVariable {
-        guard let v = arr as? Variable else { throw IRError.SubscriptingNonVariableTypeNotAllowed }
+        guard let v = arr as? Variable<AnyExpression> else { throw IRError.SubscriptingNonVariableTypeNotAllowed }
         guard let arr = try scope.variable(v.name) as? ArrayVariable else { throw IRError.SubscriptingNonVariableTypeNotAllowed }
         
         return arr

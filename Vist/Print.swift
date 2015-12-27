@@ -209,7 +209,7 @@ extension Variable {
         return true
     }
     func printList() -> [(String?, Printable)]? {
-        return [("name", name), ("is_mutable", isMutable)]
+        return [("name", name)]
     }
 }
 
@@ -219,11 +219,6 @@ extension FunctionCallExpression {
     }
 }
 
-extension EndOfScope {
-    func inline() -> Bool {
-        return true
-    }
-}
 
 extension CommentExpression {
     func printVal() -> String? {

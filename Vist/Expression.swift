@@ -8,12 +8,14 @@
 
 import Foundation
 
-protocol Expression : Printable {
-}
+protocol Expression : Printable {}
 
 protocol Typed {
     var type: Type { get }
 }
+
+struct AnyExpression : Expression {}
+
 protocol Sized : Expression {
     var size: UInt32 { get set }
 }
@@ -21,8 +23,6 @@ protocol Type : Expression {}
 
 protocol Literal : Expression {
 }
-
-
 
 
 protocol ScopeExpression : Expression {
@@ -44,14 +44,6 @@ class BlockExpression : ScopeExpression {
         self.expressions = expressions
     }
 }
-class DefinitionScope : ScopeExpression {
-    var expressions: [Expression]
-    var topLevel = false
-    init(expressions: [Expression]) {
-        self.expressions = expressions
-    }
-}
-struct EndOfScope : Expression {}
 
 
 struct BooleanLiteral : Literal, Typed, BooleanType {
@@ -118,11 +110,13 @@ struct Void : Expression {}
 
 protocol AssignableExpression : Expression {}
 
-class Variable : AssignableExpression {
+/// A variable lookup expression
+///
+/// Generic over the variable type, use AnyExpression if this is not known
+class Variable <T : Expression> : AssignableExpression {
     let name: String
-    let isMutable: Bool = false
     
-    init(name: String, isMutable: Bool = false) {
+    init(name: String) {
         self.name = name
     }
 }
@@ -310,13 +304,16 @@ protocol LoopExpression : Expression {
 }
 
 
-class ForInLoopExpression<Iterator : IteratorExpression> : LoopExpression {
+class ForInLoopExpression
+    <Iterator : IteratorExpression,
+    BoundType : Expression>
+    : LoopExpression {
     
-    let binded: Variable
+    let binded: Variable<BoundType>
     let iterator: Iterator
     let block: BlockExpression
     
-    init(identifier: Variable, iterator: Iterator, block: BlockExpression) {
+    init(identifier: Variable<BoundType>, iterator: Iterator, block: BlockExpression) {
         self.binded = identifier
         self.iterator = iterator
         self.block = block

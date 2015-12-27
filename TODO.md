@@ -27,5 +27,5 @@
 
 * Strings
 
-
+* Partial application of functions
 

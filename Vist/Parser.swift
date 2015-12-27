@@ -177,7 +177,7 @@ struct Parser {
     //  MARK:                                      Identifier and operators
     //-------------------------------------------------------------------------------------------------------------------------
     
-    private mutating func parseTextExpression() throws -> Variable {
+    private mutating func parseTextExpression() throws -> Variable<AnyExpression> {
         guard case .Identifier(let i) = currentToken else { throw ParseError.NoIdentifier(currentPos) }
         return Variable(name: i)
     }
@@ -204,24 +204,24 @@ struct Parser {
 
             
             guard case .Assign = currentToken else { // if call
-                return ArraySubscriptExpression(arr: Variable(name: token), index: subscpipt)
+                return ArraySubscriptExpression(arr: Variable<AnyExpression>(name: token), index: subscpipt)
             }
             getNextToken() // eat '='
             
             let exp = try parseOperatorExpression()
             // if assigning to subscripted value
-            return MutationExpression(object: ArraySubscriptExpression(arr: Variable(name: token), index: subscpipt), value: exp)
+            return MutationExpression(object: ArraySubscriptExpression(arr: Variable<AnyExpression>(name: token), index: subscpipt), value: exp)
             
         case .Assign?: // mutation
             getNextToken(); getNextToken() // eat 'identifier ='
             
             let exp = try parseOperatorExpression()
             
-            return MutationExpression(object: Variable(name: token), value: exp)
+            return MutationExpression(object: Variable<AnyExpression>(name: token), value: exp)
             
         default: // just identifier
             defer { getNextToken() }
-            return try parseOperatorExpression(Variable(name: token))
+            return try parseOperatorExpression(Variable<AnyExpression>(name: token))
         }
     }
     
@@ -265,12 +265,12 @@ struct Parser {
     private mutating func parseParenExpression() throws -> Expression {
         
         guard case .OpenParen = currentToken else { throw ParseError.ExpectedParen(currentPos) }
-        getNextToken()
+        getNextToken() // eat '('
         
         let expr = try parseOperatorExpression()
         
         guard case .CloseParen = currentToken else { throw ParseError.ExpectedParen(currentPos) }
-        getNextToken()
+        getNextToken() // eat ')'
         
         return expr
         
@@ -289,17 +289,16 @@ struct Parser {
             
             // Get next operand
             getNextToken()
-            
-            print(lhs, currentToken)
+
             // Error handling
             let rhs = try parsePrimary()
-            
+
             // Get next operator
             guard case .InfixOperator(let nextOp) = currentToken else { return BinaryExpression(op: op, lhs: lhs, rhs: rhs) }
             guard let nextTokenPrecedence = precedences[nextOp] else { throw ParseError.NoOperator(currentPos) }
-            
+
             let newRhs = try parseOperationRHS(tokenPrecedence, lhs: rhs)
-            
+
             if tokenPrecedence < nextTokenPrecedence {
                 return try parseOperationRHS(nextTokenPrecedence, lhs: BinaryExpression(op: op, lhs: lhs, rhs: newRhs))
             }
@@ -317,8 +316,8 @@ struct Parser {
             getNextToken()
             let newLHS = PrefixExpression(op: op, expr: lhs)
             return try parseOperationRHS(precedence, lhs: newLHS)
-            // Encountered a different token, return the lhs.
-        default:
+            
+        default: // Encountered a different token, return the lhs.
             return lhs
         }
     }
@@ -372,7 +371,7 @@ struct Parser {
     }
     
     
-    private mutating func parseForInLoopExpression() throws -> ForInLoopExpression<RangeIteratorExpression> {
+    private mutating func parseForInLoopExpression() throws -> ForInLoopExpression<RangeIteratorExpression, AnyExpression> {
         
         getNextToken() // eat 'for'
         let itentifier = try parseTextExpression() // bind loop label
@@ -540,7 +539,10 @@ struct Parser {
         while true {
             if case .CloseBrace = currentToken { break }
             
-            do { expressions.append(try parseExpression(currentToken)) }
+            do {
+                guard let exp = try parseExpression(currentToken) else { throw ParseError.NoToken(currentToken, currentPos) }
+                expressions.append(exp)
+            }
             catch ParseError.NoToken(.CloseParen, _) { break }
         }
         getNextToken() // eat '}'
@@ -556,7 +558,7 @@ struct Parser {
     private mutating func parseBracelessDoExpression() throws -> BlockExpression {
         getNextToken() // eat 'do'
         
-        let ex = try parseExpression(currentToken)
+        guard let ex = try parseExpression(currentToken) else { throw ParseError.NoToken(currentToken, currentPos) }
         
         return BlockExpression(expressions: [ex])
     }
@@ -672,7 +674,7 @@ struct Parser {
     /// parses any token, starts new scopes
     ///
     /// promises that the input token will be consumed
-    private mutating func parseExpression(token: Token) throws -> Expression {
+    private mutating func parseExpression(token: Token) throws -> Expression? {
         
         switch token {
         case     .Let:                  return try parseVariableAssignmentMutable(false)
@@ -695,7 +697,7 @@ struct Parser {
         case let .FloatingPoint(x):     return parseFloatingPointExpression(x)
         case let .Str(str):             return parseStringExpression(str)
         case     .Void:                 index++; return Void()
-        case     .EOF, .CloseBrace:     index++; return EndOfScope()
+        case     .EOF, .CloseBrace:     index++; return nil
         default:                        throw ParseError.NoToken(token, currentPos)
         }
     }
@@ -714,10 +716,10 @@ struct Parser {
         expressions = []
         
         while let tok = tok() {
-            expressions.append(try parseExpression(tok))
+            if let exp = try parseExpression(tok) {
+                expressions.append(exp)
+            }
         }
-        
-        expressions = expressions.filter { !($0 is EndOfScope) }
         
         return AST(expressions: expressions)
     }

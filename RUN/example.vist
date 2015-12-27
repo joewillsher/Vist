@@ -8,7 +8,7 @@
 }
 */
 
-
+/*
 var tot = 0
 
 for i in 0 ... 100000000 do
@@ -16,3 +16,9 @@ for i in 0 ... 100000000 do
         tot = tot + i
 
 print(tot)
+*/
+
+
+let a = [1,2,3]
+
+print(a[1])
