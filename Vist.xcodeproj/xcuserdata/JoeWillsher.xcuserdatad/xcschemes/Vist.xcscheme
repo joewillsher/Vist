@@ -101,11 +101,11 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "second.vist"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "third.vist"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>

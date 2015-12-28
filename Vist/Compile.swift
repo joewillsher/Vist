@@ -232,14 +232,18 @@ public func compileDocuments(fileNames: [String],
         runTask.currentDirectoryPath = currentDirectory
         runTask.launchPath = "\(currentDirectory)/\(file)"
         
-        let t0 = CFAbsoluteTimeGetCurrent()
         
         runTask.launch()
+        let t0 = CFAbsoluteTimeGetCurrent()
+
         runTask.waitUntilExit()
         
         if profile {
-            let t = CFAbsoluteTimeGetCurrent() - t0
-            print("\n--------\nTime elapsed: \(t)s")
+            let t = CFAbsoluteTimeGetCurrent() - t0 - 0.062
+            let f = NSNumberFormatter()
+            f.maximumFractionDigits = 2
+            f.minimumFractionDigits = 2
+            print("\n--------\nTime elapsed: \(f.stringFromNumber(t)!)s")
         }
         
         

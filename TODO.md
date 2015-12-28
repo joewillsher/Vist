@@ -4,11 +4,6 @@
 
 * Method & property parsing
 
-* Semantic analysis
-    - Type and variable/function reliability checking
-    - Adding information into AST about the types it is going to lower to -- move a lot of the checks from IRGen into this
-    - Interface gen (for linking files)
-
 * Struct IR Gen
     - Properties and padding (incl improving current equal-width impl)
     - Method implementation -- sema pass getting info about functions and associating them with the object

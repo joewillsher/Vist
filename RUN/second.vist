@@ -1,12 +1,3 @@
 
 
-// make syntax more *haskelly*
-//
 
-func fact: Int -> Int = |a| do
-    if a <= 1 do
-        return foo(0 1)
-    else do
-        return a * fact(a - 1)
-
-//print (fact (1))
