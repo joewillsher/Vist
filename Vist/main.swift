@@ -22,15 +22,14 @@ do {
     let r = i...(c-1)
     let files = Array(ar[(i+1)...c])
     
-    let args = a.dropLast()
-    let verbose = args.contains("-verbose") || args.contains("-v")
-    let ast = args.contains("-dump-ast")
-    let ir = args.contains("-emit-ir")
-    let asm = args.contains("-emit-asm")
-    let b = args.contains("-build-only") || args.contains("-b")
-    let profile = args.contains("-profile") || args.contains("-p")
-    let o = args.contains("-O")
-    let preserveIntermediate = args.contains("-preserve")
+    let verbose = a.contains("-verbose") || a.contains("-v")
+    let ast = a.contains("-dump-ast")
+    let ir = a.contains("-emit-ir")
+    let asm = a.contains("-emit-asm")
+    let b = a.contains("-build-only") || a.contains("-b")
+    let profile = a.contains("-profile") || a.contains("-p")
+    let o = a.contains("-O")
+    let preserveIntermediate = a.contains("-preserve")
     
     if a.contains("-h") || a.contains("-help") {
         

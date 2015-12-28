@@ -27,7 +27,6 @@ func fact: Int -> Int = |a| do
         return foo(0 1)
     else do
         return a * fact(a - 1)
-
 ```
 
 ##How it works
