@@ -75,9 +75,9 @@ class ArrayVariable : RuntimeVariable {
         LLVMBuildStore(builder, base, self.ptr)
     }
     
-    func ptrToElementAtIndex(i: LLVMValueRef) -> LLVMValueRef {
+    func ptrToElementAtIndex(index: LLVMValueRef) -> LLVMValueRef {
         
-        return LLVMBuildGEP(builder, base, [i].ptr(), 1, "ptr")
+        return LLVMBuildGEP(builder, base, [index].ptr(), 1, "ptr")
     }
     
 }

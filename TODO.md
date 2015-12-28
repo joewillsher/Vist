@@ -4,6 +4,8 @@
 
 * Method & property parsing
 
+* Name mangling
+
 * Struct IR Gen
     - Properties and padding (incl improving current equal-width impl)
     - Method implementation -- sema pass getting info about functions and associating them with the object
@@ -22,5 +24,7 @@
 
 * Strings
 
-* Partial application of functions
+* Make functions first class objects
+    - Currying
+    - Partial application of functions
 

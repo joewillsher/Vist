@@ -14,7 +14,9 @@ protocol LLVMTyped {
 enum LLVMType : LLVMTyped {
     case Null, Void
     case Int(size: UInt32), Float(size: UInt32), Bool
-    indirect case Array(el: LLVMType, size: UInt32), Pointer(to: LLVMType)
+    indirect case Array(el: LLVMType, size: UInt32)
+    indirect case Pointer(to: LLVMType)
+    indirect case Struct(members: [LLVMType], methods: [LLVMFnType])
     
     func ir() throws -> LLVMTypeRef {
         switch self {
@@ -32,6 +34,11 @@ enum LLVMType : LLVMTyped {
             case 128:                   return LLVMFP128Type()
             default:                    throw SemaError.InvalidType(self)
             }
+        case .Struct(let members, _):
+            let arr = try members
+                .map { try $0.ir() }
+                .ptr()
+                                        return LLVMStructType(arr, UInt32(members.count), LLVMBool(false))
         }
     }
     
@@ -62,4 +69,6 @@ struct LLVMFnType : LLVMTyped {
             LLVMBool(false))
     }
 }
+
+
 

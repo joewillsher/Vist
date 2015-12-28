@@ -6,7 +6,6 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-import Foundation
 
 
 /// Link the module with another IR file

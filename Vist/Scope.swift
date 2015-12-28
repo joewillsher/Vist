@@ -6,8 +6,6 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-import Foundation
-
 
 /// A stack frame, used by irgen to lookup variables, function types and return pointers (via function)
 class Scope {

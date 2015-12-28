@@ -92,13 +92,13 @@ struct Parser {
     init(tokens: [(Token, SourceLoc)]) {
         self.tokensWithPos = tokens
     }
+}
 
-    
-    
-    //-------------------------------------------------------------------------------------------------------------------------
-    //  MARK:                                              Literals
-    //-------------------------------------------------------------------------------------------------------------------------
-    
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                              Literals
+//-------------------------------------------------------------------------------------------------------------------------
+
+extension Parser {
     
     private mutating func parseIntExpression(token: Int) -> IntegerLiteral {
         getNextToken()
@@ -117,14 +117,15 @@ struct Parser {
         return BooleanLiteral(val: token)
     }
     
-    
-    
-    
-    
-    //-------------------------------------------------------------------------------------------------------------------------
-    //  MARK:                                                   Tuple
-    //-------------------------------------------------------------------------------------------------------------------------
-    
+}
+
+
+
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                                   Tuple
+//-------------------------------------------------------------------------------------------------------------------------
+
+extension Parser {
     ///parses expression like Int String, of type (_identifier, _identifier)
     private mutating func parseTypeTupleExpression() throws -> TupleExpression {
         
@@ -133,9 +134,11 @@ struct Parser {
             elements.append(ValueType(name: id))    // param
             getNextToken()
         }
+        // TODO: Handle void?
+        
         return TupleExpression(elements: elements)
     }
-
+    
     private mutating func parseTupleExpression() throws -> TupleExpression {
         
         var elements = [Expression]()
@@ -148,26 +151,27 @@ struct Parser {
                 return TupleExpression(elements: elements)
             }
             
-//            switch currentToken {
-//            case .Comma:
-//                getNextToken()  // eat ','
-//                
-//            case .CloseParen:
-//                getNextToken()
-//                return TupleExpression(elements: elements)
-//                
-//            default:
-//                throw ParseError.ExpectedParen(currentPos)
-//            }
+            //            switch currentToken {
+            //            case .Comma:
+            //                getNextToken()  // eat ','
+            //
+            //            case .CloseParen:
+            //                getNextToken()
+            //                return TupleExpression(elements: elements)
+            //
+            //            default:
+            //                throw ParseError.ExpectedParen(currentPos)
+            //            }
         }
     }
     
-    
-    
-    
-    //-------------------------------------------------------------------------------------------------------------------------
-    //  MARK:                                      Identifier and operators
-    //-------------------------------------------------------------------------------------------------------------------------
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                      Identifier and operators
+//-------------------------------------------------------------------------------------------------------------------------
+extension Parser {
     
     private mutating func parseTextExpression() throws -> Variable<AnyExpression> {
         guard case .Identifier(let i) = currentToken else { throw ParseError.NoIdentifier(currentPos) }
@@ -187,7 +191,7 @@ struct Parser {
             }
             
             return FunctionCallExpression(name: token, args: try parseTupleExpression())
-
+            
         case .SqbrOpen?: // subscript
             getNextToken(); getNextToken() // eat 'identifier['
             
@@ -253,7 +257,7 @@ struct Parser {
             throw ParseError.NoIdentifier(currentPos)
         }
     }
-
+    
     
     private mutating func parseParenExpression() throws -> Expression {
         
@@ -282,16 +286,16 @@ struct Parser {
             
             // Get next operand
             getNextToken()
-
+            
             // Error handling
             let rhs = try parsePrimary()
-
+            
             // Get next operator
             guard case .InfixOperator(let nextOp) = currentToken else { return BinaryExpression(op: op, lhs: lhs, rhs: rhs) }
             guard let nextTokenPrecedence = precedences[nextOp] else { throw ParseError.NoOperator(currentPos) }
-
+            
             let newRhs = try parseOperationRHS(tokenPrecedence, lhs: rhs)
-
+            
             if tokenPrecedence < nextTokenPrecedence {
                 return try parseOperationRHS(nextTokenPrecedence, lhs: BinaryExpression(op: op, lhs: lhs, rhs: newRhs))
             }
@@ -305,7 +309,7 @@ struct Parser {
             return try parseOperationRHS(precedence, lhs: newLHS)
             
         case .PrefixOperator(let op):
-
+            
             getNextToken()
             let newLHS = PrefixExpression(op: op, expr: lhs)
             return try parseOperationRHS(precedence, lhs: newLHS)
@@ -315,12 +319,15 @@ struct Parser {
         }
     }
     
-    
-    
-    //-------------------------------------------------------------------------------------------------------------------------
-    //  MARK:                                              Control flow
-    //-------------------------------------------------------------------------------------------------------------------------
-    
+}
+
+
+
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                              Control flow
+//-------------------------------------------------------------------------------------------------------------------------
+
+extension Parser {
     
     private mutating func parseIfExpression() throws -> Expression {
         
@@ -351,10 +358,10 @@ struct Parser {
                 
             } else { condition = nil }
             
-//            if usesBraces {
-                getNextToken()
-//            }
-
+            //            if usesBraces {
+            getNextToken()
+            //            }
+            
             let block = try parseBlockExpression()
             
             blocks.append((condition, block))
@@ -386,37 +393,38 @@ struct Parser {
         
         return WhileLoopExpression(iterator: iterator, block: block)
     }
-
+    
     
     private mutating func parseForInIterator() throws -> RangeIteratorExpression {
         
         guard
             let o = try parseOperatorExpression() as? BinaryExpression//,
-//            let lhs = o.lhs as? IntegerType,
-//            let rhs = o.rhs as? IntegerType
+            //            let lhs = o.lhs as? IntegerType,
+            //            let rhs = o.rhs as? IntegerType
             else { throw ParseError.NotIterator(currentPos) }
         
         return RangeIteratorExpression(s: o.lhs, e: o.rhs)
     }
     
     private mutating func parseWhileIterator() throws -> WhileIteratorExpression {
-
+        
         let cond = try parseOperatorExpression()
         
         return WhileIteratorExpression(condition: cond)
     }
-    
-    
-    
-    //-------------------------------------------------------------------------------------------------------------------------
-    //  MARK:                                              Variables
-    //-------------------------------------------------------------------------------------------------------------------------
-    
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                              Variables
+//-------------------------------------------------------------------------------------------------------------------------
+
+extension Parser {
     
     private mutating func parseVariableAssignmentMutable(mutable: Bool) throws -> AssignmentExpression {
         
         guard case let .Identifier(id) = getNextToken() else { throw ParseError.NoIdentifier(currentPos) }
-
+        
         var explicitType: String?
         if case .Colon = getNextToken(), case let .Identifier(t) = getNextToken() {
             explicitType = t
@@ -442,16 +450,18 @@ struct Parser {
         
         return AssignmentExpression(name: id, type: type, isMutable: mutable, value: value)
     }
-    
-    
-    
-    //-------------------------------------------------------------------------------------------------------------------------
-    //  MARK:                                              Function
-    //-------------------------------------------------------------------------------------------------------------------------
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                              Function
+//-------------------------------------------------------------------------------------------------------------------------
+
+extension Parser {
     
     private mutating func parseFunctionType() throws -> FunctionType {
         
-//        getNextToken() 
+//        getNextToken()
         let params = try parseTypeTupleExpression()
         
         guard case .Returns = currentToken else {
@@ -471,7 +481,7 @@ struct Parser {
             throw ParseError.NoReturnType(currentPos)
         }
     }
-
+    
     
     private mutating func parseFunctionDeclaration() throws -> FunctionPrototypeExpression {
         
@@ -515,7 +525,7 @@ struct Parser {
     
     private mutating func parseBraceExpressions() throws -> BlockExpression {
         getNextToken() // eat '{'
-
+        
         var expressions = [Expression]()
         
         while true {
@@ -555,11 +565,13 @@ struct Parser {
         
     }
     
-    
-    //-------------------------------------------------------------------------------------------------------------------------
-    //  MARK:                                              Array
-    //-------------------------------------------------------------------------------------------------------------------------
+}
 
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                              Array
+//-------------------------------------------------------------------------------------------------------------------------
+
+extension Parser {
     
     private mutating func parseArrayExpression() throws -> Expression {
         
@@ -583,13 +595,14 @@ struct Parser {
         }
         
     }
-    
-    
-    
-    //-------------------------------------------------------------------------------------------------------------------------
-    //  MARK:                                              Other
-    //-------------------------------------------------------------------------------------------------------------------------
+}
 
+
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                              Other
+//-------------------------------------------------------------------------------------------------------------------------
+
+extension Parser {
     
     private mutating func parseTypeExpression(byRef byRef: Bool) throws -> StructExpression {
         getNextToken() // eat 'type'
@@ -624,34 +637,36 @@ struct Parser {
         return StructExpression(name: name, properties: properties, methods: methods)
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    //-------------------------------------------------------------------------------------------------------------------------
-    //  MARK:                                              Other
-    //-------------------------------------------------------------------------------------------------------------------------
+}
+
+
+
+
+
+
+
+
+
+
+
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                              Other
+//-------------------------------------------------------------------------------------------------------------------------
+extension Parser {
     
     private mutating func parseCommentExpression(str: String) throws -> Expression {
         getNextToken() //eat comment
         return CommentExpression(str: str)
     }
     
-    
-    
-    
-    //-------------------------------------------------------------------------------------------------------------------------
-    //  MARK:                                           AST Generator
-    //-------------------------------------------------------------------------------------------------------------------------
+}
 
+
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                           AST Generator
+//-------------------------------------------------------------------------------------------------------------------------
+
+extension Parser {
     
     /// parses any token, starts new scopes
     ///
@@ -659,33 +674,33 @@ struct Parser {
     private mutating func parseExpression(token: Token) throws -> Expression? {
         
         switch token {
-        case     .Let:                  return try parseVariableAssignmentMutable(false)
-        case     .Var:                  return try parseVariableAssignmentMutable(true)
-        case     .Func:                 return try parseFunctionDeclaration()
-        case     .Return:               return try parseReturnExpression()
-        case     .OpenParen:            return try parseParenExpression()
-        case     .OpenBrace:            return try parseBraceExpressions()
-        case let .Identifier(str):      return try parseIdentifierExpression(str)
-        case     .InfixOperator:        return try parseOperatorExpression()
-        case let .Comment(str):         return try parseCommentExpression(str)
-        case     .If:                   return try parseIfExpression()
-        case     .For:                  return try parseForInLoopExpression()
-        case     .Do:                   return try parseBracelessDoExpression()
-        case     .While:                return try parseWhileLoopExpression()
-        case     .SqbrOpen:             return try parseArrayExpression()
-        case     .Type:                 return try parseTypeExpression(byRef: false)
-        case     .Reference:            getNextToken(); return try parseTypeExpression(byRef: true)
-        case let .Integer(i):           return parseIntExpression(i)
-        case let .FloatingPoint(x):     return parseFloatingPointExpression(x)
-        case let .Str(str):             return parseStringExpression(str)
-        case     .Void:                 index++; return Void()
-        case     .EOF, .CloseBrace:     index++; return nil
-        default:                        throw ParseError.NoToken(token, currentPos)
+        case .Let:                  return try parseVariableAssignmentMutable(false)
+        case .Var:                  return try parseVariableAssignmentMutable(true)
+        case .Func:                 return try parseFunctionDeclaration()
+        case .Return:               return try parseReturnExpression()
+        case .OpenParen:            return try parseParenExpression()
+        case .OpenBrace:            return try parseBraceExpressions()
+        case .Identifier(let str):  return try parseIdentifierExpression(str)
+        case .InfixOperator:        return try parseOperatorExpression()
+        case .Comment(let str):     return try parseCommentExpression(str)
+        case .If:                   return try parseIfExpression()
+        case .For:                  return try parseForInLoopExpression()
+        case .Do:                   return try parseBracelessDoExpression()
+        case .While:                return try parseWhileLoopExpression()
+        case .SqbrOpen:             return try parseArrayExpression()
+        case .Type:                 return try parseTypeExpression(byRef: false)
+        case .Reference:            getNextToken(); return try parseTypeExpression(byRef: true)
+        case .Integer(let i):       return parseIntExpression(i)
+        case .FloatingPoint(let x): return parseFloatingPointExpression(x)
+        case .Str(let str):         return parseStringExpression(str)
+        case .Void:                 index++; return Void()
+        case .EOF, .CloseBrace:     index++; return nil
+        default:                    throw ParseError.NoToken(token, currentPos)
         }
     }
     
     // TODO: if statements have return type
-    // TODO: Implicit return if a block only has 1 expression    
+    // TODO: Implicit return if a block only has 1 expression
     
     private func tok() -> Token? { return index < tokens.count ? tokens[index] : nil }
     

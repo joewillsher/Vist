@@ -6,7 +6,6 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-import Foundation
 
 protocol Expression : Printable, TypeProvider, Typed {}
 
@@ -196,7 +195,7 @@ class AssignmentExpression : Expression, StructMember {
     let name: String
     let aType: String?
     let isMutable: Bool
-    let value: Expression
+    var value: Expression
     
     init(name: String, type: String?, isMutable: Bool, value: Expression) {
         self.name = name
@@ -257,7 +256,7 @@ class TupleExpression : Expression {
     
     static func void() -> TupleExpression{ return TupleExpression(elements: [])}
     
-    func mapAs<T>(t: T.Type) -> [T] {
+    func mapAs<T>(_: T.Type) -> [T] {
         return elements.flatMap { $0 as? T }
     }
     
@@ -296,7 +295,9 @@ class FunctionType : Expression {
     
     func desc() -> String {
         let params = args.elements.isEmpty ? "()" : "(\(args.elements[0])" + args.elements.dropFirst().reduce("") { "\($0), \($1)" } + ")"
-        let ret = returns.elements.isEmpty ? "Void" : (returns.elements.count > 1 ? "(" : "") + "\(returns.elements[0])" + returns.elements.dropFirst().reduce("") { "\($0), \($1)" }  + (returns.elements.count > 1 ? ")" : "")
+        let ret = returns.elements.isEmpty ?
+            "Void" : (returns.elements.count > 1 ?
+                "(" : "") + "\(returns.elements[0])" + returns.elements.dropFirst().reduce("") { "\($0), \($1)" }  + (returns.elements.count > 1 ? ")" : "")
         return params + " -> " + ret
     }
     

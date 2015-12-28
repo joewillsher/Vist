@@ -6,7 +6,6 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-import Foundation
 
 enum IRError : ErrorType {
     case NotIRGenerator, NotBBGenerator, NoOperator
@@ -340,7 +339,6 @@ extension FunctionCallExpression : IRGenerator {
 }
 
 private extension FunctionType {
-    
     
     func params() throws -> [LLVMTypeRef] {
         let res = args.mapAs(ValueType).flatMap { typeDict[$0.name] }

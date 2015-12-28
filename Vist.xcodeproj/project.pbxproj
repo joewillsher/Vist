@@ -25,7 +25,6 @@
 		D49410831C124B4E0029BF3D /* Print.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49410821C124B4E0029BF3D /* Print.swift */; };
 		D4AD08261C2DEB1200BE7D86 /* ArrayVariable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4AD08251C2DEB1200BE7D86 /* ArrayVariable.swift */; };
 		D4AD08281C2DEB2D00BE7D86 /* StructVariable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4AD08271C2DEB2D00BE7D86 /* StructVariable.swift */; };
-		D4B1FA031C300A9D001E7BCC /* ASTNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4B1FA021C300A9D001E7BCC /* ASTNode.swift */; };
 		D4B1FA061C3027E1001E7BCC /* SemaTypeCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4B1FA051C3027E1001E7BCC /* SemaTypeCheck.swift */; };
 		D4B1FA0A1C304027001E7BCC /* SemaScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4B1FA091C304027001E7BCC /* SemaScope.swift */; };
 		D4B1FA0C1C304049001E7BCC /* TypeLowering.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4B1FA0B1C304049001E7BCC /* TypeLowering.swift */; };
@@ -78,7 +77,6 @@
 		D4AD08251C2DEB1200BE7D86 /* ArrayVariable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArrayVariable.swift; sourceTree = "<group>"; };
 		D4AD08271C2DEB2D00BE7D86 /* StructVariable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StructVariable.swift; sourceTree = "<group>"; };
 		D4B1FA011C2E1F58001E7BCC /* TODO.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = TODO.md; sourceTree = "<group>"; };
-		D4B1FA021C300A9D001E7BCC /* ASTNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASTNode.swift; sourceTree = "<group>"; };
 		D4B1FA051C3027E1001E7BCC /* SemaTypeCheck.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SemaTypeCheck.swift; sourceTree = "<group>"; };
 		D4B1FA091C304027001E7BCC /* SemaScope.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SemaScope.swift; sourceTree = "<group>"; };
 		D4B1FA0B1C304049001E7BCC /* TypeLowering.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TypeLowering.swift; sourceTree = "<group>"; };
@@ -108,10 +106,23 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		D44DB8881C316DA500EBCD9F /* Runtime */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Runtime;
+			sourceTree = "<group>";
+		};
+		D44DB8891C316DB400EBCD9F /* StdLib */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = StdLib;
+			sourceTree = "<group>";
+		};
 		D46DA5F31C297AB9006AF1BE /* AST */ = {
 			isa = PBXGroup;
 			children = (
-				D4B1FA021C300A9D001E7BCC /* ASTNode.swift */,
 				D46AD8881B8246C300C95574 /* Expression.swift */,
 				D46AD8861B8245A000C95574 /* Parser.swift */,
 			);
@@ -181,6 +192,8 @@
 				D46DA5F31C297AB9006AF1BE /* AST */,
 				D4B1FA041C300AA8001E7BCC /* Sema */,
 				D46DA5F51C297ADA006AF1BE /* IR */,
+				D44DB8881C316DA500EBCD9F /* Runtime */,
+				D44DB8891C316DB400EBCD9F /* StdLib */,
 				D46DA5F61C297AED006AF1BE /* Helper */,
 			);
 			path = Vist;
@@ -324,7 +337,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D4B1FA0C1C304049001E7BCC /* TypeLowering.swift in Sources */,
-				D4B1FA031C300A9D001E7BCC /* ASTNode.swift in Sources */,
 				D46AD8891B8246C300C95574 /* Expression.swift in Sources */,
 				D4B1FA0A1C304027001E7BCC /* SemaScope.swift in Sources */,
 				D4DB9D611C1DED5C00503153 /* Link.swift in Sources */,

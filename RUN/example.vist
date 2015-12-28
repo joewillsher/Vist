@@ -1,5 +1,16 @@
 
 
+type Meme {
+    let a: Int = 3
+    let b: Int = 4
+
+    func foo: Int -> Int
+}
+
+
+
+
+/*
 func foo: Int Int -> Int = |a b| do
     return a + b
 
@@ -17,8 +28,9 @@ bar(y)
 
 var tot = 0
 
-for i in 0 ... 100000000 do
+for i in 0 ... 10000 do
     if i % 3 == 0 || i % 5 == 0 do
         tot = tot + i
 
 print(tot)
+*/

@@ -6,8 +6,6 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-import Foundation
-
 
 protocol RuntimeVariable {
     var type: LLVMTypeRef { get }

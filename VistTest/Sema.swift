@@ -6,16 +6,16 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-import Foundation
-
 // TODO: Semantic analyser
 
 // Should walk the ast and:
 // - ✅ ensure type correctness for functions
 // - ✅ ensure variables and functions are availiable
-// - generate the interface for a file to allow it to be linked with other files
+// - ✅ generate the interface for a file to allow it to be linked with other files
 // - ✅ add metadata about return types, array member types
 // - specialise types to generic versions
+// - parse fn decls first, see TODOs in SemaTypeCheck.swift line 68
+
 
 enum SemaError : ErrorType {
     case InvalidType(LLVMType)
@@ -25,6 +25,7 @@ enum SemaError : ErrorType {
     case HeterogenousArray(String), EmptyArray
     case NotVariableType, CannotSubscriptNonArrayVariable
     case NonBooleanCondition, RangeWithInconsistentTypes, DifferentTypeForMutation
+    case StructPropertyNotTyped, StructMethodNotTyped
 }
 
 func sema(inout ast: AST) throws {
@@ -36,7 +37,7 @@ func sema(inout ast: AST) throws {
     let ptd = LLVMFnType(params: [LLVMType.Float(size: 64)], returns: LLVMType.Void)
     fnTable["printd"] = ptd
     
-    try variableTypeSema(forScope: &ast, v: nil, f: fnTable)
+    try variableTypeSema(forScope: &ast, vars: nil, functions: fnTable)
     
 }
 
