@@ -36,11 +36,7 @@ func sema(inout ast: AST) throws {
     let ptd = LLVMFnType(params: [LLVMType.Float(size: 64)], returns: LLVMType.Void)
     fnTable["printd"] = ptd
     
-    
-    
-    
     try variableTypeSema(forScope: &ast, v: nil, f: fnTable)
-    
     
 }
 

@@ -77,7 +77,6 @@ public func compileDocuments(fileNames: [String],
         
         try sema(&ast)
         print(ast.description())
-
         
         let file = fileNames.first!.stringByReplacingOccurrencesOfString(".vist", withString: "")
 
