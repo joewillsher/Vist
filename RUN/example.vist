@@ -7,6 +7,15 @@ type Meme {
     func foo: Int -> Int
 }
 
+let a = [0,1,2]
+
+print(a[1])
+
+
+func foo: Int Int -> Int = |a b| do
+    return a + b
+
+print(foo(1 5))
 
 
 

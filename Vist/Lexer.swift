@@ -292,13 +292,13 @@ extension Lexer {
             
             switch (context, currentChar) {
                 
-                
             case (.Comment(let multiLine)?, let n): // comment end
                 
                 if (multiLine && (n == "/" && charPtrSafe(-1) == "*")) || (!multiLine && (n == "\n" || n == "\r")) {
                     
                     try resetContext()
                 }
+                addChar()
                 try consumeChar()
                 continue
                 

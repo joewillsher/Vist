@@ -150,18 +150,6 @@ extension Parser {
                 getNextToken()
                 return TupleExpression(elements: elements)
             }
-            
-            //            switch currentToken {
-            //            case .Comma:
-            //                getNextToken()  // eat ','
-            //
-            //            case .CloseParen:
-            //                getNextToken()
-            //                return TupleExpression(elements: elements)
-            //
-            //            default:
-            //                throw ParseError.ExpectedParen(currentPos)
-            //            }
         }
     }
     
@@ -397,11 +385,7 @@ extension Parser {
     
     private mutating func parseForInIterator() throws -> RangeIteratorExpression {
         
-        guard
-            let o = try parseOperatorExpression() as? BinaryExpression//,
-            //            let lhs = o.lhs as? IntegerType,
-            //            let rhs = o.rhs as? IntegerType
-            else { throw ParseError.NotIterator(currentPos) }
+        guard let o = try parseOperatorExpression() as? BinaryExpression else { throw ParseError.NotIterator(currentPos) }
         
         return RangeIteratorExpression(s: o.lhs, e: o.rhs)
     }
@@ -461,7 +445,6 @@ extension Parser {
     
     private mutating func parseFunctionType() throws -> FunctionType {
         
-//        getNextToken()
         let params = try parseTypeTupleExpression()
         
         guard case .Returns = currentToken else {

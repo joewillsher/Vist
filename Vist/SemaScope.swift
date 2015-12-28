@@ -6,24 +6,37 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-class SemaScope<VarType> {
+class SemaScope {
     
-    var variables: [String: VarType]
-    let parent: SemaScope<VarType>?
+    var variables: [String: LLVMType]
+    var functions: [String: LLVMFnType]
+    var returnType: LLVMType?
+    let parent: SemaScope?
     
-    subscript (name: String) -> VarType? {
+    subscript (variable variable: String) -> LLVMType? {
         get {
-            if let v = variables[name] { return v }
-            return parent?[name]
+            if let v = variables[variable] { return v }
+            return parent?[variable: variable]
         }
         set {
-            variables[name] = newValue
+            variables[variable] = newValue
         }
     }
-        
-    init(parent: SemaScope?) {
+    subscript (function function: String) -> LLVMFnType? {
+        get {
+            if let v = functions[function] { return v }
+            return parent?[function: function]
+        }
+        set {
+            functions[function] = newValue
+        }
+    }
+    
+    init(parent: SemaScope?, returnType: LLVMType? = .Void) {
         self.parent = parent
+        self.returnType = returnType
         self.variables = [:]
+        self.functions = [:]
     }
 }
 

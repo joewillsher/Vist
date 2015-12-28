@@ -23,21 +23,24 @@ enum SemaError : ErrorType {
     case NoVariable(String), NoFunction(String)
     case WrongApplication, NotTypeProvider
     case HeterogenousArray(String), EmptyArray
-    case NotVariableType, CannotSubscriptNonArrayVariable
+    case NotVariableType, CannotSubscriptNonArrayVariable, NonIntegerSubscript
     case NonBooleanCondition, RangeWithInconsistentTypes, DifferentTypeForMutation
     case StructPropertyNotTyped, StructMethodNotTyped
+    case WrongFunctionReturnType(applied: LLVMType, expected: LLVMType), WrongFunctionApplication(applied: LLVMType, expected: LLVMType, paramNum: Int)
 }
 
 func sema(inout ast: AST) throws {
-
-    // add helper functions to ast tables
-    let fnTable = SemaScope<LLVMFnType>(parent: nil)
-    let pt = LLVMFnType(params: [LLVMType.Int(size: 64)], returns: LLVMType.Void)
-    fnTable["print"] = pt
-    let ptd = LLVMFnType(params: [LLVMType.Float(size: 64)], returns: LLVMType.Void)
-    fnTable["printd"] = ptd
     
-    try variableTypeSema(forScope: &ast, vars: nil, functions: fnTable)
+    // add helper functions to ast tables
+    let globalScope = SemaScope(parent: nil)
+    let pt = LLVMFnType(params: [LLVMType.Int(size: 64)], returns: LLVMType.Void)
+    globalScope[function: "print"] = pt
+    let ptd = LLVMFnType(params: [LLVMType.Float(size: 64)], returns: LLVMType.Void)
+    globalScope[function: "printd"] = ptd
+    
+    ast.expressions = ast.expressions.filter { !($0 is CommentExpression) }
+    
+    try variableTypeSema(forScopeExpression: &ast, scope: globalScope)
     
 }
 
