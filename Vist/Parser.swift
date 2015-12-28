@@ -13,7 +13,7 @@ enum ParseError: ErrorType {
     case InvalidOperator(Pos), InvalidCall(String, Pos) // cant call (*2) or (.print())
     case NoIdentifier(Pos)
     case ExpectedColon(Pos), NoReturnType(Pos)
-    case ExpectedAssignment(Pos)
+    case ExpectedAssignment(Pos), ExpectedBar(Pos)
     case NoExpression(Pos)
     case NoOperator(Pos)
     case MismatchedType((String, Pos), (String, Pos))
@@ -125,30 +125,17 @@ struct Parser {
     //  MARK:                                                   Tuple
     //-------------------------------------------------------------------------------------------------------------------------
     
-    ///parses expression like (Int, String), of type (_identifier, _identifier)
+    ///parses expression like Int String, of type (_identifier, _identifier)
     private mutating func parseTypeTupleExpression() throws -> TupleExpression {
         
         var elements = [Expression]()
-        while true {
-            
-            switch currentToken {
-            case let .Identifier(id):
-                elements.append(ValueType(name: id))    // param
-                getNextToken()
-
-            case .Comma:
-                getNextToken()  // eat ','
-                
-            case .CloseParen:
-                getNextToken()
-                return TupleExpression(elements: elements)
-                
-            default:
-                throw ParseError.ExpectedParen(currentPos)
-            }
+        while case let .Identifier(id) = currentToken {
+            elements.append(ValueType(name: id))    // param
+            getNextToken()
         }
+        return TupleExpression(elements: elements)
     }
-    
+
     private mutating func parseTupleExpression() throws -> TupleExpression {
         
         var elements = [Expression]()
@@ -156,17 +143,22 @@ struct Parser {
             
             elements.append(try parseOperatorExpression())
             
-            switch currentToken {
-            case .Comma:
-                getNextToken()  // eat ','
-                
-            case .CloseParen:
+            if case .CloseParen = currentToken {
                 getNextToken()
                 return TupleExpression(elements: elements)
-                
-            default:
-                throw ParseError.ExpectedParen(currentPos)
             }
+            
+//            switch currentToken {
+//            case .Comma:
+//                getNextToken()  // eat ','
+//                
+//            case .CloseParen:
+//                getNextToken()
+//                return TupleExpression(elements: elements)
+//                
+//            default:
+//                throw ParseError.ExpectedParen(currentPos)
+//            }
         }
     }
     
@@ -182,6 +174,7 @@ struct Parser {
         return Variable(name: i)
     }
     
+    /// Handles parsing of a text token
     private mutating func parseIdentifierExpression(token: String) throws -> Expression {
         
         switch inspectNextToken() {
@@ -421,10 +414,8 @@ struct Parser {
     
     
     private mutating func parseVariableAssignmentMutable(mutable: Bool) throws -> AssignmentExpression {
-
-        guard case let .Identifier(id) = getNextToken() else {
-            throw ParseError.NoIdentifier(currentPos)
-        }
+        
+        guard case let .Identifier(id) = getNextToken() else { throw ParseError.NoIdentifier(currentPos) }
 
         var explicitType: String?
         if case .Colon = getNextToken(), case let .Identifier(t) = getNextToken() {
@@ -460,7 +451,7 @@ struct Parser {
     
     private mutating func parseFunctionType() throws -> FunctionType {
         
-        getNextToken()
+//        getNextToken() 
         let params = try parseTypeTupleExpression()
         
         guard case .Returns = currentToken else {
@@ -505,21 +496,12 @@ struct Parser {
             getNextToken() // eat '|'
             
             var nms: [String] = []
-            while true {
-                if case let .Identifier(name) = currentToken {
-                    nms.append(name)
-                }
-                
-                if case .Comma = getNextToken() {   // more params
-                    getNextToken()  // eat ','
-                    continue        // move to next arg
-                }
-                if case .Bar = currentToken {       // end of param list
-                    getNextToken()  // eat '|'
-                    break
-                }
-                throw ParseError.ExpectedComma(currentPos)  // else throw error
+            while case let .Identifier(name) = currentToken {
+                nms.append(name)
+                getNextToken()
             }
+            guard case .Bar = currentToken else { throw ParseError.ExpectedBar(currentPos) }
+            guard getNextToken().isControlToken() else { throw ParseError.NotBlock(currentPos) }
             names = nms.map{ ValueType.init(name: $0) }
             
         } else {

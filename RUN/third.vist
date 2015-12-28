@@ -1,4 +1,6 @@
 
 
-func foo: (Int, Int) -> Int = |a, b| do
+func foo: Int Int -> Int = |a b| do
     return a + b
+
+func bar: Int = do print($0)

@@ -1,6 +1,7 @@
 
 let y = fact(10)
-print(y)
+bar(y)
+
 
 var tot = 0
 

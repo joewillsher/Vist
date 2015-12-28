@@ -17,12 +17,14 @@ brew install homebrew/versions/llvm-gcc28
 ##Examples
 
 ```swift
-func foo: (Int) -> Int = do return $0 + 1
-func bar: (Int, Int) -> Int = |a, b| { return a + b }
+func foo: Int -> Int = do
+    return $0 + 1
 
-func fact: (Int) -> Int = |a| do
+func bar: Int = do print($0)
+
+func fact: Int -> Int = |a| do
     if a <= 1 do
-        return 1
+        return foo(0 1)
     else do
         return a * fact(a - 1)
 
