@@ -54,8 +54,8 @@ public func compileDocuments(fileNames: [String],
             // parse tokens & generate AST
             var parser = Parser(tokens: tokens)
             var ast = try parser.parse()
-            if dumpAST { print(ast.description()); return }
-            if verbose { print(ast.description()) }
+            if dumpAST { print(ast); return }
+            if verbose { print(ast) }
             
             
             if let h = head {
@@ -76,7 +76,7 @@ public func compileDocuments(fileNames: [String],
         var ast = main
         
         try sema(&ast)
-        print(ast.description())
+        print(ast)
         
         let file = fileNames.first!.stringByReplacingOccurrencesOfString(".vist", withString: "")
 

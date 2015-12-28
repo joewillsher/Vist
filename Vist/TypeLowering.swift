@@ -6,7 +6,7 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-protocol LLVMTyped {
+protocol LLVMTyped : Printable {
     func ir() throws -> LLVMTypeRef
 }
 
@@ -69,6 +69,36 @@ struct LLVMFnType : LLVMTyped {
             LLVMBool(false))
     }
 }
+
+
+extension LLVMType : CustomStringConvertible {
+    
+    var description: String {
+        switch self {
+        case .Null:                     return "Null"
+        case .Void:                     return "Void"
+        case .Int(let s):               return "Int\(s)"
+        case Bool:                      return "Bool"
+        case .Array(let el, let size):  return "[\(size) x \(el)"
+        case .Pointer(let to):          return "\(to)*"
+        case .Float(let s):
+            switch s {
+            case 16:                    return "Half"
+            case 32:                    return "Float"
+            case 64:                    return "Double"
+            case 128:                   return "FP128"
+            default:                    return ""
+            }
+        case .Struct(let members, _):
+            let arr = members
+                .map { $0.description }
+                .joinWithSeparator(", ")
+                                        return "Struct(\(arr))"
+        }
+    }
+}
+
+
 
 
 

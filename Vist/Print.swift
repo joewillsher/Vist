@@ -12,84 +12,96 @@ private func t(n:Int) -> String {
 }
 
 
-protocol Printable {
-    func description(n: Int) -> String
+public protocol Printable : CustomStringConvertible {
+    func _description(n: Int) -> String
     func printList() -> [(String?, Printable)]?
     func printVal() -> String?
     func printDirectly() -> String?
     func inline() -> Bool
 }
 
+extension AST {
+    
+    var description: String {
+        return _description(0)
+    }
+}
+
+extension Printable {
+    public var description: String {
+        return "\(self.dynamicType)"
+    }
+}
+
 extension Printable {
     
-    func description(n: Int = 0) -> String {
+    public func _description(n: Int = 0) -> String {
         
         if let v = printDirectly() { return v }
         if let v = printVal() { return "(\(self.dynamicType) \(v))" }
         
         let i = inline()
         let n0 = i ? "" : "\n", t1 = i ? " " : t(n+1), te = i ? "" : t(n)
-    
-        return "(\(self.dynamicType)" + (printList() ?? []).reduce("") {
+        let ty = (self as? Typed)?.type
+        let typeItem = ty != nil ? [("type", ty!)] : [] as [(String?, Printable)]
+        
+        return "(\(self.dynamicType)" + ((printList() ?? []) + typeItem).reduce("") {
             
             let a: String
-            if let s = $1.0 {
-                a = s + ":"
-            } else {
-                a = ""
-            }
+            if let s = $1.0 { a = "\(s):" }
+            else            { a = "" }
             
-            return "\($0)\(n0)\(t1)\(a)\($1.1.description(n+1))" } + "\(n0)\(te))"
+            return "\($0)\(n0)\(t1)\(a)\($1.1._description(n+1))" } + "\(n0)\(te))"
     }
     
-    /// implement to call description on children
-    func printList() -> [(String?, Printable)]? { return nil }
+    /// implement to call _description on children
+    public func printList() -> [(String?, Printable)]? { return nil }
     
     /// should represent this object
-    func printVal() -> String? { return nil }
+    public func printVal() -> String? { return nil }
     
     /// return true to run children inline
-    func inline() -> Bool { return false }
+    public func inline() -> Bool { return false }
     
-    /// Print the object, not a description of it
-    func printDirectly() -> String? { return nil }
+    /// Print the object, not a _description of it
+    public func printDirectly() -> String? { return nil }
 }
 
 
 extension String : Printable {
-    func printDirectly() -> String? {
+    public func printDirectly() -> String? {
         return "\"\(self)\""
     }   
 }
 extension Int : Printable {
-    func printDirectly() -> String? {
+    public func printDirectly() -> String? {
         return "\(self)"
     }
 }
 extension UInt32 : Printable {
-    func printDirectly() -> String? {
+    public func printDirectly() -> String? {
         return "\(self)"
     }
 }
 extension Float : Printable {
-    func printDirectly() -> String? {
+    public func printDirectly() -> String? {
         return "\(self)"
     }
 }
 extension Double : Printable {
-    func printDirectly() -> String? {
+    public func printDirectly() -> String? {
         return "\(self)"
     }
 }
 extension Bool : Printable {
-    func printDirectly() -> String? {
+    public func printDirectly() -> String? {
         return "\(self)"
     }
 }
 
 extension Array : Printable {
     
-    func printList() -> [(String?, Printable)]? {
+    public func printList() -> [(String?, Printable)]? {
         
         var list: [Printable] = []
         
@@ -105,7 +117,7 @@ extension Array : Printable {
 }
 
 extension Optional : Printable {
-    func printDirectly() -> String? {
+    public func printDirectly() -> String? {
         switch self {
         case .None: return "nil"
         case .Some(let a) where a is Printable: return (a as! Printable).printDirectly()
@@ -113,7 +125,7 @@ extension Optional : Printable {
         }
     }
     
-    func printVal() -> String? {
+    public func printVal() -> String? {
         switch self {
         case .None: return "nil"
         case .Some(let a) where a is Printable: return (a as! Printable).printVal()
@@ -121,7 +133,7 @@ extension Optional : Printable {
         }
     }
     
-    func printList() -> [(String?, Printable)]? {
+    public func printList() -> [(String?, Printable)]? {
         switch self {
         case .None: return nil
         case .Some(let a) where a is Printable: return (a as! Printable).printList()
@@ -132,26 +144,26 @@ extension Optional : Printable {
 
 extension ScopeExpression {
     func printList() -> [(String?, Printable)]? {
-        return expressions.map {(nil, $0 as Printable) }
+        return expressions.map { (nil, $0 as Printable) }
     }
 }
 
 extension AssignmentExpression {
     func printList() -> [(String?, Printable)]? {
-        return [("name", name), ("explicitType", aType), ("type",type), ("value", value)]
+        return [("name", name), ("explicitType", aType), ("value", value)]
     }
     
 }
 
 extension FunctionPrototypeExpression {
     func printList() -> [(String?, Printable)]? {
-        return [("name",name), ("type",type), ("impl",impl)]
+        return [("name",name), ("impl",impl), ("fnType", fnType)]
     }
 }
 
 extension FunctionType {
-    func printVal() -> String? {
-        return desc()
+    func printList() -> [(String?, Printable)]? {
+        return [("ty", desc()), ("type", type)]
     }
 }
 

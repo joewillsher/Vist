@@ -200,7 +200,7 @@ extension ArrayExpression : TypeProvider {
         }
         
         // make sure array is homogeneous
-        guard Set(try types.map { try $0.ir() }).count == 1 else { throw SemaError.HeterogenousArray(self.description()) }
+        guard Set(try types.map { try $0.ir() }).count == 1 else { throw SemaError.HeterogenousArray(description) }
         
         // get element type and assign to self
         guard let elementType = types.first else { throw SemaError.EmptyArray }
