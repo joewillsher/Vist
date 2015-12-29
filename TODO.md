@@ -28,3 +28,10 @@
     - Currying
     - Partial application of functions
 
+* Look into guard statements. Haskell:
+
+```haskell
+factorial n
+    | n < 2     = 1
+    | otherwise = n * factorial (n - 1)
+```

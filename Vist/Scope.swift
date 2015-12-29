@@ -8,18 +8,18 @@
 
 
 /// A stack frame, used by irgen to lookup variables, function types and return pointers (via function)
-class Scope {
+class StackFrame {
     
     private var runtimeVariables: [String: RuntimeVariable]
     private var functionTypes: [String: LLVMTypeRef]
     var block: LLVMBasicBlockRef, function: LLVMValueRef
-    var parentScope: Scope?
+    var parentStackFrame: StackFrame?
     
-    init(vars: [String: RuntimeVariable] = [:], functionTypes: [String: LLVMTypeRef] = [:], block: LLVMBasicBlockRef = nil, function: LLVMValueRef = nil, parentScope: Scope? = nil) {
+    init(vars: [String: RuntimeVariable] = [:], functionTypes: [String: LLVMTypeRef] = [:], block: LLVMBasicBlockRef = nil, function: LLVMValueRef = nil, parentStackFrame: StackFrame? = nil) {
         self.runtimeVariables = [:]
         self.functionTypes = [:]
         self.block = block
-        self.parentScope = parentScope
+        self.parentStackFrame = parentStackFrame
         self.function = function
         
         functionTypes.forEach(addFunctionType)
@@ -39,7 +39,7 @@ class Scope {
         
         if let v = runtimeVariables[name] where v.isValid() { return v }
         
-        let inParent = try parentScope?.variable(name)
+        let inParent = try parentStackFrame?.variable(name)
         if let p = inParent where p.isValid() { return p }
         
         throw IRError.NoVariable(name)
@@ -48,7 +48,7 @@ class Scope {
     func functionType(name: String) throws -> LLVMValueRef {
         if let v = functionTypes[name] { return v }
         
-        let inParent = try parentScope?.functionType(name)
+        let inParent = try parentStackFrame?.functionType(name)
         if let p = inParent where p != nil { return p }
         
         throw IRError.NoVariable(name)

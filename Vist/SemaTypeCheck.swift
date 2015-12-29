@@ -12,7 +12,7 @@ func variableTypeSema<ScopeType : ScopeExpression>(inout forScopeExpression scop
     
     let scope = s ?? SemaScope(parent: nil, returnType: nil) // global scope if no parent, no return in user code
     
-    for (i, exp) in scopeExp.expressions.enumerate() {
+    for (_, exp) in scopeExp.expressions.enumerate() {
         
         try exp.llvmType(scope)
         

@@ -1,45 +1,14 @@
 
 
-type Meme {
-    let a: Int = 3
-    let b: Int = 4
+func lt: Int Int -> Bool = do
+    return $0 < $1
 
-    func foo: Int -> Int
-}
+func or: Bool Bool -> Bool = do
+    return $0 || $1
 
-let a = [0,1,2]
-
-print(a[1])
-
-
-func foo: Int Int -> Int = |a b| do
-    return a + b
-
-print(foo(1 5))
-
-
-
-/*
-func foo: Int Int -> Int = |a b| do
-    return a + b
-
-func bar: Int = do print($0)
 
 func fact: Int -> Int = |a| do
     if a <= 1 do
-        return foo(0 1)
+        return 1
     else do
         return a * fact(a - 1)
-
-let y = fact(10)
-bar(y)
-
-
-var tot = 0
-
-for i in 0 ... 10000 do
-    if i % 3 == 0 || i % 5 == 0 do
-        tot = tot + i
-
-print(tot)
-*/

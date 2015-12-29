@@ -1,7 +1,7 @@
 #README #
 
 ##About
-A simple programming language using LLVM written in Swift.
+A programming language using LLVM, inspired by Swift, Haskell, and Rust.
 
 
 ##Installing

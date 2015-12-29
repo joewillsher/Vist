@@ -19,32 +19,47 @@ define void @printd(double %d) #0 {
   ret void
 }
 
-; Function Attrs: ssp
-define i64 @main() #2 {
+define i64 @main() {
 entry:
-  %arr1 = alloca [3 x i64], align 8
-  %arr1.sub = getelementptr inbounds [3 x i64]* %arr1, i64 0, i64 0
-  store i64 0, i64* %arr1.sub, align 8
-  %el1 = getelementptr [3 x i64]* %arr1, i64 0, i64 1
-  store i64 1, i64* %el1, align 8
-  %el2 = getelementptr [3 x i64]* %arr1, i64 0, i64 2
-  store i64 2, i64* %el2, align 8
-  %ptr = getelementptr [3 x i64]* %arr1, i64 0, i64 1
-  %element = load i64* %ptr, align 8
-  %0 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str, i64 0, i64 0), i64 %element)
-  %1 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str, i64 0, i64 0), i64 6)
   ret i64 0
 }
 
-define i64 @foo(i64 %a, i64 %b) {
+define i1 @lt(i64 %"$0", i64 %"$1") {
 entry:
-  %add_res = add i64 %a, %b
-  ret i64 %add_res
+  %cmp_lt_res = icmp slt i64 %"$0", %"$1"
+  ret i1 %cmp_lt_res
+}
+
+define i1 @or(i1 %"$0", i1 %"$1") {
+entry:
+  %or_res = or i1 %"$0", %"$1"
+  ret i1 %or_res
+}
+
+define i64 @fact(i64 %a) {
+entry:
+  br label %tailrecurse
+
+tailrecurse:                                      ; preds = %else1, %entry
+  %accumulator.tr = phi i64 [ 1, %entry ], [ %mul_res, %else1 ]
+  %a.tr = phi i64 [ %a, %entry ], [ %sub_res, %else1 ]
+  %cmp_lte_res = icmp slt i64 %a.tr, 2
+  br i1 %cmp_lte_res, label %then0, label %cont0
+
+cont0:                                            ; preds = %tailrecurse
+  br label %else1
+
+then0:                                            ; preds = %tailrecurse
+  ret i64 %accumulator.tr
+
+else1:                                            ; preds = %cont0
+  %sub_res = add i64 %a.tr, -1
+  %mul_res = mul i64 %accumulator.tr, %a.tr
+  br label %tailrecurse
 }
 
 attributes #0 = { ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #2 = { ssp }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}

@@ -21,8 +21,20 @@ extension TypeProvider {
     }
 }
 
-func ==<T : LLVMTyped>(lhs: T, rhs: T) -> Bool {
+@warn_unused_result
+func ==
+    <T : LLVMTyped>
+    (lhs: T, rhs: T)
+    -> Bool {
     let l = (try? lhs.ir()), r = (try? rhs.ir())
+    if let l = l, let r = r { return l == r } else { return false }
+}
+@warn_unused_result
+func ==
+    <T : LLVMTyped>
+    (lhs: LLVMTyped?, rhs: T)
+    -> Bool {
+    let l = (try? lhs?.ir()), r = (try? rhs.ir())
     if let l = l, let r = r { return l == r } else { return false }
 }
 
@@ -32,9 +44,9 @@ extension LLVMFnType : Equatable {}
 
 
 
-
-
-
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                                 Literals
+//-------------------------------------------------------------------------------------------------------------------------
 
 extension IntegerLiteral : TypeProvider {
     
@@ -62,6 +74,12 @@ extension BooleanLiteral : TypeProvider {
     }
 }
 
+
+
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                                 Variables
+//-------------------------------------------------------------------------------------------------------------------------
+
 extension Variable : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMType {
@@ -74,6 +92,43 @@ extension Variable : TypeProvider {
         return v
     }
 }
+
+
+extension AssignmentExpression : TypeProvider {
+    
+    func llvmType(scope: SemaScope) throws -> LLVMType {
+        // handle redeclaration
+        if let _ = scope[variable: name] { throw SemaError.InvalidRedeclaration(name, value) }
+        
+        // get val type
+        let inferredType = try value.llvmType(scope)
+        
+        type = LLVMType.Void        // set type to self
+        value.type = inferredType   // store type in value’s type
+        scope[variable: name] = inferredType   // store in arr
+        return .Void                // return void type for assignment expression
+    }
+}
+
+
+extension MutationExpression : TypeProvider {
+    
+    func llvmType(scope: SemaScope) throws -> LLVMType {
+        
+        // gen types for variable and value
+        let old = try object.llvmType(scope)
+        let new = try value.llvmType(scope)
+        guard try old.ir() == new.ir() else { throw SemaError.DifferentTypeForMutation }
+        
+        return .Null
+    }
+}
+
+
+
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                                 Expressions
+//-------------------------------------------------------------------------------------------------------------------------
 
 extension BinaryExpression : TypeProvider {
     
@@ -105,6 +160,7 @@ extension BinaryExpression : TypeProvider {
     }
 }
 
+
 extension Void : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMType {
@@ -116,7 +172,9 @@ extension Void : TypeProvider {
 
 
 
-
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                                 Functions
+//-------------------------------------------------------------------------------------------------------------------------
 
 private extension FunctionType {
     
@@ -133,6 +191,7 @@ private extension FunctionType {
     
 }
 
+
 extension FunctionCallExpression : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMType {
@@ -144,7 +203,7 @@ extension FunctionCallExpression : TypeProvider {
         for (i, arg) in args.elements.enumerate() {
             let ti = try arg.llvmType(scope)
             let expected = fnType.params[i]
-            guard try ti == expected else { throw SemaError.WrongFunctionApplication(applied: ti, expected: expected, paramNum: i) }
+            guard ti == expected else { throw SemaError.WrongFunctionApplication(applied: ti, expected: expected, paramNum: i) }
         }
         
         // assign type to self and return
@@ -152,6 +211,7 @@ extension FunctionCallExpression : TypeProvider {
         return fnType.returns
     }
 }
+
 
 extension FunctionPrototypeExpression : TypeProvider {
     
@@ -183,23 +243,144 @@ extension FunctionPrototypeExpression : TypeProvider {
     }
 }
 
-extension AssignmentExpression : TypeProvider {
+
+extension ReturnExpression : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMType {
-        // handle redeclaration
-        if let _ = scope[variable: name] { throw SemaError.InvalidRedeclaration(name, value) }
         
-        // get val type
-        let inferredType = try value.llvmType(scope)
+        let returnType = try expression.llvmType(scope)
+        guard let ret = scope.returnType where ret == returnType else { throw SemaError.WrongFunctionReturnType(applied: returnType, expected: scope.returnType ?? .Null) }
         
-        type = LLVMType.Void        // set type to self
-        value.type = inferredType   // store type in value’s type
-        scope[variable: name] = inferredType   // store in arr
-        return .Void                // return void type for assignment expression
+        self.type = LLVMType.Null
+        return .Null
+    }
+    
+}
+
+
+
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                                 Control flow
+//-------------------------------------------------------------------------------------------------------------------------
+
+extension ConditionalExpression : TypeProvider {
+    
+    func llvmType(scope: SemaScope) throws -> LLVMType {
+        
+        // call on child `ElseIfBlockExpressions`
+        for statement in statements {
+            // inner scopes
+            let ifScope = SemaScope(parent: scope, returnType: scope.returnType)
+            
+            try statement.llvmType(ifScope)
+        }
+        
+        type = LLVMType.Null
+        return .Null
     }
 }
 
 
+extension ElseIfBlockExpression : TypeProvider {
+    
+    func llvmType(scope: SemaScope) throws -> LLVMType {
+        
+        // get condition type
+        let cond = try condition?.llvmType(scope)
+        guard try cond?.ir() == LLVMInt1Type() || cond == nil else { throw SemaError.NonBooleanCondition }
+        
+        // gen types for cond block
+        try variableTypeSema(forScopeExpression: &block, scope: scope)
+        
+        self.type = LLVMType.Null
+        return .Null
+    }
+    
+}
+
+
+
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                                 Loops
+//-------------------------------------------------------------------------------------------------------------------------
+
+extension RangeIteratorExpression : TypeProvider {
+    
+    func llvmType(scope: SemaScope) throws -> LLVMType {
+        
+        // gen types for start and end
+        let s = try start.llvmType(scope)
+        let e = try end.llvmType(scope)
+        
+        // make sure range has same start and end types
+        guard try e.ir() == s.ir() else { throw SemaError.RangeWithInconsistentTypes }
+        
+        self.type = LLVMType.Null
+        return .Null
+    }
+    
+}
+
+
+extension ForInLoopExpression : TypeProvider {
+    
+    func llvmType(scope: SemaScope) throws -> LLVMType {
+        
+        // scopes for inner loop
+        let loopScope = SemaScope(parent: scope, returnType: scope.returnType)
+        
+        // add bound name to scopes
+        loopScope[variable: binded.name] = .Int(size: 64)
+        
+        // gen types for iterator
+        try iterator.llvmType(scope)
+        
+        // parse inside of loop in loop scope
+        try variableTypeSema(forScopeExpression: &block, scope: loopScope)
+        
+        return .Null
+    }
+    
+}
+
+
+extension WhileLoopExpression : TypeProvider {
+    
+    func llvmType(scope: SemaScope) throws -> LLVMType {
+        
+        // scopes for inner loop
+        let loopScope = SemaScope(parent: scope, returnType: scope.returnType)
+        
+        // gen types for iterator
+        let it = try iterator.llvmType(scope)
+        guard try it.ir() == LLVMInt1Type() else { throw SemaError.NonBooleanCondition }
+        
+        // parse inside of loop in loop scope
+        try variableTypeSema(forScopeExpression: &block, scope: loopScope)
+        
+        type = LLVMType.Null
+        return .Null
+    }
+}
+
+extension WhileIteratorExpression : TypeProvider {
+    
+    func llvmType(scope: SemaScope) throws -> LLVMType {
+        
+        // make condition variable and make sure bool
+        let t = try condition.llvmType(scope)
+        guard try t.ir() == LLVMInt1Type() else { throw SemaError.NonBooleanCondition }
+        
+        type = LLVMType.Bool
+        return .Bool
+    }
+}
+
+
+
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                                 Arrays
+//-------------------------------------------------------------------------------------------------------------------------
 
 extension ArrayExpression : TypeProvider {
     
@@ -248,135 +429,11 @@ extension ArraySubscriptExpression : TypeProvider {
     
 }
 
-extension ReturnExpression : TypeProvider {
-    
-    func llvmType(scope: SemaScope) throws -> LLVMType {
-        
-        let returnType = try expression.llvmType(scope)
-        guard let ret = scope.returnType where ret == returnType else { throw SemaError.WrongFunctionReturnType(applied: returnType, expected: scope.returnType ?? .Void) }
-        
-        self.type = LLVMType.Null
-        return .Null
-    }
-    
-}
-
-extension RangeIteratorExpression : TypeProvider {
-    
-    func llvmType(scope: SemaScope) throws -> LLVMType {
-        
-        // gen types for start and end
-        let s = try start.llvmType(scope)
-        let e = try end.llvmType(scope)
-        
-        // make sure range has same start and end types
-        guard try e.ir() == s.ir() else { throw SemaError.RangeWithInconsistentTypes }
-        
-        self.type = LLVMType.Null
-        return .Null
-    }
-    
-}
-
-extension ForInLoopExpression : TypeProvider {
-    
-    func llvmType(scope: SemaScope) throws -> LLVMType {
-        
-        // scopes for inner loop
-        let loopScope = SemaScope(parent: scope, returnType: scope.returnType)
-        
-        // add bound name to scopes
-        loopScope[variable: binded.name] = .Int(size: 64)
-        
-        // gen types for iterator
-        try iterator.llvmType(scope)
-        
-        // parse inside of loop in loop scope
-        try variableTypeSema(forScopeExpression: &block, scope: loopScope)
-        
-        return .Null
-    }
-    
-}
-
-extension WhileLoopExpression : TypeProvider {
-    
-    func llvmType(scope: SemaScope) throws -> LLVMType {
-        
-        // scopes for inner loop
-        let loopScope = SemaScope(parent: scope, returnType: scope.returnType)
-        
-        // gen types for iterator
-        let it = try iterator.llvmType(scope)
-        guard try it.ir() == LLVMInt1Type() else { throw SemaError.NonBooleanCondition }
-        
-        // parse inside of loop in loop scope
-        try variableTypeSema(forScopeExpression: &block, scope: loopScope)
-        
-        type = LLVMType.Null
-        return .Null
-    }
-}
-extension WhileIteratorExpression : TypeProvider {
-    
-    func llvmType(scope: SemaScope) throws -> LLVMType {
-        
-        // make condition variable and make sure bool
-        let t = try condition.llvmType(scope)
-        guard try t.ir() == LLVMInt1Type() else { throw SemaError.NonBooleanCondition }
-        
-        type = LLVMType.Bool
-        return .Bool
-    }
-}
 
 
-extension ConditionalExpression : TypeProvider {
-    
-    func llvmType(scope: SemaScope) throws -> LLVMType {
-        
-        // call on child `ElseIfBlockExpressions`
-        for statement in statements {
-            // inner scopes
-            let ifScope = SemaScope(parent: scope, returnType: scope.returnType)
-            
-            try statement.llvmType(ifScope)
-        }
-        
-        type = LLVMType.Null
-        return .Null
-    }
-}
-
-extension ElseIfBlockExpression : TypeProvider {
-    
-    func llvmType(scope: SemaScope) throws -> LLVMType {
-        
-        // get condition type
-        let cond = try condition?.llvmType(scope)
-        guard try cond?.ir() == LLVMInt1Type() || cond == nil else { throw SemaError.NonBooleanCondition }
-        
-        // gen types for cond block
-        try variableTypeSema(forScopeExpression: &block, scope: scope)
-        
-        self.type = LLVMType.Null
-        return .Null
-    }
-    
-}
-
-extension MutationExpression : TypeProvider {
-    
-    func llvmType(scope: SemaScope) throws -> LLVMType {
-        
-        // gen types for variable and value
-        let old = try object.llvmType(scope)
-        let new = try value.llvmType(scope)
-        guard try old.ir() == new.ir() else { throw SemaError.DifferentTypeForMutation }
-        
-        return .Null
-    }
-}
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                                 Structs
+//-------------------------------------------------------------------------------------------------------------------------
 
 extension StructExpression : TypeProvider {
     
@@ -403,5 +460,9 @@ extension StructExpression : TypeProvider {
         return ty
     }
 }
+
+
+
+
 
 

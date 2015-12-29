@@ -27,11 +27,6 @@ public func compileDocuments(fileNames: [String],
         
         for (index, fileName) in fileNames.enumerate() {
             
-            let file = fileName.stringByReplacingOccurrencesOfString(".vist", withString: "")
-            
-            
-            
-            
             let doc = try String(contentsOfFile: fileName, encoding: NSUTF8StringEncoding)
             if verbose { print("----------------------------SOURCE-----------------------------\n\n\(doc)\n\n\n-----------------------------TOKS------------------------------\n") }
             
@@ -53,7 +48,7 @@ public func compileDocuments(fileNames: [String],
             
             // parse tokens & generate AST
             var parser = Parser(tokens: tokens)
-            var ast = try parser.parse()
+            let ast = try parser.parse()
             if dumpAST { print(ast); return }
             if verbose { print(ast) }
             
