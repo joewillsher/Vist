@@ -1,5 +1,18 @@
 
-let a = ()
+func foo: Int Int -> Int = do
+    return $0 + $1
+
+print(foo(2 3))
+
+func iterate: () -> Int -> Int = {
+    return {
+        return $0 + 1
+    }
+}
+
+let i = iterate()
+
+print(i(3))
 
 
 /*

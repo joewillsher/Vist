@@ -8,12 +8,12 @@
 
 class SemaScope {
     
-    var variables: [String: LLVMType]
+    var variables: [String: LLVMTyped]
     var functions: [String: LLVMFnType]
-    var returnType: LLVMType?
+    var returnType: LLVMTyped?
     let parent: SemaScope?
     
-    subscript (variable variable: String) -> LLVMType? {
+    subscript (variable variable: String) -> LLVMTyped? {
         get {
             if let v = variables[variable] { return v }
             return parent?[variable: variable]
@@ -32,7 +32,7 @@ class SemaScope {
         }
     }
     
-    init(parent: SemaScope?, returnType: LLVMType? = .Void) {
+    init(parent: SemaScope?, returnType: LLVMTyped? = LLVMType.Void) {
         self.parent = parent
         self.returnType = returnType
         self.variables = [:]

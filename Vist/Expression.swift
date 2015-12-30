@@ -286,20 +286,20 @@ class ValueType : Expression {
 
 class FunctionType : Expression {
     let args: TupleExpression
-    let returns: TupleExpression
+    let returns: Expression
     
-    init(args: TupleExpression, returns: TupleExpression) {
+    init(args: TupleExpression, returns: Expression) {
         self.args = args
         self.returns = returns
     }
     
-    func desc() -> String {
-        let params = args.elements.isEmpty ? "()" : "(\(args.elements[0])" + args.elements.dropFirst().reduce("") { "\($0), \($1)" } + ")"
-        let ret = returns.elements.isEmpty ?
-            "Void" : (returns.elements.count > 1 ?
-                "(" : "") + "\(returns.elements[0])" + returns.elements.dropFirst().reduce("") { "\($0), \($1)" }  + (returns.elements.count > 1 ? ")" : "")
-        return params + " -> " + ret
-    }
+//    func desc() -> String {
+//        let params = args.elements.isEmpty ? "()" : "(\(args.elements[0])" + args.elements.dropFirst().reduce("") { "\($0), \($1)" } + ")"
+//        let ret = returns.elements.isEmpty ?
+//            "Void" : (returns.elements.count > 1 ?
+//                "(" : "") + "\(returns.elements[0])" + returns.elements.dropFirst().reduce("") { "\($0), \($1)" }  + (returns.elements.count > 1 ? ")" : "")
+//        return params + " -> " + ret
+//    }
     
     var type: LLVMTyped? = nil
 }

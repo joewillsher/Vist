@@ -163,7 +163,7 @@ extension FunctionPrototypeExpression {
 
 extension FunctionType {
     func printList() -> [(String?, Printable)]? {
-        return [("ty", desc())]
+        return [("args", args), ("returns", returns)]
     }
 }
 

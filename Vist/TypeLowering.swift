@@ -14,9 +14,11 @@ protocol LLVMTyped : Printable {
 enum LLVMType : LLVMTyped {
     case Null, Void
     case Int(size: UInt32), Float(size: UInt32), Bool
-    indirect case Array(el: LLVMType, size: UInt32)
-    indirect case Pointer(to: LLVMType)
+    indirect case Array(el: LLVMTyped, size: UInt32)
+    indirect case Pointer(to: LLVMTyped)
     indirect case Struct(members: [LLVMType], methods: [LLVMFnType])
+    
+    // TODO: Implement Tuple types
     
     func ir() throws -> LLVMTypeRef {
         switch self {
@@ -59,7 +61,7 @@ enum LLVMType : LLVMTyped {
 
 struct LLVMFnType : LLVMTyped {
     let params: [LLVMType]
-    let returns: LLVMType
+    let returns: LLVMTyped
     
     func ir() throws -> LLVMTypeRef {
         return LLVMFunctionType(

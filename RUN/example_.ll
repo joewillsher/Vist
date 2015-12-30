@@ -27,37 +27,15 @@ define void @printd(double %d) #0 {
 
 define i64 @main() {
 entry:
+  %foo = call i64 @foo(i64 2, i64 3)
+  call void @print(i64 %foo)
   ret i64 0
 }
 
-define i1 @lt(i64 %"$0", i64 %"$1") {
+define i64 @foo(i64 %"$0", i64 %"$1") {
 entry:
-  %cmp_lt_res = icmp slt i64 %"$0", %"$1"
-  ret i1 %cmp_lt_res
-}
-
-define i1 @or(i1 %"$0", i1 %"$1") {
-entry:
-  %or_res = or i1 %"$0", %"$1"
-  ret i1 %or_res
-}
-
-define i64 @fact(i64 %a) {
-entry:
-  %cmp_lte_res = icmp sle i64 %a, 1
-  br i1 %cmp_lte_res, label %then0, label %cont0
-
-cont0:                                            ; preds = %entry
-  br label %else1
-
-then0:                                            ; preds = %entry
-  ret i64 1
-
-else1:                                            ; preds = %cont0
-  %sub_res = sub i64 %a, 1
-  %fact = call i64 @fact(i64 %sub_res)
-  %mul_res = mul i64 %a, %fact
-  ret i64 %mul_res
+  %add_res = add i64 %"$0", %"$1"
+  ret i64 %add_res
 }
 
 attributes #0 = { ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

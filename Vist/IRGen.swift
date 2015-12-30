@@ -334,9 +334,8 @@ private extension FunctionType {
     }
     
     func returnType() throws -> LLVMTypeRef {
-        let res = returns.mapAs(ValueType).flatMap { typeDict[$0.name] }
-        if res.count == returns.elements.count && res.count == 0 { return LLVMVoidType() }
-        if let f = res.first where res.count == returns.elements.count { return f } else { throw IRError.TypeNotFound }
+        guard let ty = type as? LLVMFnType else { throw IRError.TypeNotFound }
+        return try ty.returns.ir()
     }
     
 }

@@ -53,14 +53,18 @@ Ltmp7:
 	movq	%rsp, %rbp
 Ltmp8:
 	.cfi_def_cfa_register %rbp
+	leaq	L_.str(%rip), %rdi
+	movl	$5, %esi
+	xorl	%eax, %eax
+	callq	_printf
 	xorl	%eax, %eax
 	popq	%rbp
 	retq
 	.cfi_endproc
 
-	.globl	_lt
+	.globl	_foo
 	.align	4, 0x90
-_lt:                                    ## @lt
+_foo:                                   ## @foo
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
@@ -71,56 +75,7 @@ Ltmp10:
 	movq	%rsp, %rbp
 Ltmp11:
 	.cfi_def_cfa_register %rbp
-	cmpq	%rsi, %rdi
-	setl	%al
-	popq	%rbp
-	retq
-	.cfi_endproc
-
-	.globl	_or
-	.align	4, 0x90
-_or:                                    ## @or
-	.cfi_startproc
-## BB#0:                                ## %entry
-	pushq	%rbp
-Ltmp12:
-	.cfi_def_cfa_offset 16
-Ltmp13:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-Ltmp14:
-	.cfi_def_cfa_register %rbp
-	orl	%esi, %edi
-	movb	%dil, %al
-	popq	%rbp
-	retq
-	.cfi_endproc
-
-	.globl	_fact
-	.align	4, 0x90
-_fact:                                  ## @fact
-	.cfi_startproc
-## BB#0:                                ## %entry
-	pushq	%rbp
-Ltmp15:
-	.cfi_def_cfa_offset 16
-Ltmp16:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-Ltmp17:
-	.cfi_def_cfa_register %rbp
-	movl	$1, %eax
-	jmp	LBB5_1
-	.align	4, 0x90
-LBB5_3:                                 ## %else1
-                                        ##   in Loop: Header=BB5_1 Depth=1
-	imulq	%rdi, %rax
-	decq	%rdi
-LBB5_1:                                 ## %tailrecurse
-                                        ## =>This Inner Loop Header: Depth=1
-	cmpq	$1, %rdi
-	jg	LBB5_3
-## BB#2:                                ## %then0
+	leaq	(%rdi,%rsi), %rax
 	popq	%rbp
 	retq
 	.cfi_endproc

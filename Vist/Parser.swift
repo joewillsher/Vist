@@ -126,8 +126,14 @@ extension Parser {
 //-------------------------------------------------------------------------------------------------------------------------
 
 extension Parser {
-    ///parses expression like Int String, of type (_identifier, _identifier)
-    private mutating func parseTypeTupleExpression() throws -> TupleExpression {
+    ///parses expression like Int String, of type _identifier _identifier
+    private mutating func parseTypeExpression() throws -> TupleExpression {
+        
+        // if () type
+        if case .OpenParen = currentToken, case .CloseParen = getNextToken() {
+            getNextToken() // eat ')'
+            return TupleExpression.void()
+        }
         
         var elements = [Expression]()
         while case let .Identifier(id) = currentToken {
@@ -241,6 +247,9 @@ extension Parser {
         case .SqbrOpen:
             return try parseArrayExpression()
             
+        case .OpenBrace, .Do:
+            return try parseBlockExpression()
+            
         default:
             throw ParseError.NoIdentifier(currentPos)
         }
@@ -251,6 +260,12 @@ extension Parser {
         
         guard case .OpenParen = currentToken else { throw ParseError.ExpectedParen(currentPos) }
         getNextToken() // eat '('
+        
+        // if void tuple
+        if case .CloseParen = currentToken {
+            getNextToken() // eat void
+            return TupleExpression.void()
+        }
         
         let expr = try parseOperatorExpression()
         
@@ -443,26 +458,38 @@ extension Parser {
 
 extension Parser {
     
+    /// Parses the function type signature
     private mutating func parseFunctionType() throws -> FunctionType {
+
+        let p = try parseTypeExpression()
         
-        let params = try parseTypeTupleExpression()
-        
+        // case like fn: Int =
         guard case .Returns = currentToken else {
-            return FunctionType(args: params, returns: TupleExpression.void())
+            return FunctionType(args: p, returns: TupleExpression.void())
+        }
+        getNextToken() // eat '->'
+        
+        let r = try parseTypeExpression()
+        
+        // case like fn: Int -> Int =
+        guard case .Returns = currentToken else {
+            return FunctionType(args: p, returns: r)
+        }
+
+        var ty = FunctionType(args: p, returns: r)
+        
+        // curried case like fn: Int -> Int -> Int
+        while case .Returns = currentToken {
+            getNextToken()
+
+            let params = TupleExpression(elements: [ty.returns])
+            let returns = try parseTypeExpression()
+            let out = FunctionType(args: params, returns: returns)
+            
+            ty = FunctionType(args: ty.args, returns: out)
         }
         
-        getNextToken()
-        if case .OpenParen = currentToken {
-            getNextToken()
-            return FunctionType(args: params, returns: try parseTypeTupleExpression())
-            
-        } else if case let .Identifier(type) = currentToken {
-            getNextToken()
-            return FunctionType(args: params, returns: TupleExpression(elements: [ValueType(name: type)]))
-            
-        } else {
-            throw ParseError.NoReturnType(currentPos)
-        }
+        return ty
     }
     
     
