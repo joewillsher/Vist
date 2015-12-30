@@ -1,5 +1,8 @@
 
+let a = ()
 
+
+/*
 func lt: Int Int -> Bool = do
     return $0 < $1
 
@@ -12,3 +15,4 @@ func fact: Int -> Int = |a| do
         return 1
     else do
         return a * fact(a - 1)
+*/

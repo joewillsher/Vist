@@ -12,7 +12,7 @@
 		D44DB8821C3084EE00EBCD9F /* ASTInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44DB8811C3084EE00EBCD9F /* ASTInterface.swift */; };
 		D44DB8841C30A90200EBCD9F /* LinkAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44DB8831C30A90200EBCD9F /* LinkAST.swift */; };
 		D44FB8B01C1657E100E6DD33 /* Compile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44FB8AF1C1657E100E6DD33 /* Compile.swift */; };
-		D465C6581C187639001A008C /* Scope.swift in Sources */ = {isa = PBXBuildFile; fileRef = D465C6571C187639001A008C /* Scope.swift */; };
+		D465C6581C187639001A008C /* StackFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = D465C6571C187639001A008C /* StackFrame.swift */; };
 		D46AD8831B82174E00C95574 /* Lexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46AD8821B82174E00C95574 /* Lexer.swift */; };
 		D46AD8851B82186600C95574 /* Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46AD8841B82186600C95574 /* Token.swift */; };
 		D46AD8871B8245A000C95574 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46AD8861B8245A000C95574 /* Parser.swift */; };
@@ -54,7 +54,7 @@
 		D44DB8851C30ABFF00EBCD9F /* second.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = second.vist; path = RUN/second.vist; sourceTree = "<group>"; };
 		D44DB8861C30B1D000EBCD9F /* third.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = third.vist; path = RUN/third.vist; sourceTree = "<group>"; };
 		D44FB8AF1C1657E100E6DD33 /* Compile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Compile.swift; sourceTree = "<group>"; };
-		D465C6571C187639001A008C /* Scope.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Scope.swift; sourceTree = "<group>"; };
+		D465C6571C187639001A008C /* StackFrame.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StackFrame.swift; sourceTree = "<group>"; };
 		D46AD87E1B81EAA400C95574 /* Vist-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Vist-Bridging-Header.h"; sourceTree = "<group>"; };
 		D46AD8821B82174E00C95574 /* Lexer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Lexer.swift; sourceTree = "<group>"; };
 		D46AD8841B82186600C95574 /* Token.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Token.swift; sourceTree = "<group>"; };
@@ -142,7 +142,7 @@
 			isa = PBXGroup;
 			children = (
 				D4C85BCB1BF8E00100731F34 /* IRGen.swift */,
-				D465C6571C187639001A008C /* Scope.swift */,
+				D465C6571C187639001A008C /* StackFrame.swift */,
 				D4AD08251C2DEB1200BE7D86 /* ArrayVariable.swift */,
 				D4AD08271C2DEB2D00BE7D86 /* StructVariable.swift */,
 				D4851F451C2434D90009233E /* RuntimeVariable.swift */,
@@ -354,7 +354,7 @@
 				D4C85BCC1BF8E00100731F34 /* IRGen.swift in Sources */,
 				D4851F461C2434D90009233E /* RuntimeVariable.swift in Sources */,
 				D44FB8B01C1657E100E6DD33 /* Compile.swift in Sources */,
-				D465C6581C187639001A008C /* Scope.swift in Sources */,
+				D465C6581C187639001A008C /* StackFrame.swift in Sources */,
 				D4DB9D631C1DF10A00503153 /* Config.swift in Sources */,
 				D44DB8801C3081CD00EBCD9F /* TypeProvider.swift in Sources */,
 				D46AD8851B82186600C95574 /* Token.swift in Sources */,

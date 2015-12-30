@@ -66,12 +66,6 @@ extension Expression {
     }
 }
 
-extension IRGenerator {
-    // default implementation
-    func llvmType(stackFrame: StackFrame) throws -> LLVMTypeRef {
-        return nil
-    }
-}
 
 extension CollectionType where
     Generator.Element == COpaquePointer,
@@ -124,7 +118,7 @@ extension IntegerLiteral : IRGenerator {
 extension FloatingPointLiteral : IRGenerator {
     
     func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
-        return LLVMConstReal(try llvmType(stackFrame), val)
+        return LLVMConstReal(try type!.ir(), val)
     }
 }
 
@@ -289,9 +283,6 @@ extension BinaryExpression : IRGenerator {
 
 
 extension Void : IRGenerator {
-    func llvmType(stackFrame: StackFrame) throws -> LLVMTypeRef {
-        return LLVMVoidType()
-    }
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         return nil
     }
@@ -330,12 +321,6 @@ extension FunctionCallExpression : IRGenerator {
         
         // add call to IR
         return LLVMBuildCall(builder, fn, argBuffer, UInt32(argCount), doNotUseName ? "" : name)
-    }
-    
-    func llvmType(stackFrame: StackFrame) throws -> LLVMTypeRef {
-        let fn = LLVMGetNamedFunction(module, name)
-        let ty = LLVMTypeOf(fn)
-        return LLVMGetReturnType(ty)
     }
     
 }
@@ -407,10 +392,6 @@ extension FunctionPrototypeExpression : IRGenerator {
         return function
     }
     
-    func llvmType(stackFrame: StackFrame) -> LLVMTypeRef {
-        return nil
-    }
-    
 }
 
 
@@ -424,10 +405,6 @@ extension ReturnExpression : IRGenerator {
         
         let v = try expression.expressioncodeGen(stackFrame)
         return LLVMBuildRet(builder, v)
-    }
-    
-    func llvmType(stackFrame: StackFrame) -> LLVMTypeRef {
-        return nil
     }
     
 }
@@ -682,13 +659,9 @@ extension ArrayExpression : IRGenerator {
         
         return variable
     }
-
+    
     func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         return try arrInstance(stackFrame).base
-    }
-    
-    func llvmType(stackFrame: StackFrame) throws -> LLVMTypeRef {
-        return LLVMArrayType(try elType!.ir(), UInt32(arr.count))
     }
     
 }
@@ -712,9 +685,6 @@ extension ArraySubscriptExpression : IRGenerator {
         return LLVMBuildLoad(builder, ptr, "element")
     }
     
-    func llvmType(stackFrame: StackFrame) throws -> LLVMTypeRef {
-        return try backingArrayVariable(stackFrame).elementType
-    }
 }
 
 
