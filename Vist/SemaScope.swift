@@ -13,6 +13,11 @@ class SemaScope {
     var returnType: LLVMTyped?
     let parent: SemaScope?
     
+    /// Hint about what type the object should have
+    ///
+    /// Used for blocks’ types
+    var objectType: LLVMTyped?
+    
     subscript (variable variable: String) -> LLVMTyped? {
         get {
             if let v = variables[variable] { return v }

@@ -329,15 +329,15 @@ extension FunctionCallExpression : IRGenerator {
 private extension FunctionType {
     
     func params() throws -> [LLVMTypeRef] {
-        let res = args.mapAs(ValueType).flatMap { typeDict[$0.name] }
-        if res.count == args.elements.count { return res } else { throw IRError.TypeNotFound }
+        guard let res = (type as? LLVMFnType)?.nonVoid else { throw IRError.TypeNotFound }
+        return try res.map { try $0.ir() }
     }
-    
-    func returnType() throws -> LLVMTypeRef {
-        guard let ty = type as? LLVMFnType else { throw IRError.TypeNotFound }
-        return try ty.returns.ir()
-    }
-    
+//
+//    func returnType() throws -> LLVMTypeRef {
+//        guard let ty = type as? LLVMFnType else { throw IRError.TypeNotFound }
+//        return try ty.returns.ir()
+//    }
+//    
 }
 
 
@@ -347,6 +347,7 @@ extension FunctionPrototypeExpression : IRGenerator {
     func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
         let args = fnType.args, argCount = args.elements.count
+        guard let type = self.fnType.type as? LLVMFnType else { throw IRError.TypeNotFound }
         
         // If existing function definition
         let _fn = LLVMGetNamedFunction(module, name)
@@ -359,8 +360,7 @@ extension FunctionPrototypeExpression : IRGenerator {
         defer { argBuffer.dealloc(argCount) }
         
         // make function
-        let returnType = try fnType.returnType()
-        let functionType = LLVMFunctionType(returnType, argBuffer, UInt32(argCount), LLVMBool(false))
+        let functionType = try type.ir()
         let function = LLVMAddFunction(module, name, functionType)
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
         
@@ -382,7 +382,7 @@ extension FunctionPrototypeExpression : IRGenerator {
         
         // generate bb for body
         do {
-            try impl?.body.bbGen(innerStackFrame: functionStackFrame, fn: function, ret: returnType)
+            try impl?.body.bbGen(innerStackFrame: functionStackFrame, fn: function, ret: try type.returns.ir())
         } catch {
             LLVMDeleteFunction(function)
             throw error

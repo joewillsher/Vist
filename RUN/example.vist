@@ -1,8 +1,4 @@
 
-func foo: Int Int -> Int = do
-    return $0 + $1
-
-print(foo(2 3))
 
 func iterate: () -> Int -> Int = {
     return {
@@ -12,20 +8,6 @@ func iterate: () -> Int -> Int = {
 
 let i = iterate()
 
-print(i(3))
+//print(i(3))
 
 
-/*
-func lt: Int Int -> Bool = do
-    return $0 < $1
-
-func or: Bool Bool -> Bool = do
-    return $0 || $1
-
-
-func fact: Int -> Int = |a| do
-    if a <= 1 do
-        return 1
-    else do
-        return a * fact(a - 1)
-*/

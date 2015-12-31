@@ -27,12 +27,19 @@ define void @printd(double %d) #0 {
 
 define i64 @main() {
 entry:
-  %foo = call i64 @foo(i64 2, i64 3)
+  %foo = call i64 @foo()
   call void @print(i64 %foo)
+  %bar = call i64 @bar(i64 2, i64 3)
+  call void @print(i64 %bar)
   ret i64 0
 }
 
-define i64 @foo(i64 %"$0", i64 %"$1") {
+define i64 @foo() {
+entry:
+  ret i64 1
+}
+
+define i64 @bar(i64 %"$0", i64 %"$1") {
 entry:
   %add_res = add i64 %"$0", %"$1"
   ret i64 %add_res

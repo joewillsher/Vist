@@ -127,12 +127,16 @@ extension Parser {
 
 extension Parser {
     ///parses expression like Int String, of type _identifier _identifier
-    private mutating func parseTypeExpression() throws -> TupleExpression {
+    private mutating func parseTypeExpression(alwaysWrap alwaysWrap: Bool = true) throws -> Expression {
         
         // if () type
         if case .OpenParen = currentToken, case .CloseParen = getNextToken() {
             getNextToken() // eat ')'
-            return TupleExpression.void()
+            if alwaysWrap {
+                return TupleExpression(elements: [ValueType(name: "Void")])
+            } else {
+                return ValueType(name: "Void")
+            }
         }
         
         var elements = [Expression]()
@@ -140,9 +144,13 @@ extension Parser {
             elements.append(ValueType(name: id))    // param
             getNextToken()
         }
-        // TODO: Handle void?
         
-        return TupleExpression(elements: elements)
+        if let f = elements.first where elements.count == 1 && !alwaysWrap {
+            return f
+            
+        } else {
+            return TupleExpression(elements: elements)
+        }
     }
     
     private mutating func parseTupleExpression() throws -> TupleExpression {
@@ -461,15 +469,16 @@ extension Parser {
     /// Parses the function type signature
     private mutating func parseFunctionType() throws -> FunctionType {
 
-        let p = try parseTypeExpression()
+        // param type
+        let p = try parseTypeExpression() as! TupleExpression
         
         // case like fn: Int =
         guard case .Returns = currentToken else {
-            return FunctionType(args: p, returns: TupleExpression.void())
+            return FunctionType(args: p, returns: ValueType(name: "Void"))
         }
         getNextToken() // eat '->'
         
-        let r = try parseTypeExpression()
+        let r = try parseTypeExpression(alwaysWrap: false)
         
         // case like fn: Int -> Int =
         guard case .Returns = currentToken else {

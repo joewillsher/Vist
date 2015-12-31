@@ -206,7 +206,7 @@ private extension FunctionType {
     
     func params() throws -> [LLVMType] {
         let res = args.mapAs(ValueType).flatMap { LLVMType($0.name) }
-        if res.count == args.elements.count { return res } else { throw IRError.TypeNotFound }
+        if res.count == args.elements.count { return res } else { throw SemaError.TypeNotFound }
     }
     
     func returnType() throws -> LLVMTyped {
@@ -215,13 +215,17 @@ private extension FunctionType {
             if tup.elements.count == 0 { return LLVMType.Void }
             
             let res = args.mapAs(ValueType).flatMap { LLVMType($0.name) }
-            guard res.count == args.elements.count else { throw IRError.TypeNotFound }
+            guard res.count == args.elements.count else { throw SemaError.TypeNotFound }
             let a = res.map { $0 as LLVMTyped }
             return a.first!
             
         } else if let f = returns as? FunctionType {
             
-            return try f.returnType()
+            return LLVMFnType(params: try f.params(), returns: try f.returnType())
+            
+        } else if let x = returns as? ValueType {
+            
+            if let val = LLVMType(x.name) { return val } else { throw SemaError.NoTypeNamed(x.name) }
         }
         
         return LLVMType.Null
@@ -255,10 +259,10 @@ extension FunctionPrototypeExpression : TypeProvider {
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
         let ty = LLVMFnType(params: try fnType.params(), returns: try fnType.returnType())
-        // update function table
-        scope[function: name] = ty
-        fnType.type = ty // store type in fntype
-        type = LLVMType.Void     // retult of prototype is void
+        
+        scope[function: name] = ty  // update function table
+        fnType.type = ty            // store type in fntype
+        type = LLVMType.Void        // retult of prototype is void
         
         guard var functionScopeExpression = impl?.body else { return LLVMType.Void }
         // if body construct scope and parse inside it
@@ -285,14 +289,55 @@ extension ReturnExpression : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
+        scope.objectType = scope.returnType // set hint to return type
+        
         let returnType = try expression.llvmType(scope)
         guard let ret = scope.returnType where ret == returnType else { throw SemaError.WrongFunctionReturnType(applied: returnType, expected: scope.returnType ?? LLVMType.Null) }
+        
+        scope.objectType = nil // reset
         
         self.type = LLVMType.Null
         return LLVMType.Null
     }
     
 }
+
+
+extension BlockExpression : TypeProvider {
+    
+    func llvmType(scope: SemaScope) throws -> LLVMTyped {
+        
+//        var r: LLVMTyped? = nil
+//        
+//        let innerScope = SemaScope(parent: scope)
+//        
+//        for expression in expressions {
+//            
+//            guard let ret = expression as? ReturnExpression else { continue }
+//            
+//            r = try ret.expression.llvmType(innerScope)
+//            
+//            print(r)
+//            break
+//        }
+//        
+//        if let r = r {
+//            let t = LLVMFnType(params: [], returns: r)
+//            self.type = t
+//            return t
+//        } else {
+//            let t = LLVMFnType(params: [], returns: LLVMType.Void)
+//            self.type = t
+//            return t
+//        }
+
+        let ty = scope.objectType ?? LLVMFnType(params: [LLVMType.Void], returns: LLVMType.Void)
+        self.type = ty
+        return ty
+    }
+}
+
+
 
 
 
