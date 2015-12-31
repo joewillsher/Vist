@@ -98,7 +98,6 @@ extension LLVMBool {
 
 
 
-
 /**************************************************************************************************************************/
 // MARK: -                                                 IR GEN
 
@@ -177,7 +176,14 @@ extension AssignmentExpression : IRGenerator {
             variable.store(v)
             
             // update stack frame variables
+            
+//            if let _ = value.type as? LLVMFnType {
+//                let fnType = LLVMGetElementType(type)
+//                stackFrame.addFunctionType(name, val: fnType)
+//            } else {
             stackFrame.addVariable(name, val: variable)
+//            }
+            
             return v
         }
     }
@@ -307,7 +313,20 @@ extension FunctionCallExpression : IRGenerator {
     func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
         // make function
-        let fn = LLVMGetNamedFunction(module, name)
+        let fn: LLVMValueRef
+        
+        if (try? stackFrame.functionType(name)) != nil {
+            // if in function table
+            
+            fn = LLVMGetNamedFunction(module, name)
+            
+        } else {
+            // if variable closure
+            
+            let v = try stackFrame.variable(name)
+            fn = v.load(name)
+        }
+        
         let argCount = args.elements.count
         
         // arguments
@@ -435,6 +454,23 @@ extension BlockExpression {
     
 }
 
+
+extension ClosureExpression : IRGenerator {
+    
+    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
+
+        // To make closures work:
+        //  - create function for closure
+        //  - add params to function to the inner scope
+        //  - gen ir for all the closure’s elements
+        
+        for exp in expressions {
+            try exp.expressioncodeGen(stackFrame)
+        }
+        
+        return nil
+    }
+}
 
 
 //-------------------------------------------------------------------------------------------------------------------------

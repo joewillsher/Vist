@@ -161,6 +161,15 @@
 			name = Helper;
 			sourceTree = "<group>";
 		};
+		D47D4BDF1C34B59C00B22B3C /* Interface */ = {
+			isa = PBXGroup;
+			children = (
+				D44DB8811C3084EE00EBCD9F /* ASTInterface.swift */,
+				D44DB8831C30A90200EBCD9F /* LinkAST.swift */,
+			);
+			name = Interface;
+			sourceTree = "<group>";
+		};
 		D47FF0711B812052003F9920 = {
 			isa = PBXGroup;
 			children = (
@@ -213,12 +222,11 @@
 			isa = PBXGroup;
 			children = (
 				D46DA5EF1C2976E8006AF1BE /* Sema.swift */,
+				D4B1FA051C3027E1001E7BCC /* SemaTypeCheck.swift */,
 				D4B1FA091C304027001E7BCC /* SemaScope.swift */,
 				D4B1FA0B1C304049001E7BCC /* TypeLowering.swift */,
-				D4B1FA051C3027E1001E7BCC /* SemaTypeCheck.swift */,
 				D44DB87F1C3081CD00EBCD9F /* TypeProvider.swift */,
-				D44DB8811C3084EE00EBCD9F /* ASTInterface.swift */,
-				D44DB8831C30A90200EBCD9F /* LinkAST.swift */,
+				D47D4BDF1C34B59C00B22B3C /* Interface */,
 			);
 			name = Sema;
 			sourceTree = "<group>";

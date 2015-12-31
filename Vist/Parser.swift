@@ -256,7 +256,10 @@ extension Parser {
             return try parseArrayExpression()
             
         case .OpenBrace, .Do:
-            return try parseBlockExpression()
+            let block = try parseBlockExpression()
+            let closure = ClosureExpression(expressions: block.expressions, params: [])
+            // set the params by looking at |the bit| before the block
+            return closure
             
         default:
             throw ParseError.NoIdentifier(currentPos)
@@ -437,6 +440,8 @@ extension Parser {
             explicitType = t
             getNextToken()
         }
+        
+        // TODO: Closure declaration parsing
         
         guard case .Assign = currentToken else { throw ParseError.ExpectedAssignment(currentPos) }
         getNextToken() // eat '='

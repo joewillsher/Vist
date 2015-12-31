@@ -53,6 +53,19 @@ class BlockExpression : ScopeExpression {
     var type: LLVMTyped? = nil
 }
 
+class ClosureExpression : Expression {
+    
+    var expressions: [Expression]
+    var parameters: [Expression]
+    
+    init(expressions: [Expression], params: [Expression]) {
+        self.expressions = expressions
+        self.parameters = params
+    }
+    
+    var type: LLVMTyped? = nil
+}
+
 
 class BooleanLiteral : Literal, BooleanType {
     let val: Bool

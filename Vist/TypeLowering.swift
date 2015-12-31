@@ -65,12 +65,20 @@ struct LLVMFnType : LLVMTyped {
     
     func ir() throws -> LLVMTypeRef {
         
+        let r: LLVMTypeRef
+        if let _ = returns as? LLVMFnType {
+            r = try LLVMType.Pointer(to: returns).ir()
+        } else {
+            r = try returns.ir()
+        }
+        
         return LLVMFunctionType(
-            try returns.ir(),
+            r,
             try nonVoid.map{try $0.ir()}.ptr(),
             UInt32(nonVoid.count),
             LLVMBool(false))
     }
+    
     
     var nonVoid: [LLVMType]  {
         return params.filter { if case .Void = $0 { return false } else { return true } }

@@ -28,6 +28,7 @@ enum SemaError : ErrorType {
     case StructPropertyNotTyped, StructMethodNotTyped
     case WrongFunctionReturnType(applied: LLVMTyped, expected: LLVMTyped), WrongFunctionApplication(applied: LLVMTyped, expected: LLVMTyped, paramNum: Int)
     case NoTypeNamed(String), TypeNotFound
+    case DifferentTypesForOperator(String)
 }
 
 func sema(inout ast: AST) throws {

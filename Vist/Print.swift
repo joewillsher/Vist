@@ -332,3 +332,10 @@ extension ValueType : Printable {
         return name
     }
 }
+
+extension ClosureExpression : Printable {
+    
+    func printList() -> [(String?, Printable)]? {
+        return expressions.map { (nil, $0 as Printable) }
+    }
+}
