@@ -22,8 +22,7 @@ define void @printd(double %d) #0 {
 ; Function Attrs: ssp
 define i64 @main() #2 {
 entry:
-  %i = tail call i64 @i(i64 3)
-  %0 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str, i64 0, i64 0), i64 %i)
+  %0 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str, i64 0, i64 0), i64 4)
   ret i64 0
 }
 
@@ -38,7 +37,11 @@ entry:
   ret i64 %add_res
 }
 
-declare i64 @i(i64)
+define i64 @i(i64 %"$0") {
+entry:
+  %add_res.i = add i64 %"$0", 1
+  ret i64 %add_res.i
+}
 
 attributes #0 = { ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

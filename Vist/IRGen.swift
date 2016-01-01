@@ -159,34 +159,41 @@ extension AssignmentExpression : IRGenerator {
             return a.ptr
             
         } else if let ty = value.type as? LLVMFnType {
+            // handle assigning a closure
             
+            // Function being made
             let fn = LLVMAddFunction(module, name, try ty.ir())
             
+            // make and move into entry block
             let entryBlock = LLVMAppendBasicBlock(fn, "entry")
             LLVMPositionBuilderAtEnd(builder, entryBlock)
             
-            let fnStackFrame = StackFrame(block: entryBlock, function: fn, parentStackFrame: stackFrame)
+            // stack frame of fn
+            let fnStackFrame = StackFrame(block: entryBlock, function: fn, parentStackFrame: nil)
             
+            // value’s IR, this needs to be called and returned
             let v = try value.expressioncodeGen(fnStackFrame)
             
-            let num = LLVMCountParams(v)
-            
+            let num = LLVMCountParams(fn)
             for i in 0..<num {
                 let param = LLVMGetParam(fn, i)
                 let name = ("$\(Int(i))")
                 LLVMSetValueName(param, name)
-                
             }
             
+            // args of `fn`
             let args = (0..<num)
                 .map { LLVMGetParam(fn, $0) }
                 .ptr()
             defer { args.dealloc(Int(num)) }
             
+            // call function pointer `v`
             let call = LLVMBuildCall(builder, v, args, num, "")
             
+            // return this value from `fn`
             LLVMBuildRet(builder, call)
             
+            // move into bb from before
             LLVMPositionBuilderAtEnd(builder, stackFrame.block)
             
             return fn
@@ -342,23 +349,10 @@ extension FunctionCallExpression : IRGenerator {
     func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
         // make function
-        let fn: LLVMValueRef
-        
-//        if (try? stackFrame.functionType(name)) != nil {
-//             if in function table
-        
-            fn = LLVMGetNamedFunction(module, name)
-//            
-//        } else {
-//            // if variable closure
-//            
-//            let v = try stackFrame.variable(name)
-//            fn = v.load(name)
-//        }
-        
-        let argCount = args.elements.count
+        let fn = LLVMGetNamedFunction(module, name)
         
         // arguments
+        let argCount = args.elements.count
         let a = try args.elements.map { try $0.expressioncodeGen(stackFrame) }
         let argBuffer = a.ptr()
         defer { argBuffer.dealloc(argCount) }
@@ -660,7 +654,9 @@ extension ForInLoopExpression : IRGenerator {
         let end = try rangeIterator.end.expressioncodeGen(stackFrame)
         
         // add incoming value to phi node
-        LLVMAddIncoming(i, [start].ptr(), [stackFrame.block].ptr(), 1)
+        let params = [start].ptr(), incoming = [stackFrame.block].ptr()
+        defer { params.dealloc(1); incoming.dealloc(1) }
+        LLVMAddIncoming(i, params, incoming, 1)
         
         
         // iterate and add phi incoming

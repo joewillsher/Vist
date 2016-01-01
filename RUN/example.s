@@ -53,12 +53,9 @@ Ltmp7:
 	movq	%rsp, %rbp
 Ltmp8:
 	.cfi_def_cfa_register %rbp
-	movl	$3, %edi
-	callq	_i
-	movq	%rax, %rcx
 	leaq	L_.str(%rip), %rdi
+	movl	$4, %esi
 	xorl	%eax, %eax
-	movq	%rcx, %rsi
 	callq	_printf
 	xorl	%eax, %eax
 	popq	%rbp
@@ -95,6 +92,24 @@ Ltmp13:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
 Ltmp14:
+	.cfi_def_cfa_register %rbp
+	leaq	1(%rdi), %rax
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	_i
+	.align	4, 0x90
+_i:                                     ## @i
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp15:
+	.cfi_def_cfa_offset 16
+Ltmp16:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp17:
 	.cfi_def_cfa_register %rbp
 	leaq	1(%rdi), %rax
 	popq	%rbp

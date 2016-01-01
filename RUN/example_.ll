@@ -46,10 +46,11 @@ entry:
   ret i64 %add_res
 }
 
-define i64 @i(i64) {
+define i64 @i(i64 %"$0") {
 entry:
   %iterate = call i64 (i64)* ()* @iterate()
-  ret i64 (i64)* %iterate
+  %0 = call i64 %iterate(i64 %"$0")
+  ret i64 %0
 }
 
 attributes #0 = { ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
