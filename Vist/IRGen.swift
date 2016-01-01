@@ -158,6 +158,39 @@ extension AssignmentExpression : IRGenerator {
             
             return a.ptr
             
+        } else if let ty = value.type as? LLVMFnType {
+            
+            let fn = LLVMAddFunction(module, name, try ty.ir())
+            
+            let entryBlock = LLVMAppendBasicBlock(fn, "entry")
+            LLVMPositionBuilderAtEnd(builder, entryBlock)
+            
+            let fnStackFrame = StackFrame(block: entryBlock, function: fn, parentStackFrame: stackFrame)
+            
+            let v = try value.expressioncodeGen(fnStackFrame)
+            
+            let num = LLVMCountParams(v)
+            
+            for i in 0..<num {
+                let param = LLVMGetParam(fn, i)
+                let name = ("$\(Int(i))")
+                LLVMSetValueName(param, name)
+                
+            }
+            
+            let args = (0..<num)
+                .map { LLVMGetParam(fn, $0) }
+                .ptr()
+            defer { args.dealloc(Int(num)) }
+            
+            let call = LLVMBuildCall(builder, v, args, num, "")
+            
+            LLVMBuildRet(builder, call)
+            
+            LLVMPositionBuilderAtEnd(builder, stackFrame.block)
+            
+            return fn
+            
         } else {
             // all other types
             
@@ -177,12 +210,8 @@ extension AssignmentExpression : IRGenerator {
             
             // update stack frame variables
             
-//            if let _ = value.type as? LLVMFnType {
-//                let fnType = LLVMGetElementType(type)
-//                stackFrame.addFunctionType(name, val: fnType)
-//            } else {
             stackFrame.addVariable(name, val: variable)
-//            }
+            
             
             return v
         }
@@ -315,17 +344,17 @@ extension FunctionCallExpression : IRGenerator {
         // make function
         let fn: LLVMValueRef
         
-        if (try? stackFrame.functionType(name)) != nil {
-            // if in function table
-            
+//        if (try? stackFrame.functionType(name)) != nil {
+//             if in function table
+        
             fn = LLVMGetNamedFunction(module, name)
-            
-        } else {
-            // if variable closure
-            
-            let v = try stackFrame.variable(name)
-            fn = v.load(name)
-        }
+//            
+//        } else {
+//            // if variable closure
+//            
+//            let v = try stackFrame.variable(name)
+//            fn = v.load(name)
+//        }
         
         let argCount = args.elements.count
         
@@ -334,7 +363,8 @@ extension FunctionCallExpression : IRGenerator {
         let argBuffer = a.ptr()
         defer { argBuffer.dealloc(argCount) }
         
-        guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else { throw IRError.WrongFunctionApplication(name) }
+        guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else {
+            throw IRError.WrongFunctionApplication(name) }
         
         let doNotUseName = type == LLVMType.Void || type == LLVMType.Null || type == nil
         
@@ -349,7 +379,7 @@ private extension FunctionType {
     
     func params() throws -> [LLVMTypeRef] {
         guard let res = (type as? LLVMFnType)?.nonVoid else { throw IRError.TypeNotFound }
-        return try res.map { try $0.ir() }
+        return try res.map(ir)
     }
 //
 //    func returnType() throws -> LLVMTypeRef {
@@ -464,11 +494,46 @@ extension ClosureExpression : IRGenerator {
         //  - add params to function to the inner scope
         //  - gen ir for all the closure’s elements
         
-        for exp in expressions {
-            try exp.expressioncodeGen(stackFrame)
+        guard let type = type as? LLVMFnType else { fatalError() }
+        
+        let argBuffer = try type.params.map(ir).ptr()
+        defer { argBuffer.dealloc(type.params.count) }
+        
+        let name = "closure"//.mangle()
+        
+        let functionType = try type.ir()
+        let function = LLVMAddFunction(module, name, functionType)
+        
+        
+        stackFrame.addFunctionType(name, val: functionType)
+        
+        let functionStackFrame = StackFrame(function: function, parentStackFrame: stackFrame)
+        
+        // set function param names and update table
+        for i in 0..<type.params.count {
+            let param = LLVMGetParam(function, UInt32(i))
+            let name = "$\(i)"
+            LLVMSetValueName(param, name)
+            
+            let s = StackVariable(val: param, builder: builder)
+            functionStackFrame.addVariable(name, val: s)
         }
         
-        return nil
+        
+        do {
+            
+            try BlockExpression(expressions: expressions)
+                .bbGen(innerStackFrame: functionStackFrame, fn: function, ret: try type.returns.ir())
+            
+        } catch {
+            LLVMDeleteFunction(function)
+            throw error
+        }
+        
+        
+        
+        
+        return function
     }
 }
 

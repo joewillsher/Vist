@@ -8,6 +8,6 @@ func iterate: () -> Int -> Int = {
 
 let i = iterate()
 
-let x = i(3)
+//let x = i(3)
 
-print(x)
+//print(x)

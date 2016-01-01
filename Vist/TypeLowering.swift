@@ -114,6 +114,8 @@ extension LLVMType : CustomStringConvertible {
 }
 
 
-
+func ir(val: LLVMTyped) throws -> LLVMValueRef {
+    return try val.ir()
+}
 
 

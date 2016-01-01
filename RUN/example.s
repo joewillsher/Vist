@@ -53,58 +53,50 @@ Ltmp7:
 	movq	%rsp, %rbp
 Ltmp8:
 	.cfi_def_cfa_register %rbp
-	pushq	%rbx
-	pushq	%rax
+	movl	$3, %edi
+	callq	_i
+	movq	%rax, %rcx
+	leaq	L_.str(%rip), %rdi
+	xorl	%eax, %eax
+	movq	%rcx, %rsi
+	callq	_printf
+	xorl	%eax, %eax
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	_iterate
+	.align	4, 0x90
+_iterate:                               ## @iterate
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
 Ltmp9:
-	.cfi_offset %rbx, -24
-	leaq	L_.str(%rip), %rbx
-	movl	$1, %esi
-	xorl	%eax, %eax
-	movq	%rbx, %rdi
-	callq	_printf
-	movl	$5, %esi
-	xorl	%eax, %eax
-	movq	%rbx, %rdi
-	callq	_printf
-	xorl	%eax, %eax
-	addq	$8, %rsp
-	popq	%rbx
-	popq	%rbp
-	retq
-	.cfi_endproc
-
-	.globl	_foo
-	.align	4, 0x90
-_foo:                                   ## @foo
-	.cfi_startproc
-## BB#0:                                ## %entry
-	pushq	%rbp
+	.cfi_def_cfa_offset 16
 Ltmp10:
-	.cfi_def_cfa_offset 16
-Ltmp11:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp12:
+Ltmp11:
 	.cfi_def_cfa_register %rbp
-	movl	$1, %eax
+	leaq	_closure(%rip), %rax
 	popq	%rbp
 	retq
 	.cfi_endproc
 
-	.globl	_bar
+	.globl	_closure
 	.align	4, 0x90
-_bar:                                   ## @bar
+_closure:                               ## @closure
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp13:
+Ltmp12:
 	.cfi_def_cfa_offset 16
-Ltmp14:
+Ltmp13:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp15:
+Ltmp14:
 	.cfi_def_cfa_register %rbp
-	leaq	(%rdi,%rsi), %rax
+	leaq	1(%rdi), %rax
 	popq	%rbp
 	retq
 	.cfi_endproc

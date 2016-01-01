@@ -27,22 +27,29 @@ define void @printd(double %d) #0 {
 
 define i64 @main() {
 entry:
-  %foo = call i64 @foo()
-  call void @print(i64 %foo)
-  %bar = call i64 @bar(i64 2, i64 3)
-  call void @print(i64 %bar)
+  %i = call i64 @i(i64 3)
+  %x = alloca i64
+  store i64 %i, i64* %x
+  %x1 = load i64* %x
+  call void @print(i64 %x1)
   ret i64 0
 }
 
-define i64 @foo() {
+define i64 (i64)* @iterate() {
 entry:
-  ret i64 1
+  ret i64 (i64)* @closure
 }
 
-define i64 @bar(i64 %"$0", i64 %"$1") {
+define i64 @closure(i64 %"$0") {
 entry:
-  %add_res = add i64 %"$0", %"$1"
+  %add_res = add i64 %"$0", 1
   ret i64 %add_res
+}
+
+define i64 @i(i64) {
+entry:
+  %iterate = call i64 (i64)* ()* @iterate()
+  ret i64 (i64)* %iterate
 }
 
 attributes #0 = { ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
