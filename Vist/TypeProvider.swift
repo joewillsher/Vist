@@ -324,6 +324,9 @@ extension ClosureExpression : TypeProvider {
         }
         
         // TODO: Implementation relying on parameters
+        // Specify which parameters from the scope are copied into the closure
+        //  - this is needed for method calls -- as `self` needs to be copied in
+        // Make syntax for the users to define this
         
         for exp in expressions {
             try exp.llvmType(innerScope)

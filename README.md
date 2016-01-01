@@ -14,6 +14,10 @@ brew install llvm36
 brew install homebrew/versions/llvm-gcc28
 ``` 
 
+Then clone this repo and run the Xcode project to build the compiler binary.
+
+You can then run the compiler from the command line, use the `-h` flag to see options.
+
 ##Examples
 
 ```swift

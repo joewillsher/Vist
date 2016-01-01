@@ -375,12 +375,6 @@ private extension FunctionType {
         guard let res = (type as? LLVMFnType)?.nonVoid else { throw IRError.TypeNotFound }
         return try res.map(ir)
     }
-//
-//    func returnType() throws -> LLVMTypeRef {
-//        guard let ty = type as? LLVMFnType else { throw IRError.TypeNotFound }
-//        return try ty.returns.ir()
-//    }
-//    
 }
 
 
@@ -482,11 +476,6 @@ extension BlockExpression {
 extension ClosureExpression : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
-
-        // To make closures work:
-        //  - create function for closure
-        //  - add params to function to the inner scope
-        //  - gen ir for all the closure’s elements
         
         guard let type = type as? LLVMFnType else { fatalError() }
         
@@ -513,19 +502,13 @@ extension ClosureExpression : IRGenerator {
             functionStackFrame.addVariable(name, val: s)
         }
         
-        
         do {
-            
             try BlockExpression(expressions: expressions)
                 .bbGen(innerStackFrame: functionStackFrame, fn: function, ret: try type.returns.ir())
-            
         } catch {
             LLVMDeleteFunction(function)
             throw error
         }
-        
-        
-        
         
         return function
     }
@@ -654,9 +637,9 @@ extension ForInLoopExpression : IRGenerator {
         let end = try rangeIterator.end.expressioncodeGen(stackFrame)
         
         // add incoming value to phi node
-        let params = [start].ptr(), incoming = [stackFrame.block].ptr()
-        defer { params.dealloc(1); incoming.dealloc(1) }
-        LLVMAddIncoming(i, params, incoming, 1)
+        let num1 = [start].ptr(), incoming1 = [stackFrame.block].ptr()
+        defer { num1.dealloc(1); incoming1.dealloc(1) }
+        LLVMAddIncoming(i, num1, incoming1, 1)
         
         
         // iterate and add phi incoming
@@ -673,7 +656,9 @@ extension ForInLoopExpression : IRGenerator {
         LLVMBuildCondBr(builder, comp, loop, afterLoop)
         
         // move back to loop / end loop
-        LLVMAddIncoming(i, [next].ptr(), [loopStackFrame.block].ptr(), 1)
+        let num2 = [next].ptr(), incoming2 = [loopStackFrame.block].ptr()
+        defer { num2.dealloc(1); incoming2.dealloc(1) }
+        LLVMAddIncoming(i, num2, incoming2, 1)
         
         LLVMPositionBuilderAtEnd(builder, afterLoop)
         stackFrame.block = afterLoop
