@@ -35,7 +35,7 @@ extension Printable {
 
 extension Printable {
     
-    public func _description(n: Int = 0) -> String {
+    public func _description(n: Int) -> String {
         
         if let v = printDirectly() { return v }
         if let v = printVal() { return "(\(self.dynamicType) \(v))" }
@@ -101,17 +101,19 @@ extension Bool : Printable {
 
 extension Array : Printable {
     
+    public func inline() -> Bool {
+        return isEmpty
+    }
+    
+    public func printVal() -> String? {
+        return isEmpty ? "[]" : nil
+    }
     public func printList() -> [(String?, Printable)]? {
         
-        var list: [Printable] = []
-        
-        for el in self where el is Printable {
-            let p = el as! Printable
-            
-            list.append(p)
-        }
-        
-        return list.enumerate().map { (String?("\($0)"), $1) }
+        return self
+            .flatMap { $0 as? Printable }
+            .enumerate()
+            .map { (String?("\($0)"), $1) }
     }
     
 }
@@ -313,7 +315,7 @@ extension ArraySubscriptExpression {
 extension StructExpression {
     
     func printList() -> [(String?, Printable)]? {
-        return [("name", name), ("properties", properties), ("methods", methods)]
+        return [("name", name), ("properties", properties), ("methods", methods), ("initialisers", initialisers)]
     }
 }
 
@@ -344,3 +346,11 @@ extension ClosureExpression : Printable {
         return expressions.map { (nil, $0 as Printable) }
     }
 }
+
+extension InitialiserExpression : Printable {
+    
+    func printList() -> [(String?, Printable)]? {
+        return [("ty", ty), ("impl", impl)]
+    }
+}
+

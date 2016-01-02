@@ -9,6 +9,8 @@
 
 protocol Expression : Printable, TypeProvider, Typed {}
 
+
+// TODO: make this generic
 protocol Typed {
     var type: LLVMTyped? { get set }
 }
@@ -34,7 +36,7 @@ protocol ScopeExpression : Expression, TypeProvider {
     var topLevel: Bool { get }
 }
 
-class AST : ScopeExpression {
+final class AST : ScopeExpression {
     var expressions: [Expression]
     var topLevel = true
     init(expressions: [Expression]) {
@@ -43,7 +45,7 @@ class AST : ScopeExpression {
     
     var type: LLVMTyped? = nil
 }
-class BlockExpression : ScopeExpression {
+final class BlockExpression : ScopeExpression {
     var expressions: [Expression]
     var variables: [ValueType]
     
@@ -56,12 +58,12 @@ class BlockExpression : ScopeExpression {
     var type: LLVMTyped? = nil
 }
 
-class ClosureExpression : Expression {
+final class ClosureExpression : Expression {
     
     var expressions: [Expression]
-    var parameters: [Expression]
+    var parameters: [String]
     
-    init(expressions: [Expression], params: [Expression]) {
+    init(expressions: [Expression], params: [String]) {
         self.expressions = expressions
         self.parameters = params
     }
@@ -70,7 +72,7 @@ class ClosureExpression : Expression {
 }
 
 
-class BooleanLiteral : Literal, BooleanType {
+final class BooleanLiteral : Literal, BooleanType {
     let val: Bool
     
     init(val: Bool) {
@@ -91,7 +93,7 @@ protocol BooleanType {
 }
 
 
-class FloatingPointLiteral : Literal, ExplicitlyTyped, FloatingPointType, Sized {
+final class FloatingPointLiteral : Literal, ExplicitlyTyped, FloatingPointType, Sized {
     let val: Double
     var size: UInt32 = 64
     var explicitType: String {
@@ -105,7 +107,7 @@ class FloatingPointLiteral : Literal, ExplicitlyTyped, FloatingPointType, Sized 
     var type: LLVMTyped? = nil
 }
 
-class IntegerLiteral : Literal, ExplicitlyTyped, IntegerType, Sized {
+final class IntegerLiteral : Literal, ExplicitlyTyped, IntegerType, Sized {
     let val: Int
     var size: UInt32
     var explicitType: String {
@@ -138,7 +140,7 @@ struct CommentExpression : Expression {
     var type: LLVMTyped? = nil
 }
 
-class Void : Expression {
+final class Void : Expression {
     var type: LLVMTyped? = nil
 }
 
@@ -148,7 +150,7 @@ protocol AssignableExpression : Expression {}
 /// A variable lookup expression
 ///
 /// Generic over the variable type, use AnyExpression if this is not known
-class Variable <T : Expression> : AssignableExpression {
+final class Variable <T : Expression> : AssignableExpression {
     let name: String
     
     init(name: String) {
@@ -158,7 +160,7 @@ class Variable <T : Expression> : AssignableExpression {
     var type: LLVMTyped? = nil
 }
 
-class BinaryExpression : Expression {
+final class BinaryExpression : Expression {
     let op: String
     let lhs: Expression, rhs: Expression
     
@@ -171,7 +173,7 @@ class BinaryExpression : Expression {
     var type: LLVMTyped? = nil
 }
 
-class PrefixExpression : Expression {
+final class PrefixExpression : Expression {
     let op: String
     let expr: Expression
     
@@ -183,7 +185,7 @@ class PrefixExpression : Expression {
     var type: LLVMTyped? = nil
 }
 
-class PostfixExpression : Expression {
+final class PostfixExpression : Expression {
     let op: String
     let expr: Expression
     
@@ -195,7 +197,7 @@ class PostfixExpression : Expression {
     var type: LLVMTyped? = nil
 }
 
-class FunctionCallExpression : Expression {
+final class FunctionCallExpression : Expression {
     let name: String
     let args: TupleExpression
     
@@ -207,7 +209,7 @@ class FunctionCallExpression : Expression {
     var type: LLVMTyped? = nil
 }
 
-class AssignmentExpression : Expression, StructMember {
+final class AssignmentExpression : Expression, StructMember {
     let name: String
     let aType: String?
     let isMutable: Bool
@@ -223,7 +225,7 @@ class AssignmentExpression : Expression, StructMember {
     var type: LLVMTyped? = nil
 }
 
-class MutationExpression : Expression {
+final class MutationExpression : Expression {
     let object: AssignableExpression
     let value: Expression
     
@@ -237,7 +239,7 @@ class MutationExpression : Expression {
 
 
 
-class FunctionPrototypeExpression : Expression, StructMember {
+final class FunctionPrototypeExpression : Expression, StructMember {
     let name: String
     let fnType: FunctionType
     let impl: FunctionImplementationExpression?
@@ -251,7 +253,7 @@ class FunctionPrototypeExpression : Expression, StructMember {
     var type: LLVMTyped? = nil
 }
 
-class FunctionImplementationExpression : Expression {
+final class FunctionImplementationExpression : Expression {
     let params: TupleExpression
     let body: BlockExpression
     
@@ -263,7 +265,7 @@ class FunctionImplementationExpression : Expression {
     var type: LLVMTyped? = nil
 }
 
-class TupleExpression : Expression {
+final class TupleExpression : Expression {
     let elements: [Expression]
     
     init(elements: [Expression]) {
@@ -279,7 +281,7 @@ class TupleExpression : Expression {
     var type: LLVMTyped? = nil
 }
 
-class ReturnExpression : Expression {
+final class ReturnExpression : Expression {
     let expression: Expression
     
     init(expression: Expression) {
@@ -290,7 +292,7 @@ class ReturnExpression : Expression {
 }
 
 
-class ValueType : Expression {
+final class ValueType : Expression {
     var name: String
     
     init(name: String) {
@@ -300,7 +302,7 @@ class ValueType : Expression {
     var type: LLVMTyped? = nil
 }
 
-class FunctionType : Expression {
+final class FunctionType : Expression {
     let args: TupleExpression
     let returns: Expression
     
@@ -317,7 +319,7 @@ class FunctionType : Expression {
 
 
 
-class ElseIfBlockExpression<BlockType : ScopeExpression> : Expression {
+final class ElseIfBlockExpression<BlockType : ScopeExpression> : Expression {
     var condition: Expression?
     var block: BlockType
     
@@ -330,7 +332,7 @@ class ElseIfBlockExpression<BlockType : ScopeExpression> : Expression {
 }
 
 
-class ConditionalExpression<BlockType : ScopeExpression> : Expression {
+final class ConditionalExpression<BlockType : ScopeExpression> : Expression {
     let statements: [ElseIfBlockExpression<BlockType> ]
     
     init(statements: [(condition: Expression?, block: BlockType)]) throws {
@@ -363,7 +365,7 @@ protocol LoopExpression : Expression {
 }
 
 
-class ForInLoopExpression
+final class ForInLoopExpression
     <Iterator : IteratorExpression,
     BoundType : Expression,
     BlockType : ScopeExpression>
@@ -382,7 +384,7 @@ class ForInLoopExpression
     var type: LLVMTyped? = nil
 }
 
-class WhileLoopExpression
+final class WhileLoopExpression
     <Iterator : IteratorExpression,
     BlockType : ScopeExpression>
     : LoopExpression {
@@ -402,7 +404,7 @@ class WhileLoopExpression
 protocol IteratorExpression : Expression {
 }
 
-class RangeIteratorExpression : IteratorExpression {
+final class RangeIteratorExpression : IteratorExpression {
     
     let start: Expression, end: Expression
     
@@ -414,7 +416,7 @@ class RangeIteratorExpression : IteratorExpression {
     var type: LLVMTyped? = nil
 }
 
-class WhileIteratorExpression : IteratorExpression {
+final class WhileIteratorExpression : IteratorExpression {
     
     let condition: Expression
     
@@ -426,7 +428,7 @@ class WhileIteratorExpression : IteratorExpression {
     var type: LLVMTyped? = nil
 }
 
-class ArrayExpression : Expression, AssignableExpression {
+final class ArrayExpression : Expression, AssignableExpression {
     
     let arr: [Expression]
     
@@ -438,7 +440,7 @@ class ArrayExpression : Expression, AssignableExpression {
     var type: LLVMTyped? = nil
 }
 
-class ArraySubscriptExpression : Expression, AssignableExpression {
+final class ArraySubscriptExpression : Expression, AssignableExpression {
     let arr: Expression
     let index: Expression
     
@@ -459,28 +461,57 @@ protocol StructMember {
 }
 
 
-class StructExpression : Expression {
-    
+final class StructExpression : Expression {
     let name: String
     let properties: [AssignmentExpression]
     let methods: [FunctionPrototypeExpression]
+    let initialisers: [InitialiserExpression]
     
-    init(name: String, properties: [AssignmentExpression], methods: [FunctionPrototypeExpression]) {
+    init(name: String, properties: [AssignmentExpression], methods: [FunctionPrototypeExpression], initialisers: [InitialiserExpression]) {
         self.name = name
         self.properties = properties
         self.methods = methods
+        self.initialisers = initialisers
+    }
+    
+    var type: LLVMTyped? = nil
+}
+
+final class InitialiserExpression : Expression, StructMember {
+    let ty: FunctionType
+    let impl: FunctionImplementationExpression
+    weak var parent: StructExpression?
+    
+    init(ty: FunctionType, impl: FunctionImplementationExpression, parent: StructExpression?) {
+        self.ty = ty
+        self.impl = impl
     }
     
     var type: LLVMTyped? = nil
 }
 
 
-class MethodCallExpression : Expression {
+final class MethodCallExpression : Expression {
+    let name: String
+    let params: TupleExpression
+    
+    init(name: String, params: TupleExpression) {
+        self.name = name
+        self.params = params
+    }
     
     var type: LLVMTyped? = nil
 }
 
-
+final class PropertyLookupExpression : Expression {
+    let name: String
+    
+    init(name: String) {
+        self.name = name
+    }
+    
+    var type: LLVMTyped? = nil
+}
 
 
 

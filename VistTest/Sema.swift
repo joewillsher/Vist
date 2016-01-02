@@ -25,7 +25,7 @@ enum SemaError : ErrorType {
     case HeterogenousArray(String), EmptyArray
     case NotVariableType, CannotSubscriptNonArrayVariable, NonIntegerSubscript
     case NonBooleanCondition, RangeWithInconsistentTypes, DifferentTypeForMutation
-    case StructPropertyNotTyped, StructMethodNotTyped
+    case StructPropertyNotTyped, StructMethodNotTyped, InitialiserNotAssociatedWithType
     case WrongFunctionReturnType(applied: LLVMTyped, expected: LLVMTyped), WrongFunctionApplication(applied: LLVMTyped, expected: LLVMTyped, paramNum: Int)
     case NoTypeNamed(String), TypeNotFound
     case DifferentTypesForOperator(String)

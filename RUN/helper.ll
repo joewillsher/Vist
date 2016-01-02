@@ -5,7 +5,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 @.str = private unnamed_addr constant [6 x i8] c"%llu\0A\00", align 1
 @.str1 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
 
-; Function Attrs: ssp uwtable
+; Function Attrs: noinline ssp uwtable
 define void @print(i64 %i) #0 {
   %1 = alloca i64, align 8
   store i64 %i, i64* %1, align 8
@@ -16,7 +16,7 @@ define void @print(i64 %i) #0 {
 
 declare i32 @printf(i8*, ...) #1
 
-; Function Attrs: ssp uwtable
+; Function Attrs: noinline ssp uwtable
 define void @printd(double %d) #0 {
   %1 = alloca double, align 8
   store double %d, double* %1, align 8
@@ -25,7 +25,7 @@ define void @printd(double %d) #0 {
   ret void
 }
 
-attributes #0 = { ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 
 !llvm.module.flags = !{!0}

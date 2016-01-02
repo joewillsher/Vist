@@ -1,4 +1,25 @@
 
+let a = x.meme
+
+type Meme {
+    let a: Int = 2
+    let b: Int = 3
+
+    init () = {
+        a = 2
+        b = 3
+    }
+
+    func foo: Int -> Int = do return 1
+}
+
+
+let x = Meme()
+
+print(1)
+
+
+/*
 func iterate: () -> Int -> Int = do
     return |a| do
         return a + 1
@@ -9,8 +30,6 @@ let x = i(8)
 
 print(x)
 
-
-/*
 func foo: Int Int -> Int = |a b| do
     return a + b
 

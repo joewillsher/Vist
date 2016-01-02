@@ -16,9 +16,9 @@ enum LLVMType : LLVMTyped {
     case Int(size: UInt32), Float(size: UInt32), Bool
     indirect case Array(el: LLVMTyped, size: UInt32)
     indirect case Pointer(to: LLVMTyped)
-    indirect case Struct(members: [LLVMType], methods: [LLVMFnType])
+//    indirect case Struct(members: [(String, LLVMType)], methods: [(String, LLVMFnType)])
     
-    // TODO: Implement Tuple types
+    // TODO: Implement Tuple types (as struct)
     
     func ir() throws -> LLVMTypeRef {
         switch self {
@@ -36,11 +36,11 @@ enum LLVMType : LLVMTyped {
             case 128:                   return LLVMFP128Type()
             default:                    throw SemaError.InvalidType(self)
             }
-        case .Struct(let members, _):
-            let arr = try members
-                .map { try $0.ir() }
-                .ptr()
-                                        return LLVMStructType(arr, UInt32(members.count), LLVMBool(false))
+//        case .Struct(let members, _):
+//            let arr = try members
+//                .map { try $1.ir() }
+//                .ptr()
+//                                        return LLVMStructType(arr, UInt32(members.count), LLVMBool(false))
         }
     }
     
@@ -85,6 +85,27 @@ struct LLVMFnType : LLVMTyped {
     }
 }
 
+final class LLVMStType : LLVMTyped {
+    let members: [(String, LLVMType)]
+    let methods: [(String, LLVMFnType)]
+    
+    init(members: [(String, LLVMType)], methods: [(String, LLVMFnType)]) {
+        self.members = members
+        self.methods = methods
+    }
+    
+    func ir() throws -> LLVMTypeRef {
+        let arr = try members
+            .map { try $1.ir() }
+            .ptr()
+        defer { arr.dealloc(members.count) }
+        
+        return LLVMStructType(
+            arr,
+            UInt32(members.count),
+            LLVMBool(false))
+    }
+}
 
 extension LLVMType : CustomStringConvertible {
     
@@ -102,14 +123,19 @@ extension LLVMType : CustomStringConvertible {
             case 32:                    return "Float"
             case 64:                    return "Double"
             case 128:                   return "FP128"
-            default:                    return ""
+            default:                    return "<<invalid type>>"
             }
-        case .Struct(let members, _):
-            let arr = members
-                .map { $0.description }
-                .joinWithSeparator(", ")
-                                        return "Struct(\(arr))"
         }
+    }
+}
+
+extension LLVMStType : CustomStringConvertible {
+    
+    var description: String {
+        let arr = members
+            .map { $1.description }
+            .joinWithSeparator(", ")
+        return "Struct(\(arr))"
     }
 }
 

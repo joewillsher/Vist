@@ -316,12 +316,12 @@ extension ClosureExpression : TypeProvider {
         self.type = ty
 
         // inner scope should be nil if we dont want implicit captutring
-        let innerScope = SemaScope(parent: scope, returnType: ty)
+        let innerScope = SemaScope(parent: nil, returnType: ty)
         innerScope.returnType = ty.returns
         
-        for i in 0..<ty.params.count {
-            let t = ty.params[i]
-            innerScope[variable: "$\(i)"] = t
+        for (i, t) in ty.params.enumerate() {
+            let name = parameters.isEmpty ? "$\(i)" : parameters[i]
+            innerScope[variable: name] = t
         }
         
         // TODO: Implementation relying on parameters
@@ -524,25 +524,49 @@ extension StructExpression : TypeProvider {
         let structScope = SemaScope(parent: scope, returnType: nil) // cannot return from Struct scope
         
         // maps over properties and gens types
-        let members = try properties.flatMap { (a: AssignmentExpression) -> LLVMType? in
+        let members = try properties.map { (a: AssignmentExpression) -> (String, LLVMType) in
             try a.llvmType(structScope)
-            return a.value.type as? LLVMType
+            guard let t = a.value.type as? LLVMType else { throw SemaError.StructPropertyNotTyped }
+            return (a.name, t)
         }
-        guard members.count == properties.count else { throw SemaError.StructPropertyNotTyped }
         
-        let memberFunctions = try methods.flatMap { (f: FunctionPrototypeExpression) -> LLVMFnType? in
+        let memberFunctions = try methods.flatMap { (f: FunctionPrototypeExpression) -> (String, LLVMFnType) in
             try f.llvmType(structScope)
-            return f.fnType.type as? LLVMFnType
+            guard let t = f.fnType.type as? LLVMFnType else { throw SemaError.StructMethodNotTyped }
+            return (f.name, t)
         }
-        guard memberFunctions.count == methods.count else { throw SemaError.StructMethodNotTyped }
         
-        let ty = LLVMType.Struct(members: members, methods: memberFunctions)
+        let ty = LLVMStType(members: members, methods: memberFunctions)
         
+        scope[type: name] = ty
         self.type = ty
+        
+        for i in initialisers {
+            try i.llvmType(scope)
+        }
+        
         return ty
     }
+
 }
 
+
+extension InitialiserExpression : TypeProvider {
+    
+    func llvmType(scope: SemaScope) throws -> LLVMTyped {
+        
+        guard let parentType = parent?.type, parentName = parent?.name else { throw SemaError.InitialiserNotAssociatedWithType }
+        
+        try impl.llvmType(scope)
+        
+        let params = try ty.params()
+        
+        let t = LLVMFnType(params: params, returns: parentType)
+        scope[function: parentName] = t
+        self.type = t
+        return t
+    }
+}
 
 
 

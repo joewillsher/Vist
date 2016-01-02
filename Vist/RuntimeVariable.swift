@@ -24,12 +24,12 @@ protocol MutableVariable {
 /// Instances are called in IR using `load` and `store`
 ///
 /// mem2reg optimisation pass moves these down to SSA register vars
-class ReferenceVariable : RuntimeVariable, MutableVariable {
+final class ReferenceVariable : RuntimeVariable, MutableVariable {
     var type: LLVMTypeRef
-    var ptr: LLVMValueRef
+    private var ptr: LLVMValueRef
     let mutable: Bool
     
-    var builder: LLVMBuilderRef
+    private var builder: LLVMBuilderRef
     
     init(type: LLVMTypeRef, ptr: LLVMValueRef, mutable: Bool, builder: LLVMBuilderRef) {
         self.type = type
@@ -63,10 +63,11 @@ class ReferenceVariable : RuntimeVariable, MutableVariable {
 /// A variable type passed by value
 ///
 /// Instances use SSA
-class StackVariable : RuntimeVariable {
+final class StackVariable : RuntimeVariable {
     var type: LLVMTypeRef
-    var val: LLVMValueRef
-    var builder: LLVMBuilderRef
+    private var val: LLVMValueRef
+    
+    private var builder: LLVMBuilderRef
     
     init(val: LLVMValueRef, builder: LLVMBuilderRef) {
         self.type = LLVMTypeOf(val)

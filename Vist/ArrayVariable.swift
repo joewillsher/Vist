@@ -10,16 +10,16 @@
 
 
 class ArrayVariable : RuntimeVariable {
-    var elementType: LLVMTypeRef    // ty Type
-    var arrayType: LLVMTypeRef // [sz x ty] Type
+    private var elementType: LLVMTypeRef    // ty Type
+    private var arrayType: LLVMTypeRef // [sz x ty] Type
     
     var ptr: LLVMValueRef   // ty*
-    var arr: LLVMValueRef   // [sz x ty]*
-    var base: LLVMValueRef  // ty*
-    var count: Int
+    private var arr: LLVMValueRef   // [sz x ty]*
+    private var base: LLVMValueRef  // ty*
+    private var count: Int
     var mutable: Bool
     
-    var builder: LLVMBuilderRef
+    private var builder: LLVMBuilderRef
     
     var type: LLVMTypeRef {
         return LLVMArrayType(elementType, UInt32(count))
@@ -35,7 +35,7 @@ class ArrayVariable : RuntimeVariable {
     
     func assignFrom(builder: LLVMBuilderRef, arr: ArrayVariable) {
         
-        assert(elementType == arr.elementType)
+        precondition(elementType == arr.elementType)
         
         LLVMBuildStore(builder, arr.base, ptr)
         count = arr.count
@@ -75,9 +75,17 @@ class ArrayVariable : RuntimeVariable {
         LLVMBuildStore(builder, base, self.ptr)
     }
     
-    func ptrToElementAtIndex(index: LLVMValueRef) -> LLVMValueRef {
+    private func ptrToElementAtIndex(index: LLVMValueRef) -> LLVMValueRef {
         
         return LLVMBuildGEP(builder, base, [index].ptr(), 1, "ptr")
+    }
+    
+    func loadElementAtIndex(index: LLVMValueRef) -> LLVMValueRef {
+        return LLVMBuildLoad(builder, ptrToElementAtIndex(index), "element")
+    }
+    
+    func store(val: LLVMValueRef, inElementAtIndex index: LLVMValueRef) {
+        LLVMBuildStore(builder, val, ptr)
     }
     
 }

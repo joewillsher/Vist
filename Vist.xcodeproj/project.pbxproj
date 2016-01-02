@@ -109,6 +109,7 @@
 		D44DB8881C316DA500EBCD9F /* Runtime */ = {
 			isa = PBXGroup;
 			children = (
+				D4DB9D5D1C1DDA1A00503153 /* helper.cpp */,
 			);
 			name = Runtime;
 			sourceTree = "<group>";
@@ -170,13 +171,21 @@
 			name = Interface;
 			sourceTree = "<group>";
 		};
+		D47D4BE01C38427200B22B3C /* Docs */ = {
+			isa = PBXGroup;
+			children = (
+				D47E66581B88D9A20051D586 /* README.md */,
+				D4B1FA011C2E1F58001E7BCC /* TODO.md */,
+			);
+			name = Docs;
+			sourceTree = "<group>";
+		};
 		D47FF0711B812052003F9920 = {
 			isa = PBXGroup;
 			children = (
 				D4DB9D641C1DFB8700503153 /* Source */,
 				D4DB9D651C1DFF9B00503153 /* Compile pipeline */,
-				D47E66581B88D9A20051D586 /* README.md */,
-				D4B1FA011C2E1F58001E7BCC /* TODO.md */,
+				D47D4BE01C38427200B22B3C /* Docs */,
 				D47FF07C1B812052003F9920 /* Vist */,
 				D485DD261C1667E900B72F81 /* VistTest */,
 				D47FF07B1B812052003F9920 /* Products */,
@@ -234,7 +243,6 @@
 		D4DB9D641C1DFB8700503153 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				D4DB9D5D1C1DDA1A00503153 /* helper.cpp */,
 				D489F3BD1C1E392D00254FFC /* example.vist */,
 				D44DB8851C30ABFF00EBCD9F /* second.vist */,
 				D44DB8861C30B1D000EBCD9F /* third.vist */,

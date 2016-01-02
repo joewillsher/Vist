@@ -255,11 +255,9 @@ extension MutationExpression : IRGenerator {
             let arr = try sub.backingArrayVariable(stackFrame)
             
             let i = try sub.index.expressioncodeGen(stackFrame)
-            let ptr = arr.ptrToElementAtIndex(i)
-            
             let val = try value.expressioncodeGen(stackFrame)
             
-            LLVMBuildStore(builder, val, ptr)
+            arr.store(val, inElementAtIndex: i)
         }
         
         return nil
@@ -490,12 +488,12 @@ extension ClosureExpression : IRGenerator {
         
         stackFrame.addFunctionType(name, val: functionType)
         
-        let functionStackFrame = StackFrame(function: function, parentStackFrame: nil)
+        let functionStackFrame = StackFrame(function: function, parentStackFrame: stackFrame)
         
         // set function param names and update table
         for i in 0..<type.params.count {
             let param = LLVMGetParam(function, UInt32(i))
-            let name = "$\(i)"
+            let name = parameters.isEmpty ? "$\(i)" : parameters[i]
             LLVMSetValueName(param, name)
             
             let s = StackVariable(val: param, builder: builder)
@@ -742,7 +740,7 @@ extension ArrayExpression : IRGenerator {
     }
     
     func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
-        return try arrInstance(stackFrame).base
+        return try arrInstance(stackFrame).load()
     }
     
 }
@@ -761,9 +759,8 @@ extension ArraySubscriptExpression : IRGenerator {
 
         let arr = try backingArrayVariable(stackFrame)
         let idx = try index.expressioncodeGen(stackFrame)
-        let ptr = arr.ptrToElementAtIndex(idx)
         
-        return LLVMBuildLoad(builder, ptr, "element")
+        return arr.loadElementAtIndex(idx)
     }
     
 }
@@ -778,18 +775,61 @@ extension StructExpression : IRGenerator {
     
     func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
+        guard let type = try type?.ir() else { throw IRError.TypeNotFound }
+        let numEls = properties.count
+        
+        let structStackFrame = StackFrame(block: stackFrame.block, function: stackFrame.function, parentStackFrame: stackFrame)
+        
+        let els = try properties
+            .map { try $0.codeGen(structStackFrame) }
+            .ptr()
+        defer { els.dealloc(numEls) }
+        
+        let a = LLVMConstStruct(els, UInt32(numEls), LLVMBool(false))
         
         
         
-        
-        
-        
-        return nil
+        return a
     }
     
 }
 
+extension InitialiserExpression : IRGenerator {
+    
+    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
+        
+        let args = ty.args, argCount = args.elements.count
+        guard let type = ty.type as? LLVMFnType, name = parent?.name, parentType = parent?.type else { throw IRError.TypeNotFound }
+        
+        // make function
+        let functionType = try type.ir()
+        let function = LLVMAddFunction(module, name, functionType)
+        LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
+        
+        // Add function type to stack frame
+        stackFrame.addFunctionType(name, val: functionType)
+        
+        // stack frame internal to initialiser, cannot capture from surrounding scope
+        let initStackFrame = StackFrame(function: function, parentStackFrame: nil)
+        
+        // set function param names and update table
+        for i in 0..<argCount {
+            let param = LLVMGetParam(function, UInt32(i))
+            let name = (impl.params.elements[i] as? ValueType)?.name ?? ("$\(i)")
+            LLVMSetValueName(param, name)
+            
+            let s = StackVariable(val: param, builder: builder)
+            initStackFrame.addVariable(name, val: s)
+        }
+        
+        let s = ReferenceVariable.alloc(builder, type: try parentType.ir(), mutable: false)
+        stackFrame.addVariable(name, val: s)
+        
+        // TODO: run init block
 
+        return function
+    }
+}
 
 
 
@@ -802,6 +842,7 @@ extension StructExpression : IRGenerator {
 
 
 extension AST {
+    
     func IRGen(module m: LLVMModuleRef) throws {
         
         // initialise global objects

@@ -5,7 +5,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 @.str = private unnamed_addr constant [6 x i8] c"%llu\0A\00", align 1
 @.str1 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
 
-; Function Attrs: ssp uwtable
+; Function Attrs: noinline ssp uwtable
 define void @print(i64 %i) #0 {
   %1 = alloca i64, align 8
   store i64 %i, i64* %1, align 8
@@ -16,7 +16,7 @@ define void @print(i64 %i) #0 {
 
 declare i32 @printf(i8*, ...) #1
 
-; Function Attrs: ssp uwtable
+; Function Attrs: noinline ssp uwtable
 define void @printd(double %d) #0 {
   %1 = alloca double, align 8
   store double %d, double* %1, align 8
@@ -27,33 +27,15 @@ define void @printd(double %d) #0 {
 
 define i64 @main() {
 entry:
-  %i = call i64 @i(i64 8)
-  %x = alloca i64
-  store i64 %i, i64* %x
-  %x1 = load i64* %x
-  call void @print(i64 %x1)
+  %a = alloca i64
+  store i64 2, i64* %a
+  %b = alloca i64
+  store i64 3, i64* %b
+  call void @print(i64 1)
   ret i64 0
 }
 
-define i64 (i64)* @iterate() {
-entry:
-  ret i64 (i64)* @closure
-}
-
-define i64 @closure(i64 %"$0") {
-entry:
-  %add_res = add i64 %"$0", 1
-  ret i64 %add_res
-}
-
-define i64 @i(i64 %"$0") {
-entry:
-  %iterate = call i64 (i64)* ()* @iterate()
-  %0 = call i64 %iterate(i64 %"$0")
-  ret i64 %0
-}
-
-attributes #0 = { ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 
 !llvm.ident = !{!0}

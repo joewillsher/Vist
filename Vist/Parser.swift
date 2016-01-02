@@ -218,6 +218,25 @@ extension Parser {
             
             return MutationExpression(object: Variable<AnyExpression>(name: token), value: exp)
             
+        case .Period?: // property or fn
+            getNextToken() // eat `.`
+            guard case .Identifier(let name) = getNextToken() else { throw ParseError.NoIdentifier(currentPos) }
+            
+            switch inspectNextToken() {
+            case .OpenParen?:
+                getNextToken() // eat `(`
+                
+                if case .CloseParen = currentToken {   // simple itentifier() call
+                    getNextToken() // eat ')'
+                    return MethodCallExpression(name: name, params: TupleExpression.void())
+                }
+                
+                return MethodCallExpression(name: token, params: try parseTupleExpression())
+                
+            default:
+                return PropertyLookupExpression(name: name)
+            }
+            
         default: // just identifier
             defer { getNextToken() }
             return try parseOperatorExpression(Variable<AnyExpression>(name: token))
@@ -257,8 +276,7 @@ extension Parser {
             
         case .OpenBrace, .Do, .Bar:
             let block = try parseBlockExpression()
-            let closure = ClosureExpression(expressions: block.expressions, params: [])
-            // set the params by looking at |the bit| before the block
+            let closure = ClosureExpression(expressions: block.expressions, params: block.variables.map { $0.name })
             return closure
             
         default:
@@ -542,7 +560,7 @@ extension Parser {
         let names: [Expression]
         
         if case .Bar = currentToken {
-            names = try parseClosureNamesExpression()
+            names = try parseClosureNamesExpression().map { $0 as Expression }
             
         } else {
             names = (0..<type.args.elements.count).map{"$\($0)"}.map{ ValueType.init(name: $0) }
@@ -630,12 +648,12 @@ extension Parser {
 
 
 //-------------------------------------------------------------------------------------------------------------------------
-//  MARK:                                              Other
+//  MARK:                                              Type
 //-------------------------------------------------------------------------------------------------------------------------
 
 extension Parser {
     
-    private mutating func parseTypeExpression(byRef byRef: Bool) throws -> StructExpression {
+    private mutating func parseTypeDeclarationExpression(byRef byRef: Bool) throws -> StructExpression {
         getNextToken() // eat 'type'
         
         guard case .Identifier(let name) = currentToken else { throw ParseError.NoTypeName(currentPos) }
@@ -643,12 +661,11 @@ extension Parser {
         guard case .OpenBrace = currentToken else { throw ParseError.ExpectedBrace(currentPos) }
         getNextToken() // eat '{'
         
-        var properties: [AssignmentExpression] = [], methods: [FunctionPrototypeExpression] = []
+        var properties: [AssignmentExpression] = [], methods: [FunctionPrototypeExpression] = [], initialisers: [InitialiserExpression] = []
         
         while true {
             
             switch currentToken {
-                
             case .Var:
                 properties.append(try parseVariableAssignmentMutable(true))
                 
@@ -658,6 +675,9 @@ extension Parser {
             case .Func:
                 methods.append(try parseFunctionDeclaration())
                 
+            case .Init:
+                initialisers.append(try parseInitDeclaration())
+                
             default:
                 throw ParseError.ObjectNotAllowedInTopLevelOfTypeImpl(currentPos)
             }
@@ -665,7 +685,20 @@ extension Parser {
             if case .CloseBrace = currentToken { break }
         }
         
-        return StructExpression(name: name, properties: properties, methods: methods)
+        let s = StructExpression(name: name, properties: properties, methods: methods, initialisers: initialisers)
+        for i in s.initialisers {
+            i.parent = s
+        }
+        return s
+    }
+    
+    private mutating func parseInitDeclaration() throws -> InitialiserExpression {
+        
+        getNextToken() // eat `init`
+        let type = try parseFunctionType()
+        getNextToken() // eat '='
+        
+        return InitialiserExpression(ty: type, impl: try parseClosureDeclaration(type: type), parent: nil)
     }
     
 }
@@ -719,8 +752,8 @@ extension Parser {
         case .Do:                   return try parseBracelessDoExpression()
         case .While:                return try parseWhileLoopExpression()
         case .SqbrOpen:             return try parseArrayExpression()
-        case .Type:                 return try parseTypeExpression(byRef: false)
-        case .Reference:            getNextToken(); return try parseTypeExpression(byRef: true)
+        case .Type:                 return try parseTypeDeclarationExpression(byRef: false)
+        case .Reference:            getNextToken(); return try parseTypeDeclarationExpression(byRef: true)
         case .Integer(let i):       return parseIntExpression(i)
         case .FloatingPoint(let x): return parseFloatingPointExpression(x)
         case .Str(let str):         return parseStringExpression(str)

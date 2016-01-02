@@ -10,6 +10,7 @@ class SemaScope {
     
     var variables: [String: LLVMTyped]
     var functions: [String: LLVMFnType]
+    var types: [String: LLVMStType]
     var returnType: LLVMTyped?
     let parent: SemaScope?
     
@@ -36,12 +37,22 @@ class SemaScope {
             functions[function] = newValue
         }
     }
+    subscript (type type: String) -> LLVMStType? {
+        get {
+            if let v = types[type] { return v }
+            return parent?[type: type]
+        }
+        set {
+            types[type] = newValue
+        }
+    }
     
     init(parent: SemaScope?, returnType: LLVMTyped? = LLVMType.Void) {
         self.parent = parent
         self.returnType = returnType
         self.variables = [:]
         self.functions = [:]
+        self.types = [:]
     }
 }
 

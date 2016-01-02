@@ -11,12 +11,12 @@
 
 extern "C" {
     
-    void print(int64_t i)
+    void __attribute__ ((noinline)) print(int64_t i)
     {
         printf("%llu\n", i);
     };
     
-    void printd(double d)
+    void __attribute__ ((noinline)) printd(double d)
     {
         printf("%f\n", d);
     };
