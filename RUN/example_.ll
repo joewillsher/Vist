@@ -27,7 +27,7 @@ define void @printd(double %d) #0 {
 
 define i64 @main() {
 entry:
-  %i = call i64 @i(i64 3)
+  %i = call i64 @i(i64 8)
   %x = alloca i64
   store i64 %i, i64* %x
   %x1 = load i64* %x

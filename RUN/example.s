@@ -54,7 +54,7 @@ Ltmp7:
 Ltmp8:
 	.cfi_def_cfa_register %rbp
 	leaq	L_.str(%rip), %rdi
-	movl	$4, %esi
+	movl	$9, %esi
 	xorl	%eax, %eax
 	callq	_printf
 	xorl	%eax, %eax

@@ -143,9 +143,9 @@
 			children = (
 				D4C85BCB1BF8E00100731F34 /* IRGen.swift */,
 				D465C6571C187639001A008C /* StackFrame.swift */,
+				D4851F451C2434D90009233E /* RuntimeVariable.swift */,
 				D4AD08251C2DEB1200BE7D86 /* ArrayVariable.swift */,
 				D4AD08271C2DEB2D00BE7D86 /* StructVariable.swift */,
-				D4851F451C2434D90009233E /* RuntimeVariable.swift */,
 			);
 			name = IR;
 			sourceTree = "<group>";

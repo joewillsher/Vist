@@ -255,7 +255,7 @@ extension Parser {
         case .SqbrOpen:
             return try parseArrayExpression()
             
-        case .OpenBrace, .Do:
+        case .OpenBrace, .Do, .Bar:
             let block = try parseBlockExpression()
             let closure = ClosureExpression(expressions: block.expressions, params: [])
             // set the params by looking at |the bit| before the block
@@ -523,20 +523,26 @@ extension Parser {
         return FunctionPrototypeExpression(name: id, type: type, impl: try parseClosureDeclaration(type: type))
     }
     
+    private mutating func parseClosureNamesExpression() throws -> [ValueType] {
+        
+        guard case .Bar = currentToken else { return [] }
+        getNextToken() // eat '|'
+        
+        var nms: [String] = []
+        while case let .Identifier(name) = currentToken {
+            nms.append(name)
+            getNextToken()
+        }
+        guard case .Bar = currentToken else { throw ParseError.ExpectedBar(currentPos) }
+        guard getNextToken().isControlToken() else { throw ParseError.NotBlock(currentPos) }
+        return nms.map { ValueType.init(name: $0) }
+    }
+    
     private mutating func parseClosureDeclaration(anon anon: Bool = false, type: FunctionType) throws -> FunctionImplementationExpression {
         let names: [Expression]
         
         if case .Bar = currentToken {
-            getNextToken() // eat '|'
-            
-            var nms: [String] = []
-            while case let .Identifier(name) = currentToken {
-                nms.append(name)
-                getNextToken()
-            }
-            guard case .Bar = currentToken else { throw ParseError.ExpectedBar(currentPos) }
-            guard getNextToken().isControlToken() else { throw ParseError.NotBlock(currentPos) }
-            names = nms.map{ ValueType.init(name: $0) }
+            names = try parseClosureNamesExpression()
             
         } else {
             names = (0..<type.args.elements.count).map{"$\($0)"}.map{ ValueType.init(name: $0) }
@@ -547,7 +553,7 @@ extension Parser {
         return FunctionImplementationExpression(params: TupleExpression(elements: names), body: try parseBlockExpression())
     }
     
-    private mutating func parseBraceExpressions() throws -> BlockExpression {
+    private mutating func parseBraceExpressions(names: [ValueType] = []) throws -> BlockExpression {
         getNextToken() // eat '{'
         
         var expressions = [Expression]()
@@ -562,7 +568,7 @@ extension Parser {
             catch ParseError.NoToken(.CloseParen, _) { break }
         }
         getNextToken() // eat '}'
-        return BlockExpression(expressions: expressions)
+        return BlockExpression(expressions: expressions, variables: names)
     }
     
     private mutating func parseReturnExpression() throws -> Expression {
@@ -571,19 +577,20 @@ extension Parser {
         return ReturnExpression(expression: try parseOperatorExpression())
     }
     
-    private mutating func parseBracelessDoExpression() throws -> BlockExpression {
+    private mutating func parseBracelessDoExpression(names: [ValueType] = []) throws -> BlockExpression {
         getNextToken() // eat 'do'
         
         guard let ex = try parseExpression(currentToken) else { throw ParseError.NoToken(currentToken, currentPos) }
         
-        return BlockExpression(expressions: [ex])
+        return BlockExpression(expressions: [ex], variables: names)
     }
     
-    private mutating func parseBlockExpression() throws -> BlockExpression {
+    private mutating func parseBlockExpression(names: [ValueType] = []) throws -> BlockExpression {
         
         switch currentToken {
-        case .OpenBrace:    return try parseBraceExpressions()
-        case .Do, .Else:    return try parseBracelessDoExpression()
+        case .Bar:          return try parseBlockExpression(try parseClosureNamesExpression())
+        case .OpenBrace:    return try parseBraceExpressions(names)
+        case .Do, .Else:    return try parseBracelessDoExpression(names)
         default:            throw ParseError.NotBlock(currentPos)
         }
         

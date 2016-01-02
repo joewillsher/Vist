@@ -2,28 +2,3 @@
 
 
 
-/*
-func foo: Int Int -> Int = |a b| do
-return a + b
-
-func bar: Int = do print($0)
-
-func fact: Int -> Int = |a| do
-if a <= 1 do
-return foo(0 1)
-else do
-return a * fact(a - 1)
-
-let y = fact(10)
-bar(y)
-
-
-var tot = 0
-
-for i in 0 ... 10000 do
-if i % 3 == 0 || i % 5 == 0 do
-tot = tot + i
-
-print(tot)
-*/
-

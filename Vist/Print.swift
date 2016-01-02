@@ -147,6 +147,11 @@ extension ScopeExpression {
         return expressions.map { (nil, $0 as Printable) }
     }
 }
+extension BlockExpression {
+    func printList() -> [(String?, Printable)]? {
+        return [("expressions", expressions), ("variables", variables)]
+    }
+}
 
 extension AssignmentExpression {
     func printList() -> [(String?, Printable)]? {

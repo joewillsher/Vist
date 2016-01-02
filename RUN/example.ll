@@ -22,7 +22,7 @@ define void @printd(double %d) #0 {
 ; Function Attrs: ssp
 define i64 @main() #2 {
 entry:
-  %0 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str, i64 0, i64 0), i64 4)
+  %0 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str, i64 0, i64 0), i64 9)
   ret i64 0
 }
 

@@ -45,9 +45,12 @@ class AST : ScopeExpression {
 }
 class BlockExpression : ScopeExpression {
     var expressions: [Expression]
+    var variables: [ValueType]
+    
     var topLevel = false
-    init(expressions: [Expression]) {
+    init(expressions: [Expression], variables: [ValueType] = []) {
         self.expressions = expressions
+        self.variables = variables
     }
     
     var type: LLVMTyped? = nil
@@ -306,14 +309,6 @@ class FunctionType : Expression {
         self.returns = returns
     }
     
-//    func desc() -> String {
-//        let params = args.elements.isEmpty ? "()" : "(\(args.elements[0])" + args.elements.dropFirst().reduce("") { "\($0), \($1)" } + ")"
-//        let ret = returns.elements.isEmpty ?
-//            "Void" : (returns.elements.count > 1 ?
-//                "(" : "") + "\(returns.elements[0])" + returns.elements.dropFirst().reduce("") { "\($0), \($1)" }  + (returns.elements.count > 1 ? ")" : "")
-//        return params + " -> " + ret
-//    }
-    
     var type: LLVMTyped? = nil
 }
 
@@ -480,7 +475,10 @@ class StructExpression : Expression {
 }
 
 
-
+class MethodCallExpression : Expression {
+    
+    var type: LLVMTyped? = nil
+}
 
 
 

@@ -315,6 +315,7 @@ extension ClosureExpression : TypeProvider {
         let ty = (scope.objectType as? LLVMFnType) ?? LLVMFnType(params: [LLVMType.Void], returns: LLVMType.Void)
         self.type = ty
 
+        // inner scope should be nil if we dont want implicit captutring
         let innerScope = SemaScope(parent: scope, returnType: ty)
         innerScope.returnType = ty.returns
         

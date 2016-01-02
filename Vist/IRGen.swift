@@ -169,7 +169,7 @@ extension AssignmentExpression : IRGenerator {
             LLVMPositionBuilderAtEnd(builder, entryBlock)
             
             // stack frame of fn
-            let fnStackFrame = StackFrame(block: entryBlock, function: fn, parentStackFrame: nil)
+            let fnStackFrame = StackFrame(block: entryBlock, function: fn, parentStackFrame: stackFrame)
             
             // value’s IR, this needs to be called and returned
             let v = try value.expressioncodeGen(fnStackFrame)
@@ -378,8 +378,8 @@ private extension FunctionType {
 }
 
 
-// function definition
 extension FunctionPrototypeExpression : IRGenerator {
+    // function definition
     
     func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
@@ -465,7 +465,7 @@ extension BlockExpression {
             LLVMBuildRetVoid(builder)
         }
         
-        // reset builder head tp parent’s stack frame
+        // reset builder head to parent’s stack frame
         LLVMPositionBuilderAtEnd(builder, stackFrame.parentStackFrame!.block)
         return entryBlock
     }
@@ -490,7 +490,7 @@ extension ClosureExpression : IRGenerator {
         
         stackFrame.addFunctionType(name, val: functionType)
         
-        let functionStackFrame = StackFrame(function: function, parentStackFrame: stackFrame)
+        let functionStackFrame = StackFrame(function: function, parentStackFrame: nil)
         
         // set function param names and update table
         for i in 0..<type.params.count {

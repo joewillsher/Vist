@@ -1,17 +1,16 @@
 
 # TODO
 
-
-* Method & property parsing
-
-* Name mangling
-
 * Struct IR Gen
     - Properties and padding (incl improving current equal-width impl)
     - Method implementation -- sema pass getting info about functions and associating them with the object
     - Concepts and dynamic methods -- need to work out type model
     - Reference semantics implemented
     - Initialisers
+
+* Method & property parsing
+
+* Name mangling
 
 * Arrays
     - Implement append by hooking into a compiler-magic function to modify array buffer size
@@ -24,9 +23,11 @@
 
 * Strings
 
+* Memory management
+
 * Make functions first class objects
-    - Currying
-    - Partial application of functions
+    - Currying & partial application of functions, needs to reference captured objects on the heap
+    - https://en.wikipedia.org/wiki/Closure_(computer_programming)#Implementation_and_theory
 
 * Look into guard statements. Haskell:
 
