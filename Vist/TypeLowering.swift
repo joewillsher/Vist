@@ -105,6 +105,11 @@ final class LLVMStType : LLVMTyped {
             UInt32(members.count),
             LLVMBool(false))
     }
+    
+    func propertyType(name: String) throws -> LLVMType? {
+        guard let i = (members.indexOf { $0.0 == name }) else { throw SemaError.NoPropertyNamed(name) }
+        return members[i].1
+    }
 }
 
 extension LLVMType : CustomStringConvertible {

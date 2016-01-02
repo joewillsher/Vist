@@ -21,7 +21,7 @@ enum SemaError : ErrorType {
     case InvalidType(LLVMType)
     case InvalidRedeclaration(String, Expression)
     case NoVariable(String), NoFunction(String)
-    case WrongApplication, NotTypeProvider
+    case WrongApplication, NotTypeProvider, NoTypeFor(Expression)
     case HeterogenousArray(String), EmptyArray
     case NotVariableType, CannotSubscriptNonArrayVariable, NonIntegerSubscript
     case NonBooleanCondition, RangeWithInconsistentTypes, DifferentTypeForMutation
@@ -29,6 +29,7 @@ enum SemaError : ErrorType {
     case WrongFunctionReturnType(applied: LLVMTyped, expected: LLVMTyped), WrongFunctionApplication(applied: LLVMTyped, expected: LLVMTyped, paramNum: Int)
     case NoTypeNamed(String), TypeNotFound
     case DifferentTypesForOperator(String)
+    case NoPropertyNamed(String)
 }
 
 func sema(inout ast: AST) throws {

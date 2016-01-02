@@ -785,9 +785,11 @@ extension StructExpression : IRGenerator {
             .ptr()
         defer { els.dealloc(numEls) }
         
+        for i in initialisers {
+            try i.codeGen(stackFrame)
+        }
+        
         let a = LLVMConstStruct(els, UInt32(numEls), LLVMBool(false))
-        
-        
         
         return a
     }
@@ -799,7 +801,8 @@ extension InitialiserExpression : IRGenerator {
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
         let args = ty.args, argCount = args.elements.count
-        guard let type = ty.type as? LLVMFnType, name = parent?.name, parentType = parent?.type else { throw IRError.TypeNotFound }
+        guard let type = type as? LLVMFnType, name = parent?.name, parentType = parent?.type else {
+            throw IRError.TypeNotFound }
         
         // make function
         let functionType = try type.ir()
@@ -828,6 +831,13 @@ extension InitialiserExpression : IRGenerator {
         // TODO: run init block
 
         return function
+    }
+}
+
+extension PropertyLookupExpression : IRGenerator {
+    
+    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
+        
     }
 }
 

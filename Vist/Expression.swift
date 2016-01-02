@@ -491,23 +491,27 @@ final class InitialiserExpression : Expression, StructMember {
 }
 
 
-final class MethodCallExpression : Expression {
+final class MethodCallExpression <ObjectType : Expression> : Expression {
     let name: String
+    let object: ObjectType
     let params: TupleExpression
     
-    init(name: String, params: TupleExpression) {
+    init(name: String, params: TupleExpression, object: ObjectType) {
         self.name = name
         self.params = params
+        self.object = object
     }
     
     var type: LLVMTyped? = nil
 }
 
-final class PropertyLookupExpression : Expression {
+final class PropertyLookupExpression <ObjectType : Expression> : Expression {
     let name: String
+    let object: ObjectType
     
-    init(name: String) {
+    init(name: String, object: ObjectType) {
         self.name = name
+        self.object = object
     }
     
     var type: LLVMTyped? = nil

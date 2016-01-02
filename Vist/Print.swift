@@ -213,7 +213,7 @@ extension FloatingPointLiteral {
 }
 extension Variable {
     func inline() -> Bool {
-        return true
+        return !(type is LLVMStType)
     }
     func printList() -> [(String?, Printable)]? {
         return [("name", name)]
@@ -354,3 +354,22 @@ extension InitialiserExpression : Printable {
     }
 }
 
+extension PropertyLookupExpression : Printable {
+    
+    func printList() -> [(String?, Printable)]? {
+        return [("name", name), ("object", object)]
+    }
+}
+
+extension MethodCallExpression : Printable {
+    
+    func printList() -> [(String?, Printable)]? {
+        return [("name", name), ("object", object), ("params", params)]
+    }
+}
+extension LLVMStType : Printable {
+    
+    func printList() -> [(String?, Printable)]? {
+        return [("members", members), ("methods", methods)]
+    }
+}

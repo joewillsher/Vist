@@ -176,7 +176,8 @@ extension Parser {
 extension Parser {
     
     private mutating func parseTextExpression() throws -> Variable<AnyExpression> {
-        guard case .Identifier(let i) = currentToken else { throw ParseError.NoIdentifier(currentPos) }
+        guard case .Identifier(let i) = currentToken else {
+            throw ParseError.NoIdentifier(currentPos) }
         return Variable(name: i)
     }
     
@@ -224,17 +225,18 @@ extension Parser {
             
             switch inspectNextToken() {
             case .OpenParen?:
-                getNextToken() // eat `(`
+                getNextToken(); getNextToken() // eat identifier(
                 
                 if case .CloseParen = currentToken {   // simple itentifier() call
                     getNextToken() // eat ')'
-                    return MethodCallExpression(name: name, params: TupleExpression.void())
+                    return MethodCallExpression(name: name, params: TupleExpression.void(), object: Variable<AnyExpression>(name: token))
                 }
                 
-                return MethodCallExpression(name: token, params: try parseTupleExpression())
+                return MethodCallExpression(name: token, params: try parseTupleExpression(), object: Variable<AnyExpression>(name: token))
                 
             default:
-                return PropertyLookupExpression(name: name)
+                getNextToken() // eat property
+                return PropertyLookupExpression(name: name, object: Variable<AnyExpression>(name: token))
             }
             
         default: // just identifier

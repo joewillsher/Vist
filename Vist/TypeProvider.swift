@@ -561,11 +561,26 @@ extension InitialiserExpression : TypeProvider {
         
         let params = try ty.params()
         
+        try impl.llvmType(scope)
+        
         let t = LLVMFnType(params: params, returns: parentType)
         scope[function: parentName] = t
         self.type = t
         return t
     }
+}
+
+extension PropertyLookupExpression : TypeProvider {
+    
+    func llvmType(scope: SemaScope) throws -> LLVMTyped {
+        
+        guard let objType = try object.llvmType(scope) as? LLVMStType else { throw SemaError.NoTypeFor(object) }
+        guard let propertyType = try objType.propertyType(name) else { throw SemaError.NoPropertyNamed(name) }
+        let t = propertyType
+        self.type = t
+        return t
+    }
+    
 }
 
 
