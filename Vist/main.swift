@@ -55,7 +55,6 @@ do {
             preserve: preserveIntermediate
         )
         
-        print("\n")
     }
     
     

@@ -114,17 +114,18 @@ extension AssignmentExpression : TypeProvider {
         if let _ = scope[variable: name] { throw SemaError.InvalidRedeclaration(name, value) }
         
         // get val type
+        let explicitType = LLVMType(aType ?? "") as? LLVMTyped
         let inferredType = try value.llvmType(scope)
         
-        if let fn = inferredType as? LLVMFnType {
+        if let fn = (explicitType ?? inferredType) as? LLVMFnType {
             scope[function: name] = fn              // store in function table if closure
         } else {
             scope[variable: name] = inferredType    // store in arr
         }
         
-        type = LLVMType.Void        // set type to self
-        value.type = inferredType   // store type in value’s type
-        return LLVMType.Void                // return void type for assignment expression
+        type = LLVMType.Void                            // set type to self
+        value.type = explicitType ?? inferredType       // store type in value’s type
+        return LLVMType.Void                            // return void type for assignment expression
     }
 }
 
@@ -137,7 +138,6 @@ extension MutationExpression : TypeProvider {
         let old = try object.llvmType(scope)
         let new = try value.llvmType(scope)
         guard old == new else { throw SemaError.DifferentTypeForMutation }
-        
         
         return LLVMType.Null
     }

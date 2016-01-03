@@ -459,7 +459,7 @@ extension Parser {
 
 extension Parser {
     
-    private mutating func parseVariableAssignmentMutable(mutable: Bool) throws -> AssignmentExpression {
+    private mutating func parseVariableAssignmentMutable(mutable: Bool, requiresInitialValue: Bool = true) throws -> AssignmentExpression {
         
         guard case let .Identifier(id) = getNextToken() else { throw ParseError.NoIdentifier(currentPos) }
         
@@ -471,7 +471,13 @@ extension Parser {
         
         // TODO: Closure declaration parsing
         
-        guard case .Assign = currentToken else { throw ParseError.ExpectedAssignment(currentPos) }
+        guard case .Assign = currentToken else {
+            if requiresInitialValue || explicitType == nil {
+                throw ParseError.ExpectedAssignment(currentPos)
+            } else {
+                return AssignmentExpression(name: id, type: explicitType, isMutable: mutable, value: NullExpression())
+            }
+        }
         getNextToken() // eat '='
         
         var value = try parseOperatorExpression()
@@ -677,10 +683,10 @@ extension Parser {
             
             switch currentToken {
             case .Var:
-                properties.append(try parseVariableAssignmentMutable(true))
+                properties.append(try parseVariableAssignmentMutable(true, requiresInitialValue: false))
                 
             case .Let:
-                properties.append(try parseVariableAssignmentMutable(false))
+                properties.append(try parseVariableAssignmentMutable(false, requiresInitialValue: false))
                 
             case .Func:
                 methods.append(try parseFunctionDeclaration())

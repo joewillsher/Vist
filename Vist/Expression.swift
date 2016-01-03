@@ -28,6 +28,9 @@ protocol ExplicitlyTyped {
 protocol Literal : Expression {
 }
 
+struct NullExpression : Expression {
+    var type: LLVMTyped? = nil
+}
 
 protocol ScopeExpression : Expression, TypeProvider {
     var expressions: [Expression] { get set }

@@ -1,9 +1,9 @@
 
 
 type Meme {
-    var a: Int = 0
-    let b: Int = 0
-
+    var a: Int
+    let b: Int
+    
     init Int Int = |x y| {
         a = x
         b = y

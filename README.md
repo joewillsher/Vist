@@ -31,6 +31,18 @@ func fact: Int -> Int = |a| do
         return foo(0 1)
     else do
         return a * fact(a - 1)
+
+type Baz {
+    var a: Int
+    let b: Int
+
+    init Int Int = |x y| {
+        a = x
+        b = y
+    }
+    
+    func foo: Int -> Int = do return a + b
+}
 ```
 
 ##How it works

@@ -3,12 +3,16 @@
 
 * Struct IR Gen
     - **Mutating a struct by doing x = a**
+    - Implicit initialisers
     - Method implementation -- sema pass getting info about functions and associating them with the object
     - Concepts and dynamic methods -- need to work out type model
     - Reference semantics implemented
-    - Initialisers
+
+* AST context object to help type inference when in sema
 
 * Name mangling
+
+* Move more checks at IR level to sema pass
 
 * Arrays
     - Implement append by hooking into a compiler-magic function to modify array buffer size
