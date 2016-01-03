@@ -14,7 +14,7 @@ protocol RuntimeVariable {
     func isValid() -> Bool
 }
 
-protocol MutableVariable {
+protocol MutableVariable : RuntimeVariable {
     func store(val: LLVMValueRef) throws
     var mutable: Bool { get }
 }
@@ -24,7 +24,7 @@ protocol MutableVariable {
 /// Instances are called in IR using `load` and `store`
 ///
 /// mem2reg optimisation pass moves these down to SSA register vars
-final class ReferenceVariable : RuntimeVariable, MutableVariable {
+final class ReferenceVariable : MutableVariable {
     var type: LLVMTypeRef
     private var ptr: LLVMValueRef
     let mutable: Bool

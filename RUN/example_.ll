@@ -27,12 +27,24 @@ define void @printd(double %d) #0 {
 
 define i64 @main() {
 entry:
-  %a = alloca i64
-  store i64 2, i64* %a
-  %b = alloca i64
-  store i64 3, i64* %b
-  call void @print(i64 1)
+  %Meme = call { i64, i64 } @Meme()
+  %0 = alloca { i64, i64 }
+  store { i64, i64 } %Meme, { i64, i64 }* %0
+  %ptr = getelementptr inbounds { i64, i64 }* %0, i32 0, i32 0
+  %element = load i64* %ptr
+  call void @print(i64 %element)
   ret i64 0
+}
+
+define { i64, i64 } @Meme() {
+entry:
+  %0 = alloca { i64, i64 }
+  %ptr = getelementptr inbounds { i64, i64 }* %0, i32 0, i32 0
+  store i64 2, i64* %ptr
+  %ptr1 = getelementptr inbounds { i64, i64 }* %0, i32 0, i32 1
+  store i64 3, i64* %ptr1
+  %1 = load { i64, i64 }* %0
+  ret { i64, i64 } %1
 }
 
 attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

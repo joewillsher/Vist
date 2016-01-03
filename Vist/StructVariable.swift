@@ -7,7 +7,7 @@
 //
 
 
-class StructVariable : RuntimeVariable, MutableVariable {
+class StructVariable : MutableVariable {
     var type: LLVMTypeRef
     var ptr: LLVMValueRef
     let mutable: Bool
@@ -28,6 +28,24 @@ class StructVariable : RuntimeVariable, MutableVariable {
         self.properties = properties
     }
     
+//    class func alloc(builder: LLVMBuilderRef, type: LLVMTypeRef, name: String = "", mutable: Bool, val: LLVMValueRef) -> StructVariable {
+//        let ptr = LLVMBuildAlloca(builder, type, name)
+//        
+//        let c = LLVMCountStructElementTypes(type)
+//        var arr = [LLVMTypeRef](count: Int(c), repeatedValue: nil)
+//        
+//        LLVMGetStructElementTypes(type, &arr)
+//        
+//        
+//        return StructVariable(type: type, ptr: ptr, mutable: mutable, builder: builder, properties: properties)
+//    }
+
+//
+//    init(type: LLVMTypeRef, val: LLVMValueRef) {
+//        self.type = type
+//        
+//    }
+//    
     func load(name: String = "") -> LLVMValueRef {
         return LLVMBuildLoad(builder, ptr, name)
     }
@@ -46,24 +64,24 @@ class StructVariable : RuntimeVariable, MutableVariable {
         LLVMBuildStore(builder, val, ptr)
     }
     
-    private func ptrToElementNamed(name: String) throws -> LLVMValueRef {
+    private func ptrToPropertyNamed(name: String) throws -> LLVMValueRef {
         guard let i = indexOfProperty(name) else { throw SemaError.NoPropertyNamed(name) }
         
         return LLVMBuildStructGEP(builder, ptr, UInt32(i), "ptr")
     }
     
-    func loadElementNamed(name: String) throws -> LLVMValueRef {
-        return LLVMBuildLoad(builder, try ptrToElementNamed(name), "element")
+    func loadPropertyNamed(name: String) throws -> LLVMValueRef {
+        return LLVMBuildLoad(builder, try ptrToPropertyNamed(name), "element")
     }
     
-    func store(val: LLVMValueRef, inElementnamed name: String) throws {
-        LLVMBuildStore(builder, val, try ptrToElementNamed(name))
+    func store(val: LLVMValueRef, inPropertyNamed name: String) throws {
+        LLVMBuildStore(builder, val, try ptrToPropertyNamed(name))
     }
     
     
 }
 
-final class AssignablePropertyVariable : RuntimeVariable, MutableVariable {
+final class AssignablePropertyVariable : MutableVariable {
     var type: LLVMTypeRef = nil
     var name: String
     let mutable = true
@@ -75,11 +93,11 @@ final class AssignablePropertyVariable : RuntimeVariable, MutableVariable {
     }
     
     func store(val: LLVMValueRef) throws {
-        try str.store(val, inElementnamed: name)
+        try str.store(val, inPropertyNamed: name)
     }
     
     func load(name: String) throws -> LLVMValueRef {
-        return try str.loadElementNamed(self.name)
+        return try str.loadPropertyNamed(self.name)
     }
     
     func isValid() -> Bool {

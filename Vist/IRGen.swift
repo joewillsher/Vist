@@ -13,7 +13,7 @@ enum IRError : ErrorType {
     case NoBody, InvalidFunction, NoVariable(String), NoBool, TypeNotFound, NotMutable
     case CannotAssignToVoid, CannotAssignToType(Expression.Type)
     case ForLoopIteratorNotInt, NotBoolCondition, SubscriptingNonVariableTypeNotAllowed, SubscriptingNonArrayType, SubscriptOutOfBounds
-    case NoProperty(String)
+    case NoProperty(String), CannotCallMethodOnNonVariableType, NotAStruct
 }
 
 
@@ -212,10 +212,18 @@ extension AssignmentExpression : IRGenerator {
             guard type != LLVMVoidType() else { throw IRError.CannotAssignToVoid }
             
             // create variable
-            let variable = ReferenceVariable.alloc(builder, type: type, name: name ?? "", mutable: isMutable)
-            
+            let variable: MutableVariable
+            if let t = value.type as? LLVMStType where value.type is LLVMStType {
+                let properties = try t.members.map {
+                    ($0.0, try $0.1.ir())
+                }
+                variable = StructVariable.alloc(builder, type: type, mutable: isMutable, properties: properties)
+                
+            } else {
+                variable = ReferenceVariable.alloc(builder, type: type, name: name ?? "", mutable: isMutable)
+            }
             // Load in memory
-            variable.store(v)
+            try variable.store(v)
             
             // update stack frame variables
             
@@ -855,17 +863,19 @@ extension InitialiserExpression : IRGenerator {
     }
 }
 
-//extension PropertyLookupExpression : IRGenerator {
-//    
-//    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
-//        
-//        let obj = try object.expressionCodeGen(stackFrame)
-//        
-//        
-//        
-//        
-//    }
-//}
+extension PropertyLookupExpression : IRGenerator {
+    
+    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
+        
+        guard let n = object as? Variable<AnyExpression> else { throw IRError.CannotCallMethodOnNonVariableType }
+        guard let variable = try stackFrame.variable(n.name) as? StructVariable else {
+            throw IRError.NoVariable(n.name) }
+        
+        let val = try variable.loadPropertyNamed(name)
+        
+        return val
+    }
+}
 
 
 

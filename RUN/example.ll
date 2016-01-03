@@ -21,12 +21,44 @@ define void @printd(double %d) #0 {
 
 define i64 @main() {
 entry:
-  tail call void @print(i64 1)
+  %0 = alloca { i64, i64 }, align 8
+  %1 = bitcast { i64, i64 }* %0 to i8*
+  call void @llvm.lifetime.start(i64 16, i8* %1)
+  %ptr.i = getelementptr inbounds { i64, i64 }* %0, i64 0, i32 0
+  store i64 2, i64* %ptr.i, align 8
+  %ptr1.i = getelementptr inbounds { i64, i64 }* %0, i64 0, i32 1
+  store i64 3, i64* %ptr1.i, align 8
+  %2 = load { i64, i64 }* %0, align 8
+  %3 = bitcast { i64, i64 }* %0 to i8*
+  call void @llvm.lifetime.end(i64 16, i8* %3)
+  %4 = alloca { i64, i64 }, align 8
+  store { i64, i64 } %2, { i64, i64 }* %4, align 8
+  %ptr = getelementptr inbounds { i64, i64 }* %4, i64 0, i32 0
+  %element = load i64* %ptr, align 8
+  tail call void @print(i64 %element)
   ret i64 0
 }
 
+define { i64, i64 } @Meme() {
+entry:
+  %0 = alloca { i64, i64 }, align 8
+  %ptr = getelementptr inbounds { i64, i64 }* %0, i64 0, i32 0
+  store i64 2, i64* %ptr, align 8
+  %ptr1 = getelementptr inbounds { i64, i64 }* %0, i64 0, i32 1
+  store i64 3, i64* %ptr1, align 8
+  %1 = load { i64, i64 }* %0, align 8
+  ret { i64, i64 } %1
+}
+
+; Function Attrs: nounwind
+declare void @llvm.lifetime.start(i64, i8* nocapture) #2
+
+; Function Attrs: nounwind
+declare void @llvm.lifetime.end(i64, i8* nocapture) #2
+
 attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { nounwind }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}

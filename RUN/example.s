@@ -53,9 +53,37 @@ Ltmp7:
 	movq	%rsp, %rbp
 Ltmp8:
 	.cfi_def_cfa_register %rbp
-	movl	$1, %edi
+	subq	$32, %rsp
+	movq	$2, -16(%rbp)
+	movq	$3, -8(%rbp)
+	movq	-16(%rbp), %rax
+	movq	%rax, -32(%rbp)
+	movq	$3, -24(%rbp)
+	movq	-32(%rbp), %rdi
 	callq	_print
 	xorl	%eax, %eax
+	addq	$32, %rsp
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	_Meme
+	.align	4, 0x90
+_Meme:                                  ## @Meme
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp9:
+	.cfi_def_cfa_offset 16
+Ltmp10:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp11:
+	.cfi_def_cfa_register %rbp
+	movq	$2, -16(%rbp)
+	movq	$3, -8(%rbp)
+	movq	-16(%rbp), %rax
+	movl	$3, %edx
 	popq	%rbp
 	retq
 	.cfi_endproc
