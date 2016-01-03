@@ -796,7 +796,12 @@ extension StructExpression : IRGenerator {
     
 }
 
+
 extension InitialiserExpression : IRGenerator {
+    
+    // TODO: Redo this implementation
+    // initialiser should take pointer to allocated struct
+    // and initalise it
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
