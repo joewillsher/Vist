@@ -138,6 +138,7 @@ extension MutationExpression : TypeProvider {
         let new = try value.llvmType(scope)
         guard old == new else { throw SemaError.DifferentTypeForMutation }
         
+        
         return LLVMType.Null
     }
 }
@@ -525,10 +526,10 @@ extension StructExpression : TypeProvider {
         let structScope = SemaScope(parent: scope, returnType: nil) // cannot return from Struct scope
         
         // maps over properties and gens types
-        let members = try properties.map { (a: AssignmentExpression) -> (String, LLVMType) in
+        let members = try properties.map { (a: AssignmentExpression) -> (String, LLVMType, Bool) in
             try a.llvmType(structScope)
             guard let t = a.value.type as? LLVMType else { throw SemaError.StructPropertyNotTyped }
-            return (a.name, t)
+            return (a.name, t, a.isMutable)
         }
         
         let memberFunctions = try methods.flatMap { (f: FunctionPrototypeExpression) -> (String, LLVMFnType) in

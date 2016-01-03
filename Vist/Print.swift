@@ -157,7 +157,7 @@ extension BlockExpression {
 
 extension AssignmentExpression {
     func printList() -> [(String?, Printable)]? {
-        return [("name", name), ("explicitType", aType), ("value", value)]
+        return [("name", name), ("explicitType", aType), ("value", value), ("mutable", isMutable)]
     }
     
 }

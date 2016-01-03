@@ -86,17 +86,17 @@ struct LLVMFnType : LLVMTyped {
 }
 
 final class LLVMStType : LLVMTyped {
-    let members: [(String, LLVMType)]
+    let members: [(String, LLVMType, Bool)]
     let methods: [(String, LLVMFnType)]
     
-    init(members: [(String, LLVMType)], methods: [(String, LLVMFnType)]) {
+    init(members: [(String, LLVMType, Bool)], methods: [(String, LLVMFnType)]) {
         self.members = members
         self.methods = methods
     }
     
     func ir() throws -> LLVMTypeRef {
         let arr = try members
-            .map { try $1.ir() }
+            .map { try $0.1.ir() }
             .ptr()
         defer { arr.dealloc(members.count) }
         
@@ -138,7 +138,7 @@ extension LLVMStType : CustomStringConvertible {
     
     var description: String {
         let arr = members
-            .map { $1.description }
+            .map { $0.1.description }
             .joinWithSeparator(", ")
         return "Struct(\(arr))"
     }

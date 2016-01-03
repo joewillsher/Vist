@@ -680,7 +680,7 @@ extension Parser {
                 properties.append(try parseVariableAssignmentMutable(true))
                 
             case .Let:
-                properties.append(try parseVariableAssignmentMutable(true))
+                properties.append(try parseVariableAssignmentMutable(false))
                 
             case .Func:
                 methods.append(try parseFunctionDeclaration())

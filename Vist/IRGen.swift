@@ -10,7 +10,7 @@
 enum IRError : ErrorType {
     case NotIRGenerator(Expression.Type), NotBBGenerator(Expression.Type), NoOperator
     case MisMatchedTypes, NoLLVMFloat(UInt32), WrongFunctionApplication(String), NoLLVMType
-    case NoBody, InvalidFunction, NoVariable(String), NoBool, TypeNotFound, NotMutable
+    case NoBody, InvalidFunction, NoVariable(String), NoBool, TypeNotFound, NotMutable(String)
     case CannotAssignToVoid, CannotAssignToType(Expression.Type)
     case ForLoopIteratorNotInt, NotBoolCondition, SubscriptingNonVariableTypeNotAllowed, SubscriptingNonArrayType, SubscriptOutOfBounds
     case NoProperty(String), CannotGetPropertyFromNonVariableType, NotAStruct
@@ -216,7 +216,7 @@ extension AssignmentExpression : IRGenerator {
             let variable: MutableVariable
             if let t = value.type as? LLVMStType where value.type is LLVMStType {
                 let properties = try t.members.map {
-                    ($0.0, try $0.1.ir())
+                    ($0.0, try $0.1.ir(), $0.2)
                 }
                 variable = StructVariable.alloc(builder, type: type, mutable: isMutable, properties: properties)
                 
@@ -253,7 +253,7 @@ extension MutationExpression : IRGenerator {
                 
                 let new = try value.expressionCodeGen(stackFrame)
                 
-                guard let v = variable as? MutableVariable where v.mutable else { throw IRError.NotMutable }
+                guard let v = variable as? MutableVariable where v.mutable else { throw IRError.NotMutable("") }
                 try v.store(new)
                 
             }
@@ -272,6 +272,9 @@ extension MutationExpression : IRGenerator {
             
             guard let n = prop.object as? Variable else { throw IRError.CannotGetPropertyFromNonVariableType }
             guard let variable = try stackFrame.variable(n.name) as? StructVariable else { throw IRError.NoVariable(n.name) }
+            
+            guard variable.mutable else { throw IRError.NotMutable(n.name) }
+            guard try variable.propertyIsMutable(prop.name) else { throw IRError.NotMutable("\(n.name).\(prop.name)") }
             
             let val = try value.expressionCodeGen(stackFrame)
             
@@ -842,34 +845,35 @@ extension InitialiserExpression : IRGenerator {
             initStackFrame.addVariable(name, val: s)
         }
         
-        let properties = try parentProperties.map { assignment -> (String, LLVMValueRef) in
-            if let t = assignment.value.type { return (assignment.name, try t.ir()) } else { throw IRError.NoProperty(assignment.name) }
+        // property types & names for sema scope
+        let properties = try parentProperties.map { assignment -> (String, LLVMValueRef, Bool) in
+            if let t = assignment.value.type { return (assignment.name, try t.ir(), assignment.isMutable) } else { throw IRError.NoProperty(assignment.name) }
         }
         
-        
-        
+        // make init funtion
         let entry = LLVMAppendBasicBlock(function, "entry")
         LLVMPositionBuilderAtEnd(builder, entry)
 
+        // allocate struct
         let s = StructVariable.alloc(builder, type: try parentType.ir(), mutable: true, properties: properties)
         stackFrame.addVariable(name, val: s)
         
+        // add struct properties into scope
         for el in parentProperties {
             let p = AssignablePropertyVariable(name: el.name, str: s)
             initStackFrame.addVariable(el.name, val: p)
         }
         
+        // add args into scope
         for exp in impl.body.expressions {
             try exp.expressionCodeGen(initStackFrame)
         }
         
+        // return struct instance from init function
         let str = s.load()
         LLVMBuildRet(builder, str)
         
-        
         LLVMPositionBuilderAtEnd(builder, stackFrame.block)
-        
-        
         return function
     }
 }

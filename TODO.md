@@ -2,6 +2,7 @@
 # TODO
 
 * Struct IR Gen
+    - **Mutating a struct by doing x = a**
     - Method implementation -- sema pass getting info about functions and associating them with the object
     - Concepts and dynamic methods -- need to work out type model
     - Reference semantics implemented
