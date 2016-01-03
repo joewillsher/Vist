@@ -1435,8 +1435,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "573"
             endingLineNumber = "573"
-            landmarkName = "llvmType(_:)"
-            landmarkType = "5">
+            landmarkName = "PropertyLookupExpression"
+            landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
