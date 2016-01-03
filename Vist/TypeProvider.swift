@@ -97,7 +97,8 @@ extension Variable : TypeProvider {
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
         // lookup variable type in scope
-        guard let v = scope[variable: name] else { throw SemaError.NoVariable(name) }
+        guard let v = scope[variable: name] else {
+            throw SemaError.NoVariable(name) }
         
         // assign type to self and return
         self.type = v
@@ -559,12 +560,15 @@ extension InitialiserExpression : TypeProvider {
         
         let initScope = SemaScope(parent: scope)
         
+        // ad scope properties to initScope
         for p in parent?.properties ?? [] {
             initScope[variable: p.name] = p.value.type
         }
         
-        for param in impl.params.elements {
-            try param.llvmType(initScope)
+        for (p, type) in zip(impl.params.elements, try ty.params()) {
+            if let param = p as? ValueType {
+                initScope[variable: param.name] = type
+            }
         }
         
         for ex in impl.body.expressions {

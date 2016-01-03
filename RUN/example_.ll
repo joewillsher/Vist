@@ -27,22 +27,25 @@ define void @printd(double %d) #0 {
 
 define i64 @main() {
 entry:
-  %Meme = call { i64, i64 } @Meme()
+  %Meme = call { i64, i64 } @Meme(i64 2, i64 3)
   %0 = alloca { i64, i64 }
   store { i64, i64 } %Meme, { i64, i64 }* %0
   %ptr = getelementptr inbounds { i64, i64 }* %0, i32 0, i32 0
   %element = load i64* %ptr
   call void @print(i64 %element)
+  %ptr1 = getelementptr inbounds { i64, i64 }* %0, i32 0, i32 1
+  %element2 = load i64* %ptr1
+  call void @print(i64 %element2)
   ret i64 0
 }
 
-define { i64, i64 } @Meme() {
+define { i64, i64 } @Meme(i64 %x, i64 %y) {
 entry:
   %0 = alloca { i64, i64 }
   %ptr = getelementptr inbounds { i64, i64 }* %0, i32 0, i32 0
-  store i64 2, i64* %ptr
+  store i64 %x, i64* %ptr
   %ptr1 = getelementptr inbounds { i64, i64 }* %0, i32 0, i32 1
-  store i64 3, i64* %ptr1
+  store i64 %y, i64* %ptr1
   %1 = load { i64, i64 }* %0
   ret { i64, i64 } %1
 }

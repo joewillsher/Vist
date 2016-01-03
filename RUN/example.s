@@ -61,6 +61,8 @@ Ltmp8:
 	movq	$3, -24(%rbp)
 	movq	-32(%rbp), %rdi
 	callq	_print
+	movq	-24(%rbp), %rdi
+	callq	_print
 	xorl	%eax, %eax
 	addq	$32, %rsp
 	popq	%rbp
@@ -80,10 +82,10 @@ Ltmp10:
 	movq	%rsp, %rbp
 Ltmp11:
 	.cfi_def_cfa_register %rbp
-	movq	$2, -16(%rbp)
-	movq	$3, -8(%rbp)
+	movq	%rdi, -16(%rbp)
+	movq	%rsi, -8(%rbp)
 	movq	-16(%rbp), %rax
-	movl	$3, %edx
+	movq	%rsi, %rdx
 	popq	%rbp
 	retq
 	.cfi_endproc

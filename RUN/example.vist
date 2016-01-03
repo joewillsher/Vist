@@ -4,18 +4,19 @@ type Meme {
     let a: Int = 0
     let b: Int = 0
 
-    init () = {
-        a = 2
-        b = 3
+    init Int Int = |x y| {
+        a = x
+        b = y
     }
 
     func foo: Int -> Int = do return 1
 }
 
 
-let x = Meme()
+let x = Meme(2 3)
 
 print(x.a)
+print(x.b)
 
 
 /*

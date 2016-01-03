@@ -226,9 +226,7 @@ extension AssignmentExpression : IRGenerator {
             try variable.store(v)
             
             // update stack frame variables
-            
             stackFrame.addVariable(name, val: variable)
-            
             
             return v
         }
