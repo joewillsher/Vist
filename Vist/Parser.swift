@@ -133,7 +133,7 @@ extension Parser {
         if case .OpenParen = currentToken, case .CloseParen = getNextToken() {
             getNextToken() // eat ')'
             if alwaysWrap {
-                return TupleExpression(elements: [ValueType(name: "Void")])
+                return TupleExpression(elements: [])
             } else {
                 return ValueType(name: "Void")
             }

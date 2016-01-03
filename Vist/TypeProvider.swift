@@ -559,6 +559,10 @@ extension InitialiserExpression : TypeProvider {
         
         let initScope = SemaScope(parent: scope)
         
+        for p in parent?.properties ?? [] {
+            initScope[variable: p.name] = p.value.type
+        }
+        
         for param in impl.params.elements {
             try param.llvmType(initScope)
         }
