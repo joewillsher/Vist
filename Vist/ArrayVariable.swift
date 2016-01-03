@@ -85,7 +85,7 @@ class ArrayVariable : RuntimeVariable {
     }
     
     func store(val: LLVMValueRef, inElementAtIndex index: LLVMValueRef) {
-        LLVMBuildStore(builder, val, ptr)
+        LLVMBuildStore(builder, val, ptrToElementAtIndex(index))
     }
     
 }

@@ -13,6 +13,7 @@ enum IRError : ErrorType {
     case NoBody, InvalidFunction, NoVariable(String), NoBool, TypeNotFound, NotMutable
     case CannotAssignToVoid, CannotAssignToType(Expression.Type)
     case ForLoopIteratorNotInt, NotBoolCondition, SubscriptingNonVariableTypeNotAllowed, SubscriptingNonArrayType, SubscriptOutOfBounds
+    case NoProperty(String)
 }
 
 
@@ -140,7 +141,7 @@ extension Variable : IRGenerator {
     func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         let variable = try stackFrame.variable(name ?? "")
         
-        return variable.load(name ?? "")
+        return try variable.load(name ?? "")
     }
 }
 
@@ -246,7 +247,7 @@ extension MutationExpression : IRGenerator {
                 let new = try value.expressioncodeGen(stackFrame)
                 
                 guard let v = variable as? MutableVariable where v.mutable else { throw IRError.NotMutable }
-                v.store(new)
+                try v.store(new)
                 
             }
         
@@ -806,8 +807,11 @@ extension InitialiserExpression : IRGenerator {
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
         let args = ty.args, argCount = args.elements.count
-        guard let type = type as? LLVMFnType, name = parent?.name, parentType = parent?.type else {
-            throw IRError.TypeNotFound }
+        guard let
+            type = type as? LLVMFnType,
+            name = parent?.name,
+            parentType = parent?.type,
+            parentProperties = parent?.properties else { throw IRError.TypeNotFound }
         
         // make function
         let functionType = try type.ir()
@@ -830,11 +834,26 @@ extension InitialiserExpression : IRGenerator {
             initStackFrame.addVariable(name, val: s)
         }
         
-        let s = ReferenceVariable.alloc(builder, type: try parentType.ir(), mutable: false)
+        let properties = try parentProperties.map { assignment -> (String, LLVMValueRef) in
+            if let t = assignment.value.type { return (assignment.name, try t.ir()) } else { throw IRError.NoProperty(assignment.name) }
+        }
+        
+        let s = StructVariable.alloc(builder, type: try parentType.ir(), mutable: true, properties: properties)
         stackFrame.addVariable(name, val: s)
         
-        // TODO: run init block
-
+        for el in parentProperties {
+            let p = AssignablePropertyVariable(name: el.name, str: s)
+            initStackFrame.addVariable(el.name, val: p)
+        }
+        
+        let entry = LLVMAppendBasicBlock(function, "entry")
+        LLVMPositionBuilderAtEnd(builder, entry)
+        
+        
+        
+        LLVMPositionBuilderAtEnd(builder, stackFrame.block)
+        
+        
         return function
     }
 }
@@ -842,6 +861,8 @@ extension InitialiserExpression : IRGenerator {
 extension PropertyLookupExpression : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
+        
+        
         
     }
 }

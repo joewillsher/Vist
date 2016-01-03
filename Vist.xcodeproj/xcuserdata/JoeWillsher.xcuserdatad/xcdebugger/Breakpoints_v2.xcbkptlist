@@ -918,11 +918,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/IRGen.swift"
-            timestampString = "473518987.062994"
+            timestampString = "473544797.964202"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "399"
-            endingLineNumber = "399"
+            startingLineNumber = "400"
+            endingLineNumber = "400"
             landmarkName = "codeGen(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -998,11 +998,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/IRGen.swift"
-            timestampString = "473518987.062994"
+            timestampString = "473544797.964202"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "393"
-            endingLineNumber = "393"
+            startingLineNumber = "394"
+            endingLineNumber = "394"
             landmarkName = "codeGen(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -1014,13 +1014,45 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/IRGen.swift"
-            timestampString = "473518987.062994"
+            timestampString = "473544797.964202"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "63"
-            endingLineNumber = "63"
+            startingLineNumber = "64"
+            endingLineNumber = "64"
             landmarkName = "expressioncodeGen(_:)"
             landmarkType = "5">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "ext.vist.vist.Expression&lt;A where A: vist.Expression&gt;.expressioncodeGen &lt;A where A: vist.Expression&gt; (A)(vist.StackFrame) throws -&gt; Swift.COpaquePointer"
+                  moduleName = "vist"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/JoeWillsher/Developer/Vist/Vist/IRGen.swift"
+                  timestampString = "473544799.414546"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "64"
+                  endingLineNumber = "64"
+                  offsetFromSymbolStart = "662">
+               </Location>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "ext.vist.vist.Expression&lt;A where A: vist.Expression&gt;.expressioncodeGen &lt;A where A: vist.Expression&gt; (A)(vist.StackFrame) throws -&gt; Swift.COpaquePointer"
+                  moduleName = "vist"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/JoeWillsher/Developer/Vist/Vist/IRGen.swift"
+                  timestampString = "473544799.414708"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "64"
+                  endingLineNumber = "64"
+                  offsetFromSymbolStart = "678">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1030,11 +1062,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/IRGen.swift"
-            timestampString = "473518987.062994"
+            timestampString = "473544797.964202"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "352"
-            endingLineNumber = "352"
+            startingLineNumber = "353"
+            endingLineNumber = "353"
             landmarkName = "codeGen(_:)"
             landmarkType = "5">
             <Locations>
@@ -1078,11 +1110,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/IRGen.swift"
-            timestampString = "473518987.062994"
+            timestampString = "473544797.964202"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "511"
-            endingLineNumber = "511"
+            startingLineNumber = "512"
+            endingLineNumber = "512"
             landmarkName = "codeGen(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -1142,11 +1174,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/IRGen.swift"
-            timestampString = "473518987.062994"
+            timestampString = "473544797.964202"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "479"
-            endingLineNumber = "479"
+            startingLineNumber = "480"
+            endingLineNumber = "480"
             landmarkName = "codeGen(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -1158,11 +1190,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/IRGen.swift"
-            timestampString = "473518987.062994"
+            timestampString = "473544797.964202"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "219"
-            endingLineNumber = "219"
+            startingLineNumber = "220"
+            endingLineNumber = "220"
             landmarkName = "codeGen(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -1174,11 +1206,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/IRGen.swift"
-            timestampString = "473518987.062994"
+            timestampString = "473544797.964202"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "360"
-            endingLineNumber = "360"
+            startingLineNumber = "361"
+            endingLineNumber = "361"
             landmarkName = "codeGen(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -1190,11 +1222,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/IRGen.swift"
-            timestampString = "473518987.062994"
+            timestampString = "473544797.964202"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "200"
-            endingLineNumber = "200"
+            startingLineNumber = "201"
+            endingLineNumber = "201"
             landmarkName = "codeGen(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -1286,11 +1318,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/IRGen.swift"
-            timestampString = "473518987.062994"
+            timestampString = "473544797.964202"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "793"
-            endingLineNumber = "793"
+            startingLineNumber = "794"
+            endingLineNumber = "794"
             landmarkName = "codeGen(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -1366,11 +1398,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/IRGen.swift"
-            timestampString = "473518987.062994"
+            timestampString = "473544797.964202"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "65"
-            endingLineNumber = "65"
+            startingLineNumber = "66"
+            endingLineNumber = "66"
             landmarkName = "expressionbbGen(innerStackFrame:fn:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -1378,15 +1410,15 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/IRGen.swift"
-            timestampString = "473518987.062994"
+            timestampString = "473544797.964202"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "806"
-            endingLineNumber = "806"
+            startingLineNumber = "815"
+            endingLineNumber = "815"
             landmarkName = "codeGen(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -1414,13 +1446,29 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/IRGen.swift"
-            timestampString = "473543349.785043"
+            timestampString = "473544797.964202"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "854"
-            endingLineNumber = "854"
+            startingLineNumber = "870"
+            endingLineNumber = "870"
             landmarkName = "AST"
             landmarkType = "3">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Vist/IRGen.swift"
+            timestampString = "473545037.961053"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "852"
+            endingLineNumber = "852"
+            landmarkName = "codeGen(_:)"
+            landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

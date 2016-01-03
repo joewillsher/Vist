@@ -10,12 +10,12 @@
 protocol RuntimeVariable {
     var type: LLVMTypeRef { get }
     
-    func load(name: String) -> LLVMValueRef
+    func load(name: String) throws -> LLVMValueRef
     func isValid() -> Bool
 }
 
 protocol MutableVariable {
-    func store(val: LLVMValueRef)
+    func store(val: LLVMValueRef) throws
     var mutable: Bool { get }
 }
 
