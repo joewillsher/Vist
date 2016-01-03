@@ -497,7 +497,7 @@ extension ArraySubscriptExpression : TypeProvider {
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
         // get array variable
-        guard let name = (arr as? Variable<AnyExpression>)?.name else { throw SemaError.NotVariableType }
+        guard let name = (arr as? Variable)?.name else { throw SemaError.NotVariableType }
         
         // make sure its an array
         guard case LLVMType.Array(let type, _)? = scope[variable: name] else { throw SemaError.CannotSubscriptNonArrayVariable }

@@ -13,7 +13,7 @@ enum IRError : ErrorType {
     case NoBody, InvalidFunction, NoVariable(String), NoBool, TypeNotFound, NotMutable
     case CannotAssignToVoid, CannotAssignToType(Expression.Type)
     case ForLoopIteratorNotInt, NotBoolCondition, SubscriptingNonVariableTypeNotAllowed, SubscriptingNonArrayType, SubscriptOutOfBounds
-    case NoProperty(String), CannotCallMethodOnNonVariableType, NotAStruct
+    case NoProperty(String), CannotGetPropertyFromNonVariableType, NotAStruct
 }
 
 
@@ -58,11 +58,12 @@ private func isFloatType(t: LLVMTypeKind) -> Bool {
 
 extension Expression {
     
-    func expressionCodeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
+    private func expressionCodeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         if let x = try (self as? IRGenerator)?.codeGen(stackFrame) { return x }
         else { throw IRError.NotIRGenerator(self.dynamicType) }
     }
-    func expressionbbGen(innerStackFrame stackFrame: StackFrame, fn: LLVMValueRef) throws -> LLVMBasicBlockRef {
+    
+    private func expressionbbGen(innerStackFrame stackFrame: StackFrame, fn: LLVMValueRef) throws -> LLVMBasicBlockRef {
         if let x = try (self as? BasicBlockGenerator)?.bbGen(innerStackFrame: stackFrame, fn: fn) { return x }
         else { throw IRError.NotBBGenerator(self.dynamicType) }
     }
@@ -238,11 +239,10 @@ extension MutationExpression : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        if let object = object as? Variable<AnyExpression> {
+        if let object = object as? Variable {
             // object = newValue
             
             let variable = try stackFrame.variable(object.name)
-            
             
             if let arrayVariable = variable as? ArrayVariable, arrayExpression = value as? ArrayExpression {
                 
@@ -266,7 +266,20 @@ extension MutationExpression : IRGenerator {
             let val = try value.expressionCodeGen(stackFrame)
             
             arr.store(val, inElementAtIndex: i)
+        
+        } else if let prop = object as? PropertyLookupExpression {
+            // foo.bar = meme
+            
+            guard let n = prop.object as? Variable else { throw IRError.CannotGetPropertyFromNonVariableType }
+            guard let variable = try stackFrame.variable(n.name) as? StructVariable else { throw IRError.NoVariable(n.name) }
+            
+            let val = try value.expressionCodeGen(stackFrame)
+            
+            try variable.store(val, inPropertyNamed: prop.name)
+            
         }
+        
+        
         
         return nil
     }
@@ -747,7 +760,7 @@ extension ArrayExpression : IRGenerator {
         return variable
     }
     
-    func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
+    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         return try arrInstance(stackFrame).load()
     }
     
@@ -757,7 +770,7 @@ extension ArrayExpression : IRGenerator {
 extension ArraySubscriptExpression : IRGenerator {
     
     private func backingArrayVariable(stackFrame: StackFrame) throws -> ArrayVariable {
-        guard let v = arr as? Variable<AnyExpression> else { throw IRError.SubscriptingNonVariableTypeNotAllowed }
+        guard let v = arr as? Variable else { throw IRError.SubscriptingNonVariableTypeNotAllowed }
         guard let arr = try stackFrame.variable(v.name) as? ArrayVariable else { throw IRError.SubscriptingNonVariableTypeNotAllowed }
         
         return arr
@@ -865,7 +878,7 @@ extension PropertyLookupExpression : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        guard let n = object as? Variable<AnyExpression> else { throw IRError.CannotCallMethodOnNonVariableType }
+        guard let n = object as? Variable else { throw IRError.CannotGetPropertyFromNonVariableType }
         guard let variable = try stackFrame.variable(n.name) as? StructVariable else {
             throw IRError.NoVariable(n.name) }
         

@@ -15,6 +15,8 @@ type Meme {
 
 let x = Meme(2 3)
 
+x.a = 1
+
 print(x.a)
 print(x.b)
 

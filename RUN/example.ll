@@ -24,31 +24,31 @@ entry:
   %0 = alloca { i64, i64 }, align 8
   %1 = bitcast { i64, i64 }* %0 to i8*
   call void @llvm.lifetime.start(i64 16, i8* %1)
-  %ptr.i = getelementptr inbounds { i64, i64 }* %0, i64 0, i32 0
-  store i64 2, i64* %ptr.i, align 8
-  %ptr1.i = getelementptr inbounds { i64, i64 }* %0, i64 0, i32 1
-  store i64 3, i64* %ptr1.i, align 8
+  %aptr.i = getelementptr inbounds { i64, i64 }* %0, i64 0, i32 0
+  store i64 2, i64* %aptr.i, align 8
+  %bptr.i = getelementptr inbounds { i64, i64 }* %0, i64 0, i32 1
+  store i64 3, i64* %bptr.i, align 8
   %2 = load { i64, i64 }* %0, align 8
   %3 = bitcast { i64, i64 }* %0 to i8*
   call void @llvm.lifetime.end(i64 16, i8* %3)
   %4 = alloca { i64, i64 }, align 8
   store { i64, i64 } %2, { i64, i64 }* %4, align 8
-  %ptr = getelementptr inbounds { i64, i64 }* %4, i64 0, i32 0
-  %element = load i64* %ptr, align 8
-  tail call void @print(i64 %element)
-  %ptr1 = getelementptr inbounds { i64, i64 }* %4, i64 0, i32 1
-  %element2 = load i64* %ptr1, align 8
-  tail call void @print(i64 %element2)
+  %aptr = getelementptr inbounds { i64, i64 }* %4, i64 0, i32 0
+  store i64 1, i64* %aptr, align 8
+  tail call void @print(i64 1)
+  %bptr = getelementptr inbounds { i64, i64 }* %4, i64 0, i32 1
+  %belement = load i64* %bptr, align 8
+  tail call void @print(i64 %belement)
   ret i64 0
 }
 
 define { i64, i64 } @Meme(i64 %x, i64 %y) {
 entry:
   %0 = alloca { i64, i64 }, align 8
-  %ptr = getelementptr inbounds { i64, i64 }* %0, i64 0, i32 0
-  store i64 %x, i64* %ptr, align 8
-  %ptr1 = getelementptr inbounds { i64, i64 }* %0, i64 0, i32 1
-  store i64 %y, i64* %ptr1, align 8
+  %aptr = getelementptr inbounds { i64, i64 }* %0, i64 0, i32 0
+  store i64 %x, i64* %aptr, align 8
+  %bptr = getelementptr inbounds { i64, i64 }* %0, i64 0, i32 1
+  store i64 %y, i64* %bptr, align 8
   %1 = load { i64, i64 }* %0, align 8
   ret { i64, i64 } %1
 }

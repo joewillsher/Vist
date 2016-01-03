@@ -80,19 +80,19 @@ public func compileDocuments(fileNames: [String],
         if verbose { print("\n\n-----------------------------LINK------------------------------") }
         
         /// Generate LLVM IR File for the helper c++ code
-        let helperIRGenTask = NSTask()
-        helperIRGenTask.currentDirectoryPath = currentDirectory
-        helperIRGenTask.launchPath = "/usr/bin/llvm-gcc"
-        helperIRGenTask.arguments = ["helper.cpp", "-S", "-emit-llvm"]
+        let runtimeIRGenTask = NSTask()
+        runtimeIRGenTask.currentDirectoryPath = currentDirectory
+        runtimeIRGenTask.launchPath = "/usr/bin/llvm-gcc"
+        runtimeIRGenTask.arguments = ["runtime.cpp", "-S", "-emit-llvm"]
         
-        helperIRGenTask.launch()
-        helperIRGenTask.waitUntilExit()
+        runtimeIRGenTask.launch()
+        runtimeIRGenTask.waitUntilExit()
         
         /// Turn that LLVM IR code into LLVM bytecode
         let assembleTask = NSTask()
         assembleTask.currentDirectoryPath = currentDirectory
         assembleTask.launchPath = "/usr/local/Cellar/llvm/3.6.2/bin/llvm-as"
-        assembleTask.arguments = ["helper.ll"]
+        assembleTask.arguments = ["runtime.ll"]
         
         assembleTask.launch()
         assembleTask.waitUntilExit()
@@ -100,7 +100,7 @@ public func compileDocuments(fileNames: [String],
         
         // Create vist program module and link against the helper bytecode
         var module = LLVMModuleCreateWithName("vist_module")
-        linkModule(&module, withFile: "helper.bc")
+        linkModule(&module, withFile: "runtime.bc")
         configModule(module)
         
         

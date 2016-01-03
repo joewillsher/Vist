@@ -59,7 +59,8 @@ Ltmp8:
 	movq	-16(%rbp), %rax
 	movq	%rax, -32(%rbp)
 	movq	$3, -24(%rbp)
-	movq	-32(%rbp), %rdi
+	movq	$1, -32(%rbp)
+	movl	$1, %edi
 	callq	_print
 	movq	-24(%rbp), %rdi
 	callq	_print

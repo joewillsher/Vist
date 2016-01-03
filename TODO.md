@@ -2,13 +2,10 @@
 # TODO
 
 * Struct IR Gen
-    - Properties and padding (incl improving current equal-width impl)
     - Method implementation -- sema pass getting info about functions and associating them with the object
     - Concepts and dynamic methods -- need to work out type model
     - Reference semantics implemented
     - Initialisers
-
-* Method & property parsing
 
 * Name mangling
 
@@ -29,7 +26,7 @@
     - Currying & partial application of functions, needs to reference captured objects on the heap
     - https://en.wikipedia.org/wiki/Closure_(computer_programming)#Implementation_and_theory
 
-* Look into guard statements. Haskell:
+* Look into guard statements. Like Haskell:
 
 ```haskell
 factorial n

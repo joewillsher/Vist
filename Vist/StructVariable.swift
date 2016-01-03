@@ -28,24 +28,6 @@ class StructVariable : MutableVariable {
         self.properties = properties
     }
     
-//    class func alloc(builder: LLVMBuilderRef, type: LLVMTypeRef, name: String = "", mutable: Bool, val: LLVMValueRef) -> StructVariable {
-//        let ptr = LLVMBuildAlloca(builder, type, name)
-//        
-//        let c = LLVMCountStructElementTypes(type)
-//        var arr = [LLVMTypeRef](count: Int(c), repeatedValue: nil)
-//        
-//        LLVMGetStructElementTypes(type, &arr)
-//        
-//        
-//        return StructVariable(type: type, ptr: ptr, mutable: mutable, builder: builder, properties: properties)
-//    }
-
-//
-//    init(type: LLVMTypeRef, val: LLVMValueRef) {
-//        self.type = type
-//        
-//    }
-//    
     func load(name: String = "") -> LLVMValueRef {
         return LLVMBuildLoad(builder, ptr, name)
     }
@@ -67,11 +49,11 @@ class StructVariable : MutableVariable {
     private func ptrToPropertyNamed(name: String) throws -> LLVMValueRef {
         guard let i = indexOfProperty(name) else { throw SemaError.NoPropertyNamed(name) }
         
-        return LLVMBuildStructGEP(builder, ptr, UInt32(i), "ptr")
+        return LLVMBuildStructGEP(builder, ptr, UInt32(i), "\(name)ptr")
     }
     
     func loadPropertyNamed(name: String) throws -> LLVMValueRef {
-        return LLVMBuildLoad(builder, try ptrToPropertyNamed(name), "element")
+        return LLVMBuildLoad(builder, try ptrToPropertyNamed(name), "\(name)element")
     }
     
     func store(val: LLVMValueRef, inPropertyNamed name: String) throws {

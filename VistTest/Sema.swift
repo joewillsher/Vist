@@ -40,9 +40,7 @@ func sema(inout ast: AST) throws {
     globalScope[function: "print"] = pt
     let ptd = LLVMFnType(params: [LLVMType.Float(size: 64)], returns: LLVMType.Void)
     globalScope[function: "printd"] = ptd
-    
-    ast.expressions = ast.expressions.filter { !($0 is CommentExpression) }
-    
+        
     try variableTypeSema(forScopeExpression: &ast, scope: globalScope)
     
 }

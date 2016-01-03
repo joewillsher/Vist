@@ -11,13 +11,11 @@ protocol Expression : Printable, TypeProvider, Typed {}
 
 
 // TODO: make this generic
+// use behaviour delegates (when released in swift 3) to make `let (delated) type: LLVMTyped { get }`
 protocol Typed {
     var type: LLVMTyped? { get set }
 }
 
-struct AnyExpression : Expression {
-    var type: LLVMTyped? = nil
-}
 
 protocol Sized : Expression {
     var size: UInt32 { get set }
@@ -150,7 +148,7 @@ protocol AssignableExpression : Expression {}
 /// A variable lookup expression
 ///
 /// Generic over the variable type, use AnyExpression if this is not known
-final class Variable <T : Expression> : AssignableExpression {
+final class Variable : AssignableExpression {
     let name: String
     
     init(name: String) {
@@ -367,15 +365,14 @@ protocol LoopExpression : Expression {
 
 final class ForInLoopExpression
     <Iterator : IteratorExpression,
-    BoundType : Expression,
     BlockType : ScopeExpression>
     : LoopExpression {
     
-    let binded: Variable<BoundType>
+    let binded: Variable
     let iterator: Iterator
     var block: BlockType
     
-    init(identifier: Variable<BoundType>, iterator: Iterator, block: BlockType) {
+    init(identifier: Variable, iterator: Iterator, block: BlockType) {
         self.binded = identifier
         self.iterator = iterator
         self.block = block
@@ -485,6 +482,7 @@ final class InitialiserExpression : Expression, StructMember {
     init(ty: FunctionType, impl: FunctionImplementationExpression, parent: StructExpression?) {
         self.ty = ty
         self.impl = impl
+        self.parent = parent
     }
     
     var type: LLVMTyped? = nil
@@ -505,11 +503,11 @@ final class MethodCallExpression <ObjectType : Expression> : Expression {
     var type: LLVMTyped? = nil
 }
 
-final class PropertyLookupExpression <ObjectType : Expression> : Expression {
+final class PropertyLookupExpression : AssignableExpression {
     let name: String
-    let object: ObjectType
+    let object: Expression
     
-    init(name: String, object: ObjectType) {
+    init(name: String, object: Expression) {
         self.name = name
         self.object = object
     }

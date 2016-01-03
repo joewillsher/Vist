@@ -72,7 +72,7 @@
 		D485DD291C1667E900B72F81 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D489F3BD1C1E392D00254FFC /* example.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vist; path = RUN/example.vist; sourceTree = "<group>"; };
 		D489F3C01C1E396E00254FFC /* example */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = example; path = RUN/example; sourceTree = "<group>"; };
-		D489F3C11C1E397700254FFC /* helper.bc */ = {isa = PBXFileReference; lastKnownFileType = file; name = helper.bc; path = RUN/helper.bc; sourceTree = "<group>"; };
+		D489F3C11C1E397700254FFC /* runtime.bc */ = {isa = PBXFileReference; lastKnownFileType = file; name = runtime.bc; path = RUN/runtime.bc; sourceTree = "<group>"; };
 		D49410821C124B4E0029BF3D /* Print.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Print.swift; sourceTree = "<group>"; };
 		D4AD08251C2DEB1200BE7D86 /* ArrayVariable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArrayVariable.swift; sourceTree = "<group>"; };
 		D4AD08271C2DEB2D00BE7D86 /* StructVariable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StructVariable.swift; sourceTree = "<group>"; };
@@ -81,11 +81,11 @@
 		D4B1FA091C304027001E7BCC /* SemaScope.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SemaScope.swift; sourceTree = "<group>"; };
 		D4B1FA0B1C304049001E7BCC /* TypeLowering.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TypeLowering.swift; sourceTree = "<group>"; };
 		D4C85BCB1BF8E00100731F34 /* IRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IRGen.swift; sourceTree = "<group>"; };
-		D4DB9D5D1C1DDA1A00503153 /* helper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = helper.cpp; path = RUN/helper.cpp; sourceTree = SOURCE_ROOT; };
+		D4DB9D5D1C1DDA1A00503153 /* runtime.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = runtime.cpp; path = RUN/runtime.cpp; sourceTree = SOURCE_ROOT; };
 		D4DB9D601C1DED5C00503153 /* Link.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Link.swift; sourceTree = "<group>"; };
 		D4DB9D621C1DF10A00503153 /* Config.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; };
-		D4DB9D681C1DFFCC00503153 /* helper.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = helper.ll; path = RUN/helper.ll; sourceTree = "<group>"; };
+		D4DB9D681C1DFFCC00503153 /* runtime.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = runtime.ll; path = RUN/runtime.ll; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,7 +109,7 @@
 		D44DB8881C316DA500EBCD9F /* Runtime */ = {
 			isa = PBXGroup;
 			children = (
-				D4DB9D5D1C1DDA1A00503153 /* helper.cpp */,
+				D4DB9D5D1C1DDA1A00503153 /* runtime.cpp */,
 			);
 			name = Runtime;
 			sourceTree = "<group>";
@@ -253,8 +253,8 @@
 		D4DB9D651C1DFF9B00503153 /* Compile pipeline */ = {
 			isa = PBXGroup;
 			children = (
-				D4DB9D681C1DFFCC00503153 /* helper.ll */,
-				D489F3C11C1E397700254FFC /* helper.bc */,
+				D4DB9D681C1DFFCC00503153 /* runtime.ll */,
+				D489F3C11C1E397700254FFC /* runtime.bc */,
 				D4851F491C28A0820009233E /* example_.ll */,
 				D4DB9D661C1DFFB300503153 /* example.ll */,
 				D4851F4A1C28A08A0009233E /* example.s */,

@@ -89,9 +89,6 @@ struct Parser {
         return index < tokens.count-i ? tokensWithPos.map{$0.1.range.start}[index+i] : nil
     }
     
-    init(tokens: [(Token, SourceLoc)]) {
-        self.tokensWithPos = tokens
-    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------------
@@ -175,7 +172,7 @@ extension Parser {
 //-------------------------------------------------------------------------------------------------------------------------
 extension Parser {
     
-    private mutating func parseTextExpression() throws -> Variable<AnyExpression> {
+    private mutating func parseTextExpression() throws -> Variable {
         guard case .Identifier(let i) = currentToken else {
             throw ParseError.NoIdentifier(currentPos) }
         return Variable(name: i)
@@ -204,20 +201,20 @@ extension Parser {
             
             
             guard case .Assign = currentToken else { // if call
-                return ArraySubscriptExpression(arr: Variable<AnyExpression>(name: token), index: subscpipt)
+                return ArraySubscriptExpression(arr: Variable(name: token), index: subscpipt)
             }
             getNextToken() // eat '='
             
             let exp = try parseOperatorExpression()
             // if assigning to subscripted value
-            return MutationExpression(object: ArraySubscriptExpression(arr: Variable<AnyExpression>(name: token), index: subscpipt), value: exp)
+            return MutationExpression(object: ArraySubscriptExpression(arr: Variable(name: token), index: subscpipt), value: exp)
             
         case .Assign?: // mutation
             getNextToken(); getNextToken() // eat 'identifier ='
             
             let exp = try parseOperatorExpression()
             
-            return MutationExpression(object: Variable<AnyExpression>(name: token), value: exp)
+            return MutationExpression(object: Variable(name: token), value: exp)
             
         case .Period?: // property or fn
             getNextToken() // eat `.`
@@ -229,23 +226,34 @@ extension Parser {
                 
                 if case .CloseParen = currentToken {   // simple itentifier() call
                     getNextToken() // eat ')'
-                    return MethodCallExpression(name: name, params: TupleExpression.void(), object: Variable<AnyExpression>(name: token))
+                    return MethodCallExpression(name: name, params: TupleExpression.void(), object: Variable(name: token))
                 }
                 
-                return MethodCallExpression(name: token, params: try parseTupleExpression(), object: Variable<AnyExpression>(name: token))
+                return MethodCallExpression(name: token, params: try parseTupleExpression(), object: Variable(name: token))
                 
             default:
                 getNextToken() // eat property
-                return PropertyLookupExpression(name: name, object: Variable<AnyExpression>(name: token))
+                
+                let property = PropertyLookupExpression(name: name, object: Variable(name: token))
+                
+                guard case .Assign = currentToken else {
+                    return property
+                }
+                getNextToken() // eat `=`
+                
+                // if assigning to property lookup
+                let exp = try parseOperatorExpression()
+                return MutationExpression(object: property, value: exp)
             }
             
         default: // just identifier
             defer { getNextToken() }
-            return try parseOperatorExpression(Variable<AnyExpression>(name: token))
+            return try parseOperatorExpression(Variable(name: token))
         }
     }
     
-    /// Function called on `return a + 1` and `if a < 3`
+    /// Function called on `return a + 1` and `if a < 3` etc
+    ///
     /// exp can be optionally defined as a known lhs operand to give more info to the parser
     private mutating func parseOperatorExpression(exp: Expression? = nil, prec: Int = 0) throws -> Expression {
         return try parseOperationRHS(prec, lhs: exp ?? (try parsePrimary()))
@@ -405,7 +413,7 @@ extension Parser {
     }
     
     
-    private mutating func parseForInLoopExpression() throws -> ForInLoopExpression<RangeIteratorExpression, AnyExpression, BlockExpression> {
+    private mutating func parseForInLoopExpression() throws -> ForInLoopExpression<RangeIteratorExpression, BlockExpression> {
         
         getNextToken() // eat 'for'
         let itentifier = try parseTextExpression() // bind loop label
@@ -786,7 +794,12 @@ extension Parser {
         
         return AST(expressions: expressions)
     }
-    
+
+    init(tokens: [(Token, SourceLoc)]) {
+        self.tokensWithPos = tokens.filter {
+            if case .Comment = $0.0 { return false } else { return true }
+        }
+    }
     
 }
 
