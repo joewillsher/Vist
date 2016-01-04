@@ -37,11 +37,16 @@ func sema(inout ast: AST) throws {
     
     // add helper functions to ast tables
     let globalScope = SemaScope(parent: nil, returnType: nil)
-    let pt = LLVMFnType(params: [LLVMType.Int(size: 64)], returns: LLVMType.Void)
-    globalScope[function: "print"] = pt
-    let ptd = LLVMFnType(params: [LLVMType.Float(size: 64)], returns: LLVMType.Void)
-    globalScope[function: "print"] = ptd
-        
+    
+    let fns = [
+        try LLVMFnType.fn("print", typeSignature: "Int"),
+        try LLVMFnType.fn("print", typeSignature: "Double")
+    ]
+    
+    for (name, fn) in fns {
+        globalScope[function: name] = fn
+    }
+    
     try variableTypeSema(forScopeExpression: &ast, scope: globalScope)
     
 }

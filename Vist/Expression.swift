@@ -205,7 +205,7 @@ final class FunctionCallExpression : Expression {
     init(name: String, args: TupleExpression) {
         self.name = name
         self.args = args
-        self.mangledName = ""
+        self.mangledName = name
     }
     
     var mangledName: String
