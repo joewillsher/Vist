@@ -24,3 +24,6 @@ print(x.b)
 
 print(22)
 print(22.0)
+
+let u: Float = 2.1
+print(u)

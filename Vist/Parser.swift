@@ -491,6 +491,9 @@ extension Parser {
             if let n = UInt32(s) {
                 sized.size = n
                 value = sized
+            } else if explicitType == "Float" {
+                sized.size = 32
+                value = sized
             }
         }
         

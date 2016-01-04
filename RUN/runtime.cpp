@@ -20,7 +20,23 @@ _print__Int64(int64_t i)
 extern "C"
 void
 __attribute__ ((noinline))
+_print__Int32(int i)
+{
+    printf("%i\n", i);
+};
+
+extern "C"
+void
+__attribute__ ((noinline))
 _print__FP64(double d)
+{
+    printf("%f\n", d);
+};
+
+extern "C"
+void
+__attribute__ ((noinline))
+_print__FP32(float d)
 {
     printf("%f\n", d);
 };

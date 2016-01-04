@@ -3,7 +3,8 @@ target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-macosx10.11.0"
 
 @.str = private unnamed_addr constant [6 x i8] c"%llu\0A\00", align 1
-@.str1 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
+@.str1 = private unnamed_addr constant [4 x i8] c"%i\0A\00", align 1
+@.str2 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
 
 ; Function Attrs: noinline ssp uwtable
 define void @_print__Int64(i64 %i) #0 {
@@ -17,11 +18,30 @@ define void @_print__Int64(i64 %i) #0 {
 declare i32 @printf(i8*, ...) #1
 
 ; Function Attrs: noinline ssp uwtable
+define void @_print__Int32(i32 %i) #0 {
+  %1 = alloca i32, align 4
+  store i32 %i, i32* %1, align 4
+  %2 = load i32* %1, align 4
+  %3 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str1, i32 0, i32 0), i32 %2)
+  ret void
+}
+
+; Function Attrs: noinline ssp uwtable
 define void @_print__FP64(double %d) #0 {
   %1 = alloca double, align 8
   store double %d, double* %1, align 8
   %2 = load double* %1, align 8
-  %3 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str1, i32 0, i32 0), double %2)
+  %3 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str2, i32 0, i32 0), double %2)
+  ret void
+}
+
+; Function Attrs: noinline ssp uwtable
+define void @_print__FP32(float %d) #0 {
+  %1 = alloca float, align 4
+  store float %d, float* %1, align 4
+  %2 = load float* %1, align 4
+  %3 = fpext float %2 to double
+  %4 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str2, i32 0, i32 0), double %3)
   ret void
 }
 

@@ -40,7 +40,9 @@ func sema(inout ast: AST) throws {
     
     let fns = [
         try LLVMFnType.fn("print", typeSignature: "Int"),
-        try LLVMFnType.fn("print", typeSignature: "Double")
+        try LLVMFnType.fn("print", typeSignature: "Int32"),
+        try LLVMFnType.fn("print", typeSignature: "Double"),
+        try LLVMFnType.fn("print", typeSignature: "Float")
     ]
     
     for (name, fn) in fns {
