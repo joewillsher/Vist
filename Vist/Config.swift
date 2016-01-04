@@ -9,13 +9,13 @@
 
 func configModule(module: LLVMModuleRef) {
     
-    let target = UnsafeMutablePointer<LLVMTargetRef>.alloc(1)
-    LLVMGetTargetFromTriple("x86_64-apple-macosx10.11.0", target, nil)
+//    let target = UnsafeMutablePointer<LLVMTargetRef>.alloc(1)
+//    LLVMGetTargetFromTriple("x86_64-apple-macosx10.11.0", target, nil)
     
     // remove IR’s metadata
-    let a = LLVMGetNamedMetadataNumOperands(module, "llvm.ident")
+//    let a = LLVMGetNamedMetadataNumOperands(module, "llvm.ident")
     
-    let ptr = UnsafeMutablePointer<LLVMValueRef>.alloc(1)
+//    let ptr = UnsafeMutablePointer<LLVMValueRef>.alloc(1)
     
 ////    LLVMGetNamedMetadataOperands(module, "attributes #0", ptr)
 //    

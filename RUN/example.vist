@@ -14,45 +14,13 @@ type Meme {
 
 
 var x = Meme(2 3)
+var y = x
 
 x.a = 1
 
 print(x.a)
+print(y.a)
 print(x.b)
 
-
-/*
-func iterate: () -> Int -> Int = do
-    return |a| do
-        return a + 1
-
-let i = iterate()
-
-let x = i(8)
-
-print(x)
-
-func foo: Int Int -> Int = |a b| do
-    return a + b
-
-func bar: Int = do print($0)
-
-func fact: Int -> Int = |a| do
-    if a <= 1 do
-        return foo(0 1)
-    else do
-        return a * fact(a - 1)
-
-let y = fact(10)
-bar(y)
-
-
-var tot = 0
-
-for i in 0 ... 10000 do
-    if i % 3 == 0 || i % 5 == 0 do
-        tot = tot + i
-
-print(tot)
-*/
-
+print(22)
+print(22.0)

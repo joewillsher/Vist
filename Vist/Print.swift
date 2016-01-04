@@ -164,7 +164,7 @@ extension AssignmentExpression {
 
 extension FunctionPrototypeExpression {
     func printList() -> [(String?, Printable)]? {
-        return [("name",name), ("impl",impl), ("fnType", fnType)]
+        return [("name",name), ("mangled", mangledName), ("impl",impl), ("fnType", fnType)]
     }
 }
 

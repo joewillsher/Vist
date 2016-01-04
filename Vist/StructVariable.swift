@@ -49,11 +49,11 @@ class StructVariable : MutableVariable {
     private func ptrToPropertyNamed(name: String) throws -> LLVMValueRef {
         guard let i = indexOfProperty(name) else { throw SemaError.NoPropertyNamed(name) }
         
-        return LLVMBuildStructGEP(builder, ptr, UInt32(i), "\(name)ptr")
+        return LLVMBuildStructGEP(builder, ptr, UInt32(i), "\(name)_ptr")
     }
     
     func loadPropertyNamed(name: String) throws -> LLVMValueRef {
-        return LLVMBuildLoad(builder, try ptrToPropertyNamed(name), "\(name)element")
+        return LLVMBuildLoad(builder, try ptrToPropertyNamed(name), "\(name)")
     }
     
     func store(val: LLVMValueRef, inPropertyNamed name: String) throws {
@@ -67,11 +67,12 @@ class StructVariable : MutableVariable {
     
 }
 
+/// Variable kind referenced by initialisers
 final class AssignablePropertyVariable : MutableVariable {
-    var type: LLVMTypeRef = nil
+    var type: LLVMTypeRef = nil // dont care -- initialiser has this info
     var name: String
-    let mutable = true
-    private unowned var str: StructVariable
+    let mutable = true // initialiser can always assign
+    private unowned var str: StructVariable // unowned ref to struct this belongs to
     
     init(name: String, str: StructVariable) {
         self.name = name
@@ -90,9 +91,6 @@ final class AssignablePropertyVariable : MutableVariable {
         return true
     }
 }
-
-
-
 
 
 

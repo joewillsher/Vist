@@ -18,11 +18,11 @@
 		D46AD8871B8245A000C95574 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46AD8861B8245A000C95574 /* Parser.swift */; };
 		D46AD8891B8246C300C95574 /* Expression.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46AD8881B8246C300C95574 /* Expression.swift */; };
 		D46DA5F01C2976E8006AF1BE /* Sema.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46DA5EF1C2976E8006AF1BE /* Sema.swift */; };
-		D47E66591B88D9A20051D586 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = D47E66581B88D9A20051D586 /* README.md */; };
 		D47FF07E1B812052003F9920 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47FF07D1B812052003F9920 /* main.swift */; };
 		D4851F461C2434D90009233E /* RuntimeVariable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4851F451C2434D90009233E /* RuntimeVariable.swift */; };
 		D485DD281C1667E900B72F81 /* VistTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D485DD271C1667E900B72F81 /* VistTest.swift */; };
 		D49410831C124B4E0029BF3D /* Print.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49410821C124B4E0029BF3D /* Print.swift */; };
+		D497A7671C3ABACF00DFE39E /* Mangle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7661C3ABACF00DFE39E /* Mangle.swift */; };
 		D4AD08261C2DEB1200BE7D86 /* ArrayVariable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4AD08251C2DEB1200BE7D86 /* ArrayVariable.swift */; };
 		D4AD08281C2DEB2D00BE7D86 /* StructVariable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4AD08271C2DEB2D00BE7D86 /* StructVariable.swift */; };
 		D4B1FA061C3027E1001E7BCC /* SemaTypeCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4B1FA051C3027E1001E7BCC /* SemaTypeCheck.swift */; };
@@ -74,6 +74,8 @@
 		D489F3C01C1E396E00254FFC /* example */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = example; path = RUN/example; sourceTree = "<group>"; };
 		D489F3C11C1E397700254FFC /* runtime.bc */ = {isa = PBXFileReference; lastKnownFileType = file; name = runtime.bc; path = RUN/runtime.bc; sourceTree = "<group>"; };
 		D49410821C124B4E0029BF3D /* Print.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Print.swift; sourceTree = "<group>"; };
+		D497A7661C3ABACF00DFE39E /* Mangle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Mangle.swift; sourceTree = "<group>"; };
+		D497A7681C3AC48600DFE39E /* Test.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = Test.playground; sourceTree = "<group>"; };
 		D4AD08251C2DEB1200BE7D86 /* ArrayVariable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArrayVariable.swift; sourceTree = "<group>"; };
 		D4AD08271C2DEB2D00BE7D86 /* StructVariable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StructVariable.swift; sourceTree = "<group>"; };
 		D4B1FA011C2E1F58001E7BCC /* TODO.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = TODO.md; sourceTree = "<group>"; };
@@ -154,6 +156,7 @@
 		D46DA5F61C297AED006AF1BE /* Helper */ = {
 			isa = PBXGroup;
 			children = (
+				D497A7681C3AC48600DFE39E /* Test.playground */,
 				D4DB9D601C1DED5C00503153 /* Link.swift */,
 				D4DB9D621C1DF10A00503153 /* Config.swift */,
 				D49410821C124B4E0029BF3D /* Print.swift */,
@@ -234,6 +237,7 @@
 				D4B1FA051C3027E1001E7BCC /* SemaTypeCheck.swift */,
 				D4B1FA091C304027001E7BCC /* SemaScope.swift */,
 				D4B1FA0B1C304049001E7BCC /* TypeLowering.swift */,
+				D497A7661C3ABACF00DFE39E /* Mangle.swift */,
 				D44DB87F1C3081CD00EBCD9F /* TypeProvider.swift */,
 				D47D4BDF1C34B59C00B22B3C /* Interface */,
 			);
@@ -366,10 +370,10 @@
 				D46AD8871B8245A000C95574 /* Parser.swift in Sources */,
 				D4B1FA061C3027E1001E7BCC /* SemaTypeCheck.swift in Sources */,
 				D4AD08281C2DEB2D00BE7D86 /* StructVariable.swift in Sources */,
-				D47E66591B88D9A20051D586 /* README.md in Sources */,
 				D4C85BCC1BF8E00100731F34 /* IRGen.swift in Sources */,
 				D4851F461C2434D90009233E /* RuntimeVariable.swift in Sources */,
 				D44FB8B01C1657E100E6DD33 /* Compile.swift in Sources */,
+				D497A7671C3ABACF00DFE39E /* Mangle.swift in Sources */,
 				D465C6581C187639001A008C /* StackFrame.swift in Sources */,
 				D4DB9D631C1DF10A00503153 /* Config.swift in Sources */,
 				D44DB8801C3081CD00EBCD9F /* TypeProvider.swift in Sources */,

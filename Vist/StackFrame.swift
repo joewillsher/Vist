@@ -1,5 +1,5 @@
 //
-//  Scope.swift
+//  StackFrame.swift
 //  Vist
 //
 //  Created by Josef Willsher on 09/12/2015.

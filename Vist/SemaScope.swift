@@ -28,13 +28,19 @@ class SemaScope {
             variables[variable] = newValue
         }
     }
+    subscript (function function: String, paramTypes types: [LLVMTyped]) -> LLVMFnType? {
+        get {
+            if let v = functions[raw: function, paramTypes: types] { return v }
+            return parent?[function: function, paramTypes: types]
+        }
+    }
     subscript (function function: String) -> LLVMFnType? {
         get {
-            if let v = functions[function] { return v }
+            if let v = functions[raw: function] { return v }
             return parent?[function: function]
         }
         set {
-            functions[function] = newValue
+            functions[function.mangle(newValue!)] = newValue
         }
     }
     subscript (type type: String) -> LLVMStType? {
@@ -55,4 +61,37 @@ class SemaScope {
         self.types = [:]
     }
 }
+
+extension DictionaryLiteralConvertible
+    where
+    Key == String,
+    Value == LLVMFnType,
+    Self : SequenceType,
+    Self.Generator.Element == (Key, Value)
+{
+    
+    /// Subscript for unmangled names
+    ///
+    /// Function name is required to be between underscores at the start _foo_...
+    subscript(raw raw: String, paramTypes types: [LLVMTyped]) -> Value? {
+        get {
+            for (k, v) in self {
+                if k.demangleName() == raw && v.params == types { return v }
+            }
+            return nil
+        }
+    }
+    
+    subscript(raw raw: String) -> Value? {
+        get {
+            for (k, v) in self {
+                if k.demangleName() == raw { return v }
+            }
+            return nil
+        }
+    }
+
+    
+}
+
 

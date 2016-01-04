@@ -21,39 +21,6 @@ extension TypeProvider {
     }
 }
 
-@warn_unused_result
-func ==
-    <T : LLVMTyped>
-    (lhs: T, rhs: T)
-    -> Bool {
-    let l = (try? lhs.ir()), r = (try? rhs.ir())
-    if let l = l, let r = r { return l == r } else { return false }
-}
-@warn_unused_result
-func ==
-    <T : LLVMTyped>
-    (lhs: LLVMTyped?, rhs: T)
-    -> Bool {
-    let l = (try? lhs?.ir()), r = (try? rhs.ir())
-    if let l = l, let r = r { return l == r } else { return false }
-}
-@warn_unused_result
-func ==
-    (lhs: LLVMTyped, rhs: LLVMTyped)
-    -> Bool {
-        let l = (try? lhs.ir()), r = (try? rhs.ir())
-        if let l = l, let r = r { return l == r } else { return false }
-}
-extension CollectionType {
-    func mapAs<T>(_: T.Type) -> [T] {
-        return flatMap { $0 as? T }
-    }
-}
-
-
-extension LLVMType : Equatable {}
-extension LLVMFnType : Equatable {}
-
 
 
 //-------------------------------------------------------------------------------------------------------------------------
@@ -97,8 +64,7 @@ extension Variable : TypeProvider {
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
         // lookup variable type in scope
-        guard let v = scope[variable: name] else {
-            throw SemaError.NoVariable(name) }
+        guard let v = scope[variable: name] else { throw SemaError.NoVariable(name) }
         
         // assign type to self and return
         self.type = v
@@ -211,8 +177,8 @@ extension TupleExpression : TypeProvider {
 
 private extension FunctionType {
     
-    func params() throws -> [LLVMType] {
-        let res = args.mapAs(ValueType).flatMap { LLVMType($0.name) }
+    func params() throws -> [LLVMTyped] {
+        let res = args.mapAs(ValueType).flatMap { LLVMType($0.name) as? LLVMTyped }
         if res.count == args.elements.count { return res } else { throw SemaError.TypeNotFound }
     }
     
@@ -245,13 +211,20 @@ extension FunctionCallExpression : TypeProvider {
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
         // get from table
-        guard let fnType = scope[function: name] else { throw SemaError.NoFunction(name) }
+        let params = try args.elements.map { try $0.llvmType(scope) }
+        
+        guard let fnType = scope[function: name, paramTypes: params] else {
+            if let f = scope[function: name] { throw SemaError.WrongFunctionApplications(applied: params, expected: f.params) }
+            else { throw SemaError.NoFunction(name) }
+        }
+        
+        self.mangledName = name.mangle(fnType)
         
         // gen types for objects in call
-        for (i, arg) in args.elements.enumerate() {
-            let ti = try arg.llvmType(scope)
-            let expected = fnType.params[i]
-            guard ti == expected else { throw SemaError.WrongFunctionApplication(applied: ti, expected: expected, paramNum: i) }
+        for arg in args.elements {
+            /*let ti =*/ try arg.llvmType(scope)
+//            let expected = fnType.params[i]
+//            guard ti == expected else { throw SemaError.WrongFunctionApplication(applied: ti, expected: expected, paramNum: i) }
         }
         
         // assign type to self and return
@@ -266,6 +239,8 @@ extension FunctionPrototypeExpression : TypeProvider {
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
         let ty = LLVMFnType(params: try fnType.params(), returns: try fnType.returnType())
+        
+        mangledName = name.mangle(ty)
         
         scope[function: name] = ty  // update function table
         fnType.type = ty            // store type in fntype
@@ -579,6 +554,8 @@ extension InitialiserExpression : TypeProvider {
         let params = try ty.params()
         
         let t = LLVMFnType(params: params, returns: parentType)
+        self.mangledName = parentName.mangle(t)
+        
         scope[function: parentName] = t
         self.type = t
         return t

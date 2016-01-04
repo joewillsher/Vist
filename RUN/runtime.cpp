@@ -12,7 +12,7 @@
 extern "C"
 void
 __attribute__ ((noinline))
-print(int64_t i)
+_print__Int64(int64_t i)
 {
     printf("%llu\n", i);
 };
@@ -20,7 +20,7 @@ print(int64_t i)
 extern "C"
 void
 __attribute__ ((noinline))
-printd(double d)
+_print__FP64(double d)
 {
     printf("%f\n", d);
 };

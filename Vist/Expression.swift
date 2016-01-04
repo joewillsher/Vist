@@ -1,5 +1,5 @@
 //
-//  AST.swift
+//  Expression.swift
 //  Vist
 //
 //  Created by Josef Willsher on 17/08/2015.
@@ -205,7 +205,10 @@ final class FunctionCallExpression : Expression {
     init(name: String, args: TupleExpression) {
         self.name = name
         self.args = args
+        self.mangledName = ""
     }
+    
+    var mangledName: String
     
     var type: LLVMTyped? = nil
 }
@@ -249,8 +252,11 @@ final class FunctionPrototypeExpression : Expression, StructMember {
         self.name = name
         self.fnType = type
         self.impl = impl
+        self.mangledName = name
     }
-        
+    
+    var mangledName: String
+    
     var type: LLVMTyped? = nil
 }
 
@@ -486,8 +492,11 @@ final class InitialiserExpression : Expression, StructMember {
         self.ty = ty
         self.impl = impl
         self.parent = parent
+        self.mangledName = ""
     }
     
+    var mangledName: String
+
     var type: LLVMTyped? = nil
 }
 

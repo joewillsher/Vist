@@ -1,13 +1,15 @@
 
 # TODO
 
+* Strings
+
 * Struct IR Gen
-    - **Mutating a struct by doing x = a**
     - Implicit initialisers
     - Method implementation -- sema pass getting info about functions and associating them with the object
     - Concepts and dynamic methods -- need to work out type model
     - Reference semantics implemented
-
+    - Initialiser taking pointer to unallocated mem and initalising it, currently it returns an initialised instance
+    
 * AST context object to help type inference when in sema
 
 * Name mangling
@@ -22,8 +24,6 @@
 * Standard library
     - need to invesitgate how I can let this interact with the compiler
     - write stdlib int and array types
-
-* Strings
 
 * Memory management
 

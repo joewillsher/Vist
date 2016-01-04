@@ -1,5 +1,5 @@
 //
-//  CodeGen.swift
+//  IRGen.swift
 //  Vist
 //
 //  Created by Josef Willsher on 15/11/2015.
@@ -353,14 +353,6 @@ extension Void : IRGenerator {
 }
 
 
-extension CommentExpression : IRGenerator {
-    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
-        return nil
-    }
-
-}
-
-
 
 //-------------------------------------------------------------------------------------------------------------------------
 //  MARK:                                                 Functions
@@ -371,7 +363,7 @@ extension FunctionCallExpression : IRGenerator {
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
         // make function
-        let fn = LLVMGetNamedFunction(module, name)
+        let fn = LLVMGetNamedFunction(module, mangledName)
         
         // arguments
         let argCount = args.elements.count
@@ -379,8 +371,7 @@ extension FunctionCallExpression : IRGenerator {
         let argBuffer = a.ptr()
         defer { argBuffer.dealloc(argCount) }
         
-        guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else {
-            throw IRError.WrongFunctionApplication(name) }
+        guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else { throw IRError.WrongFunctionApplication(name) }
         
         let doNotUseName = type == LLVMType.Void || type == LLVMType.Null || type == nil
         
@@ -409,7 +400,7 @@ extension FunctionPrototypeExpression : IRGenerator {
         guard let type = self.fnType.type as? LLVMFnType else { throw IRError.TypeNotFound }
         
         // If existing function definition
-        let _fn = LLVMGetNamedFunction(module, name)
+        let _fn = LLVMGetNamedFunction(module, mangledName)
         if _fn != nil && LLVMCountParams(_fn) == UInt32(argCount) && LLVMCountBasicBlocks(_fn) != 0 && LLVMGetEntryBasicBlock(_fn) != nil {
             return _fn
         }
@@ -420,11 +411,11 @@ extension FunctionPrototypeExpression : IRGenerator {
         
         // make function
         let functionType = try type.ir()
-        let function = LLVMAddFunction(module, name, functionType)
+        let function = LLVMAddFunction(module, mangledName, functionType)
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
         
         // Add function type to stack frame
-        stackFrame.addFunctionType(name, val: functionType)
+        stackFrame.addFunctionType(mangledName, val: functionType)
         
         // stack frame internal to function, needs params setting and then the block should be added *inside* the bbGen function
         let functionStackFrame = StackFrame(function: function, parentStackFrame: stackFrame)
@@ -826,8 +817,9 @@ extension InitialiserExpression : IRGenerator {
         
         // make function
         let functionType = try type.ir()
-        let function = LLVMAddFunction(module, name, functionType)
+        let function = LLVMAddFunction(module, mangledName, functionType)
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
+        LLVMAddFunctionAttr(function, LLVMAlwaysInlineAttribute) // we want 
         
         // Add function type to stack frame
         stackFrame.addFunctionType(name, val: functionType)
@@ -845,7 +837,7 @@ extension InitialiserExpression : IRGenerator {
             initStackFrame.addVariable(name, val: s)
         }
         
-        // property types & names for sema scope
+        // property types, names, & mutability for stack frame
         let properties = try parentProperties.map { assignment -> (String, LLVMValueRef, Bool) in
             if let t = assignment.value.type { return (assignment.name, try t.ir(), assignment.isMutable) } else { throw IRError.NoProperty(assignment.name) }
         }
@@ -883,8 +875,7 @@ extension PropertyLookupExpression : IRGenerator {
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
         guard let n = object as? Variable else { throw IRError.CannotGetPropertyFromNonVariableType }
-        guard let variable = try stackFrame.variable(n.name) as? StructVariable else {
-            throw IRError.NoVariable(n.name) }
+        guard let variable = try stackFrame.variable(n.name) as? StructVariable else { throw IRError.NoVariable(n.name) }
         
         let val = try variable.loadPropertyNamed(name)
         

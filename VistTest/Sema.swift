@@ -26,7 +26,8 @@ enum SemaError : ErrorType {
     case NotVariableType, CannotSubscriptNonArrayVariable, NonIntegerSubscript
     case NonBooleanCondition, RangeWithInconsistentTypes, DifferentTypeForMutation
     case StructPropertyNotTyped, StructMethodNotTyped, InitialiserNotAssociatedWithType
-    case WrongFunctionReturnType(applied: LLVMTyped, expected: LLVMTyped), WrongFunctionApplication(applied: LLVMTyped, expected: LLVMTyped, paramNum: Int)
+    case WrongFunctionReturnType(applied: LLVMTyped, expected: LLVMTyped)
+    case WrongFunctionApplication(applied: LLVMTyped, expected: LLVMTyped, paramNum: Int), WrongFunctionApplications(applied: [LLVMTyped], expected: [LLVMTyped])
     case NoTypeNamed(String), TypeNotFound
     case DifferentTypesForOperator(String)
     case NoPropertyNamed(String)
@@ -39,7 +40,7 @@ func sema(inout ast: AST) throws {
     let pt = LLVMFnType(params: [LLVMType.Int(size: 64)], returns: LLVMType.Void)
     globalScope[function: "print"] = pt
     let ptd = LLVMFnType(params: [LLVMType.Float(size: 64)], returns: LLVMType.Void)
-    globalScope[function: "printd"] = ptd
+    globalScope[function: "print"] = ptd
         
     try variableTypeSema(forScopeExpression: &ast, scope: globalScope)
     

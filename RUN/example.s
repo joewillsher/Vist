@@ -1,8 +1,8 @@
 	.section	__TEXT,__text,regular,pure_instructions
 	.macosx_version_min 10, 11
-	.globl	_print
+	.globl	__print__Int64
 	.align	4, 0x90
-_print:                                 ## @print
+__print__Int64:                         ## @_print__Int64
 	.cfi_startproc
 ## BB#0:
 	pushq	%rbp
@@ -21,9 +21,9 @@ Ltmp2:
 	jmp	_printf                 ## TAILCALL
 	.cfi_endproc
 
-	.globl	_printd
+	.globl	__print__FP64
 	.align	4, 0x90
-_printd:                                ## @printd
+__print__FP64:                          ## @_print__FP64
 	.cfi_startproc
 ## BB#0:
 	pushq	%rbp
@@ -40,6 +40,11 @@ Ltmp5:
 	jmp	_printf                 ## TAILCALL
 	.cfi_endproc
 
+	.section	__TEXT,__literal8,8byte_literals
+	.align	3
+LCPI2_0:
+	.quad	4626885667169763328     ## double 22
+	.section	__TEXT,__text,regular,pure_instructions
 	.globl	_main
 	.align	4, 0x90
 _main:                                  ## @main
@@ -53,26 +58,34 @@ Ltmp7:
 	movq	%rsp, %rbp
 Ltmp8:
 	.cfi_def_cfa_register %rbp
-	subq	$32, %rsp
+	subq	$48, %rsp
 	movq	$2, -16(%rbp)
 	movq	$3, -8(%rbp)
 	movq	-16(%rbp), %rax
 	movq	%rax, -32(%rbp)
 	movq	$3, -24(%rbp)
+	movq	%rax, -48(%rbp)
+	movq	$3, -40(%rbp)
 	movq	$1, -32(%rbp)
 	movl	$1, %edi
-	callq	_print
+	callq	__print__Int64
+	movq	-48(%rbp), %rdi
+	callq	__print__Int64
 	movq	-24(%rbp), %rdi
-	callq	_print
+	callq	__print__Int64
+	movl	$22, %edi
+	callq	__print__Int64
+	movsd	LCPI2_0(%rip), %xmm0
+	callq	__print__FP64
 	xorl	%eax, %eax
-	addq	$32, %rsp
+	addq	$48, %rsp
 	popq	%rbp
 	retq
 	.cfi_endproc
 
-	.globl	_Meme
+	.globl	__Meme__Int64_Int64_R__SInt64.Int64
 	.align	4, 0x90
-_Meme:                                  ## @Meme
+__Meme__Int64_Int64_R__SInt64.Int64:    ## @_Meme__Int64_Int64_R__SInt64.Int64
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp

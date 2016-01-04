@@ -6,7 +6,7 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-protocol LLVMTyped : Printable {
+protocol LLVMTyped : Printable, CustomDebugStringConvertible {
     func ir() throws -> LLVMTypeRef
 }
 
@@ -16,8 +16,6 @@ enum LLVMType : LLVMTyped {
     case Int(size: UInt32), Float(size: UInt32), Bool
     indirect case Array(el: LLVMTyped, size: UInt32)
     indirect case Pointer(to: LLVMTyped)
-//    indirect case Struct(members: [(String, LLVMType)], methods: [(String, LLVMFnType)])
-    
     // TODO: Implement Tuple types (as struct)
     
     func ir() throws -> LLVMTypeRef {
@@ -36,11 +34,6 @@ enum LLVMType : LLVMTyped {
             case 128:                   return LLVMFP128Type()
             default:                    throw SemaError.InvalidType(self)
             }
-//        case .Struct(let members, _):
-//            let arr = try members
-//                .map { try $1.ir() }
-//                .ptr()
-//                                        return LLVMStructType(arr, UInt32(members.count), LLVMBool(false))
         }
     }
     
@@ -60,7 +53,7 @@ enum LLVMType : LLVMTyped {
 }
 
 struct LLVMFnType : LLVMTyped {
-    let params: [LLVMType]
+    let params: [LLVMTyped]
     let returns: LLVMTyped
     
     func ir() throws -> LLVMTypeRef {
@@ -80,8 +73,8 @@ struct LLVMFnType : LLVMTyped {
     }
     
     
-    var nonVoid: [LLVMType]  {
-        return params.filter { if case .Void = $0 { return false } else { return true } }
+    var nonVoid: [LLVMTyped]  {
+        return params.filter { if case LLVMType.Void = $0 { return false } else { return true } }
     }
 }
 
@@ -112,41 +105,55 @@ final class LLVMStType : LLVMTyped {
     }
 }
 
-extension LLVMType : CustomStringConvertible {
-    
-    var description: String {
-        switch self {
-        case .Null:                     return "Null"
-        case .Void:                     return "Void"
-        case .Int(let s):               return "Int\(s)"
-        case Bool:                      return "Bool"
-        case .Array(let el, let size):  return "[\(size) x \(el)"
-        case .Pointer(let to):          return "\(to)*"
-        case .Float(let s):
-            switch s {
-            case 16:                    return "Half"
-            case 32:                    return "Float"
-            case 64:                    return "Double"
-            case 128:                   return "FP128"
-            default:                    return "<<invalid type>>"
-            }
-        }
-    }
-}
-
-extension LLVMStType : CustomStringConvertible {
-    
-    var description: String {
-        let arr = members
-            .map { $0.1.description }
-            .joinWithSeparator(", ")
-        return "Struct(\(arr))"
-    }
-}
 
 
 func ir(val: LLVMTyped) throws -> LLVMValueRef {
     return try val.ir()
 }
 
+
+@warn_unused_result
+func ==
+    <T : LLVMTyped>
+    (lhs: T, rhs: T)
+    -> Bool {
+        let l = (try? lhs.ir()), r = (try? rhs.ir())
+        if let l = l, let r = r { return l == r } else { return false }
+}
+@warn_unused_result
+func ==
+    <T : LLVMTyped>
+    (lhs: LLVMTyped?, rhs: T)
+    -> Bool {
+        let l = (try? lhs?.ir()), r = (try? rhs.ir())
+        if let l = l, let r = r { return l == r } else { return false }
+}
+@warn_unused_result
+func ==
+    (lhs: LLVMTyped, rhs: LLVMTyped)
+    -> Bool {
+        let l = (try? lhs.ir()), r = (try? rhs.ir())
+        if let l = l, let r = r { return l == r } else { return false }
+}
+@warn_unused_result
+func ==
+    (lhs: [LLVMTyped], rhs: [LLVMTyped])
+    -> Bool {
+        if lhs.count != rhs.count { return false }
+        
+        for (l,r) in zip(lhs,rhs) {
+            let ll = (try? l.ir()), rr = (try? r.ir())
+            if let l = ll, let r = rr where l == r { return true }
+        }
+        return false
+}
+extension CollectionType {
+    func mapAs<T>(_: T.Type) -> [T] {
+        return flatMap { $0 as? T }
+    }
+}
+
+
+extension LLVMType : Equatable {}
+extension LLVMFnType : Equatable {}
 
