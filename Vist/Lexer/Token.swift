@@ -27,7 +27,7 @@ enum Token {
     case EOF
     case If, Else, For, In, While, Do
     case Type, Reference, Init
-    case Assign, SqbrOpen, SqrbrClose, Comma, Period, Colon, Semicolon, OpenParen, CloseParen, Returns, Bar, OpenBrace, CloseBrace
+    case Assign, SqbrOpen, SqbrClose, Comma, Period, Colon, Semicolon, OpenParen, CloseParen, Returns, Bar, OpenBrace, CloseBrace
     case InfixOperator(String), PrefixOperator(String), PostfixOperator(String)
     case Identifier(String), FloatingPoint(Double), Integer(Int), Boolean(Bool)
     case Char(Character), Str(String), Comment(String), StringLiteral(String)
@@ -36,7 +36,7 @@ enum Token {
 let operators: [String: Token] = [
     "=": .Assign,
     "[": .SqbrOpen,
-    "]": .SqrbrClose,
+    "]": .SqbrClose,
     ",": .Comma,
     ".": .Period,
     ":": .Colon,

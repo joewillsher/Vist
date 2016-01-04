@@ -50,8 +50,8 @@ extension LLVMType : CustomStringConvertible, CustomDebugStringConvertible {
         case .Void:                     return "V"
         case .Int(let s):               return "Int\(s)"
         case Bool:                      return "Bool"
-        case .Array(let el, let size):  return "Arr_S\(size)_T\(el)"
-        case .Pointer(let to):          return "Ptr_M\(to)"
+        case .Array(let el, _):         return "Arr_T\(el.debugDescription)"
+        case .Pointer(let to):          return "Ptr_M\(to.debugDescription)"
         case .Float(let s):             return "FP\(s)"
         }
     }

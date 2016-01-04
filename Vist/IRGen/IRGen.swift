@@ -6,6 +6,7 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
+import Foundation
 
 enum IRError : ErrorType {
     case NotIRGenerator(Expression.Type), NotBBGenerator(Expression.Type), NoOperator
@@ -30,21 +31,6 @@ private protocol IRGenerator {
 private protocol BasicBlockGenerator {
     func bbGen(innerStackFrame stackFrame: StackFrame, fn: LLVMValueRef) throws -> LLVMBasicBlockRef
 }
-
-private var typeDict: [String: LLVMTypeRef] = [
-    "Int": LLVMInt64Type(),
-    "Int64": LLVMInt64Type(),
-    "Int32": LLVMInt32Type(),
-//    "Int128": LLVMIntType(128), // no support in swift for literals of this size
-//    "Int256": LLVMIntType(256),
-    "Int16": LLVMInt16Type(),
-    "Int8": LLVMInt8Type(),
-    "Bool": LLVMInt1Type(),
-    "Double": LLVMDoubleType(),
-    "Float": LLVMFloatType(),
-    "Void": LLVMVoidType(),
-]
-
 
 
 
@@ -132,6 +118,21 @@ extension BooleanLiteral : IRGenerator {
     }
 }
 
+
+extension StringLiteral : IRGenerator {
+    
+    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
+        
+        var s: COpaquePointer = nil
+        str
+            .cStringUsingEncoding(NSUTF8StringEncoding)?
+            .withUnsafeBufferPointer { ptr in
+            s = LLVMConstString(ptr.baseAddress, UInt32(ptr.count), LLVMBool(true))
+        }
+        
+        return s
+    }
+}
 
 
 //-------------------------------------------------------------------------------------------------------------------------

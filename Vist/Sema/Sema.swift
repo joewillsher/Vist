@@ -42,7 +42,8 @@ func sema(inout ast: AST) throws {
         try LLVMFnType.fn("print", typeSignature: "Int"),
         try LLVMFnType.fn("print", typeSignature: "Int32"),
         try LLVMFnType.fn("print", typeSignature: "Double"),
-        try LLVMFnType.fn("print", typeSignature: "Float")
+        try LLVMFnType.fn("print", typeSignature: "Float"),
+        try LLVMFnType.fn("print", typeSignature: "[Int8]")
     ]
     
     for (name, fn) in fns {

@@ -14,7 +14,7 @@ protocol LLVMTyped : Printable, CustomDebugStringConvertible {
 enum LLVMType : LLVMTyped {
     case Null, Void
     case Int(size: UInt32), Float(size: UInt32), Bool
-    indirect case Array(el: LLVMTyped, size: UInt32)
+    indirect case Array(el: LLVMTyped, size: UInt32?)
     indirect case Pointer(to: LLVMTyped)
     // TODO: Implement Tuple types (as struct)
     
@@ -24,7 +24,7 @@ enum LLVMType : LLVMTyped {
         case .Void:                     return LLVMVoidType()
         case .Int(let s):               return LLVMIntType(s)
         case Bool:                      return LLVMInt1Type()
-        case .Array(let el, let size):  return LLVMArrayType(try el.ir(), size)
+        case .Array(let el, let size):  return LLVMArrayType(try el.ir(), size ?? 0)
         case .Pointer(let to):          return LLVMPointerType(try to.ir(), 0)
         case .Float(let s):
             switch s {
@@ -47,6 +47,11 @@ enum LLVMType : LLVMTyped {
         case "Double": self = .Float(size: 64)
         case "Float": self = .Float(size: 32)
         case "Void": self = .Void
+        case "String": self = .Array(el: LLVMType.Int(size: 8), size: nil)
+        case _ where str.characters.first == "[" && str.characters.last == "]":
+            guard let el = LLVMType(String(str.characters.dropFirst().dropLast())) else { return nil }
+            self = .Array(el: el, size: nil)
+            
         default: return nil
         }
     }

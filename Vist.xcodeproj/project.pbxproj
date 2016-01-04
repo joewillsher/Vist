@@ -512,7 +512,7 @@
 				PRELINK_LIBS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REEXPORTED_LIBRARY_NAMES = "";
-				SWIFT_OBJC_BRIDGING_HEADER = "Vist/Vist-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Vist/Helper/Vist-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				USER_HEADER_SEARCH_PATHS = "";
 			};
@@ -557,7 +557,7 @@
 				PRELINK_LIBS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REEXPORTED_LIBRARY_NAMES = "";
-				SWIFT_OBJC_BRIDGING_HEADER = "Vist/Vist-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Vist/Helper/Vist-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				USER_HEADER_SEARCH_PATHS = "";
 			};

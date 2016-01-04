@@ -11,7 +11,7 @@ import Foundation
 enum ParseError: ErrorType {
     case ExpectedParen(Pos),  ExpectedCloseBracket(Pos), NoToken(Token, Pos), ExpectedComma(Pos), ExpectedBrace(Pos)
     case InvalidOperator(Pos), InvalidCall(String, Pos) // cant call (*2) or (.print())
-    case NoIdentifier(Pos)
+    case NoIdentifier(Pos), NoBracket(Pos)
     case ExpectedColon(Pos), NoReturnType(Pos)
     case ExpectedAssignment(Pos), ExpectedBar(Pos)
     case NoExpression(Pos)
@@ -137,9 +137,21 @@ extension Parser {
         }
         
         var elements = [Expression]()
-        while case let .Identifier(id) = currentToken {
-            elements.append(ValueType(name: id))    // param
-            getNextToken()
+        loop: while true {
+            switch currentToken {
+            case let .Identifier(id):
+                elements.append(ValueType(name: id))    // param
+                getNextToken()
+
+            case .SqbrOpen:
+                guard case .Identifier(let id) = getNextToken() else { throw ParseError.NoIdentifier(currentPos) }
+                elements.append(ValueType(name: "[\(id)]"))    // param
+                guard case .SqbrClose = getNextToken() else { throw ParseError.NoBracket(currentPos) }
+                getNextToken() // eat ]
+                
+            default:
+                break loop
+            }
         }
         
         if let f = elements.first where elements.count == 1 && !alwaysWrap {
@@ -216,6 +228,14 @@ extension Parser {
             
             return MutationExpression(object: Variable(name: token), value: exp)
             
+        case .Period? where token == "BuiltIn": // && isStdLib
+//            getNextToken(); getNextToken() // eat 'BuiltIn.'
+            fallthrough
+            
+            // TODO: Use this to access builtin types
+
+            
+            
         case .Period?: // property or fn
             getNextToken() // eat `.`
             guard case .Identifier(let name) = getNextToken() else { throw ParseError.NoIdentifier(currentPos) }
@@ -283,6 +303,9 @@ extension Parser {
             
         case .SqbrOpen:
             return try parseArrayExpression()
+            
+        case let .StringLiteral(str):
+            return parseStringExpression(str)
             
         case .OpenBrace, .Do, .Bar:
             let block = try parseBlockExpression()
@@ -510,7 +533,7 @@ extension Parser {
     
     /// Parses the function type signature
     private mutating func parseFunctionType() throws -> FunctionType {
-
+        
         // param type
         let p = try parseTypeExpression() as! TupleExpression
         
@@ -652,7 +675,7 @@ extension Parser {
             case .Comma:
                 getNextToken()  // eat ','
                 
-            case .SqrbrClose:
+            case .SqbrClose:
                 getNextToken() // eat ']'
                 return ArrayExpression(arr: elements)
                 

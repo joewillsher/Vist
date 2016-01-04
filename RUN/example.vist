@@ -1,5 +1,7 @@
 
+type Array {
+}
 
-let x = "Hello"
 
 
+let x = Str("1")

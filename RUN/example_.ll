@@ -47,47 +47,13 @@ define void @_print__FP32(float %d) #0 {
 
 define i64 @main() {
 entry:
-  %Meme = call { i64, i64 } @_Meme__Int64_Int64_R__SInt64.Int64(i64 2, i64 3)
-  %0 = alloca { i64, i64 }
-  store { i64, i64 } %Meme, { i64, i64 }* %0
-  %x = load { i64, i64 }* %0
-  %1 = alloca { i64, i64 }
-  store { i64, i64 } %x, { i64, i64 }* %1
-  %a_ptr = getelementptr inbounds { i64, i64 }* %0, i32 0, i32 0
-  store i64 1, i64* %a_ptr
-  %a_ptr1 = getelementptr inbounds { i64, i64 }* %0, i32 0, i32 0
-  %a = load i64* %a_ptr1
-  call void @_print__Int64(i64 %a)
-  %a_ptr2 = getelementptr inbounds { i64, i64 }* %1, i32 0, i32 0
-  %a3 = load i64* %a_ptr2
-  call void @_print__Int64(i64 %a3)
-  %b_ptr = getelementptr inbounds { i64, i64 }* %0, i32 0, i32 1
-  %b = load i64* %b_ptr
-  call void @_print__Int64(i64 %b)
-  call void @_print__Int64(i64 22)
-  call void @_print__FP64(double 2.200000e+01)
-  %u = alloca float
-  store float 0x4000CCCCC0000000, float* %u
-  %u4 = load float* %u
-  call void @_print__FP32(float %u4)
+  %x = alloca [8 x i8]
+  store [8 x i8] c"Hello\5Cn\00", [8 x i8]* %x
   ret i64 0
-}
-
-; Function Attrs: alwaysinline
-define { i64, i64 } @_Meme__Int64_Int64_R__SInt64.Int64(i64 %x, i64 %y) #2 {
-entry:
-  %0 = alloca { i64, i64 }
-  %a_ptr = getelementptr inbounds { i64, i64 }* %0, i32 0, i32 0
-  store i64 %x, i64* %a_ptr
-  %b_ptr = getelementptr inbounds { i64, i64 }* %0, i32 0, i32 1
-  store i64 %y, i64* %b_ptr
-  %1 = load { i64, i64 }* %0
-  ret { i64, i64 } %1
 }
 
 attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #2 = { alwaysinline }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}

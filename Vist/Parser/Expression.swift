@@ -122,8 +122,9 @@ final class IntegerLiteral : Literal, ExplicitlyTyped, IntegerType, Sized {
     
     var type: LLVMTyped? = nil
 }
-struct StringLiteral : Literal, Typed {
+final class StringLiteral : Literal, Typed {
     let str: String
+    var count: Int { return str.characters.count }
     
     init(str: String) {
         self.str = str
@@ -308,6 +309,7 @@ final class ValueType : Expression {
     
     var type: LLVMTyped? = nil
 }
+
 
 final class FunctionType : Expression {
     let args: TupleExpression

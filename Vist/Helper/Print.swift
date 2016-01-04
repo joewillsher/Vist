@@ -203,6 +203,11 @@ extension IntegerLiteral {
         return true
     }
 }
+extension StringLiteral {
+    func printVal() -> String? {
+        return "\"\(str.debugDescription)\""
+    }
+}
 extension FloatingPointLiteral {
     func printList() -> [(String?, Printable)]? {
         return [("val", val), ("size", size)]
@@ -229,7 +234,7 @@ extension FunctionCallExpression {
 
 extension CommentExpression {
     func printVal() -> String? {
-        return "\"\(str)\""
+        return "\"\(str.debugDescription)\""
     }
 }
 

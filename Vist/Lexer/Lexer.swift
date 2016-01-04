@@ -263,9 +263,9 @@ extension Lexer {
 //    }
 //
 //    mutating private func lexStringLiteral() throws {
-//        try lexWhilePredicate({$0.isSymbol()})
+//        try lexWhilePredicate({$0 != "\""})
 //    }
-    
+//    
     mutating private func lexWhilePredicate(p: (Character) throws -> Bool) throws {
         while try p(currentChar) {
             addChar()
@@ -320,13 +320,18 @@ extension Lexer {
                 try consumeChar(2)
                 continue
                 
+            case (.StringLiteral?, "\"") where charPtrSafe(-1) != "\\": // comment end
+                try resetContext()
+                try consumeChar()
+                continue
+                
             case (_, "\""): // string literal start
                 context = .StringLiteral
                 try consumeChar()
                 continue
-                
-            case (.StringLiteral?, "\"") where charPtrSafe(-1) != "\\": // comment end
-                try resetContext()
+
+            case (.StringLiteral?, _):
+                addChar()
                 try consumeChar()
                 continue
                 

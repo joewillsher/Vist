@@ -53,6 +53,14 @@ extension BooleanLiteral : TypeProvider {
     }
 }
 
+extension StringLiteral : TypeProvider {
+    
+    func llvmType(scope: SemaScope) throws -> LLVMTyped {
+        let t = LLVMType.Array(el: LLVMType.Int(size: 8), size: UInt32(count))
+        self.type = t
+        return t
+    }
+}
 
 
 //-------------------------------------------------------------------------------------------------------------------------

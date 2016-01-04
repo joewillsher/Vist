@@ -35,57 +35,11 @@ define void @_print__FP32(float %d) #0 {
 
 define i64 @main() {
 entry:
-  %0 = alloca { i64, i64 }, align 8
-  %1 = bitcast { i64, i64 }* %0 to i8*
-  call void @llvm.lifetime.start(i64 16, i8* %1)
-  %a_ptr.i = getelementptr inbounds { i64, i64 }* %0, i64 0, i32 0
-  store i64 2, i64* %a_ptr.i, align 8
-  %b_ptr.i = getelementptr inbounds { i64, i64 }* %0, i64 0, i32 1
-  store i64 3, i64* %b_ptr.i, align 8
-  %2 = load { i64, i64 }* %0, align 8
-  %3 = bitcast { i64, i64 }* %0 to i8*
-  call void @llvm.lifetime.end(i64 16, i8* %3)
-  %4 = alloca { i64, i64 }, align 8
-  store { i64, i64 } %2, { i64, i64 }* %4, align 8
-  %5 = alloca { i64, i64 }, align 8
-  store { i64, i64 } %2, { i64, i64 }* %5, align 8
-  %a_ptr = getelementptr inbounds { i64, i64 }* %4, i64 0, i32 0
-  store i64 1, i64* %a_ptr, align 8
-  tail call void @_print__Int64(i64 1)
-  %a_ptr2 = getelementptr inbounds { i64, i64 }* %5, i64 0, i32 0
-  %a3 = load i64* %a_ptr2, align 8
-  tail call void @_print__Int64(i64 %a3)
-  %b_ptr = getelementptr inbounds { i64, i64 }* %4, i64 0, i32 1
-  %b = load i64* %b_ptr, align 8
-  tail call void @_print__Int64(i64 %b)
-  tail call void @_print__Int64(i64 22)
-  tail call void @_print__FP64(double 2.200000e+01)
-  tail call void @_print__FP32(float 0x4000CCCCC0000000)
   ret i64 0
 }
 
-; Function Attrs: alwaysinline
-define { i64, i64 } @_Meme__Int64_Int64_R__SInt64.Int64(i64 %x, i64 %y) #2 {
-entry:
-  %0 = alloca { i64, i64 }, align 8
-  %a_ptr = getelementptr inbounds { i64, i64 }* %0, i64 0, i32 0
-  store i64 %x, i64* %a_ptr, align 8
-  %b_ptr = getelementptr inbounds { i64, i64 }* %0, i64 0, i32 1
-  store i64 %y, i64* %b_ptr, align 8
-  %1 = load { i64, i64 }* %0, align 8
-  ret { i64, i64 } %1
-}
-
-; Function Attrs: nounwind
-declare void @llvm.lifetime.start(i64, i8* nocapture) #3
-
-; Function Attrs: nounwind
-declare void @llvm.lifetime.end(i64, i8* nocapture) #3
-
 attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #2 = { alwaysinline }
-attributes #3 = { nounwind }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}

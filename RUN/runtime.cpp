@@ -40,3 +40,11 @@ _print__FP32(float d)
 {
     printf("%f\n", d);
 };
+
+extern "C"
+void
+__attribute__ ((noinline))
+_print__Arr_TInt8(char str[])
+{
+    printf("%s\n", str);
+};
