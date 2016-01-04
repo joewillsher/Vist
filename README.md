@@ -16,7 +16,9 @@ brew install homebrew/versions/llvm-gcc28
 
 Then clone this repo and run the Xcode project to build the compiler binary.
 
-You can then run the compiler from the command line, use the `-h` flag to see options.
+To run the binary in Xcode, go to ‘Edit Scheme’ (⌘<) and set the arguments to `-O -verbose -preserve example.vist` and under ‘Options’ set the ‘Custom Working Directory’ to `$(SRCROOT)/RUN`
+
+Or you can then run the compiler from the command line, use the `-h` flag to see options.
 
 ##Examples
 

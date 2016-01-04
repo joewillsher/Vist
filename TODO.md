@@ -12,8 +12,6 @@
     
 * AST context object to help type inference when in sema
 
-* Name mangling
-
 * Move more checks at IR level to sema pass
 
 * Arrays
