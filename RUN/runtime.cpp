@@ -44,7 +44,7 @@ _print__FP32(float d)
 extern "C"
 void
 __attribute__ ((noinline))
-_print__Arr_TInt8(char str[])
+_print__Arr_TInt8(char *str, int l)
 {
-    printf("%s\n", str);
+    printf("%.*s\n", l, str);
 };

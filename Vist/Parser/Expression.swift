@@ -122,12 +122,33 @@ final class IntegerLiteral : Literal, ExplicitlyTyped, IntegerType, Sized {
     
     var type: LLVMTyped? = nil
 }
-final class StringLiteral : Literal, Typed {
+final class StringLiteral : Literal, Expression {
     let str: String
     var count: Int { return str.characters.count }
     
     init(str: String) {
         self.str = str
+    }
+    
+//    var arr: ArrayExpression? = nil
+    
+    var type: LLVMTyped? = nil
+}
+//final class CharacterExpression : Expression {
+//    let val: Character
+//    
+//    init(c: Character) {
+//        val =  c
+//    }
+//    
+//    var type: LLVMTyped? = nil
+//}
+
+final class BuiltInExpression : Expression {
+    let expression: Expression
+    
+    init(expression: Expression) {
+        self.expression = expression
     }
     
     var type: LLVMTyped? = nil

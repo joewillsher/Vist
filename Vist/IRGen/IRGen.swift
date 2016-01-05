@@ -131,8 +131,18 @@ extension StringLiteral : IRGenerator {
         }
         
         return s
+//        return arr!.codeGen(stackFrame)
     }
 }
+
+//extension CharacterExpression : IRGenerator {
+//    
+//    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
+//        
+//        let x = String(val).cStringUsingEncoding(NSUTF8StringEncoding)![0]
+//        return LLVMConstInt(LLVMIntType(8), UInt64(x), LLVMBool(false))
+//    }
+//}
 
 
 //-------------------------------------------------------------------------------------------------------------------------

@@ -1,14 +1,25 @@
 
 # TODO
 
-* Strings
+* Standard library
+    - Let the stdlib use native types & functions
+        - use LLVM.Int64 to annotate to the compiler when to generate native LLVM types
+        - use LLVM.add_i64_i64 to annotate when to use builtin functions
+        - the compiler then sees substitutes these with their native counterparts
+    - To make literals look into stdlib
+        - Int has an initialiser that takes LLVM.Int64, give the compiler special knowlege of this
+        - The compiler wraps any literals in this initaliser
+    - write stdlib int and array types
 
-* Struct IR Gen
+* Operators
+
+* Structs
     - Implicit initialisers
-    - Method implementation -- sema pass getting info about functions and associating them with the object
-    - Concepts and dynamic methods -- need to work out type model
+    - Generics & concepts (as constriants and existentials)
     - Reference semantics implemented
     - Initialiser taking pointer to unallocated mem and initalising it, currently it returns an initialised instance
+
+* Strings
     
 * AST context object to help type inference when in sema
 
@@ -19,11 +30,7 @@
     - Use sema pass to work out what can be statically sized, otherise move to the heap
     - Store arr size next to head ptr at runtime
 
-* Standard library
-    - need to invesitgate how I can let this interact with the compiler
-    - write stdlib int and array types
-
-* Memory management
+* Memory management on the heap
 
 * Make functions first class objects
     - Currying & partial application of functions, needs to reference captured objects on the heap

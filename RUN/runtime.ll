@@ -5,7 +5,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 @.str = private unnamed_addr constant [6 x i8] c"%llu\0A\00", align 1
 @.str1 = private unnamed_addr constant [4 x i8] c"%i\0A\00", align 1
 @.str2 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
-@.str3 = private unnamed_addr constant [4 x i8] c"%s\0A\00", align 1
+@.str3 = private unnamed_addr constant [6 x i8] c"%.*s\0A\00", align 1
 
 ; Function Attrs: noinline ssp uwtable
 define void @_print__Int64(i64 %i) #0 {
@@ -47,11 +47,14 @@ define void @_print__FP32(float %d) #0 {
 }
 
 ; Function Attrs: noinline ssp uwtable
-define void @_print__Arr_TInt8(i8* %str) #0 {
+define void @_print__Arr_TInt8(i8* %str, i32 %l) #0 {
   %1 = alloca i8*, align 8
+  %2 = alloca i32, align 4
   store i8* %str, i8** %1, align 8
-  %2 = load i8** %1, align 8
-  %3 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str3, i32 0, i32 0), i8* %2)
+  store i32 %l, i32* %2, align 4
+  %3 = load i32* %2, align 4
+  %4 = load i8** %1, align 8
+  %5 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str3, i32 0, i32 0), i32 %3, i8* %4)
   ret void
 }
 

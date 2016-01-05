@@ -59,9 +59,23 @@ extension StringLiteral : TypeProvider {
         let t = LLVMType.Array(el: LLVMType.Int(size: 8), size: UInt32(count))
         self.type = t
         return t
+//        let a = str.characters.map { CharacterExpression(c: $0) as Expression }
+//        arr = ArrayExpression(arr: a)
+//        
+//        let t = try arr!.llvmType(scope)
+//        self.type = t
+//        return t
     }
 }
 
+//extension CharacterExpression : TypeProvider {
+//    
+//    func llvmType(scope: SemaScope) throws -> LLVMTyped {
+//        let t = LLVMType.Int(size: 8)
+//        self.type = t
+//        return t
+//    }
+//}
 
 //-------------------------------------------------------------------------------------------------------------------------
 //  MARK:                                                 Variables

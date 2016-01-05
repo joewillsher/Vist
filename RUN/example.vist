@@ -1,7 +1,8 @@
 
-type Array {
+
+type Int {
+    var value: BuiltIn.Int64
+
+
 }
 
-
-
-let x = Str("1")

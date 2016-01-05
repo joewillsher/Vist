@@ -51,7 +51,7 @@ enum LLVMType : LLVMTyped {
         case _ where str.characters.first == "[" && str.characters.last == "]":
             guard let el = LLVMType(String(str.characters.dropFirst().dropLast())) else { return nil }
             self = .Array(el: el, size: nil)
-            
+            // hack: array type IR has no size which is wrong
         default: return nil
         }
     }

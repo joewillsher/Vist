@@ -229,12 +229,12 @@ extension Parser {
             return MutationExpression(object: Variable(name: token), value: exp)
             
         case .Period? where token == "BuiltIn": // && isStdLib
-//            getNextToken(); getNextToken() // eat 'BuiltIn.'
-            fallthrough
+            getNextToken(); getNextToken() // eat 'BuiltIn.'
             
-            // TODO: Use this to access builtin types
-
+            guard case .Identifier(let id) = currentToken else { fatalError() }
+            let obj = try parseIdentifierExpression(id)
             
+            return BuiltInExpression(expression: obj)
             
         case .Period?: // property or fn
             getNextToken() // eat `.`
