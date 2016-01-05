@@ -87,7 +87,7 @@ extension LLVMFnType {
     
     static func fn(name: String, typeSignature: String) throws -> (String, LLVMFnType) {
         var l = Lexer(code: "func \(name): \(typeSignature)")
-        var p = Parser(tokens: try l.getTokens())
+        var p = Parser(tokens: try l.getTokens(), isStdLib: true)
         
         var a = try p.parse()
         try variableTypeSema(forScopeExpression: &a)

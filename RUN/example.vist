@@ -1,8 +1,9 @@
 
 
 type Int {
-    var value: BuiltIn.Int64
-
+    var value: LLVM.Int64
 
 }
 
+func foo: LLVM.Int LLVM.Int -> LLVM.Int = do
+    return $0 + $1

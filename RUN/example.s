@@ -81,11 +81,11 @@ Ltmp11:
 	jmp	_printf                 ## TAILCALL
 	.cfi_endproc
 
-	.globl	__print__Arr_TInt8
+	.globl	_main
 	.align	4, 0x90
-__print__Arr_TInt8:                     ## @_print__Arr_TInt8
+_main:                                  ## @main
 	.cfi_startproc
-## BB#0:
+## BB#0:                                ## %entry
 	pushq	%rbp
 Ltmp12:
 	.cfi_def_cfa_offset 16
@@ -93,27 +93,6 @@ Ltmp13:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
 Ltmp14:
-	.cfi_def_cfa_register %rbp
-	movq	%rdi, %rcx
-	leaq	L_.str3(%rip), %rdi
-	xorl	%eax, %eax
-	movq	%rcx, %rdx
-	popq	%rbp
-	jmp	_printf                 ## TAILCALL
-	.cfi_endproc
-
-	.globl	_main
-	.align	4, 0x90
-_main:                                  ## @main
-	.cfi_startproc
-## BB#0:                                ## %entry
-	pushq	%rbp
-Ltmp15:
-	.cfi_def_cfa_offset 16
-Ltmp16:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-Ltmp17:
 	.cfi_def_cfa_register %rbp
 	xorl	%eax, %eax
 	popq	%rbp
@@ -129,9 +108,6 @@ L_.str1:                                ## @.str1
 
 L_.str2:                                ## @.str2
 	.asciz	"%f\n"
-
-L_.str3:                                ## @.str3
-	.asciz	"%.*s\n"
 
 
 .subsections_via_symbols

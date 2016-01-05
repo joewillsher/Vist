@@ -47,7 +47,7 @@ public func compileDocuments(fileNames: [String],
             if verbose { print("\n\n------------------------------AST-------------------------------\n") }
             
             // parse tokens & generate AST
-            var parser = Parser(tokens: tokens)
+            var parser = Parser(tokens: tokens, isStdLib: true)
             let ast = try parser.parse()
             if dumpAST { print(ast); return }
             if verbose { print(ast) }

@@ -61,6 +61,8 @@ struct Parser {
     private var currentToken: Token { return tokens[index] }
     private var currentPos: Pos     { return tokensWithPos.map{$0.1.range.start}[index] }
     
+    private let isStdLib: Bool
+    
     private let precedences: [String: Int] = [
         "<": 30,
         ">": 30,
@@ -123,6 +125,7 @@ extension Parser {
 //-------------------------------------------------------------------------------------------------------------------------
 
 extension Parser {
+    
     ///parses expression like Int String, of type _identifier _identifier
     private mutating func parseTypeExpression(alwaysWrap alwaysWrap: Bool = true) throws -> Expression {
         
@@ -140,8 +143,16 @@ extension Parser {
         loop: while true {
             switch currentToken {
             case let .Identifier(id):
-                elements.append(ValueType(name: id))    // param
-                getNextToken()
+                
+                // handle native llvm type in stdlib
+                if case .Period? = inspectNextToken(), case .Identifier(let n)? = inspectNextToken(2) where id == "LLVM" && isStdLib {
+                    elements.append(ValueType(name: "LLVM.\(n)"))    // param
+                    getNextToken(); getNextToken(); getNextToken() // eat LLVM.Id
+                    
+                } else {
+                    elements.append(ValueType(name: id))    // param
+                    getNextToken()
+                }
 
             case .SqbrOpen:
                 guard case .Identifier(let id) = getNextToken() else { throw ParseError.NoIdentifier(currentPos) }
@@ -228,8 +239,8 @@ extension Parser {
             
             return MutationExpression(object: Variable(name: token), value: exp)
             
-        case .Period? where token == "BuiltIn": // && isStdLib
-            getNextToken(); getNextToken() // eat 'BuiltIn.'
+        case .Period? where token == "LLVM" && isStdLib:
+            getNextToken(); getNextToken() // eat 'LLVM.'
             
             guard case .Identifier(let id) = currentToken else { fatalError() }
             let obj = try parseIdentifierExpression(id)
@@ -488,8 +499,17 @@ extension Parser {
         
         var explicitType: String?
         if case .Colon = getNextToken(), case let .Identifier(t) = getNextToken() {
-            explicitType = t
-            getNextToken()
+            
+            // handle stdlib case of native types
+            if case .Period? = inspectNextToken(), case .Identifier(let n)? = inspectNextToken(2) where t == "LLVM" && isStdLib {
+                explicitType = "LLVM.\(n)"
+                getNextToken(); getNextToken(); getNextToken() // eat LLVM.Id
+                
+            } else {
+                explicitType = t
+                getNextToken()
+            }
+            
         }
         
         // TODO: Closure declaration parsing
@@ -827,10 +847,11 @@ extension Parser {
         return AST(expressions: expressions)
     }
 
-    init(tokens: [(Token, SourceLoc)]) {
+    init(tokens: [(Token, SourceLoc)], isStdLib: Bool = false) {
         self.tokensWithPos = tokens.filter {
             if case .Comment = $0.0 { return false } else { return true }
         }
+        self.isStdLib = isStdLib
     }
     
 }
