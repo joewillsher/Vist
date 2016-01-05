@@ -156,7 +156,16 @@ extension Parser {
 
             case .SqbrOpen:
                 guard case .Identifier(let id) = getNextToken() else { throw ParseError.NoIdentifier(currentPos) }
-                elements.append(ValueType(name: "[\(id)]"))    // param
+                
+                // handle native llvm type in stdlib
+                if case .Period? = inspectNextToken(), case .Identifier(let n)? = inspectNextToken(2) where id == "LLVM" && isStdLib {
+                    elements.append(ValueType(name: "LLVM.\(n)"))    // param
+                    getNextToken(); getNextToken() // eat LLVM.Id
+                    
+                } else {
+                    elements.append(ValueType(name: id))    // param
+                    getNextToken()
+                }
                 guard case .SqbrClose = getNextToken() else { throw ParseError.NoBracket(currentPos) }
                 getNextToken() // eat ]
                 

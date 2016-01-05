@@ -47,7 +47,15 @@ define void @_print__FP32(float %d) #0 {
 
 define i64 @main() {
 entry:
+  %foo = call i64 @_foo__Int64_Int64_R__Int64(i64 1, i64 2)
+  call void @_print__Int64(i64 %foo)
   ret i64 0
+}
+
+define i64 @_foo__Int64_Int64_R__Int64(i64 %"$0", i64 %"$1") {
+entry:
+  %add_res = add i64 %"$0", %"$1"
+  ret i64 %add_res
 }
 
 attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

@@ -199,28 +199,41 @@ extension TupleExpression : TypeProvider {
 
 private extension FunctionType {
     
-    func params() throws -> [LLVMTyped] {
-        let res = args.mapAs(ValueType).flatMap { LLVMType($0.name) as? LLVMTyped }
-        if res.count == args.elements.count { return res } else { throw SemaError.TypeNotFound }
+    func params<
+        TypeCollection : CollectionType
+        where TypeCollection.Generator.Element == LLVMStType>
+        (tys: TypeCollection) throws -> [LLVMTyped] {
+            
+        let res = try args.elements.mapAs(ValueType).map { (ty: ValueType) -> LLVMTyped in
+            if let builtin = LLVMType(ty.name) as? LLVMTyped { return builtin }
+            else if let i = (tys.indexOf { ty.name == $0.name }) { return tys[i] as LLVMTyped }
+            else { throw SemaError.TypeNotFound }
+        }
+        return res
     }
     
-    func returnType() throws -> LLVMTyped {
+    func returnType<
+        TypeCollection : CollectionType
+        where TypeCollection.Generator.Element == LLVMStType>
+        (tys: TypeCollection) throws -> LLVMTyped {
         if let tup = returns as? TupleExpression {
             
             if tup.elements.count == 0 { return LLVMType.Void }
             
             let res = args.mapAs(ValueType).flatMap { LLVMType($0.name) }
-            guard res.count == args.elements.count else { throw SemaError.TypeNotFound }
+            guard res.count == args.elements.count else {
+                throw SemaError.TypeNotFound }
             let a = res.map { $0 as LLVMTyped }
             return a.first!
             
         } else if let f = returns as? FunctionType {
             
-            return LLVMFnType(params: try f.params(), returns: try f.returnType())
+            return LLVMFnType(params: try f.params(tys), returns: try f.returnType(tys))
             
         } else if let x = returns as? ValueType {
             
-            if let val = LLVMType(x.name) { return val } else { throw SemaError.NoTypeNamed(x.name) }
+            if let val = LLVMType(x.name) { return val } else {
+                throw SemaError.NoTypeNamed(x.name) }
         }
         
         return LLVMType.Null
@@ -260,7 +273,7 @@ extension FunctionPrototypeExpression : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
-        let ty = LLVMFnType(params: try fnType.params(), returns: try fnType.returnType())
+        let ty = LLVMFnType(params: try fnType.params(scope.types.values), returns: try fnType.returnType(scope.types.values))
         
         mangledName = name.mangle(ty)
         
@@ -276,7 +289,7 @@ extension FunctionPrototypeExpression : TypeProvider {
         for (i, v) in (impl?.params.elements ?? []).enumerate() {
             
             let n = (v as? ValueType)?.name ?? "$\(i)"
-            let t = try fnType.params()[i]
+            let t = try fnType.params(scope.types.values)[i]
             
             fnScope[variable: n] = t
         }
@@ -535,7 +548,7 @@ extension StructExpression : TypeProvider {
             return (f.name, t)
         }
         
-        let ty = LLVMStType(members: members, methods: memberFunctions)
+        let ty = LLVMStType(members: members, methods: memberFunctions, name: name)
         
         scope[type: name] = ty
         self.type = ty
@@ -563,7 +576,7 @@ extension InitialiserExpression : TypeProvider {
             initScope[variable: p.name] = p.value.type
         }
         
-        for (p, type) in zip(impl.params.elements, try ty.params()) {
+        for (p, type) in zip(impl.params.elements, try ty.params(scope.types.values)) {
             if let param = p as? ValueType {
                 initScope[variable: param.name] = type
             }
@@ -573,7 +586,7 @@ extension InitialiserExpression : TypeProvider {
             try ex.llvmType(initScope)
         }
         
-        let params = try ty.params()
+        let params = try ty.params(scope.types.values)
         
         let t = LLVMFnType(params: params, returns: parentType)
         self.mangledName = parentName.mangle(t)

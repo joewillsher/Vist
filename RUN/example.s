@@ -94,7 +94,27 @@ Ltmp13:
 	movq	%rsp, %rbp
 Ltmp14:
 	.cfi_def_cfa_register %rbp
+	movl	$3, %edi
+	callq	__print__Int64
 	xorl	%eax, %eax
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	__foo__Int64_Int64_R__Int64
+	.align	4, 0x90
+__foo__Int64_Int64_R__Int64:            ## @_foo__Int64_Int64_R__Int64
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp15:
+	.cfi_def_cfa_offset 16
+Ltmp16:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp17:
+	.cfi_def_cfa_register %rbp
+	leaq	(%rdi,%rsi), %rax
 	popq	%rbp
 	retq
 	.cfi_endproc

@@ -39,11 +39,11 @@ func sema(inout ast: AST) throws {
     let globalScope = SemaScope(parent: nil, returnType: nil)
     
     let fns = [
-        try LLVMFnType.fn("print", typeSignature: "Int"),
-        try LLVMFnType.fn("print", typeSignature: "Int32"),
-        try LLVMFnType.fn("print", typeSignature: "Double"),
-        try LLVMFnType.fn("print", typeSignature: "Float"),
-        try LLVMFnType.fn("print", typeSignature: "[Int8]")
+        try LLVMFnType.fn("print", typeSignature: "LLVM.Int"),
+        try LLVMFnType.fn("print", typeSignature: "LLVM.Int32"),
+        try LLVMFnType.fn("print", typeSignature: "LLVM.Double"),
+        try LLVMFnType.fn("print", typeSignature: "LLVM.Float"),
+        try LLVMFnType.fn("print", typeSignature: "[LLVM.Int8]")
     ]
     
     for (name, fn) in fns {

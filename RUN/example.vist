@@ -3,7 +3,17 @@
 type Int {
     var value: LLVM.Int64
 
+    init LLVM.Int = |v| {
+        value = v
+    }
+
+    init Int = |o| {
+        value = o.value
+    }
+    
 }
 
 func foo: LLVM.Int LLVM.Int -> LLVM.Int = do
     return $0 + $1
+
+print(foo(1 2))
