@@ -3,17 +3,26 @@
 type Int {
     var value: LLVM.Int64
 
+    init Int = |o| {
+        value = o.value
+    }
+
     init LLVM.Int = |v| {
         value = v
     }
 
-    init Int = |o| {
-        value = o.value
-    }
-    
 }
 
-func foo: LLVM.Int LLVM.Int -> LLVM.Int = do
-    return $0 + $1
+func foo: Int Int -> Int = do
+    return Int($0.value + $1.value)
 
-print(foo(1 2))
+let a = Int(3)
+print(a.value)
+
+let b = Int(a)
+print(b.value)
+
+let c = foo(a Int(3))
+
+
+//print(foo(1 2))

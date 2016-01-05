@@ -7,7 +7,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 @.str2 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
 
 ; Function Attrs: noinline ssp uwtable
-define void @_print__Int64(i64 %i) #0 {
+define void @_print_i64(i64 %i) #0 {
   %1 = alloca i64, align 8
   store i64 %i, i64* %1, align 8
   %2 = load i64* %1, align 8
@@ -18,7 +18,7 @@ define void @_print__Int64(i64 %i) #0 {
 declare i32 @printf(i8*, ...) #1
 
 ; Function Attrs: noinline ssp uwtable
-define void @_print__Int32(i32 %i) #0 {
+define void @_print_i32(i32 %i) #0 {
   %1 = alloca i32, align 4
   store i32 %i, i32* %1, align 4
   %2 = load i32* %1, align 4
@@ -27,7 +27,7 @@ define void @_print__Int32(i32 %i) #0 {
 }
 
 ; Function Attrs: noinline ssp uwtable
-define void @_print__FP64(double %d) #0 {
+define void @_print_FP64(double %d) #0 {
   %1 = alloca double, align 8
   store double %d, double* %1, align 8
   %2 = load double* %1, align 8
@@ -36,7 +36,7 @@ define void @_print__FP64(double %d) #0 {
 }
 
 ; Function Attrs: noinline ssp uwtable
-define void @_print__FP32(float %d) #0 {
+define void @_print_FP32(float %d) #0 {
   %1 = alloca float, align 4
   store float %d, float* %1, align 4
   %2 = load float* %1, align 4

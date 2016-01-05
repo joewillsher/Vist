@@ -15,6 +15,7 @@ extension String {
         return "_\(self)_\(type.debugDescription)"
     }
     
+    // TODO: Allow underscores in names
     func demangleName() -> String {
         let kk = characters.dropFirst()
         return String(kk.prefixUpTo(kk.indexOf("_")!))
@@ -46,12 +47,12 @@ extension LLVMType : CustomStringConvertible, CustomDebugStringConvertible {
     
     var debugDescription: String {
         switch self {
-        case .Null:                     return "Null"
+        case .Null:                     return "N"
         case .Void:                     return "V"
-        case .Int(let s):               return "Int\(s)"
-        case Bool:                      return "Bool"
-        case .Array(let el, _):         return "Arr_T\(el.debugDescription)"
-        case .Pointer(let to):          return "Ptr_M\(to.debugDescription)"
+        case .Int(let s):               return "i\(s)"
+        case Bool:                      return "b"
+        case .Array(let el, _):         return "A\(el.debugDescription)"
+        case .Pointer(let to):          return "P\(to.debugDescription)"
         case .Float(let s):             return "FP\(s)"
         }
     }
@@ -70,7 +71,7 @@ extension LLVMStType : CustomStringConvertible, CustomDebugStringConvertible {
         let arr = members
             .map { $0.1.debugDescription }
             .joinWithSeparator(".")
-        return "S\(arr)"
+        return "S.\(arr)"
     }
 }
 
@@ -81,11 +82,11 @@ extension LLVMFnType : CustomDebugStringConvertible {
         var str = ""
         
         for p in params {
-            str += "_\(p.debugDescription)"
+            str += "\(p.debugDescription)"
         }
         
         if case LLVMType.Void = returns {}
-        else { str += "_R__\(returns.debugDescription)" }
+        else { str += "_R\(returns.debugDescription)" }
         
         return str
     }

@@ -75,9 +75,13 @@ extension CollectionType where
     
 }
 
-extension LLVMBool {
+extension LLVMBool : Swift.BooleanType {
     init(_ b: Bool) {
         self.init(b ? 1 : 0)
+    }
+    
+    public var boolValue: Bool {
+        return self == 1
     }
 }
 
@@ -800,7 +804,9 @@ extension ArraySubscriptExpression : IRGenerator {
 extension StructExpression : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
-        
+
+        stackFrame.addType(name, val: self.type! as! LLVMStType)
+
         for i in initialisers {
             try i.codeGen(stackFrame)
         }
@@ -830,8 +836,11 @@ extension InitialiserExpression : IRGenerator {
         let functionType = try type.ir()
         let function = LLVMAddFunction(module, mangledName, functionType)
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
-        LLVMAddFunctionAttr(function, LLVMAlwaysInlineAttribute) // we want 
+        LLVMAddFunctionAttr(function, LLVMAlwaysInlineAttribute)
         
+        let entry = LLVMAppendBasicBlock(function, "entry")
+        LLVMPositionBuilderAtEnd(builder, entry)
+
         // Add function type to stack frame
         stackFrame.addFunctionType(name, val: functionType)
         
@@ -844,8 +853,23 @@ extension InitialiserExpression : IRGenerator {
             let name = (impl.params.elements[i] as? ValueType)?.name ?? ("$\(i)")
             LLVMSetValueName(param, name)
             
-            let s = StackVariable(val: param, builder: builder)
-            initStackFrame.addVariable(name, val: s)
+            let ty = LLVMTypeOf(param)
+            if LLVMGetTypeKind(ty) == LLVMStructTypeKind {
+                let ptr = LLVMBuildAlloca(builder, ty, "ptr\(name)")
+                LLVMBuildStore(builder, param, ptr)
+                
+                let tyName = (args.elements[i] as! ValueType).name
+                let t = try stackFrame.type(tyName)
+                
+                let memTys = try t.members.map { ($0.0, try $0.1.ir(), $0.2) }
+                
+                let s = StructVariable(type: ty, ptr: ptr, mutable: false, builder: builder, properties: memTys)
+                initStackFrame.addVariable(name, val: s)
+                
+            } else {
+                let s = StackVariable(val: param, builder: builder)
+                initStackFrame.addVariable(name, val: s)
+            }
         }
         
         // property types, names, & mutability for stack frame
@@ -853,10 +877,6 @@ extension InitialiserExpression : IRGenerator {
             if let t = assignment.value.type { return (assignment.name, try t.ir(), assignment.isMutable) } else { throw IRError.NoProperty(assignment.name) }
         }
         
-        // make init funtion
-        let entry = LLVMAppendBasicBlock(function, "entry")
-        LLVMPositionBuilderAtEnd(builder, entry)
-
         // allocate struct
         let s = StructVariable.alloc(builder, type: try parentType.ir(), mutable: true, properties: properties)
         stackFrame.addVariable(name, val: s)

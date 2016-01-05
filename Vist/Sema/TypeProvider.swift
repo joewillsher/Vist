@@ -202,41 +202,44 @@ private extension FunctionType {
     func params<
         TypeCollection : CollectionType
         where TypeCollection.Generator.Element == LLVMStType>
-        (tys: TypeCollection) throws -> [LLVMTyped] {
+        (tys: TypeCollection)
+        throws -> [LLVMTyped] {
             
-        let res = try args.elements.mapAs(ValueType).map { (ty: ValueType) -> LLVMTyped in
-            if let builtin = LLVMType(ty.name) as? LLVMTyped { return builtin }
-            else if let i = (tys.indexOf { ty.name == $0.name }) { return tys[i] as LLVMTyped }
-            else { throw SemaError.TypeNotFound }
-        }
-        return res
+            let res = try args.elements.mapAs(ValueType).map { (ty: ValueType) -> LLVMTyped in
+                if let builtin = LLVMType(ty.name) as? LLVMTyped { return builtin }
+                else if let i = (tys.indexOf { ty.name == $0.name }) { return tys[i] as LLVMTyped }
+                else { throw SemaError.TypeNotFound }
+            }
+            return res
     }
     
     func returnType<
         TypeCollection : CollectionType
         where TypeCollection.Generator.Element == LLVMStType>
-        (tys: TypeCollection) throws -> LLVMTyped {
-        if let tup = returns as? TupleExpression {
+        (tys: TypeCollection)
+        throws -> LLVMTyped {
             
-            if tup.elements.count == 0 { return LLVMType.Void }
+            if let tup = returns as? TupleExpression {
+                
+                if tup.elements.count == 0 { return LLVMType.Void }
+                
+                let res = args.mapAs(ValueType).flatMap { LLVMType($0.name) }
+                guard res.count == args.elements.count else {
+                    throw SemaError.TypeNotFound }
+                let a = res.map { $0 as LLVMTyped }
+                return a.first!
+                
+            } else if let f = returns as? FunctionType {
+                
+                return LLVMFnType(params: try f.params(tys), returns: try f.returnType(tys))
+                
+            } else if let x = returns as? ValueType {
+                
+                if let val = LLVMType(x.name) { return val } else {
+                    throw SemaError.NoTypeNamed(x.name) }
+            }
             
-            let res = args.mapAs(ValueType).flatMap { LLVMType($0.name) }
-            guard res.count == args.elements.count else {
-                throw SemaError.TypeNotFound }
-            let a = res.map { $0 as LLVMTyped }
-            return a.first!
-            
-        } else if let f = returns as? FunctionType {
-            
-            return LLVMFnType(params: try f.params(tys), returns: try f.returnType(tys))
-            
-        } else if let x = returns as? ValueType {
-            
-            if let val = LLVMType(x.name) { return val } else {
-                throw SemaError.NoTypeNamed(x.name) }
-        }
-        
-        return LLVMType.Null
+            return LLVMType.Null
     }
 }
 
@@ -257,9 +260,7 @@ extension FunctionCallExpression : TypeProvider {
         
         // gen types for objects in call
         for arg in args.elements {
-            /*let ti =*/ try arg.llvmType(scope)
-//            let expected = fnType.params[i]
-//            guard ti == expected else { throw SemaError.WrongFunctionApplication(applied: ti, expected: expected, paramNum: i) }
+            try arg.llvmType(scope)
         }
         
         // assign type to self and return
@@ -290,6 +291,8 @@ extension FunctionPrototypeExpression : TypeProvider {
             
             let n = (v as? ValueType)?.name ?? "$\(i)"
             let t = try fnType.params(scope.types.values)[i]
+            
+            try v.llvmType(fnScope)
             
             fnScope[variable: n] = t
         }
@@ -577,6 +580,7 @@ extension InitialiserExpression : TypeProvider {
         }
         
         for (p, type) in zip(impl.params.elements, try ty.params(scope.types.values)) {
+            
             if let param = p as? ValueType {
                 initScope[variable: param.name] = type
             }

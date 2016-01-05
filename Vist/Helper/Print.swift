@@ -227,7 +227,7 @@ extension Variable {
 
 extension FunctionCallExpression {
     func printList() -> [(String?, Printable)]? {
-        return [("name", name), ("args", args)]
+        return [("name", name), ("args", args), ("mangled", mangledName)]
     }
 }
 
@@ -355,7 +355,7 @@ extension ClosureExpression : Printable {
 extension InitialiserExpression : Printable {
     
     func printList() -> [(String?, Printable)]? {
-        return [("ty", ty), ("impl", impl)]
+        return [("ty", ty), ("impl", impl), ("mangled", mangledName)]
     }
 }
 

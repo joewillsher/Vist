@@ -12,18 +12,21 @@ class StackFrame {
     
     private var runtimeVariables: [String: RuntimeVariable]
     private var functionTypes: [String: LLVMTypeRef]
+    private var types: [String: LLVMStType]
     var block: LLVMBasicBlockRef, function: LLVMValueRef
     var parentStackFrame: StackFrame?
     
-    init(vars: [String: RuntimeVariable] = [:], functionTypes: [String: LLVMTypeRef] = [:], block: LLVMBasicBlockRef = nil, function: LLVMValueRef = nil, parentStackFrame: StackFrame? = nil) {
+    init(vars: [String: RuntimeVariable] = [:], functionTypes: [String: LLVMTypeRef] = [:], types: [String: LLVMStType] = [:], block: LLVMBasicBlockRef = nil, function: LLVMValueRef = nil, parentStackFrame: StackFrame? = nil) {
         self.runtimeVariables = [:]
         self.functionTypes = [:]
+        self.types = [:]
         self.block = block
         self.parentStackFrame = parentStackFrame
         self.function = function
         
         functionTypes.forEach(addFunctionType)
         vars.forEach { addVariable($0.0, val: $0.1) }
+        types.forEach { addType($0.0, val: $0.1) }
     }
     
     func addVariable(name: String, val: RuntimeVariable) {
@@ -31,6 +34,9 @@ class StackFrame {
     }
     func addFunctionType(name: String, val: LLVMValueRef) {
         functionTypes[name] = val
+    }
+    func addType(name: String, val: LLVMStType) {
+        types[name] = val
     }
     
     /// Return a variable
@@ -53,7 +59,16 @@ class StackFrame {
         
         throw IRError.NoVariable(name)
     }
+
+    func type(name: String) throws -> LLVMStType {
+        if let v = types[name] { return v }
         
+        let inParent = try parentStackFrame?.type(name)
+        if let p = inParent { return p }
+        
+        throw IRError.NoVariable(name)
+    }
+
 }
 
 
