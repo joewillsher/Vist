@@ -86,7 +86,8 @@ extension Variable : TypeProvider {
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
         // lookup variable type in scope
-        guard let v = scope[variable: name] else { throw SemaError.NoVariable(name) }
+        guard let v = scope[variable: name] else {
+            throw SemaError.NoVariable(name) }
         
         // assign type to self and return
         self.type = v
@@ -235,8 +236,15 @@ private extension FunctionType {
                 
             } else if let x = returns as? ValueType {
                 
-                if let val = LLVMType(x.name) { return val } else {
-                    throw SemaError.NoTypeNamed(x.name) }
+                if let val = LLVMType(x.name) {
+                    return val
+                    
+                } else if let i = (tys.indexOf { $0.name == x.name }) {
+                    return tys[i]
+                    
+                } else {
+                    throw SemaError.NoTypeNamed(x.name)
+                }
             }
             
             return LLVMType.Null
