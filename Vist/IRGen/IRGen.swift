@@ -377,22 +377,23 @@ extension FunctionCallExpression : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        // TODO: Took up function from native table
-        
-        
-        
+        let argCount = self.args.elements.count
+        let args = try self.args.elements.map { try $0.expressionCodeGen(stackFrame) }
+
+        // Lookup
+        if let biInst = builtinInstruction(name, builder: builder) {
+            guard args.count == 2 else { throw IRError.WrongFunctionApplication(name) }
+            return try biInst(args[0], args[1])
+        }
         
         // make function
         let fn = LLVMGetNamedFunction(module, mangledName)
         
         // arguments
-        let argCount = args.elements.count
-        let a = try args.elements.map { try $0.expressionCodeGen(stackFrame) }
-        let argBuffer = a.ptr()
+        let argBuffer = args.ptr()
         defer { argBuffer.dealloc(argCount) }
         
-        guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else {
-            throw IRError.WrongFunctionApplication(name) }
+        guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else { throw IRError.WrongFunctionApplication(name) }
         
         let doNotUseName = type == LLVMType.Void || type == LLVMType.Null || type == nil
         

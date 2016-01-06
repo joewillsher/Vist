@@ -42,13 +42,13 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i64 } @_Int_S.i64_RS.i64({ i64 } %o) #3 {
+define { i64 } @_Int_S.i64({ i64 } %o) #3 {
 entry:
   ret { i64 } %o
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i64 } @_Int_i64_RS.i64(i64 %v) #3 {
+define { i64 } @_Int_i64(i64 %v) #3 {
 entry:
   %.fca.0.insert = insertvalue { i64 } undef, i64 %v, 0
   ret { i64 } %.fca.0.insert
@@ -63,7 +63,7 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define { i64 } @_foo_S.i64S.i64_RS.i64({ i64 } %a, { i64 } %b) #4 {
+define { i64 } @_foo_S.i64S.i64({ i64 } %a, { i64 } %b) #4 {
 entry:
   %a.fca.0.extract = extractvalue { i64 } %a, 0
   %b.fca.0.extract = extractvalue { i64 } %b, 0

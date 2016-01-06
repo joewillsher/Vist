@@ -47,16 +47,16 @@ define void @_print_FP32(float %d) #0 {
 
 define i64 @main() {
 entry:
-  %Int = call { i64 } @_Int_i64_RS.i64(i64 3)
+  %Int = call { i64 } @_Int_i64(i64 3)
   %0 = alloca { i64 }
   store { i64 } %Int, { i64 }* %0
   %a = load { i64 }* %0
-  %Int1 = call { i64 } @_Int_S.i64_RS.i64({ i64 } %a)
+  %Int1 = call { i64 } @_Int_S.i64({ i64 } %a)
   %1 = alloca { i64 }
   store { i64 } %Int1, { i64 }* %1
   %a2 = load { i64 }* %0
   %b = load { i64 }* %1
-  %foo = call { i64 } @_foo_S.i64S.i64_RS.i64({ i64 } %a2, { i64 } %b)
+  %foo = call { i64 } @_foo_S.i64S.i64({ i64 } %a2, { i64 } %b)
   %2 = alloca { i64 }
   store { i64 } %foo, { i64 }* %2
   %c = load { i64 }* %2
@@ -65,7 +65,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { i64 } @_Int_S.i64_RS.i64({ i64 } %o) #2 {
+define { i64 } @_Int_S.i64({ i64 } %o) #2 {
 entry:
   %ptro = alloca { i64 }
   store { i64 } %o, { i64 }* %ptro
@@ -79,7 +79,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { i64 } @_Int_i64_RS.i64(i64 %v) #2 {
+define { i64 } @_Int_i64(i64 %v) #2 {
 entry:
   %0 = alloca { i64 }
   %value_ptr = getelementptr inbounds { i64 }* %0, i32 0, i32 0
@@ -98,7 +98,7 @@ entry:
   ret void
 }
 
-define { i64 } @_foo_S.i64S.i64_RS.i64({ i64 } %a, { i64 } %b) {
+define { i64 } @_foo_S.i64S.i64({ i64 } %a, { i64 } %b) {
 entry:
   %ptra = alloca { i64 }
   store { i64 } %a, { i64 }* %ptra
@@ -109,7 +109,7 @@ entry:
   %value_ptr1 = getelementptr inbounds { i64 }* %ptrb, i32 0, i32 0
   %value2 = load i64* %value_ptr1
   %add_res = add i64 %value, %value2
-  %Int = call { i64 } @_Int_i64_RS.i64(i64 %add_res)
+  %Int = call { i64 } @_Int_i64(i64 %add_res)
   ret { i64 } %Int
 }
 

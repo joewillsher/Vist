@@ -25,10 +25,9 @@ type Double {
 }
 
 
-func foo: Int Int -> Int = |a b| {
-    let x = LLVM.add_i64_i64(a.value b.value)
-    return Int(x)
-}
+func foo: Int Int -> Int = |a b| do
+    return Int(LLVM.i_add(a.value b.value))
+
 
 
 

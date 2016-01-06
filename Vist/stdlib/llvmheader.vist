@@ -1,6 +1,6 @@
 
 
-func LLVM.add_i64_i64: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
+func LLVM.i_add: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
 
 
 
