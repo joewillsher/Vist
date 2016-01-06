@@ -75,8 +75,10 @@ extension DictionaryLiteralConvertible
     /// Function name is required to be between underscores at the start _foo_...
     subscript(raw raw: String, paramTypes types: [LLVMTyped]) -> Value? {
         get {
+            
             for (k, v) in self {
-                if k.demangleName() == raw && v.params == types { return v }
+                
+                if k.demangleName() == raw.sansUnderscores() && v.params == types { return v }
             }
             return nil
         }
@@ -85,7 +87,7 @@ extension DictionaryLiteralConvertible
     subscript(raw raw: String) -> Value? {
         get {
             for (k, v) in self {
-                if k.demangleName() == raw { return v }
+                if k.demangleName() == raw.sansUnderscores() { return v }
             }
             return nil
         }

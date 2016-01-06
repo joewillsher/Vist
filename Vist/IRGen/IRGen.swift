@@ -377,6 +377,11 @@ extension FunctionCallExpression : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
+        // TODO: Took up function from native table
+        
+        
+        
+        
         // make function
         let fn = LLVMGetNamedFunction(module, mangledName)
         
@@ -386,7 +391,8 @@ extension FunctionCallExpression : IRGenerator {
         let argBuffer = a.ptr()
         defer { argBuffer.dealloc(argCount) }
         
-        guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else { throw IRError.WrongFunctionApplication(name) }
+        guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else {
+            throw IRError.WrongFunctionApplication(name) }
         
         let doNotUseName = type == LLVMType.Void || type == LLVMType.Null || type == nil
         

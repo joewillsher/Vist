@@ -12,7 +12,11 @@ import Foundation
 extension String {
     
     func mangle(type: LLVMFnType) -> String {
-        return "_\(self)_\(type.debugDescription)"
+        return "_\(sansUnderscores())_\(type.debugDescription)"
+    }
+    
+    func sansUnderscores() -> String {
+        return stringByReplacingOccurrencesOfString("_", withString: ".")
     }
     
     // TODO: Allow underscores in names
@@ -23,6 +27,7 @@ extension String {
     }
     
 }
+
 
 
 extension LLVMType : CustomStringConvertible, CustomDebugStringConvertible {
@@ -85,9 +90,6 @@ extension LLVMFnType : CustomDebugStringConvertible {
         for p in params {
             str += "\(p.debugDescription)"
         }
-        
-        if case LLVMType.Void = returns {}
-        else { str += "_R\(returns.debugDescription)" }
         
         return str
     }

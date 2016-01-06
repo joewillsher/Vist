@@ -16,6 +16,7 @@
 // - specialise types to generic versions
 // - parse fn decls first, see TODOs in SemaTypeCheck.swift line 68
 
+import Foundation
 
 enum SemaError : ErrorType {
     case InvalidType(LLVMType)
@@ -38,16 +39,19 @@ func sema(inout ast: AST) throws {
     // add helper functions to ast tables
     let globalScope = SemaScope(parent: nil, returnType: nil)
     
-    let fns = [
-        try LLVMFnType.fn("print", typeSignature: "LLVM.Int"),
-        try LLVMFnType.fn("print", typeSignature: "LLVM.Int32"),
-        try LLVMFnType.fn("print", typeSignature: "LLVM.Double"),
-        try LLVMFnType.fn("print", typeSignature: "LLVM.Float"),
-        try LLVMFnType.fn("print", typeSignature: "[LLVM.Int8]")
-    ]
+    // expose runtime (like print and fatalError) and compiler magic (like add) functions to the vist code
+    // see llvmheader.vist
+    let code = try String(contentsOfFile: "\(NSTask().currentDirectoryPath)/../Vist/stdlib/llvmheader.vist")
+    var l = Lexer(code: code)
+    var p = Parser(tokens: try l.getTokens(), isStdLib: true)
+    var a = try p.parse()
+    try variableTypeSema(forScopeExpression: &a)
+    let fns = a.expressions
+        .flatMap { ($0 as? FunctionPrototypeExpression) }
+        .map { ($0.name, $0.fnType.type as? LLVMFnType) }
     
-    for (name, fn) in fns {
-        globalScope[function: name] = fn
+    for (name, t) in fns {
+        globalScope[function: name] = t
     }
     
     try variableTypeSema(forScopeExpression: &ast, scope: globalScope)

@@ -1,0 +1,42 @@
+
+
+type Int {
+    var value: LLVM.Int64
+
+    init Int = |o| {
+        value = o.value
+    }
+
+    init LLVM.Int = |v| {
+        value = v
+    }
+
+}
+
+func print: Int = |a| do print(a.value)
+
+
+type Bool {
+    var value: LLVM.Int1
+}
+
+type Double {
+    var value: LLVM.Double
+}
+
+
+func foo: Int Int -> Int = |a b| do
+    return Int(a.value + b.value)
+
+
+
+let a = Int(3)
+let b = Int(a)
+
+let c = foo(a b)
+
+print(c)
+
+
+
+//print(foo(1 2))

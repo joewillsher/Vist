@@ -1,0 +1,14 @@
+
+
+func LLVM.add_i64_i64: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
+
+
+
+
+
+func print: LLVM.Int
+func print: LLVM.Float
+func print: LLVM.Double
+
+
+

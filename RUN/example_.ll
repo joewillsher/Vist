@@ -59,9 +59,8 @@ entry:
   %foo = call { i64 } @_foo_S.i64S.i64_RS.i64({ i64 } %a2, { i64 } %b)
   %2 = alloca { i64 }
   store { i64 } %foo, { i64 }* %2
-  %value_ptr = getelementptr inbounds { i64 }* %2, i32 0, i32 0
-  %value = load i64* %value_ptr
-  call void @_print_i64(i64 %value)
+  %c = load { i64 }* %2
+  call void @_print_S.i64({ i64 } %c)
   ret i64 0
 }
 
@@ -87,6 +86,16 @@ entry:
   store i64 %v, i64* %value_ptr
   %1 = load { i64 }* %0
   ret { i64 } %1
+}
+
+define void @_print_S.i64({ i64 } %a) {
+entry:
+  %ptra = alloca { i64 }
+  store { i64 } %a, { i64 }* %ptra
+  %value_ptr = getelementptr inbounds { i64 }* %ptra, i32 0, i32 0
+  %value = load i64* %value_ptr
+  call void @_print_i64(i64 %value)
+  ret void
 }
 
 define { i64 } @_foo_S.i64S.i64_RS.i64({ i64 } %a, { i64 } %b) {

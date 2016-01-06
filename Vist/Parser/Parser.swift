@@ -252,9 +252,7 @@ extension Parser {
             getNextToken(); getNextToken() // eat 'LLVM.'
             
             guard case .Identifier(let id) = currentToken else { fatalError() }
-            let obj = try parseIdentifierExpression(id)
-            
-            return BuiltInExpression(expression: obj)
+            return try parseIdentifierExpression("LLVM.\(id)")
             
         case .Period?: // property or fn
             getNextToken() // eat `.`
@@ -598,7 +596,16 @@ extension Parser {
     
     private mutating func parseFunctionDeclaration() throws -> FunctionPrototypeExpression {
         
-        guard case let .Identifier(id) = getNextToken() else { throw ParseError.NoIdentifier(currentPos) }
+        guard case .Identifier(let s) = getNextToken() else { throw ParseError.NoIdentifier(currentPos) }
+        
+        let id: String
+        if case .Period? = inspectNextToken(), case .Identifier(let n)? = inspectNextToken(2) where s == "LLVM" && isStdLib {
+            id = "LLVM.\(n)"
+            getNextToken(); getNextToken() // eat
+        } else {
+            id = s
+        }
+        
         guard case .Colon = getNextToken() else { throw ParseError.ExpectedColon(currentPos) }
         
         getNextToken() // eat ':'

@@ -144,15 +144,6 @@ final class StringLiteral : Literal, Expression {
 //    var type: LLVMTyped? = nil
 //}
 
-final class BuiltInExpression : Expression {
-    let expression: Expression
-    
-    init(expression: Expression) {
-        self.expression = expression
-    }
-    
-    var type: LLVMTyped? = nil
-}
 
 struct CommentExpression : Expression {
     let str: String

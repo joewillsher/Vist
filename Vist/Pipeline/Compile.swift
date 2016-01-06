@@ -21,7 +21,7 @@ public func compileDocuments(fileNames: [String],
     throws {
         
         let currentDirectory = NSTask().currentDirectoryPath
-
+        
         var head: AST? = nil
         var all: [AST] = []
         

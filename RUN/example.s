@@ -113,6 +113,15 @@ __Int_i64_RS.i64:                       ## @_Int_i64_RS.i64
 	popq	%rbp
 	retq
 
+	.globl	__print_S.i64
+	.align	4, 0x90
+__print_S.i64:                          ## @_print_S.i64
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	popq	%rbp
+	jmp	__print_i64             ## TAILCALL
+
 	.globl	__foo_S.i64S.i64_RS.i64
 	.align	4, 0x90
 __foo_S.i64S.i64_RS.i64:                ## @_foo_S.i64S.i64_RS.i64

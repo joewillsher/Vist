@@ -13,6 +13,9 @@ type Int {
 
 }
 
+func print: Int = |a| do print(a.value)
+
+
 type Bool {
     var value: LLVM.Int1
 }
@@ -22,17 +25,19 @@ type Double {
 }
 
 
+func foo: Int Int -> Int = |a b| {
+    let x = LLVM.add_i64_i64(a.value b.value)
+    return Int(x)
+}
 
 
-func foo: Int Int -> Int = |a b| do
-    return Int(a.value + b.value)
 
 let a = Int(3)
 let b = Int(a)
 
 let c = foo(a b)
 
-print(c.value)
+print(c)
 
 
 

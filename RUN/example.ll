@@ -37,7 +37,7 @@ define void @_print_FP32(float %d) #0 {
 ; Function Attrs: nounwind
 define i64 @main() #2 {
 entry:
-  tail call void @_print_i64(i64 6)
+  tail call void @_print_i64(i64 6) #2
   ret i64 0
 }
 
@@ -52,6 +52,14 @@ define { i64 } @_Int_i64_RS.i64(i64 %v) #3 {
 entry:
   %.fca.0.insert = insertvalue { i64 } undef, i64 %v, 0
   ret { i64 } %.fca.0.insert
+}
+
+; Function Attrs: nounwind
+define void @_print_S.i64({ i64 } %a) #2 {
+entry:
+  %a.fca.0.extract = extractvalue { i64 } %a, 0
+  tail call void @_print_i64(i64 %a.fca.0.extract)
+  ret void
 }
 
 ; Function Attrs: nounwind readnone
