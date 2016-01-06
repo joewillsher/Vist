@@ -39,15 +39,15 @@ enum LLVMType : LLVMTyped {
     
     init?(_ str: String) {
         switch str {
-        case "Int", "Int64": self = .Int(size: 64)
-        case "Int32": self = .Int(size: 32)
-        case "Int16": self = .Int(size: 16)
-        case "Int8": self = .Int(size: 8)
-        case "Bool": self = .Bool
-        case "Double": self = .Float(size: 64)
-        case "Float": self = .Float(size: 32)
+        case "LLVM.Int", "LLVM.Int64": self = .Int(size: 64)
+        case "LLVM.Int32": self = .Int(size: 32)
+        case "LLVM.Int16": self = .Int(size: 16)
+        case "LLVM.Int8": self = .Int(size: 8)
+        case "LLVM.Int1": self = .Bool
+        case "LLVM.Double": self = .Float(size: 64)
+        case "LLVM.Float": self = .Float(size: 32)
         case "Void": self = .Void
-        case "String": self = .Array(el: LLVMType.Int(size: 8), size: nil)
+        case "LLVM.String": self = .Array(el: LLVMType.Int(size: 8), size: nil)
         case _ where str.characters.first == "[" && str.characters.last == "]":
             guard let el = LLVMType(String(str.characters.dropFirst().dropLast())) else { return nil }
             self = .Array(el: el, size: nil)
@@ -87,7 +87,7 @@ extension LLVMFnType {
     
     static func fn(name: String, typeSignature: String) throws -> (String, LLVMFnType) {
         var l = Lexer(code: "func \(name): \(typeSignature)")
-        var p = Parser(tokens: try l.getTokens())
+        var p = Parser(tokens: try l.getTokens(), isStdLib: true)
         
         var a = try p.parse()
         try variableTypeSema(forScopeExpression: &a)
@@ -101,10 +101,12 @@ extension LLVMFnType {
 
 
 final class LLVMStType : LLVMTyped {
+    let name: String
     let members: [(String, LLVMType, Bool)]
     let methods: [(String, LLVMFnType)]
     
-    init(members: [(String, LLVMType, Bool)], methods: [(String, LLVMFnType)]) {
+    init(members: [(String, LLVMType, Bool)], methods: [(String, LLVMFnType)], name: String) {
+        self.name = name
         self.members = members
         self.methods = methods
     }

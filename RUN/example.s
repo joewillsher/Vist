@@ -1,8 +1,8 @@
 	.section	__TEXT,__text,regular,pure_instructions
 	.macosx_version_min 10, 11
-	.globl	__print__Int64
+	.globl	__print_i64
 	.align	4, 0x90
-__print__Int64:                         ## @_print__Int64
+__print_i64:                            ## @_print_i64
 	.cfi_startproc
 ## BB#0:
 	pushq	%rbp
@@ -21,9 +21,9 @@ Ltmp2:
 	jmp	_printf                 ## TAILCALL
 	.cfi_endproc
 
-	.globl	__print__Int32
+	.globl	__print_i32
 	.align	4, 0x90
-__print__Int32:                         ## @_print__Int32
+__print_i32:                            ## @_print_i32
 	.cfi_startproc
 ## BB#0:
 	pushq	%rbp
@@ -42,9 +42,9 @@ Ltmp5:
 	jmp	_printf                 ## TAILCALL
 	.cfi_endproc
 
-	.globl	__print__FP64
+	.globl	__print_FP64
 	.align	4, 0x90
-__print__FP64:                          ## @_print__FP64
+__print_FP64:                           ## @_print_FP64
 	.cfi_startproc
 ## BB#0:
 	pushq	%rbp
@@ -61,9 +61,9 @@ Ltmp8:
 	jmp	_printf                 ## TAILCALL
 	.cfi_endproc
 
-	.globl	__print__FP32
+	.globl	__print_FP32
 	.align	4, 0x90
-__print__FP32:                          ## @_print__FP32
+__print_FP32:                           ## @_print_FP32
 	.cfi_startproc
 ## BB#0:
 	pushq	%rbp
@@ -81,44 +81,48 @@ Ltmp11:
 	jmp	_printf                 ## TAILCALL
 	.cfi_endproc
 
-	.globl	__print__Arr_TInt8
-	.align	4, 0x90
-__print__Arr_TInt8:                     ## @_print__Arr_TInt8
-	.cfi_startproc
-## BB#0:
-	pushq	%rbp
-Ltmp12:
-	.cfi_def_cfa_offset 16
-Ltmp13:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-Ltmp14:
-	.cfi_def_cfa_register %rbp
-	movq	%rdi, %rcx
-	leaq	L_.str3(%rip), %rdi
-	xorl	%eax, %eax
-	movq	%rcx, %rdx
-	popq	%rbp
-	jmp	_printf                 ## TAILCALL
-	.cfi_endproc
-
 	.globl	_main
 	.align	4, 0x90
 _main:                                  ## @main
-	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp15:
-	.cfi_def_cfa_offset 16
-Ltmp16:
-	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp17:
-	.cfi_def_cfa_register %rbp
+	movl	$6, %edi
+	callq	__print_i64
 	xorl	%eax, %eax
 	popq	%rbp
 	retq
-	.cfi_endproc
+
+	.globl	__Int_S.i64_RS.i64
+	.align	4, 0x90
+__Int_S.i64_RS.i64:                     ## @_Int_S.i64_RS.i64
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	movq	%rdi, %rax
+	popq	%rbp
+	retq
+
+	.globl	__Int_i64_RS.i64
+	.align	4, 0x90
+__Int_i64_RS.i64:                       ## @_Int_i64_RS.i64
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	movq	%rdi, %rax
+	popq	%rbp
+	retq
+
+	.globl	__foo_S.i64S.i64_RS.i64
+	.align	4, 0x90
+__foo_S.i64S.i64_RS.i64:                ## @_foo_S.i64S.i64_RS.i64
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	addq	%rsi, %rdi
+	movq	%rdi, %rax
+	popq	%rbp
+	retq
 
 	.section	__TEXT,__cstring,cstring_literals
 L_.str:                                 ## @.str
@@ -129,9 +133,6 @@ L_.str1:                                ## @.str1
 
 L_.str2:                                ## @.str2
 	.asciz	"%f\n"
-
-L_.str3:                                ## @.str3
-	.asciz	"%.*s\n"
 
 
 .subsections_via_symbols
