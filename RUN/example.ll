@@ -35,41 +35,60 @@ define void @_print_FP32(float %d) #0 {
 
 define i64 @main() {
 entry:
-  %ptro.i = alloca { i64 }, align 8
   %0 = alloca { i64 }, align 8
+  %ptra.i = alloca { i64 }, align 8
+  %ptrb.i = alloca { i64 }, align 8
+  %ptro.i = alloca { i64 }, align 8
   %1 = alloca { i64 }, align 8
-  %2 = bitcast { i64 }* %1 to i8*
-  call void @llvm.lifetime.start(i64 8, i8* %2)
-  %value_ptr.i = getelementptr inbounds { i64 }* %1, i64 0, i32 0
+  %2 = alloca { i64 }, align 8
+  %3 = bitcast { i64 }* %2 to i8*
+  call void @llvm.lifetime.start(i64 8, i8* %3)
+  %value_ptr.i = getelementptr inbounds { i64 }* %2, i64 0, i32 0
   store i64 3, i64* %value_ptr.i, align 8
-  %3 = load { i64 }* %1, align 8
-  %4 = bitcast { i64 }* %1 to i8*
-  call void @llvm.lifetime.end(i64 8, i8* %4)
-  %5 = alloca { i64 }, align 8
-  store { i64 } %3, { i64 }* %5, align 8
-  %value_ptr = getelementptr inbounds { i64 }* %5, i64 0, i32 0
-  %value = load i64* %value_ptr, align 8
-  tail call void @_print_i64(i64 %value)
-  %a = load { i64 }* %5, align 8
+  %4 = load { i64 }* %2, align 8
+  %5 = bitcast { i64 }* %2 to i8*
+  call void @llvm.lifetime.end(i64 8, i8* %5)
   %6 = bitcast { i64 }* %ptro.i to i8*
   call void @llvm.lifetime.start(i64 8, i8* %6)
-  %7 = bitcast { i64 }* %0 to i8*
+  %7 = bitcast { i64 }* %1 to i8*
   call void @llvm.lifetime.start(i64 8, i8* %7)
-  store { i64 } %a, { i64 }* %ptro.i, align 8
+  store { i64 } %4, { i64 }* %ptro.i, align 8
   %value_ptr.i1 = getelementptr inbounds { i64 }* %ptro.i, i64 0, i32 0
   %value.i = load i64* %value_ptr.i1, align 8
-  %value_ptr1.i = getelementptr inbounds { i64 }* %0, i64 0, i32 0
+  %value_ptr1.i = getelementptr inbounds { i64 }* %1, i64 0, i32 0
   store i64 %value.i, i64* %value_ptr1.i, align 8
-  %8 = load { i64 }* %0, align 8
+  %8 = load { i64 }* %1, align 8
   %9 = bitcast { i64 }* %ptro.i to i8*
   call void @llvm.lifetime.end(i64 8, i8* %9)
-  %10 = bitcast { i64 }* %0 to i8*
+  %10 = bitcast { i64 }* %1 to i8*
   call void @llvm.lifetime.end(i64 8, i8* %10)
-  %11 = alloca { i64 }, align 8
-  store { i64 } %8, { i64 }* %11, align 8
-  %value_ptr2 = getelementptr inbounds { i64 }* %11, i64 0, i32 0
-  %value3 = load i64* %value_ptr2, align 8
-  tail call void @_print_i64(i64 %value3)
+  %11 = bitcast { i64 }* %ptra.i to i8*
+  call void @llvm.lifetime.start(i64 8, i8* %11)
+  %12 = bitcast { i64 }* %ptrb.i to i8*
+  call void @llvm.lifetime.start(i64 8, i8* %12)
+  store { i64 } %4, { i64 }* %ptra.i, align 8
+  store { i64 } %8, { i64 }* %ptrb.i, align 8
+  %value_ptr.i2 = getelementptr inbounds { i64 }* %ptra.i, i64 0, i32 0
+  %value.i3 = load i64* %value_ptr.i2, align 8
+  %value_ptr1.i4 = getelementptr inbounds { i64 }* %ptrb.i, i64 0, i32 0
+  %value2.i = load i64* %value_ptr1.i4, align 8
+  %add_res.i = add i64 %value.i3, %value2.i
+  %13 = bitcast { i64 }* %0 to i8*
+  call void @llvm.lifetime.start(i64 8, i8* %13)
+  %value_ptr.i.i = getelementptr inbounds { i64 }* %0, i64 0, i32 0
+  store i64 %add_res.i, i64* %value_ptr.i.i, align 8
+  %14 = load { i64 }* %0, align 8
+  %15 = bitcast { i64 }* %0 to i8*
+  call void @llvm.lifetime.end(i64 8, i8* %15)
+  %16 = bitcast { i64 }* %ptra.i to i8*
+  call void @llvm.lifetime.end(i64 8, i8* %16)
+  %17 = bitcast { i64 }* %ptrb.i to i8*
+  call void @llvm.lifetime.end(i64 8, i8* %17)
+  %18 = alloca { i64 }, align 8
+  store { i64 } %14, { i64 }* %18, align 8
+  %value_ptr = getelementptr inbounds { i64 }* %18, i64 0, i32 0
+  %value = load i64* %value_ptr, align 8
+  tail call void @_print_i64(i64 %value)
   ret i64 0
 }
 
@@ -95,6 +114,28 @@ entry:
   store i64 %v, i64* %value_ptr, align 8
   %1 = load { i64 }* %0, align 8
   ret { i64 } %1
+}
+
+define { i64 } @_foo_S.i64S.i64_RS.i64({ i64 } %a, { i64 } %b) {
+entry:
+  %0 = alloca { i64 }, align 8
+  %ptra = alloca { i64 }, align 8
+  store { i64 } %a, { i64 }* %ptra, align 8
+  %ptrb = alloca { i64 }, align 8
+  store { i64 } %b, { i64 }* %ptrb, align 8
+  %value_ptr = getelementptr inbounds { i64 }* %ptra, i64 0, i32 0
+  %value = load i64* %value_ptr, align 8
+  %value_ptr1 = getelementptr inbounds { i64 }* %ptrb, i64 0, i32 0
+  %value2 = load i64* %value_ptr1, align 8
+  %add_res = add i64 %value, %value2
+  %1 = bitcast { i64 }* %0 to i8*
+  call void @llvm.lifetime.start(i64 8, i8* %1)
+  %value_ptr.i = getelementptr inbounds { i64 }* %0, i64 0, i32 0
+  store i64 %add_res, i64* %value_ptr.i, align 8
+  %2 = load { i64 }* %0, align 8
+  %3 = bitcast { i64 }* %0 to i8*
+  call void @llvm.lifetime.end(i64 8, i8* %3)
+  ret { i64 } %2
 }
 
 ; Function Attrs: nounwind

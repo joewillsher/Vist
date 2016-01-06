@@ -13,16 +13,16 @@ type Int {
 
 }
 
-func foo: Int Int -> Int = do
-    return Int($0.value + $1.value)
+func foo: Int Int -> Int = |a b| do
+    return Int(a.value + b.value)
 
 let a = Int(3)
-print(a.value)
-
 let b = Int(a)
-print(b.value)
 
-let c = foo(a Int(3))
+let c = foo(a b)
+
+print(c.value)
+
 
 
 //print(foo(1 2))

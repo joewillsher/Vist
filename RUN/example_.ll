@@ -50,16 +50,18 @@ entry:
   %Int = call { i64 } @_Int_i64_RS.i64(i64 3)
   %0 = alloca { i64 }
   store { i64 } %Int, { i64 }* %0
-  %value_ptr = getelementptr inbounds { i64 }* %0, i32 0, i32 0
-  %value = load i64* %value_ptr
-  call void @_print_i64(i64 %value)
   %a = load { i64 }* %0
   %Int1 = call { i64 } @_Int_S.i64_RS.i64({ i64 } %a)
   %1 = alloca { i64 }
   store { i64 } %Int1, { i64 }* %1
-  %value_ptr2 = getelementptr inbounds { i64 }* %1, i32 0, i32 0
-  %value3 = load i64* %value_ptr2
-  call void @_print_i64(i64 %value3)
+  %a2 = load { i64 }* %0
+  %b = load { i64 }* %1
+  %foo = call { i64 } @_foo_S.i64S.i64_RS.i64({ i64 } %a2, { i64 } %b)
+  %2 = alloca { i64 }
+  store { i64 } %foo, { i64 }* %2
+  %value_ptr = getelementptr inbounds { i64 }* %2, i32 0, i32 0
+  %value = load i64* %value_ptr
+  call void @_print_i64(i64 %value)
   ret i64 0
 }
 
@@ -85,6 +87,21 @@ entry:
   store i64 %v, i64* %value_ptr
   %1 = load { i64 }* %0
   ret { i64 } %1
+}
+
+define { i64 } @_foo_S.i64S.i64_RS.i64({ i64 } %a, { i64 } %b) {
+entry:
+  %ptra = alloca { i64 }
+  store { i64 } %a, { i64 }* %ptra
+  %ptrb = alloca { i64 }
+  store { i64 } %b, { i64 }* %ptrb
+  %value_ptr = getelementptr inbounds { i64 }* %ptra, i32 0, i32 0
+  %value = load i64* %value_ptr
+  %value_ptr1 = getelementptr inbounds { i64 }* %ptrb, i32 0, i32 0
+  %value2 = load i64* %value_ptr1
+  %add_res = add i64 %value, %value2
+  %Int = call { i64 } @_Int_i64_RS.i64(i64 %add_res)
+  ret { i64 } %Int
 }
 
 attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

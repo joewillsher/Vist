@@ -240,7 +240,7 @@ extension Lexer {
         
         let start = index
         
-        try lexWhilePredicate { return $0.isSymbol() }
+        try lexWhilePredicate { $0.isSymbol() && $0 != "$" }
 
         if operators.keys.contains(String(charsInContext)) || stdlibOperators.contains(String(charsInContext)) {
             try resetContext()
