@@ -447,15 +447,14 @@ extension FunctionPrototypeExpression : IRGenerator {
             
             let ty = LLVMTypeOf(param)
             if LLVMGetTypeKind(ty) == LLVMStructTypeKind {
-                let ptr = LLVMBuildAlloca(builder, ty, "ptr\(name)")
-                LLVMBuildStore(builder, param, ptr)
                 
                 let tyName = (args.elements[i] as! ValueType).name
                 let t = try stackFrame.type(tyName)
                 
                 let memTys = try t.members.map { ($0.0, try $0.1.ir(), $0.2) }
                 
-                let s = StructVariable(type: ty, ptr: ptr, mutable: false, builder: builder, properties: memTys)
+                let s = StructVariable.alloc(builder, type: ty, name: "ptr\(name)", mutable: false, properties: memTys)
+                s.store(param)
                 functionStackFrame.addVariable(name, val: s)
                 
             } else {
@@ -877,6 +876,7 @@ extension InitialiserExpression : IRGenerator {
         let initStackFrame = StackFrame(function: function, parentStackFrame: nil)
         
         // set function param names and update table
+        // TODO: Split this out into a function for funcs & closures to use as well
         for i in 0..<argCount {
             let param = LLVMGetParam(function, UInt32(i))
             let name = (impl.params.elements[i] as? ValueType)?.name ?? ("$\(i)")
@@ -884,15 +884,15 @@ extension InitialiserExpression : IRGenerator {
             
             let ty = LLVMTypeOf(param)
             if LLVMGetTypeKind(ty) == LLVMStructTypeKind {
-                let ptr = LLVMBuildAlloca(builder, ty, "ptr\(name)")
-                LLVMBuildStore(builder, param, ptr)
                 
+                // TODO: Fix how this info is brought down
                 let tyName = (args.elements[i] as! ValueType).name
                 let t = try stackFrame.type(tyName)
                 
                 let memTys = try t.members.map { ($0.0, try $0.1.ir(), $0.2) }
                 
-                let s = StructVariable(type: ty, ptr: ptr, mutable: false, builder: builder, properties: memTys)
+                let s = StructVariable.alloc(builder, type: ty, name: "ptr\(name)", mutable: false, properties: memTys)
+                s.store(param)
                 initStackFrame.addVariable(name, val: s)
                 
             } else {
@@ -900,6 +900,11 @@ extension InitialiserExpression : IRGenerator {
                 initStackFrame.addVariable(name, val: s)
             }
         }
+        // 3 ways of passing a struct into a function
+        //  - Pass in pointer to copy
+        //  - Pass in object and make copy there
+        //  - Expand struct to params of function, so a fn taking ({i64 i32} i32) becomes (i64 i32 i32)
+        //      - This is harder bacause all property lookups have to be remapped to a param
         
         // property types, names, & mutability for stack frame
         let properties = try parentProperties.map { assignment -> (String, LLVMValueRef, Bool) in

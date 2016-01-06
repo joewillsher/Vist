@@ -13,6 +13,17 @@ type Int {
 
 }
 
+type Bool {
+    var value: LLVM.Int1
+}
+
+type Double {
+    var value: LLVM.Double
+}
+
+
+
+
 func foo: Int Int -> Int = |a b| do
     return Int(a.value + b.value)
 

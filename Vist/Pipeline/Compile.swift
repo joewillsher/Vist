@@ -125,21 +125,7 @@ public func compileDocuments(fileNames: [String],
         
         if optim {
             
-            let flags = [
-                "-mem2reg",                 // promotes `load` and `store` IR stack operations to registers
-                "-loop-unroll",             // Loop unrolling
-                "-constprop",               // constant propagation
-                "-correlated-propagation",  // value propagation
-                "-consthoist",              // constant hoisting
-                "-inline",                  // function inlining
-                "-instcombine",             // combine redundant instructions
-                "-instsimplify",            // remove redundant instructions
-                "-dce",                     // dead code elimination
-                "-load-combine",            // combine adjacent loops
-                "-loop-reduce",             // loop strength reduction —— https://en.wikipedia.org/wiki/Strength_reduction
-                "-loop-vectorize",          // parallelise loops
-                "-tailcallelim"             // eliminate tail calls —— https://en.wikipedia.org/wiki/Tail_call
-            ]
+            let flags = ["-O3"]
             
             // Optimiser
             let optimTask = NSTask()
