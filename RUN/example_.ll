@@ -85,9 +85,9 @@ entry:
   store { i64 } %Int1, { i64 }* %3
   %a2 = load { i64 }* %2
   %b = load { i64 }* %3
-  %foo = call { i64 } @_foo_S.i64S.i64({ i64 } %a2, { i64 } %b)
+  %add = call { i64 } @_add_S.i64S.i64({ i64 } %a2, { i64 } %b)
   %4 = alloca { i64 }
-  store { i64 } %foo, { i64 }* %4
+  store { i64 } %add, { i64 }* %4
   %c = load { i64 }* %4
   call void @_print_S.i64({ i64 } %c)
   %bo = load { i1 }* %0
@@ -199,7 +199,7 @@ entry:
   ret void
 }
 
-define { i64 } @_foo_S.i64S.i64({ i64 } %a, { i64 } %b) {
+define { i64 } @_add_S.i64S.i64({ i64 } %a, { i64 } %b) {
 entry:
   %ptra = alloca { i64 }
   store { i64 } %a, { i64 }* %ptra
@@ -212,6 +212,21 @@ entry:
   %add_res = add i64 %value, %value2
   %Int = call { i64 } @_Int_i64(i64 %add_res)
   ret { i64 } %Int
+}
+
+define { double } @_add_S.FP64S.FP64({ double } %a, { double } %b) {
+entry:
+  %ptra = alloca { double }
+  store { double } %a, { double }* %ptra
+  %ptrb = alloca { double }
+  store { double } %b, { double }* %ptrb
+  %value_ptr = getelementptr inbounds { double }* %ptra, i32 0, i32 0
+  %value = load double* %value_ptr
+  %value_ptr1 = getelementptr inbounds { double }* %ptrb, i32 0, i32 0
+  %value2 = load double* %value_ptr1
+  %add_res = fadd double %value, %value2
+  %Double = call { double } @_Double_FP64(double %add_res)
+  ret { double } %Double
 }
 
 attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

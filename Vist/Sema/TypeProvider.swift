@@ -259,7 +259,8 @@ extension FunctionCallExpression : TypeProvider {
         let params = try args.elements.map { try $0.llvmType(scope) }
         
         guard let fnType = scope[function: name, paramTypes: params] else {
-            if let f = scope[function: name] { throw SemaError.WrongFunctionApplications(applied: params, expected: f.params) }
+            if let f = scope[function: name] {
+                throw SemaError.WrongFunctionApplications(applied: params, expected: f.params) }
             else { throw SemaError.NoFunction(name) }
         }
         

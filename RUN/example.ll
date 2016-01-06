@@ -125,13 +125,23 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define { i64 } @_foo_S.i64S.i64({ i64 } %a, { i64 } %b) #4 {
+define { i64 } @_add_S.i64S.i64({ i64 } %a, { i64 } %b) #4 {
 entry:
   %a.fca.0.extract = extractvalue { i64 } %a, 0
   %b.fca.0.extract = extractvalue { i64 } %b, 0
   %add_res = add i64 %b.fca.0.extract, %a.fca.0.extract
   %.fca.0.insert.i = insertvalue { i64 } undef, i64 %add_res, 0
   ret { i64 } %.fca.0.insert.i
+}
+
+; Function Attrs: nounwind readnone
+define { double } @_add_S.FP64S.FP64({ double } %a, { double } %b) #4 {
+entry:
+  %a.fca.0.extract = extractvalue { double } %a, 0
+  %b.fca.0.extract = extractvalue { double } %b, 0
+  %add_res = fadd double %a.fca.0.extract, %b.fca.0.extract
+  %.fca.0.insert.i = insertvalue { double } undef, double %add_res, 0
+  ret { double } %.fca.0.insert.i
 }
 
 ; Function Attrs: nounwind

@@ -213,14 +213,24 @@ __print_S.FP64:                         ## @_print_S.FP64
 	popq	%rbp
 	jmp	__print_FP64            ## TAILCALL
 
-	.globl	__foo_S.i64S.i64
+	.globl	__add_S.i64S.i64
 	.align	4, 0x90
-__foo_S.i64S.i64:                       ## @_foo_S.i64S.i64
+__add_S.i64S.i64:                       ## @_add_S.i64S.i64
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
 	addq	%rsi, %rdi
 	movq	%rdi, %rax
+	popq	%rbp
+	retq
+
+	.globl	__add_S.FP64S.FP64
+	.align	4, 0x90
+__add_S.FP64S.FP64:                     ## @_add_S.FP64S.FP64
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	addsd	%xmm1, %xmm0
 	popq	%rbp
 	retq
 

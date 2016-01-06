@@ -48,10 +48,11 @@ func print: Double = |a| do print(a.value)
 
 
 
-
-
-func foo: Int Int -> Int = |a b| do
+func add: Int Int -> Int = |a b| do
     return Int(LLVM.i_add(a.value b.value))
+
+func add: Double Double -> Double = |a b| do
+    return Double(LLVM.f_add(a.value b.value))
 
 
 let bo = Bool(true)
@@ -62,7 +63,7 @@ let xx = Double(3.0)
 let a = Int(3)
 let b = Int(a)
 
-let c = foo(a b)
+let c = add(a b)
 
 print(c)
 print(bo)

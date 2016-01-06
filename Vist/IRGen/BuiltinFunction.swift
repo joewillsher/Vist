@@ -17,7 +17,20 @@ func builtinInstruction(named: String, builder: LLVMBuilderRef) -> ((LLVMValueRe
             LLVMBuildAdd(builder, $0, $1, "add_res")
         }
         
+    case "LLVM.i_mul":
+        return {
+            LLVMBuildMul(builder, $0, $1, "mul_res")
+        }
         
+    case "LLVM.f_add":
+        return {
+            LLVMBuildFAdd(builder, $0, $1, "add_res")
+        }
+        
+    case "LLVM.f_mul":
+        return {
+            LLVMBuildFMul(builder, $0, $1, "mul_res")
+        }
         
     default:
         return nil
