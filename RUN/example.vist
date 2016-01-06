@@ -48,10 +48,10 @@ func print: Double = |a| do print(a.value)
 
 
 
-func add: Int Int -> Int = |a b| do
+@inline func add: Int Int -> Int = |a b| do
     return Int(LLVM.i_add(a.value b.value))
 
-func add: Double Double -> Double = |a b| do
+@inline func add: Double Double -> Double = |a b| do
     return Double(LLVM.f_add(a.value b.value))
 
 

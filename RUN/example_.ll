@@ -199,7 +199,8 @@ entry:
   ret void
 }
 
-define { i64 } @_add_S.i64S.i64({ i64 } %a, { i64 } %b) {
+; Function Attrs: alwaysinline
+define { i64 } @_add_S.i64S.i64({ i64 } %a, { i64 } %b) #2 {
 entry:
   %ptra = alloca { i64 }
   store { i64 } %a, { i64 }* %ptra

@@ -436,6 +436,10 @@ extension FunctionPrototypeExpression : IRGenerator {
         let function = LLVMAddFunction(module, mangledName, functionType)
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
         
+        for a in attrs {
+            a.addAttrTo(function)
+        }
+        
         // setup function block
         let entryBlock = LLVMAppendBasicBlock(function, "entry")
         LLVMPositionBuilderAtEnd(builder, entryBlock)

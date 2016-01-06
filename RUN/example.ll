@@ -124,8 +124,8 @@ entry:
   ret void
 }
 
-; Function Attrs: nounwind readnone
-define { i64 } @_add_S.i64S.i64({ i64 } %a, { i64 } %b) #4 {
+; Function Attrs: alwaysinline nounwind readnone
+define { i64 } @_add_S.i64S.i64({ i64 } %a, { i64 } %b) #3 {
 entry:
   %a.fca.0.extract = extractvalue { i64 } %a, 0
   %b.fca.0.extract = extractvalue { i64 } %b, 0

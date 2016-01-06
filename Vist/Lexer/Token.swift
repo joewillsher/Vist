@@ -31,6 +31,7 @@ enum Token {
     case InfixOperator(String), PrefixOperator(String), PostfixOperator(String)
     case Identifier(String), FloatingPoint(Double), Integer(Int), Boolean(Bool)
     case Char(Character), Str(String), Comment(String), StringLiteral(String)
+    case At
 }
 
 let operators: [String: Token] = [
@@ -46,7 +47,8 @@ let operators: [String: Token] = [
     "->": .Returns,
     "|": .Bar,
     "}": .CloseBrace,
-    "{": .OpenBrace
+    "{": .OpenBrace,
+    "@": .At
 ]
 
 let stdlibOperators: [String] = ["<", ">", "<=", ">=", "/", "+", "-", "*", "%", "&&", "||", "...", "==", "!="]

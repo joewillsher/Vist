@@ -260,12 +260,14 @@ final class FunctionPrototypeExpression : Expression, StructMember {
     let name: String
     let fnType: FunctionType
     let impl: FunctionImplementationExpression?
+    let attrs: [AttributeExpression]
     
-    init(name: String, type: FunctionType, impl: FunctionImplementationExpression?) {
+    init(name: String, type: FunctionType, impl: FunctionImplementationExpression?, attrs: [AttributeExpression]) {
         self.name = name
         self.fnType = type
         self.impl = impl
         self.mangledName = name
+        self.attrs = attrs
     }
     
     var mangledName: String
@@ -486,12 +488,14 @@ final class StructExpression : Expression {
     let properties: [AssignmentExpression]
     let methods: [FunctionPrototypeExpression]
     let initialisers: [InitialiserExpression]
+    let attrs: [AttributeExpression]
     
-    init(name: String, properties: [AssignmentExpression], methods: [FunctionPrototypeExpression], initialisers: [InitialiserExpression]) {
+    init(name: String, properties: [AssignmentExpression], methods: [FunctionPrototypeExpression], initialisers: [InitialiserExpression], attrs: [AttributeExpression]) {
         self.name = name
         self.properties = properties
         self.methods = methods
         self.initialisers = initialisers
+        self.attrs = attrs
     }
     
     var type: LLVMTyped? = nil
@@ -540,8 +544,6 @@ final class PropertyLookupExpression : AssignableExpression {
     
     var type: LLVMTyped? = nil
 }
-
-
 
 
 

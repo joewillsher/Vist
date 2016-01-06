@@ -63,6 +63,8 @@ struct Parser {
     
     private let isStdLib: Bool
     
+    private var attrs: [AttributeExpression]
+    
     private let precedences: [String: Int] = [
         "<": 30,
         ">": 30,
@@ -80,8 +82,8 @@ struct Parser {
         "...": 40
     ]
     
-    private mutating func getNextToken() -> Token {
-        index++
+    private mutating func getNextToken(n: Int = 1) -> Token {
+        index += n
         return currentToken
     }
     private func inspectNextToken(i: Int = 1) -> Token? { // debug function, acts as getNextToken() but does not mutate
@@ -596,6 +598,9 @@ extension Parser {
     
     private mutating func parseFunctionDeclaration() throws -> FunctionPrototypeExpression {
         
+        let a = attrs
+        attrs = []
+        
         guard case .Identifier(let s) = getNextToken() else { throw ParseError.NoIdentifier(currentPos) }
         
         let id: String
@@ -612,11 +617,11 @@ extension Parser {
         let type = try parseFunctionType()
         
         guard case .Assign = currentToken else {
-            return FunctionPrototypeExpression(name: id, type: type, impl: nil)
+            return FunctionPrototypeExpression(name: id, type: type, impl: nil, attrs: a)
         }
         getNextToken() // eat '='
         
-        return FunctionPrototypeExpression(name: id, type: type, impl: try parseClosureDeclaration(type: type))
+        return FunctionPrototypeExpression(name: id, type: type, impl: try parseClosureDeclaration(type: type), attrs: a)
     }
     
     private mutating func parseClosureNamesExpression() throws -> [ValueType] {
@@ -732,6 +737,10 @@ extension Parser {
 extension Parser {
     
     private mutating func parseTypeDeclarationExpression(byRef byRef: Bool) throws -> StructExpression {
+        
+        let a = attrs
+        attrs = []
+        
         getNextToken() // eat 'type'
         
         guard case .Identifier(let name) = currentToken else { throw ParseError.NoTypeName(currentPos) }
@@ -743,6 +752,8 @@ extension Parser {
         
         while true {
             
+            if case .CloseBrace = currentToken { break }
+
             switch currentToken {
             case .Var:
                 properties.append(try parseVariableAssignmentMutable(true, requiresInitialValue: false))
@@ -756,14 +767,16 @@ extension Parser {
             case .Init:
                 initialisers.append(try parseInitDeclaration())
                 
+            case .At:
+                parseAttrExpression()
+                
             default:
                 throw ParseError.ObjectNotAllowedInTopLevelOfTypeImpl(currentPos)
             }
             
-            if case .CloseBrace = currentToken { break }
         }
         
-        let s = StructExpression(name: name, properties: properties, methods: methods, initialisers: initialisers)
+        let s = StructExpression(name: name, properties: properties, methods: methods, initialisers: initialisers, attrs: a)
         for i in s.initialisers {
             i.parent = s
         }
@@ -796,11 +809,19 @@ extension Parser {
 //-------------------------------------------------------------------------------------------------------------------------
 extension Parser {
     
+    // TODO: Fix how this gets in the way of other things
     private mutating func parseCommentExpression(str: String) throws -> Expression {
         getNextToken() //eat comment
         return CommentExpression(str: str)
     }
     
+    private mutating func parseAttrExpression() {
+        getNextToken() // eat @attr
+        if case .Identifier(let id) = currentToken, let a = AttributeExpression(name: id) {
+            getNextToken()
+            attrs.append(a)
+        }
+    }
 }
 
 
@@ -835,6 +856,7 @@ extension Parser {
         case .Integer(let i):       return parseIntExpression(i)
         case .FloatingPoint(let x): return parseFloatingPointExpression(x)
         case .Str(let str):         return parseStringExpression(str)
+        case .At:                   parseAttrExpression(); return nil
         case .Void:                 index++; return Void()
         case .EOF, .CloseBrace:     index++; return nil
         default:                    throw ParseError.NoToken(token, currentPos)
@@ -868,6 +890,7 @@ extension Parser {
             if case .Comment = $0.0 { return false } else { return true }
         }
         self.isStdLib = isStdLib
+        self.attrs = []
     }
     
 }

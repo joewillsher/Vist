@@ -32,6 +32,7 @@
 		D497A7931C3B015700DFE39E /* Link.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7901C3B015700DFE39E /* Link.swift */; };
 		D497A7941C3B015700DFE39E /* Print.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7911C3B015700DFE39E /* Print.swift */; };
 		D4FAE45C1C3DCEEE00C9EE05 /* BuiltinFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4FAE45B1C3DCEEE00C9EE05 /* BuiltinFunction.swift */; };
+		D4FAE45E1C3DDE3100C9EE05 /* FunctionAttribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4FAE45D1C3DDE3100C9EE05 /* FunctionAttribute.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -92,6 +93,7 @@
 		D4FAE4571C3B023600C9EE05 /* stdlib.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = stdlib.vist; path = stdlib/stdlib.vist; sourceTree = "<group>"; };
 		D4FAE45A1C3DA10600C9EE05 /* llvmheader.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = llvmheader.vist; path = stdlib/llvmheader.vist; sourceTree = "<group>"; };
 		D4FAE45B1C3DCEEE00C9EE05 /* BuiltinFunction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BuiltinFunction.swift; path = IRGen/BuiltinFunction.swift; sourceTree = "<group>"; };
+		D4FAE45D1C3DDE3100C9EE05 /* FunctionAttribute.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FunctionAttribute.swift; path = IRGen/FunctionAttribute.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -156,6 +158,7 @@
 				D497A7851C3B012700DFE39E /* ArrayVariable.swift */,
 				D497A7891C3B012700DFE39E /* StructVariable.swift */,
 				D4FAE45B1C3DCEEE00C9EE05 /* BuiltinFunction.swift */,
+				D4FAE45D1C3DDE3100C9EE05 /* FunctionAttribute.swift */,
 			);
 			name = IRGen;
 			sourceTree = "<group>";
@@ -367,6 +370,7 @@
 				D497A76C1C3B003A00DFE39E /* main.swift in Sources */,
 				D497A77B1C3B00C600DFE39E /* Mangle.swift in Sources */,
 				D497A7931C3B015700DFE39E /* Link.swift in Sources */,
+				D4FAE45E1C3DDE3100C9EE05 /* FunctionAttribute.swift in Sources */,
 				D497A78A1C3B012700DFE39E /* ArrayVariable.swift in Sources */,
 				D497A7841C3B00FE00DFE39E /* LinkAST.swift in Sources */,
 				D497A77D1C3B00C600DFE39E /* SemaScope.swift in Sources */,
