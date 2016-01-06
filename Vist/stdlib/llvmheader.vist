@@ -9,6 +9,6 @@ func LLVM.i_add: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
 func print: LLVM.Int
 func print: LLVM.Float
 func print: LLVM.Double
-
+func print: LLVM.Bool
 
 

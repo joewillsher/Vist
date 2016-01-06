@@ -5,6 +5,8 @@ target triple = "x86_64-apple-macosx10.11.0"
 @.str = private unnamed_addr constant [6 x i8] c"%llu\0A\00", align 1
 @.str1 = private unnamed_addr constant [4 x i8] c"%i\0A\00", align 1
 @.str2 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
+@.str3 = private unnamed_addr constant [6 x i8] c"true\0A\00", align 1
+@.str4 = private unnamed_addr constant [7 x i8] c"false\0A\00", align 1
 
 ; Function Attrs: noinline ssp uwtable
 define void @_print_i64(i64 %i) #0 {
@@ -42,6 +44,27 @@ define void @_print_FP32(float %d) #0 {
   %2 = load float* %1, align 4
   %3 = fpext float %2 to double
   %4 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str2, i32 0, i32 0), double %3)
+  ret void
+}
+
+; Function Attrs: noinline ssp uwtable
+define void @_print_b(i1 zeroext %b) #0 {
+  %1 = alloca i8, align 1
+  %2 = zext i1 %b to i8
+  store i8 %2, i8* %1, align 1
+  %3 = load i8* %1, align 1
+  %4 = trunc i8 %3 to i1
+  br i1 %4, label %5, label %7
+
+; <label>:5                                       ; preds = %0
+  %6 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str3, i32 0, i32 0))
+  br label %9
+
+; <label>:7                                       ; preds = %0
+  %8 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([7 x i8]* @.str4, i32 0, i32 0))
+  br label %9
+
+; <label>:9                                       ; preds = %7, %5
   ret void
 }
 

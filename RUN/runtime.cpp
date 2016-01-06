@@ -41,6 +41,14 @@ _print_FP32(float d)
     printf("%f\n", d);
 };
 
+extern "C"
+void
+__attribute__ ((noinline))
+_print_b(bool b)
+{
+    if (b) { printf("true\n"); } else { printf("false\n"); };
+};
+
 //extern "C"
 //void
 //__attribute__ ((noinline))

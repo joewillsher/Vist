@@ -13,21 +13,49 @@ type Int {
 
 }
 
-func print: Int = |a| do print(a.value)
 
 
 type Bool {
-    var value: LLVM.Int1
+    var value: LLVM.Bool
+
+    init Bool = |o| {
+        value = o.value
+    }
+
+    init LLVM.Bool = |v| {
+        value = v
+    }
 }
+
+
 
 type Double {
     var value: LLVM.Double
+
+    init Double = |o| {
+        value = o.value
+    }
+
+    init LLVM.Double = |v| {
+        value = v
+    }
 }
+
+
+func print: Int = |a| do print(a.value)
+func print: Bool = |a| do print(a.value)
+func print: Double = |a| do print(a.value)
+
+
+
 
 
 func foo: Int Int -> Int = |a b| do
     return Int(LLVM.i_add(a.value b.value))
 
+
+let bo = Bool(true)
+let xx = Double(3.0)
 
 
 
@@ -37,7 +65,7 @@ let b = Int(a)
 let c = foo(a b)
 
 print(c)
-
-
+print(bo)
+print(xx)
 
 //print(foo(1 2))

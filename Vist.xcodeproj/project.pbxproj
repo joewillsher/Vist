@@ -31,7 +31,7 @@
 		D497A7921C3B015700DFE39E /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A78F1C3B015700DFE39E /* Config.swift */; };
 		D497A7931C3B015700DFE39E /* Link.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7901C3B015700DFE39E /* Link.swift */; };
 		D497A7941C3B015700DFE39E /* Print.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7911C3B015700DFE39E /* Print.swift */; };
-		D4FAE4591C3D9F4A00C9EE05 /* BuiltinFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4FAE4581C3D9F4A00C9EE05 /* BuiltinFunction.swift */; };
+		D4FAE45C1C3DCEEE00C9EE05 /* BuiltinFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4FAE45B1C3DCEEE00C9EE05 /* BuiltinFunction.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -90,8 +90,8 @@
 		D4DB9D681C1DFFCC00503153 /* runtime.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = runtime.ll; path = RUN/runtime.ll; sourceTree = "<group>"; };
 		D4FAE4561C3B018000C9EE05 /* Test.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; name = Test.playground; path = Helper/Test.playground; sourceTree = "<group>"; };
 		D4FAE4571C3B023600C9EE05 /* stdlib.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = stdlib.vist; path = stdlib/stdlib.vist; sourceTree = "<group>"; };
-		D4FAE4581C3D9F4A00C9EE05 /* BuiltinFunction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BuiltinFunction.swift; sourceTree = "<group>"; };
 		D4FAE45A1C3DA10600C9EE05 /* llvmheader.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = llvmheader.vist; path = stdlib/llvmheader.vist; sourceTree = "<group>"; };
+		D4FAE45B1C3DCEEE00C9EE05 /* BuiltinFunction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BuiltinFunction.swift; path = IRGen/BuiltinFunction.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -155,7 +155,7 @@
 				D497A7871C3B012700DFE39E /* RuntimeVariable.swift */,
 				D497A7851C3B012700DFE39E /* ArrayVariable.swift */,
 				D497A7891C3B012700DFE39E /* StructVariable.swift */,
-				D4FAE4581C3D9F4A00C9EE05 /* BuiltinFunction.swift */,
+				D4FAE45B1C3DCEEE00C9EE05 /* BuiltinFunction.swift */,
 			);
 			name = IRGen;
 			sourceTree = "<group>";
@@ -370,7 +370,6 @@
 				D497A78A1C3B012700DFE39E /* ArrayVariable.swift in Sources */,
 				D497A7841C3B00FE00DFE39E /* LinkAST.swift in Sources */,
 				D497A77D1C3B00C600DFE39E /* SemaScope.swift in Sources */,
-				D4FAE4591C3D9F4A00C9EE05 /* BuiltinFunction.swift in Sources */,
 				D497A78E1C3B012700DFE39E /* StructVariable.swift in Sources */,
 				D497A7731C3B006D00DFE39E /* Expression.swift in Sources */,
 				D497A76B1C3B003A00DFE39E /* Compile.swift in Sources */,
@@ -384,6 +383,7 @@
 				D497A77E1C3B00C600DFE39E /* SemaTypeCheck.swift in Sources */,
 				D497A7921C3B015700DFE39E /* Config.swift in Sources */,
 				D497A76F1C3B005600DFE39E /* Lexer.swift in Sources */,
+				D4FAE45C1C3DCEEE00C9EE05 /* BuiltinFunction.swift in Sources */,
 				D497A77C1C3B00C600DFE39E /* Sema.swift in Sources */,
 				D497A7741C3B006D00DFE39E /* Parser.swift in Sources */,
 			);

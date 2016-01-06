@@ -43,7 +43,7 @@ enum LLVMType : LLVMTyped {
         case "LLVM.Int32": self = .Int(size: 32)
         case "LLVM.Int16": self = .Int(size: 16)
         case "LLVM.Int8": self = .Int(size: 8)
-        case "LLVM.Int1": self = .Bool
+        case "LLVM.Bool": self = .Bool
         case "LLVM.Double": self = .Float(size: 64)
         case "LLVM.Float": self = .Float(size: 32)
         case "Void": self = .Void
