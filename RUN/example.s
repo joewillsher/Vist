@@ -114,6 +114,20 @@ _main:                                  ## @main
 	movq	%rsp, %rbp
 	movl	$7, %edi
 	callq	__print_i64
+	movl	$1, %edi
+	callq	__print_i64
+	movl	$12, %edi
+	callq	__print_i64
+	movl	$1, %edi
+	callq	__print_i64
+	xorl	%edi, %edi
+	callq	__print_b
+	xorl	%edi, %edi
+	callq	__print_b
+	movl	$1, %edi
+	callq	__print_b
+	movl	$1, %edi
+	callq	__print_b
 	xorl	%eax, %eax
 	popq	%rbp
 	retq
@@ -204,35 +218,13 @@ __print_S.FP64:                         ## @_print_S.FP64
 	popq	%rbp
 	jmp	__print_FP64            ## TAILCALL
 
-	.globl	__add_S.i64S.i64
+	.globl	"__+_S.FP64S.FP64"
 	.align	4, 0x90
-__add_S.i64S.i64:                       ## @_add_S.i64S.i64
-## BB#0:                                ## %entry
-	pushq	%rbp
-	movq	%rsp, %rbp
-	addq	%rsi, %rdi
-	movq	%rdi, %rax
-	popq	%rbp
-	retq
-
-	.globl	__add_S.FP64S.FP64
-	.align	4, 0x90
-__add_S.FP64S.FP64:                     ## @_add_S.FP64S.FP64
+"__+_S.FP64S.FP64":                     ## @"_+_S.FP64S.FP64"
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
 	addsd	%xmm1, %xmm0
-	popq	%rbp
-	retq
-
-	.globl	__cmp.lt_S.i64S.i64
-	.align	4, 0x90
-__cmp.lt_S.i64S.i64:                    ## @_cmp.lt_S.i64S.i64
-## BB#0:                                ## %entry
-	pushq	%rbp
-	movq	%rsp, %rbp
-	cmpq	%rsi, %rdi
-	setl	%al
 	popq	%rbp
 	retq
 
@@ -244,6 +236,84 @@ __cmp.lt_S.i64S.i64:                    ## @_cmp.lt_S.i64S.i64
 	movq	%rsp, %rbp
 	addq	%rsi, %rdi
 	movq	%rdi, %rax
+	popq	%rbp
+	retq
+
+	.globl	"__-_S.i64S.i64"
+	.align	4, 0x90
+"__-_S.i64S.i64":                       ## @_-_S.i64S.i64
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	subq	%rsi, %rdi
+	movq	%rdi, %rax
+	popq	%rbp
+	retq
+
+	.globl	"__*_S.i64S.i64"
+	.align	4, 0x90
+"__*_S.i64S.i64":                       ## @"_*_S.i64S.i64"
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	imulq	%rsi, %rdi
+	movq	%rdi, %rax
+	popq	%rbp
+	retq
+
+	.globl	"__/_S.i64S.i64"
+	.align	4, 0x90
+"__/_S.i64S.i64":                       ## @"_/_S.i64S.i64"
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	xorl	%edx, %edx
+	movq	%rdi, %rax
+	divq	%rsi
+	popq	%rbp
+	retq
+
+	.globl	"__<_S.i64S.i64"
+	.align	4, 0x90
+"__<_S.i64S.i64":                       ## @"_<_S.i64S.i64"
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	cmpq	%rsi, %rdi
+	setl	%al
+	popq	%rbp
+	retq
+
+	.globl	"__<=_S.i64S.i64"
+	.align	4, 0x90
+"__<=_S.i64S.i64":                      ## @"_<=_S.i64S.i64"
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	cmpq	%rsi, %rdi
+	setle	%al
+	popq	%rbp
+	retq
+
+	.globl	"__>_S.i64S.i64"
+	.align	4, 0x90
+"__>_S.i64S.i64":                       ## @"_>_S.i64S.i64"
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	cmpq	%rsi, %rdi
+	setg	%al
+	popq	%rbp
+	retq
+
+	.globl	"__>=_S.i64S.i64"
+	.align	4, 0x90
+"__>=_S.i64S.i64":                      ## @"_>=_S.i64S.i64"
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	cmpq	%rsi, %rdi
+	setge	%al
 	popq	%rbp
 	retq
 

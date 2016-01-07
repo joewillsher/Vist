@@ -47,28 +47,61 @@ type Double {
 @inline func print: Bool = |a| do print(a.value)
 @inline func print: Double = |a| do print(a.value)
 
-
-@inline
-func add: Int Int -> Int = |a b| do
-    return Int(LLVM.i_add(a.value b.value))
-
-@inline
-func add: Double Double -> Double = |a b| do
+@inline @operator(80)
+func + : Double Double -> Double = |a b| do
     return Double(LLVM.f_add(a.value b.value))
 
-@inline
-func cmp_lt: Int Int -> LLVM.Bool = |a b| do
-    return LLVM.i_cmp_lt(a.value b.value)
 
-@inline
-@operator(80)
-func +: Int Int -> Int = |a b| do
+
+
+@inline @operator(80)
+func + : Int Int -> Int = |a b| do
     return Int(LLVM.i_add(a.value b.value))
 
+@inline @operator(80)
+func - : Int Int -> Int = |a b| do
+    return Int(LLVM.i_sub(a.value b.value))
 
-let a = Int(3)
-let b = Int(4)
+@inline @operator(100)
+func * : Int Int -> Int = |a b| do
+    return Int(LLVM.i_mul(a.value b.value))
 
-let x = a + b
+@inline @operator(100)
+func / : Int Int -> Int = |a b| do
+    return Int(LLVM.i_div(a.value b.value))
 
-print(x)
+@inline @operator(70)
+func % : Int Int -> Bool = |a b| do
+    return Int(LLVM.i_rem(a.value b.value))
+
+@inline @operator(30)
+func < : Int Int -> Bool = |a b| do
+    return Bool(LLVM.i_cmp_lt(a.value b.value))
+
+@inline @operator(30)
+func <= : Int Int -> Bool = |a b| do
+    return Bool(LLVM.i_cmp_lte(a.value b.value))
+
+@inline @operator(30)
+func > : Int Int -> Bool = |a b| do
+    return Bool(LLVM.i_cmp_gt(a.value b.value))
+
+@inline @operator(30)
+func >= : Int Int -> Bool = |a b| do
+    return Bool(LLVM.i_cmp_gte(a.value b.value))
+
+
+
+let a = Int(4)
+let b = Int(3)
+
+print(a + b)
+print(a - b)
+print(a * b)
+print(a / b)
+print(a % b)
+print(a <= b)
+print(a < b)
+print(a >= b)
+print(a > b)
+

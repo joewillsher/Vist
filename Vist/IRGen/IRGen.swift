@@ -319,62 +319,19 @@ extension BinaryExpression : IRGenerator {
         
         let lIR = try lhs.expressionCodeGen(stackFrame), rIR = try rhs.expressionCodeGen(stackFrame)
         
-        guard let type = try self.type?.ir() else { throw IRError.TypeNotFound }
+        // make function
+        let fn = LLVMGetNamedFunction(module, mangledName)
         
-        if LLVMGetTypeKind(type) == LLVMIntegerTypeKind {
-            
-            switch op {
-            case "+": return LLVMBuildAdd(builder, lIR, rIR, "add_res")
-            case "-": return LLVMBuildSub(builder, lIR, rIR, "sub_res")
-            case "*": return LLVMBuildMul(builder, lIR, rIR, "mul_res")
-            case "/": return LLVMBuildUDiv(builder, lIR, rIR, "div_res")
-            case "%": return LLVMBuildURem(builder, lIR, rIR, "rem_res")
-            case "&&": return LLVMBuildAnd(builder, lIR, rIR, "and_res")
-            case "||": return LLVMBuildOr(builder, lIR, rIR, "or_res")
-            case "<": return LLVMBuildICmp(builder, LLVMIntSLT, lIR, rIR, "cmp_lt_res")
-            case ">": return LLVMBuildICmp(builder, LLVMIntSGT, lIR, rIR, "cmp_gt_res")
-            case "<=": return LLVMBuildICmp(builder, LLVMIntSLE, lIR, rIR, "cmp_lte_res")
-            case ">=": return LLVMBuildICmp(builder, LLVMIntSGE, lIR, rIR, "cmp_gte_res")
-            case "==": return LLVMBuildICmp(builder, LLVMIntEQ, lIR, rIR, "cmp_eq_res")
-            case "!=": return LLVMBuildICmp(builder, LLVMIntNE, lIR, rIR, "cmp_neq_res")
-            default: throw IRError.NoOperator
-            }
-
-        } else if isFloatType(LLVMGetTypeKind(type)) {
-            
-            switch op {
-            case "+": return LLVMBuildFAdd(builder, lIR, rIR, "fadd_res")
-            case "-": return LLVMBuildFSub(builder, lIR, rIR, "fsub_res")
-            case "*": return LLVMBuildFMul(builder, lIR, rIR, "fmul_res")
-            case "/": return LLVMBuildFDiv(builder, lIR, rIR, "fdiv_res")
-            case "%": return LLVMBuildFRem(builder, lIR, rIR, "frem_res")
-            case "<": return LLVMBuildFCmp(builder, LLVMRealOLT, lIR, rIR, "fcmp_lt_res")
-            case ">": return LLVMBuildFCmp(builder, LLVMRealOGT, lIR, rIR, "fcmp_gt_res")
-            case "<=": return LLVMBuildFCmp(builder, LLVMRealOLE, lIR, rIR, "cmp_lte_res")
-            case ">=": return LLVMBuildFCmp(builder, LLVMRealOGE, lIR, rIR, "cmp_gte_res")
-            case "==": return LLVMBuildFCmp(builder, LLVMRealOEQ, lIR, rIR, "cmp_eq_res")
-            case "!=": return LLVMBuildFCmp(builder, LLVMRealONE, lIR, rIR, "cmp_neq_res")
-            default: throw IRError.NoOperator
-            }
-
-        } else {
-
-            let argCount = 2
-            // make function
-            let fn = LLVMGetNamedFunction(module, mangledName)
-            
-            // arguments
-            let argBuffer = [lIR, rIR].ptr()
-            defer { argBuffer.dealloc(argCount) }
-            
-            guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else { throw IRError.WrongFunctionApplication(op) }
-            
-            let doNotUseName = self.type == LLVMType.Void || self.type == LLVMType.Null || self.type == nil
-            
-            // add call to IR
-            return LLVMBuildCall(builder, fn, argBuffer, UInt32(argCount), doNotUseName ? "" : op)
-
-        }
+        // arguments
+        let argBuffer = [lIR, rIR].ptr()
+        defer { argBuffer.dealloc(2) }
+        
+        guard fn != nil && LLVMCountParams(fn) == UInt32(2) else { throw IRError.WrongFunctionApplication(op) }
+        
+        let doNotUseName = self.type == LLVMType.Void || self.type == LLVMType.Null || self.type == nil
+        
+        // add call to IR
+        return LLVMBuildCall(builder, fn, argBuffer, UInt32(2), doNotUseName ? "" : op)
         
     }
 }

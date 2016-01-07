@@ -56,6 +56,13 @@ define void @_print_b(i1 zeroext %b) #0 {
 define i64 @main() #2 {
 entry:
   tail call void @_print_i64(i64 7) #2
+  tail call void @_print_i64(i64 1) #2
+  tail call void @_print_i64(i64 12) #2
+  tail call void @_print_i64(i64 1) #2
+  tail call void @_print_b(i1 false) #2
+  tail call void @_print_b(i1 false) #2
+  tail call void @_print_b(i1 true) #2
+  tail call void @_print_b(i1 true) #2
   ret i64 0
 }
 
@@ -123,32 +130,13 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i64 } @_add_S.i64S.i64({ i64 } %a, { i64 } %b) #3 {
-entry:
-  %value = extractvalue { i64 } %a, 0
-  %value1 = extractvalue { i64 } %b, 0
-  %add_res = add i64 %value1, %value
-  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %add_res, 0
-  ret { i64 } %.fca.0.insert.i
-}
-
-; Function Attrs: alwaysinline nounwind readnone
-define { double } @_add_S.FP64S.FP64({ double } %a, { double } %b) #3 {
+define { double } @"_+_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %add_res = fadd double %value, %value1
   %.fca.0.insert.i = insertvalue { double } undef, double %add_res, 0
   ret { double } %.fca.0.insert.i
-}
-
-; Function Attrs: alwaysinline nounwind readnone
-define i1 @_cmp.lt_S.i64S.i64({ i64 } %a, { i64 } %b) #3 {
-entry:
-  %value = extractvalue { i64 } %a, 0
-  %value1 = extractvalue { i64 } %b, 0
-  %cmp_lt_res = icmp slt i64 %value, %value1
-  ret i1 %cmp_lt_res
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -159,6 +147,76 @@ entry:
   %add_res = add i64 %value1, %value
   %.fca.0.insert.i = insertvalue { i64 } undef, i64 %add_res, 0
   ret { i64 } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { i64 } @_-_S.i64S.i64({ i64 } %a, { i64 } %b) #3 {
+entry:
+  %value = extractvalue { i64 } %a, 0
+  %value1 = extractvalue { i64 } %b, 0
+  %add_res = sub i64 %value, %value1
+  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %add_res, 0
+  ret { i64 } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { i64 } @"_*_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
+entry:
+  %value = extractvalue { i64 } %a, 0
+  %value1 = extractvalue { i64 } %b, 0
+  %mul_res = mul i64 %value1, %value
+  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %mul_res, 0
+  ret { i64 } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { i64 } @"_/_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
+entry:
+  %value = extractvalue { i64 } %a, 0
+  %value1 = extractvalue { i64 } %b, 0
+  %mul_res = udiv i64 %value, %value1
+  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %mul_res, 0
+  ret { i64 } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { i1 } @"_<_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
+entry:
+  %value = extractvalue { i64 } %a, 0
+  %value1 = extractvalue { i64 } %b, 0
+  %cmp_lt_res = icmp slt i64 %value, %value1
+  %.fca.0.insert.i = insertvalue { i1 } undef, i1 %cmp_lt_res, 0
+  ret { i1 } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { i1 } @"_<=_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
+entry:
+  %value = extractvalue { i64 } %a, 0
+  %value1 = extractvalue { i64 } %b, 0
+  %cmp_lt_res = icmp sle i64 %value, %value1
+  %.fca.0.insert.i = insertvalue { i1 } undef, i1 %cmp_lt_res, 0
+  ret { i1 } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { i1 } @"_>_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
+entry:
+  %value = extractvalue { i64 } %a, 0
+  %value1 = extractvalue { i64 } %b, 0
+  %cmp_lt_res = icmp sgt i64 %value, %value1
+  %.fca.0.insert.i = insertvalue { i1 } undef, i1 %cmp_lt_res, 0
+  ret { i1 } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { i1 } @"_>=_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
+entry:
+  %value = extractvalue { i64 } %a, 0
+  %value1 = extractvalue { i64 } %b, 0
+  %cmp_lt_res = icmp sge i64 %value, %value1
+  %.fca.0.insert.i = insertvalue { i1 } undef, i1 %cmp_lt_res, 0
+  ret { i1 } %.fca.0.insert.i
 }
 
 ; Function Attrs: nounwind
