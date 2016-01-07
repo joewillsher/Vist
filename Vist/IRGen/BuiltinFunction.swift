@@ -32,6 +32,12 @@ func builtinInstruction(named: String, builder: LLVMBuilderRef) -> ((LLVMValueRe
             LLVMBuildFMul(builder, $0, $1, "mul_res")
         }
         
+    case "LLVM.i_cmp_lt":
+        return {
+            return LLVMBuildICmp(builder, LLVMIntSLT, $0, $1, "cmp_lt_res")
+        }
+        
+        
     default:
         return nil
     }

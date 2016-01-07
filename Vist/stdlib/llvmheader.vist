@@ -2,8 +2,13 @@
 
 func LLVM.i_add: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
 func LLVM.i_mul: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
+func LLVM.i_cmp_lt: LLVM.Int64 LLVM.Int64 -> LLVM.Bool
+
 func LLVM.f_add: LLVM.Double LLVM.Double -> LLVM.Double
 func LLVM.f_mul: LLVM.Double LLVM.Double -> LLVM.Double
+
+
+
 
 func print: LLVM.Int
 func print: LLVM.Float

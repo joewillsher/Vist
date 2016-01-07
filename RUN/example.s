@@ -106,24 +106,27 @@ LBB4_2:
 	jmp	_puts                   ## TAILCALL
 	.cfi_endproc
 
-	.section	__TEXT,__literal8,8byte_literals
-	.align	3
-LCPI5_0:
-	.quad	4613937818241073152     ## double 3
-	.section	__TEXT,__text,regular,pure_instructions
 	.globl	_main
 	.align	4, 0x90
 _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	movl	$6, %edi
+	pushq	%rbx
+	pushq	%rax
+	xorl	%ebx, %ebx
+	.align	4, 0x90
+LBB5_1:                                 ## %loop
+                                        ## =>This Inner Loop Header: Depth=1
+	movq	%rbx, %rdi
 	callq	__print_i64
-	movl	$1, %edi
-	callq	__print_b
-	movsd	LCPI5_0(%rip), %xmm0
-	callq	__print_FP64
+	incq	%rbx
+	cmpq	$100000, %rbx           ## imm = 0x186A0
+	jne	LBB5_1
+## BB#2:                                ## %afterloop
 	xorl	%eax, %eax
+	addq	$8, %rsp
+	popq	%rbx
 	popq	%rbp
 	retq
 
@@ -231,6 +234,17 @@ __add_S.FP64S.FP64:                     ## @_add_S.FP64S.FP64
 	pushq	%rbp
 	movq	%rsp, %rbp
 	addsd	%xmm1, %xmm0
+	popq	%rbp
+	retq
+
+	.globl	__cmp.lt_S.i64S.i64
+	.align	4, 0x90
+__cmp.lt_S.i64S.i64:                    ## @_cmp.lt_S.i64S.i64
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	cmpq	%rsi, %rdi
+	setl	%al
 	popq	%rbp
 	retq
 

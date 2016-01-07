@@ -70,30 +70,30 @@ define void @_print_b(i1 zeroext %b) #0 {
 
 define i64 @main() {
 entry:
-  %Bool = call { i1 } @_Bool_b(i1 true)
-  %0 = alloca { i1 }
-  store { i1 } %Bool, { i1 }* %0
-  %Double = call { double } @_Double_FP64(double 3.000000e+00)
-  %1 = alloca { double }
-  store { double } %Double, { double }* %1
-  %Int = call { i64 } @_Int_i64(i64 3)
-  %2 = alloca { i64 }
-  store { i64 } %Int, { i64 }* %2
-  %a = load { i64 }* %2
-  %Int1 = call { i64 } @_Int_S.i64({ i64 } %a)
-  %3 = alloca { i64 }
-  store { i64 } %Int1, { i64 }* %3
-  %a2 = load { i64 }* %2
-  %b = load { i64 }* %3
-  %add = call { i64 } @_add_S.i64S.i64({ i64 } %a2, { i64 } %b)
-  %4 = alloca { i64 }
-  store { i64 } %add, { i64 }* %4
-  %c = load { i64 }* %4
-  call void @_print_S.i64({ i64 } %c)
-  %bo = load { i1 }* %0
-  call void @_print_S.b({ i1 } %bo)
-  %xx = load { double }* %1
-  call void @_print_S.FP64({ double } %xx)
+  %Int = call { i64 } @_Int_i64(i64 0)
+  %0 = alloca { i64 }
+  store { i64 } %Int, { i64 }* %0
+  %Int1 = call { i64 } @_Int_i64(i64 100000)
+  %1 = alloca { i64 }
+  store { i64 } %Int1, { i64 }* %1
+  %i = load { i64 }* %0
+  %m = load { i64 }* %1
+  %cmp_lt = call i1 @_cmp.lt_S.i64S.i64({ i64 } %i, { i64 } %m)
+  br i1 %cmp_lt, label %loop, label %afterloop
+
+loop:                                             ; preds = %loop, %entry
+  %i2 = load { i64 }* %0
+  call void @_print_S.i64({ i64 } %i2)
+  %i3 = load { i64 }* %0
+  %Int4 = call { i64 } @_Int_i64(i64 1)
+  %add = call { i64 } @_add_S.i64S.i64({ i64 } %i3, { i64 } %Int4)
+  store { i64 } %add, { i64 }* %0
+  %i5 = load { i64 }* %0
+  %m6 = load { i64 }* %1
+  %cmp_lt7 = call i1 @_cmp.lt_S.i64S.i64({ i64 } %i5, { i64 } %m6)
+  br i1 %cmp_lt7, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %loop, %entry
   ret i64 0
 }
 
@@ -202,6 +202,15 @@ entry:
   %add_res = fadd double %value, %value1
   %Double = call { double } @_Double_FP64(double %add_res)
   ret { double } %Double
+}
+
+; Function Attrs: alwaysinline
+define i1 @_cmp.lt_S.i64S.i64({ i64 } %a, { i64 } %b) #2 {
+entry:
+  %value = extractvalue { i64 } %a, 0
+  %value1 = extractvalue { i64 } %b, 0
+  %cmp_lt_res = icmp slt i64 %value, %value1
+  ret i1 %cmp_lt_res
 }
 
 attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
