@@ -6,20 +6,14 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
+protocol AttributeExpression { }
 
-enum AttributeExpression {
-    case Inline
-    
-    init?(name: String) {
-        
-        switch name {
-        case "inline":
-            self = .Inline
-            
-        default:
-            return nil
-        }
-    }
+enum ASTAttributeExpression : AttributeExpression {
+    case Operator(prec: Int)
+}
+
+enum FunctionAttributeExpression : String, AttributeExpression {
+    case Inline = "inline"
     
     func addAttrTo(function: LLVMValueRef) {
         switch self {

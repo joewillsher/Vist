@@ -22,29 +22,33 @@ private func identity<T>(a:T)->T { return a }
 
 private extension Character {
     
-    func value() -> Int32 {
+    var value: Int32 {
         let s = String(self).unicodeScalars
         return Int32(s[s.startIndex].value)
     }
     
     func isAlNumOr_() -> Bool {
-        return isalnum(value()) != 0 || self == "_"
+        return isalnum(value) != 0 || self == "_"
     }
 
     func isNum() -> Bool {
-        return isdigit(value()) != 0
+        return isdigit(value) != 0
     }
 
     func isAlphaOr_() -> Bool {
-        return isalpha(value()) != 0 || self == "_"
+        return isalpha(value) != 0 || self == "_"
     }
     
     func isNumOr_() -> Bool {
-        return isdigit(value()) != 0 || self == "_" || self == "."
+        return isdigit(value) != 0 || self == "_" || self == "."
     }
     
     func isSymbol() -> Bool {
-        return (isblank(value()) != 1) && operators.keys.reduce("", combine: +).characters.contains(self) || stdlibOperators.reduce("", combine: +).characters.contains(self)
+        return (isblank(value) != 1) && operators.keys.reduce("", combine: +).characters.contains(self) || stdlibOperators.reduce("", combine: +).characters.contains(self)
+    }
+    
+    func isSingleCharSymbol() -> Bool {
+        return (isblank(value) != 1) && [":"].contains(self)
     }
 }
 
@@ -236,6 +240,11 @@ extension Lexer {
         try resetContext()
     }
     
+    mutating private func lexOperatorDecl() throws {
+        try lexWhilePredicate { $0.isSymbol() && $0 != ":" }
+        try resetContext()
+    }
+    
     mutating private func lexSymbol() throws {
         
         let start = index
@@ -350,12 +359,19 @@ extension Lexer {
                 try lexNumber()
                 continue
                 
+            case (_, let s) where s.isSingleCharSymbol():
+                context = .Symbol
+                addChar()
+                try consumeChar()
+                try resetContext()
+                continue
+                
             case (_, let s) where s.isSymbol():
                 context = .Symbol
                 try lexSymbol()
                 continue
                 
-            case (_, let s) where isspace(s.value()) != 0:
+            case (_, let s) where isspace(s.value) != 0:
                 try consumeChar()
                 continue
                 

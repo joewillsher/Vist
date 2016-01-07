@@ -42,6 +42,7 @@ type Double {
 }
 
 
+
 @inline func print: Int = |a| do print(a.value)
 @inline func print: Bool = |a| do print(a.value)
 @inline func print: Double = |a| do print(a.value)
@@ -59,15 +60,15 @@ func add: Double Double -> Double = |a b| do
 func cmp_lt: Int Int -> LLVM.Bool = |a b| do
     return LLVM.i_cmp_lt(a.value b.value)
 
-
-var i = Int(0)
-let m = Int(100000)
-
-while cmp_lt(i m) {
-    print(i)
-    i = add(i Int(1))
-}
+@inline
+@operator(80)
+func +: Int Int -> Int = |a b| do
+    return Int(LLVM.i_add(a.value b.value))
 
 
+let a = Int(3)
+let b = Int(4)
 
+let x = a + b
 
+print(x)

@@ -164,13 +164,28 @@ extension AssignmentExpression {
 
 extension FunctionPrototypeExpression {
     func printList() -> [(String?, Printable)]? {
-        return [("name",name), ("mangled", mangledName), ("impl",impl), ("fnType", fnType)]
+        return [("name",name), ("mangled", mangledName), ("impl",impl), ("fnType", fnType), ("attrs", attrs)]
     }
 }
 
 extension FunctionType {
     func printList() -> [(String?, Printable)]? {
         return [("args", args), ("returns", returns)]
+    }
+}
+
+extension FunctionAttributeExpression : Printable {
+    
+    func printVal() -> String? {
+        return "@\(self.rawValue)"
+    }
+}
+extension ASTAttributeExpression : Printable {
+    
+    func printVal() -> String? {
+        switch self {
+        case .Operator(prec: let p): return "@operator(\(p))"
+        }
     }
 }
 

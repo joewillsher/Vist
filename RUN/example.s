@@ -112,21 +112,9 @@ _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	pushq	%rbx
-	pushq	%rax
-	xorl	%ebx, %ebx
-	.align	4, 0x90
-LBB5_1:                                 ## %loop
-                                        ## =>This Inner Loop Header: Depth=1
-	movq	%rbx, %rdi
+	movl	$7, %edi
 	callq	__print_i64
-	incq	%rbx
-	cmpq	$100000, %rbx           ## imm = 0x186A0
-	jne	LBB5_1
-## BB#2:                                ## %afterloop
 	xorl	%eax, %eax
-	addq	$8, %rsp
-	popq	%rbx
 	popq	%rbp
 	retq
 
@@ -245,6 +233,17 @@ __cmp.lt_S.i64S.i64:                    ## @_cmp.lt_S.i64S.i64
 	movq	%rsp, %rbp
 	cmpq	%rsi, %rdi
 	setl	%al
+	popq	%rbp
+	retq
+
+	.globl	"__+_S.i64S.i64"
+	.align	4, 0x90
+"__+_S.i64S.i64":                       ## @"_+_S.i64S.i64"
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	addq	%rsi, %rdi
+	movq	%rdi, %rax
 	popq	%rbp
 	retq
 

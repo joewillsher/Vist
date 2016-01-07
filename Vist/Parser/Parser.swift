@@ -23,6 +23,7 @@ enum ParseError: ErrorType {
     case NotBlock(Pos)
     case SubscriptNotIntegerType(Pos)
     case ObjectNotAllowedInTopLevelOfTypeImpl(Pos), NoTypeName(Pos)
+    case NoPrecedenceForOperator(String, Pos), OpDoesNotHaveParams(Pos), CannotChangeOpPrecedence(String, Int, Pos)
 }
 
 private extension Array {
@@ -65,7 +66,7 @@ struct Parser {
     
     private var attrs: [AttributeExpression]
     
-    private let precedences: [String: Int] = [
+    private var precedences: [String: Int] = [
         "<": 30,
         ">": 30,
         "<=": 30,
@@ -598,10 +599,28 @@ extension Parser {
     
     private mutating func parseFunctionDeclaration() throws -> FunctionPrototypeExpression {
         
-        let a = attrs
+        let a = attrs.flatMap { $0 as? FunctionAttributeExpression } ?? []
+        let ops = attrs.flatMap { $0 as? ASTAttributeExpression }.flatMap { a -> Int? in if case .Operator(let p) = a { return p } else { return nil } }.last
         attrs = []
         
-        guard case .Identifier(let s) = getNextToken() else { throw ParseError.NoIdentifier(currentPos) }
+        getNextToken()
+        let s: String
+        if case .Identifier(let n) = currentToken {
+            s = n
+            
+        } else if case .InfixOperator(let o) = currentToken, let pp = ops {
+            s = o
+            
+            let found = precedences[o]
+            if let x = found where x != ops { // make sure uses op’s predetermined prec
+                throw ParseError.CannotChangeOpPrecedence(o, x, currentPos)
+            } else if found == nil {
+                precedences[o] = pp // update prec table if not found
+            }
+            
+        } else {
+            throw ParseError.NoIdentifier(currentPos)
+        }
         
         let id: String
         if case .Period? = inspectNextToken(), case .Identifier(let n)? = inspectNextToken(2) where s == "LLVM" && isStdLib {
@@ -768,7 +787,7 @@ extension Parser {
                 initialisers.append(try parseInitDeclaration())
                 
             case .At:
-                parseAttrExpression()
+                try parseAttrExpression()
                 
             default:
                 throw ParseError.ObjectNotAllowedInTopLevelOfTypeImpl(currentPos)
@@ -815,12 +834,33 @@ extension Parser {
         return CommentExpression(str: str)
     }
     
-    private mutating func parseAttrExpression() {
-        getNextToken() // eat @attr
-        if case .Identifier(let id) = currentToken, let a = AttributeExpression(name: id) {
-            getNextToken()
-            attrs.append(a)
+    private mutating func parseAttrExpression() throws {
+        getNextToken() // eat @
+        
+        if case .Identifier(let id) = currentToken {
+            
+            if case .OpenParen? = inspectNextToken() {
+                getNextToken(2)
+                
+                switch id {
+                case "operator":
+                    guard let i = try parseOperatorExpression() as? IntegerLiteral else { throw ParseError.NoPrecedenceForOperator(id, currentPos) }
+                    attrs.append(ASTAttributeExpression.Operator(prec: i.val))
+                    
+                default:
+                    throw ParseError.OpDoesNotHaveParams(currentPos)
+                }
+                
+                guard case .CloseParen = currentToken else { throw ParseError.ExpectedParen(currentPos) }
+                getNextToken()
+                
+            } else if let a = FunctionAttributeExpression(rawValue: id) {
+                getNextToken()
+                attrs.append(a)
+            }
+            
         }
+        
     }
 }
 
@@ -856,7 +896,7 @@ extension Parser {
         case .Integer(let i):       return parseIntExpression(i)
         case .FloatingPoint(let x): return parseFloatingPointExpression(x)
         case .Str(let str):         return parseStringExpression(str)
-        case .At:                   parseAttrExpression(); return nil
+        case .At:                   try parseAttrExpression(); return nil
         case .Void:                 index++; return Void()
         case .EOF, .CloseBrace:     index++; return nil
         default:                    throw ParseError.NoToken(token, currentPos)

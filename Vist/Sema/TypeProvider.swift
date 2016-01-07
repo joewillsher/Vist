@@ -141,27 +141,47 @@ extension BinaryExpression : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
-        // FIXME: this is kinda a hack: these should be stdlib implementations -- operators should be user definable and looked up from the vars scope like functions
-        switch op {
-        case "<", ">", "==", "!=", ">=", "<=":
-            try lhs.llvmType(scope)
-            try rhs.llvmType(scope)
-            
-            self.type = LLVMType.Bool
-            return LLVMType.Bool
-            
-        default:
-            let a = try lhs.llvmType(scope)
-            let b = try rhs.llvmType(scope)
-            
-            // if same object
-            if a == b {
-                // assign type to self and return
-                self.type = a
-                return a
-                
-            } else { throw SemaError.DifferentTypesForOperator(op) }
+        let args = [lhs, rhs]
+        
+        let params = try args.map { try $0.llvmType(scope) }
+        
+        guard let fnType = scope[function: op, paramTypes: params] else {
+            if let f = scope[function: op] { throw SemaError.WrongFunctionApplications(applied: params, expected: f.params) }
+            else { throw SemaError.NoFunction(op) }
         }
+        
+        self.mangledName = op.mangle(fnType)
+        
+        // gen types for objects in call
+        for arg in args {
+            try arg.llvmType(scope)
+        }
+        
+        // assign type to self and return
+        self.type = fnType.returns
+        return fnType.returns
+        
+//        // FIXME: this is kinda a hack: these should be stdlib implementations -- operators should be user definable and looked up from the vars scope like functions
+//        switch op {
+//        case "<", ">", "==", "!=", ">=", "<=":
+//            try lhs.llvmType(scope)
+//            try rhs.llvmType(scope)
+//            
+//            self.type = LLVMType.Bool
+//            return LLVMType.Bool
+//            
+//        default:
+//            let a = try lhs.llvmType(scope)
+//            let b = try rhs.llvmType(scope)
+//            
+//            // if same object
+//            if a == b {
+//                // assign type to self and return
+//                self.type = a
+//                return a
+//                
+//            } else { throw SemaError.DifferentTypesForOperator(op) }
+//        }
         
         
     }
@@ -259,8 +279,7 @@ extension FunctionCallExpression : TypeProvider {
         let params = try args.elements.map { try $0.llvmType(scope) }
         
         guard let fnType = scope[function: name, paramTypes: params] else {
-            if let f = scope[function: name] {
-                throw SemaError.WrongFunctionApplications(applied: params, expected: f.params) }
+            if let f = scope[function: name] { throw SemaError.WrongFunctionApplications(applied: params, expected: f.params) }
             else { throw SemaError.NoFunction(name) }
         }
         

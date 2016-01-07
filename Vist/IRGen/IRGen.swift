@@ -320,6 +320,7 @@ extension BinaryExpression : IRGenerator {
         let lIR = try lhs.expressionCodeGen(stackFrame), rIR = try rhs.expressionCodeGen(stackFrame)
         
         guard let type = try self.type?.ir() else { throw IRError.TypeNotFound }
+        
         if LLVMGetTypeKind(type) == LLVMIntegerTypeKind {
             
             switch op {
@@ -357,7 +358,22 @@ extension BinaryExpression : IRGenerator {
             }
 
         } else {
-            throw IRError.MisMatchedTypes
+
+            let argCount = 2
+            // make function
+            let fn = LLVMGetNamedFunction(module, mangledName)
+            
+            // arguments
+            let argBuffer = [lIR, rIR].ptr()
+            defer { argBuffer.dealloc(argCount) }
+            
+            guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else { throw IRError.WrongFunctionApplication(op) }
+            
+            let doNotUseName = self.type == LLVMType.Void || self.type == LLVMType.Null || self.type == nil
+            
+            // add call to IR
+            return LLVMBuildCall(builder, fn, argBuffer, UInt32(argCount), doNotUseName ? "" : op)
+
         }
         
     }

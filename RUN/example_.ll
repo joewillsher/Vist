@@ -70,30 +70,19 @@ define void @_print_b(i1 zeroext %b) #0 {
 
 define i64 @main() {
 entry:
-  %Int = call { i64 } @_Int_i64(i64 0)
+  %Int = call { i64 } @_Int_i64(i64 3)
   %0 = alloca { i64 }
   store { i64 } %Int, { i64 }* %0
-  %Int1 = call { i64 } @_Int_i64(i64 100000)
+  %Int1 = call { i64 } @_Int_i64(i64 4)
   %1 = alloca { i64 }
   store { i64 } %Int1, { i64 }* %1
-  %i = load { i64 }* %0
-  %m = load { i64 }* %1
-  %cmp_lt = call i1 @_cmp.lt_S.i64S.i64({ i64 } %i, { i64 } %m)
-  br i1 %cmp_lt, label %loop, label %afterloop
-
-loop:                                             ; preds = %loop, %entry
-  %i2 = load { i64 }* %0
-  call void @_print_S.i64({ i64 } %i2)
-  %i3 = load { i64 }* %0
-  %Int4 = call { i64 } @_Int_i64(i64 1)
-  %add = call { i64 } @_add_S.i64S.i64({ i64 } %i3, { i64 } %Int4)
-  store { i64 } %add, { i64 }* %0
-  %i5 = load { i64 }* %0
-  %m6 = load { i64 }* %1
-  %cmp_lt7 = call i1 @_cmp.lt_S.i64S.i64({ i64 } %i5, { i64 } %m6)
-  br i1 %cmp_lt7, label %loop, label %afterloop
-
-afterloop:                                        ; preds = %loop, %entry
+  %a = load { i64 }* %0
+  %b = load { i64 }* %1
+  %"+" = call { i64 } @"_+_S.i64S.i64"({ i64 } %a, { i64 } %b)
+  %2 = alloca { i64 }
+  store { i64 } %"+", { i64 }* %2
+  %x = load { i64 }* %2
+  call void @_print_S.i64({ i64 } %x)
   ret i64 0
 }
 
@@ -211,6 +200,16 @@ entry:
   %value1 = extractvalue { i64 } %b, 0
   %cmp_lt_res = icmp slt i64 %value, %value1
   ret i1 %cmp_lt_res
+}
+
+; Function Attrs: alwaysinline
+define { i64 } @"_+_S.i64S.i64"({ i64 } %a, { i64 } %b) #2 {
+entry:
+  %value = extractvalue { i64 } %a, 0
+  %value1 = extractvalue { i64 } %b, 0
+  %add_res = add i64 %value, %value1
+  %Int = call { i64 } @_Int_i64(i64 %add_res)
+  ret { i64 } %Int
 }
 
 attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

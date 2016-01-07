@@ -55,16 +55,7 @@ define void @_print_b(i1 zeroext %b) #0 {
 ; Function Attrs: nounwind
 define i64 @main() #2 {
 entry:
-  br label %loop
-
-loop:                                             ; preds = %loop, %entry
-  %.sroa.02.0 = phi i64 [ 0, %entry ], [ %add_res.i, %loop ]
-  tail call void @_print_i64(i64 %.sroa.02.0) #2
-  %add_res.i = add nuw nsw i64 %.sroa.02.0, 1
-  %exitcond = icmp eq i64 %add_res.i, 100000
-  br i1 %exitcond, label %afterloop, label %loop
-
-afterloop:                                        ; preds = %loop
+  tail call void @_print_i64(i64 7) #2
   ret i64 0
 }
 
@@ -158,6 +149,16 @@ entry:
   %value1 = extractvalue { i64 } %b, 0
   %cmp_lt_res = icmp slt i64 %value, %value1
   ret i1 %cmp_lt_res
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { i64 } @"_+_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
+entry:
+  %value = extractvalue { i64 } %a, 0
+  %value1 = extractvalue { i64 } %b, 0
+  %add_res = add i64 %value1, %value
+  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %add_res, 0
+  ret { i64 } %.fca.0.insert.i
 }
 
 ; Function Attrs: nounwind

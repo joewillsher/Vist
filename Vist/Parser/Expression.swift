@@ -184,6 +184,8 @@ final class BinaryExpression : Expression {
         self.rhs = rhs
     }
     
+    var mangledName: String = ""
+    
     var type: LLVMTyped? = nil
 }
 
@@ -255,14 +257,17 @@ final class MutationExpression : Expression {
 }
 
 
+struct OpObj {
+    let precedence: Int
+}
 
-final class FunctionPrototypeExpression : Expression, StructMember {
+class FunctionPrototypeExpression : Expression, StructMember {
     let name: String
     let fnType: FunctionType
     let impl: FunctionImplementationExpression?
-    let attrs: [AttributeExpression]
+    let attrs: [FunctionAttributeExpression]
     
-    init(name: String, type: FunctionType, impl: FunctionImplementationExpression?, attrs: [AttributeExpression]) {
+    init(name: String, type: FunctionType, impl: FunctionImplementationExpression?, attrs: [FunctionAttributeExpression]) {
         self.name = name
         self.fnType = type
         self.impl = impl
