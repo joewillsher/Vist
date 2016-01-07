@@ -39,18 +39,18 @@ enum LLVMType : LLVMTyped {
     
     init?(_ str: String) {
         switch str {
-        case "LLVM.Int", "LLVM.Int64": self = .Int(size: 64)
-        case "LLVM.Int32": self = .Int(size: 32)
-        case "LLVM.Int16": self = .Int(size: 16)
-        case "LLVM.Int8": self = .Int(size: 8)
-        case "LLVM.Bool": self = .Bool
-        case "LLVM.Double": self = .Float(size: 64)
-        case "LLVM.Float": self = .Float(size: 32)
-        case "Void": self = .Void
-        case "LLVM.String": self = .Array(el: LLVMType.Int(size: 8), size: nil)
+        case "LLVM.Int", "LLVM.Int64":  self = .Int(size: 64)
+        case "LLVM.Int32":              self = .Int(size: 32)
+        case "LLVM.Int16":              self = .Int(size: 16)
+        case "LLVM.Int8":               self = .Int(size: 8)
+        case "LLVM.Bool":               self = .Bool
+        case "LLVM.Double":             self = .Float(size: 64)
+        case "LLVM.Float":              self = .Float(size: 32)
+        case "Void":                    self = .Void
+        case "LLVM.String":             self = .Array(el: LLVMType.Int(size: 8), size: nil)
         case _ where str.characters.first == "[" && str.characters.last == "]":
             guard let el = LLVMType(String(str.characters.dropFirst().dropLast())) else { return nil }
-            self = .Array(el: el, size: nil)
+                                        self = .Array(el: el, size: nil)
             // hack: array type IR has no size which is wrong
         default: return nil
         }

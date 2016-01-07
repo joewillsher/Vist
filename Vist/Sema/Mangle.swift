@@ -16,7 +16,7 @@ extension String {
     }
     
     func sansUnderscores() -> String {
-        return stringByReplacingOccurrencesOfString("_", withString: ".")
+        return stringByReplacingOccurrencesOfString(".", withString: "..").stringByReplacingOccurrencesOfString("_", withString: ".")
     }
     
     // TODO: Allow underscores in names

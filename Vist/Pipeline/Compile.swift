@@ -126,6 +126,7 @@ public func compileDocuments(fileNames: [String],
         if optim {
             
             let flags = ["-O3"]
+//            let flags = ["-inline"]
             
             // Optimiser
             let optimTask = NSTask()

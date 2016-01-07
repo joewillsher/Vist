@@ -100,13 +100,10 @@ entry:
 ; Function Attrs: alwaysinline
 define { i64 } @_Int_S.i64({ i64 } %o) #2 {
 entry:
-  %ptro = alloca { i64 }
-  store { i64 } %o, { i64 }* %ptro
   %0 = alloca { i64 }
-  %value_ptr = getelementptr inbounds { i64 }* %ptro, i32 0, i32 0
-  %value = load i64* %value_ptr
-  %value_ptr1 = getelementptr inbounds { i64 }* %0, i32 0, i32 0
-  store i64 %value, i64* %value_ptr1
+  %value = extractvalue { i64 } %o, 0
+  %value_ptr = getelementptr inbounds { i64 }* %0, i32 0, i32 0
+  store i64 %value, i64* %value_ptr
   %1 = load { i64 }* %0
   ret { i64 } %1
 }
@@ -124,13 +121,10 @@ entry:
 ; Function Attrs: alwaysinline
 define { i1 } @_Bool_S.b({ i1 } %o) #2 {
 entry:
-  %ptro = alloca { i1 }
-  store { i1 } %o, { i1 }* %ptro
   %0 = alloca { i1 }
-  %value_ptr = getelementptr inbounds { i1 }* %ptro, i32 0, i32 0
-  %value = load i1* %value_ptr
-  %value_ptr1 = getelementptr inbounds { i1 }* %0, i32 0, i32 0
-  store i1 %value, i1* %value_ptr1
+  %value = extractvalue { i1 } %o, 0
+  %value_ptr = getelementptr inbounds { i1 }* %0, i32 0, i32 0
+  store i1 %value, i1* %value_ptr
   %1 = load { i1 }* %0
   ret { i1 } %1
 }
@@ -148,13 +142,10 @@ entry:
 ; Function Attrs: alwaysinline
 define { double } @_Double_S.FP64({ double } %o) #2 {
 entry:
-  %ptro = alloca { double }
-  store { double } %o, { double }* %ptro
   %0 = alloca { double }
-  %value_ptr = getelementptr inbounds { double }* %ptro, i32 0, i32 0
-  %value = load double* %value_ptr
-  %value_ptr1 = getelementptr inbounds { double }* %0, i32 0, i32 0
-  store double %value, double* %value_ptr1
+  %value = extractvalue { double } %o, 0
+  %value_ptr = getelementptr inbounds { double }* %0, i32 0, i32 0
+  store double %value, double* %value_ptr
   %1 = load { double }* %0
   ret { double } %1
 }
@@ -169,32 +160,26 @@ entry:
   ret { double } %1
 }
 
-define void @_print_S.i64({ i64 } %a) {
+; Function Attrs: alwaysinline
+define void @_print_S.i64({ i64 } %a) #2 {
 entry:
-  %ptra = alloca { i64 }
-  store { i64 } %a, { i64 }* %ptra
-  %value_ptr = getelementptr inbounds { i64 }* %ptra, i32 0, i32 0
-  %value = load i64* %value_ptr
+  %value = extractvalue { i64 } %a, 0
   call void @_print_i64(i64 %value)
   ret void
 }
 
-define void @_print_S.b({ i1 } %a) {
+; Function Attrs: alwaysinline
+define void @_print_S.b({ i1 } %a) #2 {
 entry:
-  %ptra = alloca { i1 }
-  store { i1 } %a, { i1 }* %ptra
-  %value_ptr = getelementptr inbounds { i1 }* %ptra, i32 0, i32 0
-  %value = load i1* %value_ptr
+  %value = extractvalue { i1 } %a, 0
   call void @_print_b(i1 %value)
   ret void
 }
 
-define void @_print_S.FP64({ double } %a) {
+; Function Attrs: alwaysinline
+define void @_print_S.FP64({ double } %a) #2 {
 entry:
-  %ptra = alloca { double }
-  store { double } %a, { double }* %ptra
-  %value_ptr = getelementptr inbounds { double }* %ptra, i32 0, i32 0
-  %value = load double* %value_ptr
+  %value = extractvalue { double } %a, 0
   call void @_print_FP64(double %value)
   ret void
 }
@@ -202,30 +187,19 @@ entry:
 ; Function Attrs: alwaysinline
 define { i64 } @_add_S.i64S.i64({ i64 } %a, { i64 } %b) #2 {
 entry:
-  %ptra = alloca { i64 }
-  store { i64 } %a, { i64 }* %ptra
-  %ptrb = alloca { i64 }
-  store { i64 } %b, { i64 }* %ptrb
-  %value_ptr = getelementptr inbounds { i64 }* %ptra, i32 0, i32 0
-  %value = load i64* %value_ptr
-  %value_ptr1 = getelementptr inbounds { i64 }* %ptrb, i32 0, i32 0
-  %value2 = load i64* %value_ptr1
-  %add_res = add i64 %value, %value2
+  %value = extractvalue { i64 } %a, 0
+  %value1 = extractvalue { i64 } %b, 0
+  %add_res = add i64 %value, %value1
   %Int = call { i64 } @_Int_i64(i64 %add_res)
   ret { i64 } %Int
 }
 
-define { double } @_add_S.FP64S.FP64({ double } %a, { double } %b) {
+; Function Attrs: alwaysinline
+define { double } @_add_S.FP64S.FP64({ double } %a, { double } %b) #2 {
 entry:
-  %ptra = alloca { double }
-  store { double } %a, { double }* %ptra
-  %ptrb = alloca { double }
-  store { double } %b, { double }* %ptrb
-  %value_ptr = getelementptr inbounds { double }* %ptra, i32 0, i32 0
-  %value = load double* %value_ptr
-  %value_ptr1 = getelementptr inbounds { double }* %ptrb, i32 0, i32 0
-  %value2 = load double* %value_ptr1
-  %add_res = fadd double %value, %value2
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %add_res = fadd double %value, %value1
   %Double = call { double } @_Double_FP64(double %add_res)
   ret { double } %Double
 }

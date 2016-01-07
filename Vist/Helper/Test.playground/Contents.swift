@@ -41,3 +41,27 @@ extension String {
 
 
 "_LLVM.add.i64.i64_i64i64".demangleName()
+
+for var i = 0; i < 100; i++ { // c style
+    i
+}
+
+for i in 0..<100 {
+    i
+}
+
+
+let range = 0..<100
+
+var _g = range.generate()
+
+while let i = _g.next() {
+    i
+}
+
+
+
+
+
+
+

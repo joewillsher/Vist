@@ -42,10 +42,9 @@ type Double {
 }
 
 
-func print: Int = |a| do print(a.value)
-func print: Bool = |a| do print(a.value)
-func print: Double = |a| do print(a.value)
-
+@inline func print: Int = |a| do print(a.value)
+@inline func print: Bool = |a| do print(a.value)
+@inline func print: Double = |a| do print(a.value)
 
 
 @inline func add: Int Int -> Int = |a b| do

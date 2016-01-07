@@ -100,46 +100,46 @@ entry:
   ret { double } %.fca.0.insert
 }
 
-; Function Attrs: nounwind
-define void @_print_S.i64({ i64 } %a) #2 {
+; Function Attrs: alwaysinline nounwind
+define void @_print_S.i64({ i64 } %a) #4 {
 entry:
-  %a.fca.0.extract = extractvalue { i64 } %a, 0
-  tail call void @_print_i64(i64 %a.fca.0.extract)
+  %value = extractvalue { i64 } %a, 0
+  tail call void @_print_i64(i64 %value)
   ret void
 }
 
-; Function Attrs: nounwind
-define void @_print_S.b({ i1 } %a) #2 {
+; Function Attrs: alwaysinline nounwind
+define void @_print_S.b({ i1 } %a) #4 {
 entry:
-  %a.fca.0.extract = extractvalue { i1 } %a, 0
-  tail call void @_print_b(i1 %a.fca.0.extract)
+  %value = extractvalue { i1 } %a, 0
+  tail call void @_print_b(i1 %value)
   ret void
 }
 
-; Function Attrs: nounwind
-define void @_print_S.FP64({ double } %a) #2 {
+; Function Attrs: alwaysinline nounwind
+define void @_print_S.FP64({ double } %a) #4 {
 entry:
-  %a.fca.0.extract = extractvalue { double } %a, 0
-  tail call void @_print_FP64(double %a.fca.0.extract)
+  %value = extractvalue { double } %a, 0
+  tail call void @_print_FP64(double %value)
   ret void
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
 define { i64 } @_add_S.i64S.i64({ i64 } %a, { i64 } %b) #3 {
 entry:
-  %a.fca.0.extract = extractvalue { i64 } %a, 0
-  %b.fca.0.extract = extractvalue { i64 } %b, 0
-  %add_res = add i64 %b.fca.0.extract, %a.fca.0.extract
+  %value = extractvalue { i64 } %a, 0
+  %value1 = extractvalue { i64 } %b, 0
+  %add_res = add i64 %value1, %value
   %.fca.0.insert.i = insertvalue { i64 } undef, i64 %add_res, 0
   ret { i64 } %.fca.0.insert.i
 }
 
-; Function Attrs: nounwind readnone
-define { double } @_add_S.FP64S.FP64({ double } %a, { double } %b) #4 {
+; Function Attrs: alwaysinline nounwind readnone
+define { double } @_add_S.FP64S.FP64({ double } %a, { double } %b) #3 {
 entry:
-  %a.fca.0.extract = extractvalue { double } %a, 0
-  %b.fca.0.extract = extractvalue { double } %b, 0
-  %add_res = fadd double %a.fca.0.extract, %b.fca.0.extract
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %add_res = fadd double %value, %value1
   %.fca.0.insert.i = insertvalue { double } undef, double %add_res, 0
   ret { double } %.fca.0.insert.i
 }
@@ -151,7 +151,7 @@ attributes #0 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no
 attributes #1 = { nounwind "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #2 = { nounwind }
 attributes #3 = { alwaysinline nounwind readnone }
-attributes #4 = { nounwind readnone }
+attributes #4 = { alwaysinline nounwind }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}

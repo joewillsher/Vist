@@ -14,7 +14,7 @@ enum IRError : ErrorType {
     case NoBody, InvalidFunction, NoVariable(String), NoBool, TypeNotFound, NotMutable(String)
     case CannotAssignToVoid, CannotAssignToType(Expression.Type)
     case ForLoopIteratorNotInt, NotBoolCondition, SubscriptingNonVariableTypeNotAllowed, SubscriptingNonArrayType, SubscriptOutOfBounds
-    case NoProperty(String), CannotGetPropertyFromNonVariableType, NotAStruct
+    case NoProperty(String), CannotGetPropertyFromNonVariableType, NotAStruct, CannotMutateParam
 }
 
 
@@ -233,7 +233,7 @@ extension AssignmentExpression : IRGenerator {
                 let properties = try t.members.map {
                     ($0.0, try $0.1.ir(), $0.2)
                 }
-                variable = StructVariable.alloc(builder, type: type, mutable: isMutable, properties: properties)
+                variable = MutableStructVariable.alloc(builder, type: type, mutable: isMutable, properties: properties)
                 
             } else {
                 variable = ReferenceVariable.alloc(builder, type: type, name: name ?? "", mutable: isMutable)
@@ -286,7 +286,10 @@ extension MutationExpression : IRGenerator {
             // foo.bar = meme
             
             guard let n = prop.object as? Variable else { throw IRError.CannotGetPropertyFromNonVariableType }
-            guard let variable = try stackFrame.variable(n.name) as? StructVariable else { throw IRError.NoVariable(n.name) }
+            guard let variable = try stackFrame.variable(n.name) as? MutableStructVariable else {
+                if try stackFrame.variable(n.name) is ParameterStructVariable { throw IRError.CannotMutateParam }
+                else { throw IRError.NoVariable(n.name) }
+            }
             
             guard variable.mutable else { throw IRError.NotMutable(n.name) }
             guard try variable.propertyIsMutable(prop.name) else { throw IRError.NotMutable("\(n.name).\(prop.name)") }
@@ -464,8 +467,7 @@ extension FunctionPrototypeExpression : IRGenerator {
                 
                 let memTys = try t.members.map { ($0.0, try $0.1.ir(), $0.2) }
                 
-                let s = StructVariable.alloc(builder, type: ty, name: "ptr\(name)", mutable: false, properties: memTys)
-                s.store(param)
+                let s = ParameterStructVariable(type: ty, val: param, builder: builder, properties: memTys)
                 functionStackFrame.addVariable(name, val: s)
                 
             } else {
@@ -561,7 +563,7 @@ extension ClosureExpression : IRGenerator {
 //                
 //                let memTys = try t.members.map { ($0.0, try $0.1.ir(), $0.2) }
 //                
-//                let s = StructVariable(type: ty, ptr: ptr, mutable: false, builder: builder, properties: memTys)
+//                let s = MutableStructVariable(type: ty, ptr: ptr, mutable: false, builder: builder, properties: memTys)
 //                functionStackFrame.addVariable(name, val: s)
 //                
 //            } else {
@@ -902,8 +904,8 @@ extension InitialiserExpression : IRGenerator {
                 
                 let memTys = try t.members.map { ($0.0, try $0.1.ir(), $0.2) }
                 
-                let s = StructVariable.alloc(builder, type: ty, name: "ptr\(name)", mutable: false, properties: memTys)
-                s.store(param)
+                let s = ParameterStructVariable(type: ty, val: param, builder: builder, properties: memTys)
+//                s.store(param)
                 initStackFrame.addVariable(name, val: s)
                 
             } else {
@@ -923,7 +925,7 @@ extension InitialiserExpression : IRGenerator {
         }
         
         // allocate struct
-        let s = StructVariable.alloc(builder, type: try parentType.ir(), mutable: true, properties: properties)
+        let s = MutableStructVariable.alloc(builder, type: try parentType.ir(), mutable: true, properties: properties)
         stackFrame.addVariable(name, val: s)
         
         // add struct properties into scope
