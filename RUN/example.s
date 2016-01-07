@@ -120,11 +120,17 @@ _main:                                  ## @main
 	callq	__print_i64
 	movl	$1, %edi
 	callq	__print_i64
+	movl	$1, %edi
+	callq	__print_i64
 	xorl	%edi, %edi
 	callq	__print_b
 	xorl	%edi, %edi
 	callq	__print_b
 	movl	$1, %edi
+	callq	__print_b
+	movl	$1, %edi
+	callq	__print_b
+	xorl	%edi, %edi
 	callq	__print_b
 	movl	$1, %edi
 	callq	__print_b
@@ -273,6 +279,19 @@ __print_S.FP64:                         ## @_print_S.FP64
 	popq	%rbp
 	retq
 
+	.globl	"__%_S.i64S.i64"
+	.align	4, 0x90
+"__%_S.i64S.i64":                       ## @"_%_S.i64S.i64"
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	xorl	%edx, %edx
+	movq	%rdi, %rax
+	divq	%rsi
+	movq	%rdx, %rax
+	popq	%rbp
+	retq
+
 	.globl	"__<_S.i64S.i64"
 	.align	4, 0x90
 "__<_S.i64S.i64":                       ## @"_<_S.i64S.i64"
@@ -314,6 +333,39 @@ __print_S.FP64:                         ## @_print_S.FP64
 	movq	%rsp, %rbp
 	cmpq	%rsi, %rdi
 	setge	%al
+	popq	%rbp
+	retq
+
+	.globl	"__==_S.i64S.i64"
+	.align	4, 0x90
+"__==_S.i64S.i64":                      ## @"_==_S.i64S.i64"
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	cmpq	%rsi, %rdi
+	sete	%al
+	popq	%rbp
+	retq
+
+	.globl	"__!=_S.i64S.i64"
+	.align	4, 0x90
+"__!=_S.i64S.i64":                      ## @"_!=_S.i64S.i64"
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	cmpq	%rsi, %rdi
+	setne	%al
+	popq	%rbp
+	retq
+
+	.globl	"__&&_S.bS.b"
+	.align	4, 0x90
+"__&&_S.bS.b":                          ## @"_&&_S.bS.b"
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	andl	%esi, %edi
+	movb	%dil, %al
 	popq	%rbp
 	retq
 

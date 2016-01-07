@@ -94,20 +94,32 @@ entry:
   call void @_print_S.i64({ i64 } %"/")
   %a8 = load { i64 }* %0
   %b9 = load { i64 }* %1
-  %"<=" = call { i1 } @"_<=_S.i64S.i64"({ i64 } %a8, { i64 } %b9)
-  call void @_print_S.b({ i1 } %"<=")
+  %"%" = call { i64 } @"_%_S.i64S.i64"({ i64 } %a8, { i64 } %b9)
+  call void @_print_S.i64({ i64 } %"%")
   %a10 = load { i64 }* %0
   %b11 = load { i64 }* %1
-  %"<" = call { i1 } @"_<_S.i64S.i64"({ i64 } %a10, { i64 } %b11)
-  call void @_print_S.b({ i1 } %"<")
+  %"<=" = call { i1 } @"_<=_S.i64S.i64"({ i64 } %a10, { i64 } %b11)
+  call void @_print_S.b({ i1 } %"<=")
   %a12 = load { i64 }* %0
   %b13 = load { i64 }* %1
-  %">=" = call { i1 } @"_>=_S.i64S.i64"({ i64 } %a12, { i64 } %b13)
-  call void @_print_S.b({ i1 } %">=")
+  %"<" = call { i1 } @"_<_S.i64S.i64"({ i64 } %a12, { i64 } %b13)
+  call void @_print_S.b({ i1 } %"<")
   %a14 = load { i64 }* %0
   %b15 = load { i64 }* %1
-  %">" = call { i1 } @"_>_S.i64S.i64"({ i64 } %a14, { i64 } %b15)
+  %">=" = call { i1 } @"_>=_S.i64S.i64"({ i64 } %a14, { i64 } %b15)
+  call void @_print_S.b({ i1 } %">=")
+  %a16 = load { i64 }* %0
+  %b17 = load { i64 }* %1
+  %">" = call { i1 } @"_>_S.i64S.i64"({ i64 } %a16, { i64 } %b17)
   call void @_print_S.b({ i1 } %">")
+  %a18 = load { i64 }* %0
+  %b19 = load { i64 }* %1
+  %"==" = call { i1 } @"_==_S.i64S.i64"({ i64 } %a18, { i64 } %b19)
+  call void @_print_S.b({ i1 } %"==")
+  %a20 = load { i64 }* %0
+  %b21 = load { i64 }* %1
+  %"!=" = call { i1 } @"_!=_S.i64S.i64"({ i64 } %a20, { i64 } %b21)
+  call void @_print_S.b({ i1 } %"!=")
   ret i64 0
 }
 
@@ -223,8 +235,8 @@ define { i64 } @_-_S.i64S.i64({ i64 } %a, { i64 } %b) #2 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
-  %add_res = sub i64 %value, %value1
-  %Int = call { i64 } @_Int_i64(i64 %add_res)
+  %sub_res = sub i64 %value, %value1
+  %Int = call { i64 } @_Int_i64(i64 %sub_res)
   ret { i64 } %Int
 }
 
@@ -243,8 +255,18 @@ define { i64 } @"_/_S.i64S.i64"({ i64 } %a, { i64 } %b) #2 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
-  %mul_res = udiv i64 %value, %value1
-  %Int = call { i64 } @_Int_i64(i64 %mul_res)
+  %div_res = udiv i64 %value, %value1
+  %Int = call { i64 } @_Int_i64(i64 %div_res)
+  ret { i64 } %Int
+}
+
+; Function Attrs: alwaysinline
+define { i64 } @"_%_S.i64S.i64"({ i64 } %a, { i64 } %b) #2 {
+entry:
+  %value = extractvalue { i64 } %a, 0
+  %value1 = extractvalue { i64 } %b, 0
+  %rem_res = urem i64 %value, %value1
+  %Int = call { i64 } @_Int_i64(i64 %rem_res)
   ret { i64 } %Int
 }
 
@@ -263,8 +285,8 @@ define { i1 } @"_<=_S.i64S.i64"({ i64 } %a, { i64 } %b) #2 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
-  %cmp_lt_res = icmp sle i64 %value, %value1
-  %Bool = call { i1 } @_Bool_b(i1 %cmp_lt_res)
+  %cmp_lte_res = icmp sle i64 %value, %value1
+  %Bool = call { i1 } @_Bool_b(i1 %cmp_lte_res)
   ret { i1 } %Bool
 }
 
@@ -273,8 +295,8 @@ define { i1 } @"_>_S.i64S.i64"({ i64 } %a, { i64 } %b) #2 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
-  %cmp_lt_res = icmp sgt i64 %value, %value1
-  %Bool = call { i1 } @_Bool_b(i1 %cmp_lt_res)
+  %cmp_gt_res = icmp sgt i64 %value, %value1
+  %Bool = call { i1 } @_Bool_b(i1 %cmp_gt_res)
   ret { i1 } %Bool
 }
 
@@ -283,8 +305,38 @@ define { i1 } @"_>=_S.i64S.i64"({ i64 } %a, { i64 } %b) #2 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
-  %cmp_lt_res = icmp sge i64 %value, %value1
-  %Bool = call { i1 } @_Bool_b(i1 %cmp_lt_res)
+  %cmp_gte_res = icmp sge i64 %value, %value1
+  %Bool = call { i1 } @_Bool_b(i1 %cmp_gte_res)
+  ret { i1 } %Bool
+}
+
+; Function Attrs: alwaysinline
+define { i1 } @"_==_S.i64S.i64"({ i64 } %a, { i64 } %b) #2 {
+entry:
+  %value = extractvalue { i64 } %a, 0
+  %value1 = extractvalue { i64 } %b, 0
+  %cmp_eq_res = icmp eq i64 %value, %value1
+  %Bool = call { i1 } @_Bool_b(i1 %cmp_eq_res)
+  ret { i1 } %Bool
+}
+
+; Function Attrs: alwaysinline
+define { i1 } @"_!=_S.i64S.i64"({ i64 } %a, { i64 } %b) #2 {
+entry:
+  %value = extractvalue { i64 } %a, 0
+  %value1 = extractvalue { i64 } %b, 0
+  %cmp_neq_res = icmp ne i64 %value, %value1
+  %Bool = call { i1 } @_Bool_b(i1 %cmp_neq_res)
+  ret { i1 } %Bool
+}
+
+; Function Attrs: alwaysinline
+define { i1 } @"_&&_S.bS.b"({ i1 } %a, { i1 } %b) #2 {
+entry:
+  %value = extractvalue { i1 } %a, 0
+  %value1 = extractvalue { i1 } %b, 0
+  %cmp_and_res = and i1 %value, %value1
+  %Bool = call { i1 } @_Bool_b(i1 %cmp_and_res)
   ret { i1 } %Bool
 }
 

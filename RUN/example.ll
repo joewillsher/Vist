@@ -59,9 +59,12 @@ entry:
   tail call void @_print_i64(i64 1) #2
   tail call void @_print_i64(i64 12) #2
   tail call void @_print_i64(i64 1) #2
+  tail call void @_print_i64(i64 1) #2
   tail call void @_print_b(i1 false) #2
   tail call void @_print_b(i1 false) #2
   tail call void @_print_b(i1 true) #2
+  tail call void @_print_b(i1 true) #2
+  tail call void @_print_b(i1 false) #2
   tail call void @_print_b(i1 true) #2
   ret i64 0
 }
@@ -154,8 +157,8 @@ define { i64 } @_-_S.i64S.i64({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
-  %add_res = sub i64 %value, %value1
-  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %add_res, 0
+  %sub_res = sub i64 %value, %value1
+  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %sub_res, 0
   ret { i64 } %.fca.0.insert.i
 }
 
@@ -174,8 +177,18 @@ define { i64 } @"_/_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
-  %mul_res = udiv i64 %value, %value1
-  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %mul_res, 0
+  %div_res = udiv i64 %value, %value1
+  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %div_res, 0
+  ret { i64 } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { i64 } @"_%_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
+entry:
+  %value = extractvalue { i64 } %a, 0
+  %value1 = extractvalue { i64 } %b, 0
+  %rem_res = urem i64 %value, %value1
+  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %rem_res, 0
   ret { i64 } %.fca.0.insert.i
 }
 
@@ -194,8 +207,8 @@ define { i1 } @"_<=_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
-  %cmp_lt_res = icmp sle i64 %value, %value1
-  %.fca.0.insert.i = insertvalue { i1 } undef, i1 %cmp_lt_res, 0
+  %cmp_lte_res = icmp sle i64 %value, %value1
+  %.fca.0.insert.i = insertvalue { i1 } undef, i1 %cmp_lte_res, 0
   ret { i1 } %.fca.0.insert.i
 }
 
@@ -204,8 +217,8 @@ define { i1 } @"_>_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
-  %cmp_lt_res = icmp sgt i64 %value, %value1
-  %.fca.0.insert.i = insertvalue { i1 } undef, i1 %cmp_lt_res, 0
+  %cmp_gt_res = icmp sgt i64 %value, %value1
+  %.fca.0.insert.i = insertvalue { i1 } undef, i1 %cmp_gt_res, 0
   ret { i1 } %.fca.0.insert.i
 }
 
@@ -214,8 +227,38 @@ define { i1 } @"_>=_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
-  %cmp_lt_res = icmp sge i64 %value, %value1
-  %.fca.0.insert.i = insertvalue { i1 } undef, i1 %cmp_lt_res, 0
+  %cmp_gte_res = icmp sge i64 %value, %value1
+  %.fca.0.insert.i = insertvalue { i1 } undef, i1 %cmp_gte_res, 0
+  ret { i1 } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { i1 } @"_==_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
+entry:
+  %value = extractvalue { i64 } %a, 0
+  %value1 = extractvalue { i64 } %b, 0
+  %cmp_eq_res = icmp eq i64 %value, %value1
+  %.fca.0.insert.i = insertvalue { i1 } undef, i1 %cmp_eq_res, 0
+  ret { i1 } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { i1 } @"_!=_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
+entry:
+  %value = extractvalue { i64 } %a, 0
+  %value1 = extractvalue { i64 } %b, 0
+  %cmp_neq_res = icmp ne i64 %value, %value1
+  %.fca.0.insert.i = insertvalue { i1 } undef, i1 %cmp_neq_res, 0
+  ret { i1 } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { i1 } @"_&&_S.bS.b"({ i1 } %a, { i1 } %b) #3 {
+entry:
+  %value = extractvalue { i1 } %a, 0
+  %value1 = extractvalue { i1 } %b, 0
+  %cmp_and_res = and i1 %value, %value1
+  %.fca.0.insert.i = insertvalue { i1 } undef, i1 %cmp_and_res, 0
   ret { i1 } %.fca.0.insert.i
 }
 

@@ -70,8 +70,8 @@ func * : Int Int -> Int = |a b| do
 func / : Int Int -> Int = |a b| do
     return Int(LLVM.i_div(a.value b.value))
 
-@inline @operator(70)
-func % : Int Int -> Bool = |a b| do
+@inline @operator(90)
+func % : Int Int -> Int = |a b| do
     return Int(LLVM.i_rem(a.value b.value))
 
 @inline @operator(30)
@@ -90,6 +90,27 @@ func > : Int Int -> Bool = |a b| do
 func >= : Int Int -> Bool = |a b| do
     return Bool(LLVM.i_cmp_gte(a.value b.value))
 
+@inline @operator(20)
+func == : Int Int -> Bool = |a b| do
+    return Bool(LLVM.i_eq(a.value b.value))
+
+@inline @operator(20)
+func != : Int Int -> Bool = |a b| do
+    return Bool(LLVM.i_neq(a.value b.value))
+
+
+
+@inline @operator(15)
+func && : Bool Bool -> Bool = |a b| do
+    return Bool(LLVM.b_and(a.value b.value))
+
+@inline @operator(15)
+func && : Bool Bool -> Bool = |a b| do
+    return Bool(LLVM.b_or(a.value b.value))
+
+
+
+
 
 
 let a = Int(4)
@@ -104,4 +125,8 @@ print(a <= b)
 print(a < b)
 print(a >= b)
 print(a > b)
+print(a == b)
+print(a != b)
+
+
 
