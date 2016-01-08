@@ -96,16 +96,16 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "example.vist"
+            argument = "-lib"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-build-stdlib"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "second.vist"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "third.vist"
-            isEnabled = "NO">
+            argument = "example.vist"
+            isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>

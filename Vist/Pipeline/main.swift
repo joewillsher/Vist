@@ -6,7 +6,6 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-
 do {
     let ar = Process.arguments
     var a = Process.arguments.dropFirst()
@@ -27,6 +26,8 @@ do {
     let b = a.contains("-build-only") || a.contains("-b")
     let profile = a.contains("-profile") || a.contains("-p")
     let o = a.contains("-O")
+    let lib = a.contains("-lib")
+    let buildStdLib = a.contains("-build-stdlib")
     let preserveIntermediate = a.contains("-preserve")
     
     if a.contains("-h") || a.contains("-help") {
@@ -44,6 +45,21 @@ do {
         
     } else {
         
+        if buildStdLib {
+            try compileDocuments(["stdlib.vist"],
+                verbose: verbose,
+                dumpAST: ast,
+                irOnly: ir,
+                asmOnly: asm,
+                buildOnly: true,
+                profile: false,
+                optim: true,
+                preserve: true,
+                generateLibrary: true,
+                isStdLib: true
+            )
+        }
+        
         try compileDocuments(files,
             verbose: verbose,
             dumpAST: ast,
@@ -52,7 +68,9 @@ do {
             buildOnly: b,
             profile: profile,
             optim: o,
-            preserve: preserveIntermediate
+            preserve: preserveIntermediate,
+            generateLibrary: lib,
+            isStdLib: false
         )
         
     }
@@ -61,4 +79,5 @@ do {
 } catch {
     print(error)
 }
+
 

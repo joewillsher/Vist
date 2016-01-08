@@ -46,14 +46,23 @@ func sema(inout ast: AST) throws {
     var p = Parser(tokens: try l.getTokens(), isStdLib: true)
     var a = try p.parse()
     try variableTypeSema(forScopeExpression: &a)
+    
     let fns = a.expressions
         .flatMap { ($0 as? FunctionPrototypeExpression) }
         .map { ($0.name, $0.fnType.type as? LLVMFnType) }
-    
+
+    let tys = a.expressions
+        .flatMap { ($0 as? StructExpression) }
+        .map { ($0.name, $0.type as? LLVMStType) }
+
     for (name, t) in fns {
         globalScope[function: name] = t
     }
-    
+
+    for (name, t) in tys {
+        globalScope[type: name] = t
+    }
+
     try variableTypeSema(forScopeExpression: &ast, scope: globalScope)
     
 }

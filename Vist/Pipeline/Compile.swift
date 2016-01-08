@@ -17,17 +17,20 @@ public func compileDocuments(fileNames: [String],
     buildOnly: Bool = false,
     profile: Bool = true,
     optim: Bool = true,
-    preserve: Bool = false)
+    preserve: Bool = false,
+    generateLibrary: Bool = false,
+    isStdLib: Bool = false)
     throws {
         
-        let currentDirectory = NSTask().currentDirectoryPath
+        let currentDirectory = isStdLib ? "\(PROJECT_DIR)/Vist/stdlib" : NSTask().currentDirectoryPath
         
         var head: AST? = nil
         var all: [AST] = []
         
         for (index, fileName) in fileNames.enumerate() {
             
-            let doc = try String(contentsOfFile: fileName, encoding: NSUTF8StringEncoding)
+            let path = "\(currentDirectory)/\(fileName)"
+            let doc = try String(contentsOfFile: path, encoding: NSUTF8StringEncoding)
             if verbose { print("----------------------------SOURCE-----------------------------\n\n\(doc)\n\n\n-----------------------------TOKS------------------------------\n") }
             
             // http://llvm.org/docs/tutorial/LangImpl1.html#language
@@ -47,7 +50,7 @@ public func compileDocuments(fileNames: [String],
             if verbose { print("\n\n------------------------------AST-------------------------------\n") }
             
             // parse tokens & generate AST
-            var parser = Parser(tokens: tokens, isStdLib: true)
+            var parser = Parser(tokens: tokens, isStdLib: true) // TODO: Update this when have better type support
             let ast = try parser.parse()
             if dumpAST { print(ast); return }
             if verbose { print(ast) }
@@ -71,7 +74,7 @@ public func compileDocuments(fileNames: [String],
         var ast = main
         
         try sema(&ast)
-        print(ast)
+        if verbose { print(ast) }
         
         let file = fileNames.first!.stringByReplacingOccurrencesOfString(".vist", withString: "")
 
@@ -127,6 +130,7 @@ public func compileDocuments(fileNames: [String],
             
             let flags = ["-O3"]
 //            let flags = ["-inline"]
+//            let flags = ["-mem2reg"]
             
             // Optimiser
             let optimTask = NSTask()
@@ -138,7 +142,7 @@ public func compileDocuments(fileNames: [String],
             optimTask.waitUntilExit()
             
             if verbose { print("\n\n----------------------------OPTIM----------------------------\n") }
-            let ir = try String(contentsOfFile: "\(file).ll")
+            let ir = try? String(contentsOfFile: "\(currentDirectory)/\(file).ll") ?? ""
             if irOnly { print(ir); return }
             if verbose { print(ir) }
             
@@ -172,23 +176,10 @@ public func compileDocuments(fileNames: [String],
         compileIRtoASMTask.launch()
         compileIRtoASMTask.waitUntilExit()
         
-        let asm = try String(contentsOfFile: "\(file).s", encoding: NSUTF8StringEncoding)
+        let asm = try String(contentsOfFile: "\(currentDirectory)/\(file).s", encoding: NSUTF8StringEncoding)
         
         if asmOnly { print(asm); return }
         if verbose { print(asm) }
-        
-        
-        
-        /// Compile IR Code task
-        let compileTask = NSTask()
-        compileTask.currentDirectoryPath = currentDirectory
-        compileTask.launchPath = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/bin/clang"
-        compileTask.arguments = ["\(file).ll", "-o", "\(file)"]
-        
-        compileTask.launch()
-        compileTask.waitUntilExit()
-        
-        if buildOnly { return }
         
         
         
@@ -205,28 +196,74 @@ public func compileDocuments(fileNames: [String],
                 rmTask.waitUntilExit()
             }
         }
-        
-        
-        if verbose { print("\n\n-----------------------------RUN-----------------------------\n") }
-        
-        /// Run the program
-        let runTask = NSTask()
-        runTask.currentDirectoryPath = currentDirectory
-        runTask.launchPath = "\(currentDirectory)/\(file)"
-        
-        
-        runTask.launch()
-        let t0 = CFAbsoluteTimeGetCurrent()
 
-        runTask.waitUntilExit()
         
-        if profile {
-            let t = CFAbsoluteTimeGetCurrent() - t0 - 0.062
-            let f = NSNumberFormatter()
-            f.maximumFractionDigits = 2
-            f.minimumFractionDigits = 2
-            print("\n--------\nTime elapsed: \(f.stringFromNumber(t)!)s")
+        
+        
+        if generateLibrary {
+            
+            
+            /*
+            /usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/bin/clang -c stdlib.ll
+            
+            libtool -dynamic stdlib.o -o stdlib.dylib -lSystem
+            */
+            
+            let objFileTask = NSTask()
+            objFileTask.currentDirectoryPath = currentDirectory
+            objFileTask.launchPath = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/bin/clang"
+            objFileTask.arguments = ["-c", "\(file).ll"]
+            
+            objFileTask.launch()
+            objFileTask.waitUntilExit()
+
+            let libGen = NSTask()
+            libGen.currentDirectoryPath = currentDirectory
+            libGen.launchPath = "/usr/bin/libtool"
+            libGen.arguments = ["-dynamic", "\(file).o", "-o", "\(file).dylib", "-lSystem"]
+            
+            libGen.launch()
+            libGen.waitUntilExit()
+            
+            
+        } else {
+            
+            /// Compile IR Code task
+            let compileTask = NSTask()
+            compileTask.currentDirectoryPath = currentDirectory
+            compileTask.launchPath = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/bin/clang"
+            compileTask.arguments = ["\(file).ll", "-o", "\(file)"]
+            
+            compileTask.launch()
+            compileTask.waitUntilExit()
+            
+            if buildOnly { return }
+            
+            
+            if verbose { print("\n\n-----------------------------RUN-----------------------------\n") }
+            
+            /// Run the program
+            let runTask = NSTask()
+            runTask.currentDirectoryPath = currentDirectory
+            runTask.launchPath = "\(currentDirectory)/\(file)"
+            
+            
+            runTask.launch()
+            let t0 = CFAbsoluteTimeGetCurrent()
+            
+            runTask.waitUntilExit()
+            
+            if profile {
+                let t = CFAbsoluteTimeGetCurrent() - t0 - 0.062
+                let f = NSNumberFormatter()
+                f.maximumFractionDigits = 2
+                f.minimumFractionDigits = 2
+                print("\n--------\nTime elapsed: \(f.stringFromNumber(t)!)s")
+            }
+
         }
+        
+        
         
         
 }

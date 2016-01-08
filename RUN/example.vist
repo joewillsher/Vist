@@ -1,132 +1,14 @@
 
 
-type Int {
-    var value: LLVM.Int64
 
-    init Int = |o| {
-        value = o.value
-    }
 
-    init LLVM.Int = |v| {
-        value = v
-    }
-
+for i in 0 ... 10 {
+    print(i)
 }
 
+let x = LLVM.i_add(3 4)
+print(x)
 
-
-type Bool {
-    var value: LLVM.Bool
-
-    init Bool = |o| {
-        value = o.value
-    }
-
-    init LLVM.Bool = |v| {
-        value = v
-    }
-}
-
-
-
-type Double {
-    var value: LLVM.Double
-
-    init Double = |o| {
-        value = o.value
-    }
-
-    init LLVM.Double = |v| {
-        value = v
-    }
-}
-
-
-
-@inline func print: Int = |a| do print(a.value)
-@inline func print: Bool = |a| do print(a.value)
-@inline func print: Double = |a| do print(a.value)
-
-@inline @operator(80)
-func + : Double Double -> Double = |a b| do
-    return Double(LLVM.f_add(a.value b.value))
-
-
-
-
-@inline @operator(80)
-func + : Int Int -> Int = |a b| do
-    return Int(LLVM.i_add(a.value b.value))
-
-@inline @operator(80)
-func - : Int Int -> Int = |a b| do
-    return Int(LLVM.i_sub(a.value b.value))
-
-@inline @operator(100)
-func * : Int Int -> Int = |a b| do
-    return Int(LLVM.i_mul(a.value b.value))
-
-@inline @operator(100)
-func / : Int Int -> Int = |a b| do
-    return Int(LLVM.i_div(a.value b.value))
-
-@inline @operator(90)
-func % : Int Int -> Int = |a b| do
-    return Int(LLVM.i_rem(a.value b.value))
-
-@inline @operator(30)
-func < : Int Int -> Bool = |a b| do
-    return Bool(LLVM.i_cmp_lt(a.value b.value))
-
-@inline @operator(30)
-func <= : Int Int -> Bool = |a b| do
-    return Bool(LLVM.i_cmp_lte(a.value b.value))
-
-@inline @operator(30)
-func > : Int Int -> Bool = |a b| do
-    return Bool(LLVM.i_cmp_gt(a.value b.value))
-
-@inline @operator(30)
-func >= : Int Int -> Bool = |a b| do
-    return Bool(LLVM.i_cmp_gte(a.value b.value))
-
-@inline @operator(20)
-func == : Int Int -> Bool = |a b| do
-    return Bool(LLVM.i_eq(a.value b.value))
-
-@inline @operator(20)
-func != : Int Int -> Bool = |a b| do
-    return Bool(LLVM.i_neq(a.value b.value))
-
-
-
-@inline @operator(15)
-func && : Bool Bool -> Bool = |a b| do
-    return Bool(LLVM.b_and(a.value b.value))
-
-@inline @operator(15)
-func && : Bool Bool -> Bool = |a b| do
-    return Bool(LLVM.b_or(a.value b.value))
-
-
-
-
-
-
-let a = Int(4)
-let b = Int(3)
-
-print(a + b)
-print(a - b)
-print(a * b)
-print(a / b)
-print(a % b)
-print(a <= b)
-print(a < b)
-print(a >= b)
-print(a > b)
-print(a == b)
-print(a != b)
 
 
 

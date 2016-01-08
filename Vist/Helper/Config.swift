@@ -6,11 +6,16 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
+import Foundation
 
 func configModule(module: LLVMModuleRef) {
     
-//    let target = UnsafeMutablePointer<LLVMTargetRef>.alloc(1)
-//    LLVMGetTargetFromTriple("x86_64-apple-macosx10.11.0", target, nil)
+    
+    LLVMLoadLibraryPermanently("\(NSTask().currentDirectoryPath)/stdlib.dylib")
+
+    
+    let target = UnsafeMutablePointer<LLVMTargetRef>.alloc(1)
+    LLVMGetTargetFromTriple("x86_64-apple-macosx10.11.0", target, nil)
     
     // remove IR’s metadata
 //    let a = LLVMGetNamedMetadataNumOperands(module, "llvm.ident")

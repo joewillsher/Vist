@@ -1,5 +1,9 @@
 
 
+
+
+
+
 type Int {
     var value: LLVM.Int64
 
@@ -13,30 +17,136 @@ type Int {
 
 }
 
-func print: Int = |a| do print(a.value)
-
 
 type Bool {
-    var value: LLVM.Int1
+    var value: LLVM.Bool
+
+    init Bool = |o| {
+        value = o.value
+    }
+
+    init LLVM.Bool = |v| {
+        value = v
+    }
 }
+
+
 
 type Double {
     var value: LLVM.Double
+
+    init Double = |o| {
+    value = o.value
+    }
+
+    init LLVM.Double = |v| {
+        value = v
+    }
 }
 
 
-func foo: Int Int -> Int = |a b| do
-    return Int(a.value + b.value)
+
+@inline func print: Int = |a| do print(a.value)
+@inline func print: Bool = |a| do print(a.value)
+@inline func print: Double = |a| do print(a.value)
+
+@inline @operator(80)
+func + : Double Double -> Double = |a b| do
+    return Double(LLVM.f_add(a.value b.value))
 
 
 
-let a = Int(3)
-let b = Int(a)
 
-let c = foo(a b)
+@inline @operator(80)
+func + : Int Int -> Int = |a b| do
+    return Int(LLVM.i_add(a.value b.value))
 
-print(c)
+@inline @operator(80)
+func - : Int Int -> Int = |a b| do
+    return Int(LLVM.i_sub(a.value b.value))
+
+@inline @operator(100)
+func * : Int Int -> Int = |a b| do
+    return Int(LLVM.i_mul(a.value b.value))
+
+@inline @operator(100)
+func / : Int Int -> Int = |a b| do
+    return Int(LLVM.i_div(a.value b.value))
+
+@inline @operator(90)
+func % : Int Int -> Int = |a b| do
+    return Int(LLVM.i_rem(a.value b.value))
+
+@inline @operator(30)
+func < : Int Int -> Bool = |a b| do
+    return Bool(LLVM.i_cmp_lt(a.value b.value))
+
+@inline @operator(30)
+func <= : Int Int -> Bool = |a b| do
+    return Bool(LLVM.i_cmp_lte(a.value b.value))
+
+@inline @operator(30)
+func > : Int Int -> Bool = |a b| do
+    return Bool(LLVM.i_cmp_gt(a.value b.value))
+
+@inline @operator(30)
+func >= : Int Int -> Bool = |a b| do
+    return Bool(LLVM.i_cmp_gte(a.value b.value))
+
+@inline @operator(20)
+func == : Int Int -> Bool = |a b| do
+    return Bool(LLVM.i_eq(a.value b.value))
+
+@inline @operator(20)
+func != : Int Int -> Bool = |a b| do
+    return Bool(LLVM.i_neq(a.value b.value))
 
 
 
-//print(foo(1 2))
+@inline @operator(15)
+func && : Bool Bool -> Bool = |a b| do
+    return Bool(LLVM.b_and(a.value b.value))
+
+@inline @operator(10)
+func || : Bool Bool -> Bool = |a b| do
+    return Bool(LLVM.b_or(a.value b.value))
+
+
+
+
+
+
+
+/*
+func print: LLVM.Int
+func print: LLVM.Float
+func print: LLVM.Double
+func print: LLVM.Bool
+
+
+
+func LLVM.i_add: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
+func LLVM.i_sub: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
+func LLVM.i_mul: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
+func LLVM.i_div: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
+func LLVM.i_rem: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
+
+func LLVM.i_cmp_lt: LLVM.Int64 LLVM.Int64 -> LLVM.Bool
+func LLVM.i_cmp_lte: LLVM.Int64 LLVM.Int64 -> LLVM.Bool
+func LLVM.i_cmp_gt: LLVM.Int64 LLVM.Int64 -> LLVM.Bool
+func LLVM.i_cmp_gte: LLVM.Int64 LLVM.Int64 -> LLVM.Bool
+func LLVM.i_eq: LLVM.Int64 LLVM.Int64 -> LLVM.Bool
+func LLVM.i_neq: LLVM.Int64 LLVM.Int64 -> LLVM.Bool
+
+
+func LLVM.b_and: LLVM.Bool LLVM.Bool -> LLVM.Bool
+func LLVM.b_or: LLVM.Bool LLVM.Bool -> LLVM.Bool
+
+
+func LLVM.f_add: LLVM.Double LLVM.Double -> LLVM.Double
+func LLVM.f_mul: LLVM.Double LLVM.Double -> LLVM.Double
+*/
+
+
+
+

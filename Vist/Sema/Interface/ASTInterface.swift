@@ -42,10 +42,12 @@ func interFileInterfaceASTGen(ast: AST) throws -> AST {
             
         } else if let f = exp as? FunctionPrototypeExpression {
             
-            let fun = FunctionPrototypeExpression(name: f.name, type: f.fnType, impl: f.impl, attrs: f.attrs)
-            fun.type = f.type
-            interface.expressions.append(fun)
+//            let fun = FunctionPrototypeExpression(name: f.name, type: f.fnType, impl: f.impl, attrs: f.attrs)
+//            fun.type = f.type
+            interface.expressions.append(f)
             
+        } else if let s = exp as? StructExpression {
+            interface.expressions.append(s)
         }
         
         // TODO: Structs / concepts etc need to be exposed in the interface
