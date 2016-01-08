@@ -115,7 +115,7 @@ public func compileDocuments(fileNames: [String],
         if verbose { print("\n---------------------------LLVM IR----------------------------\n") }
         
         // Generate LLVM IR code for program
-        try ast.IRGen(module: module)
+        try ast.IRGen(module: module, isLibrary: generateLibrary)
         
         configModule(module)
         

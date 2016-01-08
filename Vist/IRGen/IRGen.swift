@@ -946,29 +946,54 @@ extension PropertyLookupExpression : IRGenerator {
 
 extension AST {
     
-    func IRGen(module m: LLVMModuleRef) throws {
+    func IRGen(module m: LLVMModuleRef, isLibrary: Bool) throws {
         
         // initialise global objects
         builder = LLVMCreateBuilder()
         module = m
         
-        // main arguments
-        let argBuffer = [LLVMTypeRef]().ptr()
-        defer { argBuffer.dealloc(0) }
-        
-        // make main function & add to IR
-        let functionType = LLVMFunctionType(LLVMInt64Type(), argBuffer, UInt32(0), LLVMBool(false))
-        let mainFunction = LLVMAddFunction(module, "main", functionType)
-        
-        // Setup BB & stack frame
-        let programEntryBlock = LLVMAppendBasicBlock(mainFunction, "entry")
-        LLVMPositionBuilderAtEnd(builder, programEntryBlock)
-        let stackFrame = StackFrame(block: programEntryBlock, function: mainFunction)
-        
-        for exp in expressions {
-            try exp.expressionCodeGen(stackFrame)
+        let programEntryBlock: LLVMValueRef, mainFn: LLVMValueRef
+        if !isLibrary {
+            // main arguments
+            let argBuffer = [LLVMTypeRef]().ptr()
+            defer { argBuffer.dealloc(0) }
+            
+            // make main function & add to IR
+            let functionType = LLVMFunctionType(LLVMInt64Type(), argBuffer, UInt32(0), LLVMBool(false))
+            let mainFunction = LLVMAddFunction(module, "main", functionType)
+            
+            // Setup BB & stack frame
+            let p = LLVMAppendBasicBlock(mainFunction, "entry")
+            LLVMPositionBuilderAtEnd(builder, p)
+            
+            programEntryBlock = p
+            mainFn = mainFunction
+        } else {
+            programEntryBlock = nil
+            mainFn = nil
         }
-                
+        
+        let stackFrame = StackFrame(block: programEntryBlock, function: mainFn)
+
+        if isLibrary {
+            
+            let e = expressions.filter {
+                $0 is FunctionPrototypeExpression || $0 is StructExpression
+            }
+            
+            for exp in e {
+                try exp.expressionCodeGen(stackFrame)
+            }
+
+            
+        } else {
+            
+            for exp in expressions {
+                try exp.expressionCodeGen(stackFrame)
+            }
+
+        }
+        
         LLVMBuildRet(builder, LLVMConstInt(LLVMInt64Type(), 0, LLVMBool(false)))
     }
 }

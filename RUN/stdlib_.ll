@@ -68,11 +68,6 @@ define void @_print_b(i1 zeroext %b) #0 {
   ret void
 }
 
-define i64 @main() {
-entry:
-  ret i64 0
-}
-
 ; Function Attrs: alwaysinline
 define { i64 } @_Int_S.i64({ i64 } %o) #2 {
 entry:
