@@ -140,7 +140,7 @@ public func compileDocuments(fileNames: [String],
             optimTask.waitUntilExit()
             
             if verbose { print("\n\n----------------------------OPTIM----------------------------\n") }
-            let ir = try? String(contentsOfFile: "\(currentDirectory)/\(file).ll") ?? ""
+            let ir = try String(contentsOfFile: "\(currentDirectory)/\(file).ll") ?? ""
             if irOnly { print(ir); return }
             if verbose { print(ir) }
             
