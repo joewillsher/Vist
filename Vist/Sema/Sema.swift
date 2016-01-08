@@ -41,7 +41,7 @@ func sema(inout ast: AST) throws {
     
     // expose runtime (like print and fatalError) and compiler magic (like add) functions to the vist code
     // see llvmheader.vist
-    let code = try String(contentsOfFile: "\(NSTask().currentDirectoryPath)/../Vist/stdlib/llvmheader.vist")
+    let code = try String(contentsOfFile: "\(PROJECT_DIR)/Vist/stdlib/llvmheader.vist")
     var l = Lexer(code: code)
     var p = Parser(tokens: try l.getTokens(), isStdLib: true)
     var a = try p.parse()

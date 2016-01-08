@@ -369,7 +369,8 @@ extension FunctionCallExpression : IRGenerator {
         let argBuffer = args.ptr()
         defer { argBuffer.dealloc(argCount) }
         
-        guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else { throw IRError.WrongFunctionApplication(name) }
+        guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else {
+            throw IRError.WrongFunctionApplication(name) }
         
         let doNotUseName = type == LLVMType.Void || type == LLVMType.Null || type == nil
         

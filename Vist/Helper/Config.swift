@@ -12,7 +12,10 @@ func configModule(module: LLVMModuleRef) {
     
     
     LLVMLoadLibraryPermanently("\(NSTask().currentDirectoryPath)/stdlib.dylib")
-
+    
+//    LLVMGetBitcodeModuleProvider(<#T##MemBuf: LLVMMemoryBufferRef##LLVMMemoryBufferRef#>, <#T##OutMP: UnsafeMutablePointer<LLVMModuleProviderRef>##UnsafeMutablePointer<LLVMModuleProviderRef>#>, <#T##OutMessage: UnsafeMutablePointer<UnsafeMutablePointer<Int8>>##UnsafeMutablePointer<UnsafeMutablePointer<Int8>>#>)
+    
+    
     
     let target = UnsafeMutablePointer<LLVMTargetRef>.alloc(1)
     LLVMGetTargetFromTriple("x86_64-apple-macosx10.11.0", target, nil)

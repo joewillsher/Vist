@@ -29,7 +29,7 @@ func LLVM.f_add: LLVM.Double LLVM.Double -> LLVM.Double
 func LLVM.f_mul: LLVM.Double LLVM.Double -> LLVM.Double
 
 
-
+func meme: LLVM.Int64
 
 
 
