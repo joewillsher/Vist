@@ -82,29 +82,29 @@ public func compileDocuments(fileNames: [String],
         
         if verbose { print("\n\n-----------------------------LINK------------------------------") }
         
-        /// Generate LLVM IR File for the helper c++ code
-        let runtimeIRGenTask = NSTask()
-        runtimeIRGenTask.currentDirectoryPath = currentDirectory
-        runtimeIRGenTask.launchPath = "/usr/bin/llvm-gcc"
-        runtimeIRGenTask.arguments = ["runtime.cpp", "-S", "-emit-llvm"]
-        
-        runtimeIRGenTask.launch()
-        runtimeIRGenTask.waitUntilExit()
-        
-        /// Turn that LLVM IR code into LLVM bytecode
-        let assembleTask = NSTask()
-        assembleTask.currentDirectoryPath = currentDirectory
-        assembleTask.launchPath = "/usr/local/Cellar/llvm/3.6.2/bin/llvm-as"
-        assembleTask.arguments = ["runtime.ll"]
-        
-        assembleTask.launch()
-        assembleTask.waitUntilExit()
-        
-        
-        // Create vist program module and link against the helper bytecode
         var module = LLVMModuleCreateWithName("vist_module")
-        linkModule(&module, withFile: "runtime.bc")
+        // Create vist program module and link against the helper bytecode
+
+        if isStdLib {
+            /// Generate LLVM IR File for the helper c++ code
+            let runtimeIRGenTask = NSTask()
+            runtimeIRGenTask.currentDirectoryPath = "\(PROJECT_DIR)/Vist/Runtime"
+            runtimeIRGenTask.launchPath = "/usr/bin/llvm-gcc"
+            runtimeIRGenTask.arguments = ["runtime.cpp", "-S", "-emit-llvm"]
+            
+            runtimeIRGenTask.launch()
+            runtimeIRGenTask.waitUntilExit()
+            
+            linkModule(&module, withFile: "\(PROJECT_DIR)/Vist/Runtime/runtime.bc")
+            
+        } else {
+            linkModule(&module, withFile: "\(PROJECT_DIR)/Vist/stdlib/stdlib.bc")
+            LLVMDumpModule(module)
+
+        }
+        
         configModule(module)
+
         
         
         
@@ -115,13 +115,15 @@ public func compileDocuments(fileNames: [String],
         if verbose { print("\n---------------------------LLVM IR----------------------------\n") }
         
         // Generate LLVM IR code for program
+        
         try ast.IRGen(module: module, isLibrary: generateLibrary)
         
-        configModule(module)
+        LLVMDumpModule(module)
+
         
         // print and write to file
         let ir = String.fromCString(LLVMPrintModuleToString(module))!
-        try ir.writeToFile("\(file)_.ll", atomically: true, encoding: NSUTF8StringEncoding)
+        try ir.writeToFile("\(currentDirectory)/\(file)_.ll", atomically: true, encoding: NSUTF8StringEncoding)
         
         if verbose { print(ir) }
         
@@ -156,10 +158,22 @@ public func compileDocuments(fileNames: [String],
             fileTask.launch()
             fileTask.waitUntilExit()
             
-            try ir.writeToFile("\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
+            try ir.writeToFile("\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
         }
         
         if irOnly { return }
+        
+        
+        if isStdLib {
+            /// Turn that LLVM IR code into LLVM bytecode
+            let assembleTask = NSTask()
+            assembleTask.currentDirectoryPath = "\(PROJECT_DIR)/Vist/Runtime"
+            assembleTask.launchPath = "/usr/local/Cellar/llvm/3.6.2/bin/llvm-as"
+            assembleTask.arguments = ["runtime.ll"]
+            
+            assembleTask.launch()
+            assembleTask.waitUntilExit()
+        }
         
         
         
@@ -183,31 +197,8 @@ public func compileDocuments(fileNames: [String],
         
         
         
-        // remove files
-        if !preserve {
-            for file in ["\(file).ll", "\(file)_.ll", "\(file).s", "helper.bc", "helper.ll"] {
-                
-                let rmTask = NSTask()
-                rmTask.currentDirectoryPath = currentDirectory
-                rmTask.launchPath = "/bin/rm"
-                rmTask.arguments = [file]
-                
-                rmTask.launch()
-                rmTask.waitUntilExit()
-            }
-        }
-
-        
-        
         
         if generateLibrary {
-            
-            
-            /*
-            /usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/bin/clang -c stdlib.ll
-            
-            libtool -dynamic stdlib.o -o stdlib.dylib -lSystem
-            */
             
             let objFileTask = NSTask()
             objFileTask.currentDirectoryPath = currentDirectory
@@ -224,6 +215,14 @@ public func compileDocuments(fileNames: [String],
             
             libGen.launch()
             libGen.waitUntilExit()
+            
+            let bitcodeTask = NSTask()
+            bitcodeTask.currentDirectoryPath = currentDirectory
+            bitcodeTask.launchPath = "/usr/local/Cellar/llvm/3.6.2/bin/llvm-as"
+            bitcodeTask.arguments = ["\(file).ll"]
+            
+            bitcodeTask.launch()
+            bitcodeTask.waitUntilExit()
             
             
         } else {
@@ -265,6 +264,22 @@ public func compileDocuments(fileNames: [String],
         
         
         
+        // remove files
+        if !preserve {
+            for file in ["\(file).ll", "\(file)_.ll", "\(file).s"] {
+                
+                let rmTask = NSTask()
+                rmTask.currentDirectoryPath = currentDirectory
+                rmTask.launchPath = "/bin/rm"
+                rmTask.arguments = [file]
+                
+                rmTask.launch()
+                rmTask.waitUntilExit()
+            }
+        }
+        
+        
+
         
 }
 

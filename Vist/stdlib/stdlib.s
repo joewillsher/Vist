@@ -106,16 +106,6 @@ LBB4_2:
 	jmp	_puts                   ## TAILCALL
 	.cfi_endproc
 
-	.globl	_main
-	.align	4, 0x90
-_main:                                  ## @main
-## BB#0:                                ## %entry
-	pushq	%rbp
-	movq	%rsp, %rbp
-	xorl	%eax, %eax
-	popq	%rbp
-	retq
-
 	.globl	__Int_S.i64
 	.align	4, 0x90
 __Int_S.i64:                            ## @_Int_S.i64
@@ -357,6 +347,15 @@ __print_S.FP64:                         ## @_print_S.FP64
 	movb	%dil, %al
 	popq	%rbp
 	retq
+
+	.globl	__meme_i64
+	.align	4, 0x90
+__meme_i64:                             ## @_meme_i64
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	popq	%rbp
+	jmp	__print_i64             ## TAILCALL
 
 	.section	__TEXT,__cstring,cstring_literals
 L_.str:                                 ## @.str

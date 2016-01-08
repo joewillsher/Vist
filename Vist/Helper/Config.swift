@@ -11,7 +11,7 @@ import Foundation
 func configModule(module: LLVMModuleRef) {
     
     
-    LLVMLoadLibraryPermanently("\(NSTask().currentDirectoryPath)/stdlib.dylib")
+//    LLVMLoadLibraryPermanently("\(NSTask().currentDirectoryPath)/stdlib.dylib")
     
 //    LLVMGetBitcodeModuleProvider(<#T##MemBuf: LLVMMemoryBufferRef##LLVMMemoryBufferRef#>, <#T##OutMP: UnsafeMutablePointer<LLVMModuleProviderRef>##UnsafeMutablePointer<LLVMModuleProviderRef>#>, <#T##OutMessage: UnsafeMutablePointer<UnsafeMutablePointer<Int8>>##UnsafeMutablePointer<UnsafeMutablePointer<Int8>>#>)
     

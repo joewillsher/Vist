@@ -1,5 +1,8 @@
 
 
+func meme: LLVM.Int64
+
+
 func print: LLVM.Int
 func print: LLVM.Float
 func print: LLVM.Double
@@ -29,7 +32,6 @@ func LLVM.f_add: LLVM.Double LLVM.Double -> LLVM.Double
 func LLVM.f_mul: LLVM.Double LLVM.Double -> LLVM.Double
 
 
-func meme: LLVM.Int64
 
 
 

@@ -295,7 +295,8 @@ entry:
   ret { i1 } %Bool
 }
 
-define void @_meme_i64(i64 %"$0") {
+; Function Attrs: alwaysinline
+define void @_meme_i64(i64 %"$0") #2 {
 entry:
   call void @_print_i64(i64 %"$0")
   ret void

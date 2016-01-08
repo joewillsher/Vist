@@ -995,7 +995,9 @@ extension AST {
 
         }
         
-        LLVMBuildRet(builder, LLVMConstInt(LLVMInt64Type(), 0, LLVMBool(false)))
+        if !isLibrary {
+            LLVMBuildRet(builder, LLVMConstInt(LLVMInt64Type(), 0, LLVMBool(false)))
+        }
     }
 }
 

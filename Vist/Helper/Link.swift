@@ -16,12 +16,17 @@ func linkModule(inout module: LLVMModuleRef, withFile file: String) {
     
     LLVMCreateMemoryBufferWithContentsOfFile(file, buffer, str)
     
-    var helperModule = LLVMModuleCreateWithName("stdlib_module")
+    var helperModule = LLVMModuleCreateWithName("_module")
+    
+    while true {
+        let f = LLVMGetNamedFunction(helperModule, "main")
+        if f == nil { break }
+        LLVMDeleteFunction(f)
+    }
     
     LLVMGetBitcodeModule(buffer.memory, &helperModule, str)
     
     LLVMLinkModules(module, helperModule, LLVMLinkerDestroySource, str)
-    
     
     
     // Special cases for helper functions

@@ -54,6 +54,7 @@
 		D4644BE31C40619800364B99 /* stdlib.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib.ll; path = stdlib/stdlib.ll; sourceTree = "<group>"; };
 		D4644BE41C40619800364B99 /* stdlib.s */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; name = stdlib.s; path = stdlib/stdlib.s; sourceTree = "<group>"; };
 		D4644BE51C40619800364B99 /* stdlib.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = stdlib.vist; path = stdlib/stdlib.vist; sourceTree = "<group>"; };
+		D4644BE61C4072D600364B99 /* runtime.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = runtime.cpp; path = Runtime/runtime.cpp; sourceTree = "<group>"; };
 		D47E66581B88D9A20051D586 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		D47FF07A1B812052003F9920 /* vist */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = vist; sourceTree = BUILT_PRODUCTS_DIR; };
 		D4851F491C28A0820009233E /* example_.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = example_.ll; path = RUN/example_.ll; sourceTree = "<group>"; };
@@ -88,7 +89,6 @@
 		D497A7911C3B015700DFE39E /* Print.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Print.swift; path = Helper/Print.swift; sourceTree = "<group>"; };
 		D497A7951C3B016400DFE39E /* Vist-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Vist-Bridging-Header.h"; path = "Helper/Vist-Bridging-Header.h"; sourceTree = "<group>"; };
 		D4B1FA011C2E1F58001E7BCC /* TODO.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = TODO.md; sourceTree = "<group>"; };
-		D4DB9D5D1C1DDA1A00503153 /* runtime.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = runtime.cpp; path = RUN/runtime.cpp; sourceTree = SOURCE_ROOT; };
 		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; };
 		D4DB9D681C1DFFCC00503153 /* runtime.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = runtime.ll; path = RUN/runtime.ll; sourceTree = "<group>"; };
 		D4FAE4561C3B018000C9EE05 /* Test.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; name = Test.playground; path = Helper/Test.playground; sourceTree = "<group>"; };
@@ -118,7 +118,7 @@
 		D44DB8881C316DA500EBCD9F /* Runtime */ = {
 			isa = PBXGroup;
 			children = (
-				D4DB9D5D1C1DDA1A00503153 /* runtime.cpp */,
+				D4644BE61C4072D600364B99 /* runtime.cpp */,
 			);
 			name = Runtime;
 			sourceTree = "<group>";

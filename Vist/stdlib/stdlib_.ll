@@ -68,11 +68,6 @@ define void @_print_b(i1 zeroext %b) #0 {
   ret void
 }
 
-define i64 @main() {
-entry:
-  ret i64 0
-}
-
 ; Function Attrs: alwaysinline
 define { i64 } @_Int_S.i64({ i64 } %o) #2 {
 entry:
@@ -298,6 +293,13 @@ entry:
   %cmp_or_res = or i1 %value, %value1
   %Bool = call { i1 } @_Bool_b(i1 %cmp_or_res)
   ret { i1 } %Bool
+}
+
+; Function Attrs: alwaysinline
+define void @_meme_i64(i64 %"$0") #2 {
+entry:
+  call void @_print_i64(i64 %"$0")
+  ret void
 }
 
 attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
