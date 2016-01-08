@@ -1,12 +1,8 @@
 
 
-
-
-
-
 type Int {
     var value: LLVM.Int64
-
+    
     init Int = |o| {
         value = o.value
     }
@@ -36,7 +32,7 @@ type Double {
     var value: LLVM.Double
 
     init Double = |o| {
-    value = o.value
+        value = o.value
     }
 
     init LLVM.Double = |v| {
@@ -110,11 +106,6 @@ func && : Bool Bool -> Bool = |a b| do
 @inline @operator(10)
 func || : Bool Bool -> Bool = |a b| do
     return Bool(LLVM.b_or(a.value b.value))
-
-
-@inline func meme: LLVM.Int64 = {
-    print( $0 )
-}
 
 
 

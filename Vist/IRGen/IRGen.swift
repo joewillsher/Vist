@@ -853,6 +853,10 @@ extension InitialiserExpression : IRGenerator {
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
         LLVMAddFunctionAttr(function, LLVMAlwaysInlineAttribute)
         
+        guard let impl = self.impl else {
+            return function
+        }
+        
         let entry = LLVMAppendBasicBlock(function, "entry")
         LLVMPositionBuilderAtEnd(builder, entry)
 

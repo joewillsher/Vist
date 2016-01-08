@@ -348,15 +348,6 @@ __print_S.FP64:                         ## @_print_S.FP64
 	popq	%rbp
 	retq
 
-	.globl	__meme_i64
-	.align	4, 0x90
-__meme_i64:                             ## @_meme_i64
-## BB#0:                                ## %entry
-	pushq	%rbp
-	movq	%rsp, %rbp
-	popq	%rbp
-	jmp	__print_i64             ## TAILCALL
-
 	.globl	_main
 	.align	4, 0x90
 _main:                                  ## @main
@@ -386,8 +377,6 @@ _main:                                  ## @main
 	movl	$10, %edi
 	callq	__print_i64
 	movl	$7, %edi
-	callq	__print_i64
-	movl	$1, %edi
 	callq	__print_i64
 	xorl	%eax, %eax
 	popq	%rbp

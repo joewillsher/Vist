@@ -109,9 +109,6 @@ public func compileDocuments(fileNames: [String],
         
         
         
-        
-        
-        
         if verbose { print("\n---------------------------LLVM IR----------------------------\n") }
         
         // Generate LLVM IR code for program
@@ -119,7 +116,6 @@ public func compileDocuments(fileNames: [String],
         try ast.IRGen(module: module, isLibrary: generateLibrary)
         
         LLVMDumpModule(module)
-
         
         // print and write to file
         let ir = String.fromCString(LLVMPrintModuleToString(module))!

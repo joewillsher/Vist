@@ -1,6 +1,21 @@
 
+type Int {
+    var value: LLVM.Int64
+    init Int
+    init LLVM.Int
+}
 
-func meme: LLVM.Int64
+type Bool {
+    var value: LLVM.Bool
+    init Bool
+    init LLVM.Bool
+}
+
+type Double {
+    var value: LLVM.Double
+    init Double
+    init LLVM.Double
+}
 
 
 func print: LLVM.Int

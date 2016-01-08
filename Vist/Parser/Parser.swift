@@ -22,7 +22,7 @@ enum ParseError: ErrorType {
     case NotIterator(Pos)
     case NotBlock(Pos)
     case SubscriptNotIntegerType(Pos)
-    case ObjectNotAllowedInTopLevelOfTypeImpl(Pos), NoTypeName(Pos)
+    case ObjectNotAllowedInTopLevelOfTypeImpl(Token, Pos), NoTypeName(Pos)
     case NoPrecedenceForOperator(String, Pos), OpDoesNotHaveParams(Pos), CannotChangeOpPrecedence(String, Int, Pos)
 }
 
@@ -790,7 +790,7 @@ extension Parser {
                 try parseAttrExpression()
                 
             default:
-                throw ParseError.ObjectNotAllowedInTopLevelOfTypeImpl(currentPos)
+                throw ParseError.ObjectNotAllowedInTopLevelOfTypeImpl(currentToken, currentPos)
             }
             
         }
@@ -806,7 +806,10 @@ extension Parser {
         
         getNextToken() // eat `init`
         let type = try parseFunctionType()
-        getNextToken() // eat '='
+        guard case .Assign = currentToken else {
+            return InitialiserExpression(ty: type, impl: nil, parent: nil)
+        }
+        getNextToken() // eat `=`
         
         return InitialiserExpression(ty: type, impl: try parseClosureDeclaration(type: type), parent: nil)
     }

@@ -348,15 +348,6 @@ __print_S.FP64:                         ## @_print_S.FP64
 	popq	%rbp
 	retq
 
-	.globl	__meme_i64
-	.align	4, 0x90
-__meme_i64:                             ## @_meme_i64
-## BB#0:                                ## %entry
-	pushq	%rbp
-	movq	%rsp, %rbp
-	popq	%rbp
-	jmp	__print_i64             ## TAILCALL
-
 	.section	__TEXT,__cstring,cstring_literals
 L_.str:                                 ## @.str
 	.asciz	"%llu\n"

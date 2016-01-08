@@ -600,6 +600,18 @@ extension InitialiserExpression : TypeProvider {
         
         guard let parentType = parent?.type, parentName = parent?.name else { throw SemaError.InitialiserNotAssociatedWithType }
         
+        let params = try ty.params(scope.types.values)
+        
+        let t = LLVMFnType(params: params, returns: parentType)
+        self.mangledName = parentName.mangle(t)
+        
+        scope[function: parentName] = t
+        self.type = t
+
+        guard let impl = self.impl else {
+            return t
+        }
+        
         let initScope = SemaScope(parent: scope)
         
         // ad scope properties to initScope
@@ -618,13 +630,7 @@ extension InitialiserExpression : TypeProvider {
             try ex.llvmType(initScope)
         }
         
-        let params = try ty.params(scope.types.values)
         
-        let t = LLVMFnType(params: params, returns: parentType)
-        self.mangledName = parentName.mangle(t)
-        
-        scope[function: parentName] = t
-        self.type = t
         return t
     }
 }

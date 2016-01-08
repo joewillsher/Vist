@@ -255,13 +255,6 @@ entry:
   ret { i1 } %.fca.0.insert.i
 }
 
-; Function Attrs: alwaysinline nounwind
-define void @_meme_i64(i64 %"$0") #3 {
-entry:
-  tail call void @_print_i64(i64 %"$0")
-  ret void
-}
-
 ; Function Attrs: nounwind
 declare i32 @puts(i8* nocapture readonly) #4
 
@@ -280,7 +273,6 @@ entry:
   tail call void @_print_i64(i64 9)
   tail call void @_print_i64(i64 10)
   tail call void @_print_i64(i64 7)
-  tail call void @_print_i64(i64 1) #4
   ret i64 0
 }
 

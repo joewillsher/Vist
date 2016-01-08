@@ -508,10 +508,10 @@ final class StructExpression : Expression {
 
 final class InitialiserExpression : Expression, StructMember {
     let ty: FunctionType
-    let impl: FunctionImplementationExpression
+    let impl: FunctionImplementationExpression?
     weak var parent: StructExpression?
     
-    init(ty: FunctionType, impl: FunctionImplementationExpression, parent: StructExpression?) {
+    init(ty: FunctionType, impl: FunctionImplementationExpression?, parent: StructExpression?) {
         self.ty = ty
         self.impl = impl
         self.parent = parent
