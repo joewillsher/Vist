@@ -1,1 +1,3 @@
 *.vist linguist-language=Vist
+*.vist linguist-vendored=Vist
+*.vist linguist-documentation=Vist
