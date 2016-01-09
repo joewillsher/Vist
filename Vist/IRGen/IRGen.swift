@@ -667,6 +667,16 @@ extension ForInLoopExpression : IRGenerator {
         let loop = LLVMAppendBasicBlock(stackFrame.function, "loop")
         let afterLoop = LLVMAppendBasicBlock(stackFrame.function, "afterloop")
         
+        
+        guard let rangeIterator = iterator as? RangeIteratorExpression else { throw IRError.ForLoopIteratorNotInt }
+
+        let s = try rangeIterator.start.expressionCodeGen(stackFrame)
+        let e = try rangeIterator.end.expressionCodeGen(stackFrame)
+        
+        let start = try PropertyLookupExpression.loadBuiltinValueProperty(s)
+        let end = try PropertyLookupExpression.loadBuiltinValueProperty(e)
+        
+        
         // move into loop block
         LLVMBuildBr(builder, loop)
         LLVMPositionBuilderAtEnd(builder, loop)
@@ -674,17 +684,11 @@ extension ForInLoopExpression : IRGenerator {
         // define variable phi node
         let name = binded.name ?? ""
         let i = LLVMBuildPhi(builder, LLVMInt64Type(), name)
-        
-        guard let rangeIterator = iterator as? RangeIteratorExpression else { throw IRError.ForLoopIteratorNotInt }
 
-        let start = try rangeIterator.start.expressionCodeGen(stackFrame)
-        let end = try rangeIterator.end.expressionCodeGen(stackFrame)
-        
         // add incoming value to phi node
         let num1 = [start].ptr(), incoming1 = [stackFrame.block].ptr()
         defer { num1.dealloc(1); incoming1.dealloc(1) }
         LLVMAddIncoming(i, num1, incoming1, 1)
-        
         
         // iterate and add phi incoming
         let one = LLVMConstInt(LLVMInt64Type(), UInt64(1), LLVMBool(false))

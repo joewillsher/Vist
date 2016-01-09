@@ -441,6 +441,7 @@ extension RangeIteratorExpression : TypeProvider {
         
         // make sure range has same start and end types
         guard e == s else { throw SemaError.RangeWithInconsistentTypes }
+        guard s.isStdInt && e.isStdInt else { throw SemaError.NonIntegerRange }
         
         self.type = LLVMType.Null
         return LLVMType.Null

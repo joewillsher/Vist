@@ -10,10 +10,14 @@ protocol LLVMTyped : Printable, CustomDebugStringConvertible {
     func ir() throws -> LLVMTypeRef
     
     var isStdBool: Bool { get }
+    var isStdInt: Bool { get }
 }
 
 extension LLVMTyped {
     var isStdBool: Bool {
+        return false
+    }
+    var isStdInt: Bool {
         return false
     }
 }
@@ -140,6 +144,9 @@ final class LLVMStType : LLVMTyped {
     
     var isStdBool: Bool {
         return name == "Bool" && members[0].0 == "value"
+    }
+    var isStdInt: Bool {
+        return name == "Int" && members[0].0 == "value"
     }
 }
 

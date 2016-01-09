@@ -1,8 +1,9 @@
 
 
+let u = Int(0)
+let v = Int(100)
 
-
-for i in 0 ... 10 do
+for i in u ... v do
     print(i)
 
 
@@ -18,10 +19,7 @@ var x = Int(1)
 var y = Int(1)
 let h = Int(1000000000)
 
-while x < h {
-    let t = y
-    y = t + x
-    x = t
-    print(x)
-}
+
+
+
 

@@ -354,57 +354,23 @@ _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	pushq	%r15
-	pushq	%r14
 	pushq	%rbx
-	subq	$24, %rsp
-	xorl	%edi, %edi
+	pushq	%rax
+	xorl	%ebx, %ebx
+	.align	4, 0x90
+LBB28_1:                                ## %loop
+                                        ## =>This Inner Loop Header: Depth=1
+	movq	%rbx, %rdi
+	leaq	1(%rbx), %rbx
 	callq	__print_i64
-	movl	$1, %r15d
-	movl	$1, %edi
-	callq	__print_i64
-	movl	$2, %edi
-	callq	__print_i64
-	movl	$3, %edi
-	callq	__print_i64
-	movl	$4, %edi
-	callq	__print_i64
-	movl	$5, %edi
-	callq	__print_i64
-	movl	$6, %edi
-	callq	__print_i64
-	movl	$7, %edi
-	callq	__print_i64
-	movl	$8, %edi
-	callq	__print_i64
-	movl	$9, %edi
-	callq	__print_i64
-	movl	$10, %edi
-	callq	__print_i64
+	cmpq	$101, %rbx
+	jne	LBB28_1
+## BB#2:                                ## %cont
 	movl	$100, %edi
 	callq	__print_i64
-	movq	$1, -32(%rbp)
-	movq	$1000000000, -40(%rbp)  ## imm = 0x3B9ACA00
-	movl	$1000000000, %r14d      ## imm = 0x3B9ACA00
-	movq	-32(%rbp), %rax
-	.align	4, 0x90
-LBB28_1:                                ## %loop9
-                                        ## =>This Inner Loop Header: Depth=1
-	movq	%rax, %rbx
-	addq	%r15, %rbx
-	movq	%r15, -32(%rbp)
-	movq	%r15, %rdi
-	callq	__print_i64
-	movq	-32(%rbp), %rax
-	cmpq	%r14, %rax
-	movq	%rbx, %r15
-	jl	LBB28_1
-## BB#2:                                ## %afterloop10
 	xorl	%eax, %eax
-	addq	$24, %rsp
+	addq	$8, %rsp
 	popq	%rbx
-	popq	%r14
-	popq	%r15
 	popq	%rbp
 	retq
 
