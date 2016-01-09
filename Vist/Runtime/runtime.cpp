@@ -8,6 +8,8 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
+#include <algorithm>
 
 extern "C"
 void
@@ -48,6 +50,44 @@ _$print_b(bool b)
 {
     if (b) { printf("true\n"); } else { printf("false\n"); };
 };
+
+extern "C"
+void
+__attribute__ ((noinline))
+_$fatalError()
+{
+    abort();
+};
+
+extern "C"
+void
+__attribute__ ((noinline))
+_$demangle_Pi8Pi8i64(char* output, char* input, int64_t length) {
+    if(!input || !output) return;
+    std::string accum;
+    int underscore_seen = 0;
+    for(int i = 0; i < length && input[i] && underscore_seen != 2; i++) {
+        switch(input[i]) {
+            case '_':
+                if(underscore_seen == 1) {
+                    underscore_seen = 2;
+                    break;
+                } else {
+                    underscore_seen = 1;
+                    break;
+                }
+            case '$':
+                accum += '_';
+                break;
+            default:
+                accum += input[i];
+                break;
+        }
+    }
+    strlcpy(output, accum.c_str(), length);
+};
+
+
 
 
 
