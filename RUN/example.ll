@@ -262,6 +262,7 @@ declare i32 @puts(i8* nocapture readonly) #4
 define i64 @main() #4 {
 entry:
   tail call void @"_$print_i64"(i64 5) #4
+  tail call void @"_$print_i64"(i64 5) #4
   ret i64 0
 }
 

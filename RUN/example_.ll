@@ -274,6 +274,11 @@ entry:
   %start_ptr = getelementptr inbounds { { i64 }, { i64 } }* %2, i32 0, i32 0
   %start = load { i64 }* %start_ptr
   call void @_print_S.i64({ i64 } %start)
+  %u2 = load { i64 }* %0
+  call void @_print_S.i64({ i64 } %u2)
+  %Double_res = call { double } @_Double_FP64(double 2.000000e+00)
+  %3 = alloca { double }
+  store { double } %Double_res, { double }* %3
   ret i64 0
 }
 

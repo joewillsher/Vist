@@ -79,10 +79,6 @@ define void @"_$fatalError_"() #0 {
 ; Function Attrs: noreturn
 declare void @abort() #2
 
-define i64 @main() {
-entry:
-}
-
 ; Function Attrs: alwaysinline
 define { i64 } @_Int_S.i64({ i64 } %o) #3 {
 entry:
@@ -144,41 +140,6 @@ entry:
   store double %v, double* %value_ptr
   %1 = load { double }* %0
   ret { double } %1
-}
-
-; Function Attrs: alwaysinline
-define void @_print_S.i64({ i64 } %a) #3 {
-entry:
-  %value = extractvalue { i64 } %a, 0
-  call void @"_$print_i64"(i64 %value)
-  ret void
-}
-
-; Function Attrs: alwaysinline
-define void @_print_S.b({ i1 } %a) #3 {
-entry:
-  %value = extractvalue { i1 } %a, 0
-  call void @"_$print_b"(i1 %value)
-  ret void
-}
-
-; Function Attrs: alwaysinline
-define void @_print_S.FP64({ double } %a) #3 {
-entry:
-  %value = extractvalue { double } %a, 0
-  call void @"_$print_FP64"(double %value)
-  ret void
-}
-
-define void @"_$sanityCheck_S.b"({ i1 } %"$0") {
-entry:
-
-cont:                                             ; preds = <null operand!>, %then0
-  ret void
-
-then0:                                            ; preds = <null operand!>
-  call void @"_$fatalError_"()
-  br label %cont
 }
 
 ; Function Attrs: alwaysinline
@@ -319,6 +280,40 @@ entry:
   %cmp_or_res = or i1 %value, %value1
   %Bool_res = call { i1 } @_Bool_b(i1 %cmp_or_res)
   ret { i1 } %Bool_res
+}
+
+define void @"_$sanityCheck_S.b"({ i1 } %"$0") {
+entry:
+
+cont:                                             ; preds = <null operand!>, %then0
+  ret void
+
+then0:                                            ; preds = <null operand!>
+  call void @"_$fatalError_"()
+  br label %cont
+}
+
+; Function Attrs: alwaysinline
+define void @_print_S.i64({ i64 } %a) #3 {
+entry:
+  call void @"_$fatalError_"()
+  ret void
+}
+
+; Function Attrs: alwaysinline
+define void @_print_S.b({ i1 } %a) #3 {
+entry:
+  %value = extractvalue { i1 } %a, 0
+  call void @"_$print_b"(i1 %value)
+  ret void
+}
+
+; Function Attrs: alwaysinline
+define void @_print_S.FP64({ double } %a) #3 {
+entry:
+  %value = extractvalue { double } %a, 0
+  call void @"_$print_FP64"(double %value)
+  ret void
 }
 
 attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

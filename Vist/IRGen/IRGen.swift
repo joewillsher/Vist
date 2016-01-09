@@ -614,8 +614,11 @@ extension ConditionalExpression : IRGenerator {
             LLVMPositionBuilderAtEnd(builder, ifIn)
             
             if let cond = cond { //if statement, make conditonal jump
+                
                 let v = try PropertyLookupExpression.loadBuiltinValueProperty(cond)
+                
                 LLVMBuildCondBr(builder, v, block, ifOut)
+                
             } else { // else statement, uncondtional jump
                 LLVMBuildBr(builder, block)
                 break
@@ -974,13 +977,10 @@ extension AST {
         let mainFunction = LLVMAddFunction(module, "main", functionType)
         
         // Setup BB & stack frame
-        let p = LLVMAppendBasicBlock(mainFunction, "entry")
-        LLVMPositionBuilderAtEnd(builder, p)
+        let programEntryBlock = LLVMAppendBasicBlock(mainFunction, "entry")
+        LLVMPositionBuilderAtEnd(builder, programEntryBlock)
         
-        let programEntryBlock = p
-        let mainFn = mainFunction
-        
-        let stackFrame = StackFrame(block: programEntryBlock, function: mainFn, parentStackFrame: s)
+        let stackFrame = StackFrame(block: programEntryBlock, function: mainFunction, parentStackFrame: s)
         
         if isLibrary {
             
@@ -992,16 +992,16 @@ extension AST {
                 try exp.expressionCodeGen(stackFrame)
             }
 
-            
         } else {
             
             for exp in expressions {
                 try exp.expressionCodeGen(stackFrame)
             }
-            
         }
         
-        if !isLibrary {
+        if isLibrary {
+            LLVMDeleteFunction(mainFunction)
+        } else {
             LLVMBuildRet(builder, LLVMConstInt(LLVMInt64Type(), 0, LLVMBool(false)))
         }
     }

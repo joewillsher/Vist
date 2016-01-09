@@ -124,12 +124,13 @@ public func compileDocuments(fileNames: [String],
         if verbose { print(ir) }
         
         
-        if optim {
+        if optim && !isStdLib {
             
             let flags = ["-O3"]
 //            let flags = ["-inline"]
 //            let flags = ["-mem2reg"]
             
+            try "".writeToFile("\(currentDirectory)/\(file)_.ll", atomically: true, encoding: NSUTF8StringEncoding)
             // Optimiser
             let optimTask = NSTask()
             optimTask.currentDirectoryPath = currentDirectory
@@ -164,7 +165,7 @@ public func compileDocuments(fileNames: [String],
         
         if verbose { print("\n\n-----------------------------ASM-----------------------------\n") }
         
-        
+        try "".writeToFile("\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
         /// compiles the LLVM IR to assembly
         let compileIRtoASMTask = NSTask()
         compileIRtoASMTask.currentDirectoryPath = currentDirectory

@@ -416,7 +416,7 @@ extension ElseIfBlockExpression : TypeProvider {
         // get condition type
         let cond = try condition?.llvmType(scope)
         
-        guard cond?.isStdBool ?? false else { throw SemaError.NonBooleanCondition }
+        guard cond?.isStdBool ?? true else { throw SemaError.NonBooleanCondition }
         
         // gen types for cond block
         try scopeSemallvmType(forScopeExpression: block, scope: scope)

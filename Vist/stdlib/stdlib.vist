@@ -43,12 +43,11 @@ type Double {
 }
 
 
-// public functions
 
-@inline func print: Int = |a| do _print(a.value)
-@inline func print: Bool = |a| do _print(a.value)
-@inline func print: Double = |a| do _print(a.value)
-func _sanityCheck: Bool = do if $0 do _fatalError()
+
+
+
+
 
 
 
@@ -138,6 +137,18 @@ type Array {
 
 
 
+// public functions
+
+
+
+func _sanityCheck: Bool = do if $0 do _fatalError()
+
+@inline func print: Int = |a| {
+    _fatalError()
+}
+
+@inline func print: Bool = |a| do _print(a.value)
+@inline func print: Double = |a| do _print(a.value)
 
 
 
