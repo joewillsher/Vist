@@ -305,8 +305,8 @@ extension Lexer {
             case (.Comment(let multiLine)?, let n): // comment end
                 
                 if (multiLine && (n == "/" && charPtrSafe(-1) == "*")) || (!multiLine && (n == "\n" || n == "\r")) {
-                    
                     try resetContext()
+                    continue
                 }
                 addChar()
                 try consumeChar()

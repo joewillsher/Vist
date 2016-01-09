@@ -1,5 +1,7 @@
 
 
+// types
+
 type Int {
     var value: LLVM.Int64
     
@@ -41,11 +43,19 @@ type Double {
 }
 
 
+// public functions
 
 @inline func print: Int = |a| do _print(a.value)
 @inline func print: Bool = |a| do _print(a.value)
 @inline func print: Double = |a| do _print(a.value)
 func _sanityCheck: Bool = do if $0 do _fatalError()
+
+
+
+
+
+
+// operators
 
 
 @inline @operator(80)

@@ -785,6 +785,9 @@ extension Parser {
             case .At:
                 try parseAttrExpression()
                 
+            case .Comment(let c):
+                try parseCommentExpression(c)
+                
             default:
                 throw ParseError.ObjectNotAllowedInTopLevelOfTypeImpl(currentToken, currentPos)
             }
