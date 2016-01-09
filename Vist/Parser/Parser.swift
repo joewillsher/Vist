@@ -443,11 +443,7 @@ extension Parser {
                 }
                 
             } else { condition = nil }
-            
-            //            if usesBraces {
-            getNextToken()
-            //            }
-            
+                        
             let block = try parseBlockExpression()
             
             blocks.append((condition, block))

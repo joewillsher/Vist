@@ -354,8 +354,13 @@ _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
+	pushq	%r15
+	pushq	%r14
+	pushq	%rbx
+	subq	$24, %rsp
 	xorl	%edi, %edi
 	callq	__print_i64
+	movl	$1, %r15d
 	movl	$1, %edi
 	callq	__print_i64
 	movl	$2, %edi
@@ -376,11 +381,30 @@ _main:                                  ## @main
 	callq	__print_i64
 	movl	$10, %edi
 	callq	__print_i64
-	movl	$7, %edi
+	movl	$100, %edi
 	callq	__print_i64
-	movl	$1, %edi
+	movq	$1, -32(%rbp)
+	movq	$1000000000, -40(%rbp)  ## imm = 0x3B9ACA00
+	movl	$1000000000, %r14d      ## imm = 0x3B9ACA00
+	movq	-32(%rbp), %rax
+	.align	4, 0x90
+LBB28_1:                                ## %loop9
+                                        ## =>This Inner Loop Header: Depth=1
+	movq	%rax, %rbx
+	addq	%r15, %rbx
+	movq	%r15, -32(%rbp)
+	movq	%r15, %rdi
 	callq	__print_i64
+	movq	-32(%rbp), %rax
+	cmpq	%r14, %rax
+	movq	%rbx, %r15
+	jl	LBB28_1
+## BB#2:                                ## %afterloop10
 	xorl	%eax, %eax
+	addq	$24, %rsp
+	popq	%rbx
+	popq	%r14
+	popq	%r15
 	popq	%rbp
 	retq
 

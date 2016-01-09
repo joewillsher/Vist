@@ -23,7 +23,9 @@ func print: LLVM.Float
 func print: LLVM.Double
 func print: LLVM.Bool
 
-
+@inline func print: Int
+@inline func print: Bool
+@inline func print: Double
 
 func LLVM.i_add: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
 func LLVM.i_sub: LLVM.Int64 LLVM.Int64 -> LLVM.Int64

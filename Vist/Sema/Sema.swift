@@ -28,7 +28,7 @@ enum SemaError : ErrorType {
     case NonBooleanCondition, RangeWithInconsistentTypes, DifferentTypeForMutation
     case StructPropertyNotTyped, StructMethodNotTyped, InitialiserNotAssociatedWithType
     case WrongFunctionReturnType(applied: LLVMTyped, expected: LLVMTyped)
-    case WrongFunctionApplication(applied: LLVMTyped, expected: LLVMTyped, paramNum: Int), WrongFunctionApplications(applied: [LLVMTyped], expected: [LLVMTyped])
+    case WrongFunctionApplication(applied: LLVMTyped, expected: LLVMTyped, paramNum: Int), WrongFunctionApplications(name: String, applied: [LLVMTyped], expected: [LLVMTyped])
     case NoTypeNamed(String), TypeNotFound
     case DifferentTypesForOperator(String)
     case NoPropertyNamed(String), CannotStoreInParameterStruct
@@ -45,7 +45,7 @@ func sema(inout ast: AST) throws {
     var l = Lexer(code: code)
     var p = Parser(tokens: try l.getTokens(), isStdLib: true)
     var a = try p.parse()
-    try variableTypeSema(forScopeExpression: &a)
+    try scopeSemallvmType(forScopeExpression: &a)
     
     let fns = a.expressions
         .flatMap { ($0 as? FunctionPrototypeExpression) }
@@ -73,7 +73,7 @@ func sema(inout ast: AST) throws {
         globalScope[type: name] = t
     }
 
-    try variableTypeSema(forScopeExpression: &ast, scope: globalScope)
+    try scopeSemallvmType(forScopeExpression: &ast, scope: globalScope)
     
 }
 

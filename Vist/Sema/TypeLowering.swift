@@ -8,6 +8,14 @@
 
 protocol LLVMTyped : Printable, CustomDebugStringConvertible {
     func ir() throws -> LLVMTypeRef
+    
+    var isStdBool: Bool { get }
+}
+
+extension LLVMTyped {
+    var isStdBool: Bool {
+        return false
+    }
 }
 
 
@@ -90,7 +98,7 @@ extension LLVMFnType {
         var p = Parser(tokens: try l.getTokens(), isStdLib: true)
         
         var a = try p.parse()
-        try variableTypeSema(forScopeExpression: &a)
+        try scopeSemallvmType(forScopeExpression: &a)
         let f = a.expressions[0] as! FunctionPrototypeExpression
         let t = f.fnType.type as! LLVMFnType
         
@@ -129,6 +137,10 @@ final class LLVMStType : LLVMTyped {
     }
     
     static func named(n: String) -> LLVMStType { return LLVMStType(members: [], methods: [], name: n) }
+    
+    var isStdBool: Bool {
+        return name == "Bool" && members[0].0 == "value"
+    }
 }
 
 @warn_unused_result

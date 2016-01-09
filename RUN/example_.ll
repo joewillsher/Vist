@@ -270,28 +270,69 @@ loop:                                             ; preds = %loop, %entry
   br i1 %looptest, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %loop
-  %x = alloca i64
-  store i64 7, i64* %x
-  %x1 = load i64* %x
-  call void @_print_i64(i64 %x1)
   %Int = call { i64 } @_Int_i64(i64 1)
   %0 = alloca { i64 }
   store { i64 } %Int, { i64 }* %0
-  %Int2 = call { i64 } @_Int_i64(i64 3)
+  %Int1 = call { i64 } @_Int_i64(i64 3)
   %1 = alloca { i64 }
-  store { i64 } %Int2, { i64 }* %1
+  store { i64 } %Int1, { i64 }* %1
   %a = load { i64 }* %0
   %b = load { i64 }* %1
-  %"<" = call { i1 } @"_<_S.i64S.i64"({ i64 } %a, { i64 } %b)
-  %b3 = extractvalue { i1 } %"<", 0
-  br i1 %b3, label %then0, label %cont
+  %">" = call { i1 } @"_>_S.i64S.i64"({ i64 } %a, { i64 } %b)
+  %b2 = extractvalue { i1 } %">", 0
+  br i1 %b2, label %then0, label %cont0
 
-cont:                                             ; preds = %afterloop, %then0
-  ret i64 0
+cont:                                             ; preds = %cont0, %then1, %then0
+  %Int6 = call { i64 } @_Int_i64(i64 1)
+  %2 = alloca { i64 }
+  store { i64 } %Int6, { i64 }* %2
+  %Int7 = call { i64 } @_Int_i64(i64 1)
+  %3 = alloca { i64 }
+  store { i64 } %Int7, { i64 }* %3
+  %Int8 = call { i64 } @_Int_i64(i64 1000000000)
+  %4 = alloca { i64 }
+  store { i64 } %Int8, { i64 }* %4
+  %x = load { i64 }* %2
+  %h = load { i64 }* %4
+  %"<11" = call { i1 } @"_<_S.i64S.i64"({ i64 } %x, { i64 } %h)
+  %b12 = extractvalue { i1 } %"<11", 0
+  br i1 %b12, label %loop9, label %afterloop10
+
+cont0:                                            ; preds = %afterloop
+  %a3 = load { i64 }* %0
+  %b4 = load { i64 }* %1
+  %"<" = call { i1 } @"_<_S.i64S.i64"({ i64 } %a3, { i64 } %b4)
+  %b5 = extractvalue { i1 } %"<", 0
+  br i1 %b5, label %then1, label %cont
 
 then0:                                            ; preds = %afterloop
   call void @_print_i64(i64 1)
   br label %cont
+
+then1:                                            ; preds = %cont0
+  call void @_print_i64(i64 100)
+  br label %cont
+
+loop9:                                            ; preds = %loop9, %cont
+  %y = load { i64 }* %3
+  %5 = alloca { i64 }
+  store { i64 } %y, { i64 }* %5
+  %t = load { i64 }* %5
+  %x13 = load { i64 }* %2
+  %"+" = call { i64 } @"_+_S.i64S.i64"({ i64 } %t, { i64 } %x13)
+  store { i64 } %"+", { i64 }* %3
+  %t14 = load { i64 }* %5
+  store { i64 } %t14, { i64 }* %2
+  %x15 = load { i64 }* %2
+  call void @_print_S.i64({ i64 } %x15)
+  %x16 = load { i64 }* %2
+  %h17 = load { i64 }* %4
+  %"<18" = call { i1 } @"_<_S.i64S.i64"({ i64 } %x16, { i64 } %h17)
+  %b19 = extractvalue { i1 } %"<18", 0
+  br i1 %b19, label %loop9, label %afterloop10
+
+afterloop10:                                      ; preds = %loop9, %cont
+  ret i64 0
 }
 
 attributes #0 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

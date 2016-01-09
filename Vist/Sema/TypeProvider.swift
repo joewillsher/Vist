@@ -147,7 +147,7 @@ extension BinaryExpression : TypeProvider {
         let params = try args.map { try $0.llvmType(scope) }
         
         guard let fnType = scope[function: op, paramTypes: params] else {
-            if let f = scope[function: op] { throw SemaError.WrongFunctionApplications(applied: params, expected: f.params) }
+            if let f = scope[function: op] { throw SemaError.WrongFunctionApplications(name: op, applied: params, expected: f.params) }
             throw SemaError.NoFunction(op)
         }
         
@@ -280,7 +280,8 @@ extension FunctionCallExpression : TypeProvider {
         let params = try args.elements.map { try $0.llvmType(scope) }
         
         guard let fnType = scope[function: name, paramTypes: params] else {
-            if let f = scope[function: name] { throw SemaError.WrongFunctionApplications(applied: params, expected: f.params) }
+            if let f = scope[function: name] {
+                throw SemaError.WrongFunctionApplications(name: name, applied: params, expected: f.params) }
             throw SemaError.NoFunction(name)
         }
         
@@ -326,7 +327,7 @@ extension FunctionPrototypeExpression : TypeProvider {
         }
         
         // type gen for inner scope
-        try variableTypeSema(forScopeExpression: &functionScopeExpression, scope: fnScope)
+        try scopeSemallvmType(forScopeExpression: &functionScopeExpression, scope: fnScope)
         
         return LLVMType.Void
     }
@@ -413,10 +414,10 @@ extension ElseIfBlockExpression : TypeProvider {
         // get condition type
         let cond = try condition?.llvmType(scope)
         
-        guard (cond as? LLVMStType)?.name == "Bool" else { throw SemaError.NonBooleanCondition }
+        guard cond?.isStdBool ?? false else { throw SemaError.NonBooleanCondition }
         
         // gen types for cond block
-        try variableTypeSema(forScopeExpression: &block, scope: scope)
+        try scopeSemallvmType(forScopeExpression: &block, scope: scope)
         
         self.type = LLVMType.Null
         return LLVMType.Null
@@ -462,7 +463,7 @@ extension ForInLoopExpression : TypeProvider {
         try iterator.llvmType(scope)
         
         // parse inside of loop in loop scope
-        try variableTypeSema(forScopeExpression: &block, scope: loopScope)
+        try scopeSemallvmType(forScopeExpression: &block, scope: loopScope)
         
         return LLVMType.Null
     }
@@ -479,10 +480,10 @@ extension WhileLoopExpression : TypeProvider {
         
         // gen types for iterator
         let it = try iterator.llvmType(scope)
-        guard it == LLVMType.Bool else { throw SemaError.NonBooleanCondition }
+        guard it.isStdBool else { throw SemaError.NonBooleanCondition }
         
         // parse inside of loop in loop scope
-        try variableTypeSema(forScopeExpression: &block, scope: loopScope)
+        try scopeSemallvmType(forScopeExpression: &block, scope: loopScope)
         
         type = LLVMType.Null
         return LLVMType.Null
@@ -495,10 +496,10 @@ extension WhileIteratorExpression : TypeProvider {
         
         // make condition variable and make sure bool
         let t = try condition.llvmType(scope)
-        guard t == LLVMType.Bool else { throw SemaError.NonBooleanCondition }
+        guard t.isStdBool else { throw SemaError.NonBooleanCondition }
         
-        type = LLVMType.Bool
-        return LLVMType.Bool
+        type = t
+        return t
     }
 }
 

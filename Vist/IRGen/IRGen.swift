@@ -718,17 +718,16 @@ extension WhileLoopExpression : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        guard try iterator.condition.type?.ir() == LLVMInt1Type() else { throw IRError.NotBoolCondition }
-        
         // generate loop and termination blocks
         let loop = LLVMAppendBasicBlock(stackFrame.function, "loop")
         let afterLoop = LLVMAppendBasicBlock(stackFrame.function, "afterloop")
         
         // whether to enter the while, first while check
         let initialCond = try iterator.condition.expressionCodeGen(stackFrame)
-        
+        let initialCondV = try PropertyLookupExpression.loadBuiltinValueProperty(initialCond)
+
         // move into loop block
-        LLVMBuildCondBr(builder, initialCond, loop, afterLoop)
+        LLVMBuildCondBr(builder, initialCondV, loop, afterLoop)
         LLVMPositionBuilderAtEnd(builder, loop)
         
         // gen the IR for the inner block
@@ -737,7 +736,8 @@ extension WhileLoopExpression : IRGenerator {
         
         // conditional break
         let conditionalRepeat = try iterator.condition.expressionCodeGen(stackFrame)
-        LLVMBuildCondBr(builder, conditionalRepeat, loop, afterLoop)
+        let conditionalRepeatV = try PropertyLookupExpression.loadBuiltinValueProperty(conditionalRepeat)
+        LLVMBuildCondBr(builder, conditionalRepeatV, loop, afterLoop)
         
         // move back to loop / end loop
         LLVMPositionBuilderAtEnd(builder, afterLoop)

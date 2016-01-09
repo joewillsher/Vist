@@ -272,8 +272,30 @@ entry:
   tail call void @_print_i64(i64 8)
   tail call void @_print_i64(i64 9)
   tail call void @_print_i64(i64 10)
-  tail call void @_print_i64(i64 7)
-  tail call void @_print_i64(i64 1)
+  tail call void @_print_i64(i64 100)
+  %0 = alloca { i64 }, align 8
+  store { i64 } { i64 1 }, { i64 }* %0, align 8
+  %1 = alloca { i64 }, align 8
+  store { i64 } { i64 1000000000 }, { i64 }* %1, align 8
+  %2 = getelementptr inbounds { i64 }* %0, i64 0, i32 0
+  %3 = getelementptr inbounds { i64 }* %1, i64 0, i32 0
+  %4 = load i64* %3, align 8
+  %.pre = load i64* %2, align 8
+  br label %loop9
+
+loop9:                                            ; preds = %entry, %loop9
+  %5 = phi i64 [ %.pre, %entry ], [ %6, %loop9 ]
+  %.fca.0.insert.i.i45 = phi { i64 } [ { i64 1 }, %entry ], [ %.fca.0.insert.i.i4, %loop9 ]
+  %value.i2 = extractvalue { i64 } %.fca.0.insert.i.i45, 0
+  %add_res.i = add i64 %5, %value.i2
+  %.fca.0.insert.i.i4 = insertvalue { i64 } undef, i64 %add_res.i, 0
+  store { i64 } %.fca.0.insert.i.i45, { i64 }* %0, align 8
+  tail call void @_print_i64(i64 %value.i2) #4
+  %6 = load i64* %2, align 8
+  %cmp_lt_res.i = icmp slt i64 %6, %4
+  br i1 %cmp_lt_res.i, label %loop9, label %afterloop10
+
+afterloop10:                                      ; preds = %loop9
   ret i64 0
 }
 
