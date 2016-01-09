@@ -357,9 +357,9 @@ extension FunctionCallExpression : IRGenerator {
         let args = try self.args.elements.map { try $0.expressionCodeGen(stackFrame) }
 
         // Lookup
-        if let biInst = builtinInstruction(name, builder: builder) {
+        if let function = builtinInstruction(name, builder: builder) {
             guard args.count == 2 else { throw IRError.WrongFunctionApplication(name) }
-            return try biInst(args[0], args[1])
+            return try function(args[0], args[1])
         }
         
         // make function
@@ -1001,7 +1001,7 @@ extension AST {
             for exp in expressions {
                 try exp.expressionCodeGen(stackFrame)
             }
-
+            
         }
         
         if !isLibrary {

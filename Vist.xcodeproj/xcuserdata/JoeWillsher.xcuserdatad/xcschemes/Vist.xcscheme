@@ -80,6 +80,10 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "-build-runtime"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "-build-stdlib"
             isEnabled = "NO">
          </CommandLineArgument>

@@ -86,14 +86,6 @@ public func compileDocuments(fileNames: [String],
         // Create vist program module and link against the helper bytecode
 
         if isStdLib {
-            /// Generate LLVM IR File for the helper c++ code
-            let runtimeIRGenTask = NSTask()
-            runtimeIRGenTask.currentDirectoryPath = runtimeDirectory
-            runtimeIRGenTask.launchPath = "/usr/bin/llvm-gcc"
-            runtimeIRGenTask.arguments = ["runtime.cpp", "-S", "-emit-llvm"]
-            
-            runtimeIRGenTask.launch()
-            runtimeIRGenTask.waitUntilExit()
             
             linkModule(&module, withFile: "\(runtimeDirectory)/runtime.bc")
             
@@ -105,6 +97,7 @@ public func compileDocuments(fileNames: [String],
         
         configModule(module)
 
+        LLVMDumpModule(module)
         
         
         
@@ -160,18 +153,6 @@ public func compileDocuments(fileNames: [String],
         if irOnly { return }
         
         
-        if isStdLib {
-            /// Turn that LLVM IR code into LLVM bytecode
-            let assembleTask = NSTask()
-            assembleTask.currentDirectoryPath = runtimeDirectory
-            assembleTask.launchPath = "/usr/local/Cellar/llvm/3.6.2/bin/llvm-as"
-            assembleTask.arguments = ["runtime.ll"]
-            
-            assembleTask.launch()
-            assembleTask.waitUntilExit()
-        }
-        
-        
         
         
         if verbose { print("\n\n-----------------------------ASM-----------------------------\n") }
@@ -203,7 +184,7 @@ public func compileDocuments(fileNames: [String],
             
             objFileTask.launch()
             objFileTask.waitUntilExit()
-
+            
             let libGen = NSTask()
             libGen.currentDirectoryPath = currentDirectory
             libGen.launchPath = "/usr/bin/libtool"
@@ -280,5 +261,28 @@ public func compileDocuments(fileNames: [String],
 }
 
 
+
+func buildRuntime() {
+    
+    let runtimeDirectory = "\(PROJECT_DIR)/Vist/Runtime"
+
+    /// Generate LLVM IR File for the helper c++ code
+    let runtimeIRGenTask = NSTask()
+    runtimeIRGenTask.currentDirectoryPath = runtimeDirectory
+    runtimeIRGenTask.launchPath = "/usr/bin/llvm-gcc"
+    runtimeIRGenTask.arguments = ["runtime.cpp", "-S", "-emit-llvm"]
+    
+    runtimeIRGenTask.launch()
+    runtimeIRGenTask.waitUntilExit()
+    
+    /// Turn that LLVM IR code into LLVM bytecode
+    let assembleTask = NSTask()
+    assembleTask.currentDirectoryPath = runtimeDirectory
+    assembleTask.launchPath = "/usr/local/Cellar/llvm/3.6.2/bin/llvm-as"
+    assembleTask.arguments = ["runtime.ll"]
+    
+    assembleTask.launch()
+    assembleTask.waitUntilExit()
+}
 
 

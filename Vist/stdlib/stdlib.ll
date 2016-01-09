@@ -9,7 +9,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 @str1 = private unnamed_addr constant [5 x i8] c"true\00"
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @_print_i64(i64 %i) #0 {
+define void @"_$print_i64"(i64 %i) #0 {
   %1 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str, i64 0, i64 0), i64 %i)
   ret void
 }
@@ -18,26 +18,26 @@ define void @_print_i64(i64 %i) #0 {
 declare i32 @printf(i8* nocapture readonly, ...) #1
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @_print_i32(i32 %i) #0 {
+define void @"_$print_i32"(i32 %i) #0 {
   %1 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str1, i64 0, i64 0), i32 %i)
   ret void
 }
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @_print_FP64(double %d) #0 {
+define void @"_$print_FP64"(double %d) #0 {
   %1 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str2, i64 0, i64 0), double %d)
   ret void
 }
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @_print_FP32(float %d) #0 {
+define void @"_$print_FP32"(float %d) #0 {
   %1 = fpext float %d to double
   %2 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str2, i64 0, i64 0), double %1)
   ret void
 }
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @_print_b(i1 zeroext %b) #0 {
+define void @"_$print_b"(i1 zeroext %b) #0 {
   br i1 %b, label %1, label %2
 
 ; <label>:1                                       ; preds = %0
@@ -95,7 +95,7 @@ entry:
 define void @_print_S.i64({ i64 } %a) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
-  tail call void @_print_i64(i64 %value)
+  tail call void @"_$print_i64"(i64 %value)
   ret void
 }
 
@@ -103,7 +103,7 @@ entry:
 define void @_print_S.b({ i1 } %a) #3 {
 entry:
   %value = extractvalue { i1 } %a, 0
-  tail call void @_print_b(i1 %value)
+  tail call void @"_$print_b"(i1 %value)
   ret void
 }
 
@@ -111,7 +111,7 @@ entry:
 define void @_print_S.FP64({ double } %a) #3 {
 entry:
   %value = extractvalue { double } %a, 0
-  tail call void @_print_FP64(double %value)
+  tail call void @"_$print_FP64"(double %value)
   ret void
 }
 

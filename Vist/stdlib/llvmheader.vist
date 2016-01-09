@@ -18,10 +18,10 @@ type Double {
 }
 
 
-func print: LLVM.Int
-func print: LLVM.Float
-func print: LLVM.Double
-func print: LLVM.Bool
+func _print: LLVM.Int
+func _print: LLVM.Float
+func _print: LLVM.Double
+func _print: LLVM.Bool
 
 @inline func print: Int
 @inline func print: Bool

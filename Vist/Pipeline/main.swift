@@ -30,6 +30,10 @@ do {
     let buildStdLib = a.contains("-build-stdlib")
     let preserveIntermediate = a.contains("-preserve")
     
+    if a.contains("-build-runtime") {
+        buildRuntime()
+    }
+    
     if a.contains("-h") || a.contains("-help") {
         
         print(

@@ -22,6 +22,10 @@ let tt = u ... v
 print(tt.start)
 
 
+
+
+
+/*
 for i in u...v do
     print(i)
 
@@ -37,7 +41,7 @@ else if a < b do
 var x = Int(1)
 var y = Int(1)
 let h = Int(1000000000)
-
+*/
 
 
 

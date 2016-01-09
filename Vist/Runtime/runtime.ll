@@ -9,7 +9,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 @.str4 = private unnamed_addr constant [7 x i8] c"false\0A\00", align 1
 
 ; Function Attrs: noinline ssp uwtable
-define void @_print_i64(i64 %i) #0 {
+define void @"_$print_i64"(i64 %i) #0 {
   %1 = alloca i64, align 8
   store i64 %i, i64* %1, align 8
   %2 = load i64* %1, align 8
@@ -20,20 +20,11 @@ define void @_print_i64(i64 %i) #0 {
 declare i32 @printf(i8*, ...) #1
 
 ; Function Attrs: noinline ssp uwtable
-define void @_print_i32(i32 %i) #0 {
+define void @"_$print_i32"(i32 %i) #0 {
   %1 = alloca i32, align 4
   store i32 %i, i32* %1, align 4
   %2 = load i32* %1, align 4
   %3 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str1, i32 0, i32 0), i32 %2)
-  ret void
-}
-
-; Function Attrs: noinline ssp uwtable
-define void @_print_FP64(double %d) #0 {
-  %1 = alloca double, align 8
-  store double %d, double* %1, align 8
-  %2 = load double* %1, align 8
-  %3 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str2, i32 0, i32 0), double %2)
   ret void
 }
 
@@ -47,7 +38,7 @@ define void @"_$print_FP64"(double %d) #0 {
 }
 
 ; Function Attrs: noinline ssp uwtable
-define void @_print_FP32(float %d) #0 {
+define void @"_$print_FP32"(float %d) #0 {
   %1 = alloca float, align 4
   store float %d, float* %1, align 4
   %2 = load float* %1, align 4
@@ -57,7 +48,7 @@ define void @_print_FP32(float %d) #0 {
 }
 
 ; Function Attrs: noinline ssp uwtable
-define void @_print_b(i1 zeroext %b) #0 {
+define void @"_$print_b"(i1 zeroext %b) #0 {
   %1 = alloca i8, align 1
   %2 = zext i1 %b to i8
   store i8 %2, i8* %1, align 1

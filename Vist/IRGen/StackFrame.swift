@@ -59,7 +59,7 @@ class StackFrame {
         
         throw IRError.NoFunction(name)
     }
-
+    
     func type(name: String) throws -> LLVMStType {
         if let v = types[name] { return v }
         
