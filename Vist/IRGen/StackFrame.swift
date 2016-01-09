@@ -57,7 +57,7 @@ class StackFrame {
         let inParent = try parentStackFrame?.functionType(name)
         if let p = inParent where p != nil { return p }
         
-        throw IRError.NoVariable(name)
+        throw IRError.NoFunction(name)
     }
 
     func type(name: String) throws -> LLVMStType {
@@ -66,7 +66,7 @@ class StackFrame {
         let inParent = try parentStackFrame?.type(name)
         if let p = inParent { return p }
         
-        throw IRError.NoVariable(name)
+        throw IRError.NoType(name)
     }
 
 }

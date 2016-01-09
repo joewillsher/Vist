@@ -23,45 +23,36 @@ let d = ["_foo_meme": 1]
 import Foundation
 
 let x = d[raw: "foo"]
+
+
 extension String {
     
-    
-    func sansUnderscores() -> String {
-        return stringByReplacingOccurrencesOfString("_", withString: ".")
+    func mangle() -> String {
+        return "_\(sansUnderscores())_"
     }
     
-    // TODO: Allow underscores in names
+    func sansUnderscores() -> String {
+        return stringByReplacingOccurrencesOfString("LLVM.", withString: "LLVM")
+            .stringByReplacingOccurrencesOfString("_", withString: "$")
+    }
+    
     // TODO: Add globalinit to mangled names for initalisers
     func demangleName() -> String {
         let kk = characters.dropFirst()
         return String(kk.prefixUpTo(kk.indexOf("_")!))
+            .stringByReplacingOccurrencesOfString("LLVM", withString: "LLVM.")
+//            .stringByReplacingOccurrencesOfString("$", withString: "_")
     }
     
 }
 
-
-"_LLVM.add.i64.i64_i64i64".demangleName()
-
-for var i = 0; i < 100; i++ { // c style
-    i
-}
-
-for i in 0..<100 {
-    i
-}
+let a = "_foo".mangle()
+let b = "LLVM.i_add".mangle()
 
 
-let range = 0..<100
-
-var _g = range.generate()
-
-while let i = _g.next() {
-    i
-}
+a.demangleName()
+b.demangleName()
 
 
 
-
-
-
-
+"_LLVM..add..i64..i64_i64i64".demangleName()

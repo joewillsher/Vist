@@ -11,7 +11,7 @@ import Foundation
 enum IRError : ErrorType {
     case NotIRGenerator(Expression.Type), NotBBGenerator(Expression.Type), NoOperator
     case MisMatchedTypes, NoLLVMFloat(UInt32), WrongFunctionApplication(String), NoLLVMType
-    case NoBody, InvalidFunction, NoVariable(String), NoBool, TypeNotFound, NotMutable(String)
+    case NoBody, InvalidFunction, NoVariable(String), NoType(String), NoFunction(String), NoBool, TypeNotFound, NotMutable(String)
     case CannotAssignToVoid, CannotAssignToType(Expression.Type)
     case ForLoopIteratorNotInt, NotBoolCondition, SubscriptingNonVariableTypeNotAllowed, SubscriptingNonArrayType, SubscriptOutOfBounds
     case NoProperty(String), CannotGetPropertyFromNonVariableType, NotAStruct, CannotMutateParam
@@ -288,7 +288,7 @@ extension MutationExpression : IRGenerator {
             guard let n = prop.object as? Variable else { throw IRError.CannotGetPropertyFromNonVariableType }
             guard let variable = try stackFrame.variable(n.name) as? MutableStructVariable else {
                 if try stackFrame.variable(n.name) is ParameterStructVariable { throw IRError.CannotMutateParam }
-                else { throw IRError.NoVariable(n.name) }
+                throw IRError.NoVariable(n.name)
             }
             
             guard variable.mutable else { throw IRError.NotMutable(n.name) }

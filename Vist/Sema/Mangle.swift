@@ -16,14 +16,16 @@ extension String {
     }
     
     func sansUnderscores() -> String {
-        return stringByReplacingOccurrencesOfString(".", withString: "..").stringByReplacingOccurrencesOfString("_", withString: ".")
+        return stringByReplacingOccurrencesOfString("LLVM.", withString: "LLVM")
+            .stringByReplacingOccurrencesOfString("_", withString: "$")
     }
     
-    // TODO: Allow underscores in names
     // TODO: Add globalinit to mangled names for initalisers
     func demangleName() -> String {
         let kk = characters.dropFirst()
         return String(kk.prefixUpTo(kk.indexOf("_")!))
+            .stringByReplacingOccurrencesOfString("LLVM", withString: "LLVM.")
+            .stringByReplacingOccurrencesOfString("$", withString: "_")
     }
     
 }
