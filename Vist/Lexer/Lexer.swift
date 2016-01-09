@@ -306,6 +306,7 @@ extension Lexer {
                 
                 if (multiLine && (n == "/" && charPtrSafe(-1) == "*")) || (!multiLine && (n == "\n" || n == "\r")) {
                     try resetContext()
+                    try consumeChar()
                     continue
                 }
                 addChar()
