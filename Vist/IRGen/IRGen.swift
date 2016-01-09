@@ -956,35 +956,30 @@ extension PropertyLookupExpression : IRGenerator {
 
 extension AST {
     
-    func IRGen(module m: LLVMModuleRef, isLibrary: Bool) throws {
+    // TODO: make this function take the semascope, and parse it into the stack frame
+    func IRGen(module m: LLVMModuleRef, isLibrary: Bool, stackFrame s: StackFrame) throws {
         
         // initialise global objects
         builder = LLVMCreateBuilder()
         module = m
         
-        let programEntryBlock: LLVMValueRef, mainFn: LLVMValueRef
-        if !isLibrary {
-            // main arguments
-            let argBuffer = [LLVMTypeRef]().ptr()
-            defer { argBuffer.dealloc(0) }
-            
-            // make main function & add to IR
-            let functionType = LLVMFunctionType(LLVMInt64Type(), argBuffer, UInt32(0), LLVMBool(false))
-            let mainFunction = LLVMAddFunction(module, "main", functionType)
-            
-            // Setup BB & stack frame
-            let p = LLVMAppendBasicBlock(mainFunction, "entry")
-            LLVMPositionBuilderAtEnd(builder, p)
-            
-            programEntryBlock = p
-            mainFn = mainFunction
-        } else {
-            programEntryBlock = nil
-            mainFn = nil
-        }
+        // main arguments
+        let argBuffer = [LLVMTypeRef]().ptr()
+        defer { argBuffer.dealloc(0) }
         
-        let stackFrame = StackFrame(block: programEntryBlock, function: mainFn)
-
+        // make main function & add to IR
+        let functionType = LLVMFunctionType(LLVMInt64Type(), argBuffer, UInt32(0), LLVMBool(false))
+        let mainFunction = LLVMAddFunction(module, "main", functionType)
+        
+        // Setup BB & stack frame
+        let p = LLVMAppendBasicBlock(mainFunction, "entry")
+        LLVMPositionBuilderAtEnd(builder, p)
+        
+        let programEntryBlock = p
+        let mainFn = mainFunction
+        
+        let stackFrame = StackFrame(block: programEntryBlock, function: mainFn, parentStackFrame: s)
+        
         if isLibrary {
             
             let e = expressions.filter {

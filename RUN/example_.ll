@@ -9,7 +9,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 @str = private unnamed_addr constant [6 x i8] c"false\00"
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @_print_i64(i64 %i) #0 {
+define void @"_$print_i64"(i64 %i) #0 {
   %1 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str, i64 0, i64 0), i64 %i)
   ret void
 }
@@ -18,26 +18,26 @@ define void @_print_i64(i64 %i) #0 {
 declare i32 @printf(i8* nocapture readonly, ...) #1
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @_print_i32(i32 %i) #0 {
+define void @"_$print_i32"(i32 %i) #0 {
   %1 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str1, i64 0, i64 0), i32 %i)
   ret void
 }
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @_print_FP64(double %d) #0 {
+define void @"_$print_FP64"(double %d) #0 {
   %1 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str2, i64 0, i64 0), double %d)
   ret void
 }
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @_print_FP32(float %d) #0 {
+define void @"_$print_FP32"(float %d) #0 {
   %1 = fpext float %d to double
   %2 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str2, i64 0, i64 0), double %1)
   ret void
 }
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @_print_b(i1 zeroext %b) #0 {
+define void @"_$print_b"(i1 zeroext %b) #0 {
   br i1 %b, label %1, label %2
 
 ; <label>:1                                       ; preds = %0
@@ -95,7 +95,7 @@ entry:
 define void @_print_S.i64({ i64 } %a) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
-  tail call void @_print_i64(i64 %value)
+  tail call void @"_$print_i64"(i64 %value)
   ret void
 }
 
@@ -103,7 +103,7 @@ entry:
 define void @_print_S.b({ i1 } %a) #3 {
 entry:
   %value = extractvalue { i1 } %a, 0
-  tail call void @_print_b(i1 %value)
+  tail call void @"_$print_b"(i1 %value)
   ret void
 }
 
@@ -111,7 +111,7 @@ entry:
 define void @_print_S.FP64({ double } %a) #3 {
 entry:
   %value = extractvalue { double } %a, 0
-  tail call void @_print_FP64(double %value)
+  tail call void @"_$print_FP64"(double %value)
   ret void
 }
 
@@ -260,7 +260,7 @@ declare i32 @puts(i8* nocapture readonly) #4
 
 define i64 @main() {
 entry:
-  %Int = call { i64 } @_Int_i64(i64 0)
+  %Int = call { i64 } @_Int_i64(i64 5)
   %0 = alloca { i64 }
   store { i64 } %Int, { i64 }* %0
   %Int1 = call { i64 } @_Int_i64(i64 100)
@@ -268,56 +268,32 @@ entry:
   store { i64 } %Int1, { i64 }* %1
   %u = load { i64 }* %0
   %v = load { i64 }* %1
-  %b = extractvalue { i64 } %u, 0
-  %b2 = extractvalue { i64 } %v, 0
-  br label %loop
-
-loop:                                             ; preds = %loop, %entry
-  %i = phi i64 [ %b, %entry ], [ %nexti, %loop ]
-  %nexti = add i64 1, %i
-  call void @_print_i64(i64 %i)
-  %looptest = icmp sle i64 %nexti, %b2
-  br i1 %looptest, label %loop, label %afterloop
-
-afterloop:                                        ; preds = %loop
-  %Int3 = call { i64 } @_Int_i64(i64 1)
-  %2 = alloca { i64 }
-  store { i64 } %Int3, { i64 }* %2
-  %Int4 = call { i64 } @_Int_i64(i64 3)
-  %3 = alloca { i64 }
-  store { i64 } %Int4, { i64 }* %3
-  %a = load { i64 }* %2
-  %b5 = load { i64 }* %3
-  %">" = call { i1 } @"_>_S.i64S.i64"({ i64 } %a, { i64 } %b5)
-  %b6 = extractvalue { i1 } %">", 0
-  br i1 %b6, label %then0, label %cont0
-
-cont:                                             ; preds = %cont0, %then1, %then0
-  %Int10 = call { i64 } @_Int_i64(i64 1)
-  %4 = alloca { i64 }
-  store { i64 } %Int10, { i64 }* %4
-  %Int11 = call { i64 } @_Int_i64(i64 1)
-  %5 = alloca { i64 }
-  store { i64 } %Int11, { i64 }* %5
-  %Int12 = call { i64 } @_Int_i64(i64 1000000000)
-  %6 = alloca { i64 }
-  store { i64 } %Int12, { i64 }* %6
+  %... = call { { i64 }, { i64 } } @_..._S.i64S.i64({ i64 } %u, { i64 } %v)
+  %2 = alloca { { i64 }, { i64 } }
+  store { { i64 }, { i64 } } %..., { { i64 }, { i64 } }* %2
+  %start_ptr = getelementptr inbounds { { i64 }, { i64 } }* %2, i32 0, i32 0
+  %start = load { i64 }* %start_ptr
+  call void @_print_S.i64({ i64 } %start)
   ret i64 0
+}
 
-cont0:                                            ; preds = %afterloop
-  %a7 = load { i64 }* %2
-  %b8 = load { i64 }* %3
-  %"<" = call { i1 } @"_<_S.i64S.i64"({ i64 } %a7, { i64 } %b8)
-  %b9 = extractvalue { i1 } %"<", 0
-  br i1 %b9, label %then1, label %cont
+; Function Attrs: alwaysinline
+define { { i64 }, { i64 } } @_Range_S.i64S.i64({ i64 } %"$0", { i64 } %"$1") #5 {
+entry:
+  %0 = alloca { { i64 }, { i64 } }
+  %start_ptr = getelementptr inbounds { { i64 }, { i64 } }* %0, i32 0, i32 0
+  store { i64 } %"$0", { i64 }* %start_ptr
+  %end_ptr = getelementptr inbounds { { i64 }, { i64 } }* %0, i32 0, i32 1
+  store { i64 } %"$1", { i64 }* %end_ptr
+  %1 = load { { i64 }, { i64 } }* %0
+  ret { { i64 }, { i64 } } %1
+}
 
-then0:                                            ; preds = %afterloop
-  call void @_print_i64(i64 1)
-  br label %cont
-
-then1:                                            ; preds = %cont0
-  call void @_print_i64(i64 100)
-  br label %cont
+; Function Attrs: alwaysinline
+define { { i64 }, { i64 } } @_..._S.i64S.i64({ i64 } %"$0", { i64 } %"$1") #5 {
+entry:
+  %Range = call { { i64 }, { i64 } } @_Range_S.i64S.i64({ i64 } %"$0", { i64 } %"$1")
+  ret { { i64 }, { i64 } } %Range
 }
 
 attributes #0 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
@@ -325,6 +301,7 @@ attributes #1 = { nounwind "less-precise-fpmad"="false" "no-frame-pointer-elim"=
 attributes #2 = { alwaysinline nounwind readnone }
 attributes #3 = { alwaysinline nounwind }
 attributes #4 = { nounwind }
+attributes #5 = { alwaysinline }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}

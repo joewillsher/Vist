@@ -327,7 +327,7 @@ extension FunctionPrototypeExpression : TypeProvider {
         }
         
         // type gen for inner scope
-        try scopeSemallvmType(forScopeExpression: &functionScopeExpression, scope: fnScope)
+        try scopeSemallvmType(forScopeExpression: functionScopeExpression, scope: fnScope)
         
         return LLVMType.Void
     }
@@ -417,7 +417,7 @@ extension ElseIfBlockExpression : TypeProvider {
         guard cond?.isStdBool ?? false else { throw SemaError.NonBooleanCondition }
         
         // gen types for cond block
-        try scopeSemallvmType(forScopeExpression: &block, scope: scope)
+        try scopeSemallvmType(forScopeExpression: block, scope: scope)
         
         self.type = LLVMType.Null
         return LLVMType.Null
@@ -464,7 +464,7 @@ extension ForInLoopExpression : TypeProvider {
         try iterator.llvmType(scope)
         
         // parse inside of loop in loop scope
-        try scopeSemallvmType(forScopeExpression: &block, scope: loopScope)
+        try scopeSemallvmType(forScopeExpression: block, scope: loopScope)
         
         return LLVMType.Null
     }
@@ -484,7 +484,7 @@ extension WhileLoopExpression : TypeProvider {
         guard it.isStdBool else { throw SemaError.NonBooleanCondition }
         
         // parse inside of loop in loop scope
-        try scopeSemallvmType(forScopeExpression: &block, scope: loopScope)
+        try scopeSemallvmType(forScopeExpression: block, scope: loopScope)
         
         type = LLVMType.Null
         return LLVMType.Null

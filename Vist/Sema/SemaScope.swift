@@ -6,7 +6,7 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-class SemaScope {
+final class SemaScope {
     
     var variables: [String: LLVMTyped]
     var functions: [String: LLVMFnType]

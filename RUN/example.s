@@ -1,8 +1,8 @@
 	.section	__TEXT,__text,regular,pure_instructions
 	.macosx_version_min 10, 11
-	.globl	__print_i64
+	.globl	__$print_i64
 	.align	4, 0x90
-__print_i64:                            ## @_print_i64
+__$print_i64:                           ## @"_$print_i64"
 	.cfi_startproc
 ## BB#0:
 	pushq	%rbp
@@ -21,9 +21,9 @@ Ltmp2:
 	jmp	_printf                 ## TAILCALL
 	.cfi_endproc
 
-	.globl	__print_i32
+	.globl	__$print_i32
 	.align	4, 0x90
-__print_i32:                            ## @_print_i32
+__$print_i32:                           ## @"_$print_i32"
 	.cfi_startproc
 ## BB#0:
 	pushq	%rbp
@@ -42,9 +42,9 @@ Ltmp5:
 	jmp	_printf                 ## TAILCALL
 	.cfi_endproc
 
-	.globl	__print_FP64
+	.globl	__$print_FP64
 	.align	4, 0x90
-__print_FP64:                           ## @_print_FP64
+__$print_FP64:                          ## @"_$print_FP64"
 	.cfi_startproc
 ## BB#0:
 	pushq	%rbp
@@ -61,9 +61,9 @@ Ltmp8:
 	jmp	_printf                 ## TAILCALL
 	.cfi_endproc
 
-	.globl	__print_FP32
+	.globl	__$print_FP32
 	.align	4, 0x90
-__print_FP32:                           ## @_print_FP32
+__$print_FP32:                          ## @"_$print_FP32"
 	.cfi_startproc
 ## BB#0:
 	pushq	%rbp
@@ -81,9 +81,9 @@ Ltmp11:
 	jmp	_printf                 ## TAILCALL
 	.cfi_endproc
 
-	.globl	__print_b
+	.globl	__$print_b
 	.align	4, 0x90
-__print_b:                              ## @_print_b
+__$print_b:                             ## @"_$print_b"
 	.cfi_startproc
 ## BB#0:
 	pushq	%rbp
@@ -171,7 +171,7 @@ __print_S.i64:                          ## @_print_S.i64
 	pushq	%rbp
 	movq	%rsp, %rbp
 	popq	%rbp
-	jmp	__print_i64             ## TAILCALL
+	jmp	__$print_i64            ## TAILCALL
 
 	.globl	__print_S.b
 	.align	4, 0x90
@@ -181,7 +181,7 @@ __print_S.b:                            ## @_print_S.b
 	movq	%rsp, %rbp
 	andl	$1, %edi
 	popq	%rbp
-	jmp	__print_b               ## TAILCALL
+	jmp	__$print_b              ## TAILCALL
 
 	.globl	__print_S.FP64
 	.align	4, 0x90
@@ -190,7 +190,7 @@ __print_S.FP64:                         ## @_print_S.FP64
 	pushq	%rbp
 	movq	%rsp, %rbp
 	popq	%rbp
-	jmp	__print_FP64            ## TAILCALL
+	jmp	__$print_FP64           ## TAILCALL
 
 	.globl	"__+_S.FP64S.FP64"
 	.align	4, 0x90
@@ -354,23 +354,31 @@ _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	pushq	%rbx
-	pushq	%rax
-	xorl	%ebx, %ebx
-	.align	4, 0x90
-LBB28_1:                                ## %loop
-                                        ## =>This Inner Loop Header: Depth=1
-	movq	%rbx, %rdi
-	leaq	1(%rbx), %rbx
-	callq	__print_i64
-	cmpq	$101, %rbx
-	jne	LBB28_1
-## BB#2:                                ## %cont
-	movl	$100, %edi
-	callq	__print_i64
+	movl	$5, %edi
+	callq	__$print_i64
 	xorl	%eax, %eax
-	addq	$8, %rsp
-	popq	%rbx
+	popq	%rbp
+	retq
+
+	.globl	__Range_S.i64S.i64
+	.align	4, 0x90
+__Range_S.i64S.i64:                     ## @_Range_S.i64S.i64
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	movq	%rdi, %rax
+	movq	%rsi, %rdx
+	popq	%rbp
+	retq
+
+	.globl	__..._S.i64S.i64
+	.align	4, 0x90
+__..._S.i64S.i64:                       ## @_..._S.i64S.i64
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	movq	%rdi, %rax
+	movq	%rsi, %rdx
 	popq	%rbp
 	retq
 

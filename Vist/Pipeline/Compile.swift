@@ -29,6 +29,8 @@ public func compileDocuments(fileNames: [String],
         var head: AST? = nil
         var all: [AST] = []
         
+        let globalScope = SemaScope(parent: nil, returnType: nil)
+        
         for (index, fileName) in fileNames.enumerate() {
             
             let path = "\(currentDirectory)/\(fileName)"
@@ -71,9 +73,15 @@ public func compileDocuments(fileNames: [String],
         if verbose { print("\n------------------------SEMA & LINK AST----------------------------\n") }
         
         guard let main = head else { fatalError("No main file supplied") }
-        var ast = main
+        let ast = main
         
-        try sema(&ast)
+        
+        let stdlib = StdLibExpose()
+        
+        // add ast info from stdlib to globalScope
+        stdlib.astToSemaScope(scope: globalScope)
+        
+        try sema(ast, globalScope: globalScope)
         if verbose { print(ast) }
         
         let file = fileNames.first!.stringByReplacingOccurrencesOfString(".vist", withString: "")
@@ -91,13 +99,10 @@ public func compileDocuments(fileNames: [String],
             
         } else {
             linkModule(&module, withFile: "\(stdLibDirectory)/stdlib.bc")
-            LLVMDumpModule(module)
-
         }
         
         configModule(module)
 
-        LLVMDumpModule(module)
         
         
         
@@ -106,9 +111,10 @@ public func compileDocuments(fileNames: [String],
         
         // Generate LLVM IR code for program
         
-        try ast.IRGen(module: module, isLibrary: generateLibrary)
+        let s = StackFrame()
+        stdlib.astToStackFrame(frame: s)
         
-        LLVMDumpModule(module)
+        try ast.IRGen(module: module, isLibrary: generateLibrary, stackFrame: s)
         
         // print and write to file
         let ir = String.fromCString(LLVMPrintModuleToString(module))!

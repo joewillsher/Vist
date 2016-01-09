@@ -9,7 +9,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 @str = private unnamed_addr constant [6 x i8] c"false\00"
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @_print_i64(i64 %i) #0 {
+define void @"_$print_i64"(i64 %i) #0 {
   %1 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str, i64 0, i64 0), i64 %i)
   ret void
 }
@@ -18,26 +18,26 @@ define void @_print_i64(i64 %i) #0 {
 declare i32 @printf(i8* nocapture readonly, ...) #1
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @_print_i32(i32 %i) #0 {
+define void @"_$print_i32"(i32 %i) #0 {
   %1 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str1, i64 0, i64 0), i32 %i)
   ret void
 }
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @_print_FP64(double %d) #0 {
+define void @"_$print_FP64"(double %d) #0 {
   %1 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str2, i64 0, i64 0), double %d)
   ret void
 }
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @_print_FP32(float %d) #0 {
+define void @"_$print_FP32"(float %d) #0 {
   %1 = fpext float %d to double
   %2 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str2, i64 0, i64 0), double %1)
   ret void
 }
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @_print_b(i1 zeroext %b) #0 {
+define void @"_$print_b"(i1 zeroext %b) #0 {
   br i1 %b, label %1, label %2
 
 ; <label>:1                                       ; preds = %0
@@ -95,7 +95,7 @@ entry:
 define void @_print_S.i64({ i64 } %a) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
-  tail call void @_print_i64(i64 %value)
+  tail call void @"_$print_i64"(i64 %value)
   ret void
 }
 
@@ -103,7 +103,7 @@ entry:
 define void @_print_S.b({ i1 } %a) #3 {
 entry:
   %value = extractvalue { i1 } %a, 0
-  tail call void @_print_b(i1 %value)
+  tail call void @"_$print_b"(i1 %value)
   ret void
 }
 
@@ -111,7 +111,7 @@ entry:
 define void @_print_S.FP64({ double } %a) #3 {
 entry:
   %value = extractvalue { double } %a, 0
-  tail call void @_print_FP64(double %value)
+  tail call void @"_$print_FP64"(double %value)
   ret void
 }
 
@@ -261,18 +261,28 @@ declare i32 @puts(i8* nocapture readonly) #4
 ; Function Attrs: nounwind
 define i64 @main() #4 {
 entry:
-  br label %loop
-
-loop:                                             ; preds = %loop, %entry
-  %i = phi i64 [ 0, %entry ], [ %nexti, %loop ]
-  %nexti = add nuw nsw i64 %i, 1
-  tail call void @_print_i64(i64 %i)
-  %exitcond = icmp eq i64 %nexti, 101
-  br i1 %exitcond, label %cont, label %loop
-
-cont:                                             ; preds = %loop
-  tail call void @_print_i64(i64 100)
+  tail call void @"_$print_i64"(i64 5) #4
   ret i64 0
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { { i64 }, { i64 } } @_Range_S.i64S.i64({ i64 } %"$0", { i64 } %"$1") #2 {
+entry:
+  %"$0.fca.0.extract" = extractvalue { i64 } %"$0", 0
+  %"$1.fca.0.extract" = extractvalue { i64 } %"$1", 0
+  %.fca.0.0.insert = insertvalue { { i64 }, { i64 } } undef, i64 %"$0.fca.0.extract", 0, 0
+  %.fca.1.0.insert = insertvalue { { i64 }, { i64 } } %.fca.0.0.insert, i64 %"$1.fca.0.extract", 1, 0
+  ret { { i64 }, { i64 } } %.fca.1.0.insert
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { { i64 }, { i64 } } @_..._S.i64S.i64({ i64 } %"$0", { i64 } %"$1") #2 {
+entry:
+  %"$0.fca.0.extract.i" = extractvalue { i64 } %"$0", 0
+  %"$1.fca.0.extract.i" = extractvalue { i64 } %"$1", 0
+  %.fca.0.0.insert.i = insertvalue { { i64 }, { i64 } } undef, i64 %"$0.fca.0.extract.i", 0, 0
+  %.fca.1.0.insert.i = insertvalue { { i64 }, { i64 } } %.fca.0.0.insert.i, i64 %"$1.fca.0.extract.i", 1, 0
+  ret { { i64 }, { i64 } } %.fca.1.0.insert.i
 }
 
 attributes #0 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

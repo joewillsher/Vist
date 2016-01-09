@@ -8,7 +8,7 @@
 
 
 /// A stack frame, used by irgen to lookup variables, function types and return pointers (via function)
-class StackFrame {
+final class StackFrame {
     
     private var runtimeVariables: [String: RuntimeVariable]
     private var functionTypes: [String: LLVMTypeRef]

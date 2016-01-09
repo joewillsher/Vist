@@ -8,7 +8,7 @@
 
 
 /// Adds type information to ast nodes and checks type signatures of functions, returns, & operators
-func scopeSemallvmType<ScopeType : ScopeExpression>(inout forScopeExpression scopeExp: ScopeType, scope s: SemaScope? = nil) throws {
+func scopeSemallvmType<ScopeType : ScopeExpression>(forScopeExpression scopeExp: ScopeType, scope s: SemaScope? = nil) throws {
     
     let scope = s ?? SemaScope(parent: nil, returnType: nil) // global scope if no parent, no return in user code
     
