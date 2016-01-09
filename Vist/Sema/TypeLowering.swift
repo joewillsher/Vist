@@ -114,10 +114,10 @@ extension LLVMFnType {
 
 final class LLVMStType : LLVMTyped {
     let name: String
-    let members: [(String, LLVMType, Bool)]
+    let members: [(String, LLVMTyped, Bool)]
     let methods: [(String, LLVMFnType)]
     
-    init(members: [(String, LLVMType, Bool)], methods: [(String, LLVMFnType)], name: String) {
+    init(members: [(String, LLVMTyped, Bool)], methods: [(String, LLVMFnType)], name: String) {
         self.name = name
         self.members = members
         self.methods = methods
@@ -135,7 +135,7 @@ final class LLVMStType : LLVMTyped {
             LLVMBool(false))
     }
     
-    func propertyType(name: String) throws -> LLVMType? {
+    func propertyType(name: String) throws -> LLVMTyped? {
         guard let i = (members.indexOf { $0.0 == name }) else { throw SemaError.NoPropertyNamed(name) }
         return members[i].1
     }

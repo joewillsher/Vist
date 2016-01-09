@@ -103,7 +103,7 @@ extension AssignmentExpression : TypeProvider {
         if let _ = scope[variable: name] { throw SemaError.InvalidRedeclaration(name, value) }
         
         // get val type
-        let explicitType = LLVMType(aType ?? "") as? LLVMTyped
+        let explicitType = LLVMType(aType ?? "") as? LLVMTyped ?? scope[type: aType ?? ""]
         let inferredType = try value.llvmType(scope)
         
         if let fn = (explicitType ?? inferredType) as? LLVMFnType {
@@ -570,9 +570,9 @@ extension StructExpression : TypeProvider {
         let structScope = SemaScope(parent: scope, returnType: nil) // cannot return from Struct scope
         
         // maps over properties and gens types
-        let members = try properties.map { (a: AssignmentExpression) -> (String, LLVMType, Bool) in
+        let members = try properties.map { (a: AssignmentExpression) -> (String, LLVMTyped, Bool) in
             try a.llvmType(structScope)
-            guard let t = a.value.type as? LLVMType else { throw SemaError.StructPropertyNotTyped }
+            guard let t = a.value.type else { throw SemaError.StructPropertyNotTyped }
             return (a.name, t, a.isMutable)
         }
         

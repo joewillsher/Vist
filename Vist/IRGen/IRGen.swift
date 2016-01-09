@@ -824,7 +824,7 @@ extension ArraySubscriptExpression : IRGenerator {
 extension StructExpression : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
-
+        
         stackFrame.addType(name, val: self.type! as! LLVMStType)
 
         for i in initialisers {
@@ -838,10 +838,6 @@ extension StructExpression : IRGenerator {
 
 
 extension InitialiserExpression : IRGenerator {
-    
-    // TODO: Redo this implementation
-    // initialiser should take pointer to allocated struct
-    // and initalise it
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
@@ -888,7 +884,6 @@ extension InitialiserExpression : IRGenerator {
                 let memTys = try t.members.map { ($0.0, try $0.1.ir(), $0.2) }
                 
                 let s = ParameterStructVariable(type: ty, val: param, builder: builder, properties: memTys)
-//                s.store(param)
                 initStackFrame.addVariable(name, val: s)
                 
             } else {
@@ -933,8 +928,9 @@ extension InitialiserExpression : IRGenerator {
 
 extension PropertyLookupExpression : IRGenerator {
     
+    // TODO: Fix this shit, variable lookup of ints should be abstracted from the data layout
     static func loadBuiltinValueProperty(object: LLVMValueRef) throws -> LLVMValueRef {
-        return LLVMBuildExtractValue(builder, object, 0, "b")
+        return LLVMBuildExtractValue(builder, object, 0/*aaahh*/, "b")
     }
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {

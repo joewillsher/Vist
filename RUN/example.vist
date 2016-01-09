@@ -1,9 +1,28 @@
 
 
+type Range {
+    let start: Int
+    let end: Int
+
+    init Int Int = {
+        start = $0
+        end = $1
+    }
+}
+
+@inline @operator(40)
+func ... : Int Int -> Range = do
+    return Range( $0 $1 )
+
+
 let u = Int(0)
 let v = Int(100)
 
-for i in u ... v do
+let tt = u ... v
+print(tt.start)
+
+
+for i in u...v do
     print(i)
 
 
