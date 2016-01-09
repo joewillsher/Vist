@@ -47,8 +47,22 @@ func LLVM.f_add: LLVM.Double LLVM.Double -> LLVM.Double
 func LLVM.f_mul: LLVM.Double LLVM.Double -> LLVM.Double
 
 
+@inline @operator(80) func + : Double Double -> Double
 
+@inline @operator(80) func + : Int Int -> Int
+@inline @operator(80) func - : Int Int -> Int
+@inline @operator(100) func * : Int Int -> Int
+@inline @operator(100) func / : Int Int -> Int
+@inline @operator(90) func % : Int Int -> Int
+@inline @operator(30) func < : Int Int -> Bool
+@inline @operator(30) func <= : Int Int -> Bool
+@inline @operator(30) func > : Int Int -> Bool
+@inline @operator(30) func >= : Int Int -> Bool
+@inline @operator(20) func == : Int Int -> Bool
+@inline @operator(20) func != : Int Int -> Bool
 
+@inline @operator(15) func && : Bool Bool -> Bool
+@inline @operator(10) func || : Bool Bool -> Bool
 
 
 

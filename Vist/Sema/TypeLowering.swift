@@ -127,6 +127,13 @@ final class LLVMStType : LLVMTyped {
         guard let i = (members.indexOf { $0.0 == name }) else { throw SemaError.NoPropertyNamed(name) }
         return members[i].1
     }
+    
+    static func named(n: String) -> LLVMStType { return LLVMStType(members: [], methods: [], name: n) }
+}
+
+@warn_unused_result
+func == (lhs: LLVMStType, rhs: LLVMStType) -> Bool {
+    return lhs.name == rhs.name
 }
 
 

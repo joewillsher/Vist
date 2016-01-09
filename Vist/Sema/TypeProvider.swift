@@ -148,7 +148,7 @@ extension BinaryExpression : TypeProvider {
         
         guard let fnType = scope[function: op, paramTypes: params] else {
             if let f = scope[function: op] { throw SemaError.WrongFunctionApplications(applied: params, expected: f.params) }
-            else { throw SemaError.NoFunction(op) }
+            throw SemaError.NoFunction(op)
         }
         
         self.mangledName = op.mangle(fnType)
@@ -281,7 +281,7 @@ extension FunctionCallExpression : TypeProvider {
         
         guard let fnType = scope[function: name, paramTypes: params] else {
             if let f = scope[function: name] { throw SemaError.WrongFunctionApplications(applied: params, expected: f.params) }
-            else { throw SemaError.NoFunction(name) }
+            throw SemaError.NoFunction(name)
         }
         
         self.mangledName = name.mangle(fnType)
@@ -412,7 +412,8 @@ extension ElseIfBlockExpression : TypeProvider {
         
         // get condition type
         let cond = try condition?.llvmType(scope)
-        guard cond == LLVMType.Bool || cond == nil else { throw SemaError.NonBooleanCondition }
+        
+        guard (cond as? LLVMStType)?.name == "Bool" else { throw SemaError.NonBooleanCondition }
         
         // gen types for cond block
         try variableTypeSema(forScopeExpression: &block, scope: scope)

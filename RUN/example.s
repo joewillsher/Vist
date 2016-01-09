@@ -378,6 +378,8 @@ _main:                                  ## @main
 	callq	__print_i64
 	movl	$7, %edi
 	callq	__print_i64
+	movl	$1, %edi
+	callq	__print_i64
 	xorl	%eax, %eax
 	popq	%rbp
 	retq

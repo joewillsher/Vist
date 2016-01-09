@@ -273,6 +273,7 @@ entry:
   tail call void @_print_i64(i64 9)
   tail call void @_print_i64(i64 10)
   tail call void @_print_i64(i64 7)
+  tail call void @_print_i64(i64 1)
   ret i64 0
 }
 

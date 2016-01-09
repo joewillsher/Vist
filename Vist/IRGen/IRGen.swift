@@ -612,7 +612,8 @@ extension ConditionalExpression : IRGenerator {
             LLVMPositionBuilderAtEnd(builder, ifIn)
             
             if let cond = cond { //if statement, make conditonal jump
-                LLVMBuildCondBr(builder, cond, block, ifOut)
+                let v = try PropertyLookupExpression.loadBuiltinValueProperty(cond)
+                LLVMBuildCondBr(builder, v, block, ifOut)
             } else { // else statement, uncondtional jump
                 LLVMBuildBr(builder, block)
                 break
@@ -927,6 +928,10 @@ extension InitialiserExpression : IRGenerator {
 }
 
 extension PropertyLookupExpression : IRGenerator {
+    
+    static func loadBuiltinValueProperty(object: LLVMValueRef) throws -> LLVMValueRef {
+        return LLVMBuildExtractValue(builder, object, 0, "b")
+    }
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         

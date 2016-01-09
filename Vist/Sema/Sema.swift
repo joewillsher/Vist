@@ -51,14 +51,24 @@ func sema(inout ast: AST) throws {
         .flatMap { ($0 as? FunctionPrototypeExpression) }
         .map { ($0.name, $0.fnType.type as? LLVMFnType) }
 
-    let tys = a.expressions
+    let structs = a.expressions
         .flatMap { ($0 as? StructExpression) }
+    let tys = structs
         .map { ($0.name, $0.type as? LLVMStType) }
-
-    for (name, t) in fns {
+    let methods = structs
+        .flatMap {
+            $0.methods
+                .flatMap { ($0.name, $0.type as? LLVMFnType) }
+            +
+            $0.initialisers
+                .flatMap { ($0.parent?.name ?? "", $0.type as? LLVMFnType)
+            }
+    }
+    
+    for (name, t) in fns + methods {
         globalScope[function: name] = t
     }
-
+    
     for (name, t) in tys {
         globalScope[type: name] = t
     }

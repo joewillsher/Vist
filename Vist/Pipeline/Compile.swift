@@ -22,7 +22,9 @@ public func compileDocuments(fileNames: [String],
     isStdLib: Bool = false)
     throws {
         
-        let currentDirectory = isStdLib ? "\(PROJECT_DIR)/Vist/stdlib" : NSTask().currentDirectoryPath
+        let stdLibDirectory = "\(PROJECT_DIR)/Vist/stdlib"
+        let runtimeDirectory = "\(PROJECT_DIR)/Vist/Runtime"
+        let currentDirectory = isStdLib ? stdLibDirectory : NSTask().currentDirectoryPath
         
         var head: AST? = nil
         var all: [AST] = []
@@ -43,8 +45,6 @@ public func compileDocuments(fileNames: [String],
             if verbose { tokens
                 .map {"\($0.0): \t\t\t\t\t\($0.1.range.start)--\($0.1.range.end)"}
                 .forEach { print($0) } }
-            
-            
             
             
             if verbose { print("\n\n------------------------------AST-------------------------------\n") }
@@ -88,17 +88,17 @@ public func compileDocuments(fileNames: [String],
         if isStdLib {
             /// Generate LLVM IR File for the helper c++ code
             let runtimeIRGenTask = NSTask()
-            runtimeIRGenTask.currentDirectoryPath = "\(PROJECT_DIR)/Vist/Runtime"
+            runtimeIRGenTask.currentDirectoryPath = runtimeDirectory
             runtimeIRGenTask.launchPath = "/usr/bin/llvm-gcc"
             runtimeIRGenTask.arguments = ["runtime.cpp", "-S", "-emit-llvm"]
             
             runtimeIRGenTask.launch()
             runtimeIRGenTask.waitUntilExit()
             
-            linkModule(&module, withFile: "\(PROJECT_DIR)/Vist/Runtime/runtime.bc")
+            linkModule(&module, withFile: "\(runtimeDirectory)/runtime.bc")
             
         } else {
-            linkModule(&module, withFile: "\(PROJECT_DIR)/Vist/stdlib/stdlib.bc")
+            linkModule(&module, withFile: "\(stdLibDirectory)/stdlib.bc")
             LLVMDumpModule(module)
 
         }
@@ -163,7 +163,7 @@ public func compileDocuments(fileNames: [String],
         if isStdLib {
             /// Turn that LLVM IR code into LLVM bytecode
             let assembleTask = NSTask()
-            assembleTask.currentDirectoryPath = "\(PROJECT_DIR)/Vist/Runtime"
+            assembleTask.currentDirectoryPath = runtimeDirectory
             assembleTask.launchPath = "/usr/local/Cellar/llvm/3.6.2/bin/llvm-as"
             assembleTask.arguments = ["runtime.ll"]
             

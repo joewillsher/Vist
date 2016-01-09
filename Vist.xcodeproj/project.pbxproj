@@ -64,7 +64,6 @@
 		D485DD291C1667E900B72F81 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D489F3BD1C1E392D00254FFC /* example.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vist; path = RUN/example.vist; sourceTree = "<group>"; };
 		D489F3C01C1E396E00254FFC /* example */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = example; path = RUN/example; sourceTree = "<group>"; };
-		D489F3C11C1E397700254FFC /* runtime.bc */ = {isa = PBXFileReference; lastKnownFileType = file; name = runtime.bc; path = RUN/runtime.bc; sourceTree = "<group>"; };
 		D497A7691C3B003A00DFE39E /* Compile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Compile.swift; path = Pipeline/Compile.swift; sourceTree = "<group>"; };
 		D497A76A1C3B003A00DFE39E /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = main.swift; path = Pipeline/main.swift; sourceTree = "<group>"; };
 		D497A76D1C3B005600DFE39E /* Lexer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Lexer.swift; path = Lexer/Lexer.swift; sourceTree = "<group>"; };
@@ -89,8 +88,12 @@
 		D497A7911C3B015700DFE39E /* Print.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Print.swift; path = Helper/Print.swift; sourceTree = "<group>"; };
 		D497A7951C3B016400DFE39E /* Vist-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Vist-Bridging-Header.h"; path = "Helper/Vist-Bridging-Header.h"; sourceTree = "<group>"; };
 		D4B1FA011C2E1F58001E7BCC /* TODO.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = TODO.md; sourceTree = "<group>"; };
+		D4BBE4191C4157E7001B8934 /* runtime.bc */ = {isa = PBXFileReference; lastKnownFileType = file; name = runtime.bc; path = Runtime/runtime.bc; sourceTree = "<group>"; };
+		D4BBE41A1C4157E7001B8934 /* runtime.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = runtime.ll; path = Runtime/runtime.ll; sourceTree = "<group>"; };
+		D4BBE41C1C415835001B8934 /* stdlib.bc */ = {isa = PBXFileReference; lastKnownFileType = file; name = stdlib.bc; path = stdlib/stdlib.bc; sourceTree = "<group>"; };
+		D4BBE41D1C415835001B8934 /* stdlib.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = stdlib.dylib; path = stdlib/stdlib.dylib; sourceTree = "<group>"; };
+		D4BBE41E1C41584C001B8934 /* stdlib.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = stdlib.o; path = stdlib/stdlib.o; sourceTree = "<group>"; };
 		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; };
-		D4DB9D681C1DFFCC00503153 /* runtime.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = runtime.ll; path = RUN/runtime.ll; sourceTree = "<group>"; };
 		D4FAE4561C3B018000C9EE05 /* Test.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; name = Test.playground; path = Helper/Test.playground; sourceTree = "<group>"; };
 		D4FAE45A1C3DA10600C9EE05 /* llvmheader.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = llvmheader.vist; path = stdlib/llvmheader.vist; sourceTree = "<group>"; };
 		D4FAE45B1C3DCEEE00C9EE05 /* BuiltinFunction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BuiltinFunction.swift; path = IRGen/BuiltinFunction.swift; sourceTree = "<group>"; };
@@ -119,6 +122,8 @@
 			isa = PBXGroup;
 			children = (
 				D4644BE61C4072D600364B99 /* runtime.cpp */,
+				D4BBE41A1C4157E7001B8934 /* runtime.ll */,
+				D4BBE4191C4157E7001B8934 /* runtime.bc */,
 			);
 			name = Runtime;
 			sourceTree = "<group>";
@@ -131,6 +136,8 @@
 				D4644BE21C40619800364B99 /* stdlib_.ll */,
 				D4644BE31C40619800364B99 /* stdlib.ll */,
 				D4644BE41C40619800364B99 /* stdlib.s */,
+				D4BBE41C1C415835001B8934 /* stdlib.bc */,
+				D4BBE41F1C415856001B8934 /* Unused */,
 			);
 			name = StdLib;
 			sourceTree = "<group>";
@@ -201,7 +208,6 @@
 			isa = PBXGroup;
 			children = (
 				D4DB9D641C1DFB8700503153 /* Source */,
-				D4DB9D651C1DFF9B00503153 /* Compile pipeline */,
 				D47D4BE01C38427200B22B3C /* Docs */,
 				D47FF07C1B812052003F9920 /* Vist */,
 				D485DD261C1667E900B72F81 /* VistTest */,
@@ -221,8 +227,7 @@
 		D47FF07C1B812052003F9920 /* Vist */ = {
 			isa = PBXGroup;
 			children = (
-				D497A76A1C3B003A00DFE39E /* main.swift */,
-				D497A7691C3B003A00DFE39E /* Compile.swift */,
+				D4BBE41B1C415806001B8934 /* Compile */,
 				D46DA5F41C297AC5006AF1BE /* Lexer */,
 				D46DA5F31C297AB9006AF1BE /* Parser */,
 				D4B1FA041C300AA8001E7BCC /* Sema */,
@@ -258,25 +263,34 @@
 			name = Sema;
 			sourceTree = "<group>";
 		};
+		D4BBE41B1C415806001B8934 /* Compile */ = {
+			isa = PBXGroup;
+			children = (
+				D497A76A1C3B003A00DFE39E /* main.swift */,
+				D497A7691C3B003A00DFE39E /* Compile.swift */,
+			);
+			name = Compile;
+			sourceTree = "<group>";
+		};
+		D4BBE41F1C415856001B8934 /* Unused */ = {
+			isa = PBXGroup;
+			children = (
+				D4BBE41D1C415835001B8934 /* stdlib.dylib */,
+				D4BBE41E1C41584C001B8934 /* stdlib.o */,
+			);
+			name = Unused;
+			sourceTree = "<group>";
+		};
 		D4DB9D641C1DFB8700503153 /* Source */ = {
 			isa = PBXGroup;
 			children = (
 				D489F3BD1C1E392D00254FFC /* example.vist */,
-			);
-			name = Source;
-			sourceTree = "<group>";
-		};
-		D4DB9D651C1DFF9B00503153 /* Compile pipeline */ = {
-			isa = PBXGroup;
-			children = (
-				D4DB9D681C1DFFCC00503153 /* runtime.ll */,
-				D489F3C11C1E397700254FFC /* runtime.bc */,
 				D4851F491C28A0820009233E /* example_.ll */,
 				D4DB9D661C1DFFB300503153 /* example.ll */,
 				D4851F4A1C28A08A0009233E /* example.s */,
 				D489F3C01C1E396E00254FFC /* example */,
 			);
-			name = "Compile pipeline";
+			name = Source;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

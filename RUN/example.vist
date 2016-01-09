@@ -9,4 +9,10 @@ for i in 0 ... 10 {
 let x = LLVM.i_add(3 4)
 print(x)
 
+let a = Int(1)
+let b = Int(3)
+
+if a < b {
+    print(1)
+}
 

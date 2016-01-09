@@ -109,3 +109,28 @@ func || : Bool Bool -> Bool = |a b| do
 
 
 
+
+
+
+
+type Array {
+
+    var count: Int
+    var capacity: Int
+    var ptr: LLVM.Pointer
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
