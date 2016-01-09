@@ -76,7 +76,7 @@ public func compileDocuments(fileNames: [String],
         let ast = main
         
         
-        let stdlib = StdLibExpose()
+        let stdlib = StdLibExpose(isStdLib: isStdLib)
         
         // add ast info from stdlib to globalScope
         stdlib.astToSemaScope(scope: globalScope)
@@ -112,6 +112,7 @@ public func compileDocuments(fileNames: [String],
         // Generate LLVM IR code for program
         
         let s = StackFrame()
+        
         stdlib.astToStackFrame(frame: s)
         
         try ast.IRGen(module: module, isLibrary: generateLibrary, stackFrame: s)

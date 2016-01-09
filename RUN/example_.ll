@@ -260,17 +260,17 @@ declare i32 @puts(i8* nocapture readonly) #4
 
 define i64 @main() {
 entry:
-  %Int = call { i64 } @_Int_i64(i64 5)
+  %Int_res = call { i64 } @_Int_i64(i64 5)
   %0 = alloca { i64 }
-  store { i64 } %Int, { i64 }* %0
-  %Int1 = call { i64 } @_Int_i64(i64 100)
+  store { i64 } %Int_res, { i64 }* %0
+  %Int_res1 = call { i64 } @_Int_i64(i64 100)
   %1 = alloca { i64 }
-  store { i64 } %Int1, { i64 }* %1
+  store { i64 } %Int_res1, { i64 }* %1
   %u = load { i64 }* %0
   %v = load { i64 }* %1
-  %... = call { { i64 }, { i64 } } @_..._S.i64S.i64({ i64 } %u, { i64 } %v)
+  %..._res = call { { i64 }, { i64 } } @_..._S.i64S.i64({ i64 } %u, { i64 } %v)
   %2 = alloca { { i64 }, { i64 } }
-  store { { i64 }, { i64 } } %..., { { i64 }, { i64 } }* %2
+  store { { i64 }, { i64 } } %..._res, { { i64 }, { i64 } }* %2
   %start_ptr = getelementptr inbounds { { i64 }, { i64 } }* %2, i32 0, i32 0
   %start = load { i64 }* %start_ptr
   call void @_print_S.i64({ i64 } %start)
@@ -292,8 +292,8 @@ entry:
 ; Function Attrs: alwaysinline
 define { { i64 }, { i64 } } @_..._S.i64S.i64({ i64 } %"$0", { i64 } %"$1") #5 {
 entry:
-  %Range = call { { i64 }, { i64 } } @_Range_S.i64S.i64({ i64 } %"$0", { i64 } %"$1")
-  ret { { i64 }, { i64 } } %Range
+  %Range_res = call { { i64 }, { i64 } } @_Range_S.i64S.i64({ i64 } %"$0", { i64 } %"$1")
+  ret { { i64 }, { i64 } } %Range_res
 }
 
 attributes #0 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

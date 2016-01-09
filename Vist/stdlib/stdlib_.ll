@@ -68,8 +68,23 @@ define void @"_$print_b"(i1 zeroext %b) #0 {
   ret void
 }
 
+; Function Attrs: noinline ssp uwtable
+define void @"_$fatalError_"() #0 {
+  call void @abort() #4
+  unreachable
+                                                  ; No predecessors!
+  ret void
+}
+
+; Function Attrs: noreturn
+declare void @abort() #2
+
+define i64 @main() {
+entry:
+}
+
 ; Function Attrs: alwaysinline
-define { i64 } @_Int_S.i64({ i64 } %o) #2 {
+define { i64 } @_Int_S.i64({ i64 } %o) #3 {
 entry:
   %0 = alloca { i64 }
   %value = extractvalue { i64 } %o, 0
@@ -80,7 +95,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { i64 } @_Int_i64(i64 %v) #2 {
+define { i64 } @_Int_i64(i64 %v) #3 {
 entry:
   %0 = alloca { i64 }
   %value_ptr = getelementptr inbounds { i64 }* %0, i32 0, i32 0
@@ -90,7 +105,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @_Bool_S.b({ i1 } %o) #2 {
+define { i1 } @_Bool_S.b({ i1 } %o) #3 {
 entry:
   %0 = alloca { i1 }
   %value = extractvalue { i1 } %o, 0
@@ -101,7 +116,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @_Bool_b(i1 %v) #2 {
+define { i1 } @_Bool_b(i1 %v) #3 {
 entry:
   %0 = alloca { i1 }
   %value_ptr = getelementptr inbounds { i1 }* %0, i32 0, i32 0
@@ -111,7 +126,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { double } @_Double_S.FP64({ double } %o) #2 {
+define { double } @_Double_S.FP64({ double } %o) #3 {
 entry:
   %0 = alloca { double }
   %value = extractvalue { double } %o, 0
@@ -122,7 +137,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { double } @_Double_FP64(double %v) #2 {
+define { double } @_Double_FP64(double %v) #3 {
 entry:
   %0 = alloca { double }
   %value_ptr = getelementptr inbounds { double }* %0, i32 0, i32 0
@@ -132,7 +147,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define void @_print_S.i64({ i64 } %a) #2 {
+define void @_print_S.i64({ i64 } %a) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   call void @"_$print_i64"(i64 %value)
@@ -140,7 +155,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define void @_print_S.b({ i1 } %a) #2 {
+define void @_print_S.b({ i1 } %a) #3 {
 entry:
   %value = extractvalue { i1 } %a, 0
   call void @"_$print_b"(i1 %value)
@@ -148,156 +163,169 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define void @_print_S.FP64({ double } %a) #2 {
+define void @_print_S.FP64({ double } %a) #3 {
 entry:
   %value = extractvalue { double } %a, 0
   call void @"_$print_FP64"(double %value)
   ret void
 }
 
+define void @"_$sanityCheck_S.b"({ i1 } %"$0") {
+entry:
+
+cont:                                             ; preds = <null operand!>, %then0
+  ret void
+
+then0:                                            ; preds = <null operand!>
+  call void @"_$fatalError_"()
+  br label %cont
+}
+
 ; Function Attrs: alwaysinline
-define { double } @"_+_S.FP64S.FP64"({ double } %a, { double } %b) #2 {
+define { double } @"_+_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %add_res = fadd double %value, %value1
-  %Double = call { double } @_Double_FP64(double %add_res)
-  ret { double } %Double
+  %Double_res = call { double } @_Double_FP64(double %add_res)
+  ret { double } %Double_res
 }
 
 ; Function Attrs: alwaysinline
-define { i64 } @"_+_S.i64S.i64"({ i64 } %a, { i64 } %b) #2 {
+define { i64 } @"_+_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %add_res = add i64 %value, %value1
-  %Int = call { i64 } @_Int_i64(i64 %add_res)
-  ret { i64 } %Int
+  %Int_res = call { i64 } @_Int_i64(i64 %add_res)
+  ret { i64 } %Int_res
 }
 
 ; Function Attrs: alwaysinline
-define { i64 } @_-_S.i64S.i64({ i64 } %a, { i64 } %b) #2 {
+define { i64 } @_-_S.i64S.i64({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %sub_res = sub i64 %value, %value1
-  %Int = call { i64 } @_Int_i64(i64 %sub_res)
-  ret { i64 } %Int
+  %Int_res = call { i64 } @_Int_i64(i64 %sub_res)
+  ret { i64 } %Int_res
 }
 
 ; Function Attrs: alwaysinline
-define { i64 } @"_*_S.i64S.i64"({ i64 } %a, { i64 } %b) #2 {
+define { i64 } @"_*_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %mul_res = mul i64 %value, %value1
-  %Int = call { i64 } @_Int_i64(i64 %mul_res)
-  ret { i64 } %Int
+  %Int_res = call { i64 } @_Int_i64(i64 %mul_res)
+  ret { i64 } %Int_res
 }
 
 ; Function Attrs: alwaysinline
-define { i64 } @"_/_S.i64S.i64"({ i64 } %a, { i64 } %b) #2 {
+define { i64 } @"_/_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %div_res = udiv i64 %value, %value1
-  %Int = call { i64 } @_Int_i64(i64 %div_res)
-  ret { i64 } %Int
+  %Int_res = call { i64 } @_Int_i64(i64 %div_res)
+  ret { i64 } %Int_res
 }
 
 ; Function Attrs: alwaysinline
-define { i64 } @"_%_S.i64S.i64"({ i64 } %a, { i64 } %b) #2 {
+define { i64 } @"_%_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %rem_res = urem i64 %value, %value1
-  %Int = call { i64 } @_Int_i64(i64 %rem_res)
-  ret { i64 } %Int
+  %Int_res = call { i64 } @_Int_i64(i64 %rem_res)
+  ret { i64 } %Int_res
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @"_<_S.i64S.i64"({ i64 } %a, { i64 } %b) #2 {
+define { i1 } @"_<_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %cmp_lt_res = icmp slt i64 %value, %value1
-  %Bool = call { i1 } @_Bool_b(i1 %cmp_lt_res)
-  ret { i1 } %Bool
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_lt_res)
+  ret { i1 } %Bool_res
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @"_<=_S.i64S.i64"({ i64 } %a, { i64 } %b) #2 {
+define { i1 } @"_<=_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %cmp_lte_res = icmp sle i64 %value, %value1
-  %Bool = call { i1 } @_Bool_b(i1 %cmp_lte_res)
-  ret { i1 } %Bool
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_lte_res)
+  ret { i1 } %Bool_res
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @"_>_S.i64S.i64"({ i64 } %a, { i64 } %b) #2 {
+define { i1 } @"_>_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %cmp_gt_res = icmp sgt i64 %value, %value1
-  %Bool = call { i1 } @_Bool_b(i1 %cmp_gt_res)
-  ret { i1 } %Bool
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_gt_res)
+  ret { i1 } %Bool_res
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @"_>=_S.i64S.i64"({ i64 } %a, { i64 } %b) #2 {
+define { i1 } @"_>=_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %cmp_gte_res = icmp sge i64 %value, %value1
-  %Bool = call { i1 } @_Bool_b(i1 %cmp_gte_res)
-  ret { i1 } %Bool
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_gte_res)
+  ret { i1 } %Bool_res
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @"_==_S.i64S.i64"({ i64 } %a, { i64 } %b) #2 {
+define { i1 } @"_==_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %cmp_eq_res = icmp eq i64 %value, %value1
-  %Bool = call { i1 } @_Bool_b(i1 %cmp_eq_res)
-  ret { i1 } %Bool
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_eq_res)
+  ret { i1 } %Bool_res
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @"_!=_S.i64S.i64"({ i64 } %a, { i64 } %b) #2 {
+define { i1 } @"_!=_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %cmp_neq_res = icmp ne i64 %value, %value1
-  %Bool = call { i1 } @_Bool_b(i1 %cmp_neq_res)
-  ret { i1 } %Bool
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_neq_res)
+  ret { i1 } %Bool_res
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @"_&&_S.bS.b"({ i1 } %a, { i1 } %b) #2 {
+define { i1 } @"_&&_S.bS.b"({ i1 } %a, { i1 } %b) #3 {
 entry:
   %value = extractvalue { i1 } %a, 0
   %value1 = extractvalue { i1 } %b, 0
   %cmp_and_res = and i1 %value, %value1
-  %Bool = call { i1 } @_Bool_b(i1 %cmp_and_res)
-  ret { i1 } %Bool
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_and_res)
+  ret { i1 } %Bool_res
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @"_||_S.bS.b"({ i1 } %a, { i1 } %b) #2 {
+define { i1 } @"_||_S.bS.b"({ i1 } %a, { i1 } %b) #3 {
 entry:
   %value = extractvalue { i1 } %a, 0
   %value1 = extractvalue { i1 } %b, 0
   %cmp_or_res = or i1 %value, %value1
-  %Bool = call { i1 } @_Bool_b(i1 %cmp_or_res)
-  ret { i1 } %Bool
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_or_res)
+  ret { i1 } %Bool_res
 }
 
 attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #2 = { alwaysinline }
+attributes #2 = { noreturn "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #3 = { alwaysinline }
+attributes #4 = { noreturn }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}

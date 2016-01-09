@@ -16,18 +16,15 @@ extension String {
     }
     
     func sansUnderscores() -> String {
-        return stringByReplacingOccurrencesOfString("LLVM.", withString: "LLVM")
-            .stringByReplacingOccurrencesOfString("_", withString: "$")
+        return stringByReplacingOccurrencesOfString("_", withString: "$")
     }
     
     // TODO: Add globalinit to mangled names for initalisers
     func demangleName() -> String {
         let kk = characters.dropFirst()
         return String(kk.prefixUpTo(kk.indexOf("_")!))
-            .stringByReplacingOccurrencesOfString("LLVM", withString: "LLVM.")
             .stringByReplacingOccurrencesOfString("$", withString: "_")
     }
-    
 }
 
 

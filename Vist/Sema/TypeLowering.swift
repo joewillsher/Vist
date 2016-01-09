@@ -173,6 +173,7 @@ func ==
 func ==
     (lhs: [LLVMTyped], rhs: [LLVMTyped])
     -> Bool {
+        if lhs.isEmpty && rhs.isEmpty { return true }
         if lhs.count != rhs.count { return false }
         
         for (l,r) in zip(lhs,rhs) {

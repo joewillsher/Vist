@@ -1,29 +1,4 @@
-extension DictionaryLiteralConvertible
-    where
-    Key == String,
-    Self : SequenceType,
-    Self.Generator.Element == (Key, Value)
-{
-    
-    subscript(raw raw: String) -> Value? {
-        get {
-            for (k, v) in self {
-                let kk = k.characters.dropFirst()
-                let r = String(kk.prefixUpTo(kk.indexOf("_")!))
-                
-                if r == raw { return v }
-            }
-            return nil
-        }
-    }
-    
-}
-
-let d = ["_foo_meme": 1]
 import Foundation
-
-let x = d[raw: "foo"]
-
 
 extension String {
     
@@ -32,27 +7,48 @@ extension String {
     }
     
     func sansUnderscores() -> String {
-        return stringByReplacingOccurrencesOfString("LLVM.", withString: "LLVM")
-            .stringByReplacingOccurrencesOfString("_", withString: "$")
+        return stringByReplacingOccurrencesOfString("_", withString: "$")
     }
     
     // TODO: Add globalinit to mangled names for initalisers
     func demangleName() -> String {
         let kk = characters.dropFirst()
         return String(kk.prefixUpTo(kk.indexOf("_")!))
-            .stringByReplacingOccurrencesOfString("LLVM", withString: "LLVM.")
-//            .stringByReplacingOccurrencesOfString("$", withString: "_")
+            .stringByReplacingOccurrencesOfString("$", withString: "_")
     }
     
 }
 
-let a = "_foo".mangle()
-let b = "LLVM.i_add".mangle()
+extension DictionaryLiteralConvertible
+    where
+    Key == String,
+    Self : SequenceType,
+    Self.Generator.Element == (Key, Value)
+{
+    
+    /// Subscript for unmangled names
+    ///
+    /// Function name is required to be between underscores at the start _foo_...
+    subscript(raw raw: String) -> Value? {
+        get {
+            
+            for (k, v) in self {
+                
+                if k.demangleName() == raw { return v }
+            }
+            return nil
+        }
+    }
+    
+    
+}
 
 
-a.demangleName()
-b.demangleName()
+let d = ["_$fatalError_": 5]
+
+let x = d[raw: "_fatalError"]
 
 
 
-"_LLVM..add..i64..i64_i64i64".demangleName()
+
+

@@ -9,14 +9,48 @@
 
 final class StdLibExpose {
     
-    private lazy var ast: AST? = try? {
-        let code = try String(contentsOfFile: "\(PROJECT_DIR)/Vist/stdlib/llvmheader.vist")
+    let isStdLib: Bool
+    
+    init(isStdLib: Bool) {
+        self.isStdLib = isStdLib
+    }
+    
+    private var code: String {
+        if isStdLib {
+            return (try? String(contentsOfFile: "\(PROJECT_DIR)/Vist/Runtime/runtime.visth")) ?? ""
+        } else {
+            return
+                ((try? String(contentsOfFile: "\(PROJECT_DIR)/Vist/Runtime/runtime.visth")) ?? "") +
+                ((try? String(contentsOfFile: "\(PROJECT_DIR)/Vist/stdlib/stdlib.visth")) ?? "")
+        }
+    }
+    
+    private func astGen() throws -> AST {
         var l = Lexer(code: code)
         var p = Parser(tokens: try l.getTokens(), isStdLib: true)
         let a = try p.parse()
-        try scopeSemallvmType(forScopeExpression: a)
+        let s = SemaScope(parent: nil)
+        try sema(a, globalScope: s)
         return a
-    }()
+    }
+    
+    private var _ast: AST? = nil
+    
+    private var ast: AST? {
+        get {
+            if let ast = _ast { return ast }
+            if let ast = try? astGen() {
+                _ast = ast
+                return ast
+            }
+            return nil
+        }
+        set {
+            _ast = newValue
+        }
+    }
+    
+    
     
     func astToSemaScope(scope globalScope: SemaScope) {
         guard let ast = ast else { fatalError("Stdlib could not be loaded") }

@@ -45,6 +45,8 @@ type Double {
 @inline func print: Int = |a| do _print(a.value)
 @inline func print: Bool = |a| do _print(a.value)
 @inline func print: Double = |a| do _print(a.value)
+func _sanityCheck: Bool = do if $0 do _fatalError()
+
 
 @inline @operator(80)
 func + : Double Double -> Double = |a b| do
@@ -106,6 +108,7 @@ func && : Bool Bool -> Bool = |a b| do
 @inline @operator(10)
 func || : Bool Bool -> Bool = |a b| do
     return Bool(LLVM.b_or(a.value b.value))
+
 
 
 

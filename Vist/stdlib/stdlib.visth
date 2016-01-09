@@ -1,4 +1,8 @@
 
+
+
+
+
 type Int {
     var value: LLVM.Int64
     init Int
@@ -18,35 +22,14 @@ type Double {
 }
 
 
-func _print: LLVM.Int
-func _print: LLVM.Float
-func _print: LLVM.Double
-func _print: LLVM.Bool
+
 
 @inline func print: Int
 @inline func print: Bool
 @inline func print: Double
 
-func LLVM.i_add: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
-func LLVM.i_sub: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
-func LLVM.i_mul: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
-func LLVM.i_div: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
-func LLVM.i_rem: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
-
-func LLVM.i_cmp_lt: LLVM.Int64 LLVM.Int64 -> LLVM.Bool
-func LLVM.i_cmp_lte: LLVM.Int64 LLVM.Int64 -> LLVM.Bool
-func LLVM.i_cmp_gt: LLVM.Int64 LLVM.Int64 -> LLVM.Bool
-func LLVM.i_cmp_gte: LLVM.Int64 LLVM.Int64 -> LLVM.Bool
-func LLVM.i_eq: LLVM.Int64 LLVM.Int64 -> LLVM.Bool
-func LLVM.i_neq: LLVM.Int64 LLVM.Int64 -> LLVM.Bool
 
 
-func LLVM.b_and: LLVM.Bool LLVM.Bool -> LLVM.Bool
-func LLVM.b_or: LLVM.Bool LLVM.Bool -> LLVM.Bool
-
-
-func LLVM.f_add: LLVM.Double LLVM.Double -> LLVM.Double
-func LLVM.f_mul: LLVM.Double LLVM.Double -> LLVM.Double
 
 
 @inline @operator(80) func + : Double Double -> Double

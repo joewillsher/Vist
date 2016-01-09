@@ -225,11 +225,12 @@ private extension FunctionType {
         where TypeCollection.Generator.Element == LLVMStType>
         (tys: TypeCollection)
         throws -> [LLVMTyped] {
+            // TODO: Should also look in parent type lists
             
             let res = try args.elements.mapAs(ValueType).map { (ty: ValueType) -> LLVMTyped in
                 if let builtin = LLVMType(ty.name) as? LLVMTyped { return builtin }
                 else if let i = (tys.indexOf { ty.name == $0.name }) { return tys[i] as LLVMTyped }
-                else { throw SemaError.TypeNotFound }
+                throw SemaError.TypeNotFound
             }
             return res
     }
@@ -281,7 +282,8 @@ extension FunctionCallExpression : TypeProvider {
         
         guard let fnType = scope[function: name, paramTypes: params] else {
             if let f = scope[function: name] {
-                throw SemaError.WrongFunctionApplications(name: name, applied: params, expected: f.params) }
+                throw SemaError.WrongFunctionApplications(name: name, applied: params, expected: f.params)
+            }
             throw SemaError.NoFunction(name)
         }
         

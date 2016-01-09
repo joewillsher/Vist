@@ -329,9 +329,10 @@ extension BinaryExpression : IRGenerator {
         guard fn != nil && LLVMCountParams(fn) == UInt32(2) else { throw IRError.WrongFunctionApplication(op) }
         
         let doNotUseName = self.type == LLVMType.Void || self.type == LLVMType.Null || self.type == nil
+        let n = "\(op)_res"
         
         // add call to IR
-        return LLVMBuildCall(builder, fn, argBuffer, UInt32(2), doNotUseName ? "" : op)
+        return LLVMBuildCall(builder, fn, argBuffer, UInt32(2), doNotUseName ? "" : n)
         
     }
 }
@@ -373,9 +374,10 @@ extension FunctionCallExpression : IRGenerator {
             throw IRError.WrongFunctionApplication(name) }
         
         let doNotUseName = type == LLVMType.Void || type == LLVMType.Null || type == nil
+        let n = "\(name)_res"
         
         // add call to IR
-        return LLVMBuildCall(builder, fn, argBuffer, UInt32(argCount), doNotUseName ? "" : name)
+        return LLVMBuildCall(builder, fn, argBuffer, UInt32(argCount), doNotUseName ? "" : n )
     }
     
 }
