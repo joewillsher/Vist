@@ -32,24 +32,5 @@ print(u)
 let y = Double(2.0)
 print(y)
 
-/*
-for i in u...v do
-    print(i)
-
-
-let a = Int(1)
-let b = Int(3)
-
-if a > b do
-    print(1)
-else if a < b do
-    print(100)
-
-var x = Int(1)
-var y = Int(1)
-let h = Int(1000000000)
-*/
-
-
-
+fatalError()
 

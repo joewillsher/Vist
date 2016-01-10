@@ -53,12 +53,12 @@ type Double {
 
 
 
-func _sanityCheck: Bool = do if $0 do _fatalError()
-
 @inline func print: Int = |a| do _print(a.value)
 @inline func print: Bool = |a| do _print(a.value)
 @inline func print: Double = |a| do _print(a.value)
 
+@noreturn func assert: Bool = do if $0 do _fatalError()
+@noreturn func fatalError: () = do _fatalError()
 
 
 

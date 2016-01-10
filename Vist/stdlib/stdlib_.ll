@@ -142,19 +142,6 @@ entry:
   ret { double } %1
 }
 
-define void @"_$sanityCheck_S.b"({ i1 } %"$0") {
-entry:
-  %b = extractvalue { i1 } %"$0", 0
-  br i1 %b, label %then0, label %cont
-
-cont:                                             ; preds = %entry, %then0
-  ret void
-
-then0:                                            ; preds = %entry
-  call void @"_$fatalError_"()
-  br label %cont
-}
-
 ; Function Attrs: alwaysinline
 define void @_print_S.i64({ i64 } %a) #3 {
 entry:
@@ -176,6 +163,27 @@ define void @_print_S.FP64({ double } %a) #3 {
 entry:
   %value = extractvalue { double } %a, 0
   call void @"_$print_FP64"(double %value)
+  ret void
+}
+
+; Function Attrs: noreturn
+define void @_assert_S.b({ i1 } %"$0") #4 {
+entry:
+  %b = extractvalue { i1 } %"$0", 0
+  br i1 %b, label %then0, label %cont
+
+cont:                                             ; preds = %entry, %then0
+  ret void
+
+then0:                                            ; preds = %entry
+  call void @"_$fatalError_"()
+  br label %cont
+}
+
+; Function Attrs: noreturn
+define void @_fatalError_() #4 {
+entry:
+  call void @"_$fatalError_"()
   ret void
 }
 

@@ -27,8 +27,8 @@ type Double {
 @inline func print: Int
 @inline func print: Bool
 @inline func print: Double
-
-
+@noreturn func assert: Bool
+@noreturn func fatalError: ()
 
 
 

@@ -258,9 +258,9 @@ Ltmp35:
 	retq
 	.cfi_endproc
 
-	.globl	__$sanityCheck_S.b
+	.globl	__print_S.i64
 	.align	4, 0x90
-__$sanityCheck_S.b:                     ## @"_$sanityCheck_S.b"
+__print_S.i64:                          ## @_print_S.i64
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
@@ -270,28 +270,6 @@ Ltmp37:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
 Ltmp38:
-	.cfi_def_cfa_register %rbp
-	testb	$1, %dil
-	je	LBB12_2
-## BB#1:                                ## %then0
-	callq	__$fatalError_
-LBB12_2:                                ## %cont
-	popq	%rbp
-	retq
-	.cfi_endproc
-
-	.globl	__print_S.i64
-	.align	4, 0x90
-__print_S.i64:                          ## @_print_S.i64
-	.cfi_startproc
-## BB#0:                                ## %entry
-	pushq	%rbp
-Ltmp39:
-	.cfi_def_cfa_offset 16
-Ltmp40:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-Ltmp41:
 	.cfi_def_cfa_register %rbp
 	callq	__$print_i64
 	popq	%rbp
@@ -304,12 +282,12 @@ __print_S.b:                            ## @_print_S.b
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp42:
+Ltmp39:
 	.cfi_def_cfa_offset 16
-Ltmp43:
+Ltmp40:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp44:
+Ltmp41:
 	.cfi_def_cfa_register %rbp
 	andl	$1, %edi
 	callq	__$print_b
@@ -323,6 +301,24 @@ __print_S.FP64:                         ## @_print_S.FP64
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
+Ltmp42:
+	.cfi_def_cfa_offset 16
+Ltmp43:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp44:
+	.cfi_def_cfa_register %rbp
+	callq	__$print_FP64
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	__assert_S.b
+	.align	4, 0x90
+__assert_S.b:                           ## @_assert_S.b
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
 Ltmp45:
 	.cfi_def_cfa_offset 16
 Ltmp46:
@@ -330,7 +326,29 @@ Ltmp46:
 	movq	%rsp, %rbp
 Ltmp47:
 	.cfi_def_cfa_register %rbp
-	callq	__$print_FP64
+	testb	$1, %dil
+	je	LBB15_2
+## BB#1:                                ## %then0
+	callq	__$fatalError_
+LBB15_2:                                ## %cont
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	__fatalError_
+	.align	4, 0x90
+__fatalError_:                          ## @_fatalError_
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp48:
+	.cfi_def_cfa_offset 16
+Ltmp49:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp50:
+	.cfi_def_cfa_register %rbp
+	callq	__$fatalError_
 	popq	%rbp
 	retq
 	.cfi_endproc
@@ -341,12 +359,12 @@ Ltmp47:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp48:
+Ltmp51:
 	.cfi_def_cfa_offset 16
-Ltmp49:
+Ltmp52:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp50:
+Ltmp53:
 	.cfi_def_cfa_register %rbp
 	addsd	%xmm1, %xmm0
 	callq	__Double_FP64
@@ -360,12 +378,12 @@ Ltmp50:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp51:
+Ltmp54:
 	.cfi_def_cfa_offset 16
-Ltmp52:
+Ltmp55:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp53:
+Ltmp56:
 	.cfi_def_cfa_register %rbp
 	addq	%rsi, %rdi
 	callq	__Int_i64
@@ -379,12 +397,12 @@ Ltmp53:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp54:
+Ltmp57:
 	.cfi_def_cfa_offset 16
-Ltmp55:
+Ltmp58:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp56:
+Ltmp59:
 	.cfi_def_cfa_register %rbp
 	subq	%rsi, %rdi
 	callq	__Int_i64
@@ -398,12 +416,12 @@ Ltmp56:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp57:
+Ltmp60:
 	.cfi_def_cfa_offset 16
-Ltmp58:
+Ltmp61:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp59:
+Ltmp62:
 	.cfi_def_cfa_register %rbp
 	imulq	%rsi, %rdi
 	callq	__Int_i64
@@ -417,12 +435,12 @@ Ltmp59:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp60:
+Ltmp63:
 	.cfi_def_cfa_offset 16
-Ltmp61:
+Ltmp64:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp62:
+Ltmp65:
 	.cfi_def_cfa_register %rbp
 	xorl	%edx, %edx
 	movq	%rdi, %rax
@@ -439,12 +457,12 @@ Ltmp62:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp63:
+Ltmp66:
 	.cfi_def_cfa_offset 16
-Ltmp64:
+Ltmp67:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp65:
+Ltmp68:
 	.cfi_def_cfa_register %rbp
 	xorl	%edx, %edx
 	movq	%rdi, %rax
@@ -461,12 +479,12 @@ Ltmp65:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp66:
+Ltmp69:
 	.cfi_def_cfa_offset 16
-Ltmp67:
+Ltmp70:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp68:
+Ltmp71:
 	.cfi_def_cfa_register %rbp
 	cmpq	%rsi, %rdi
 	setl	%al
@@ -482,12 +500,12 @@ Ltmp68:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp69:
+Ltmp72:
 	.cfi_def_cfa_offset 16
-Ltmp70:
+Ltmp73:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp71:
+Ltmp74:
 	.cfi_def_cfa_register %rbp
 	cmpq	%rsi, %rdi
 	setle	%al
@@ -503,12 +521,12 @@ Ltmp71:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp72:
+Ltmp75:
 	.cfi_def_cfa_offset 16
-Ltmp73:
+Ltmp76:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp74:
+Ltmp77:
 	.cfi_def_cfa_register %rbp
 	cmpq	%rsi, %rdi
 	setg	%al
@@ -524,12 +542,12 @@ Ltmp74:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp75:
+Ltmp78:
 	.cfi_def_cfa_offset 16
-Ltmp76:
+Ltmp79:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp77:
+Ltmp80:
 	.cfi_def_cfa_register %rbp
 	cmpq	%rsi, %rdi
 	setge	%al
@@ -545,12 +563,12 @@ Ltmp77:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp78:
+Ltmp81:
 	.cfi_def_cfa_offset 16
-Ltmp79:
+Ltmp82:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp80:
+Ltmp83:
 	.cfi_def_cfa_register %rbp
 	cmpq	%rsi, %rdi
 	sete	%al
@@ -566,12 +584,12 @@ Ltmp80:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp81:
+Ltmp84:
 	.cfi_def_cfa_offset 16
-Ltmp82:
+Ltmp85:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp83:
+Ltmp86:
 	.cfi_def_cfa_register %rbp
 	cmpq	%rsi, %rdi
 	setne	%al
@@ -587,12 +605,12 @@ Ltmp83:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp84:
+Ltmp87:
 	.cfi_def_cfa_offset 16
-Ltmp85:
+Ltmp88:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp86:
+Ltmp89:
 	.cfi_def_cfa_register %rbp
 	andl	%esi, %edi
 	callq	__Bool_b
@@ -606,12 +624,12 @@ Ltmp86:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp87:
+Ltmp90:
 	.cfi_def_cfa_offset 16
-Ltmp88:
+Ltmp91:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp89:
+Ltmp92:
 	.cfi_def_cfa_register %rbp
 	orl	%esi, %edi
 	callq	__Bool_b

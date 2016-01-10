@@ -180,28 +180,6 @@ __Double_FP64:                          ## @_Double_FP64
 	popq	%rbp
 	retq
 
-	.globl	__$sanityCheck_S.b
-	.align	4, 0x90
-__$sanityCheck_S.b:                     ## @"_$sanityCheck_S.b"
-	.cfi_startproc
-## BB#0:                                ## %entry
-	pushq	%rbp
-Ltmp18:
-	.cfi_def_cfa_offset 16
-Ltmp19:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-Ltmp20:
-	.cfi_def_cfa_register %rbp
-	testb	$1, %dil
-	jne	LBB12_2
-## BB#1:                                ## %cont
-	popq	%rbp
-	retq
-LBB12_2:                                ## %then0
-	callq	__$fatalError_
-	.cfi_endproc
-
 	.globl	__print_S.i64
 	.align	4, 0x90
 __print_S.i64:                          ## @_print_S.i64
@@ -229,6 +207,44 @@ __print_S.FP64:                         ## @_print_S.FP64
 	movq	%rsp, %rbp
 	popq	%rbp
 	jmp	__$print_FP64           ## TAILCALL
+
+	.globl	__assert_S.b
+	.align	4, 0x90
+__assert_S.b:                           ## @_assert_S.b
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp18:
+	.cfi_def_cfa_offset 16
+Ltmp19:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp20:
+	.cfi_def_cfa_register %rbp
+	testb	$1, %dil
+	jne	LBB15_2
+## BB#1:                                ## %cont
+	popq	%rbp
+	retq
+LBB15_2:                                ## %then0
+	callq	__$fatalError_
+	.cfi_endproc
+
+	.globl	__fatalError_
+	.align	4, 0x90
+__fatalError_:                          ## @_fatalError_
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp21:
+	.cfi_def_cfa_offset 16
+Ltmp22:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp23:
+	.cfi_def_cfa_register %rbp
+	callq	__$fatalError_
+	.cfi_endproc
 
 	.globl	"__+_S.FP64S.FP64"
 	.align	4, 0x90
@@ -388,24 +404,30 @@ __print_S.FP64:                         ## @_print_S.FP64
 
 	.section	__TEXT,__literal8,8byte_literals
 	.align	3
-LCPI30_0:
+LCPI31_0:
 	.quad	4611686018427387904     ## double 2
 	.section	__TEXT,__text,regular,pure_instructions
 	.globl	_main
 	.align	4, 0x90
 _main:                                  ## @main
+	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
+Ltmp24:
+	.cfi_def_cfa_offset 16
+Ltmp25:
+	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
+Ltmp26:
+	.cfi_def_cfa_register %rbp
 	movl	$5, %edi
 	callq	__$print_i64
 	movl	$5, %edi
 	callq	__$print_i64
-	movsd	LCPI30_0(%rip), %xmm0
+	movsd	LCPI31_0(%rip), %xmm0
 	callq	__$print_FP64
-	xorl	%eax, %eax
-	popq	%rbp
-	retq
+	callq	__fatalError_
+	.cfi_endproc
 
 	.globl	__Range_S.i64S.i64
 	.align	4, 0x90
