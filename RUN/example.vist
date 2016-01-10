@@ -30,7 +30,7 @@ print(tt.start)
 print(u)
 
 let y = Double(2.0)
-
+print(y)
 
 /*
 for i in u...v do

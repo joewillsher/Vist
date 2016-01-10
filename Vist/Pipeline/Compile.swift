@@ -130,7 +130,6 @@ public func compileDocuments(fileNames: [String],
 //            let flags = ["-inline"]
 //            let flags = ["-mem2reg"]
             
-            try "".writeToFile("\(currentDirectory)/\(file)_.ll", atomically: true, encoding: NSUTF8StringEncoding)
             // Optimiser
             let optimTask = NSTask()
             optimTask.currentDirectoryPath = currentDirectory
@@ -165,7 +164,7 @@ public func compileDocuments(fileNames: [String],
         
         if verbose { print("\n\n-----------------------------ASM-----------------------------\n") }
         
-        try "".writeToFile("\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
+
         /// compiles the LLVM IR to assembly
         let compileIRtoASMTask = NSTask()
         compileIRtoASMTask.currentDirectoryPath = currentDirectory
@@ -183,7 +182,7 @@ public func compileDocuments(fileNames: [String],
         
         
         
-        if generateLibrary {
+        if generateLibrary || isStdLib {
             
             let objFileTask = NSTask()
             objFileTask.currentDirectoryPath = currentDirectory
@@ -204,7 +203,7 @@ public func compileDocuments(fileNames: [String],
             let bitcodeTask = NSTask()
             bitcodeTask.currentDirectoryPath = currentDirectory
             bitcodeTask.launchPath = "/usr/local/Cellar/llvm/3.6.2/bin/llvm-as"
-            bitcodeTask.arguments = ["\(file).ll"]
+            bitcodeTask.arguments = ["\(file)_.ll", "-o", "\(file).bc"]
             
             bitcodeTask.launch()
             bitcodeTask.waitUntilExit()

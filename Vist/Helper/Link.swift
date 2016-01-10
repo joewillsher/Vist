@@ -18,11 +18,11 @@ func linkModule(inout module: LLVMModuleRef, withFile file: String) {
     
     var helperModule = LLVMModuleCreateWithName("_module")
     
-    while true {
-        let f = LLVMGetNamedFunction(helperModule, "main")
-        if f == nil { break }
-        LLVMDeleteFunction(f)
-    }
+//    while true {
+//        let f = LLVMGetNamedFunction(helperModule, "main")
+//        if f == nil { break }
+//        LLVMDeleteFunction(f)
+//    }
     
     LLVMGetBitcodeModule(buffer.memory, &helperModule, str)
     

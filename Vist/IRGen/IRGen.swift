@@ -427,7 +427,7 @@ extension FunctionPrototypeExpression : IRGenerator {
         stackFrame.addFunctionType(mangledName, val: functionType)
         
         // stack frame internal to function, needs params setting and then the block should be added *inside* the bbGen function
-        let functionStackFrame = StackFrame(function: function, parentStackFrame: stackFrame)
+        let functionStackFrame = StackFrame(block: entryBlock, function: function, parentStackFrame: stackFrame)
         
         // set function param names and update table
         for i in 0..<argCount {

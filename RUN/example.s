@@ -106,6 +106,22 @@ LBB4_2:
 	jmp	_puts                   ## TAILCALL
 	.cfi_endproc
 
+	.globl	__$fatalError_
+	.align	4, 0x90
+__$fatalError_:                         ## @"_$fatalError_"
+	.cfi_startproc
+## BB#0:
+	pushq	%rbp
+Ltmp15:
+	.cfi_def_cfa_offset 16
+Ltmp16:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp17:
+	.cfi_def_cfa_register %rbp
+	callq	_abort
+	.cfi_endproc
+
 	.globl	__Int_S.i64
 	.align	4, 0x90
 __Int_S.i64:                            ## @_Int_S.i64
@@ -163,6 +179,28 @@ __Double_FP64:                          ## @_Double_FP64
 	movq	%rsp, %rbp
 	popq	%rbp
 	retq
+
+	.globl	__$sanityCheck_S.b
+	.align	4, 0x90
+__$sanityCheck_S.b:                     ## @"_$sanityCheck_S.b"
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp18:
+	.cfi_def_cfa_offset 16
+Ltmp19:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp20:
+	.cfi_def_cfa_register %rbp
+	testb	$1, %dil
+	jne	LBB12_2
+## BB#1:                                ## %cont
+	popq	%rbp
+	retq
+LBB12_2:                                ## %then0
+	callq	__$fatalError_
+	.cfi_endproc
 
 	.globl	__print_S.i64
 	.align	4, 0x90
@@ -348,6 +386,11 @@ __print_S.FP64:                         ## @_print_S.FP64
 	popq	%rbp
 	retq
 
+	.section	__TEXT,__literal8,8byte_literals
+	.align	3
+LCPI30_0:
+	.quad	4611686018427387904     ## double 2
+	.section	__TEXT,__text,regular,pure_instructions
 	.globl	_main
 	.align	4, 0x90
 _main:                                  ## @main
@@ -358,6 +401,8 @@ _main:                                  ## @main
 	callq	__$print_i64
 	movl	$5, %edi
 	callq	__$print_i64
+	movsd	LCPI30_0(%rip), %xmm0
+	callq	__$print_FP64
 	xorl	%eax, %eax
 	popq	%rbp
 	retq
@@ -394,11 +439,11 @@ L_.str1:                                ## @.str1
 L_.str2:                                ## @.str2
 	.asciz	"%f\n"
 
-L_str1:                                 ## @str1
-	.asciz	"true"
-
 L_str:                                  ## @str
 	.asciz	"false"
+
+L_str1:                                 ## @str1
+	.asciz	"true"
 
 
 .subsections_via_symbols
