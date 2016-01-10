@@ -141,7 +141,10 @@ Ltmp16:
 	movq	%rsp, %rbp
 Ltmp17:
 	.cfi_def_cfa_register %rbp
-	callq	_abort
+	movl	$6, %edi
+	callq	_raise
+	popq	%rbp
+	retq
 	.cfi_endproc
 
 	.globl	__Int_S.i64

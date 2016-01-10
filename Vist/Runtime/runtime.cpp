@@ -6,11 +6,12 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-#include <stdlib.h>
+//#include <stdlib.h>
+#include <csignal>
 #include <stdio.h>
 #include <stdint.h>
-#include <string.h>
-#include <algorithm>
+//#include <string.h>
+//#include <algorithm>
 
 extern "C"
 void
@@ -57,7 +58,7 @@ void
 __attribute__ ((noinline))
 _$fatalError_()
 {
-    abort();
+    raise(SIGABRT);
 };
 //
 //extern "C"

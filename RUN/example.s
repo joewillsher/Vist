@@ -119,7 +119,9 @@ Ltmp16:
 	movq	%rsp, %rbp
 Ltmp17:
 	.cfi_def_cfa_register %rbp
-	callq	_abort
+	movl	$6, %edi
+	popq	%rbp
+	jmp	_raise                  ## TAILCALL
 	.cfi_endproc
 
 	.globl	__Int_S.i64
@@ -222,12 +224,13 @@ Ltmp19:
 Ltmp20:
 	.cfi_def_cfa_register %rbp
 	testb	$1, %dil
-	jne	LBB15_2
-## BB#1:                                ## %cont
+	je	LBB15_1
+## BB#2:                                ## %then0
+	popq	%rbp
+	jmp	__$fatalError_          ## TAILCALL
+LBB15_1:                                ## %cont
 	popq	%rbp
 	retq
-LBB15_2:                                ## %then0
-	callq	__$fatalError_
 	.cfi_endproc
 
 	.globl	__fatalError_
@@ -243,7 +246,8 @@ Ltmp22:
 	movq	%rsp, %rbp
 Ltmp23:
 	.cfi_def_cfa_register %rbp
-	callq	__$fatalError_
+	popq	%rbp
+	jmp	__$fatalError_          ## TAILCALL
 	.cfi_endproc
 
 	.globl	"__+_S.FP64S.FP64"

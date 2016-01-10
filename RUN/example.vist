@@ -34,3 +34,8 @@ print(y)
 
 fatalError()
 
+print(Int(1))
+
+
+
+
