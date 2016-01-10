@@ -18,8 +18,6 @@ type Range {
 func ... : Int Int -> Range = do
     return Range( $0 $1 )
 
-
-
 let u = Int(5)
 let v = Int(100)
 

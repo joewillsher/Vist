@@ -236,6 +236,10 @@ public func compileDocuments(fileNames: [String],
             
             runTask.waitUntilExit()
             
+            if case .UncaughtSignal = runTask.terminationReason {
+                print("**Fatal Error**: program ended with exit code \(runTask.terminationStatus)")
+            }
+            
             if profile {
                 let t = CFAbsoluteTimeGetCurrent() - t0 - 0.062
                 let f = NSNumberFormatter()
