@@ -1,9 +1,6 @@
 
 
-
-
-
-
+// todo: different one line assignment expressions
 type Range {
     let start: Int
     let end: Int
@@ -14,9 +11,18 @@ type Range {
     }
 }
 
+// todo: range operators in loops
 @inline @operator(40)
 func ... : Int Int -> Range = do
     return Range( $0 $1 )
+
+// todo: lexing multiple operators next to eachother
+// instead of current (whitelist based) method, contunue
+// lexing for all but the chars used exclusively by the language
+//@inline @operator(40)
+//func .. : Int Int -> Range = do
+//    return Range( $0 ( $1 - 1))
+
 
 let u = Int(5)
 let v = Int(100)

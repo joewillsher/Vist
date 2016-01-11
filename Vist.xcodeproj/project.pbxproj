@@ -54,7 +54,7 @@
 		D4644BE21C40619800364B99 /* stdlib_.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib_.ll; path = stdlib/stdlib_.ll; sourceTree = "<group>"; };
 		D4644BE31C40619800364B99 /* stdlib.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib.ll; path = stdlib/stdlib.ll; sourceTree = "<group>"; };
 		D4644BE41C40619800364B99 /* stdlib.s */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; name = stdlib.s; path = stdlib/stdlib.s; sourceTree = "<group>"; };
-		D4644BE51C40619800364B99 /* stdlib.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = stdlib.vist; path = stdlib/stdlib.vist; sourceTree = "<group>"; };
+		D4644BE51C40619800364B99 /* stdlib.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = stdlib.vist; path = stdlib/stdlib.vist; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D4644BE61C4072D600364B99 /* runtime.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = runtime.cpp; path = Runtime/runtime.cpp; sourceTree = "<group>"; };
 		D47E66581B88D9A20051D586 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		D47FF07A1B812052003F9920 /* vist */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = vist; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -63,7 +63,7 @@
 		D485DD251C1667E900B72F81 /* VistTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VistTest.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D485DD271C1667E900B72F81 /* VistTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VistTest.swift; sourceTree = "<group>"; };
 		D485DD291C1667E900B72F81 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		D489F3BD1C1E392D00254FFC /* example.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vist; path = RUN/example.vist; sourceTree = "<group>"; };
+		D489F3BD1C1E392D00254FFC /* example.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vist; path = RUN/example.vist; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D489F3C01C1E396E00254FFC /* example */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = example; path = RUN/example; sourceTree = "<group>"; };
 		D497A7691C3B003A00DFE39E /* Compile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Compile.swift; path = Pipeline/Compile.swift; sourceTree = "<group>"; };
 		D497A76A1C3B003A00DFE39E /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = main.swift; path = Pipeline/main.swift; sourceTree = "<group>"; };
@@ -95,10 +95,10 @@
 		D4BBE41D1C415835001B8934 /* stdlib.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = stdlib.dylib; path = stdlib/stdlib.dylib; sourceTree = "<group>"; };
 		D4BBE41E1C41584C001B8934 /* stdlib.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = stdlib.o; path = stdlib/stdlib.o; sourceTree = "<group>"; };
 		D4BBE4201C419A6C001B8934 /* StdLibExpose.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StdLibExpose.swift; path = Sema/Interface/StdLibExpose.swift; sourceTree = "<group>"; };
-		D4BBE4231C41A2E6001B8934 /* runtime.visth */ = {isa = PBXFileReference; lastKnownFileType = text; name = runtime.visth; path = Runtime/runtime.visth; sourceTree = "<group>"; };
+		D4BBE4231C41A2E6001B8934 /* runtime.visth */ = {isa = PBXFileReference; lastKnownFileType = text; name = runtime.visth; path = Runtime/runtime.visth; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; };
 		D4FAE4561C3B018000C9EE05 /* Test.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; name = Test.playground; path = Helper/Test.playground; sourceTree = "<group>"; };
-		D4FAE45A1C3DA10600C9EE05 /* stdlib.visth */ = {isa = PBXFileReference; lastKnownFileType = text; name = stdlib.visth; path = stdlib/stdlib.visth; sourceTree = "<group>"; };
+		D4FAE45A1C3DA10600C9EE05 /* stdlib.visth */ = {isa = PBXFileReference; lastKnownFileType = text; name = stdlib.visth; path = stdlib/stdlib.visth; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D4FAE45B1C3DCEEE00C9EE05 /* BuiltinFunction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BuiltinFunction.swift; path = IRGen/BuiltinFunction.swift; sourceTree = "<group>"; };
 		D4FAE45D1C3DDE3100C9EE05 /* FunctionAttribute.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FunctionAttribute.swift; path = IRGen/FunctionAttribute.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */

@@ -1,7 +1,5 @@
 
-
-
-
+// types
 
 type Int {
     var value: LLVM.Int64
@@ -23,6 +21,7 @@ type Double {
 
 
 
+// runtime functions
 
 @inline func print: Int
 @inline func print: Bool
@@ -31,6 +30,8 @@ type Double {
 @noreturn func fatalError: ()
 
 
+
+// operators
 
 @inline @operator(80) func + : Double Double -> Double
 

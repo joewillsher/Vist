@@ -313,7 +313,7 @@ extension FunctionPrototypeExpression : TypeProvider {
         fnType.type = ty            // store type in fntype
         type = LLVMType.Void        // retult of prototype is void
         
-        guard var functionScopeExpression = impl?.body else { return LLVMType.Void }
+        guard let functionScopeExpression = impl?.body else { return LLVMType.Void }
         // if body construct scope and parse inside it
         
         let fnScope = SemaScope(parent: scope, returnType: ty.returns)

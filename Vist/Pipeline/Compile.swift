@@ -237,7 +237,7 @@ public func compileDocuments(fileNames: [String],
             runTask.waitUntilExit()
             
             if case .UncaughtSignal = runTask.terminationReason {
-                print("**Fatal Error**: program ended with exit code \(runTask.terminationStatus)")
+                print("**Fatal Error** program ended with exit code \(runTask.terminationStatus)")
             }
             
             if profile {
