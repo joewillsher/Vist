@@ -36,6 +36,9 @@ print(u)
 let y = Double(2.0)
 print(y)
 
+
+
+
 fatalError()
 
 print(Int(1))

@@ -430,6 +430,8 @@ Ltmp26:
 	callq	__$print_i64
 	movsd	LCPI31_0(%rip), %xmm0
 	callq	__$print_FP64
+	movq	$-4, %rdi
+	callq	__$print_i64
 	callq	__fatalError_
 	.cfi_endproc
 

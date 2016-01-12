@@ -31,24 +31,18 @@ func builtinInstruction(named: String, builder: LLVMBuilderRef) -> ((LLVMValueRe
         
         
     case "LLVM.f_add": return { LLVMBuildFAdd(builder, $0, $1, "add_res") }
+    case "LLVM.f_sub": return { LLVMBuildFSub(builder, $0, $1, "sub_res") }
     case "LLVM.f_mul": return { LLVMBuildFMul(builder, $0, $1, "mul_res") }
+    case "LLVM.f_div": return { LLVMBuildFDiv(builder, $0, $1, "div_res") }
+    case "LLVM.f_rem": return { LLVMBuildFRem(builder, $0, $1, "rem_res") }
+        
+    case "LLVM.f_cmp_lt": return { return LLVMBuildFCmp(builder, LLVMRealOLT, $0, $1, "cmp_lt_res") }
+    case "LLVM.f_cmp_lte": return { return LLVMBuildFCmp(builder, LLVMRealOLE, $0, $1, "cmp_lte_res") }
+    case "LLVM.f_cmp_gt": return { return LLVMBuildFCmp(builder, LLVMRealOGT, $0, $1, "cmp_gt_res") }
+    case "LLVM.f_cmp_gte": return { return LLVMBuildFCmp(builder, LLVMRealOGE, $0, $1, "cmp_gte_res") }
+    case "LLVM.f_eq": return { return LLVMBuildFCmp(builder, LLVMRealOEQ, $0, $1, "cmp_eq_res") }
+    case "LLVM.f_neq": return { return LLVMBuildFCmp(builder, LLVMRealONE, $0, $1, "cmp_neq_res") }
         
     default: return nil
     }
 }
-//        if LLVMGetTypeKind(type) == LLVMIntegerTypeKind {
-//
-//        } else if isFloatType(LLVMGetTypeKind(type)) {
-//
-//            switch op {
-//            case "-": return LLVMBuildFSub(builder, lIR, rIR, "fsub_res")
-//            case "/": return LLVMBuildFDiv(builder, lIR, rIR, "fdiv_res")
-//            case "%": return LLVMBuildFRem(builder, lIR, rIR, "frem_res")
-//            case "<": return LLVMBuildFCmp(builder, LLVMRealOLT, lIR, rIR, "fcmp_lt_res")
-//            case ">": return LLVMBuildFCmp(builder, LLVMRealOGT, lIR, rIR, "fcmp_gt_res")
-//            case "<=": return LLVMBuildFCmp(builder, LLVMRealOLE, lIR, rIR, "cmp_lte_res")
-//            case ">=": return LLVMBuildFCmp(builder, LLVMRealOGE, lIR, rIR, "cmp_gte_res")
-//            case "==": return LLVMBuildFCmp(builder, LLVMRealOEQ, lIR, rIR, "cmp_eq_res")
-//            case "!=": return LLVMBuildFCmp(builder, LLVMRealONE, lIR, rIR, "cmp_neq_res")
-//            default: throw IRError.NoOperator
-//            }

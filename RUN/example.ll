@@ -290,6 +290,7 @@ entry:
   tail call void @"_$print_i64"(i64 5) #7
   tail call void @"_$print_i64"(i64 5) #7
   tail call void @"_$print_FP64"(double 2.000000e+00) #7
+  tail call void @"_$print_i64"(i64 -4) #7
   tail call void @_fatalError_()
   unreachable
 }

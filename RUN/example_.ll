@@ -347,9 +347,16 @@ entry:
   store { double } %Double_res, { double }* %3
   %y = load { double }* %3
   call void @_print_S.FP64({ double } %y)
+  %Int_res3 = call { i64 } @_Int_i64(i64 6)
+  %Int_res4 = call { i64 } @_Int_i64(i64 10)
+  %-_res = call { i64 } @_-_S.i64S.i64({ i64 } %Int_res3, { i64 } %Int_res4)
+  %4 = alloca { i64 }
+  store { i64 } %-_res, { i64 }* %4
+  %a = load { i64 }* %4
+  call void @_print_S.i64({ i64 } %a)
   call void @_fatalError_()
-  %Int_res3 = call { i64 } @_Int_i64(i64 1)
-  call void @_print_S.i64({ i64 } %Int_res3)
+  %Int_res5 = call { i64 } @_Int_i64(i64 1)
+  call void @_print_S.i64({ i64 } %Int_res5)
   ret i64 0
 }
 
