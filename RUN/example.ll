@@ -2,7 +2,7 @@
 target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-macosx10.11.0"
 
-@.str = private unnamed_addr constant [6 x i8] c"%llu\0A\00", align 1
+@.str = private unnamed_addr constant [6 x i8] c"%lli\0A\00", align 1
 @.str1 = private unnamed_addr constant [4 x i8] c"%i\0A\00", align 1
 @.str2 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
 @str = private unnamed_addr constant [6 x i8] c"false\00"
@@ -52,13 +52,14 @@ define void @"_$print_b"(i1 zeroext %b) #0 {
   ret void
 }
 
-; Function Attrs: noinline ssp uwtable
+; Function Attrs: noinline noreturn ssp uwtable
 define void @"_$fatalError_"() #2 {
-  %1 = tail call i32 @raise(i32 6)
-  ret void
+  tail call void @abort() #6
+  unreachable
 }
 
-declare i32 @raise(i32) #3
+; Function Attrs: noreturn
+declare void @abort() #3
 
 ; Function Attrs: alwaysinline nounwind readnone
 define { i64 } @_Int_S.i64({ i64 } %o) #4 {
@@ -129,19 +130,19 @@ entry:
   %b = extractvalue { i1 } %"$0", 0
   br i1 %b, label %then0, label %cont
 
-cont:                                             ; preds = %then0, %entry
+cont:                                             ; preds = %entry
   ret void
 
 then0:                                            ; preds = %entry
   tail call void @"_$fatalError_"()
-  br label %cont
+  unreachable
 }
 
 ; Function Attrs: noreturn
 define void @_fatalError_() #6 {
 entry:
   tail call void @"_$fatalError_"()
-  ret void
+  unreachable
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -320,8 +321,8 @@ declare i32 @puts(i8* nocapture readonly) #7
 
 attributes #0 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { nounwind "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #2 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #3 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { noinline noreturn ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #3 = { noreturn "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #4 = { alwaysinline nounwind readnone }
 attributes #5 = { alwaysinline nounwind }
 attributes #6 = { noreturn }

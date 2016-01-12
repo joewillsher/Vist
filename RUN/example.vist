@@ -38,6 +38,12 @@ print(y)
 
 
 
+// hrm
+let a = Int(6) - Int(10)
+
+print(a)
+
+
 
 fatalError()
 
