@@ -51,9 +51,7 @@
 
 /* Begin PBXFileReference section */
 		D4249F551C1AF9B200B15530 /* fn.vist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = fn.vist; sourceTree = "<group>"; };
-		D4644BE21C40619800364B99 /* stdlib_.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib_.ll; path = stdlib/stdlib_.ll; sourceTree = "<group>"; };
 		D4644BE31C40619800364B99 /* stdlib.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib.ll; path = stdlib/stdlib.ll; sourceTree = "<group>"; };
-		D4644BE41C40619800364B99 /* stdlib.s */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; name = stdlib.s; path = stdlib/stdlib.s; sourceTree = "<group>"; };
 		D4644BE51C40619800364B99 /* stdlib.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = stdlib.vist; path = stdlib/stdlib.vist; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D4644BE61C4072D600364B99 /* runtime.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = runtime.cpp; path = Runtime/runtime.cpp; sourceTree = "<group>"; };
 		D47E66581B88D9A20051D586 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -137,9 +135,7 @@
 			children = (
 				D4644BE51C40619800364B99 /* stdlib.vist */,
 				D4FAE45A1C3DA10600C9EE05 /* stdlib.visth */,
-				D4644BE21C40619800364B99 /* stdlib_.ll */,
 				D4644BE31C40619800364B99 /* stdlib.ll */,
-				D4644BE41C40619800364B99 /* stdlib.s */,
 				D4BBE41C1C415835001B8934 /* stdlib.bc */,
 				D4BBE41F1C415856001B8934 /* Unused */,
 			);

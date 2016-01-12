@@ -184,21 +184,29 @@ public func compileDocuments(fileNames: [String],
         
         if generateLibrary || isStdLib {
             
-            let objFileTask = NSTask()
-            objFileTask.currentDirectoryPath = currentDirectory
-            objFileTask.launchPath = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/bin/clang"
-            objFileTask.arguments = ["-c", "\(file).ll"]
+//            let objFileTask = NSTask()
+//            objFileTask.currentDirectoryPath = currentDirectory
+//            objFileTask.launchPath = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/bin/clang"
+//            objFileTask.arguments = ["-c", "\(file).ll"]
+//            
+//            objFileTask.launch()
+//            objFileTask.waitUntilExit()
+//            
+//            let libGen = NSTask()
+//            libGen.currentDirectoryPath = currentDirectory
+//            libGen.launchPath = "/usr/bin/libtool"
+//            libGen.arguments = ["-dynamic", "\(file).o", "-o", "\(file).dylib", "-lSystem"]
+//            
+//            libGen.launch()
+//            libGen.waitUntilExit()
             
-            objFileTask.launch()
-            objFileTask.waitUntilExit()
+            let rmTask = NSTask()
+            rmTask.currentDirectoryPath = currentDirectory
+            rmTask.launchPath = "/bin/rm"
+            rmTask.arguments = ["\(file)_.ll"]
             
-            let libGen = NSTask()
-            libGen.currentDirectoryPath = currentDirectory
-            libGen.launchPath = "/usr/bin/libtool"
-            libGen.arguments = ["-dynamic", "\(file).o", "-o", "\(file).dylib", "-lSystem"]
-            
-            libGen.launch()
-            libGen.waitUntilExit()
+            rmTask.launch()
+            rmTask.waitUntilExit()
             
             let bitcodeTask = NSTask()
             bitcodeTask.currentDirectoryPath = currentDirectory
