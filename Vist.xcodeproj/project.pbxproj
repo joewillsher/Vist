@@ -122,8 +122,8 @@
 		D44DB8881C316DA500EBCD9F /* Runtime */ = {
 			isa = PBXGroup;
 			children = (
-				D4644BE61C4072D600364B99 /* runtime.cpp */,
 				D4BBE4231C41A2E6001B8934 /* runtime.visth */,
+				D4644BE61C4072D600364B99 /* runtime.cpp */,
 				D4BBE41A1C4157E7001B8934 /* runtime.ll */,
 				D4BBE4191C4157E7001B8934 /* runtime.bc */,
 			);
@@ -133,8 +133,8 @@
 		D44DB8891C316DB400EBCD9F /* StdLib */ = {
 			isa = PBXGroup;
 			children = (
-				D4644BE51C40619800364B99 /* stdlib.vist */,
 				D4FAE45A1C3DA10600C9EE05 /* stdlib.visth */,
+				D4644BE51C40619800364B99 /* stdlib.vist */,
 				D4644BE31C40619800364B99 /* stdlib.ll */,
 				D4BBE41C1C415835001B8934 /* stdlib.bc */,
 				D4BBE41F1C415856001B8934 /* Unused */,

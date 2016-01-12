@@ -31,6 +31,7 @@ let tt = u ... v
 print(tt.start)
 
 
+
 print(u)
 
 let y = Double(2.0)
@@ -42,7 +43,7 @@ print(a)
 
 
 
-fatalError()
+assert(Bool(true))
 
 print(Int(1))
 

@@ -54,7 +54,7 @@ define void @"_$print_b"(i1 zeroext %b) #0 {
 
 ; Function Attrs: noinline noreturn ssp uwtable
 define void @"_$fatalError_"() #2 {
-  tail call void @abort() #6
+  tail call void @abort() #9
   unreachable
 }
 
@@ -124,8 +124,15 @@ entry:
   ret void
 }
 
-; Function Attrs: noreturn
-define void @_assert_S.b({ i1 } %"$0") #6 {
+; Function Attrs: noinline noreturn
+define void @_fatalError_() #6 {
+entry:
+  tail call void @"_$fatalError_"()
+  unreachable
+}
+
+; Function Attrs: alwaysinline
+define void @_assert_S.b({ i1 } %"$0") #7 {
 entry:
   %b = extractvalue { i1 } %"$0", 0
   br i1 %b, label %then0, label %cont
@@ -134,14 +141,7 @@ cont:                                             ; preds = %entry
   ret void
 
 then0:                                            ; preds = %entry
-  tail call void @"_$fatalError_"()
-  unreachable
-}
-
-; Function Attrs: noreturn
-define void @_fatalError_() #6 {
-entry:
-  tail call void @"_$fatalError_"()
+  tail call void @_fatalError_()
   unreachable
 }
 
@@ -385,13 +385,12 @@ entry:
   ret { i1 } %.fca.0.insert.i
 }
 
-; Function Attrs: noreturn
-define i64 @main() #6 {
-entry:
-  tail call void @"_$print_i64"(i64 5) #7
-  tail call void @"_$print_i64"(i64 5) #7
-  tail call void @"_$print_FP64"(double 2.000000e+00) #7
-  tail call void @"_$print_i64"(i64 -4) #7
+define i64 @main() {
+then0.i:
+  tail call void @"_$print_i64"(i64 5) #8
+  tail call void @"_$print_i64"(i64 5) #8
+  tail call void @"_$print_FP64"(double 2.000000e+00) #8
+  tail call void @"_$print_i64"(i64 -4) #8
   tail call void @_fatalError_()
   unreachable
 }
@@ -417,7 +416,7 @@ entry:
 }
 
 ; Function Attrs: nounwind
-declare i32 @puts(i8* nocapture readonly) #7
+declare i32 @puts(i8* nocapture readonly) #8
 
 attributes #0 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { nounwind "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
@@ -425,8 +424,10 @@ attributes #2 = { noinline noreturn ssp uwtable "less-precise-fpmad"="false" "no
 attributes #3 = { noreturn "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #4 = { alwaysinline nounwind readnone }
 attributes #5 = { alwaysinline nounwind }
-attributes #6 = { noreturn }
-attributes #7 = { nounwind }
+attributes #6 = { noinline noreturn }
+attributes #7 = { alwaysinline }
+attributes #8 = { nounwind }
+attributes #9 = { noreturn }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}

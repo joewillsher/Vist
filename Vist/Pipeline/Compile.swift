@@ -201,18 +201,20 @@ public func compileDocuments(fileNames: [String],
 //            libGen.launch()
 //            libGen.waitUntilExit()
             
-            let rmTask = NSTask()
-            rmTask.currentDirectoryPath = currentDirectory
-            rmTask.launchPath = "/bin/rm"
-            rmTask.arguments = ["\(file)_.ll"]
-            
-            rmTask.launch()
-            rmTask.waitUntilExit()
+            for f in ["\(file)_.ll", "\(file).bc"] {
+                let rmTask = NSTask()
+                rmTask.currentDirectoryPath = currentDirectory
+                rmTask.launchPath = "/bin/rm"
+                rmTask.arguments = [f]
+                
+                rmTask.launch()
+                rmTask.waitUntilExit()
+            }
             
             let bitcodeTask = NSTask()
             bitcodeTask.currentDirectoryPath = currentDirectory
             bitcodeTask.launchPath = "/usr/local/Cellar/llvm/3.6.2/bin/llvm-as"
-            bitcodeTask.arguments = ["\(file)_.ll", "-o", "\(file).bc"]
+            bitcodeTask.arguments = ["\(file).ll", "-o", "\(file).bc"]
             
             bitcodeTask.launch()
             bitcodeTask.waitUntilExit()
