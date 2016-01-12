@@ -184,6 +184,7 @@ public func compileDocuments(fileNames: [String],
         
         if generateLibrary || isStdLib {
             
+            // for o & dylib gen
 //            let objFileTask = NSTask()
 //            objFileTask.currentDirectoryPath = currentDirectory
 //            objFileTask.launchPath = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/bin/clang"
