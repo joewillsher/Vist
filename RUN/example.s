@@ -246,16 +246,6 @@ Ltmp23:
 	callq	__$fatalError_
 	.cfi_endproc
 
-	.globl	"__+_S.FP64S.FP64"
-	.align	4, 0x90
-"__+_S.FP64S.FP64":                     ## @"_+_S.FP64S.FP64"
-## BB#0:                                ## %entry
-	pushq	%rbp
-	movq	%rsp, %rbp
-	addsd	%xmm1, %xmm0
-	popq	%rbp
-	retq
-
 	.globl	"__+_S.i64S.i64"
 	.align	4, 0x90
 "__+_S.i64S.i64":                       ## @"_+_S.i64S.i64"
@@ -402,9 +392,126 @@ Ltmp23:
 	popq	%rbp
 	retq
 
+	.globl	"__+_S.FP64S.FP64"
+	.align	4, 0x90
+"__+_S.FP64S.FP64":                     ## @"_+_S.FP64S.FP64"
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	addsd	%xmm1, %xmm0
+	popq	%rbp
+	retq
+
+	.globl	"__-_S.FP64S.FP64"
+	.align	4, 0x90
+"__-_S.FP64S.FP64":                     ## @_-_S.FP64S.FP64
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	subsd	%xmm1, %xmm0
+	popq	%rbp
+	retq
+
+	.globl	"__*_S.FP64S.FP64"
+	.align	4, 0x90
+"__*_S.FP64S.FP64":                     ## @"_*_S.FP64S.FP64"
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	mulsd	%xmm1, %xmm0
+	popq	%rbp
+	retq
+
+	.globl	"__/_S.FP64S.FP64"
+	.align	4, 0x90
+"__/_S.FP64S.FP64":                     ## @"_/_S.FP64S.FP64"
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	divsd	%xmm1, %xmm0
+	popq	%rbp
+	retq
+
+	.globl	"__%_S.FP64S.FP64"
+	.align	4, 0x90
+"__%_S.FP64S.FP64":                     ## @"_%_S.FP64S.FP64"
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	popq	%rbp
+	jmp	_fmod                   ## TAILCALL
+
+	.globl	"__<_S.FP64S.FP64"
+	.align	4, 0x90
+"__<_S.FP64S.FP64":                     ## @"_<_S.FP64S.FP64"
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	ucomisd	%xmm0, %xmm1
+	seta	%al
+	popq	%rbp
+	retq
+
+	.globl	"__<=_S.FP64S.FP64"
+	.align	4, 0x90
+"__<=_S.FP64S.FP64":                    ## @"_<=_S.FP64S.FP64"
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	ucomisd	%xmm0, %xmm1
+	setae	%al
+	popq	%rbp
+	retq
+
+	.globl	"__>_S.FP64S.FP64"
+	.align	4, 0x90
+"__>_S.FP64S.FP64":                     ## @"_>_S.FP64S.FP64"
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	ucomisd	%xmm1, %xmm0
+	seta	%al
+	popq	%rbp
+	retq
+
+	.globl	"__>=_S.FP64S.FP64"
+	.align	4, 0x90
+"__>=_S.FP64S.FP64":                    ## @"_>=_S.FP64S.FP64"
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	ucomisd	%xmm1, %xmm0
+	setae	%al
+	popq	%rbp
+	retq
+
+	.globl	"__==_S.FP64S.FP64"
+	.align	4, 0x90
+"__==_S.FP64S.FP64":                    ## @"_==_S.FP64S.FP64"
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	cmpeqsd	%xmm1, %xmm0
+	movd	%xmm0, %rax
+	andl	$1, %eax
+                                        ## kill: AL<def> AL<kill> RAX<kill>
+	popq	%rbp
+	retq
+
+	.globl	"__!=_S.FP64S.FP64"
+	.align	4, 0x90
+"__!=_S.FP64S.FP64":                    ## @"_!=_S.FP64S.FP64"
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	ucomisd	%xmm1, %xmm0
+	setne	%al
+	popq	%rbp
+	retq
+
 	.section	__TEXT,__literal8,8byte_literals
 	.align	3
-LCPI31_0:
+LCPI41_0:
 	.quad	4611686018427387904     ## double 2
 	.section	__TEXT,__text,regular,pure_instructions
 	.globl	_main
@@ -424,7 +531,7 @@ Ltmp26:
 	callq	__$print_i64
 	movl	$5, %edi
 	callq	__$print_i64
-	movsd	LCPI31_0(%rip), %xmm0
+	movsd	LCPI41_0(%rip), %xmm0
 	callq	__$print_FP64
 	movq	$-4, %rdi
 	callq	__$print_i64

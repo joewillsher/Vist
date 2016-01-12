@@ -353,9 +353,9 @@ Ltmp50:
 	retq
 	.cfi_endproc
 
-	.globl	"__+_S.FP64S.FP64"
+	.globl	"__+_S.i64S.i64"
 	.align	4, 0x90
-"__+_S.FP64S.FP64":                     ## @"_+_S.FP64S.FP64"
+"__+_S.i64S.i64":                       ## @"_+_S.i64S.i64"
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
@@ -365,25 +365,6 @@ Ltmp52:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
 Ltmp53:
-	.cfi_def_cfa_register %rbp
-	addsd	%xmm1, %xmm0
-	callq	__Double_FP64
-	popq	%rbp
-	retq
-	.cfi_endproc
-
-	.globl	"__+_S.i64S.i64"
-	.align	4, 0x90
-"__+_S.i64S.i64":                       ## @"_+_S.i64S.i64"
-	.cfi_startproc
-## BB#0:                                ## %entry
-	pushq	%rbp
-Ltmp54:
-	.cfi_def_cfa_offset 16
-Ltmp55:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-Ltmp56:
 	.cfi_def_cfa_register %rbp
 	addq	%rsi, %rdi
 	callq	__Int_i64
@@ -397,12 +378,12 @@ Ltmp56:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp57:
+Ltmp54:
 	.cfi_def_cfa_offset 16
-Ltmp58:
+Ltmp55:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp59:
+Ltmp56:
 	.cfi_def_cfa_register %rbp
 	subq	%rsi, %rdi
 	callq	__Int_i64
@@ -416,12 +397,12 @@ Ltmp59:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp60:
+Ltmp57:
 	.cfi_def_cfa_offset 16
-Ltmp61:
+Ltmp58:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp62:
+Ltmp59:
 	.cfi_def_cfa_register %rbp
 	imulq	%rsi, %rdi
 	callq	__Int_i64
@@ -435,12 +416,12 @@ Ltmp62:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp63:
+Ltmp60:
 	.cfi_def_cfa_offset 16
-Ltmp64:
+Ltmp61:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp65:
+Ltmp62:
 	.cfi_def_cfa_register %rbp
 	xorl	%edx, %edx
 	movq	%rdi, %rax
@@ -457,12 +438,12 @@ Ltmp65:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp66:
+Ltmp63:
 	.cfi_def_cfa_offset 16
-Ltmp67:
+Ltmp64:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp68:
+Ltmp65:
 	.cfi_def_cfa_register %rbp
 	xorl	%edx, %edx
 	movq	%rdi, %rax
@@ -479,12 +460,12 @@ Ltmp68:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp69:
+Ltmp66:
 	.cfi_def_cfa_offset 16
-Ltmp70:
+Ltmp67:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp71:
+Ltmp68:
 	.cfi_def_cfa_register %rbp
 	cmpq	%rsi, %rdi
 	setl	%al
@@ -500,12 +481,12 @@ Ltmp71:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp72:
+Ltmp69:
 	.cfi_def_cfa_offset 16
-Ltmp73:
+Ltmp70:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp74:
+Ltmp71:
 	.cfi_def_cfa_register %rbp
 	cmpq	%rsi, %rdi
 	setle	%al
@@ -521,12 +502,12 @@ Ltmp74:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp75:
+Ltmp72:
 	.cfi_def_cfa_offset 16
-Ltmp76:
+Ltmp73:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp77:
+Ltmp74:
 	.cfi_def_cfa_register %rbp
 	cmpq	%rsi, %rdi
 	setg	%al
@@ -542,12 +523,12 @@ Ltmp77:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp78:
+Ltmp75:
 	.cfi_def_cfa_offset 16
-Ltmp79:
+Ltmp76:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp80:
+Ltmp77:
 	.cfi_def_cfa_register %rbp
 	cmpq	%rsi, %rdi
 	setge	%al
@@ -563,12 +544,12 @@ Ltmp80:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp81:
+Ltmp78:
 	.cfi_def_cfa_offset 16
-Ltmp82:
+Ltmp79:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp83:
+Ltmp80:
 	.cfi_def_cfa_register %rbp
 	cmpq	%rsi, %rdi
 	sete	%al
@@ -584,12 +565,12 @@ Ltmp83:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp84:
+Ltmp81:
 	.cfi_def_cfa_offset 16
-Ltmp85:
+Ltmp82:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp86:
+Ltmp83:
 	.cfi_def_cfa_register %rbp
 	cmpq	%rsi, %rdi
 	setne	%al
@@ -605,12 +586,12 @@ Ltmp86:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp87:
+Ltmp84:
 	.cfi_def_cfa_offset 16
-Ltmp88:
+Ltmp85:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp89:
+Ltmp86:
 	.cfi_def_cfa_register %rbp
 	andl	%esi, %edi
 	callq	__Bool_b
@@ -624,6 +605,25 @@ Ltmp89:
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
+Ltmp87:
+	.cfi_def_cfa_offset 16
+Ltmp88:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp89:
+	.cfi_def_cfa_register %rbp
+	orl	%esi, %edi
+	callq	__Bool_b
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	"__+_S.FP64S.FP64"
+	.align	4, 0x90
+"__+_S.FP64S.FP64":                     ## @"_+_S.FP64S.FP64"
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
 Ltmp90:
 	.cfi_def_cfa_offset 16
 Ltmp91:
@@ -631,7 +631,210 @@ Ltmp91:
 	movq	%rsp, %rbp
 Ltmp92:
 	.cfi_def_cfa_register %rbp
-	orl	%esi, %edi
+	addsd	%xmm1, %xmm0
+	callq	__Double_FP64
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	"__-_S.FP64S.FP64"
+	.align	4, 0x90
+"__-_S.FP64S.FP64":                     ## @_-_S.FP64S.FP64
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp93:
+	.cfi_def_cfa_offset 16
+Ltmp94:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp95:
+	.cfi_def_cfa_register %rbp
+	subsd	%xmm1, %xmm0
+	callq	__Double_FP64
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	"__*_S.FP64S.FP64"
+	.align	4, 0x90
+"__*_S.FP64S.FP64":                     ## @"_*_S.FP64S.FP64"
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp96:
+	.cfi_def_cfa_offset 16
+Ltmp97:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp98:
+	.cfi_def_cfa_register %rbp
+	mulsd	%xmm1, %xmm0
+	callq	__Double_FP64
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	"__/_S.FP64S.FP64"
+	.align	4, 0x90
+"__/_S.FP64S.FP64":                     ## @"_/_S.FP64S.FP64"
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp99:
+	.cfi_def_cfa_offset 16
+Ltmp100:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp101:
+	.cfi_def_cfa_register %rbp
+	divsd	%xmm1, %xmm0
+	callq	__Double_FP64
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	"__%_S.FP64S.FP64"
+	.align	4, 0x90
+"__%_S.FP64S.FP64":                     ## @"_%_S.FP64S.FP64"
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp102:
+	.cfi_def_cfa_offset 16
+Ltmp103:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp104:
+	.cfi_def_cfa_register %rbp
+	callq	_fmod
+	callq	__Double_FP64
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	"__<_S.FP64S.FP64"
+	.align	4, 0x90
+"__<_S.FP64S.FP64":                     ## @"_<_S.FP64S.FP64"
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp105:
+	.cfi_def_cfa_offset 16
+Ltmp106:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp107:
+	.cfi_def_cfa_register %rbp
+	ucomisd	%xmm0, %xmm1
+	seta	%al
+	movzbl	%al, %edi
+	callq	__Bool_b
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	"__<=_S.FP64S.FP64"
+	.align	4, 0x90
+"__<=_S.FP64S.FP64":                    ## @"_<=_S.FP64S.FP64"
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp108:
+	.cfi_def_cfa_offset 16
+Ltmp109:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp110:
+	.cfi_def_cfa_register %rbp
+	ucomisd	%xmm0, %xmm1
+	setae	%al
+	movzbl	%al, %edi
+	callq	__Bool_b
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	"__>_S.FP64S.FP64"
+	.align	4, 0x90
+"__>_S.FP64S.FP64":                     ## @"_>_S.FP64S.FP64"
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp111:
+	.cfi_def_cfa_offset 16
+Ltmp112:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp113:
+	.cfi_def_cfa_register %rbp
+	ucomisd	%xmm1, %xmm0
+	seta	%al
+	movzbl	%al, %edi
+	callq	__Bool_b
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	"__>=_S.FP64S.FP64"
+	.align	4, 0x90
+"__>=_S.FP64S.FP64":                    ## @"_>=_S.FP64S.FP64"
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp114:
+	.cfi_def_cfa_offset 16
+Ltmp115:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp116:
+	.cfi_def_cfa_register %rbp
+	ucomisd	%xmm1, %xmm0
+	setae	%al
+	movzbl	%al, %edi
+	callq	__Bool_b
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	"__==_S.FP64S.FP64"
+	.align	4, 0x90
+"__==_S.FP64S.FP64":                    ## @"_==_S.FP64S.FP64"
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp117:
+	.cfi_def_cfa_offset 16
+Ltmp118:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp119:
+	.cfi_def_cfa_register %rbp
+	cmpeqsd	%xmm1, %xmm0
+	movd	%xmm0, %rdi
+	andl	$1, %edi
+                                        ## kill: EDI<def> EDI<kill> RDI<kill>
+	callq	__Bool_b
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	"__!=_S.FP64S.FP64"
+	.align	4, 0x90
+"__!=_S.FP64S.FP64":                    ## @"_!=_S.FP64S.FP64"
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp120:
+	.cfi_def_cfa_offset 16
+Ltmp121:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp122:
+	.cfi_def_cfa_register %rbp
+	ucomisd	%xmm1, %xmm0
+	setne	%al
+	movzbl	%al, %edi
 	callq	__Bool_b
 	popq	%rbp
 	retq

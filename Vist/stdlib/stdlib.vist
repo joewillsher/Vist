@@ -1,6 +1,8 @@
 
 
+// ----------------------------------------------------
 // types
+// ----------------------------------------------------
 
 type Int {
     var value: LLVM.Int64
@@ -26,8 +28,9 @@ type Double {
 
 
 
-
-// runtime functions
+// ----------------------------------------------------
+// free functions
+// ----------------------------------------------------
 
 @inline func print: Int = |a| do _print(a.value)
 @inline func print: Bool = |a| do _print(a.value)
@@ -39,15 +42,11 @@ type Double {
 
 
 
-
+// ----------------------------------------------------
 // operators
+// ----------------------------------------------------
 
-@inline @operator(80)
-func + : Double Double -> Double = |a b| do
-    return Double(LLVM.f_add(a.value b.value))
-
-
-
+// int
 @inline @operator(80)
 func + : Int Int -> Int = |a b| do
     return Int(LLVM.i_add(a.value b.value))
@@ -93,7 +92,7 @@ func != : Int Int -> Bool = |a b| do
     return Bool(LLVM.i_neq(a.value b.value))
 
 
-
+// bool
 @inline @operator(15)
 func && : Bool Bool -> Bool = |a b| do
     return Bool(LLVM.b_and(a.value b.value))
@@ -103,6 +102,50 @@ func || : Bool Bool -> Bool = |a b| do
     return Bool(LLVM.b_or(a.value b.value))
 
 
+// float
+@inline @operator(80)
+func + : Double Double -> Double = |a b| do
+    return Double(LLVM.f_add(a.value b.value))
+
+@inline @operator(80)
+func - : Double Double -> Double = |a b| do
+    return Double(LLVM.f_sub(a.value b.value))
+
+@inline @operator(100)
+func * : Double Double -> Double = |a b| do
+    return Double(LLVM.f_mul(a.value b.value))
+
+@inline @operator(100)
+func / : Double Double -> Double = |a b| do
+    return Double(LLVM.f_div(a.value b.value))
+
+@inline @operator(90)
+func % : Double Double -> Double = |a b| do
+    return Double(LLVM.f_rem(a.value b.value))
+
+@inline @operator(30)
+func < : Double Double -> Bool = |a b| do
+    return Bool(LLVM.f_cmp_lt(a.value b.value))
+
+@inline @operator(30)
+func <= : Double Double -> Bool = |a b| do
+    return Bool(LLVM.f_cmp_lte(a.value b.value))
+
+@inline @operator(30)
+func > : Double Double -> Bool = |a b| do
+    return Bool(LLVM.f_cmp_gt(a.value b.value))
+
+@inline @operator(30)
+func >= : Double Double -> Bool = |a b| do
+    return Bool(LLVM.f_cmp_gte(a.value b.value))
+
+@inline @operator(20)
+func == : Double Double -> Bool = |a b| do
+    return Bool(LLVM.f_eq(a.value b.value))
+
+@inline @operator(20)
+func != : Double Double -> Bool = |a b| do
+    return Bool(LLVM.f_neq(a.value b.value))
 
 
 

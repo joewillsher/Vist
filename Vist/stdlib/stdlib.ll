@@ -188,16 +188,6 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { double } @"_+_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
-entry:
-  %value = extractvalue { double } %a, 0
-  %value1 = extractvalue { double } %b, 0
-  %add_res = fadd double %value, %value1
-  %Double_res = call { double } @_Double_FP64(double %add_res)
-  ret { double } %Double_res
-}
-
-; Function Attrs: alwaysinline
 define { i64 } @"_+_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
@@ -324,6 +314,116 @@ entry:
   %value1 = extractvalue { i1 } %b, 0
   %cmp_or_res = or i1 %value, %value1
   %Bool_res = call { i1 } @_Bool_b(i1 %cmp_or_res)
+  ret { i1 } %Bool_res
+}
+
+; Function Attrs: alwaysinline
+define { double } @"_+_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
+entry:
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %add_res = fadd double %value, %value1
+  %Double_res = call { double } @_Double_FP64(double %add_res)
+  ret { double } %Double_res
+}
+
+; Function Attrs: alwaysinline
+define { double } @_-_S.FP64S.FP64({ double } %a, { double } %b) #3 {
+entry:
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %sub_res = fsub double %value, %value1
+  %Double_res = call { double } @_Double_FP64(double %sub_res)
+  ret { double } %Double_res
+}
+
+; Function Attrs: alwaysinline
+define { double } @"_*_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
+entry:
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %mul_res = fmul double %value, %value1
+  %Double_res = call { double } @_Double_FP64(double %mul_res)
+  ret { double } %Double_res
+}
+
+; Function Attrs: alwaysinline
+define { double } @"_/_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
+entry:
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %div_res = fdiv double %value, %value1
+  %Double_res = call { double } @_Double_FP64(double %div_res)
+  ret { double } %Double_res
+}
+
+; Function Attrs: alwaysinline
+define { double } @"_%_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
+entry:
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %rem_res = frem double %value, %value1
+  %Double_res = call { double } @_Double_FP64(double %rem_res)
+  ret { double } %Double_res
+}
+
+; Function Attrs: alwaysinline
+define { i1 } @"_<_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
+entry:
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %cmp_lt_res = fcmp olt double %value, %value1
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_lt_res)
+  ret { i1 } %Bool_res
+}
+
+; Function Attrs: alwaysinline
+define { i1 } @"_<=_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
+entry:
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %cmp_lte_res = fcmp ole double %value, %value1
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_lte_res)
+  ret { i1 } %Bool_res
+}
+
+; Function Attrs: alwaysinline
+define { i1 } @"_>_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
+entry:
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %cmp_gt_res = fcmp ogt double %value, %value1
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_gt_res)
+  ret { i1 } %Bool_res
+}
+
+; Function Attrs: alwaysinline
+define { i1 } @"_>=_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
+entry:
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %cmp_gte_res = fcmp oge double %value, %value1
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_gte_res)
+  ret { i1 } %Bool_res
+}
+
+; Function Attrs: alwaysinline
+define { i1 } @"_==_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
+entry:
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %cmp_eq_res = fcmp oeq double %value, %value1
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_eq_res)
+  ret { i1 } %Bool_res
+}
+
+; Function Attrs: alwaysinline
+define { i1 } @"_!=_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
+entry:
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %cmp_neq_res = fcmp one double %value, %value1
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_neq_res)
   ret { i1 } %Bool_res
 }
 

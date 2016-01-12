@@ -2,13 +2,7 @@
 # TODO
 
 * Standard library
-    - Let the stdlib use native types & functions
-        - use LLVM.Int64 to annotate to the compiler when to generate native LLVM types
-        - use LLVM.add_i64_i64 to annotate when to use builtin functions
-        - the compiler then sees substitutes these with their native counterparts
-    - To make literals look into stdlib
-        - Int has an initialiser that takes LLVM.Int64, give the compiler special knowlege of this
-        - The compiler wraps any literals in this initaliser
+    - The compiler wraps any literals in this initaliser
     - write stdlib int and array types
 
 * Operators

@@ -1,6 +1,5 @@
 
 // types
-
 type Int {
     var value: LLVM.Int64
     init Int
@@ -21,8 +20,7 @@ type Double {
 
 
 
-// runtime functions
-
+// free functions
 @inline func print: Int
 @inline func print: Bool
 @inline func print: Double
@@ -32,9 +30,6 @@ type Double {
 
 
 // operators
-
-@inline @operator(80) func + : Double Double -> Double
-
 @inline @operator(80) func + : Int Int -> Int
 @inline @operator(80) func - : Int Int -> Int
 @inline @operator(100) func * : Int Int -> Int
@@ -50,6 +45,17 @@ type Double {
 @inline @operator(15) func && : Bool Bool -> Bool
 @inline @operator(10) func || : Bool Bool -> Bool
 
+@inline @operator(80) func + : Double Double -> Double
+@inline @operator(80) func - : Double Double -> Double
+@inline @operator(100) func * : Double Double -> Double
+@inline @operator(100) func / : Double Double -> Double
+@inline @operator(90) func % : Double Double -> Double
+@inline @operator(30) func < : Double Double -> Bool
+@inline @operator(30) func <= : Double Double -> Bool
+@inline @operator(30) func > : Double Double -> Bool
+@inline @operator(30) func >= : Double Double -> Bool
+@inline @operator(20) func == : Double Double -> Bool
+@inline @operator(20) func != : Double Double -> Bool
 
 
 

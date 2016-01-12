@@ -1,5 +1,7 @@
 
 
+
+// runtime functions
 func _print: LLVM.Int
 func _print: LLVM.Float
 func _print: LLVM.Double
@@ -10,7 +12,7 @@ func _fatalError: ()
 
 
 
-
+// compiler functions
 func LLVM.i_add: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
 func LLVM.i_sub: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
 func LLVM.i_mul: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
@@ -30,4 +32,14 @@ func LLVM.b_or: LLVM.Bool LLVM.Bool -> LLVM.Bool
 
 
 func LLVM.f_add: LLVM.Double LLVM.Double -> LLVM.Double
+func LLVM.f_sub: LLVM.Double LLVM.Double -> LLVM.Double
 func LLVM.f_mul: LLVM.Double LLVM.Double -> LLVM.Double
+func LLVM.f_div: LLVM.Double LLVM.Double -> LLVM.Double
+func LLVM.f_rem: LLVM.Double LLVM.Double -> LLVM.Double
+
+func LLVM.f_cmp_lt: LLVM.Double LLVM.Double -> LLVM.Bool
+func LLVM.f_cmp_lte: LLVM.Double LLVM.Double -> LLVM.Bool
+func LLVM.f_cmp_gt: LLVM.Double LLVM.Double -> LLVM.Bool
+func LLVM.f_cmp_gte: LLVM.Double LLVM.Double -> LLVM.Bool
+func LLVM.f_eq: LLVM.Double LLVM.Double -> LLVM.Bool
+func LLVM.f_neq: LLVM.Double LLVM.Double -> LLVM.Bool

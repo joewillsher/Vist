@@ -146,16 +146,6 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { double } @"_+_S.FP64S.FP64"({ double } %a, { double } %b) #4 {
-entry:
-  %value = extractvalue { double } %a, 0
-  %value1 = extractvalue { double } %b, 0
-  %add_res = fadd double %value, %value1
-  %.fca.0.insert.i = insertvalue { double } undef, double %add_res, 0
-  ret { double } %.fca.0.insert.i
-}
-
-; Function Attrs: alwaysinline nounwind readnone
 define { i64 } @"_+_S.i64S.i64"({ i64 } %a, { i64 } %b) #4 {
 entry:
   %value = extractvalue { i64 } %a, 0
@@ -282,6 +272,116 @@ entry:
   %value1 = extractvalue { i1 } %b, 0
   %cmp_or_res = or i1 %value, %value1
   %.fca.0.insert.i = insertvalue { i1 } undef, i1 %cmp_or_res, 0
+  ret { i1 } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { double } @"_+_S.FP64S.FP64"({ double } %a, { double } %b) #4 {
+entry:
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %add_res = fadd double %value, %value1
+  %.fca.0.insert.i = insertvalue { double } undef, double %add_res, 0
+  ret { double } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { double } @_-_S.FP64S.FP64({ double } %a, { double } %b) #4 {
+entry:
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %sub_res = fsub double %value, %value1
+  %.fca.0.insert.i = insertvalue { double } undef, double %sub_res, 0
+  ret { double } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { double } @"_*_S.FP64S.FP64"({ double } %a, { double } %b) #4 {
+entry:
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %mul_res = fmul double %value, %value1
+  %.fca.0.insert.i = insertvalue { double } undef, double %mul_res, 0
+  ret { double } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { double } @"_/_S.FP64S.FP64"({ double } %a, { double } %b) #4 {
+entry:
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %div_res = fdiv double %value, %value1
+  %.fca.0.insert.i = insertvalue { double } undef, double %div_res, 0
+  ret { double } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { double } @"_%_S.FP64S.FP64"({ double } %a, { double } %b) #4 {
+entry:
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %rem_res = frem double %value, %value1
+  %.fca.0.insert.i = insertvalue { double } undef, double %rem_res, 0
+  ret { double } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { i1 } @"_<_S.FP64S.FP64"({ double } %a, { double } %b) #4 {
+entry:
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %cmp_lt_res = fcmp olt double %value, %value1
+  %.fca.0.insert.i = insertvalue { i1 } undef, i1 %cmp_lt_res, 0
+  ret { i1 } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { i1 } @"_<=_S.FP64S.FP64"({ double } %a, { double } %b) #4 {
+entry:
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %cmp_lte_res = fcmp ole double %value, %value1
+  %.fca.0.insert.i = insertvalue { i1 } undef, i1 %cmp_lte_res, 0
+  ret { i1 } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { i1 } @"_>_S.FP64S.FP64"({ double } %a, { double } %b) #4 {
+entry:
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %cmp_gt_res = fcmp ogt double %value, %value1
+  %.fca.0.insert.i = insertvalue { i1 } undef, i1 %cmp_gt_res, 0
+  ret { i1 } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { i1 } @"_>=_S.FP64S.FP64"({ double } %a, { double } %b) #4 {
+entry:
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %cmp_gte_res = fcmp oge double %value, %value1
+  %.fca.0.insert.i = insertvalue { i1 } undef, i1 %cmp_gte_res, 0
+  ret { i1 } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { i1 } @"_==_S.FP64S.FP64"({ double } %a, { double } %b) #4 {
+entry:
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %cmp_eq_res = fcmp oeq double %value, %value1
+  %.fca.0.insert.i = insertvalue { i1 } undef, i1 %cmp_eq_res, 0
+  ret { i1 } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { i1 } @"_!=_S.FP64S.FP64"({ double } %a, { double } %b) #4 {
+entry:
+  %value = extractvalue { double } %a, 0
+  %value1 = extractvalue { double } %b, 0
+  %cmp_neq_res = fcmp one double %value, %value1
+  %.fca.0.insert.i = insertvalue { i1 } undef, i1 %cmp_neq_res, 0
   ret { i1 } %.fca.0.insert.i
 }
 
