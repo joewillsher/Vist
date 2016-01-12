@@ -165,21 +165,21 @@ public func compileDocuments(fileNames: [String],
         if verbose { print("\n\n-----------------------------ASM-----------------------------\n") }
         
 
-        /// compiles the LLVM IR to assembly
-        let compileIRtoASMTask = NSTask()
-        compileIRtoASMTask.currentDirectoryPath = currentDirectory
-        compileIRtoASMTask.launchPath = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/bin/llc"
-        compileIRtoASMTask.arguments = ["\(file).ll"]
-        
-        compileIRtoASMTask.launch()
-        compileIRtoASMTask.waitUntilExit()
-        
-        let asm = try String(contentsOfFile: "\(currentDirectory)/\(file).s", encoding: NSUTF8StringEncoding)
-        
-        if asmOnly { print(asm); return }
-        if verbose { print(asm) }
-        
-        
+        if !isStdLib {
+            /// compiles the LLVM IR to assembly
+            let compileIRtoASMTask = NSTask()
+            compileIRtoASMTask.currentDirectoryPath = currentDirectory
+            compileIRtoASMTask.launchPath = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/bin/llc"
+            compileIRtoASMTask.arguments = ["\(file).ll"]
+            
+            compileIRtoASMTask.launch()
+            compileIRtoASMTask.waitUntilExit()
+            
+            let asm = try String(contentsOfFile: "\(currentDirectory)/\(file).s", encoding: NSUTF8StringEncoding)
+            
+            if asmOnly { print(asm); return }
+            if verbose { print(asm) }
+        }
         
         
         if generateLibrary || isStdLib {
