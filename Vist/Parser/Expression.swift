@@ -386,24 +386,22 @@ final class ConditionalExpression<BlockType : ScopeExpression> : Expression {
 
 protocol LoopExpression : Expression {
     
-    typealias Iterator: IteratorExpression
     typealias BlockType: ScopeExpression
     
-    var iterator: Iterator { get }
+//    var iterator: Expression { get }
     var block: BlockType { get }
 }
 
 
 final class ForInLoopExpression
-    <Iterator : IteratorExpression,
-    BlockType : ScopeExpression>
+    <BlockType : ScopeExpression>
     : LoopExpression {
     
     let binded: Variable
-    let iterator: Iterator
+    let iterator: Expression
     var block: BlockType
     
-    init(identifier: Variable, iterator: Iterator, block: BlockType) {
+    init(identifier: Variable, iterator: Expression, block: BlockType) {
         self.binded = identifier
         self.iterator = iterator
         self.block = block
@@ -413,8 +411,7 @@ final class ForInLoopExpression
 }
 
 final class WhileLoopExpression
-    <Iterator : IteratorExpression,
-    BlockType : ScopeExpression>
+    <BlockType : ScopeExpression>
     : LoopExpression {
     
     let iterator: WhileIteratorExpression

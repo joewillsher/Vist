@@ -388,8 +388,18 @@ entry:
 ; Function Attrs: nounwind
 define i64 @main() #8 {
 entry:
-  tail call void @"_$print_i64"(i64 5) #8
-  tail call void @"_$print_i64"(i64 100) #8
+  br label %loop
+
+loop:                                             ; preds = %loop, %entry
+  %a = phi { i64 } [ { i64 4 }, %entry ], [ %.fca.0.insert.i, %loop ]
+  %value2 = extractvalue { i64 } %a, 0
+  %na = add i64 %value2, 1
+  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %na, 0
+  tail call void @"_$print_i64"(i64 %value2) #8
+  %looptest = icmp sgt i64 %na, 100
+  br i1 %looptest, label %afterloop, label %loop
+
+afterloop:                                        ; preds = %loop
   ret i64 0
 }
 

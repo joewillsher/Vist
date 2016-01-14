@@ -7,11 +7,11 @@
 //
 
 
-extension StackFrame {
+extension COpaquePointer {
     
-    func load(object: LLVMValueRef, type: LLVMTyped?, property: String, builder: LLVMBuilderRef) throws -> LLVMValueRef {
+    func load(property: String, type: LLVMTyped?, builder: LLVMBuilderRef) throws -> LLVMValueRef {
         if let stdType = type as? LLVMStType {
-            return try stdType.loadPropertyNamed(property, from: object, builder: builder)
+            return try stdType.loadPropertyNamed(property, from: self, builder: builder)
         }
         else {
             fatalError("Stdlib type \(type?.description) has no property \(property)")

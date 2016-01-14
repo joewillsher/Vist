@@ -11,6 +11,7 @@ protocol LLVMTyped : Printable, CustomDebugStringConvertible {
     
     var isStdBool: Bool { get }
     var isStdInt: Bool { get }
+    var isStdRange: Bool { get }
 }
 
 extension LLVMTyped {
@@ -18,6 +19,9 @@ extension LLVMTyped {
         return false
     }
     var isStdInt: Bool {
+        return false
+    }
+    var isStdRange: Bool {
         return false
     }
 }
@@ -131,6 +135,9 @@ final class LLVMStType : LLVMTyped {
     }
     var isStdInt: Bool {
         return name == "Int" && members[0].0 == "value"
+    }
+    var isStdRange: Bool {
+        return name == "Range" && members[0].0 == "start" && members[1].0 == "end"
     }
 }
 

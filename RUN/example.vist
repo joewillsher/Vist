@@ -25,9 +25,9 @@ func ... : Int Int -> Range = do
 //    return Range( $0 ( $1 - 1))
 
 
-let tt = Int(5) ... Int(100)
-print(tt.start)
-print(tt.end)
+//let tt = Int(5) ... Int(100)
+//print(tt.start)
+//print(tt.end)
 
 
 for a in Int(4) ... Int(100) {

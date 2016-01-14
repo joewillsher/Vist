@@ -409,24 +409,24 @@ extension ElseIfBlockExpression : TypeProvider {
 //  MARK:                                                 Loops
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension RangeIteratorExpression : TypeProvider {
-    
-    func llvmType(scope: SemaScope) throws -> LLVMTyped {
-        
-        // gen types for start and end
-        let s = try start.llvmType(scope)
-        let e = try end.llvmType(scope)
-        
-        // make sure range has same start and end types
-        guard e == s else { throw SemaError.RangeWithInconsistentTypes }
-        guard s.isStdInt && e.isStdInt else { throw SemaError.NonIntegerRange }
-        
-        self.type = LLVMType.Null
-        return LLVMType.Null
-    }
-    
-}
-
+//extension RangeIteratorExpression : TypeProvider {
+//    
+//    func llvmType(scope: SemaScope) throws -> LLVMTyped {
+//        
+//        // gen types for start and end
+//        let s = try start.llvmType(scope)
+//        let e = try end.llvmType(scope)
+//        
+//        // make sure range has same start and end types
+//        guard e == s else { throw SemaError.RangeWithInconsistentTypes }
+//        guard s.isStdInt && e.isStdInt else { throw SemaError.NonIntegerRange }
+//        
+//        self.type = LLVMType.Null
+//        return LLVMType.Null
+//    }
+//    
+//}
+//
 
 extension ForInLoopExpression : TypeProvider {
     
@@ -436,10 +436,10 @@ extension ForInLoopExpression : TypeProvider {
         let loopScope = SemaScope(parent: scope, returnType: scope.returnType)
         
         // add bound name to scopes
-        loopScope[variable: binded.name] = LLVMType.Int(size: 64)
+        loopScope[variable: binded.name] = scope[type: "Int"]
         
         // gen types for iterator
-        try iterator.llvmType(scope)
+        guard try iterator.llvmType(scope).isStdRange else { throw SemaError.NotRangeType }
         
         // parse inside of loop in loop scope
         try scopeSemallvmType(forScopeExpression: block, scope: loopScope)

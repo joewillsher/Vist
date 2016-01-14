@@ -515,11 +515,21 @@ _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	movl	$5, %edi
+	pushq	%rbx
+	pushq	%rax
+	movl	$4, %ebx
+	.align	4, 0x90
+LBB41_1:                                ## %loop
+                                        ## =>This Inner Loop Header: Depth=1
+	movq	%rbx, %rdi
+	leaq	1(%rbx), %rbx
 	callq	__$print_i64
-	movl	$100, %edi
-	callq	__$print_i64
+	cmpq	$101, %rbx
+	jl	LBB41_1
+## BB#2:                                ## %afterloop
 	xorl	%eax, %eax
+	addq	$8, %rsp
+	popq	%rbx
 	popq	%rbp
 	retq
 

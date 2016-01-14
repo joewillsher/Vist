@@ -435,17 +435,24 @@ entry:
 
 define i64 @main() {
 entry:
-  %Int_res = call { i64 } @_Int_i64(i64 5)
+  %Int_res = call { i64 } @_Int_i64(i64 4)
   %Int_res1 = call { i64 } @_Int_i64(i64 100)
   %..._res = call { { i64 }, { i64 } } @_..._S.i64S.i64({ i64 } %Int_res, { i64 } %Int_res1)
-  %0 = alloca { { i64 }, { i64 } }
-  store { { i64 }, { i64 } } %..._res, { { i64 }, { i64 } }* %0
-  %start_ptr = getelementptr inbounds { { i64 }, { i64 } }* %0, i32 0, i32 0
-  %start = load { i64 }* %start_ptr
-  call void @_print_S.i64({ i64 } %start)
-  %end_ptr = getelementptr inbounds { { i64 }, { i64 } }* %0, i32 0, i32 1
-  %end = load { i64 }* %end_ptr
-  call void @_print_S.i64({ i64 } %end)
+  %start = extractvalue { { i64 }, { i64 } } %..._res, 0
+  %end = extractvalue { { i64 }, { i64 } } %..._res, 1
+  %value = extractvalue { i64 } %end, 0
+  br label %loop
+
+loop:                                             ; preds = %loop, %entry
+  %a = phi { i64 } [ %start, %entry ], [ %nexta, %loop ]
+  %value2 = extractvalue { i64 } %a, 0
+  %na = add i64 1, %value2
+  %nexta = call { i64 } @_Int_i64(i64 %na)
+  call void @_print_S.i64({ i64 } %a)
+  %looptest = icmp sle i64 %na, %value
+  br i1 %looptest, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %loop
   ret i64 0
 }
 

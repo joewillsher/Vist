@@ -621,7 +621,7 @@ extension ConditionalExpression : IRGenerator {
             
             if let cond = cond { //if statement, make conditonal jump
                 
-                let v = try stackFrame.load(cond, type: statement.condition?.type, property: "value", builder: builder)
+                let v = try cond.load("value", type: statement.condition?.type, builder: builder)
                 
                 LLVMBuildCondBr(builder, v, block, ifOut)
                 
@@ -670,6 +670,7 @@ private extension ElseIfBlockExpression {
 //  MARK:                                                 Loops
 //-------------------------------------------------------------------------------------------------------------------------
 
+
 extension ForInLoopExpression : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
@@ -678,22 +679,21 @@ extension ForInLoopExpression : IRGenerator {
         let loop = LLVMAppendBasicBlock(stackFrame.function, "loop")
         let afterLoop = LLVMAppendBasicBlock(stackFrame.function, "afterloop")
         
-        guard let rangeIterator = iterator as? RangeIteratorExpression else { fatalError() }
+        let rangeIterator = try iterator.expressionCodeGen(stackFrame)
         
-        let s = try rangeIterator.start.expressionCodeGen(stackFrame)
-        let e = try rangeIterator.end.expressionCodeGen(stackFrame)
-        
-        let start = try stackFrame.load(s, type: rangeIterator.start.type, property: "value", builder: builder)
-        let end = try stackFrame.load(e, type: rangeIterator.end.type, property: "value", builder: builder)
+        let start = try rangeIterator.load("start", type: iterator.type, builder: builder)
+        let endValue = try rangeIterator.load("end", type: iterator.type, builder: builder).load("value", type: stackFrame.type("Int"), builder: builder)
         
         // move into loop block
         LLVMBuildBr(builder, loop)
         LLVMPositionBuilderAtEnd(builder, loop)
         
+        let stdIntType = try stackFrame.type("Int")
+        
         // define variable phi node
         let name = binded.name ?? ""
-        let i = LLVMBuildPhi(builder, LLVMInt64Type(), name)
-
+        let i = LLVMBuildPhi(builder, stdIntType.ir(), name)
+        
         // add incoming value to phi node
         let num1 = [start].ptr(), incoming1 = [stackFrame.block].ptr()
         defer { num1.dealloc(1); incoming1.dealloc(1) }
@@ -701,7 +701,14 @@ extension ForInLoopExpression : IRGenerator {
         
         // iterate and add phi incoming
         let one = LLVMConstInt(LLVMInt64Type(), UInt64(1), LLVMBool(false))
-        let next = LLVMBuildAdd(builder, one, i, "next\(name)")
+        let value = try i.load("value", type: stdIntType, builder: builder)
+        let next = LLVMBuildAdd(builder, one, value, "n\(name)")
+        
+        // initialise next i value with the iterated num
+        let initialiser = LLVMGetNamedFunction(module, "_Int_i64")
+        let args = [next].ptr()
+        defer { args.dealloc(1) }
+        let nextInt = LLVMBuildCall(builder, initialiser, args, 1, "next\(name)")
         
         // gen the IR for the inner block
         let lv = StackVariable(val: i, builder: builder)
@@ -709,11 +716,11 @@ extension ForInLoopExpression : IRGenerator {
         try block.bbGenInline(stackFrame: loopStackFrame)
         
         // conditional break
-        let comp = LLVMBuildICmp(builder, LLVMIntSLE, next, end, "looptest")
+        let comp = LLVMBuildICmp(builder, LLVMIntSLE, next, endValue, "looptest")
         LLVMBuildCondBr(builder, comp, loop, afterLoop)
         
         // move back to loop / end loop
-        let num2 = [next].ptr(), incoming2 = [loopStackFrame.block].ptr()
+        let num2 = [nextInt].ptr(), incoming2 = [loopStackFrame.block].ptr()
         defer { num2.dealloc(1); incoming2.dealloc(1) }
         LLVMAddIncoming(i, num2, incoming2, 1)
         
@@ -737,7 +744,7 @@ extension WhileLoopExpression : IRGenerator {
         
         // whether to enter the while, first while check
         let initialCond = try iterator.condition.expressionCodeGen(stackFrame)
-        let initialCondV = try stackFrame.load(initialCond, type: iterator.condition.type, property: "value", builder: builder)
+        let initialCondV = try initialCond.load("value", type: iterator.condition.type, builder: builder)
 
         // move into loop block
         LLVMBuildCondBr(builder, initialCondV, loop, afterLoop)
@@ -749,7 +756,7 @@ extension WhileLoopExpression : IRGenerator {
         
         // conditional break
         let conditionalRepeat = try iterator.condition.expressionCodeGen(stackFrame)
-        let conditionalRepeatV = try stackFrame.load(conditionalRepeat, type: iterator.condition.type, property: "value", builder: builder)
+        let conditionalRepeatV = try conditionalRepeat.load("value", type: iterator.condition.type, builder: builder)
         LLVMBuildCondBr(builder, conditionalRepeatV, loop, afterLoop)
         
         // move back to loop / end loop

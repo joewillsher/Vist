@@ -457,20 +457,20 @@ extension Parser {
     }
     
     
-    private mutating func parseForInLoopExpression() throws -> ForInLoopExpression<RangeIteratorExpression, BlockExpression> {
+    private mutating func parseForInLoopExpression() throws -> ForInLoopExpression<BlockExpression> {
         
         getNextToken() // eat 'for'
         let itentifier = try parseTextExpression() // bind loop label
         guard case .In = getNextToken() else { throw ParseError.ExpectedIn(currentPos) }
         getNextToken() // eat 'in'
         
-        let loop = try parseForInIterator()
+        let loop = try parseOperatorExpression()
         let block = try parseBlockExpression()
         
         return ForInLoopExpression(identifier: itentifier, iterator: loop, block: block)
     }
     
-    private mutating func parseWhileLoopExpression() throws -> WhileLoopExpression<WhileIteratorExpression, BlockExpression> {
+    private mutating func parseWhileLoopExpression() throws -> WhileLoopExpression<BlockExpression> {
         
         getNextToken() // eat 'while'
         
