@@ -385,38 +385,12 @@ entry:
   ret { i1 } %.fca.0.insert.i
 }
 
-define i64 @main() {
-_assert_S.b.exit:
-  tail call void @"_$print_i64"(i64 5) #8
-  tail call void @"_$print_i64"(i64 5) #8
-  tail call void @"_$print_FP64"(double 2.000000e+00) #8
-  tail call void @"_$print_i64"(i64 -4) #8
-  tail call void @"_$print_i64"(i64 1) #8
-  br label %loop
-
-loop:                                             ; preds = %_assert_S.b.exit, %loop
-  %.sroa.0.0 = phi i64 [ -4, %_assert_S.b.exit ], [ %add_res.i, %loop ]
-  %add_res.i = add nsw i64 %.sroa.0.0, 5
-  tail call void @"_$print_i64"(i64 %add_res.i) #8
-  %cmp_lt_res.i = icmp slt i64 %add_res.i, 1000
-  br i1 %cmp_lt_res.i, label %loop, label %afterloop
-
-afterloop:                                        ; preds = %loop
-  ret i64 0
-}
-
-; Function Attrs: alwaysinline
-define void @_meme_S.b({ i1 } %"$0") #7 {
+; Function Attrs: nounwind
+define i64 @main() #8 {
 entry:
-  %value = extractvalue { i1 } %"$0", 0
-  br i1 %value, label %then0, label %else1
-
-then0:                                            ; preds = %entry
-  ret void
-
-else1:                                            ; preds = %entry
-  tail call void @"_$fatalError_"()
-  unreachable
+  tail call void @"_$print_i64"(i64 5) #8
+  tail call void @"_$print_i64"(i64 100) #8
+  ret i64 0
 }
 
 ; Function Attrs: alwaysinline nounwind readnone

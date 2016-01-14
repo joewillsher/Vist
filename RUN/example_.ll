@@ -436,78 +436,17 @@ entry:
 define i64 @main() {
 entry:
   %Int_res = call { i64 } @_Int_i64(i64 5)
-  %0 = alloca { i64 }
-  store { i64 } %Int_res, { i64 }* %0
   %Int_res1 = call { i64 } @_Int_i64(i64 100)
-  %1 = alloca { i64 }
-  store { i64 } %Int_res1, { i64 }* %1
-  %u = load { i64 }* %0
-  %v = load { i64 }* %1
-  %..._res = call { { i64 }, { i64 } } @_..._S.i64S.i64({ i64 } %u, { i64 } %v)
-  %2 = alloca { { i64 }, { i64 } }
-  store { { i64 }, { i64 } } %..._res, { { i64 }, { i64 } }* %2
-  %start_ptr = getelementptr inbounds { { i64 }, { i64 } }* %2, i32 0, i32 0
+  %..._res = call { { i64 }, { i64 } } @_..._S.i64S.i64({ i64 } %Int_res, { i64 } %Int_res1)
+  %0 = alloca { { i64 }, { i64 } }
+  store { { i64 }, { i64 } } %..._res, { { i64 }, { i64 } }* %0
+  %start_ptr = getelementptr inbounds { { i64 }, { i64 } }* %0, i32 0, i32 0
   %start = load { i64 }* %start_ptr
   call void @_print_S.i64({ i64 } %start)
-  %u2 = load { i64 }* %0
-  call void @_print_S.i64({ i64 } %u2)
-  %Double_res = call { double } @_Double_FP64(double 2.000000e+00)
-  %3 = alloca { double }
-  store { double } %Double_res, { double }* %3
-  %y = load { double }* %3
-  call void @_print_S.FP64({ double } %y)
-  %Int_res3 = call { i64 } @_Int_i64(i64 6)
-  %Int_res4 = call { i64 } @_Int_i64(i64 10)
-  %-_res = call { i64 } @_-_S.i64S.i64({ i64 } %Int_res3, { i64 } %Int_res4)
-  %4 = alloca { i64 }
-  store { i64 } %-_res, { i64 }* %4
-  %a = load { i64 }* %4
-  call void @_print_S.i64({ i64 } %a)
-  %Bool_res = call { i1 } @_Bool_b(i1 true)
-  call void @_assert_S.b({ i1 } %Bool_res)
-  %Int_res5 = call { i64 } @_Int_i64(i64 1)
-  call void @_print_S.i64({ i64 } %Int_res5)
-  %a6 = load { i64 }* %4
-  %Int_res7 = call { i64 } @_Int_i64(i64 1000)
-  %"<_res" = call { i1 } @"_<_S.i64S.i64"({ i64 } %a6, { i64 } %Int_res7)
-  %value = extractvalue { i1 } %"<_res", 0
-  br i1 %value, label %loop, label %afterloop
-
-loop:                                             ; preds = %loop, %entry
-  %a8 = load { i64 }* %4
-  %Int_res9 = call { i64 } @_Int_i64(i64 5)
-  %"+_res" = call { i64 } @"_+_S.i64S.i64"({ i64 } %a8, { i64 } %Int_res9)
-  store { i64 } %"+_res", { i64 }* %4
-  %a10 = load { i64 }* %4
-  call void @_print_S.i64({ i64 } %a10)
-  %a11 = load { i64 }* %4
-  %Int_res12 = call { i64 } @_Int_i64(i64 1000)
-  %"<_res13" = call { i1 } @"_<_S.i64S.i64"({ i64 } %a11, { i64 } %Int_res12)
-  %value14 = extractvalue { i1 } %"<_res13", 0
-  br i1 %value14, label %loop, label %afterloop
-
-afterloop:                                        ; preds = %loop, %entry
+  %end_ptr = getelementptr inbounds { { i64 }, { i64 } }* %0, i32 0, i32 1
+  %end = load { i64 }* %end_ptr
+  call void @_print_S.i64({ i64 } %end)
   ret i64 0
-}
-
-; Function Attrs: alwaysinline
-define void @_meme_S.b({ i1 } %"$0") #3 {
-entry:
-  %value = extractvalue { i1 } %"$0", 0
-  br i1 %value, label %then0, label %cont0
-
-cont:                                             ; preds = %else1, %then0
-  ret void
-
-cont0:                                            ; preds = %entry
-  br label %else1
-
-then0:                                            ; preds = %entry
-  br label %cont
-
-else1:                                            ; preds = %cont0
-  call void @_fatalError_()
-  br label %cont
 }
 
 ; Function Attrs: alwaysinline

@@ -266,9 +266,8 @@ extension FunctionCallExpression : TypeProvider {
         self.mangledName = name.mangle(fnType)
         
         // gen types for objects in call
-        for (i, arg) in args.elements.enumerate() {
-            let t = try arg.llvmType(scope)
-//            guard params[i] == t else { throw Wrong
+        for arg in args.elements {
+            try arg.llvmType(scope)
         }
         
         // assign type to self and return
@@ -502,7 +501,7 @@ extension ArrayExpression : TypeProvider {
         }
         
         // make sure array is homogeneous
-        guard Set(try types.map { try $0.ir() }).count == 1 else { throw SemaError.HeterogenousArray(description) }
+        guard Set(types.map { $0.ir() }).count == 1 else { throw SemaError.HeterogenousArray(description) }
         
         // get element type and assign to self
         guard let elementType = types.first else { throw SemaError.EmptyArray }
@@ -611,7 +610,6 @@ extension InitialiserExpression : TypeProvider {
         for ex in impl.body.expressions {
             try ex.llvmType(initScope)
         }
-        
         
         return t
     }

@@ -1,10 +1,5 @@
 
 
-@inline func meme: Bool = do
-    if $0 do () else do fatalError()
-
-
-
 // todo: different one line assignment expressions
 type Range {
     let start: Int
@@ -30,35 +25,14 @@ func ... : Int Int -> Range = do
 //    return Range( $0 ( $1 - 1))
 
 
-let u = Int(5)
-let v = Int(100)
-
-let tt = u ... v
+let tt = Int(5) ... Int(100)
 print(tt.start)
+print(tt.end)
 
 
-
-print(u)
-
-let y = Double(2.0)
-print(y)
-
-
-var a = Int(6) - Int(10)
-print(a)
-
-
-assert(Bool(true))
-
-print(Int(1))
-
-
-while a < Int(1000) {
-    a = a + Int(5)
+for a in Int(4) ... Int(100) {
     print(a)
 }
-
-
 
 
 

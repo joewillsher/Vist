@@ -7,7 +7,7 @@
 //
 
 protocol LLVMTyped : Printable, CustomDebugStringConvertible {
-    func ir() throws -> LLVMTypeRef
+    func ir() -> LLVMTypeRef
     
     var isStdBool: Bool { get }
     var isStdInt: Bool { get }
@@ -30,21 +30,21 @@ enum LLVMType : LLVMTyped {
     indirect case Pointer(to: LLVMTyped)
     // TODO: Implement Tuple types (as struct)
     
-    func ir() throws -> LLVMTypeRef {
+    func ir() -> LLVMTypeRef {
         switch self {
         case .Null:                     return nil
         case .Void:                     return LLVMVoidType()
         case .Int(let s):               return LLVMIntType(s)
         case Bool:                      return LLVMInt1Type()
-        case .Array(let el, let size):  return LLVMArrayType(try el.ir(), size ?? 0)
-        case .Pointer(let to):          return LLVMPointerType(try to.ir(), 0)
+        case .Array(let el, let size):  return LLVMArrayType(el.ir(), size ?? 0)
+        case .Pointer(let to):          return LLVMPointerType(to.ir(), 0)
         case .Float(let s):
             switch s {
             case 16:                    return LLVMHalfType()
             case 32:                    return LLVMFloatType()
             case 64:                    return LLVMDoubleType()
             case 128:                   return LLVMFP128Type()
-            default:                    throw SemaError.InvalidType(self)
+            default:                    fatalError("Invalid float type")
             }
         }
     }
@@ -73,18 +73,18 @@ struct LLVMFnType : LLVMTyped {
     let params: [LLVMTyped]
     let returns: LLVMTyped
     
-    func ir() throws -> LLVMTypeRef {
+    func ir() -> LLVMTypeRef {
         
         let r: LLVMTypeRef
         if let _ = returns as? LLVMFnType {
-            r = try LLVMType.Pointer(to: returns).ir()
+            r = LLVMType.Pointer(to: returns).ir()
         } else {
-            r = try returns.ir()
+            r = returns.ir()
         }
         
         return LLVMFunctionType(
             r,
-            try nonVoid.map{try $0.ir()}.ptr(),
+            nonVoid.map{$0.ir()}.ptr(),
             UInt32(nonVoid.count),
             LLVMBool(false))
     }
@@ -107,9 +107,9 @@ final class LLVMStType : LLVMTyped {
         self.methods = methods
     }
     
-    func ir() throws -> LLVMTypeRef {
-        let arr = try members
-            .map { try $0.1.ir() }
+    func ir() -> LLVMTypeRef {
+        let arr = members
+            .map { $0.1.ir() }
             .ptr()
         defer { arr.dealloc(members.count) }
         
@@ -142,7 +142,7 @@ func == (lhs: LLVMStType, rhs: LLVMStType) -> Bool {
 
 
 func ir(val: LLVMTyped) throws -> LLVMValueRef {
-    return try val.ir()
+    return val.ir()
 }
 
 
@@ -151,23 +151,20 @@ func ==
     <T : LLVMTyped>
     (lhs: T, rhs: T)
     -> Bool {
-        let l = (try? lhs.ir()), r = (try? rhs.ir())
-        if let l = l, let r = r { return l == r } else { return false }
+        return lhs.ir() == rhs.ir()
 }
 @warn_unused_result
 func ==
     <T : LLVMTyped>
     (lhs: LLVMTyped?, rhs: T)
     -> Bool {
-        let l = (try? lhs?.ir()), r = (try? rhs.ir())
-        if let l = l, let r = r { return l == r } else { return false }
+        return lhs?.ir() == rhs.ir()
 }
 @warn_unused_result
 func ==
     (lhs: LLVMTyped, rhs: LLVMTyped)
     -> Bool {
-        let l = (try? lhs.ir()), r = (try? rhs.ir())
-        if let l = l, let r = r { return l == r } else { return false }
+        return lhs.ir() == rhs.ir()
 }
 @warn_unused_result
 func ==
@@ -177,8 +174,7 @@ func ==
         if lhs.count != rhs.count { return false }
         
         for (l,r) in zip(lhs,rhs) {
-            let ll = (try? l.ir()), rr = (try? r.ir())
-            if let l = ll, let r = rr where l == r { return true }
+            if l == r { return true }
         }
         return false
 }

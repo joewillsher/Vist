@@ -509,76 +509,19 @@ LBB16_2:                                ## %else1
 	popq	%rbp
 	retq
 
-	.section	__TEXT,__literal8,8byte_literals
-	.align	3
-LCPI41_0:
-	.quad	4611686018427387904     ## double 2
-	.section	__TEXT,__text,regular,pure_instructions
 	.globl	_main
 	.align	4, 0x90
 _main:                                  ## @main
-	.cfi_startproc
-## BB#0:                                ## %_assert_S.b.exit
-	pushq	%rbp
-Ltmp24:
-	.cfi_def_cfa_offset 16
-Ltmp25:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-Ltmp26:
-	.cfi_def_cfa_register %rbp
-	pushq	%rbx
-	pushq	%rax
-Ltmp27:
-	.cfi_offset %rbx, -24
-	movl	$5, %edi
-	callq	__$print_i64
-	movl	$5, %edi
-	callq	__$print_i64
-	movsd	LCPI41_0(%rip), %xmm0
-	callq	__$print_FP64
-	movq	$-4, %rbx
-	movq	$-4, %rdi
-	callq	__$print_i64
-	movl	$1, %edi
-	callq	__$print_i64
-	.align	4, 0x90
-LBB41_1:                                ## %loop
-                                        ## =>This Inner Loop Header: Depth=1
-	addq	$5, %rbx
-	movq	%rbx, %rdi
-	callq	__$print_i64
-	cmpq	$1000, %rbx             ## imm = 0x3E8
-	jl	LBB41_1
-## BB#2:                                ## %afterloop
-	xorl	%eax, %eax
-	addq	$8, %rsp
-	popq	%rbx
-	popq	%rbp
-	retq
-	.cfi_endproc
-
-	.globl	__meme_S.b
-	.align	4, 0x90
-__meme_S.b:                             ## @_meme_S.b
-	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp28:
-	.cfi_def_cfa_offset 16
-Ltmp29:
-	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp30:
-	.cfi_def_cfa_register %rbp
-	testb	$1, %dil
-	je	LBB42_2
-## BB#1:                                ## %then0
+	movl	$5, %edi
+	callq	__$print_i64
+	movl	$100, %edi
+	callq	__$print_i64
+	xorl	%eax, %eax
 	popq	%rbp
 	retq
-LBB42_2:                                ## %else1
-	callq	__$fatalError_
-	.cfi_endproc
 
 	.globl	__Range_S.i64S.i64
 	.align	4, 0x90

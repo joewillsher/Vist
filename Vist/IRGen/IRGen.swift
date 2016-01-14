@@ -9,12 +9,12 @@
 import Foundation
 
 enum IRError : ErrorType {
-    case NotIRGenerator(Expression.Type), NotBBGenerator(Expression.Type), NoOperator
-    case MisMatchedTypes, NoLLVMFloat(UInt32), WrongFunctionApplication(String), NoLLVMType
+    case NoOperator
+    case MisMatchedTypes, WrongFunctionApplication(String), NoLLVMType
     case NoBody, InvalidFunction, NoVariable(String), NoType(String), NoFunction(String), NoBool, TypeNotFound, NotMutable(String)
     case CannotAssignToVoid, CannotAssignToType(Expression.Type)
-    case ForLoopIteratorNotInt, NotBoolCondition, SubscriptingNonVariableTypeNotAllowed, SubscriptingNonArrayType, SubscriptOutOfBounds
-    case NoProperty(String), CannotGetPropertyFromNonVariableType, NotAStruct, CannotMutateParam
+    case SubscriptingNonVariableTypeNotAllowed, SubscriptOutOfBounds
+    case NoProperty(String), NotAStruct, CannotMutateParam
 }
 
 
@@ -46,12 +46,12 @@ extension Expression {
     
     private func expressionCodeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         if let x = try (self as? IRGenerator)?.codeGen(stackFrame) { return x }
-        else { throw IRError.NotIRGenerator(self.dynamicType) }
+        fatalError("\(self.dynamicType) not IR Generator")
     }
     
     private func expressionbbGen(innerStackFrame stackFrame: StackFrame, fn: LLVMValueRef) throws -> LLVMBasicBlockRef {
         if let x = try (self as? BasicBlockGenerator)?.bbGen(innerStackFrame: stackFrame, fn: fn) { return x }
-        else { throw IRError.NotBBGenerator(self.dynamicType) }
+        fatalError("\(self.dynamicType) not IR Generator")
     }
 }
 
@@ -101,16 +101,16 @@ extension LLVMBool : Swift.BooleanType {
 
 extension IntegerLiteral : IRGenerator {
     
-    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
-        return LLVMConstInt(try type!.ir(), UInt64(val), LLVMBool(false))
+    private func codeGen(stackFrame: StackFrame) -> LLVMValueRef {
+        return LLVMConstInt(type!.ir(), UInt64(val), LLVMBool(false))
     }
 }
 
 
 extension FloatingPointLiteral : IRGenerator {
     
-    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
-        return LLVMConstReal(try type!.ir(), val)
+    private func codeGen(stackFrame: StackFrame) -> LLVMValueRef {
+        return LLVMConstReal(type!.ir(), val)
     }
 }
 
@@ -125,7 +125,7 @@ extension BooleanLiteral : IRGenerator {
 
 extension StringLiteral : IRGenerator {
     
-    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
+    private func codeGen(stackFrame: StackFrame) -> LLVMValueRef {
         
         var s: COpaquePointer = nil
         str
@@ -180,7 +180,7 @@ extension AssignmentExpression : IRGenerator {
             // handle assigning a closure
             
             // Function being made
-            let fn = LLVMAddFunction(module, name, try ty.ir())
+            let fn = LLVMAddFunction(module, name, ty.ir())
             
             // make and move into entry block
             let entryBlock = LLVMAppendBasicBlock(fn, "entry")
@@ -230,8 +230,8 @@ extension AssignmentExpression : IRGenerator {
             // create variable
             let variable: MutableVariable
             if let t = value.type as? LLVMStType where value.type is LLVMStType {
-                let properties = try t.members.map {
-                    ($0.0, try $0.1.ir(), $0.2)
+                let properties = t.members.map {
+                    ($0.0, $0.1.ir(), $0.2)
                 }
                 variable = MutableStructVariable.alloc(builder, type: type, mutable: isMutable, properties: properties)
                 
@@ -285,7 +285,7 @@ extension MutationExpression : IRGenerator {
         } else if let prop = object as? PropertyLookupExpression {
             // foo.bar = meme
             
-            guard let n = prop.object as? Variable else { throw IRError.CannotGetPropertyFromNonVariableType }
+            guard let n = prop.object as? Variable else { fatalError("CannotGetPropertyFromNonVariableType") }
             guard let variable = try stackFrame.variable(n.name) as? MutableStructVariable else {
                 if try stackFrame.variable(n.name) is ParameterStructVariable { throw IRError.CannotMutateParam }
                 throw IRError.NoVariable(n.name)
@@ -417,7 +417,7 @@ extension FunctionPrototypeExpression : IRGenerator {
         defer { argBuffer.dealloc(argCount) }
         
         // make function
-        let functionType = try type.ir()
+        let functionType = type.ir()
         let function = LLVMAddFunction(module, mangledName, functionType)
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
         
@@ -447,7 +447,7 @@ extension FunctionPrototypeExpression : IRGenerator {
                 let tyName = (args.elements[i] as! ValueType).name
                 let t = try stackFrame.type(tyName)
                 
-                let memTys = try t.members.map { ($0.0, try $0.1.ir(), $0.2) }
+                let memTys = t.members.map { ($0.0, $0.1.ir(), $0.2) }
                 
                 let s = ParameterStructVariable(type: ty, val: param, builder: builder, properties: memTys)
                 functionStackFrame.addVariable(name, val: s)
@@ -460,7 +460,7 @@ extension FunctionPrototypeExpression : IRGenerator {
         
         // generate bb for body
         do {
-            try impl?.body.bbGen(innerStackFrame: functionStackFrame, ret: try type.returns.ir())
+            try impl?.body.bbGen(innerStackFrame: functionStackFrame, ret: type.returns.ir())
         } catch {
             LLVMDeleteFunction(function)
             throw error
@@ -476,7 +476,7 @@ extension ReturnExpression : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        if try expression.type?.ir() == LLVMVoidType() {
+        if expression.type?.ir() == LLVMVoidType() {
             return LLVMBuildRetVoid(builder)
         }
         
@@ -518,7 +518,7 @@ extension ClosureExpression : IRGenerator {
         
         let name = "closure"//.mangle()
         
-        let functionType = try type.ir()
+        let functionType = type.ir()
         let function = LLVMAddFunction(module, name, functionType)
         
         // setup function block
@@ -555,7 +555,7 @@ extension ClosureExpression : IRGenerator {
         }
         
         do {
-            try BlockExpression(expressions: expressions).bbGen(innerStackFrame: functionStackFrame, ret: try type.returns.ir())
+            try BlockExpression(expressions: expressions).bbGen(innerStackFrame: functionStackFrame, ret: type.returns.ir())
         } catch {
             LLVMDeleteFunction(function)
             throw error
@@ -678,9 +678,8 @@ extension ForInLoopExpression : IRGenerator {
         let loop = LLVMAppendBasicBlock(stackFrame.function, "loop")
         let afterLoop = LLVMAppendBasicBlock(stackFrame.function, "afterloop")
         
+        guard let rangeIterator = iterator as? RangeIteratorExpression else { fatalError() }
         
-        guard let rangeIterator = iterator as? RangeIteratorExpression else { throw IRError.ForLoopIteratorNotInt }
-
         let s = try rangeIterator.start.expressionCodeGen(stackFrame)
         let e = try rangeIterator.end.expressionCodeGen(stackFrame)
         
@@ -786,7 +785,7 @@ extension ArrayExpression : IRGenerator {
     private func arrInstance(stackFrame: StackFrame) throws -> ArrayVariable {
         
         // assume homogeneous
-        guard let elementType = try elType?.ir() else { throw IRError.TypeNotFound }
+        guard let elementType = elType?.ir() else { throw IRError.TypeNotFound }
         let arrayType = LLVMArrayType(elementType, UInt32(arr.count))
         
         // allocate memory for arr
@@ -859,7 +858,7 @@ extension InitialiserExpression : IRGenerator {
             parentProperties = parent?.properties else { throw IRError.TypeNotFound }
         
         // make function
-        let functionType = try type.ir()
+        let functionType = type.ir()
         let function = LLVMAddFunction(module, mangledName, functionType)
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
         LLVMAddFunctionAttr(function, LLVMAlwaysInlineAttribute)
@@ -891,7 +890,7 @@ extension InitialiserExpression : IRGenerator {
                 let tyName = (args.elements[i] as! ValueType).name
                 let t = try stackFrame.type(tyName)
                 
-                let memTys = try t.members.map { ($0.0, try $0.1.ir(), $0.2) }
+                let memTys = t.members.map { ($0.0, $0.1.ir(), $0.2) }
                 
                 let s = ParameterStructVariable(type: ty, val: param, builder: builder, properties: memTys)
                 initStackFrame.addVariable(name, val: s)
@@ -909,11 +908,11 @@ extension InitialiserExpression : IRGenerator {
         
         // property types, names, & mutability for stack frame
         let properties = try parentProperties.map { assignment -> (String, LLVMValueRef, Bool) in
-            if let t = assignment.value.type { return (assignment.name, try t.ir(), assignment.isMutable) } else { throw IRError.NoProperty(assignment.name) }
+            if let t = assignment.value.type { return (assignment.name, t.ir(), assignment.isMutable) } else { throw IRError.NoProperty(assignment.name) }
         }
         
         // allocate struct
-        let s = MutableStructVariable.alloc(builder, type: try parentType.ir(), mutable: true, properties: properties)
+        let s = MutableStructVariable.alloc(builder, type: parentType.ir(), mutable: true, properties: properties)
         stackFrame.addVariable(name, val: s)
         
         // add struct properties into scope
@@ -940,7 +939,7 @@ extension PropertyLookupExpression : IRGenerator {
         
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        guard let n = object as? Variable else { throw IRError.CannotGetPropertyFromNonVariableType }
+        guard let n = object as? Variable else { fatalError("CannotGetPropertyFromNonVariableType") }
         guard let variable = try stackFrame.variable(n.name) as? StructVariable else { throw IRError.NoVariable(n.name) }
         
         let val = try variable.loadPropertyNamed(name)
