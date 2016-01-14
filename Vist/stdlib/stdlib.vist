@@ -25,7 +25,24 @@ type Double {
     init LLVM.Double = |v| do value = v
 }
 
+type Range {
+    let start: Int
+    let end: Int
+    
+    init Int Int = {
+        start = $0
+        end = $1
+    }
+}
 
+
+type Array {
+    
+    var count: Int
+    var capacity: Int
+    var ptr: LLVM.Pointer
+    
+}
 
 
 // ----------------------------------------------------
@@ -151,16 +168,11 @@ func != : Double Double -> Bool = |a b| do
 
 
 
+// ranges
+@inline @operator(40)
+func ... : Int Int -> Range = do
+    return Range( $0 $1 )
 
-
-
-type Array {
-
-    var count: Int
-    var capacity: Int
-    var ptr: LLVM.Pointer
-
-}
 
 
 

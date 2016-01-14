@@ -18,6 +18,14 @@ type Double {
     init LLVM.Double
 }
 
+type Range {
+    let start: Int
+    let end: Int
+    
+    init Int Int
+}
+
+
 
 
 // free functions
@@ -58,6 +66,8 @@ func fatalError: ()
 @operator(20) func != : Double Double -> Bool
 
 
+@inline @operator(40) func ... : Int Int -> Range
+@inline @operator(40) func ..< : Int Int -> Range
 
 
 

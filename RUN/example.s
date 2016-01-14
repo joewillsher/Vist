@@ -180,6 +180,17 @@ __Double_FP64:                          ## @_Double_FP64
 	popq	%rbp
 	retq
 
+	.globl	__Range_S.i64S.i64
+	.align	4, 0x90
+__Range_S.i64S.i64:                     ## @_Range_S.i64S.i64
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	movq	%rdi, %rax
+	movq	%rsi, %rdx
+	popq	%rbp
+	retq
+
 	.globl	__print_S.i64
 	.align	4, 0x90
 __print_S.i64:                          ## @_print_S.i64
@@ -238,11 +249,11 @@ Ltmp22:
 Ltmp23:
 	.cfi_def_cfa_register %rbp
 	testb	$1, %dil
-	je	LBB16_2
+	je	LBB17_2
 ## BB#1:                                ## %then0
 	popq	%rbp
 	retq
-LBB16_2:                                ## %else1
+LBB17_2:                                ## %else1
 	callq	__$fatalError_
 	.cfi_endproc
 
@@ -509,6 +520,17 @@ LBB16_2:                                ## %else1
 	popq	%rbp
 	retq
 
+	.globl	__..._S.i64S.i64
+	.align	4, 0x90
+__..._S.i64S.i64:                       ## @_..._S.i64S.i64
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	movq	%rdi, %rax
+	movq	%rsi, %rdx
+	popq	%rbp
+	retq
+
 	.globl	_main
 	.align	4, 0x90
 _main:                                  ## @main
@@ -519,39 +541,17 @@ _main:                                  ## @main
 	pushq	%rax
 	movl	$4, %ebx
 	.align	4, 0x90
-LBB41_1:                                ## %loop
+LBB43_1:                                ## %loop
                                         ## =>This Inner Loop Header: Depth=1
 	movq	%rbx, %rdi
 	leaq	1(%rbx), %rbx
 	callq	__$print_i64
 	cmpq	$101, %rbx
-	jl	LBB41_1
+	jl	LBB43_1
 ## BB#2:                                ## %afterloop
 	xorl	%eax, %eax
 	addq	$8, %rsp
 	popq	%rbx
-	popq	%rbp
-	retq
-
-	.globl	__Range_S.i64S.i64
-	.align	4, 0x90
-__Range_S.i64S.i64:                     ## @_Range_S.i64S.i64
-## BB#0:                                ## %entry
-	pushq	%rbp
-	movq	%rsp, %rbp
-	movq	%rdi, %rax
-	movq	%rsi, %rdx
-	popq	%rbp
-	retq
-
-	.globl	__..._S.i64S.i64
-	.align	4, 0x90
-__..._S.i64S.i64:                       ## @_..._S.i64S.i64
-## BB#0:                                ## %entry
-	pushq	%rbp
-	movq	%rsp, %rbp
-	movq	%rdi, %rax
-	movq	%rsi, %rdx
 	popq	%rbp
 	retq
 

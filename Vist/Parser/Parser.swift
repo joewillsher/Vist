@@ -80,7 +80,8 @@ struct Parser {
         "&&": 15,
         "==": 20,
         "!=": 20,
-        "...": 40
+        "...": 40,
+        "..<": 40
     ]
     
     private mutating func getNextToken(n: Int = 1) -> Token {

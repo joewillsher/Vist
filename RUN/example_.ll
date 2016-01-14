@@ -143,6 +143,18 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
+define { { i64 }, { i64 } } @_Range_S.i64S.i64({ i64 } %"$0", { i64 } %"$1") #3 {
+entry:
+  %0 = alloca { { i64 }, { i64 } }
+  %start_ptr = getelementptr inbounds { { i64 }, { i64 } }* %0, i32 0, i32 0
+  store { i64 } %"$0", { i64 }* %start_ptr
+  %end_ptr = getelementptr inbounds { { i64 }, { i64 } }* %0, i32 0, i32 1
+  store { i64 } %"$1", { i64 }* %end_ptr
+  %1 = load { { i64 }, { i64 } }* %0
+  ret { { i64 }, { i64 } } %1
+}
+
+; Function Attrs: alwaysinline
 define void @_print_S.i64({ i64 } %a) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
@@ -176,8 +188,8 @@ entry:
 ; Function Attrs: alwaysinline
 define void @_assert_S.b({ i1 } %"$0") #3 {
 entry:
-  %b = extractvalue { i1 } %"$0", 0
-  br i1 %b, label %then0, label %cont0
+  %value = extractvalue { i1 } %"$0", 0
+  br i1 %value, label %then0, label %cont0
 
 cont:                                             ; preds = %else1, %then0
   ret void
@@ -433,6 +445,13 @@ entry:
   ret { i1 } %Bool_res
 }
 
+; Function Attrs: alwaysinline
+define { { i64 }, { i64 } } @_..._S.i64S.i64({ i64 } %"$0", { i64 } %"$1") #3 {
+entry:
+  %Range_res = call { { i64 }, { i64 } } @_Range_S.i64S.i64({ i64 } %"$0", { i64 } %"$1")
+  ret { { i64 }, { i64 } } %Range_res
+}
+
 define i64 @main() {
 entry:
   %Int_res = call { i64 } @_Int_i64(i64 4)
@@ -454,25 +473,6 @@ loop:                                             ; preds = %loop, %entry
 
 afterloop:                                        ; preds = %loop
   ret i64 0
-}
-
-; Function Attrs: alwaysinline
-define { { i64 }, { i64 } } @_Range_S.i64S.i64({ i64 } %"$0", { i64 } %"$1") #3 {
-entry:
-  %0 = alloca { { i64 }, { i64 } }
-  %start_ptr = getelementptr inbounds { { i64 }, { i64 } }* %0, i32 0, i32 0
-  store { i64 } %"$0", { i64 }* %start_ptr
-  %end_ptr = getelementptr inbounds { { i64 }, { i64 } }* %0, i32 0, i32 1
-  store { i64 } %"$1", { i64 }* %end_ptr
-  %1 = load { { i64 }, { i64 } }* %0
-  ret { { i64 }, { i64 } } %1
-}
-
-; Function Attrs: alwaysinline
-define { { i64 }, { i64 } } @_..._S.i64S.i64({ i64 } %"$0", { i64 } %"$1") #3 {
-entry:
-  %Range_res = call { { i64 }, { i64 } } @_Range_S.i64S.i64({ i64 } %"$0", { i64 } %"$1")
-  ret { { i64 }, { i64 } } %Range_res
 }
 
 attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

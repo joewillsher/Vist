@@ -1,21 +1,5 @@
 
 
-// todo: different one line assignment expressions
-type Range {
-    let start: Int
-    let end: Int
-
-    init Int Int = {
-        start = $0
-        end = $1
-    }
-}
-
-
-// todo: range operators in loops
-@inline @operator(40)
-func ... : Int Int -> Range = do
-    return Range( $0 $1 )
 
 // todo: lexing multiple operators next to eachother
 // instead of current (whitelist based) method, contunue

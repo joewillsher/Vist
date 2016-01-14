@@ -100,6 +100,16 @@ entry:
   ret { double } %.fca.0.insert
 }
 
+; Function Attrs: alwaysinline nounwind readnone
+define { { i64 }, { i64 } } @_Range_S.i64S.i64({ i64 } %"$0", { i64 } %"$1") #4 {
+entry:
+  %"$0.fca.0.extract" = extractvalue { i64 } %"$0", 0
+  %"$1.fca.0.extract" = extractvalue { i64 } %"$1", 0
+  %.fca.0.0.insert = insertvalue { { i64 }, { i64 } } undef, i64 %"$0.fca.0.extract", 0, 0
+  %.fca.1.0.insert = insertvalue { { i64 }, { i64 } } %.fca.0.0.insert, i64 %"$1.fca.0.extract", 1, 0
+  ret { { i64 }, { i64 } } %.fca.1.0.insert
+}
+
 ; Function Attrs: alwaysinline nounwind
 define void @_print_S.i64({ i64 } %a) #5 {
 entry:
@@ -134,8 +144,8 @@ entry:
 ; Function Attrs: alwaysinline
 define void @_assert_S.b({ i1 } %"$0") #7 {
 entry:
-  %b = extractvalue { i1 } %"$0", 0
-  br i1 %b, label %then0, label %else1
+  %value = extractvalue { i1 } %"$0", 0
+  br i1 %value, label %then0, label %else1
 
 then0:                                            ; preds = %entry
   ret void
@@ -385,6 +395,16 @@ entry:
   ret { i1 } %.fca.0.insert.i
 }
 
+; Function Attrs: alwaysinline nounwind readnone
+define { { i64 }, { i64 } } @_..._S.i64S.i64({ i64 } %"$0", { i64 } %"$1") #4 {
+entry:
+  %"$0.fca.0.extract.i" = extractvalue { i64 } %"$0", 0
+  %"$1.fca.0.extract.i" = extractvalue { i64 } %"$1", 0
+  %.fca.0.0.insert.i = insertvalue { { i64 }, { i64 } } undef, i64 %"$0.fca.0.extract.i", 0, 0
+  %.fca.1.0.insert.i = insertvalue { { i64 }, { i64 } } %.fca.0.0.insert.i, i64 %"$1.fca.0.extract.i", 1, 0
+  ret { { i64 }, { i64 } } %.fca.1.0.insert.i
+}
+
 ; Function Attrs: nounwind
 define i64 @main() #8 {
 entry:
@@ -401,26 +421,6 @@ loop:                                             ; preds = %loop, %entry
 
 afterloop:                                        ; preds = %loop
   ret i64 0
-}
-
-; Function Attrs: alwaysinline nounwind readnone
-define { { i64 }, { i64 } } @_Range_S.i64S.i64({ i64 } %"$0", { i64 } %"$1") #4 {
-entry:
-  %"$0.fca.0.extract" = extractvalue { i64 } %"$0", 0
-  %"$1.fca.0.extract" = extractvalue { i64 } %"$1", 0
-  %.fca.0.0.insert = insertvalue { { i64 }, { i64 } } undef, i64 %"$0.fca.0.extract", 0, 0
-  %.fca.1.0.insert = insertvalue { { i64 }, { i64 } } %.fca.0.0.insert, i64 %"$1.fca.0.extract", 1, 0
-  ret { { i64 }, { i64 } } %.fca.1.0.insert
-}
-
-; Function Attrs: alwaysinline nounwind readnone
-define { { i64 }, { i64 } } @_..._S.i64S.i64({ i64 } %"$0", { i64 } %"$1") #4 {
-entry:
-  %"$0.fca.0.extract.i" = extractvalue { i64 } %"$0", 0
-  %"$1.fca.0.extract.i" = extractvalue { i64 } %"$1", 0
-  %.fca.0.0.insert.i = insertvalue { { i64 }, { i64 } } undef, i64 %"$0.fca.0.extract.i", 0, 0
-  %.fca.1.0.insert.i = insertvalue { { i64 }, { i64 } } %.fca.0.0.insert.i, i64 %"$1.fca.0.extract.i", 1, 0
-  ret { { i64 }, { i64 } } %.fca.1.0.insert.i
 }
 
 ; Function Attrs: nounwind
