@@ -374,7 +374,8 @@ final class ConditionalExpression<BlockType : ScopeExpression> : Expression {
             // either because there is more than 1 else or expressions after an else
             guard let _ = path.condition else {
                 if index == statements.count-1 { break }
-                else { self.statements = []; throw ParseError.InvalidIfStatement }}
+                else { self.statements = []; throw ParseError.InvalidIfStatement }
+            }
         }
         
         self.statements = p

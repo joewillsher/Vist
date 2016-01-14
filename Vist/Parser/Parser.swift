@@ -137,7 +137,8 @@ extension Parser {
             getNextToken() // eat ')'
             if alwaysWrap {
                 return TupleExpression(elements: [])
-            } else {
+            }
+            else {
                 return ValueType(name: "Void")
             }
         }
@@ -151,8 +152,8 @@ extension Parser {
                 if case .Period? = inspectNextToken(), case .Identifier(let n)? = inspectNextToken(2) where id == "LLVM" && isStdLib {
                     elements.append(ValueType(name: "LLVM.\(n)"))    // param
                     getNextToken(); getNextToken(); getNextToken() // eat LLVM.Id
-                    
-                } else {
+                }
+                else {
                     elements.append(ValueType(name: id))    // param
                     getNextToken()
                 }
@@ -164,8 +165,8 @@ extension Parser {
                 if case .Period? = inspectNextToken(), case .Identifier(let n)? = inspectNextToken(2) where id == "LLVM" && isStdLib {
                     elements.append(ValueType(name: "LLVM.\(n)"))    // param
                     getNextToken(); getNextToken() // eat LLVM.Id
-                    
-                } else {
+                }
+                else {
                     elements.append(ValueType(name: id))    // param
                     getNextToken()
                 }
@@ -179,8 +180,8 @@ extension Parser {
         
         if let f = elements.first where elements.count == 1 && !alwaysWrap {
             return f
-            
-        } else {
+        }
+        else {
             return TupleExpression(elements: elements)
         }
     }
@@ -441,9 +442,12 @@ extension Parser {
                 if usesBraces {
                     guard currentToken.isControlToken() else { throw ParseError.ExpectedBrace(currentPos) }
                 }
-                
-            } else { condition = nil }
-                        
+            }
+            else {
+                getNextToken()
+                condition = nil
+            }
+            
             let block = try parseBlockExpression()
             
             blocks.append((condition, block))
@@ -510,8 +514,8 @@ extension Parser {
             if case .Period? = inspectNextToken(), case .Identifier(let n)? = inspectNextToken(2) where t == "LLVM" && isStdLib {
                 explicitType = "LLVM.\(n)"
                 getNextToken(); getNextToken(); getNextToken() // eat LLVM.Id
-                
-            } else {
+            }
+            else {
                 explicitType = t
                 getNextToken()
             }
@@ -523,7 +527,8 @@ extension Parser {
         guard case .Assign = currentToken else {
             if requiresInitialValue || explicitType == nil {
                 throw ParseError.ExpectedAssignment(currentPos)
-            } else {
+            }
+            else {
                 return AssignmentExpression(name: id, type: explicitType, isMutable: mutable, value: NullExpression())
             }
         }
@@ -603,18 +608,19 @@ extension Parser {
         let s: String
         if case .Identifier(let n) = currentToken {
             s = n
-            
-        } else if case .InfixOperator(let o) = currentToken, let pp = ops {
+        }
+        else if case .InfixOperator(let o) = currentToken, let pp = ops {
             s = o
             
             let found = precedences[o]
             if let x = found where x != ops { // make sure uses op’s predetermined prec
                 throw ParseError.CannotChangeOpPrecedence(o, x, currentPos)
-            } else if found == nil {
+            }
+            else if found == nil {
                 precedences[o] = pp // update prec table if not found
             }
-            
-        } else {
+        }
+        else {
             throw ParseError.NoIdentifier(currentPos)
         }
         
@@ -622,7 +628,8 @@ extension Parser {
         if case .Period? = inspectNextToken(), case .Identifier(let n)? = inspectNextToken(2) where s == "LLVM" && isStdLib {
             id = "LLVM.\(n)"
             getNextToken(); getNextToken() // eat
-        } else {
+        }
+        else {
             id = s
         }
         
@@ -651,6 +658,7 @@ extension Parser {
         }
         guard case .Bar = currentToken else { throw ParseError.ExpectedBar(currentPos) }
         guard getNextToken().isControlToken() else { throw ParseError.NotBlock(currentPos) }
+        
         return nms.map { ValueType.init(name: $0) }
     }
     
@@ -658,10 +666,13 @@ extension Parser {
         let names: [Expression]
         
         if case .Bar = currentToken {
-            names = try parseClosureNamesExpression().map { $0 as Expression }
-            
-        } else {
-            names = (0..<type.args.elements.count).map{"$\($0)"}.map{ ValueType.init(name: $0) }
+            names = try parseClosureNamesExpression()
+                .map { $0 as Expression }
+        }
+        else {
+            names = (0..<type.args.elements.count)
+                .map {"$\($0)"}
+                .map { ValueType.init(name: $0) }
         }
         
         guard currentToken.isControlToken() else { throw ParseError.ExpectedBrace(currentPos) }
@@ -669,7 +680,7 @@ extension Parser {
         return FunctionImplementationExpression(params: TupleExpression(elements: names), body: try parseBlockExpression())
     }
     
-    private mutating func parseBraceExpressions(names: [ValueType] = []) throws -> BlockExpression {
+    private mutating func parseBraceExpression(names: [ValueType] = []) throws -> BlockExpression {
         getNextToken() // eat '{'
         
         var expressions = [Expression]()
@@ -705,7 +716,7 @@ extension Parser {
         
         switch currentToken {
         case .Bar:          return try parseBlockExpression(try parseClosureNamesExpression())
-        case .OpenBrace:    return try parseBraceExpressions(names)
+        case .OpenBrace:    return try parseBraceExpression(names)
         case .Do, .Else:    return try parseBracelessDoExpression(names)
         default:            throw ParseError.NotBlock(currentPos)
         }
@@ -884,7 +895,7 @@ extension Parser {
         case .Func:                 return try parseFunctionDeclaration()
         case .Return:               return try parseReturnExpression()
         case .OpenParen:            return try parseParenExpression()
-        case .OpenBrace:            return try parseBraceExpressions()
+        case .OpenBrace:            return try parseBraceExpression()
         case .Identifier(let str):  return try parseIdentifierExpression(str)
         case .InfixOperator:        return try parseOperatorExpression()
         case .Comment(let str):     return try parseCommentExpression(str)

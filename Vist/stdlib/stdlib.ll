@@ -166,7 +166,7 @@ entry:
   ret void
 }
 
-; Function Attrs: noinline noreturn
+; Function Attrs: alwaysinline noreturn
 define void @_fatalError_() #4 {
 entry:
   call void @"_$fatalError_"()
@@ -177,12 +177,18 @@ entry:
 define void @_assert_S.b({ i1 } %"$0") #3 {
 entry:
   %b = extractvalue { i1 } %"$0", 0
-  br i1 %b, label %then0, label %cont
+  br i1 %b, label %then0, label %cont0
 
-cont:                                             ; preds = %entry, %then0
+cont:                                             ; preds = %else1, %then0
   ret void
 
+cont0:                                            ; preds = %entry
+  br label %else1
+
 then0:                                            ; preds = %entry
+  br label %cont
+
+else1:                                            ; preds = %cont0
   call void @_fatalError_()
   br label %cont
 }
@@ -431,7 +437,7 @@ attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-po
 attributes #1 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #2 = { noreturn "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #3 = { alwaysinline }
-attributes #4 = { noinline noreturn }
+attributes #4 = { alwaysinline noreturn }
 attributes #5 = { noreturn }
 
 !llvm.ident = !{!0}

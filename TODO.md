@@ -8,7 +8,9 @@
 * Operators
 
 * Structs
-    - Implicit initialisers
+    - Initialisers
+        - Generate one which takes params of struct order
+        - Generate one which does that but including objects with initial values
     - Generics & concepts (as constriants and existentials)
     - Reference semantics implemented
     - Initialiser taking pointer to unallocated mem and initalising it, currently it returns an initialised instance

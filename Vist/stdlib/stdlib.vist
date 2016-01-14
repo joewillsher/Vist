@@ -36,8 +36,10 @@ type Double {
 @inline func print: Bool = |a| do _print(a.value)
 @inline func print: Double = |a| do _print(a.value)
 
-@noinline @noreturn func fatalError: () = do _fatalError()
-@inline func assert: Bool = do if $0 do fatalError()
+// TODO: ! prefix operator
+@inline @noreturn func fatalError: () = do _fatalError()
+@inline func assert: Bool = do
+    if $0 do () else do fatalError()
 
 
 

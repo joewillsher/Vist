@@ -124,7 +124,7 @@ entry:
   ret void
 }
 
-; Function Attrs: noinline noreturn
+; Function Attrs: alwaysinline noreturn
 define void @_fatalError_() #6 {
 entry:
   tail call void @"_$fatalError_"()
@@ -135,13 +135,13 @@ entry:
 define void @_assert_S.b({ i1 } %"$0") #7 {
 entry:
   %b = extractvalue { i1 } %"$0", 0
-  br i1 %b, label %then0, label %cont
-
-cont:                                             ; preds = %entry
-  ret void
+  br i1 %b, label %then0, label %else1
 
 then0:                                            ; preds = %entry
-  tail call void @_fatalError_()
+  ret void
+
+else1:                                            ; preds = %entry
+  tail call void @"_$fatalError_"()
   unreachable
 }
 
@@ -386,12 +386,26 @@ entry:
 }
 
 define i64 @main() {
-then0.i:
+_assert_S.b.exit:
   tail call void @"_$print_i64"(i64 5) #8
   tail call void @"_$print_i64"(i64 5) #8
   tail call void @"_$print_FP64"(double 2.000000e+00) #8
   tail call void @"_$print_i64"(i64 -4) #8
-  tail call void @_fatalError_()
+  tail call void @"_$print_i64"(i64 1) #8
+  ret i64 0
+}
+
+; Function Attrs: alwaysinline
+define void @_meme_S.b({ i1 } %"$0") #7 {
+entry:
+  %b = extractvalue { i1 } %"$0", 0
+  br i1 %b, label %then0, label %else1
+
+then0:                                            ; preds = %entry
+  ret void
+
+else1:                                            ; preds = %entry
+  tail call void @"_$fatalError_"()
   unreachable
 }
 
@@ -424,7 +438,7 @@ attributes #2 = { noinline noreturn ssp uwtable "less-precise-fpmad"="false" "no
 attributes #3 = { noreturn "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #4 = { alwaysinline nounwind readnone }
 attributes #5 = { alwaysinline nounwind }
-attributes #6 = { noinline noreturn }
+attributes #6 = { alwaysinline noreturn }
 attributes #7 = { alwaysinline }
 attributes #8 = { nounwind }
 attributes #9 = { noreturn }

@@ -1,5 +1,10 @@
 
 
+@inline func meme: Bool = do
+    if $0 do () else do fatalError()
+
+
+
 // todo: different one line assignment expressions
 type Range {
     let start: Int
@@ -10,6 +15,7 @@ type Range {
         end = $1
     }
 }
+
 
 // todo: range operators in loops
 @inline @operator(40)
@@ -42,10 +48,12 @@ let a = Int(6) - Int(10)
 print(a)
 
 
-
 assert(Bool(true))
 
 print(Int(1))
+
+
+
 
 
 

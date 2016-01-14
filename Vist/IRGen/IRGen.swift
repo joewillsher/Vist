@@ -329,16 +329,22 @@ extension BinaryExpression : IRGenerator {
         guard fn != nil && LLVMCountParams(fn) == UInt32(2) else { throw IRError.WrongFunctionApplication(op) }
         
         let doNotUseName = self.type == LLVMType.Void || self.type == LLVMType.Null || self.type == nil
-        let n = "\(op)_res"
+        let n = doNotUseName ? "" : "\(op)_res"
         
         // add call to IR
-        return LLVMBuildCall(builder, fn, argBuffer, UInt32(2), doNotUseName ? "" : n)
+        return LLVMBuildCall(builder, fn, argBuffer, UInt32(2), n)
         
     }
 }
 
 
 extension Void : IRGenerator {
+    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
+        return nil
+    }
+}
+
+extension TupleExpression : IRGenerator {
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         return nil
     }

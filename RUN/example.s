@@ -238,12 +238,12 @@ Ltmp22:
 Ltmp23:
 	.cfi_def_cfa_register %rbp
 	testb	$1, %dil
-	jne	LBB16_2
-## BB#1:                                ## %cont
+	je	LBB16_2
+## BB#1:                                ## %then0
 	popq	%rbp
 	retq
-LBB16_2:                                ## %then0
-	callq	__fatalError_
+LBB16_2:                                ## %else1
+	callq	__$fatalError_
 	.cfi_endproc
 
 	.globl	"__+_S.i64S.i64"
@@ -518,7 +518,7 @@ LCPI41_0:
 	.align	4, 0x90
 _main:                                  ## @main
 	.cfi_startproc
-## BB#0:                                ## %then0.i
+## BB#0:                                ## %_assert_S.b.exit
 	pushq	%rbp
 Ltmp24:
 	.cfi_def_cfa_offset 16
@@ -535,7 +535,33 @@ Ltmp26:
 	callq	__$print_FP64
 	movq	$-4, %rdi
 	callq	__$print_i64
-	callq	__fatalError_
+	movl	$1, %edi
+	callq	__$print_i64
+	xorl	%eax, %eax
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	__meme_S.b
+	.align	4, 0x90
+__meme_S.b:                             ## @_meme_S.b
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp27:
+	.cfi_def_cfa_offset 16
+Ltmp28:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp29:
+	.cfi_def_cfa_register %rbp
+	testb	$1, %dil
+	je	LBB42_2
+## BB#1:                                ## %then0
+	popq	%rbp
+	retq
+LBB42_2:                                ## %else1
+	callq	__$fatalError_
 	.cfi_endproc
 
 	.globl	__Range_S.i64S.i64

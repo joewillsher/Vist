@@ -245,7 +245,7 @@ private extension FunctionType {
                 
                 if tup.elements.count == 0 { return LLVMType.Void }
                 
-                let res = args.mapAs(ValueType).flatMap { LLVMType($0.name) }
+                let res = args.mapAs(ValueType).map{$0.name}.flatMap(LLVMType.init)
                 guard res.count == args.elements.count else {
                     throw SemaError.TypeNotFound }
                 let a = res.map { $0 as LLVMTyped }
