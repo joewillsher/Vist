@@ -621,7 +621,7 @@ extension ConditionalExpression : IRGenerator {
             
             if let cond = cond { //if statement, make conditonal jump
                 
-                let v = try stackFrame.load(cond, type: "Int", property: "value", builder: builder)
+                let v = try stackFrame.load(cond, type: statement.condition?.type, property: "value", builder: builder)
                 
                 LLVMBuildCondBr(builder, v, block, ifOut)
                 
@@ -684,9 +684,8 @@ extension ForInLoopExpression : IRGenerator {
         let s = try rangeIterator.start.expressionCodeGen(stackFrame)
         let e = try rangeIterator.end.expressionCodeGen(stackFrame)
         
-        let start = try stackFrame.load(s, type: "Int", property: "value", builder: builder)
-        let end = try stackFrame.load(e, type: "Int", property: "value", builder: builder)
-        
+        let start = try stackFrame.load(s, type: rangeIterator.start.type, property: "value", builder: builder)
+        let end = try stackFrame.load(e, type: rangeIterator.end.type, property: "value", builder: builder)
         
         // move into loop block
         LLVMBuildBr(builder, loop)
@@ -739,7 +738,7 @@ extension WhileLoopExpression : IRGenerator {
         
         // whether to enter the while, first while check
         let initialCond = try iterator.condition.expressionCodeGen(stackFrame)
-        let initialCondV = try stackFrame.load(initialCond, type: "Int", property: "value", builder: builder)
+        let initialCondV = try stackFrame.load(initialCond, type: iterator.condition.type, property: "value", builder: builder)
 
         // move into loop block
         LLVMBuildCondBr(builder, initialCondV, loop, afterLoop)
@@ -751,7 +750,7 @@ extension WhileLoopExpression : IRGenerator {
         
         // conditional break
         let conditionalRepeat = try iterator.condition.expressionCodeGen(stackFrame)
-        let conditionalRepeatV = try stackFrame.load(conditionalRepeat, type: "Int", property: "value", builder: builder)
+        let conditionalRepeatV = try stackFrame.load(conditionalRepeat, type: iterator.condition.type, property: "value", builder: builder)
         LLVMBuildCondBr(builder, conditionalRepeatV, loop, afterLoop)
         
         // move back to loop / end loop

@@ -9,11 +9,14 @@
 
 extension StackFrame {
     
-    func load(object: LLVMValueRef, type: String, property: String, builder: LLVMBuilderRef) throws -> LLVMValueRef {
-        let stdType = try self.type(type)
-        return try stdType.loadPropertyNamed(property, from: object, builder: builder)
+    func load(object: LLVMValueRef, type: LLVMTyped?, property: String, builder: LLVMBuilderRef) throws -> LLVMValueRef {
+        if let stdType = type as? LLVMStType {
+            return try stdType.loadPropertyNamed(property, from: object, builder: builder)
+        }
+        else {
+            fatalError("Stdlib type \(type?.description) has no property \(property)")
+        }
     }
-    
 }
 
 
