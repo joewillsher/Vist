@@ -22,7 +22,6 @@ protocol StructVariable : class, RuntimeVariable {
     
     func loadPropertyNamed(name: String) throws -> LLVMValueRef
     func store(val: LLVMValueRef, inPropertyNamed name: String) throws
-    
 }
 
 extension StructVariable {

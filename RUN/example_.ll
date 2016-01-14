@@ -467,14 +467,34 @@ entry:
   call void @_assert_S.b({ i1 } %Bool_res)
   %Int_res5 = call { i64 } @_Int_i64(i64 1)
   call void @_print_S.i64({ i64 } %Int_res5)
+  %a6 = load { i64 }* %4
+  %Int_res7 = call { i64 } @_Int_i64(i64 1000)
+  %"<_res" = call { i1 } @"_<_S.i64S.i64"({ i64 } %a6, { i64 } %Int_res7)
+  %value = extractvalue { i1 } %"<_res", 0
+  br i1 %value, label %loop, label %afterloop
+
+loop:                                             ; preds = %loop, %entry
+  %a8 = load { i64 }* %4
+  %Int_res9 = call { i64 } @_Int_i64(i64 5)
+  %"+_res" = call { i64 } @"_+_S.i64S.i64"({ i64 } %a8, { i64 } %Int_res9)
+  store { i64 } %"+_res", { i64 }* %4
+  %a10 = load { i64 }* %4
+  call void @_print_S.i64({ i64 } %a10)
+  %a11 = load { i64 }* %4
+  %Int_res12 = call { i64 } @_Int_i64(i64 1000)
+  %"<_res13" = call { i1 } @"_<_S.i64S.i64"({ i64 } %a11, { i64 } %Int_res12)
+  %value14 = extractvalue { i1 } %"<_res13", 0
+  br i1 %value14, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %loop, %entry
   ret i64 0
 }
 
 ; Function Attrs: alwaysinline
 define void @_meme_S.b({ i1 } %"$0") #3 {
 entry:
-  %b = extractvalue { i1 } %"$0", 0
-  br i1 %b, label %then0, label %cont0
+  %value = extractvalue { i1 } %"$0", 0
+  br i1 %value, label %then0, label %cont0
 
 cont:                                             ; preds = %else1, %then0
   ret void

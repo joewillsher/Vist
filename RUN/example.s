@@ -527,17 +527,33 @@ Ltmp25:
 	movq	%rsp, %rbp
 Ltmp26:
 	.cfi_def_cfa_register %rbp
+	pushq	%rbx
+	pushq	%rax
+Ltmp27:
+	.cfi_offset %rbx, -24
 	movl	$5, %edi
 	callq	__$print_i64
 	movl	$5, %edi
 	callq	__$print_i64
 	movsd	LCPI41_0(%rip), %xmm0
 	callq	__$print_FP64
+	movq	$-4, %rbx
 	movq	$-4, %rdi
 	callq	__$print_i64
 	movl	$1, %edi
 	callq	__$print_i64
+	.align	4, 0x90
+LBB41_1:                                ## %loop
+                                        ## =>This Inner Loop Header: Depth=1
+	addq	$5, %rbx
+	movq	%rbx, %rdi
+	callq	__$print_i64
+	cmpq	$1000, %rbx             ## imm = 0x3E8
+	jl	LBB41_1
+## BB#2:                                ## %afterloop
 	xorl	%eax, %eax
+	addq	$8, %rsp
+	popq	%rbx
 	popq	%rbp
 	retq
 	.cfi_endproc
@@ -548,12 +564,12 @@ __meme_S.b:                             ## @_meme_S.b
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp27:
-	.cfi_def_cfa_offset 16
 Ltmp28:
+	.cfi_def_cfa_offset 16
+Ltmp29:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp29:
+Ltmp30:
 	.cfi_def_cfa_register %rbp
 	testb	$1, %dil
 	je	LBB42_2

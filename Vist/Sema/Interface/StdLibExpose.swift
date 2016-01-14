@@ -8,7 +8,7 @@
 
 final class StdLibExpose {
     
-    let isStdLib: Bool
+    private let isStdLib: Bool
     
     init(isStdLib: Bool) {
         self.isStdLib = isStdLib
@@ -33,6 +33,8 @@ final class StdLibExpose {
         return a
     }
     
+    // Swift's lazy sucks so I implement it myself
+    
     private var _ast: AST? = nil
     
     private var ast: AST? {
@@ -50,7 +52,6 @@ final class StdLibExpose {
     }
     
     
-    
     func astToSemaScope(scope globalScope: SemaScope) {
         guard let ast = ast else { fatalError("Stdlib could not be loaded") }
         
@@ -64,11 +65,9 @@ final class StdLibExpose {
             .map { ($0.name, $0.type as? LLVMStType) }
         let methods = structs
             .flatMap {
-                $0.methods
-                    .flatMap { ($0.name, $0.type as? LLVMFnType) }
+                    $0.methods.flatMap { ($0.name, $0.type as? LLVMFnType) }
                     +
-                    $0.initialisers
-                        .flatMap { ($0.parent?.name ?? "", $0.type as? LLVMFnType)
+                    $0.initialisers .flatMap { ($0.parent?.name ?? "", $0.type as? LLVMFnType)
                 }
         }
         

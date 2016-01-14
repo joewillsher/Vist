@@ -161,30 +161,6 @@ extension BinaryExpression : TypeProvider {
         // assign type to self and return
         self.type = fnType.returns
         return fnType.returns
-        
-//        // FIXME: this is kinda a hack: these should be stdlib implementations -- operators should be user definable and looked up from the vars scope like functions
-//        switch op {
-//        case "<", ">", "==", "!=", ">=", "<=":
-//            try lhs.llvmType(scope)
-//            try rhs.llvmType(scope)
-//            
-//            self.type = LLVMType.Bool
-//            return LLVMType.Bool
-//            
-//        default:
-//            let a = try lhs.llvmType(scope)
-//            let b = try rhs.llvmType(scope)
-//            
-//            // if same object
-//            if a == b {
-//                // assign type to self and return
-//                self.type = a
-//                return a
-//                
-//            } else { throw SemaError.DifferentTypesForOperator(op) }
-//        }
-        
-        
     }
 }
 
@@ -290,8 +266,9 @@ extension FunctionCallExpression : TypeProvider {
         self.mangledName = name.mangle(fnType)
         
         // gen types for objects in call
-        for arg in args.elements {
-            try arg.llvmType(scope)
+        for (i, arg) in args.elements.enumerate() {
+            let t = try arg.llvmType(scope)
+//            guard params[i] == t else { throw Wrong
         }
         
         // assign type to self and return

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D40FC4CA1C48323E00122397 /* StdTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D40FC4C91C48323E00122397 /* StdTypes.swift */; };
 		D4249F561C1AF9B200B15530 /* fn.vist in Resources */ = {isa = PBXBuildFile; fileRef = D4249F551C1AF9B200B15530 /* fn.vist */; };
 		D485DD281C1667E900B72F81 /* VistTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D485DD271C1667E900B72F81 /* VistTest.swift */; };
 		D497A76B1C3B003A00DFE39E /* Compile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7691C3B003A00DFE39E /* Compile.swift */; };
@@ -50,6 +51,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D40FC4C91C48323E00122397 /* StdTypes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StdTypes.swift; path = IRGen/StdTypes.swift; sourceTree = "<group>"; };
 		D4249F551C1AF9B200B15530 /* fn.vist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = fn.vist; sourceTree = "<group>"; };
 		D4644BE31C40619800364B99 /* stdlib.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib.ll; path = stdlib/stdlib.ll; sourceTree = "<group>"; };
 		D4644BE51C40619800364B99 /* stdlib.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = stdlib.vist; path = stdlib/stdlib.vist; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
@@ -169,6 +171,7 @@
 				D497A7851C3B012700DFE39E /* ArrayVariable.swift */,
 				D497A7891C3B012700DFE39E /* StructVariable.swift */,
 				D4FAE45B1C3DCEEE00C9EE05 /* BuiltinFunction.swift */,
+				D40FC4C91C48323E00122397 /* StdTypes.swift */,
 				D4FAE45D1C3DDE3100C9EE05 /* FunctionAttribute.swift */,
 			);
 			name = IRGen;
@@ -400,6 +403,7 @@
 				D497A78B1C3B012700DFE39E /* IRGen.swift in Sources */,
 				D497A78C1C3B012700DFE39E /* RuntimeVariable.swift in Sources */,
 				D497A77F1C3B00C600DFE39E /* TypeLowering.swift in Sources */,
+				D40FC4CA1C48323E00122397 /* StdTypes.swift in Sources */,
 				D497A7701C3B005600DFE39E /* Token.swift in Sources */,
 				D497A7801C3B00C600DFE39E /* TypeProvider.swift in Sources */,
 				D497A77E1C3B00C600DFE39E /* SemaTypeCheck.swift in Sources */,

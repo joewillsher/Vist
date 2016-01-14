@@ -44,7 +44,7 @@ let y = Double(2.0)
 print(y)
 
 
-let a = Int(6) - Int(10)
+var a = Int(6) - Int(10)
 print(a)
 
 
@@ -53,6 +53,10 @@ assert(Bool(true))
 print(Int(1))
 
 
+while a < Int(1000) {
+    a = a + Int(5)
+    print(a)
+}
 
 
 

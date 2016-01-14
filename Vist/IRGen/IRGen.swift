@@ -621,7 +621,7 @@ extension ConditionalExpression : IRGenerator {
             
             if let cond = cond { //if statement, make conditonal jump
                 
-                let v = try PropertyLookupExpression.loadBuiltinValueProperty(cond)
+                let v = try stackFrame.load(cond, type: "Int", property: "value", builder: builder)
                 
                 LLVMBuildCondBr(builder, v, block, ifOut)
                 
@@ -684,8 +684,8 @@ extension ForInLoopExpression : IRGenerator {
         let s = try rangeIterator.start.expressionCodeGen(stackFrame)
         let e = try rangeIterator.end.expressionCodeGen(stackFrame)
         
-        let start = try PropertyLookupExpression.loadBuiltinValueProperty(s)
-        let end = try PropertyLookupExpression.loadBuiltinValueProperty(e)
+        let start = try stackFrame.load(s, type: "Int", property: "value", builder: builder)
+        let end = try stackFrame.load(e, type: "Int", property: "value", builder: builder)
         
         
         // move into loop block
@@ -739,7 +739,7 @@ extension WhileLoopExpression : IRGenerator {
         
         // whether to enter the while, first while check
         let initialCond = try iterator.condition.expressionCodeGen(stackFrame)
-        let initialCondV = try PropertyLookupExpression.loadBuiltinValueProperty(initialCond)
+        let initialCondV = try stackFrame.load(initialCond, type: "Int", property: "value", builder: builder)
 
         // move into loop block
         LLVMBuildCondBr(builder, initialCondV, loop, afterLoop)
@@ -751,7 +751,7 @@ extension WhileLoopExpression : IRGenerator {
         
         // conditional break
         let conditionalRepeat = try iterator.condition.expressionCodeGen(stackFrame)
-        let conditionalRepeatV = try PropertyLookupExpression.loadBuiltinValueProperty(conditionalRepeat)
+        let conditionalRepeatV = try stackFrame.load(conditionalRepeat, type: "Int", property: "value", builder: builder)
         LLVMBuildCondBr(builder, conditionalRepeatV, loop, afterLoop)
         
         // move back to loop / end loop
@@ -938,12 +938,7 @@ extension InitialiserExpression : IRGenerator {
 }
 
 extension PropertyLookupExpression : IRGenerator {
-    
-    // TODO: Fix this shit, variable lookup of ints should be abstracted from the data layout
-    static func loadBuiltinValueProperty(object: LLVMValueRef) throws -> LLVMValueRef {
-        return LLVMBuildExtractValue(builder, object, 0/*aaahh*/, "b")
-    }
-    
+        
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
         guard let n = object as? Variable else { throw IRError.CannotGetPropertyFromNonVariableType }
