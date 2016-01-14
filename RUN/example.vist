@@ -14,9 +14,14 @@
 //print(tt.end)
 
 
-for a in Int(4) ... Int(100) {
+for a in 4 ... 100 {
     print(a)
 }
 
 
+var a = 1000
+while a > 0 {
+    print(a)
+    a = a - 100
+}
 

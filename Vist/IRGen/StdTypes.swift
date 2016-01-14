@@ -32,3 +32,10 @@ extension LLVMStType {
     }
     
 }
+
+extension LLVMTypeRef {
+    
+    
+    
+}
+

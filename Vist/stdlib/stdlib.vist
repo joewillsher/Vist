@@ -173,6 +173,9 @@ func != : Double Double -> Bool = |a b| do
 func ... : Int Int -> Range = do
     return Range( $0 $1 )
 
+@inline @operator(40)
+func ..< : Int Int -> Range = do
+    return Range( $0 $1 )
 
 
 

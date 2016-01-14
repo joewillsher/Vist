@@ -452,11 +452,18 @@ entry:
   ret { { i64 }, { i64 } } %Range_res
 }
 
+; Function Attrs: alwaysinline
+define { { i64 }, { i64 } } @"_..<_S.i64S.i64"({ i64 } %"$0", { i64 } %"$1") #3 {
+entry:
+  %Range_res = call { { i64 }, { i64 } } @_Range_S.i64S.i64({ i64 } %"$0", { i64 } %"$1")
+  ret { { i64 }, { i64 } } %Range_res
+}
+
 define i64 @main() {
 entry:
-  %Int_res = call { i64 } @_Int_i64(i64 4)
-  %Int_res1 = call { i64 } @_Int_i64(i64 100)
-  %..._res = call { { i64 }, { i64 } } @_..._S.i64S.i64({ i64 } %Int_res, { i64 } %Int_res1)
+  %0 = call { i64 } @_Int_i64(i64 4)
+  %1 = call { i64 } @_Int_i64(i64 100)
+  %..._res = call { { i64 }, { i64 } } @_..._S.i64S.i64({ i64 } %0, { i64 } %1)
   %start = extractvalue { { i64 }, { i64 } } %..._res, 0
   %end = extractvalue { { i64 }, { i64 } } %..._res, 1
   %value = extractvalue { i64 } %end, 0
@@ -464,14 +471,37 @@ entry:
 
 loop:                                             ; preds = %loop, %entry
   %a = phi { i64 } [ %start, %entry ], [ %nexta, %loop ]
-  %value2 = extractvalue { i64 } %a, 0
-  %na = add i64 1, %value2
+  %value1 = extractvalue { i64 } %a, 0
+  %na = add i64 1, %value1
   %nexta = call { i64 } @_Int_i64(i64 %na)
   call void @_print_S.i64({ i64 } %a)
   %looptest = icmp sle i64 %na, %value
   br i1 %looptest, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %loop
+  %2 = call { i64 } @_Int_i64(i64 1000)
+  %3 = alloca { i64 }
+  store { i64 } %2, { i64 }* %3
+  %a4 = load { i64 }* %3
+  %4 = call { i64 } @_Int_i64(i64 0)
+  %">_res" = call { i1 } @"_>_S.i64S.i64"({ i64 } %a4, { i64 } %4)
+  %value5 = extractvalue { i1 } %">_res", 0
+  br i1 %value5, label %loop2, label %afterloop3
+
+loop2:                                            ; preds = %loop2, %afterloop
+  %a6 = load { i64 }* %3
+  call void @_print_S.i64({ i64 } %a6)
+  %a7 = load { i64 }* %3
+  %5 = call { i64 } @_Int_i64(i64 100)
+  %-_res = call { i64 } @_-_S.i64S.i64({ i64 } %a7, { i64 } %5)
+  store { i64 } %-_res, { i64 }* %3
+  %a8 = load { i64 }* %3
+  %6 = call { i64 } @_Int_i64(i64 0)
+  %">_res9" = call { i1 } @"_>_S.i64S.i64"({ i64 } %a8, { i64 } %6)
+  %value10 = extractvalue { i1 } %">_res9", 0
+  br i1 %value10, label %loop2, label %afterloop3
+
+afterloop3:                                       ; preds = %loop2, %afterloop
   ret i64 0
 }
 

@@ -102,7 +102,13 @@ extension LLVMBool : Swift.BooleanType {
 extension IntegerLiteral : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) -> LLVMValueRef {
-        return LLVMConstInt(type!.ir(), UInt64(val), LLVMBool(false))
+        let value = LLVMConstInt(LLVMType.Int(size: size).ir(), UInt64(val), LLVMBool(false))
+        
+        let initialiser = LLVMGetNamedFunction(module, "_Int_i64")
+        let args = [value].ptr()
+        defer { args.dealloc(1) }
+        
+        return LLVMBuildCall(builder, initialiser, args, 1, "")
     }
 }
 
@@ -118,7 +124,13 @@ extension FloatingPointLiteral : IRGenerator {
 extension BooleanLiteral : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) -> LLVMValueRef {
-        return LLVMConstInt(LLVMInt1Type(), UInt64(val.hashValue), LLVMBool(false))
+        let value = LLVMConstInt(LLVMInt1Type(), UInt64(val.hashValue), LLVMBool(false))
+        
+        let initialiser = LLVMGetNamedFunction(module, "_Bool_b")
+        let args = [value].ptr()
+        defer { args.dealloc(1) }
+        
+        return LLVMBuildCall(builder, initialiser, args, 1, "")
     }
 }
 

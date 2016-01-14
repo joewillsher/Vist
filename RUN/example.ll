@@ -405,6 +405,16 @@ entry:
   ret { { i64 }, { i64 } } %.fca.1.0.insert.i
 }
 
+; Function Attrs: alwaysinline nounwind readnone
+define { { i64 }, { i64 } } @"_..<_S.i64S.i64"({ i64 } %"$0", { i64 } %"$1") #4 {
+entry:
+  %"$0.fca.0.extract.i" = extractvalue { i64 } %"$0", 0
+  %"$1.fca.0.extract.i" = extractvalue { i64 } %"$1", 0
+  %.fca.0.0.insert.i = insertvalue { { i64 }, { i64 } } undef, i64 %"$0.fca.0.extract.i", 0, 0
+  %.fca.1.0.insert.i = insertvalue { { i64 }, { i64 } } %.fca.0.0.insert.i, i64 %"$1.fca.0.extract.i", 1, 0
+  ret { { i64 }, { i64 } } %.fca.1.0.insert.i
+}
+
 ; Function Attrs: nounwind
 define i64 @main() #8 {
 entry:
@@ -412,14 +422,29 @@ entry:
 
 loop:                                             ; preds = %loop, %entry
   %a = phi { i64 } [ { i64 4 }, %entry ], [ %.fca.0.insert.i, %loop ]
-  %value2 = extractvalue { i64 } %a, 0
-  %na = add i64 %value2, 1
+  %value1 = extractvalue { i64 } %a, 0
+  %na = add i64 %value1, 1
   %.fca.0.insert.i = insertvalue { i64 } undef, i64 %na, 0
-  tail call void @"_$print_i64"(i64 %value2) #8
+  tail call void @"_$print_i64"(i64 %value1) #8
   %looptest = icmp sgt i64 %na, 100
   br i1 %looptest, label %afterloop, label %loop
 
 afterloop:                                        ; preds = %loop
+  %0 = alloca { i64 }, align 8
+  store { i64 } { i64 1000 }, { i64 }* %0, align 8
+  %1 = getelementptr inbounds { i64 }* %0, i64 0, i32 0
+  br label %loop2
+
+loop2:                                            ; preds = %afterloop, %loop2
+  %2 = load i64* %1, align 8
+  tail call void @"_$print_i64"(i64 %2) #8
+  %sub_res.i = add i64 %2, -100
+  %.fca.0.insert.i.i3 = insertvalue { i64 } undef, i64 %sub_res.i, 0
+  store { i64 } %.fca.0.insert.i.i3, { i64 }* %0, align 8
+  %cmp_gt_res.i = icmp sgt i64 %sub_res.i, 0
+  br i1 %cmp_gt_res.i, label %loop2, label %afterloop3
+
+afterloop3:                                       ; preds = %loop2
   ret i64 0
 }
 

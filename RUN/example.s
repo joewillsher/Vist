@@ -531,27 +531,54 @@ __..._S.i64S.i64:                       ## @_..._S.i64S.i64
 	popq	%rbp
 	retq
 
+	.globl	"__..<_S.i64S.i64"
+	.align	4, 0x90
+"__..<_S.i64S.i64":                     ## @"_..<_S.i64S.i64"
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	movq	%rdi, %rax
+	movq	%rsi, %rdx
+	popq	%rbp
+	retq
+
 	.globl	_main
 	.align	4, 0x90
 _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
+	pushq	%r14
 	pushq	%rbx
-	pushq	%rax
 	movl	$4, %ebx
 	.align	4, 0x90
-LBB43_1:                                ## %loop
+LBB44_1:                                ## %loop
                                         ## =>This Inner Loop Header: Depth=1
 	movq	%rbx, %rdi
 	leaq	1(%rbx), %rbx
 	callq	__$print_i64
 	cmpq	$101, %rbx
-	jl	LBB43_1
+	jl	LBB44_1
 ## BB#2:                                ## %afterloop
+	movq	%rsp, %rax
+	leaq	-16(%rax), %r14
+	movq	%r14, %rsp
+	movq	$1000, -16(%rax)        ## imm = 0x3E8
+	.align	4, 0x90
+LBB44_3:                                ## %loop2
+                                        ## =>This Inner Loop Header: Depth=1
+	movq	(%r14), %rbx
+	movq	%rbx, %rdi
+	callq	__$print_i64
+	addq	$-100, %rbx
+	movq	%rbx, (%r14)
+	testq	%rbx, %rbx
+	jg	LBB44_3
+## BB#4:                                ## %afterloop3
 	xorl	%eax, %eax
-	addq	$8, %rsp
+	leaq	-16(%rbp), %rsp
 	popq	%rbx
+	popq	%r14
 	popq	%rbp
 	retq
 

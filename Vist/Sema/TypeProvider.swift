@@ -30,7 +30,7 @@ extension TypeProvider {
 extension IntegerLiteral : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
-        let ty = LLVMType.Int(size: size)
+        guard let ty = scope[type: "Int"] else { fatalError("No Std Int type") }
         self.type = ty
         return ty
     }
