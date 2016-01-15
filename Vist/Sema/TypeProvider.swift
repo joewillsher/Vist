@@ -566,6 +566,10 @@ extension StructExpression : TypeProvider {
         scope[type: name] = ty
         self.type = ty
         
+        if let implicit = implicitIntialiser() {
+            initialisers.append(implicit)
+        }
+        
         for i in initialisers {
             try i.llvmType(scope)
         }

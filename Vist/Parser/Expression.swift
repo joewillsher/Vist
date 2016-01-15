@@ -490,7 +490,7 @@ final class StructExpression : Expression {
     let name: String
     let properties: [AssignmentExpression]
     let methods: [FunctionPrototypeExpression]
-    let initialisers: [InitialiserExpression]
+    var initialisers: [InitialiserExpression]
     let attrs: [AttributeExpression]
     
     init(name: String, properties: [AssignmentExpression], methods: [FunctionPrototypeExpression], initialisers: [InitialiserExpression], attrs: [AttributeExpression]) {

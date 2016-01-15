@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		D40FC4CA1C48323E00122397 /* StdTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D40FC4C91C48323E00122397 /* StdTypes.swift */; };
+		D40FC4CC1C4932F200122397 /* Initialiser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D40FC4CB1C4932F100122397 /* Initialiser.swift */; };
 		D4249F561C1AF9B200B15530 /* fn.vist in Resources */ = {isa = PBXBuildFile; fileRef = D4249F551C1AF9B200B15530 /* fn.vist */; };
 		D485DD281C1667E900B72F81 /* VistTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D485DD271C1667E900B72F81 /* VistTest.swift */; };
 		D497A76B1C3B003A00DFE39E /* Compile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7691C3B003A00DFE39E /* Compile.swift */; };
@@ -52,6 +53,7 @@
 
 /* Begin PBXFileReference section */
 		D40FC4C91C48323E00122397 /* StdTypes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StdTypes.swift; path = IRGen/StdTypes.swift; sourceTree = "<group>"; };
+		D40FC4CB1C4932F100122397 /* Initialiser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Initialiser.swift; path = Sema/Initialiser.swift; sourceTree = "<group>"; };
 		D4249F551C1AF9B200B15530 /* fn.vist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = fn.vist; sourceTree = "<group>"; };
 		D4644BE31C40619800364B99 /* stdlib.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib.ll; path = stdlib/stdlib.ll; sourceTree = "<group>"; };
 		D4644BE51C40619800364B99 /* stdlib.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = stdlib.vist; path = stdlib/stdlib.vist; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
@@ -262,6 +264,7 @@
 				D497A7791C3B00C600DFE39E /* TypeLowering.swift */,
 				D497A7751C3B00C600DFE39E /* Mangle.swift */,
 				D497A77A1C3B00C600DFE39E /* TypeProvider.swift */,
+				D40FC4CB1C4932F100122397 /* Initialiser.swift */,
 				D47D4BDF1C34B59C00B22B3C /* Interface */,
 			);
 			name = Sema;
@@ -389,6 +392,7 @@
 				D497A78D1C3B012700DFE39E /* StackFrame.swift in Sources */,
 				D497A76C1C3B003A00DFE39E /* main.swift in Sources */,
 				D497A77B1C3B00C600DFE39E /* Mangle.swift in Sources */,
+				D40FC4CC1C4932F200122397 /* Initialiser.swift in Sources */,
 				D497A7931C3B015700DFE39E /* Link.swift in Sources */,
 				D4FAE45E1C3DDE3100C9EE05 /* FunctionAttribute.swift in Sources */,
 				D4BBE4211C419A6C001B8934 /* StdLibExpose.swift in Sources */,

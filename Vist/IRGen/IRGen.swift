@@ -969,7 +969,6 @@ extension PropertyLookupExpression : IRGenerator {
 
 extension AST {
     
-    // TODO: make this function take the semascope, and parse it into the stack frame
     func IRGen(module m: LLVMModuleRef, isLibrary: Bool, stackFrame s: StackFrame) throws {
         
         // initialise global objects

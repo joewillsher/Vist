@@ -463,52 +463,18 @@ entry:
 
 define i64 @main() {
 entry:
-  %0 = call { i64 } @_Int_i64(i64 1)
-  %1 = call { i64 } @_Int_i64(i64 2)
-  %2 = call { i64 } @_Int_i64(i64 4)
-  %Foo_res = call { { i64 }, { i64 }, { i64 } } @_Foo_S.i64S.i64S.i64({ i64 } %0, { i64 } %1, { i64 } %2)
-  %3 = alloca { { i64 }, { i64 }, { i64 } }
-  store { { i64 }, { i64 }, { i64 } } %Foo_res, { { i64 }, { i64 }, { i64 } }* %3
-  %4 = call { i64 } @_Int_i64(i64 20)
-  %b_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %3, i32 0, i32 1
-  store { i64 } %4, { i64 }* %b_ptr
-  %a_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %3, i32 0, i32 0
+  %Foo_res = call { { i64 }, { i64 }, { i64 } } @_Foo_()
+  %0 = alloca { { i64 }, { i64 }, { i64 } }
+  store { { i64 }, { i64 }, { i64 } } %Foo_res, { { i64 }, { i64 }, { i64 } }* %0
+  %a_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 0
   %a = load { i64 }* %a_ptr
-  %5 = call { i64 } @_Int_i64(i64 1)
-  %"==_res" = call { i1 } @"_==_S.i64S.i64"({ i64 } %a, { i64 } %5)
-  call void @_print_S.b({ i1 } %"==_res")
-  %b_ptr1 = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %3, i32 0, i32 1
-  %b = load { i64 }* %b_ptr1
+  call void @_print_S.i64({ i64 } %a)
+  %b_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 1
+  %b = load { i64 }* %b_ptr
   call void @_print_S.i64({ i64 } %b)
-  %c_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %3, i32 0, i32 2
+  %c_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 2
   %c = load { i64 }* %c_ptr
   call void @_print_S.i64({ i64 } %c)
-  %b_ptr2 = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %3, i32 0, i32 1
-  %b3 = load { i64 }* %b_ptr2
-  %6 = call { i64 } @_Int_i64(i64 10)
-  %">_res" = call { i1 } @"_>_S.i64S.i64"({ i64 } %b3, { i64 } %6)
-  call void @_assert_S.b({ i1 } %">_res")
-  %7 = call { i64 } @_Int_i64(i64 1)
-  %8 = call { i64 } @_Int_i64(i64 2)
-  %9 = call { i64 } @_Int_i64(i64 3)
-  %"+_res" = call { i64 } @"_+_S.i64S.i64"({ i64 } %8, { i64 } %9)
-  %"+_res4" = call { i64 } @"_+_S.i64S.i64"({ i64 } %7, { i64 } %"+_res")
-  %10 = alloca { i64 }
-  store { i64 } %"+_res4", { i64 }* %10
-  %w = load { i64 }* %10
-  call void @_print_S.i64({ i64 } %w)
-  %a_ptr5 = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %3, i32 0, i32 0
-  %a6 = load { i64 }* %a_ptr5
-  %b_ptr7 = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %3, i32 0, i32 1
-  %b8 = load { i64 }* %b_ptr7
-  %c_ptr9 = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %3, i32 0, i32 2
-  %c10 = load { i64 }* %c_ptr9
-  %"+_res11" = call { i64 } @"_+_S.i64S.i64"({ i64 } %b8, { i64 } %c10)
-  %"+_res12" = call { i64 } @"_+_S.i64S.i64"({ i64 } %a6, { i64 } %"+_res11")
-  %11 = alloca { i64 }
-  store { i64 } %"+_res12", { i64 }* %11
-  %y = load { i64 }* %11
-  call void @_print_S.i64({ i64 } %y)
   ret i64 0
 }
 
@@ -524,6 +490,23 @@ entry:
   store { i64 } %"$2", { i64 }* %c_ptr
   %1 = load { { i64 }, { i64 }, { i64 } }* %0
   ret { { i64 }, { i64 }, { i64 } } %1
+}
+
+; Function Attrs: alwaysinline
+define { { i64 }, { i64 }, { i64 } } @_Foo_() #3 {
+entry:
+  %0 = alloca { { i64 }, { i64 }, { i64 } }
+  %1 = call { i64 } @_Int_i64(i64 10)
+  %a_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 0
+  store { i64 } %1, { i64 }* %a_ptr
+  %2 = call { i64 } @_Int_i64(i64 20)
+  %b_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 1
+  store { i64 } %2, { i64 }* %b_ptr
+  %3 = call { i64 } @_Int_i64(i64 40)
+  %c_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 2
+  store { i64 } %3, { i64 }* %c_ptr
+  %4 = load { { i64 }, { i64 }, { i64 } }* %0
+  ret { { i64 }, { i64 }, { i64 } } %4
 }
 
 attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

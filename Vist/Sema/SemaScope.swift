@@ -77,7 +77,6 @@ extension DictionaryLiteralConvertible
         get {
             
             for (k, v) in self {
-                
                 if k.demangleName() == raw && v.params == types { return v }
             }
             return nil

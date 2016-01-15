@@ -1,9 +1,9 @@
 
 
 type Foo {
-    let a: Int
-    var b: Int
-    let c: Int
+    let a: Int = 10
+    var b: Int = 20
+    let c: Int = 40
     
     init Int Int Int = {
         a = $0
@@ -17,20 +17,8 @@ type Foo {
 }
 
 
-var x = Foo(1 2 4)
+var x = Foo()
 
-x.b = 20
-
-print(x.a == 1)
+print(x.a)
 print(x.b)
 print(x.c)
-
-assert(x.b > 10)
-
-
-let w = 1 + 2 + 3
-print(w)
-
-// this doesnt work -_-
-let y = x.a + x.b + x.c
-print(y)

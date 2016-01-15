@@ -41,9 +41,13 @@ final class StdLibExpose {
     private var ast: AST? {
         get {
             if let ast = _ast { return ast }
-            if let ast = try? astGen() {
+            do {
+                let ast = try astGen()
                 _ast = ast
                 return ast
+            } catch {
+                print(error)
+                fatalError()
             }
             return nil
         }

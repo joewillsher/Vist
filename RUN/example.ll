@@ -416,13 +416,12 @@ entry:
   ret { { i64 }, { i64 } } %.fca.1.0.insert.i
 }
 
-define i64 @main() {
-_assert_S.b.exit:
-  tail call void @"_$print_b"(i1 true) #8
+; Function Attrs: nounwind
+define i64 @main() #8 {
+entry:
+  tail call void @"_$print_i64"(i64 10) #8
   tail call void @"_$print_i64"(i64 20) #8
-  tail call void @"_$print_i64"(i64 4) #8
-  tail call void @"_$print_i64"(i64 6) #8
-  tail call void @"_$print_i64"(i64 25) #8
+  tail call void @"_$print_i64"(i64 40) #8
   ret i64 0
 }
 
@@ -436,6 +435,12 @@ entry:
   %.fca.1.0.insert = insertvalue { { i64 }, { i64 }, { i64 } } %.fca.0.0.insert, i64 %"$1.fca.0.extract", 1, 0
   %.fca.2.0.insert = insertvalue { { i64 }, { i64 }, { i64 } } %.fca.1.0.insert, i64 %"$2.fca.0.extract", 2, 0
   ret { { i64 }, { i64 }, { i64 } } %.fca.2.0.insert
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { { i64 }, { i64 }, { i64 } } @_Foo_() #4 {
+entry:
+  ret { { i64 }, { i64 }, { i64 } } { { i64 } { i64 10 }, { i64 } { i64 20 }, { i64 } { i64 40 } }
 }
 
 ; Function Attrs: nounwind
