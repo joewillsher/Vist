@@ -282,7 +282,7 @@ extension FunctionPrototypeExpression : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
-        let ty = LLVMFnType(params: try fnType.params(scope.types.values), returns: try fnType.returnType(scope.types.values))
+        let ty = LLVMFnType(params: try fnType.params(scope.allTypes), returns: try fnType.returnType(scope.allTypes))
         
         mangledName = name.mangle(ty)
         
@@ -298,7 +298,7 @@ extension FunctionPrototypeExpression : TypeProvider {
         for (i, v) in (impl?.params.elements ?? []).enumerate() {
             
             let n = (v as? ValueType)?.name ?? "$\(i)"
-            let t = try fnType.params(scope.types.values)[i]
+            let t = try fnType.params(scope.allTypes)[i]
             
             try v.llvmType(fnScope)
             
@@ -586,7 +586,7 @@ extension InitialiserExpression : TypeProvider {
         
         guard let parentType = parent?.type, parentName = parent?.name else { throw SemaError.InitialiserNotAssociatedWithType }
         
-        let params = try ty.params(scope.types.values)
+        let params = try ty.params(scope.allTypes)
         
         let t = LLVMFnType(params: params, returns: parentType)
         self.mangledName = parentName.mangle(t)
@@ -605,7 +605,7 @@ extension InitialiserExpression : TypeProvider {
             initScope[variable: p.name] = p.value.type
         }
         
-        for (p, type) in zip(impl.params.elements, try ty.params(scope.types.values)) {
+        for (p, type) in zip(impl.params.elements, try ty.params(scope.allTypes)) {
             
             if let param = p as? ValueType {
                 initScope[variable: param.name] = type

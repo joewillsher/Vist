@@ -142,6 +142,16 @@ __Int_i64:                              ## @_Int_i64
 	popq	%rbp
 	retq
 
+	.globl	__Int_
+	.align	4, 0x90
+__Int_:                                 ## @_Int_
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	xorl	%eax, %eax
+	popq	%rbp
+	retq
+
 	.globl	__Bool_S.b
 	.align	4, 0x90
 __Bool_S.b:                             ## @_Bool_S.b
@@ -159,6 +169,16 @@ __Bool_b:                               ## @_Bool_b
 	pushq	%rbp
 	movq	%rsp, %rbp
 	movb	%dil, %al
+	popq	%rbp
+	retq
+
+	.globl	__Bool_
+	.align	4, 0x90
+__Bool_:                                ## @_Bool_
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	xorl	%eax, %eax
 	popq	%rbp
 	retq
 
@@ -249,11 +269,11 @@ Ltmp22:
 Ltmp23:
 	.cfi_def_cfa_register %rbp
 	testb	$1, %dil
-	je	LBB17_2
+	je	LBB19_2
 ## BB#1:                                ## %then0
 	popq	%rbp
 	retq
-LBB17_2:                                ## %else1
+LBB19_2:                                ## %else1
 	callq	__$fatalError_
 	.cfi_endproc
 
@@ -548,12 +568,6 @@ _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	movl	$10, %edi
-	callq	__$print_i64
-	movl	$20, %edi
-	callq	__$print_i64
-	movl	$40, %edi
-	callq	__$print_i64
 	xorl	%eax, %eax
 	popq	%rbp
 	retq

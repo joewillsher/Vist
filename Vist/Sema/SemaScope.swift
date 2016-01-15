@@ -8,9 +8,9 @@
 
 final class SemaScope {
     
-    var variables: [String: LLVMTyped]
-    var functions: [String: LLVMFnType]
-    var types: [String: LLVMStType]
+    private var variables: [String: LLVMTyped]
+    private var functions: [String: LLVMFnType]
+    private var types: [String: LLVMStType]
     var returnType: LLVMTyped?
     let parent: SemaScope?
     
@@ -60,6 +60,30 @@ final class SemaScope {
         self.functions = [:]
         self.types = [:]
     }
+    
+    /// Types including parents’ types
+    var allTypes: LazyMapCollection<Dictionary<String, LLVMStType>, LLVMStType> {
+        return types + (parent?.types ?? [String: LLVMStType]())
+    }
+}
+
+/// Append 2 dictionaries and return their lazy value collection
+private func +
+    <Key, Value>
+    (
+    lhs: Dictionary<Key, Value>,
+    rhs: Dictionary<Key, Value>
+    ) -> LazyMapCollection<Dictionary<Key, Value>, Value>
+{
+        var u: [Key: Value] = [:]
+        
+        for (k, v) in lhs {
+            u[k] = v
+        }
+        for (k, v) in rhs {
+            u[k] = v
+        }
+        return u.values
 }
 
 extension DictionaryLiteralConvertible
@@ -69,7 +93,6 @@ extension DictionaryLiteralConvertible
     Self : SequenceType,
     Self.Generator.Element == (Key, Value)
 {
-    
     /// Subscript for unmangled names
     ///
     /// Function name is required to be between underscores at the start _foo_...

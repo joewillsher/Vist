@@ -54,7 +54,7 @@ define void @"_$print_b"(i1 zeroext %b) #0 {
 
 ; Function Attrs: noinline noreturn ssp uwtable
 define void @"_$fatalError_"() #2 {
-  tail call void @abort() #9
+  tail call void @abort() #10
   unreachable
 }
 
@@ -75,6 +75,12 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
+define { i64 } @_Int_() #4 {
+entry:
+  ret { i64 } zeroinitializer
+}
+
+; Function Attrs: alwaysinline nounwind readnone
 define { i1 } @_Bool_S.b({ i1 } %o) #4 {
 entry:
   ret { i1 } %o
@@ -85,6 +91,12 @@ define { i1 } @_Bool_b(i1 %v) #4 {
 entry:
   %.fca.0.insert = insertvalue { i1 } undef, i1 %v, 0
   ret { i1 } %.fca.0.insert
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { i1 } @_Bool_() #4 {
+entry:
+  ret { i1 } zeroinitializer
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -416,12 +428,9 @@ entry:
   ret { { i64 }, { i64 } } %.fca.1.0.insert.i
 }
 
-; Function Attrs: nounwind
+; Function Attrs: nounwind readnone
 define i64 @main() #8 {
 entry:
-  tail call void @"_$print_i64"(i64 10) #8
-  tail call void @"_$print_i64"(i64 20) #8
-  tail call void @"_$print_i64"(i64 40) #8
   ret i64 0
 }
 
@@ -444,7 +453,7 @@ entry:
 }
 
 ; Function Attrs: nounwind
-declare i32 @puts(i8* nocapture readonly) #8
+declare i32 @puts(i8* nocapture readonly) #9
 
 attributes #0 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { nounwind "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
@@ -454,8 +463,9 @@ attributes #4 = { alwaysinline nounwind readnone }
 attributes #5 = { alwaysinline nounwind }
 attributes #6 = { alwaysinline noreturn }
 attributes #7 = { alwaysinline }
-attributes #8 = { nounwind }
-attributes #9 = { noreturn }
+attributes #8 = { nounwind readnone }
+attributes #9 = { nounwind }
+attributes #10 = { noreturn }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}

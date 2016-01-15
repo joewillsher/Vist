@@ -11,14 +11,11 @@ type Foo {
         c = $2
     }
     
-//    func sum: -> Int {
-//        return a + b + c
-//    }
+    func sum: -> Int = {
+        return a + b + c
+    }
 }
 
 
-var x = Foo()
+var y = Foo(1 2 4)
 
-print(x.a)
-print(x.b)
-print(x.c)

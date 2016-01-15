@@ -101,6 +101,21 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
+define { i64 } @_Int_() #3 {
+entry:
+  %0 = alloca { i64 }
+  %1 = call { i64 } @_Int_i64(i64 0)
+  %2 = alloca { i64 }
+  store { i64 } %1, { i64 }* %2
+  %value_ptr = getelementptr inbounds { i64 }* %2, i32 0, i32 0
+  %value = load i64* %value_ptr
+  %value_ptr1 = getelementptr inbounds { i64 }* %0, i32 0, i32 0
+  store i64 %value, i64* %value_ptr1
+  %3 = load { i64 }* %0
+  ret { i64 } %3
+}
+
+; Function Attrs: alwaysinline
 define { i1 } @_Bool_S.b({ i1 } %o) #3 {
 entry:
   %0 = alloca { i1 }
@@ -119,6 +134,21 @@ entry:
   store i1 %v, i1* %value_ptr
   %1 = load { i1 }* %0
   ret { i1 } %1
+}
+
+; Function Attrs: alwaysinline
+define { i1 } @_Bool_() #3 {
+entry:
+  %0 = alloca { i1 }
+  %1 = call { i1 } @_Bool_b(i1 false)
+  %2 = alloca { i1 }
+  store { i1 } %1, { i1 }* %2
+  %value_ptr = getelementptr inbounds { i1 }* %2, i32 0, i32 0
+  %value = load i1* %value_ptr
+  %value_ptr1 = getelementptr inbounds { i1 }* %0, i32 0, i32 0
+  store i1 %value, i1* %value_ptr1
+  %3 = load { i1 }* %0
+  ret { i1 } %3
 }
 
 ; Function Attrs: alwaysinline
@@ -463,18 +493,12 @@ entry:
 
 define i64 @main() {
 entry:
-  %Foo_res = call { { i64 }, { i64 }, { i64 } } @_Foo_()
-  %0 = alloca { { i64 }, { i64 }, { i64 } }
-  store { { i64 }, { i64 }, { i64 } } %Foo_res, { { i64 }, { i64 }, { i64 } }* %0
-  %a_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 0
-  %a = load { i64 }* %a_ptr
-  call void @_print_S.i64({ i64 } %a)
-  %b_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 1
-  %b = load { i64 }* %b_ptr
-  call void @_print_S.i64({ i64 } %b)
-  %c_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 2
-  %c = load { i64 }* %c_ptr
-  call void @_print_S.i64({ i64 } %c)
+  %0 = call { i64 } @_Int_i64(i64 1)
+  %1 = call { i64 } @_Int_i64(i64 2)
+  %2 = call { i64 } @_Int_i64(i64 4)
+  %Foo_res = call { { i64 }, { i64 }, { i64 } } @_Foo_S.i64S.i64S.i64({ i64 } %0, { i64 } %1, { i64 } %2)
+  %3 = alloca { { i64 }, { i64 }, { i64 } }
+  store { { i64 }, { i64 }, { i64 } } %Foo_res, { { i64 }, { i64 }, { i64 } }* %3
   ret i64 0
 }
 

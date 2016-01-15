@@ -958,6 +958,15 @@ extension PropertyLookupExpression : IRGenerator {
 }
 
 
+extension MethodCallExpression : IRGenerator {
+    
+    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
+        
+        
+        
+        return nil
+    }
+}
 
 
 

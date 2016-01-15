@@ -9,6 +9,10 @@ type Int {
     
     init Int = |o| do value = o.value
     init LLVM.Int = |v| do value = v
+    init () = {
+        let v = 0
+        value = v.value
+    }
 }
 
 type Bool {
@@ -16,6 +20,10 @@ type Bool {
 
     init Bool = |o| do value = o.value
     init LLVM.Bool = |v| do value = v
+    init () = {
+        let b = false
+        value = b.value
+    }
 }
 
 type Double {

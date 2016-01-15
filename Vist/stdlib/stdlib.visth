@@ -4,12 +4,14 @@ type Int {
     var value: LLVM.Int64
     init Int
     init LLVM.Int
+    init ()
 }
 
 type Bool {
     var value: LLVM.Bool
     init Bool
     init LLVM.Bool
+    init ()
 }
 
 type Double {
