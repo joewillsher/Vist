@@ -37,7 +37,7 @@ extension LLVMStType {
         let args = val.ptr()
         defer { args.dealloc(members.count) }
         guard initialiser != nil else { fatalError("No initialiser for \(name)") }
-        return LLVMBuildCall(builder, initialiser, args, 1, "next\(name)")
+        return LLVMBuildCall(builder, initialiser, args, 1, "")
     }
     
 }

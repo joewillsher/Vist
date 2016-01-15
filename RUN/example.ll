@@ -416,46 +416,26 @@ entry:
   ret { { i64 }, { i64 } } %.fca.1.0.insert.i
 }
 
-; Function Attrs: nounwind
-define i64 @main() #8 {
-entry:
-  br label %loop
-
-loop:                                             ; preds = %loop, %entry
-  %a = phi { i64 } [ { i64 4 }, %entry ], [ %.fca.0.insert.i, %loop ]
-  %value2 = extractvalue { i64 } %a, 0
-  %na = add i64 %value2, 1
-  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %na, 0
-  tail call void @"_$print_i64"(i64 %value2) #8
-  %looptest = icmp sgt i64 %na, 99
-  br i1 %looptest, label %afterloop, label %loop
-
-afterloop:                                        ; preds = %loop
-  %0 = alloca { i64 }, align 8
-  store { i64 } { i64 1000 }, { i64 }* %0, align 8
-  %1 = getelementptr inbounds { i64 }* %0, i64 0, i32 0
-  br label %loop5
-
-loop5:                                            ; preds = %afterloop, %loop5
-  %2 = load i64* %1, align 8
-  tail call void @"_$print_i64"(i64 %2) #8
-  %sub_res.i = add i64 %2, -100
-  %.fca.0.insert.i.i7 = insertvalue { i64 } undef, i64 %sub_res.i, 0
-  store { i64 } %.fca.0.insert.i.i7, { i64 }* %0, align 8
-  %cmp_gt_res.i = icmp sgt i64 %sub_res.i, 0
-  br i1 %cmp_gt_res.i, label %loop5, label %afterloop6
-
-afterloop6:                                       ; preds = %loop5
-  %3 = load i64* %1, align 8
-  %cmp_lt_res.i = icmp slt i64 %3, 1000
-  br i1 %cmp_lt_res.i, label %then0, label %cont
-
-cont:                                             ; preds = %then0, %afterloop6
+define i64 @main() {
+_assert_S.b.exit:
+  tail call void @"_$print_b"(i1 true) #8
+  tail call void @"_$print_i64"(i64 20) #8
+  tail call void @"_$print_i64"(i64 4) #8
+  tail call void @"_$print_i64"(i64 6) #8
+  tail call void @"_$print_i64"(i64 25) #8
   ret i64 0
+}
 
-then0:                                            ; preds = %afterloop6
-  tail call void @"_$print_i64"(i64 100000) #8
-  br label %cont
+; Function Attrs: alwaysinline nounwind readnone
+define { { i64 }, { i64 }, { i64 } } @_Foo_S.i64S.i64S.i64({ i64 } %"$0", { i64 } %"$1", { i64 } %"$2") #4 {
+entry:
+  %"$0.fca.0.extract" = extractvalue { i64 } %"$0", 0
+  %"$1.fca.0.extract" = extractvalue { i64 } %"$1", 0
+  %"$2.fca.0.extract" = extractvalue { i64 } %"$2", 0
+  %.fca.0.0.insert = insertvalue { { i64 }, { i64 }, { i64 } } undef, i64 %"$0.fca.0.extract", 0, 0
+  %.fca.1.0.insert = insertvalue { { i64 }, { i64 }, { i64 } } %.fca.0.0.insert, i64 %"$1.fca.0.extract", 1, 0
+  %.fca.2.0.insert = insertvalue { { i64 }, { i64 }, { i64 } } %.fca.1.0.insert, i64 %"$2.fca.0.extract", 2, 0
+  ret { { i64 }, { i64 }, { i64 } } %.fca.2.0.insert
 }
 
 ; Function Attrs: nounwind

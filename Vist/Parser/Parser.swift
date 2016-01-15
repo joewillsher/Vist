@@ -384,7 +384,7 @@ extension Parser {
             
             let newRhs = try parseOperationRHS(tokenPrecedence, lhs: rhs)
             
-            if tokenPrecedence < nextTokenPrecedence {
+            if tokenPrecedence <= nextTokenPrecedence {
                 return try parseOperationRHS(nextTokenPrecedence, lhs: BinaryExpression(op: op, lhs: lhs, rhs: newRhs))
             }
             return try parseOperationRHS(precedence + 1, lhs: BinaryExpression(op: op, lhs: lhs, rhs: rhs))

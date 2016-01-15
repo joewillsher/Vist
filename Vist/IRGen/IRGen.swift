@@ -303,10 +303,7 @@ extension MutationExpression : IRGenerator {
             let val = try value.expressionCodeGen(stackFrame)
             
             try variable.store(val, inPropertyNamed: prop.name)
-            
         }
-        
-        
         
         return nil
     }

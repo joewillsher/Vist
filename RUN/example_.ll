@@ -463,60 +463,67 @@ entry:
 
 define i64 @main() {
 entry:
-  %nextInt = call { i64 } @_Int_i64(i64 4)
-  %nextInt1 = call { i64 } @_Int_i64(i64 100)
-  %"..<_res" = call { { i64 }, { i64 } } @"_..<_S.i64S.i64"({ i64 } %nextInt, { i64 } %nextInt1)
-  %start = extractvalue { { i64 }, { i64 } } %"..<_res", 0
-  %end = extractvalue { { i64 }, { i64 } } %"..<_res", 1
-  %value = extractvalue { i64 } %end, 0
-  br label %loop
-
-loop:                                             ; preds = %loop, %entry
-  %a = phi { i64 } [ %start, %entry ], [ %nextInt3, %loop ]
-  %value2 = extractvalue { i64 } %a, 0
-  %na = add i64 1, %value2
-  %nextInt3 = call { i64 } @_Int_i64(i64 %na)
-  call void @_print_S.i64({ i64 } %a)
-  %looptest = icmp sle i64 %na, %value
-  br i1 %looptest, label %loop, label %afterloop
-
-afterloop:                                        ; preds = %loop
-  %nextInt4 = call { i64 } @_Int_i64(i64 1000)
-  %0 = alloca { i64 }
-  store { i64 } %nextInt4, { i64 }* %0
-  %a7 = load { i64 }* %0
-  %nextInt8 = call { i64 } @_Int_i64(i64 0)
-  %">_res" = call { i1 } @"_>_S.i64S.i64"({ i64 } %a7, { i64 } %nextInt8)
-  %value9 = extractvalue { i1 } %">_res", 0
-  br i1 %value9, label %loop5, label %afterloop6
-
-loop5:                                            ; preds = %loop5, %afterloop
-  %a10 = load { i64 }* %0
-  call void @_print_S.i64({ i64 } %a10)
-  %a11 = load { i64 }* %0
-  %nextInt12 = call { i64 } @_Int_i64(i64 100)
-  %-_res = call { i64 } @_-_S.i64S.i64({ i64 } %a11, { i64 } %nextInt12)
-  store { i64 } %-_res, { i64 }* %0
-  %a13 = load { i64 }* %0
-  %nextInt14 = call { i64 } @_Int_i64(i64 0)
-  %">_res15" = call { i1 } @"_>_S.i64S.i64"({ i64 } %a13, { i64 } %nextInt14)
-  %value16 = extractvalue { i1 } %">_res15", 0
-  br i1 %value16, label %loop5, label %afterloop6
-
-afterloop6:                                       ; preds = %loop5, %afterloop
-  %a17 = load { i64 }* %0
-  %nextInt18 = call { i64 } @_Int_i64(i64 1000)
-  %"<_res" = call { i1 } @"_<_S.i64S.i64"({ i64 } %a17, { i64 } %nextInt18)
-  %value20 = extractvalue { i1 } %"<_res", 0
-  br i1 %value20, label %then0, label %cont
-
-cont:                                             ; preds = %afterloop6, %then0
+  %0 = call { i64 } @_Int_i64(i64 1)
+  %1 = call { i64 } @_Int_i64(i64 2)
+  %2 = call { i64 } @_Int_i64(i64 4)
+  %Foo_res = call { { i64 }, { i64 }, { i64 } } @_Foo_S.i64S.i64S.i64({ i64 } %0, { i64 } %1, { i64 } %2)
+  %3 = alloca { { i64 }, { i64 }, { i64 } }
+  store { { i64 }, { i64 }, { i64 } } %Foo_res, { { i64 }, { i64 }, { i64 } }* %3
+  %4 = call { i64 } @_Int_i64(i64 20)
+  %b_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %3, i32 0, i32 1
+  store { i64 } %4, { i64 }* %b_ptr
+  %a_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %3, i32 0, i32 0
+  %a = load { i64 }* %a_ptr
+  %5 = call { i64 } @_Int_i64(i64 1)
+  %"==_res" = call { i1 } @"_==_S.i64S.i64"({ i64 } %a, { i64 } %5)
+  call void @_print_S.b({ i1 } %"==_res")
+  %b_ptr1 = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %3, i32 0, i32 1
+  %b = load { i64 }* %b_ptr1
+  call void @_print_S.i64({ i64 } %b)
+  %c_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %3, i32 0, i32 2
+  %c = load { i64 }* %c_ptr
+  call void @_print_S.i64({ i64 } %c)
+  %b_ptr2 = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %3, i32 0, i32 1
+  %b3 = load { i64 }* %b_ptr2
+  %6 = call { i64 } @_Int_i64(i64 10)
+  %">_res" = call { i1 } @"_>_S.i64S.i64"({ i64 } %b3, { i64 } %6)
+  call void @_assert_S.b({ i1 } %">_res")
+  %7 = call { i64 } @_Int_i64(i64 1)
+  %8 = call { i64 } @_Int_i64(i64 2)
+  %9 = call { i64 } @_Int_i64(i64 3)
+  %"+_res" = call { i64 } @"_+_S.i64S.i64"({ i64 } %8, { i64 } %9)
+  %"+_res4" = call { i64 } @"_+_S.i64S.i64"({ i64 } %7, { i64 } %"+_res")
+  %10 = alloca { i64 }
+  store { i64 } %"+_res4", { i64 }* %10
+  %w = load { i64 }* %10
+  call void @_print_S.i64({ i64 } %w)
+  %a_ptr5 = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %3, i32 0, i32 0
+  %a6 = load { i64 }* %a_ptr5
+  %b_ptr7 = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %3, i32 0, i32 1
+  %b8 = load { i64 }* %b_ptr7
+  %c_ptr9 = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %3, i32 0, i32 2
+  %c10 = load { i64 }* %c_ptr9
+  %"+_res11" = call { i64 } @"_+_S.i64S.i64"({ i64 } %b8, { i64 } %c10)
+  %"+_res12" = call { i64 } @"_+_S.i64S.i64"({ i64 } %a6, { i64 } %"+_res11")
+  %11 = alloca { i64 }
+  store { i64 } %"+_res12", { i64 }* %11
+  %y = load { i64 }* %11
+  call void @_print_S.i64({ i64 } %y)
   ret i64 0
+}
 
-then0:                                            ; preds = %afterloop6
-  %nextInt19 = call { i64 } @_Int_i64(i64 100000)
-  call void @_print_S.i64({ i64 } %nextInt19)
-  br label %cont
+; Function Attrs: alwaysinline
+define { { i64 }, { i64 }, { i64 } } @_Foo_S.i64S.i64S.i64({ i64 } %"$0", { i64 } %"$1", { i64 } %"$2") #3 {
+entry:
+  %0 = alloca { { i64 }, { i64 }, { i64 } }
+  %a_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 0
+  store { i64 } %"$0", { i64 }* %a_ptr
+  %b_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 1
+  store { i64 } %"$1", { i64 }* %b_ptr
+  %c_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 2
+  store { i64 } %"$2", { i64 }* %c_ptr
+  %1 = load { { i64 }, { i64 }, { i64 } }* %0
+  ret { { i64 }, { i64 }, { i64 } } %1
 }
 
 attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

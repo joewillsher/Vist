@@ -1,17 +1,36 @@
 
 
-
-for a in 4 ..< 100 {
-    print(a)
+type Foo {
+    let a: Int
+    var b: Int
+    let c: Int
+    
+    init Int Int Int = {
+        a = $0
+        b = $1
+        c = $2
+    }
+    
+//    func sum: -> Int {
+//        return a + b + c
+//    }
 }
 
 
-var a = 1000
-while a > 0 {
-    print(a)
-    a = a - 100
-}
+var x = Foo(1 2 4)
 
-if a < 1000 {
-    print(100000)
-}
+x.b = 20
+
+print(x.a == 1)
+print(x.b)
+print(x.c)
+
+assert(x.b > 10)
+
+
+let w = 1 + 2 + 3
+print(w)
+
+// this doesnt work -_-
+let y = x.a + x.b + x.c
+print(y)

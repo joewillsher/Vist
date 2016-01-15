@@ -545,46 +545,40 @@ __..._S.i64S.i64:                       ## @_..._S.i64S.i64
 	.globl	_main
 	.align	4, 0x90
 _main:                                  ## @main
+	.cfi_startproc
+## BB#0:                                ## %_assert_S.b.exit
+	pushq	%rbp
+Ltmp24:
+	.cfi_def_cfa_offset 16
+Ltmp25:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp26:
+	.cfi_def_cfa_register %rbp
+	movl	$1, %edi
+	callq	__$print_b
+	movl	$20, %edi
+	callq	__$print_i64
+	movl	$4, %edi
+	callq	__$print_i64
+	movl	$6, %edi
+	callq	__$print_i64
+	movl	$25, %edi
+	callq	__$print_i64
+	xorl	%eax, %eax
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	__Foo_S.i64S.i64S.i64
+	.align	4, 0x90
+__Foo_S.i64S.i64S.i64:                  ## @_Foo_S.i64S.i64S.i64
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	pushq	%r14
-	pushq	%rbx
-	movl	$4, %ebx
-	.align	4, 0x90
-LBB44_1:                                ## %loop
-                                        ## =>This Inner Loop Header: Depth=1
-	movq	%rbx, %rdi
-	leaq	1(%rbx), %rbx
-	callq	__$print_i64
-	cmpq	$100, %rbx
-	jl	LBB44_1
-## BB#2:                                ## %afterloop
-	movq	%rsp, %rax
-	leaq	-16(%rax), %r14
-	movq	%r14, %rsp
-	movq	$1000, -16(%rax)        ## imm = 0x3E8
-	.align	4, 0x90
-LBB44_3:                                ## %loop5
-                                        ## =>This Inner Loop Header: Depth=1
-	movq	(%r14), %rbx
-	movq	%rbx, %rdi
-	callq	__$print_i64
-	addq	$-100, %rbx
-	movq	%rbx, (%r14)
-	testq	%rbx, %rbx
-	jg	LBB44_3
-## BB#4:                                ## %afterloop6
-	cmpq	$1000, (%r14)           ## imm = 0x3E8
-	jge	LBB44_6
-## BB#5:                                ## %then0
-	movl	$100000, %edi           ## imm = 0x186A0
-	callq	__$print_i64
-LBB44_6:                                ## %cont
-	xorl	%eax, %eax
-	leaq	-16(%rbp), %rsp
-	popq	%rbx
-	popq	%r14
+	movq	%rdx, %rcx
+	movq	%rdi, %rax
+	movq	%rsi, %rdx
 	popq	%rbp
 	retq
 
