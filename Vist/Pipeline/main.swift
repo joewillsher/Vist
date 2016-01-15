@@ -5,6 +5,7 @@
 //  Created by Josef Willsher on 16/08/2015.
 //  Copyright © 2015 vistlang. All rights reserved.
 //
+import Foundation
 
 do {
     let ar = Process.arguments
@@ -26,7 +27,7 @@ do {
     let b = a.contains("-build-only") || a.contains("-b")
     let profile = a.contains("-profile") || a.contains("-p")
     let o = a.contains("-O")
-    let lib = a.contains("-lib")
+    let lib = a.contains("-lib") // undocumented
     let buildStdLib = a.contains("-build-stdlib")
     let preserveIntermediate = a.contains("-preserve")
     
@@ -45,9 +46,14 @@ do {
             "  -emit-ir\t\t- Only generate LLVM IR file\n" +
             "  -emit-asm\t\t- Only generate assembly code\n" +
             "  -build-only -b\t- Do not run the program\n" +
+            "  -build-stdlib\t\t- Build the standard library too\n" +
+            "  -build-runtime\t\t- Build the runtime too\n" +
             "  -preserve\t\t- Keep intermediate LLVM IR and ASM files")
-        
-    } else {
+    }
+    else {    
+        #if DEBUG
+            let s = CFAbsoluteTimeGetCurrent()
+        #endif
         
         if buildStdLib {
             try compileDocuments(["stdlib.vist"],
@@ -77,6 +83,9 @@ do {
             isStdLib: false
         )
         
+        #if DEBUG
+            print("Compile took \(CFAbsoluteTimeGetCurrent() - s)s")
+        #endif
     }
     
     

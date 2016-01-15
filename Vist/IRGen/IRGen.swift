@@ -102,13 +102,11 @@ extension LLVMBool : Swift.BooleanType {
 extension IntegerLiteral : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) -> LLVMValueRef {
-        let value = LLVMConstInt(LLVMType.Int(size: size).ir(), UInt64(val), LLVMBool(false))
+        let rawType = LLVMType.Int(size: size)
+        let value = LLVMConstInt(rawType.ir(), UInt64(val), LLVMBool(false))
         
-        let initialiser = LLVMGetNamedFunction(module, "_Int_i64")
-        let args = [value].ptr()
-        defer { args.dealloc(1) }
-        
-        return LLVMBuildCall(builder, initialiser, args, 1, "")
+        guard let type = self.type as? LLVMStType else { fatalError("Int literal with no type") }
+        return type.initialiseWithBuiltin(value, module: module, builder: builder)
     }
 }
 
@@ -124,13 +122,11 @@ extension FloatingPointLiteral : IRGenerator {
 extension BooleanLiteral : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) -> LLVMValueRef {
-        let value = LLVMConstInt(LLVMInt1Type(), UInt64(val.hashValue), LLVMBool(false))
+        let rawType = LLVMType.Bool
+        let value = LLVMConstInt(rawType.ir(), UInt64(val.hashValue), LLVMBool(false))
         
-        let initialiser = LLVMGetNamedFunction(module, "_Bool_b")
-        let args = [value].ptr()
-        defer { args.dealloc(1) }
-        
-        return LLVMBuildCall(builder, initialiser, args, 1, "")
+        guard let type = self.type as? LLVMStType else { fatalError("Bool literal with no type") }
+        return type.initialiseWithBuiltin(value, module: module, builder: builder)
     }
 }
 
@@ -187,8 +183,8 @@ extension AssignmentExpression : IRGenerator {
             stackFrame.addVariable(name, val: a)
             
             return a.ptr
-            
-        } else if let ty = value.type as? LLVMFnType {
+        }
+        else if let ty = value.type as? LLVMFnType {
             // handle assigning a closure
             
             // Function being made
@@ -227,8 +223,8 @@ extension AssignmentExpression : IRGenerator {
             LLVMPositionBuilderAtEnd(builder, stackFrame.block)
             
             return fn
-            
-        } else {
+        }
+        else {
             // all other types
             
             // create value
@@ -246,8 +242,8 @@ extension AssignmentExpression : IRGenerator {
                     ($0.0, $0.1.ir(), $0.2)
                 }
                 variable = MutableStructVariable.alloc(builder, type: type, mutable: isMutable, properties: properties)
-                
-            } else {
+            }
+            else {
                 variable = ReferenceVariable.alloc(builder, type: type, name: name ?? "", mutable: isMutable)
             }
             // Load in memory
@@ -275,17 +271,15 @@ extension MutationExpression : IRGenerator {
                 
                 let newArray = try arrayExpression.arrInstance(stackFrame)
                 arrayVariable.assignFrom(builder, arr: newArray)
-                
-            } else {
-                
+            }
+            else {
                 let new = try value.expressionCodeGen(stackFrame)
                 
                 guard let v = variable as? MutableVariable where v.mutable else { throw IRError.NotMutable("") }
                 try v.store(new)
-                
             }
-        
-        } else if let sub = object as? ArraySubscriptExpression {
+        }
+        else if let sub = object as? ArraySubscriptExpression {
             
             let arr = try sub.backingArrayVariable(stackFrame)
             
@@ -293,8 +287,8 @@ extension MutationExpression : IRGenerator {
             let val = try value.expressionCodeGen(stackFrame)
             
             arr.store(val, inElementAtIndex: i)
-        
-        } else if let prop = object as? PropertyLookupExpression {
+        }
+        else if let prop = object as? PropertyLookupExpression {
             // foo.bar = meme
             
             guard let n = prop.object as? Variable else { fatalError("CannotGetPropertyFromNonVariableType") }
@@ -463,8 +457,8 @@ extension FunctionPrototypeExpression : IRGenerator {
                 
                 let s = ParameterStructVariable(type: ty, val: param, builder: builder, properties: memTys)
                 functionStackFrame.addVariable(name, val: s)
-                
-            } else {
+            }
+            else {
                 let s = StackVariable(val: param, builder: builder)
                 functionStackFrame.addVariable(name, val: s)
             }
@@ -559,8 +553,8 @@ extension ClosureExpression : IRGenerator {
 //                
 //                let s = MutableStructVariable(type: ty, ptr: ptr, mutable: false, builder: builder, properties: memTys)
 //                functionStackFrame.addVariable(name, val: s)
-//                
-//            } else {
+//            }
+//            else {
                 let s = StackVariable(val: param, builder: builder)
                 functionStackFrame.addVariable(name, val: s)
 //            }
@@ -614,7 +608,8 @@ extension ConditionalExpression : IRGenerator {
                 
                 ifOut = LLVMAppendBasicBlock(stackFrame.function, "cont\(i)")
                 
-            } else { //else or final else-if statement
+            }
+            else { //else or final else-if statement
 
                 // If the block returns from the current scope, remove the cont block
                 if rets {
@@ -636,8 +631,8 @@ extension ConditionalExpression : IRGenerator {
                 let v = try cond.load("value", type: statement.condition?.type, builder: builder)
                 
                 LLVMBuildCondBr(builder, v, block, ifOut)
-                
-            } else { // else statement, uncondtional jump
+            }
+            else { // else statement, uncondtional jump
                 LLVMBuildBr(builder, block)
                 break
             }
@@ -704,26 +699,23 @@ extension ForInLoopExpression : IRGenerator {
         
         // define variable phi node
         let name = binded.name ?? ""
-        let i = LLVMBuildPhi(builder, stdIntType.ir(), name)
+        let loopCount = LLVMBuildPhi(builder, stdIntType.ir(), name)
         
         // add incoming value to phi node
         let num1 = [start].ptr(), incoming1 = [stackFrame.block].ptr()
         defer { num1.dealloc(1); incoming1.dealloc(1) }
-        LLVMAddIncoming(i, num1, incoming1, 1)
+        LLVMAddIncoming(loopCount, num1, incoming1, 1)
         
         // iterate and add phi incoming
         let one = LLVMConstInt(LLVMInt64Type(), UInt64(1), LLVMBool(false))
-        let value = try i.load("value", type: stdIntType, builder: builder)
+        let value = try loopCount.load("value", type: stdIntType, builder: builder)
         let next = LLVMBuildAdd(builder, one, value, "n\(name)")
         
         // initialise next i value with the iterated num
-        let initialiser = LLVMGetNamedFunction(module, "_Int_i64")
-        let args = [next].ptr()
-        defer { args.dealloc(1) }
-        let nextInt = LLVMBuildCall(builder, initialiser, args, 1, "next\(name)")
+        let nextInt = stdIntType.initialiseWithBuiltin(next, module: module, builder: builder)
         
         // gen the IR for the inner block
-        let lv = StackVariable(val: i, builder: builder)
+        let lv = StackVariable(val: loopCount, builder: builder)
         let loopStackFrame = StackFrame(block: loop, vars: [name: lv], function: stackFrame.function, parentStackFrame: stackFrame)
         try block.bbGenInline(stackFrame: loopStackFrame)
         
@@ -734,7 +726,7 @@ extension ForInLoopExpression : IRGenerator {
         // move back to loop / end loop
         let num2 = [nextInt].ptr(), incoming2 = [loopStackFrame.block].ptr()
         defer { num2.dealloc(1); incoming2.dealloc(1) }
-        LLVMAddIncoming(i, num2, incoming2, 1)
+        LLVMAddIncoming(loopCount, num2, incoming2, 1)
         
         LLVMPositionBuilderAtEnd(builder, afterLoop)
         stackFrame.block = afterLoop
@@ -914,7 +906,8 @@ extension InitialiserExpression : IRGenerator {
                 let s = ParameterStructVariable(type: ty, val: param, builder: builder, properties: memTys)
                 initStackFrame.addVariable(name, val: s)
                 
-            } else {
+            }
+            else {
                 let s = StackVariable(val: param, builder: builder)
                 initStackFrame.addVariable(name, val: s)
             }
@@ -1009,8 +1002,8 @@ extension AST {
             for exp in e {
                 try exp.expressionCodeGen(stackFrame)
             }
-
-        } else {
+        }
+        else {
             
             for exp in expressions {
                 try exp.expressionCodeGen(stackFrame)
@@ -1019,7 +1012,8 @@ extension AST {
         
         if isLibrary {
             LLVMDeleteFunction(mainFunction)
-        } else {
+        }
+        else {
             LLVMBuildRet(builder, LLVMConstInt(LLVMInt64Type(), 0, LLVMBool(false)))
         }
     }

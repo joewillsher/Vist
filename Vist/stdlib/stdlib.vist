@@ -175,7 +175,7 @@ func ... : Int Int -> Range = do
 
 @inline @operator(40)
 func ..< : Int Int -> Range = do
-    return Range( $0 $1 )
+    return Range( $0 $1-1 )
 
 
 

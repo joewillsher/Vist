@@ -64,8 +64,8 @@ public func compileDocuments(fileNames: [String],
 
             if index == 0 {
                 head = ast
-                
-            } else {
+            }
+            else {
                 all.append(ast)
             }
         }
@@ -94,10 +94,9 @@ public func compileDocuments(fileNames: [String],
         // Create vist program module and link against the helper bytecode
 
         if isStdLib {
-            
             linkModule(&module, withFile: "\(runtimeDirectory)/runtime.bc")
-            
-        } else {
+        }
+        else {
             linkModule(&module, withFile: "\(stdLibDirectory)/stdlib.bc")
         }
         
@@ -143,8 +142,8 @@ public func compileDocuments(fileNames: [String],
             let ir = try String(contentsOfFile: "\(currentDirectory)/\(file).ll") ?? ""
             if irOnly { print(ir); return }
             if verbose { print(ir) }
-            
-        } else {
+        }
+        else {
             
             let fileTask = NSTask()
             fileTask.currentDirectoryPath = currentDirectory
@@ -218,9 +217,8 @@ public func compileDocuments(fileNames: [String],
             
             bitcodeTask.launch()
             bitcodeTask.waitUntilExit()
-            
-            
-        } else {
+        }
+        else {
             
             /// Compile IR Code task
             let compileTask = NSTask()

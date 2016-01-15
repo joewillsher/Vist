@@ -537,8 +537,8 @@ __..._S.i64S.i64:                       ## @_..._S.i64S.i64
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
+	leaq	-1(%rsi), %rdx
 	movq	%rdi, %rax
-	movq	%rsi, %rdx
 	popq	%rbp
 	retq
 
@@ -557,7 +557,7 @@ LBB44_1:                                ## %loop
 	movq	%rbx, %rdi
 	leaq	1(%rbx), %rbx
 	callq	__$print_i64
-	cmpq	$101, %rbx
+	cmpq	$100, %rbx
 	jl	LBB44_1
 ## BB#2:                                ## %afterloop
 	movq	%rsp, %rax
@@ -565,7 +565,7 @@ LBB44_1:                                ## %loop
 	movq	%r14, %rsp
 	movq	$1000, -16(%rax)        ## imm = 0x3E8
 	.align	4, 0x90
-LBB44_3:                                ## %loop2
+LBB44_3:                                ## %loop5
                                         ## =>This Inner Loop Header: Depth=1
 	movq	(%r14), %rbx
 	movq	%rbx, %rdi
@@ -574,7 +574,13 @@ LBB44_3:                                ## %loop2
 	movq	%rbx, (%r14)
 	testq	%rbx, %rbx
 	jg	LBB44_3
-## BB#4:                                ## %afterloop3
+## BB#4:                                ## %afterloop6
+	cmpq	$1000, (%r14)           ## imm = 0x3E8
+	jge	LBB44_6
+## BB#5:                                ## %then0
+	movl	$100000, %edi           ## imm = 0x186A0
+	callq	__$print_i64
+LBB44_6:                                ## %cont
 	xorl	%eax, %eax
 	leaq	-16(%rbp), %rsp
 	popq	%rbx

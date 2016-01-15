@@ -15,8 +15,8 @@ func interfaceASTGen(ast: AST) throws -> AST {
         
         if let e = exp as? AssignmentExpression {
             interface.expressions.append(e)
-            
-        } else if let f = exp as? FunctionPrototypeExpression {
+        }
+        else if let f = exp as? FunctionPrototypeExpression {
             
             let fun = FunctionPrototypeExpression(name: f.name, type: f.fnType, impl: nil, attrs: f.attrs)
             fun.type = f.type
@@ -39,14 +39,14 @@ func interFileInterfaceASTGen(ast: AST) throws -> AST {
         
         if let e = exp as? AssignmentExpression {
             interface.expressions.append(e)
-            
-        } else if let f = exp as? FunctionPrototypeExpression {
+        }
+        else if let f = exp as? FunctionPrototypeExpression {
             
 //            let fun = FunctionPrototypeExpression(name: f.name, type: f.fnType, impl: f.impl, attrs: f.attrs)
 //            fun.type = f.type
             interface.expressions.append(f)
-            
-        } else if let s = exp as? StructExpression {
+        }
+        else if let s = exp as? StructExpression {
             interface.expressions.append(s)
         }
         

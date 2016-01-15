@@ -39,7 +39,7 @@ extension IntegerLiteral : TypeProvider {
 extension FloatingPointLiteral : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
-        let ty = LLVMType.Float(size: size)
+        let ty = LLVMType.Float(size: size) // TODO: Float stdlib
         self.type = ty
         return ty
     }
@@ -48,8 +48,9 @@ extension FloatingPointLiteral : TypeProvider {
 extension BooleanLiteral : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
-        self.type = LLVMType.Bool
-        return LLVMType.Bool
+        guard let ty = scope[type: "Bool"] else { fatalError("No Std Bool type") }
+        self.type = ty
+        return ty
     }
 }
 
@@ -108,7 +109,8 @@ extension AssignmentExpression : TypeProvider {
         
         if let fn = (explicitType ?? inferredType) as? LLVMFnType {
             scope[function: name] = fn              // store in function table if closure
-        } else {
+        }
+        else {
             scope[variable: name] = inferredType    // store in arr
         }
         
@@ -222,24 +224,23 @@ private extension FunctionType {
                 if tup.elements.count == 0 { return LLVMType.Void }
                 
                 let res = args.mapAs(ValueType).map{$0.name}.flatMap(LLVMType.init)
-                guard res.count == args.elements.count else {
-                    throw SemaError.TypeNotFound }
+                guard res.count == args.elements.count else { throw SemaError.TypeNotFound }
                 let a = res.map { $0 as LLVMTyped }
                 return a.first!
-                
-            } else if let f = returns as? FunctionType {
+            }
+            else if let f = returns as? FunctionType {
                 
                 return LLVMFnType(params: try f.params(tys), returns: try f.returnType(tys))
-                
-            } else if let x = returns as? ValueType {
+            }
+            else if let x = returns as? ValueType {
                 
                 if let val = LLVMType(x.name) {
                     return val
-                    
-                } else if let i = (tys.indexOf { $0.name == x.name }) {
+                }
+                else if let i = (tys.indexOf { $0.name == x.name }) {
                     return tys[i]
-                    
-                } else {
+                }
+                else {
                     throw SemaError.NoTypeNamed(x.name)
                 }
             }

@@ -543,10 +543,12 @@ extension Parser {
         // if explicit assignment defines size, add info about this size to object
         if let ex = explicitType, var sized = value as? Sized  {
             let s = ex.componentsSeparatedByCharactersInSet(NSCharacterSet.decimalDigitCharacterSet().invertedSet).joinWithSeparator("")
+            
             if let n = UInt32(s) {
                 sized.size = n
                 value = sized
-            } else if explicitType == "Float" {
+            }
+            else if explicitType == "Float" {
                 sized.size = 32
                 value = sized
             }
@@ -867,8 +869,8 @@ extension Parser {
                 
                 guard case .CloseParen = currentToken else { throw ParseError.ExpectedParen(currentPos) }
                 getNextToken()
-                
-            } else if let a = FunctionAttributeExpression(rawValue: id) {
+            }
+            else if let a = FunctionAttributeExpression(rawValue: id) {
                 getNextToken()
                 attrs.append(a)
             }

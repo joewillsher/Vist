@@ -17,7 +17,8 @@ final class StdLibExpose {
     private var code: String {
         if isStdLib {
             return (try? String(contentsOfFile: "\(PROJECT_DIR)/Vist/Runtime/runtime.visth")) ?? ""
-        } else {
+        }
+        else {
             return
                 ((try? String(contentsOfFile: "\(PROJECT_DIR)/Vist/Runtime/runtime.visth")) ?? "") +
                 ((try? String(contentsOfFile: "\(PROJECT_DIR)/Vist/stdlib/stdlib.visth")) ?? "")

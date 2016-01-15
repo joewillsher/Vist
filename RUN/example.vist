@@ -1,20 +1,7 @@
 
 
 
-// todo: lexing multiple operators next to eachother
-// instead of current (whitelist based) method, contunue
-// lexing for all but the chars used exclusively by the language
-//@inline @operator(40)
-//func .. : Int Int -> Range = do
-//    return Range( $0 ( $1 - 1))
-
-
-//let tt = Int(5) ... Int(100)
-//print(tt.start)
-//print(tt.end)
-
-
-for a in 4 ... 100 {
+for a in 4 ..< 100 {
     print(a)
 }
 
@@ -25,3 +12,6 @@ while a > 0 {
     a = a - 100
 }
 
+if a < 1000 {
+    print(100000)
+}

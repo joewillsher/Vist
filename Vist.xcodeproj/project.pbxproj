@@ -512,10 +512,10 @@
 				EMBEDDED_CONTENT_CONTAINS_SWIFT = NO;
 				ENABLE_TESTABILITY = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					"PROJECT_DIR=@\\\"$(PROJECT_DIR)\\\"",
 					__STDC_CONSTANT_MACROS,
 					__STDC_LIMIT_MACROS,
 					__STDC_FORMAT_MACROS,
-					"PROJECT_DIR=@\\\"$(PROJECT_DIR)\\\"",
 				);
 				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
 				"LD_MAP_FILE_PATH[arch=*]" = "$(TARGET_TEMP_DIR)/$(PRODUCT_NAME)-LinkMap-$(CURRENT_VARIANT)-$(CURRENT_ARCH).txt";
@@ -544,6 +544,7 @@
 					"-lcurses",
 					"-lLLVMLinker",
 				);
+				OTHER_SWIFT_FLAGS = "-DDEBUG";
 				PRELINK_LIBS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REEXPORTED_LIBRARY_NAMES = "";
@@ -561,10 +562,10 @@
 				EMBEDDED_CONTENT_CONTAINS_SWIFT = NO;
 				ENABLE_TESTABILITY = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					"PROJECT_DIR=@\\\"$(PROJECT_DIR)\\\"",
 					__STDC_CONSTANT_MACROS,
 					__STDC_LIMIT_MACROS,
 					__STDC_FORMAT_MACROS,
-					"PROJECT_DIR=@\\\"$(PROJECT_DIR)\\\"",
 				);
 				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
@@ -592,6 +593,7 @@
 					"-lcurses",
 					"-lLLVMLinker",
 				);
+				OTHER_SWIFT_FLAGS = "-DDEBUG";
 				PRELINK_LIBS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REEXPORTED_LIBRARY_NAMES = "";

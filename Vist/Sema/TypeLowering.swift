@@ -82,7 +82,8 @@ struct LLVMFnType : LLVMTyped {
         let r: LLVMTypeRef
         if let _ = returns as? LLVMFnType {
             r = LLVMType.Pointer(to: returns).ir()
-        } else {
+        }
+        else {
             r = returns.ir()
         }
         

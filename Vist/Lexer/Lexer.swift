@@ -99,7 +99,8 @@ private extension Token {
         
         if numeric.characters.contains(".") {
             self = .FloatingPoint(Double(number))
-        } else {
+        }
+        else {
             self = .Integer(Int(number))
         }
     }
@@ -166,7 +167,8 @@ struct Lexer {
     private mutating func updatePos() throws {
         if let a = (try? charPtr(-1)) where a == "\n" {
             pos = (pos.0+1, 0)
-        } else {
+        }
+        else {
             pos = (pos.0, pos.1+1)
         }
     }
@@ -289,6 +291,11 @@ extension Lexer {
 //-------------------------------------------------------------------------------------------------------------------------
 //  MARK:                                              Main lexing loop
 //-------------------------------------------------------------------------------------------------------------------------
+
+
+// todo: lexing multiple operators next to eachother
+// instead of current (whitelist based) method, contunue
+// lexing for all but the chars used exclusively by the language
 
 
 extension Lexer {

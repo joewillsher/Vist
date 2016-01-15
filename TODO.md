@@ -2,10 +2,7 @@
 # TODO
 
 * Standard library
-    - The compiler wraps any literals in this initaliser
-    - write stdlib int and array types
-
-* Operators
+    - write stdlib array type
 
 * Structs
     - Initialisers
