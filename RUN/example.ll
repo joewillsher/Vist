@@ -202,25 +202,49 @@ _condFail_b.exit:                                 ; preds = %entry
 ; Function Attrs: nounwind readnone
 declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #8
 
-; Function Attrs: alwaysinline nounwind readnone
-define { i64 } @_-_S.i64S.i64({ i64 } %a, { i64 } %b) #4 {
+; Function Attrs: alwaysinline
+define { i64 } @_-_S.i64S.i64({ i64 } %a, { i64 } %b) #7 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
-  %sub_res = sub i64 %value, %value1
-  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %sub_res, 0
+  %sub_res = tail call { i64, i1 } @llvm.ssub.with.overflow.i64(i64 %value, i64 %value1)
+  %sub_res.fca.1.extract = extractvalue { i64, i1 } %sub_res, 1
+  br i1 %sub_res.fca.1.extract, label %then0.i, label %_condFail_b.exit
+
+then0.i:                                          ; preds = %entry
+  tail call void @"_$fatalError_"()
+  unreachable
+
+_condFail_b.exit:                                 ; preds = %entry
+  %sub_res.fca.0.extract = extractvalue { i64, i1 } %sub_res, 0
+  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %sub_res.fca.0.extract, 0
   ret { i64 } %.fca.0.insert.i
 }
 
-; Function Attrs: alwaysinline nounwind readnone
-define { i64 } @"_*_S.i64S.i64"({ i64 } %a, { i64 } %b) #4 {
+; Function Attrs: nounwind readnone
+declare { i64, i1 } @llvm.ssub.with.overflow.i64(i64, i64) #8
+
+; Function Attrs: alwaysinline
+define { i64 } @"_*_S.i64S.i64"({ i64 } %a, { i64 } %b) #7 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
-  %mul_res = mul i64 %value1, %value
-  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %mul_res, 0
+  %mul_res = tail call { i64, i1 } @llvm.smul.with.overflow.i64(i64 %value, i64 %value1)
+  %mul_res.fca.1.extract = extractvalue { i64, i1 } %mul_res, 1
+  br i1 %mul_res.fca.1.extract, label %then0.i, label %_condFail_b.exit
+
+then0.i:                                          ; preds = %entry
+  tail call void @"_$fatalError_"()
+  unreachable
+
+_condFail_b.exit:                                 ; preds = %entry
+  %mul_res.fca.0.extract = extractvalue { i64, i1 } %mul_res, 0
+  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %mul_res.fca.0.extract, 0
   ret { i64 } %.fca.0.insert.i
 }
+
+; Function Attrs: nounwind readnone
+declare { i64, i1 } @llvm.smul.with.overflow.i64(i64, i64) #8
 
 ; Function Attrs: alwaysinline nounwind readnone
 define { i64 } @"_/_S.i64S.i64"({ i64 } %a, { i64 } %b) #4 {
@@ -442,14 +466,23 @@ entry:
   ret { { i64 }, { i64 } } %.fca.1.0.insert.i
 }
 
-; Function Attrs: alwaysinline nounwind readnone
-define { { i64 }, { i64 } } @"_..<_S.i64S.i64"({ i64 } %"$0", { i64 } %"$1") #4 {
+; Function Attrs: alwaysinline
+define { { i64 }, { i64 } } @"_..<_S.i64S.i64"({ i64 } %"$0", { i64 } %"$1") #7 {
 entry:
   %value.i = extractvalue { i64 } %"$1", 0
-  %sub_res.i = add i64 %value.i, -1
+  %sub_res.i = tail call { i64, i1 } @llvm.ssub.with.overflow.i64(i64 %value.i, i64 1)
+  %sub_res.fca.1.extract.i = extractvalue { i64, i1 } %sub_res.i, 1
+  br i1 %sub_res.fca.1.extract.i, label %then0.i.i, label %_-_S.i64S.i64.exit
+
+then0.i.i:                                        ; preds = %entry
+  tail call void @"_$fatalError_"()
+  unreachable
+
+_-_S.i64S.i64.exit:                               ; preds = %entry
+  %sub_res.fca.0.extract.i = extractvalue { i64, i1 } %sub_res.i, 0
   %"$0.fca.0.extract.i" = extractvalue { i64 } %"$0", 0
   %.fca.0.0.insert.i = insertvalue { { i64 }, { i64 } } undef, i64 %"$0.fca.0.extract.i", 0, 0
-  %.fca.1.0.insert.i = insertvalue { { i64 }, { i64 } } %.fca.0.0.insert.i, i64 %sub_res.i, 1, 0
+  %.fca.1.0.insert.i = insertvalue { { i64 }, { i64 } } %.fca.0.0.insert.i, i64 %sub_res.fca.0.extract.i, 1, 0
   ret { { i64 }, { i64 } } %.fca.1.0.insert.i
 }
 

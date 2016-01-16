@@ -275,20 +275,40 @@ define { i64 } @_-_S.i64S.i64({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
-  %sub_res = sub i64 %value, %value1
-  %Int_res = call { i64 } @_Int_i64(i64 %sub_res)
+  %sub_res = call { i64, i1 } @llvm.ssub.with.overflow.i64(i64 %value, i64 %value1)
+  %0 = alloca { i64, i1 }
+  store { i64, i1 } %sub_res, { i64, i1 }* %0
+  %"1_ptr" = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 1
+  %"1" = load i1* %"1_ptr"
+  call void @_condFail_b(i1 %"1")
+  %"0_ptr" = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 0
+  %"0" = load i64* %"0_ptr"
+  %Int_res = call { i64 } @_Int_i64(i64 %"0")
   ret { i64 } %Int_res
 }
+
+; Function Attrs: nounwind readnone
+declare { i64, i1 } @llvm.ssub.with.overflow.i64(i64, i64) #5
 
 ; Function Attrs: alwaysinline
 define { i64 } @"_*_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
-  %mul_res = mul i64 %value, %value1
-  %Int_res = call { i64 } @_Int_i64(i64 %mul_res)
+  %mul_res = call { i64, i1 } @llvm.smul.with.overflow.i64(i64 %value, i64 %value1)
+  %0 = alloca { i64, i1 }
+  store { i64, i1 } %mul_res, { i64, i1 }* %0
+  %"1_ptr" = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 1
+  %"1" = load i1* %"1_ptr"
+  call void @_condFail_b(i1 %"1")
+  %"0_ptr" = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 0
+  %"0" = load i64* %"0_ptr"
+  %Int_res = call { i64 } @_Int_i64(i64 %"0")
   ret { i64 } %Int_res
 }
+
+; Function Attrs: nounwind readnone
+declare { i64, i1 } @llvm.smul.with.overflow.i64(i64, i64) #5
 
 ; Function Attrs: alwaysinline
 define { i64 } @"_/_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {

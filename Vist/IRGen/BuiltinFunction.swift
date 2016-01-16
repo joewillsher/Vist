@@ -13,20 +13,30 @@ func builtinInstruction(named: String, builder: LLVMBuilderRef, module: LLVMModu
     switch named {
         
     case "LLVM.i_add": return {
-        // calls into c++
         let l = getIntrinsic("llvm.sadd.with.overflow", module, LLVMTypeOf($0))
         
         let args = [$0, $1].ptr()
         defer { args.dealloc(2) }
         
-        let c = LLVMBuildCall(builder, l, args, 2, "add_res")
-//        let a = LLVMBuildExtractValue(builder, c, 0, "sum")
-//        let e = LLVMBuildExtractValue(builder, c, 0, "overflow")
-        
-        return c
+        return LLVMBuildCall(builder, l, args, 2, "add_res")
         }
-    case "LLVM.i_sub": return { LLVMBuildSub(builder, $0, $1, "sub_res") }
-    case "LLVM.i_mul": return { LLVMBuildMul(builder, $0, $1, "mul_res") }
+        
+    case "LLVM.i_sub": return {
+        let l = getIntrinsic("llvm.ssub.with.overflow", module, LLVMTypeOf($0))
+        
+        let args = [$0, $1].ptr()
+        defer { args.dealloc(2) }
+        
+        return LLVMBuildCall(builder, l, args, 2, "sub_res")
+        }
+    case "LLVM.i_mul": return {
+        let l = getIntrinsic("llvm.smul.with.overflow", module, LLVMTypeOf($0))
+        
+        let args = [$0, $1].ptr()
+        defer { args.dealloc(2) }
+        
+        return LLVMBuildCall(builder, l, args, 2, "mul_res")
+        }
     case "LLVM.i_div": return { LLVMBuildUDiv(builder, $0, $1, "div_res") }
     case "LLVM.i_rem": return { LLVMBuildURem(builder, $0, $1, "rem_res") }
 
@@ -59,6 +69,3 @@ func builtinInstruction(named: String, builder: LLVMBuilderRef, module: LLVMModu
     }
 }
 
-private func LLVMBuildCondFail(fail: LLVMValueRef) {
-    
-}

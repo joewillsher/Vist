@@ -14,9 +14,9 @@ func _fatalError: ()
 
 // compiler functions
 func LLVM.i_add: LLVM.Int64 LLVM.Int64 -> LLVM.Int64 LLVM.Bool
-func LLVM.i_sub: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
-func LLVM.i_mul: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
-func LLVM.i_div: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
+func LLVM.i_sub: LLVM.Int64 LLVM.Int64 -> LLVM.Int64 LLVM.Bool
+func LLVM.i_mul: LLVM.Int64 LLVM.Int64 -> LLVM.Int64 LLVM.Bool
+func LLVM.i_div: LLVM.Int64 LLVM.Int64 -> LLVM.Int64 
 func LLVM.i_rem: LLVM.Int64 LLVM.Int64 -> LLVM.Int64
 
 func LLVM.i_cmp_lt: LLVM.Int64 LLVM.Int64 -> LLVM.Bool

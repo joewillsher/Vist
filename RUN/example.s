@@ -325,24 +325,48 @@ LBB21_2:                                ## %then0.i
 	.globl	"__-_S.i64S.i64"
 	.align	4, 0x90
 "__-_S.i64S.i64":                       ## @_-_S.i64S.i64
+	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
+Ltmp30:
+	.cfi_def_cfa_offset 16
+Ltmp31:
+	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
+Ltmp32:
+	.cfi_def_cfa_register %rbp
 	subq	%rsi, %rdi
+	jo	LBB22_2
+## BB#1:                                ## %_condFail_b.exit
 	movq	%rdi, %rax
 	popq	%rbp
 	retq
+LBB22_2:                                ## %then0.i
+	callq	__$fatalError_
+	.cfi_endproc
 
 	.globl	"__*_S.i64S.i64"
 	.align	4, 0x90
 "__*_S.i64S.i64":                       ## @"_*_S.i64S.i64"
+	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
+Ltmp33:
+	.cfi_def_cfa_offset 16
+Ltmp34:
+	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
+Ltmp35:
+	.cfi_def_cfa_register %rbp
 	imulq	%rsi, %rdi
+	jo	LBB23_2
+## BB#1:                                ## %_condFail_b.exit
 	movq	%rdi, %rax
 	popq	%rbp
 	retq
+LBB23_2:                                ## %then0.i
+	callq	__$fatalError_
+	.cfi_endproc
 
 	.globl	"__/_S.i64S.i64"
 	.align	4, 0x90
@@ -588,13 +612,26 @@ __..._S.i64S.i64:                       ## @_..._S.i64S.i64
 	.globl	"__..<_S.i64S.i64"
 	.align	4, 0x90
 "__..<_S.i64S.i64":                     ## @"_..<_S.i64S.i64"
+	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
+Ltmp36:
+	.cfi_def_cfa_offset 16
+Ltmp37:
+	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-	leaq	-1(%rsi), %rdx
+Ltmp38:
+	.cfi_def_cfa_register %rbp
+	decq	%rsi
+	jo	LBB46_2
+## BB#1:                                ## %_-_S.i64S.i64.exit
 	movq	%rdi, %rax
+	movq	%rsi, %rdx
 	popq	%rbp
 	retq
+LBB46_2:                                ## %then0.i.i
+	callq	__$fatalError_
+	.cfi_endproc
 
 	.globl	_main
 	.align	4, 0x90
@@ -602,12 +639,12 @@ _main:                                  ## @main
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp30:
+Ltmp39:
 	.cfi_def_cfa_offset 16
-Ltmp31:
+Ltmp40:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp32:
+Ltmp41:
 	.cfi_def_cfa_register %rbp
 	movl	$5, %edi
 	callq	__$print_i64

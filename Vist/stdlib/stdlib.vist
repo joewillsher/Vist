@@ -84,12 +84,18 @@ func + : Int Int -> Int = |a b| {
 }
 
 @inline @operator(80)
-func - : Int Int -> Int = |a b| do
-    return Int(LLVM.i_sub(a.value b.value))
+func - : Int Int -> Int = |a b| {
+    let v = LLVM.i_sub(a.value b.value)
+    condFail(v.1)
+    return Int(v.0)
+}
 
 @inline @operator(100)
-func * : Int Int -> Int = |a b| do
-    return Int(LLVM.i_mul(a.value b.value))
+func * : Int Int -> Int = |a b| {
+    let v = LLVM.i_mul(a.value b.value)
+    condFail(v.1)
+    return Int(v.0)
+}
 
 @inline @operator(100)
 func / : Int Int -> Int = |a b| do
