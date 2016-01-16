@@ -984,6 +984,12 @@ extension AST {
         builder = LLVMCreateBuilder()
         module = m
         
+        let l = getIntrinsic("llvm.sadd.with.overflow", module, LLVMType.Int(size: 64).ir())
+
+        LLVMDumpValue(l)
+        
+        
+        
         // main arguments
         let argBuffer = [LLVMTypeRef]().ptr()
         defer { argBuffer.dealloc(0) }

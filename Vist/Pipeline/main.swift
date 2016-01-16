@@ -33,7 +33,7 @@ do {
     
     if a.contains("-build-runtime") {
         buildRuntime()
-    }
+    } 
     
     if a.contains("-h") || a.contains("-help") {
         

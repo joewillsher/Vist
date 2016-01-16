@@ -63,7 +63,7 @@ final class SemaScope {
     
     /// Types including parents’ types
     var allTypes: LazyMapCollection<Dictionary<String, LLVMStType>, LLVMStType> {
-        return types + (parent?.types ?? [String: LLVMStType]())
+        return types + parent?.types
     }
 }
 
@@ -72,18 +72,20 @@ private func +
     <Key, Value>
     (
     lhs: Dictionary<Key, Value>,
-    rhs: Dictionary<Key, Value>
+    rhs: Dictionary<Key, Value>?
     ) -> LazyMapCollection<Dictionary<Key, Value>, Value>
 {
-        var u: [Key: Value] = [:]
-        
-        for (k, v) in lhs {
-            u[k] = v
-        }
+    var u: [Key: Value] = [:]
+    
+    for (k, v) in lhs {
+        u[k] = v
+    }
+    if let rhs = rhs {
         for (k, v) in rhs {
             u[k] = v
         }
-        return u.values
+    }
+    return u.values
 }
 
 extension DictionaryLiteralConvertible

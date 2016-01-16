@@ -200,6 +200,8 @@ public func compileDocuments(fileNames: [String],
 //            libGen.launch()
 //            libGen.waitUntilExit()
             
+            
+            
             for f in ["\(file)_.ll", "\(file).bc"] {
                 let rmTask = NSTask()
                 rmTask.currentDirectoryPath = currentDirectory

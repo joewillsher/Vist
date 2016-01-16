@@ -593,7 +593,7 @@ extension InitialiserExpression : TypeProvider {
         
         scope[function: parentName] = t
         self.type = t
-
+        
         guard let impl = self.impl else {
             return t
         }
@@ -633,6 +633,12 @@ extension PropertyLookupExpression : TypeProvider {
     
 }
 
-
+extension MethodCallExpression : TypeProvider {
+    
+    func llvmType(scope: SemaScope) throws -> LLVMTyped {
+        
+        return LLVMType.Null
+    }
+}
 
 

@@ -32,6 +32,7 @@ extension StructExpression {
         return exp
     }
     
+    // TODO: Memberwise init
     /// Returns an initialiser for each element in the struct
 //    func memberwiseInitialiser() -> InitialiserExpression {
 //        

@@ -130,6 +130,7 @@ final class LLVMStType : LLVMTyped {
     }
     
     static func named(n: String) -> LLVMStType { return LLVMStType(members: [], methods: [], name: n) }
+    static func withProperties(ps: [LLVMTyped]) -> LLVMStType { return LLVMStType(members: ps.map {("", $0, false)}, methods: [], name: "") }
     
     var isStdBool: Bool {
         return name == "Bool" && members[0].0 == "value"
