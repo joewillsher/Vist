@@ -54,7 +54,7 @@ define void @"_$print_b"(i1 zeroext %b) #0 {
 
 ; Function Attrs: noinline noreturn ssp uwtable
 define void @"_$fatalError_"() #2 {
-  tail call void @abort() #9
+  tail call void @abort() #10
   unreachable
 }
 
@@ -167,15 +167,40 @@ else1:                                            ; preds = %entry
   unreachable
 }
 
-; Function Attrs: alwaysinline nounwind readnone
-define { i64 } @"_+_S.i64S.i64"({ i64 } %a, { i64 } %b) #4 {
+; Function Attrs: alwaysinline
+define void @_condFail_b(i1 %"$0") #7 {
+entry:
+  br i1 %"$0", label %then0, label %cont
+
+cont:                                             ; preds = %entry
+  ret void
+
+then0:                                            ; preds = %entry
+  tail call void @"_$fatalError_"()
+  unreachable
+}
+
+; Function Attrs: alwaysinline
+define { i64 } @"_+_S.i64S.i64"({ i64 } %a, { i64 } %b) #7 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
-  %sum = add i64 %value1, %value
-  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %sum, 0
+  %add_res = tail call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %value, i64 %value1)
+  %add_res.fca.1.extract = extractvalue { i64, i1 } %add_res, 1
+  br i1 %add_res.fca.1.extract, label %then0.i, label %_condFail_b.exit
+
+then0.i:                                          ; preds = %entry
+  tail call void @"_$fatalError_"()
+  unreachable
+
+_condFail_b.exit:                                 ; preds = %entry
+  %add_res.fca.0.extract = extractvalue { i64, i1 } %add_res, 0
+  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %add_res.fca.0.extract, 0
   ret { i64 } %.fca.0.insert.i
 }
+
+; Function Attrs: nounwind readnone
+declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #8
 
 ; Function Attrs: alwaysinline nounwind readnone
 define { i64 } @_-_S.i64S.i64({ i64 } %a, { i64 } %b) #4 {
@@ -428,34 +453,14 @@ entry:
   ret { { i64 }, { i64 } } %.fca.1.0.insert.i
 }
 
-; Function Attrs: nounwind
-define i64 @main() #8 {
+define i64 @main() {
 entry:
-  tail call void @"_$print_i64"(i64 3) #8
-  tail call void @"_$print_i64"(i64 1) #8
+  tail call void @"_$print_i64"(i64 5) #9
   ret i64 0
 }
 
-; Function Attrs: alwaysinline nounwind readnone
-define { { i64 }, { i64 }, { i64 } } @_Foo_S.i64S.i64S.i64({ i64 } %"$0", { i64 } %"$1", { i64 } %"$2") #4 {
-entry:
-  %"$0.fca.0.extract" = extractvalue { i64 } %"$0", 0
-  %"$1.fca.0.extract" = extractvalue { i64 } %"$1", 0
-  %"$2.fca.0.extract" = extractvalue { i64 } %"$2", 0
-  %.fca.0.0.insert = insertvalue { { i64 }, { i64 }, { i64 } } undef, i64 %"$0.fca.0.extract", 0, 0
-  %.fca.1.0.insert = insertvalue { { i64 }, { i64 }, { i64 } } %.fca.0.0.insert, i64 %"$1.fca.0.extract", 1, 0
-  %.fca.2.0.insert = insertvalue { { i64 }, { i64 }, { i64 } } %.fca.1.0.insert, i64 %"$2.fca.0.extract", 2, 0
-  ret { { i64 }, { i64 }, { i64 } } %.fca.2.0.insert
-}
-
-; Function Attrs: alwaysinline nounwind readnone
-define { { i64 }, { i64 }, { i64 } } @_Foo_() #4 {
-entry:
-  ret { { i64 }, { i64 }, { i64 } } { { i64 } { i64 10 }, { i64 } { i64 20 }, { i64 } { i64 40 } }
-}
-
 ; Function Attrs: nounwind
-declare i32 @puts(i8* nocapture readonly) #8
+declare i32 @puts(i8* nocapture readonly) #9
 
 attributes #0 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { nounwind "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
@@ -465,8 +470,9 @@ attributes #4 = { alwaysinline nounwind readnone }
 attributes #5 = { alwaysinline nounwind }
 attributes #6 = { alwaysinline noreturn }
 attributes #7 = { alwaysinline }
-attributes #8 = { nounwind }
-attributes #9 = { noreturn }
+attributes #8 = { nounwind readnone }
+attributes #9 = { nounwind }
+attributes #10 = { noreturn }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}

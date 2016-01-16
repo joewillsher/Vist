@@ -150,12 +150,7 @@ extension Parser {
         // if () type
         if case .OpenParen = currentToken, case .CloseParen = getNextToken() {
             getNextToken() // eat ')'
-            if alwaysWrap {
-                return TupleExpression(elements: [])
-            }
-            else {
-                return ValueType(name: "Void")
-            }
+            return alwaysWrap ? TupleExpression(elements: []) : ValueType(name: "Void")
         }
         
         var elements = [Expression]()
@@ -367,7 +362,7 @@ extension Parser {
     private mutating func parseTupleExpression() throws -> TupleExpression {
         return try parseParenExpression(tuple: true) as! TupleExpression
     }
-
+    
     /// Guarantees if tuple is true, the return type is a TupleExpression
     private mutating func parseParenExpression(tuple tuple: Bool) throws -> Expression {
         
@@ -381,7 +376,7 @@ extension Parser {
             exps.append(try parseOperatorExpression())
         }
         getNextToken() // eat `)`
-
+        
         switch exps.count {
         case 0: return TupleExpression.void()
         case 1: return tuple ? TupleExpression(elements: exps) : exps[0]

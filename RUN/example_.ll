@@ -236,14 +236,34 @@ else1:                                            ; preds = %cont0
 }
 
 ; Function Attrs: alwaysinline
+define void @_condFail_b(i1 %"$0") #3 {
+entry:
+  %Bool_res = call { i1 } @_Bool_b(i1 %"$0")
+  %value = extractvalue { i1 } %Bool_res, 0
+  br i1 %value, label %then0, label %cont
+
+cont:                                             ; preds = %then0, %entry
+  ret void
+
+then0:                                            ; preds = %entry
+  call void @_fatalError_()
+  br label %cont
+}
+
+; Function Attrs: alwaysinline
 define { i64 } @"_+_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %add_res = call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %value, i64 %value1)
-  %sum = extractvalue { i64, i1 } %add_res, 0
-  %sum2 = extractvalue { i64, i1 } %add_res, 0
-  %Int_res = call { i64 } @_Int_i64(i64 %sum)
+  %0 = alloca { i64, i1 }
+  store { i64, i1 } %add_res, { i64, i1 }* %0
+  %"1_ptr" = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 1
+  %"1" = load i1* %"1_ptr"
+  call void @_condFail_b(i1 %"1")
+  %"0_ptr" = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 0
+  %"0" = load i64* %"0_ptr"
+  %Int_res = call { i64 } @_Int_i64(i64 %"0")
   ret { i64 } %Int_res
 }
 
@@ -498,66 +518,14 @@ entry:
 
 define i64 @main() {
 entry:
-  %0 = call { i64 } @_Int_i64(i64 1)
+  %0 = call { i64 } @_Int_i64(i64 3)
   %1 = call { i64 } @_Int_i64(i64 2)
-  %2 = call { i64 } @_Int_i64(i64 4)
-  %Foo_res = call { { i64 }, { i64 }, { i64 } } @_Foo_S.i64S.i64S.i64({ i64 } %0, { i64 } %1, { i64 } %2)
-  %3 = alloca { { i64 }, { i64 }, { i64 } }
-  store { { i64 }, { i64 }, { i64 } } %Foo_res, { { i64 }, { i64 }, { i64 } }* %3
-  %a_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %3, i32 0, i32 0
-  %a = load { i64 }* %a_ptr
-  %b_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %3, i32 0, i32 1
-  %b = load { i64 }* %b_ptr
-  %"+_res" = call { i64 } @"_+_S.i64S.i64"({ i64 } %a, { i64 } %b)
-  call void @_print_S.i64({ i64 } %"+_res")
-  %4 = call { i64 } @_Int_i64(i64 1)
-  %5 = call { i64 } @_Int_i64(i64 4)
-  %6 = call { i1 } @_Bool_b(i1 false)
-  %7 = alloca { { i64 }, { i64 }, { i1 } }
-  %"0_ptr" = getelementptr inbounds { { i64 }, { i64 }, { i1 } }* %7, i32 0, i32 0
-  store { i64 } %4, { i64 }* %"0_ptr"
-  %"1_ptr" = getelementptr inbounds { { i64 }, { i64 }, { i1 } }* %7, i32 0, i32 1
-  store { i64 } %5, { i64 }* %"1_ptr"
-  %"2_ptr" = getelementptr inbounds { { i64 }, { i64 }, { i1 } }* %7, i32 0, i32 2
-  store { i1 } %6, { i1 }* %"2_ptr"
-  %8 = load { { i64 }, { i64 }, { i1 } }* %7
-  %9 = alloca { { i64 }, { i64 }, { i1 } }
-  store { { i64 }, { i64 }, { i1 } } %8, { { i64 }, { i64 }, { i1 } }* %9
-  %"0_ptr1" = getelementptr inbounds { { i64 }, { i64 }, { i1 } }* %9, i32 0, i32 0
-  %"0" = load { i64 }* %"0_ptr1"
-  call void @_print_S.i64({ i64 } %"0")
+  %"+_res" = call { i64 } @"_+_S.i64S.i64"({ i64 } %0, { i64 } %1)
+  %2 = alloca { i64 }
+  store { i64 } %"+_res", { i64 }* %2
+  %a = load { i64 }* %2
+  call void @_print_S.i64({ i64 } %a)
   ret i64 0
-}
-
-; Function Attrs: alwaysinline
-define { { i64 }, { i64 }, { i64 } } @_Foo_S.i64S.i64S.i64({ i64 } %"$0", { i64 } %"$1", { i64 } %"$2") #3 {
-entry:
-  %0 = alloca { { i64 }, { i64 }, { i64 } }
-  %a_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 0
-  store { i64 } %"$0", { i64 }* %a_ptr
-  %b_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 1
-  store { i64 } %"$1", { i64 }* %b_ptr
-  %c_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 2
-  store { i64 } %"$2", { i64 }* %c_ptr
-  %1 = load { { i64 }, { i64 }, { i64 } }* %0
-  ret { { i64 }, { i64 }, { i64 } } %1
-}
-
-; Function Attrs: alwaysinline
-define { { i64 }, { i64 }, { i64 } } @_Foo_() #3 {
-entry:
-  %0 = alloca { { i64 }, { i64 }, { i64 } }
-  %1 = call { i64 } @_Int_i64(i64 10)
-  %a_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 0
-  store { i64 } %1, { i64 }* %a_ptr
-  %2 = call { i64 } @_Int_i64(i64 20)
-  %b_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 1
-  store { i64 } %2, { i64 }* %b_ptr
-  %3 = call { i64 } @_Int_i64(i64 40)
-  %c_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 2
-  store { i64 } %3, { i64 }* %c_ptr
-  %4 = load { { i64 }, { i64 }, { i64 } }* %0
-  ret { { i64 }, { i64 }, { i64 } } %4
 }
 
 attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

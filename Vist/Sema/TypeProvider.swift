@@ -88,7 +88,8 @@ extension Variable : TypeProvider {
         
         // lookup variable type in scope
         guard let v = scope[variable: name] else {
-            throw SemaError.NoVariable(name) }
+            throw SemaError.NoVariable(name)
+        }
         
         // assign type to self and return
         self.type = v
@@ -114,8 +115,8 @@ extension AssignmentExpression : TypeProvider {
             scope[variable: name] = inferredType    // store in arr
         }
         
-        type = LLVMType.Void                            // set type to self
         value.type = explicitType ?? inferredType       // store type in value’s type
+        type = LLVMType.Void                            // set type to self
         return LLVMType.Void                            // return void type for assignment expression
     }
 }
@@ -182,6 +183,19 @@ extension Void : TypeProvider {
 //  MARK:                                                 Functions
 //-------------------------------------------------------------------------------------------------------------------------
 
+/// Curried function, returns a function which takes a ValueType object and returns the correct type
+private func getType<
+    TypeCollection : CollectionType
+    where TypeCollection.Generator.Element == LLVMStType>
+    (tys: TypeCollection) -> ValueType throws -> LLVMTyped {
+        
+    return { (ty: ValueType) -> LLVMTyped in
+        if let builtin = LLVMType(ty.name) as? LLVMTyped { return builtin }
+        else if let i = (tys.indexOf { ty.name == $0.name }) { return tys[i] as LLVMTyped }
+        throw SemaError.TypeNotFound
+    }
+}
+
 private extension FunctionType {
     
     func params<
@@ -189,13 +203,8 @@ private extension FunctionType {
         where TypeCollection.Generator.Element == LLVMStType>
         (tys: TypeCollection)
         throws -> [LLVMTyped] {
-            // TODO: Should also look in parent type lists
             
-            let res = try args.elements.mapAs(ValueType).map { (ty: ValueType) -> LLVMTyped in
-                if let builtin = LLVMType(ty.name) as? LLVMTyped { return builtin }
-                else if let i = (tys.indexOf { ty.name == $0.name }) { return tys[i] as LLVMTyped }
-                throw SemaError.TypeNotFound
-            }
+            let res = try args.elements.mapAs(ValueType).map(getType(tys))
             return res
     }
     
@@ -209,10 +218,9 @@ private extension FunctionType {
                 
                 if tup.elements.count == 0 { return LLVMType.Void }
                 
-                let res = args.mapAs(ValueType).map{$0.name}.flatMap(LLVMType.init)
-                guard res.count == args.elements.count else { throw SemaError.TypeNotFound }
-                let a = res.map { $0 as LLVMTyped }
-                return a.first!
+                let res = try tup.elements.mapAs(ValueType).map(getType(tys))
+                guard res.count == tup.elements.count else { throw SemaError.TypeNotFound }
+                return LLVMStType.withProperties(res, gen: {"\($0)"})
             }
             else if let f = returns as? FunctionType {
                 
@@ -306,7 +314,9 @@ extension ReturnExpression : TypeProvider {
         scope.objectType = scope.returnType // set hint to return type
         
         let returnType = try expression.llvmType(scope)
-        guard let ret = scope.returnType where ret == returnType else { throw SemaError.WrongFunctionReturnType(applied: returnType, expected: scope.returnType ?? LLVMType.Null) }
+        guard let ret = scope.returnType where ret == returnType else {
+            throw SemaError.WrongFunctionReturnType(applied: returnType, expected: scope.returnType ?? LLVMType.Null)
+        }
         
         scope.objectType = nil // reset
         
@@ -396,24 +406,6 @@ extension ElseIfBlockExpression : TypeProvider {
 //  MARK:                                                 Loops
 //-------------------------------------------------------------------------------------------------------------------------
 
-//extension RangeIteratorExpression : TypeProvider {
-//    
-//    func llvmType(scope: SemaScope) throws -> LLVMTyped {
-//        
-//        // gen types for start and end
-//        let s = try start.llvmType(scope)
-//        let e = try end.llvmType(scope)
-//        
-//        // make sure range has same start and end types
-//        guard e == s else { throw SemaError.RangeWithInconsistentTypes }
-//        guard s.isStdInt && e.isStdInt else { throw SemaError.NonIntegerRange }
-//        
-//        self.type = LLVMType.Null
-//        return LLVMType.Null
-//    }
-//    
-//}
-//
 
 extension ForInLoopExpression : TypeProvider {
     
@@ -638,6 +630,8 @@ extension MethodCallExpression : TypeProvider {
 extension TupleExpression : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
+        
+        guard elements.count != 1 else { return LLVMType.Void }
         
         let tys = try elements
             .map { try $0.llvmType(scope) }

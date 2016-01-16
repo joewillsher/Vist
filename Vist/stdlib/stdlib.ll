@@ -236,14 +236,34 @@ else1:                                            ; preds = %cont0
 }
 
 ; Function Attrs: alwaysinline
+define void @_condFail_b(i1 %"$0") #3 {
+entry:
+  %Bool_res = call { i1 } @_Bool_b(i1 %"$0")
+  %value = extractvalue { i1 } %Bool_res, 0
+  br i1 %value, label %then0, label %cont
+
+cont:                                             ; preds = %entry, %then0
+  ret void
+
+then0:                                            ; preds = %entry
+  call void @_fatalError_()
+  br label %cont
+}
+
+; Function Attrs: alwaysinline
 define { i64 } @"_+_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %add_res = call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %value, i64 %value1)
-  %sum = extractvalue { i64, i1 } %add_res, 0
-  %sum2 = extractvalue { i64, i1 } %add_res, 0
-  %Int_res = call { i64 } @_Int_i64(i64 %sum)
+  %0 = alloca { i64, i1 }
+  store { i64, i1 } %add_res, { i64, i1 }* %0
+  %"1_ptr" = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 1
+  %"1" = load i1* %"1_ptr"
+  call void @_condFail_b(i1 %"1")
+  %"0_ptr" = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 0
+  %"0" = load i64* %"0_ptr"
+  %Int_res = call { i64 } @_Int_i64(i64 %"0")
   ret { i64 } %Int_res
 }
 

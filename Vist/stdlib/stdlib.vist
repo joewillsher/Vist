@@ -65,6 +65,8 @@ type Array {
 @inline @noreturn func fatalError: () = do _fatalError()
 @inline func assert: Bool = do
     if $0 do () else do fatalError()
+@inline func condFail: LLVM.Bool = do
+    if Bool($0) do fatalError()
 
 
 
@@ -75,8 +77,11 @@ type Array {
 
 // int
 @inline @operator(80)
-func + : Int Int -> Int = |a b| do
-    return Int(LLVM.i_add(a.value b.value))
+func + : Int Int -> Int = |a b| {
+    let v = LLVM.i_add(a.value b.value)
+    condFail(v.1)
+    return Int(v.0)
+}
 
 @inline @operator(80)
 func - : Int Int -> Int = |a b| do

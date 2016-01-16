@@ -13,19 +13,17 @@ func builtinInstruction(named: String, builder: LLVMBuilderRef, module: LLVMModu
     switch named {
         
     case "LLVM.i_add": return {
-//        LLVMBuildAdd(builder, $0, $1, "add_res")
+        // calls into c++
+        let l = getIntrinsic("llvm.sadd.with.overflow", module, LLVMTypeOf($0))
         
-        let l = getIntrinsic("llvm.sadd.with.overflow", module, LLVMType.Int(size: 64).ir())
-
         let args = [$0, $1].ptr()
         defer { args.dealloc(2) }
         
         let c = LLVMBuildCall(builder, l, args, 2, "add_res")
-        let a = LLVMBuildExtractValue(builder, c, 0, "sum")
-        let e = LLVMBuildExtractValue(builder, c, 0, "overflow")
+//        let a = LLVMBuildExtractValue(builder, c, 0, "sum")
+//        let e = LLVMBuildExtractValue(builder, c, 0, "overflow")
         
-        return a
-        
+        return c
         }
     case "LLVM.i_sub": return { LLVMBuildSub(builder, $0, $1, "sub_res") }
     case "LLVM.i_mul": return { LLVMBuildMul(builder, $0, $1, "mul_res") }
