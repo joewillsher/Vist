@@ -41,12 +41,13 @@ int GetLLVMIntrinsicIDFromString(const char* str,
     return 1;
 }
 
+
+
 LLVMValueRef getIntrinsic(const char *name,
                           LLVMModuleRef mod,
                           LLVMTypeRef ty
                           ) {
     llvm::Intrinsic::ID id;
-    
     GetLLVMIntrinsicIDFromString(name, id);
     
     std::vector<llvm::Type *> arg_types;
@@ -56,7 +57,3 @@ LLVMValueRef getIntrinsic(const char *name,
     return rt;
 }
 
-
-//inline LLVMValueRef *wrap(const llvm::Value **Vals) {
-//    return reinterpret_cast<LLVMValueRef*>(const_cast<llvm::Value**>(Vals));
-//}

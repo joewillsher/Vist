@@ -568,6 +568,8 @@ _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
+	movl	$3, %edi
+	callq	__$print_i64
 	xorl	%eax, %eax
 	popq	%rbp
 	retq

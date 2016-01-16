@@ -9,10 +9,24 @@
 import Foundation
 
 
-func builtinInstruction(named: String, builder: LLVMBuilderRef) -> ((LLVMValueRef, LLVMValueRef) throws -> LLVMValueRef)? {
+func builtinInstruction(named: String, builder: LLVMBuilderRef, module: LLVMModuleRef) -> ((LLVMValueRef, LLVMValueRef) throws -> LLVMValueRef)? {
     switch named {
         
-    case "LLVM.i_add": return { LLVMBuildAdd(builder, $0, $1, "add_res") }
+    case "LLVM.i_add": return {
+//        LLVMBuildAdd(builder, $0, $1, "add_res")
+        
+        let l = getIntrinsic("llvm.sadd.with.overflow", module, LLVMType.Int(size: 64).ir())
+
+        let args = [$0, $1].ptr()
+        defer { args.dealloc(2) }
+        
+        let c = LLVMBuildCall(builder, l, args, 2, "add_res")
+        let a = LLVMBuildExtractValue(builder, c, 0, "sum")
+        let e = LLVMBuildExtractValue(builder, c, 0, "overflow")
+        
+        return a
+        
+        }
     case "LLVM.i_sub": return { LLVMBuildSub(builder, $0, $1, "sub_res") }
     case "LLVM.i_mul": return { LLVMBuildMul(builder, $0, $1, "mul_res") }
     case "LLVM.i_div": return { LLVMBuildUDiv(builder, $0, $1, "div_res") }
@@ -45,4 +59,8 @@ func builtinInstruction(named: String, builder: LLVMBuilderRef) -> ((LLVMValueRe
         
     default: return nil
     }
+}
+
+private func LLVMBuildCondFail(fail: LLVMValueRef) {
+    
 }

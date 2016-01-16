@@ -367,7 +367,7 @@ extension FunctionCallExpression : IRGenerator {
         let args = try self.args.elements.map { try $0.expressionCodeGen(stackFrame) }
 
         // Lookup
-        if let function = builtinInstruction(name, builder: builder) {
+        if let function = builtinInstruction(name, builder: builder, module: module) {
             guard args.count == 2 else { throw IRError.WrongFunctionApplication(name) }
             return try function(args[0], args[1])
         }
@@ -821,7 +821,7 @@ extension ArraySubscriptExpression : IRGenerator {
         
         return arr
     }
-
+    
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
 
         let arr = try backingArrayVariable(stackFrame)
@@ -984,12 +984,6 @@ extension AST {
         builder = LLVMCreateBuilder()
         module = m
         
-        let l = getIntrinsic("llvm.sadd.with.overflow", module, LLVMType.Int(size: 64).ir())
-
-        LLVMDumpValue(l)
-        
-        
-        
         // main arguments
         let argBuffer = [LLVMTypeRef]().ptr()
         defer { argBuffer.dealloc(0) }
@@ -1015,7 +1009,6 @@ extension AST {
             }
         }
         else {
-            
             for exp in expressions {
                 try exp.expressionCodeGen(stackFrame)
             }

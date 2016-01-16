@@ -70,7 +70,7 @@ define void @"_$print_b"(i1 zeroext %b) #0 {
 
 ; Function Attrs: noinline ssp uwtable
 define void @"_$fatalError_"() #0 {
-  call void @abort() #5
+  call void @abort() #6
   unreachable
                                                   ; No predecessors!
   ret void
@@ -240,10 +240,15 @@ define { i64 } @"_+_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
-  %add_res = add i64 %value, %value1
-  %Int_res = call { i64 } @_Int_i64(i64 %add_res)
+  %add_res = call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %value, i64 %value1)
+  %sum = extractvalue { i64, i1 } %add_res, 0
+  %sum2 = extractvalue { i64, i1 } %add_res, 0
+  %Int_res = call { i64 } @_Int_i64(i64 %sum)
   ret { i64 } %Int_res
 }
+
+; Function Attrs: nounwind readnone
+declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #5
 
 ; Function Attrs: alwaysinline
 define { i64 } @_-_S.i64S.i64({ i64 } %a, { i64 } %b) #3 {
@@ -496,7 +501,8 @@ attributes #1 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "n
 attributes #2 = { noreturn "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #3 = { alwaysinline }
 attributes #4 = { alwaysinline noreturn }
-attributes #5 = { noreturn }
+attributes #5 = { nounwind readnone }
+attributes #6 = { noreturn }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}

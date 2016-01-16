@@ -54,7 +54,7 @@ define void @"_$print_b"(i1 zeroext %b) #0 {
 
 ; Function Attrs: noinline noreturn ssp uwtable
 define void @"_$fatalError_"() #2 {
-  tail call void @abort() #10
+  tail call void @abort() #9
   unreachable
 }
 
@@ -172,8 +172,8 @@ define { i64 } @"_+_S.i64S.i64"({ i64 } %a, { i64 } %b) #4 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
-  %add_res = add i64 %value1, %value
-  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %add_res, 0
+  %sum = add i64 %value1, %value
+  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %sum, 0
   ret { i64 } %.fca.0.insert.i
 }
 
@@ -428,9 +428,10 @@ entry:
   ret { { i64 }, { i64 } } %.fca.1.0.insert.i
 }
 
-; Function Attrs: nounwind readnone
+; Function Attrs: nounwind
 define i64 @main() #8 {
 entry:
+  tail call void @"_$print_i64"(i64 3) #8
   ret i64 0
 }
 
@@ -453,7 +454,7 @@ entry:
 }
 
 ; Function Attrs: nounwind
-declare i32 @puts(i8* nocapture readonly) #9
+declare i32 @puts(i8* nocapture readonly) #8
 
 attributes #0 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { nounwind "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
@@ -463,9 +464,8 @@ attributes #4 = { alwaysinline nounwind readnone }
 attributes #5 = { alwaysinline nounwind }
 attributes #6 = { alwaysinline noreturn }
 attributes #7 = { alwaysinline }
-attributes #8 = { nounwind readnone }
-attributes #9 = { nounwind }
-attributes #10 = { noreturn }
+attributes #8 = { nounwind }
+attributes #9 = { noreturn }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}

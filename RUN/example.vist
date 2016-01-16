@@ -18,6 +18,10 @@ type Foo {
 
 
 let y = Foo(1 2 4)
+print(y.a + y.b)
 //let s = y.sum()
 //print(s)
+
+
+let a = (1 4)
 

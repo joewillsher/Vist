@@ -152,7 +152,7 @@ extension Parser {
                 // handle native llvm type in stdlib
                 if case .Period? = inspectNextToken(), case .Identifier(let n)? = inspectNextToken(2) where id == "LLVM" && isStdLib {
                     elements.append(ValueType(name: "LLVM.\(n)"))    // param
-                    getNextToken(); getNextToken(); getNextToken() // eat LLVM.Id
+                    getNextToken(3)// eat LLVM.Id
                 }
                 else {
                     elements.append(ValueType(name: id))    // param
@@ -165,7 +165,7 @@ extension Parser {
                 // handle native llvm type in stdlib
                 if case .Period? = inspectNextToken(), case .Identifier(let n)? = inspectNextToken(2) where id == "LLVM" && isStdLib {
                     elements.append(ValueType(name: "LLVM.\(n)"))    // param
-                    getNextToken(); getNextToken() // eat LLVM.Id
+                    getNextToken(2)// eat LLVM.Id
                 }
                 else {
                     elements.append(ValueType(name: id))    // param
@@ -184,20 +184,6 @@ extension Parser {
         }
         else {
             return TupleExpression(elements: elements)
-        }
-    }
-    
-    private mutating func parseTupleExpression() throws -> TupleExpression {
-        
-        var elements = [Expression]()
-        while true {
-            
-            elements.append(try parseOperatorExpression())
-            
-            if case .CloseParen = currentToken {
-                getNextToken()
-                return TupleExpression(elements: elements)
-            }
         }
     }
     
@@ -220,17 +206,17 @@ extension Parser {
         
         switch inspectNextToken() {
         case .OpenParen?: // call
-            getNextToken(); getNextToken() // eat 'identifier('
+            getNextToken() // eat 'identifier'
             
-            if case .CloseParen = currentToken {   // simple itentifier() call
-                getNextToken() // eat ')'
-                return FunctionCallExpression(name: token, args: TupleExpression(elements: []))
+            if case .CloseParen? = inspectNextToken() {   // simple itentifier() call
+                getNextToken(2) // eat '()'
+                return FunctionCallExpression(name: token, args: TupleExpression.void())
             }
             
             return FunctionCallExpression(name: token, args: try parseTupleExpression())
             
         case .SqbrOpen?: // subscript
-            getNextToken(); getNextToken() // eat 'identifier['
+            getNextToken(2) // eat 'identifier['
             
             let subscpipt = try parseOperatorExpression()
             
@@ -247,14 +233,14 @@ extension Parser {
             return MutationExpression(object: ArraySubscriptExpression(arr: Variable(name: token), index: subscpipt), value: exp)
             
         case .Assign?: // mutation
-            getNextToken(); getNextToken() // eat 'identifier ='
+            getNextToken(2)// eat 'identifier ='
             
             let exp = try parseOperatorExpression()
             
             return MutationExpression(object: Variable(name: token), value: exp)
             
         case .Period? where token == "LLVM" && isStdLib:
-            getNextToken(); getNextToken() // eat 'LLVM.'
+            getNextToken(2) // eat 'LLVM.'
             
             guard case .Identifier(let id) = currentToken else { fatalError() }
             return try parseIdentifierExpression("LLVM.\(id)")
@@ -265,10 +251,10 @@ extension Parser {
             
             switch inspectNextToken() {
             case .OpenParen?:
-                getNextToken(); getNextToken() // eat identifier(
+                getNextToken() // eat identifier(
                 
                 if case .CloseParen = currentToken {   // simple itentifier() call
-                    getNextToken() // eat ')'
+                    getNextToken(2) // eat ')'
                     return MethodCallExpression(name: name, params: TupleExpression.void(), object: Variable(name: token))
                 }
                 
@@ -322,7 +308,7 @@ extension Parser {
             return parseBooleanExpression(b)
             
         case .OpenParen:
-            return try parseParenExpression()
+            return try parseParenExpression(tuple: false)
             
         case .SqbrOpen:
             return try parseArrayExpression()
@@ -340,25 +326,29 @@ extension Parser {
         }
     }
     
-    
-    private mutating func parseParenExpression() throws -> Expression {
+    private mutating func parseTupleExpression() throws -> TupleExpression {
+        return try parseParenExpression(tuple: true) as! TupleExpression
+    }
+
+    /// Guarantees if tuple is true, the return type is a TupleExpression
+    private mutating func parseParenExpression(tuple tuple: Bool) throws -> Expression {
         
         guard case .OpenParen = currentToken else { throw ParseError.ExpectedParen(currentPos) }
-        getNextToken() // eat '('
+        getNextToken() // eat `(`
         
-        // if void tuple
-        if case .CloseParen = currentToken {
-            getNextToken() // eat void
-            return TupleExpression.void()
+        var exps: [Expression] = []
+        
+        while true {
+            if case .CloseParen = currentToken { break }
+            exps.append(try parseOperatorExpression())
         }
-        
-        let expr = try parseOperatorExpression()
-        
-        guard case .CloseParen = currentToken else { throw ParseError.ExpectedParen(currentPos) }
-        getNextToken() // eat ')'
-        
-        return expr
-        
+        getNextToken() // eat `)`
+
+        switch exps.count {
+        case 0: return TupleExpression.void()
+        case 1: return tuple ? TupleExpression(elements: exps) : exps[0]
+        case _: return TupleExpression(elements: exps)
+        }
     }
     
     
@@ -437,7 +427,7 @@ extension Parser {
             
             if case .If? = inspectNextToken() {
                 // `else if` statement
-                getNextToken(); getNextToken()
+                getNextToken(2)
                 condition = try parseOperatorExpression()
                 
                 if usesBraces {
@@ -514,7 +504,7 @@ extension Parser {
             // handle stdlib case of native types
             if case .Period? = inspectNextToken(), case .Identifier(let n)? = inspectNextToken(2) where t == "LLVM" && isStdLib {
                 explicitType = "LLVM.\(n)"
-                getNextToken(); getNextToken(); getNextToken() // eat LLVM.Id
+                getNextToken(3) // eat LLVM.Id
             }
             else {
                 explicitType = t
@@ -630,7 +620,7 @@ extension Parser {
         let id: String
         if case .Period? = inspectNextToken(), case .Identifier(let n)? = inspectNextToken(2) where s == "LLVM" && isStdLib {
             id = "LLVM.\(n)"
-            getNextToken(); getNextToken() // eat
+            getNextToken(2) // eat
         }
         else {
             id = s
@@ -897,7 +887,7 @@ extension Parser {
         case .Var:                  return try parseVariableAssignmentMutable(true)
         case .Func:                 return try parseFunctionDeclaration()
         case .Return:               return try parseReturnExpression()
-        case .OpenParen:            return try parseParenExpression()
+        case .OpenParen:            return try parseParenExpression(tuple: true)
         case .OpenBrace:            return try parseBraceExpression()
         case .Identifier(let str):  return try parseIdentifierExpression(str)
         case .InfixOperator:        return try parseOperatorExpression()

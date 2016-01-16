@@ -127,6 +127,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		D40FC4D11C4AB98600122397 /* Headers */ = {
+			isa = PBXGroup;
+			children = (
+				D497A7951C3B016400DFE39E /* Vist-Bridging-Header.h */,
+				D40FC4D01C4AAB7C00122397 /* LLVM.h */,
+			);
+			name = Headers;
+			sourceTree = "<group>";
+		};
 		D44DB8881C316DA500EBCD9F /* Runtime */ = {
 			isa = PBXGroup;
 			children = (
@@ -190,10 +199,9 @@
 				D497A7901C3B015700DFE39E /* Link.swift */,
 				D497A78F1C3B015700DFE39E /* Config.swift */,
 				D497A7911C3B015700DFE39E /* Print.swift */,
-				D497A7951C3B016400DFE39E /* Vist-Bridging-Header.h */,
-				D40FC4D01C4AAB7C00122397 /* LLVM.h */,
 				D40FC4CF1C4AAB2800122397 /* Intrinsic.h */,
 				D40FC4CD1C4AAB0E00122397 /* Intrinsic.cpp */,
+				D40FC4D11C4AB98600122397 /* Headers */,
 			);
 			name = Helper;
 			sourceTree = "<group>";
