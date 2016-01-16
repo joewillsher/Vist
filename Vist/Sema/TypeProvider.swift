@@ -175,20 +175,6 @@ extension Void : TypeProvider {
     }
 }
 
-extension TupleExpression : TypeProvider {
-    
-    func llvmType(scope: SemaScope) throws -> LLVMTyped {
-        
-        for e in elements {
-            try e.llvmType(scope)
-        }
-        // FIXME: Tuple types
-        
-        type = LLVMType.Void
-        return LLVMType.Void
-    }
-    
-}
 
 
 
@@ -579,6 +565,23 @@ extension StructExpression : TypeProvider {
 
 }
 
+
+extension TupleExpression : TypeProvider {
+    
+    func llvmType(scope: SemaScope) throws -> LLVMTyped {
+        
+        let tys = try elements
+            .map { try $0.llvmType(scope) }
+            .enumerate()
+            .map { ("\($0)", $1, false) }
+        
+        let t = LLVMStType(members: tys, methods: [], name: "LLVM$Tuple")
+        
+        type = t
+        return t
+    }
+    
+}
 
 extension InitialiserExpression : TypeProvider {
     

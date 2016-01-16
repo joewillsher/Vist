@@ -347,13 +347,6 @@ extension Void : IRGenerator {
     }
 }
 
-extension TupleExpression : IRGenerator {
-    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
-        return nil
-    }
-}
-
-
 
 //-------------------------------------------------------------------------------------------------------------------------
 //  MARK:                                                 Functions
@@ -851,6 +844,30 @@ extension StructExpression : IRGenerator {
         return nil
     }
     
+}
+
+extension TupleExpression : IRGenerator {
+    
+    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
+        
+        if elements.count == 0 { return nil }
+        
+        guard let type = self.type as? LLVMStType else { fatalError("No type for tuple") }
+        let typeIR = type.ir()
+        
+        let memeberIR = try elements.map { try $0.expressionCodeGen(stackFrame) }
+        
+        let t = LLVMBuildAlloca(builder, typeIR, "tuple")
+        
+        let membersWithLLVMTypes = type.members.map { ($0.0, $0.1.ir(), $0.2) }
+        let s = MutableStructVariable.alloc(builder, type: typeIR, mutable: false, properties: membersWithLLVMTypes)
+        
+        for (i, el) in memeberIR.enumerate() {
+            try s.store(el, inPropertyNamed: "\(i)")
+        }
+        
+        return s.load()
+    }
 }
 
 

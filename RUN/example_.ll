@@ -510,6 +510,20 @@ entry:
   %b = load { i64 }* %b_ptr
   %"+_res" = call { i64 } @"_+_S.i64S.i64"({ i64 } %a, { i64 } %b)
   call void @_print_S.i64({ i64 } %"+_res")
+  %4 = call { i64 } @_Int_i64(i64 1)
+  %5 = call { i64 } @_Int_i64(i64 4)
+  %6 = call { i1 } @_Bool_b(i1 false)
+  %tuple = alloca { { i64 }, { i64 }, { i1 } }
+  %7 = alloca { { i64 }, { i64 }, { i1 } }
+  %"0_ptr" = getelementptr inbounds { { i64 }, { i64 }, { i1 } }* %7, i32 0, i32 0
+  store { i64 } %4, { i64 }* %"0_ptr"
+  %"1_ptr" = getelementptr inbounds { { i64 }, { i64 }, { i1 } }* %7, i32 0, i32 1
+  store { i64 } %5, { i64 }* %"1_ptr"
+  %"2_ptr" = getelementptr inbounds { { i64 }, { i64 }, { i1 } }* %7, i32 0, i32 2
+  store { i1 } %6, { i1 }* %"2_ptr"
+  %8 = load { { i64 }, { i64 }, { i1 } }* %7
+  %9 = alloca { { i64 }, { i64 }, { i1 } }
+  store { { i64 }, { i64 }, { i1 } } %8, { { i64 }, { i64 }, { i1 } }* %9
   ret i64 0
 }
 
