@@ -846,30 +846,6 @@ extension StructExpression : IRGenerator {
     
 }
 
-extension TupleExpression : IRGenerator {
-    
-    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
-        
-        if elements.count == 0 { return nil }
-        
-        guard let type = self.type as? LLVMStType else { fatalError("No type for tuple") }
-        let typeIR = type.ir()
-        
-        let memeberIR = try elements.map { try $0.expressionCodeGen(stackFrame) }
-        
-        let t = LLVMBuildAlloca(builder, typeIR, "tuple")
-        
-        let membersWithLLVMTypes = type.members.map { ($0.0, $0.1.ir(), $0.2) }
-        let s = MutableStructVariable.alloc(builder, type: typeIR, mutable: false, properties: membersWithLLVMTypes)
-        
-        for (i, el) in memeberIR.enumerate() {
-            try s.store(el, inPropertyNamed: "\(i)")
-        }
-        
-        return s.load()
-    }
-}
-
 
 extension InitialiserExpression : IRGenerator {
     
@@ -985,6 +961,45 @@ extension MethodCallExpression : IRGenerator {
     }
 }
 
+
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                                 Tuples
+//-------------------------------------------------------------------------------------------------------------------------
+
+extension TupleExpression : IRGenerator {
+    
+    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
+        
+        if elements.count == 0 { return nil }
+        
+        guard let type = self.type as? LLVMStType else { fatalError("No type for tuple") }
+        let typeIR = type.ir()
+        
+        let memeberIR = try elements.map { try $0.expressionCodeGen(stackFrame) }
+        
+        let membersWithLLVMTypes = type.members.map { ($0.0, $0.1.ir(), $0.2) }
+        let s = MutableStructVariable.alloc(builder, type: typeIR, mutable: false, properties: membersWithLLVMTypes)
+        
+        for (i, el) in memeberIR.enumerate() {
+            try s.store(el, inPropertyNamed: "\(i)")
+        }
+        
+        return s.load()
+    }
+}
+
+extension TupleMemberLookupExpression : IRGenerator {
+    
+    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
+        
+        guard let n = object as? Variable else { fatalError("CannotGetPropertyFromNonVariableType") }
+        guard let variable = try stackFrame.variable(n.name) as? StructVariable else { throw IRError.NoVariable(n.name) }
+        
+        let val = try variable.loadPropertyNamed("\(index)")
+        
+        return val
+    }
+}
 
 
 

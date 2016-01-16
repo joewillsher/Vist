@@ -31,7 +31,7 @@ enum SemaError : ErrorType {
     case WrongFunctionApplication(applied: LLVMTyped, expected: LLVMTyped, paramNum: Int), WrongFunctionApplications(name: String, applied: [LLVMTyped], expected: [LLVMTyped])
     case NoTypeNamed(String), TypeNotFound
     case DifferentTypesForOperator(String)
-    case NoPropertyNamed(String), CannotStoreInParameterStruct
+    case NoPropertyNamed(String), CannotStoreInParameterStruct, TupleHasNoObjectAtIndex(Int)
 }
 
 func sema(ast: AST, globalScope: SemaScope) throws {

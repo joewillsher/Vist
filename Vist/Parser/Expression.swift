@@ -308,6 +308,18 @@ final class TupleExpression : Expression {
     var type: LLVMTyped? = nil
 }
 
+final class TupleMemberLookupExpression : AssignableExpression {
+    let index: Int
+    let object: Expression
+    
+    init(index: Int, object: Expression) {
+        self.index = index
+        self.object = object
+    }
+    
+    var type: LLVMTyped? = nil
+}
+
 final class ReturnExpression : Expression {
     let expression: Expression
     

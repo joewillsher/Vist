@@ -25,3 +25,5 @@ print(y.a + y.b)
 
 let a = (1 4 false)
 
+print(a.0)
+

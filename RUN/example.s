@@ -570,6 +570,8 @@ _main:                                  ## @main
 	movq	%rsp, %rbp
 	movl	$3, %edi
 	callq	__$print_i64
+	movl	$1, %edi
+	callq	__$print_i64
 	xorl	%eax, %eax
 	popq	%rbp
 	retq

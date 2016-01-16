@@ -513,7 +513,6 @@ entry:
   %4 = call { i64 } @_Int_i64(i64 1)
   %5 = call { i64 } @_Int_i64(i64 4)
   %6 = call { i1 } @_Bool_b(i1 false)
-  %tuple = alloca { { i64 }, { i64 }, { i1 } }
   %7 = alloca { { i64 }, { i64 }, { i1 } }
   %"0_ptr" = getelementptr inbounds { { i64 }, { i64 }, { i1 } }* %7, i32 0, i32 0
   store { i64 } %4, { i64 }* %"0_ptr"
@@ -524,6 +523,9 @@ entry:
   %8 = load { { i64 }, { i64 }, { i1 } }* %7
   %9 = alloca { { i64 }, { i64 }, { i1 } }
   store { { i64 }, { i64 }, { i1 } } %8, { { i64 }, { i64 }, { i1 } }* %9
+  %"0_ptr1" = getelementptr inbounds { { i64 }, { i64 }, { i1 } }* %9, i32 0, i32 0
+  %"0" = load { i64 }* %"0_ptr1"
+  call void @_print_S.i64({ i64 } %"0")
   ret i64 0
 }
 

@@ -432,6 +432,7 @@ entry:
 define i64 @main() #8 {
 entry:
   tail call void @"_$print_i64"(i64 3) #8
+  tail call void @"_$print_i64"(i64 1) #8
   ret i64 0
 }
 

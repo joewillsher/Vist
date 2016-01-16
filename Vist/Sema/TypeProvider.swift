@@ -566,22 +566,6 @@ extension StructExpression : TypeProvider {
 }
 
 
-extension TupleExpression : TypeProvider {
-    
-    func llvmType(scope: SemaScope) throws -> LLVMTyped {
-        
-        let tys = try elements
-            .map { try $0.llvmType(scope) }
-            .enumerate()
-            .map { ("\($0)", $1, false) }
-        
-        let t = LLVMStType(members: tys, methods: [], name: "LLVM$Tuple")
-        
-        type = t
-        return t
-    }
-    
-}
 
 extension InitialiserExpression : TypeProvider {
     
@@ -629,9 +613,8 @@ extension PropertyLookupExpression : TypeProvider {
         
         guard let objType = try object.llvmType(scope) as? LLVMStType else { throw SemaError.NoTypeFor(object) }
         guard let propertyType = try objType.propertyType(name) else { throw SemaError.NoPropertyNamed(name) }
-        let t = propertyType
-        self.type = t
-        return t
+        self.type = propertyType
+        return propertyType
     }
     
 }
@@ -643,5 +626,46 @@ extension MethodCallExpression : TypeProvider {
         return LLVMType.Null
     }
 }
+
+
+
+
+
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                                 Tuples
+//-------------------------------------------------------------------------------------------------------------------------
+
+extension TupleExpression : TypeProvider {
+    
+    func llvmType(scope: SemaScope) throws -> LLVMTyped {
+        
+        let tys = try elements
+            .map { try $0.llvmType(scope) }
+            .enumerate()
+            .map { ("\($0)", $1, false) }
+        
+        let t = LLVMStType(members: tys, methods: [], name: "LLVM$Tuple")
+        
+        type = t
+        return t
+    }
+    
+}
+
+extension TupleMemberLookupExpression : TypeProvider {
+    
+    func llvmType(scope: SemaScope) throws -> LLVMTyped {
+        
+        guard let objType = try object.llvmType(scope) as? LLVMStType else { throw SemaError.NoTypeFor(object) }
+        guard let propertyType = try objType.propertyType("\(index)") else { throw SemaError.TupleHasNoObjectAtIndex(index) }
+        self.type = propertyType
+        return propertyType
+    }
+}
+
+
+
+
+
 
 

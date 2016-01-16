@@ -103,9 +103,16 @@ struct Parser {
 
 extension Parser {
     
-    private mutating func parseIntExpression(token: Int) -> IntegerLiteral {
+    private mutating func parseIntExpression(token: Int) throws -> Expression {
         getNextToken()
-        return IntegerLiteral(val: token)
+        let i = IntegerLiteral(val: token)
+        
+        if case .Period? = inspectNextToken() where isStdLib {
+            getNextToken()
+            return try parseMemberLookupExpression(i)
+        }
+        
+        return i
     }
     private mutating func parseFloatingPointExpression(token: Double) -> FloatingPointLiteral {
         getNextToken()
@@ -115,9 +122,16 @@ extension Parser {
         getNextToken()
         return StringLiteral(str: token)
     }
-    private mutating func parseBooleanExpression(token: Bool) -> BooleanLiteral {
+    private mutating func parseBooleanExpression(token: Bool) throws -> Expression {
         getNextToken()
-        return BooleanLiteral(val: token)
+        let b = BooleanLiteral(val: token)
+        
+        if case .Period? = inspectNextToken() where isStdLib {
+            getNextToken()
+            return try parseMemberLookupExpression(b)
+        }
+        
+        return b
     }
     
 }
@@ -246,40 +260,64 @@ extension Parser {
             return try parseIdentifierExpression("LLVM.\(id)")
             
         case .Period?: // property or fn
-            getNextToken() // eat `.`
-            guard case .Identifier(let name) = getNextToken() else { throw ParseError.NoIdentifier(currentPos) }
+            getNextToken(2) // eat `.`
             
-            switch inspectNextToken() {
-            case .OpenParen?:
-                getNextToken() // eat identifier(
-                
-                if case .CloseParen = currentToken {   // simple itentifier() call
-                    getNextToken(2) // eat ')'
-                    return MethodCallExpression(name: name, params: TupleExpression.void(), object: Variable(name: token))
-                }
-                
-                return MethodCallExpression(name: token, params: try parseTupleExpression(), object: Variable(name: token))
-                
-            default:
-                getNextToken() // eat property
-                
-                let property = PropertyLookupExpression(name: name, object: Variable(name: token))
-                
-                guard case .Assign = currentToken else {
-                    return property
-                }
-                getNextToken() // eat `=`
-                
-                // if assigning to property lookup
-                let exp = try parseOperatorExpression()
-                return MutationExpression(object: property, value: exp)
-            }
+            return try parseMemberLookupExpression(Variable(name: token))
             
         default: // just identifier
             defer { getNextToken() }
             return try parseOperatorExpression(Variable(name: token))
         }
     }
+    
+    private mutating func parseMemberLookupExpression<Exp : Expression>(exp: Exp) throws -> Expression {
+        
+        switch currentToken {
+        case .Identifier(let name):
+            
+            switch getNextToken() {
+            case .OpenParen:
+                
+                if case .CloseParen = currentToken {   // simple itentifier() call
+                    getNextToken(2) // eat ')'
+                    return MethodCallExpression(name: name, params: TupleExpression.void(), object: exp)
+                }
+                
+                return MethodCallExpression(name: name, params: try parseTupleExpression(), object: exp)
+                
+            case .Assign:
+                getNextToken() // eat =
+                
+                let property = PropertyLookupExpression(name: name, object: exp)
+                
+                let exp = try parseOperatorExpression()
+                return MutationExpression(object: property, value: exp)
+                
+            default:
+                return PropertyLookupExpression(name: name, object: exp)
+            }
+            
+        case .Integer(let i):
+            
+            switch getNextToken() {
+            case .Assign:
+                getNextToken() // eat =
+                
+                let property = TupleMemberLookupExpression(index: i, object: exp)
+                
+                let exp = try parseOperatorExpression()
+                return MutationExpression(object: property, value: exp)
+                
+            default:
+                return TupleMemberLookupExpression(index: i, object: exp)
+            }
+            
+        default:
+            throw ParseError.NoIdentifier(currentPos)
+        }
+        
+    }
+    
     
     /// Function called on `return a + 1` and `if a < 3` etc
     ///
@@ -299,13 +337,13 @@ extension Parser {
             return PrefixExpression(op: op, expr: try parsePrimary())
             
         case let .Integer(i):
-            return parseIntExpression(i)
+            return try parseIntExpression(i)
             
         case let .FloatingPoint(f):
             return parseFloatingPointExpression(f)
             
         case let .Boolean(b):
-            return parseBooleanExpression(b)
+            return try parseBooleanExpression(b)
             
         case .OpenParen:
             return try parseParenExpression(tuple: false)
@@ -899,7 +937,7 @@ extension Parser {
         case .SqbrOpen:             return try parseArrayExpression()
         case .Type:                 return try parseTypeDeclarationExpression(byRef: false)
         case .Reference:            getNextToken(); return try parseTypeDeclarationExpression(byRef: true)
-        case .Integer(let i):       return parseIntExpression(i)
+        case .Integer(let i):       return  try parseIntExpression(i)
         case .FloatingPoint(let x): return parseFloatingPointExpression(x)
         case .Str(let str):         return parseStringExpression(str)
         case .At:                   try parseAttrExpression(); return nil
