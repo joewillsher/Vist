@@ -11,7 +11,7 @@ import Foundation
 
 extension String {
     
-    func mangle(type: LLVMFnType, parentTypeName: String? = nil) -> String {
+    func mangle(type: FnType, parentTypeName: String? = nil) -> String {
         return "_\(sansUnderscores())_\(type.debugDescription)"
     }
     
@@ -29,7 +29,7 @@ extension String {
 
 
 
-extension LLVMType : CustomStringConvertible, CustomDebugStringConvertible {
+extension NativeType : CustomStringConvertible, CustomDebugStringConvertible {
     
     var description: String {
         switch self {
@@ -63,7 +63,7 @@ extension LLVMType : CustomStringConvertible, CustomDebugStringConvertible {
     }
 }
 
-extension LLVMStType : CustomStringConvertible, CustomDebugStringConvertible {
+extension StructType: CustomStringConvertible, CustomDebugStringConvertible {
     
     var description: String {
         let arr = members
@@ -80,7 +80,7 @@ extension LLVMStType : CustomStringConvertible, CustomDebugStringConvertible {
     }
 }
 
-extension LLVMFnType : CustomDebugStringConvertible {
+extension FnType: CustomDebugStringConvertible {
     
     var debugDescription: String {
         

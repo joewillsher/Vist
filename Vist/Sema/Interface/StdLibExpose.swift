@@ -62,17 +62,17 @@ final class StdLibExpose {
         
         let fns = ast.expressions
             .flatMap { ($0 as? FunctionPrototypeExpression) }
-            .map { ($0.name, $0.fnType.type as? LLVMFnType) }
+            .map { ($0.name, $0.fnType.type as? FnType) }
         
         let structs = ast.expressions
             .flatMap { ($0 as? StructExpression) }
         let tys = structs
-            .map { ($0.name, $0.type as? LLVMStType) }
+            .map { ($0.name, $0.type as? StructType) }
         let methods = structs
             .flatMap {
-                    $0.methods.flatMap { ($0.name, $0.type as? LLVMFnType) }
+                    $0.methods.flatMap { ($0.name, $0.type as? FnType) }
                     +
-                    $0.initialisers .flatMap { ($0.parent?.name ?? "", $0.type as? LLVMFnType)
+                    $0.initialisers .flatMap { ($0.parent?.name ?? "", $0.type as? FnType)
                 }
         }
         
@@ -92,7 +92,7 @@ final class StdLibExpose {
         let structs = ast.expressions
             .flatMap { ($0 as? StructExpression) }
         let tys = structs
-            .map { ($0.name, $0.type as? LLVMStType) }
+            .map { ($0.name, $0.type as? StructType) }
         
         for (name, t) in tys {
             if let t = t { frame.addType(name, val: t) }

@@ -19,7 +19,7 @@
 import Foundation
 
 enum SemaError : ErrorType {
-    case InvalidType(LLVMType)
+    case InvalidType(NativeType)
     case InvalidRedeclaration(String, Expression)
     case NoVariable(String), NoFunction(String)
     case WrongApplication, NotTypeProvider, NoTypeFor(Expression)

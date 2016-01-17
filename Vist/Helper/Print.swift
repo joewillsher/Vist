@@ -233,7 +233,7 @@ extension FloatingPointLiteral {
 }
 extension Variable {
     func inline() -> Bool {
-        return !(type is LLVMStType)
+        return !(type is StructType)
     }
     func printList() -> [(String?, Printable)]? {
         return [("name", name)]
@@ -339,14 +339,14 @@ extension StructExpression {
     }
 }
 
-extension LLVMFnType : Printable {
+extension FnType: Printable {
     
     func printList() -> [(String?, Printable)]? {
         return [("params", params), ("returns", returns)]
     }
 }
 
-extension LLVMType : Printable {
+extension NativeType : Printable {
     
     func printVal() -> String? {
         return "\(self)"
@@ -387,7 +387,7 @@ extension MethodCallExpression : Printable {
         return [("name", name), ("object", object), ("params", params)]
     }
 }
-extension LLVMStType : Printable {
+extension StructType: Printable {
     
     func printList() -> [(String?, Printable)]? {
         return [("members", members), ("methods", methods)]

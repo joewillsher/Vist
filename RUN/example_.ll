@@ -542,19 +542,15 @@ entry:
   %0 = alloca { { i64 }, { i64 }, { i64 } }
   store { { i64 }, { i64 }, { i64 } } %Foo_res, { { i64 }, { i64 }, { i64 } }* %0
   %f = load { { i64 }, { i64 }, { i64 } }* %0
-  %1 = call { i64 } @_Int_i64(i64 2)
-  %sum_res = call { i64 } @_Foo.sum_S.i64({ { i64 }, { i64 }, { i64 } } %f, { i64 } %1)
-  %2 = alloca { i64 }
-  store { i64 } %sum_res, { i64 }* %2
-  %u = load { i64 }* %2
+  %1 = call { i1 } @_Bool_b(i1 true)
+  call void @_Foo.sum_S.b({ { i64 }, { i64 }, { i64 } } %f, { i1 } %1)
+  %f1 = load { { i64 }, { i64 }, { i64 } }* %0
+  %2 = call { i64 } @_Int_i64(i64 2)
+  %sum_res = call { i64 } @_Foo.sum_S.i64({ { i64 }, { i64 }, { i64 } } %f1, { i64 } %2)
+  %3 = alloca { i64 }
+  store { i64 } %sum_res, { i64 }* %3
+  %u = load { i64 }* %3
   call void @_print_S.i64({ i64 } %u)
-  %3 = call { i64 } @_Int_i64(i64 100)
-  %4 = call { i1 } @_Bool_b(i1 true)
-  %Bar_res = call { { i1 }, { i64 } } @_Bar_S.i64S.b({ i64 } %3, { i1 } %4)
-  %5 = alloca { { i1 }, { i64 } }
-  store { { i1 }, { i64 } } %Bar_res, { { i1 }, { i64 } }* %5
-  %w = load { { i1 }, { i64 } }* %5
-  call void @_Bar.meme_({ { i1 }, { i64 } } %w)
   ret i64 0
 }
 
@@ -586,38 +582,17 @@ entry:
   ret { i64 } %"*_res"
 }
 
-; Function Attrs: alwaysinline
-define { { i1 }, { i64 } } @_Bar_S.i64S.b({ i64 } %"$0", { i1 } %"$1") #3 {
+define void @_Foo.sum_S.b({ { i64 }, { i64 }, { i64 } } %self, { i1 } %"$0") {
 entry:
-  %0 = alloca { { i1 }, { i64 } }
-  %i_ptr = getelementptr inbounds { { i1 }, { i64 } }* %0, i32 0, i32 1
-  store { i64 } %"$0", { i64 }* %i_ptr
-  %aay_ptr = getelementptr inbounds { { i1 }, { i64 } }* %0, i32 0, i32 0
-  store { i1 } %"$1", { i1 }* %aay_ptr
-  %1 = load { { i1 }, { i64 } }* %0
-  ret { { i1 }, { i64 } } %1
-}
+  %value = extractvalue { i1 } %"$0", 0
+  br i1 %value, label %then0, label %cont
 
-define void @_Bar.meme_({ { i1 }, { i64 } } %self) {
-entry:
-  %aay = extractvalue { { i1 }, { i64 } } %self, 0
-  %value = extractvalue { i1 } %aay, 0
-  br i1 %value, label %then0, label %cont0
-
-cont:                                             ; preds = %else1, %then0
+cont:                                             ; preds = %entry, %then0
   ret void
 
-cont0:                                            ; preds = %entry
-  br label %else1
-
 then0:                                            ; preds = %entry
-  %i = extractvalue { { i1 }, { i64 } } %self, 1
-  call void @_print_S.i64({ i64 } %i)
-  br label %cont
-
-else1:                                            ; preds = %cont0
-  %0 = call { i64 } @_Int_i64(i64 0)
-  call void @_print_S.i64({ i64 } %0)
+  %a = extractvalue { { i64 }, { i64 }, { i64 } } %self, 0
+  call void @_print_S.i64({ i64 } %a)
   br label %cont
 }
 

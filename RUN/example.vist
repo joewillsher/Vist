@@ -7,27 +7,19 @@ type Foo {
     
     func sum: Int -> Int = do
         return (self.a + self.b + self.c) * $0
+        
+    func sum: Bool = do
+        if $0 do print(self.a)
 }
 
 
 let f = Foo()
+f.sum(true)
 let u = f.sum(2)
 
 print(u)
 
 
-type Bar {
-    let aay: Bool
-    let i: Int
-    
-    init Int Bool = {
-        i = $0
-        aay = $1
-    }
-    
-    func meme: () = do
-        if self.aay do print(self.i) else do print(0)
-}
-
-let w = Bar(100 true)
-w.meme()
+// TODO: Method lookup function from StructType-- need to be able to overload
+// TODO: Make sure methods cannot conflict with global functions
+// TODO: Memberwise initialiser

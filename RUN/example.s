@@ -637,7 +637,7 @@ LBB46_2:                                ## %then0.i.i
 	.align	4, 0x90
 _main:                                  ## @main
 	.cfi_startproc
-## BB#0:                                ## %_Bar.meme_.exit
+## BB#0:                                ## %_Foo.sum_S.i64.exit
 	pushq	%rbp
 Ltmp39:
 	.cfi_def_cfa_offset 16
@@ -646,9 +646,9 @@ Ltmp40:
 	movq	%rsp, %rbp
 Ltmp41:
 	.cfi_def_cfa_register %rbp
-	movl	$140, %edi
+	movl	$10, %edi
 	callq	__$print_i64
-	movl	$100, %edi
+	movl	$140, %edi
 	callq	__$print_i64
 	xorl	%eax, %eax
 	popq	%rbp
@@ -696,33 +696,20 @@ LBB49_4:                                ## %then0.i.i11
 	callq	__$fatalError_
 	.cfi_endproc
 
-	.globl	__Bar_S.i64S.b
+	.globl	__Foo.sum_S.b
 	.align	4, 0x90
-__Bar_S.i64S.b:                         ## @_Bar_S.i64S.b
+__Foo.sum_S.b:                          ## @_Foo.sum_S.b
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	movb	%sil, %al
-	movq	%rdi, %rdx
+	testb	$1, %cl
+	je	LBB50_1
+## BB#2:                                ## %then0
+	popq	%rbp
+	jmp	__$print_i64            ## TAILCALL
+LBB50_1:                                ## %cont
 	popq	%rbp
 	retq
-
-	.globl	__Bar.meme_
-	.align	4, 0x90
-__Bar.meme_:                            ## @_Bar.meme_
-## BB#0:                                ## %entry
-	pushq	%rbp
-	movq	%rsp, %rbp
-	testb	$1, %dil
-	je	LBB51_2
-## BB#1:                                ## %then0
-	movq	%rsi, %rdi
-	popq	%rbp
-	jmp	__$print_i64            ## TAILCALL
-LBB51_2:                                ## %else1
-	xorl	%edi, %edi
-	popq	%rbp
-	jmp	__$print_i64            ## TAILCALL
 
 	.section	__TEXT,__cstring,cstring_literals
 L_.str:                                 ## @.str

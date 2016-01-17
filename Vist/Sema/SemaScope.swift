@@ -9,11 +9,13 @@
 final class SemaScope {
     
     private var variables: [String: LLVMTyped]
-    private var functions: [String: LLVMFnType]
-    private var types: [String: LLVMStType]
+    private var functions: [String: FnType]
+    private var types: [String: StructType]
     var returnType: LLVMTyped?
     let parent: SemaScope?
     
+    
+    // TODO: make this the AST context
     /// Hint about what type the object should have
     ///
     /// Used for blocks’ types
@@ -28,13 +30,13 @@ final class SemaScope {
             variables[variable] = newValue
         }
     }
-    subscript (function function: String, paramTypes types: [LLVMTyped]) -> LLVMFnType? {
+    subscript (function function: String, paramTypes types: [LLVMTyped]) -> FnType? {
         get {
             if let v = functions[raw: function, paramTypes: types] { return v }
             return parent?[function: function, paramTypes: types]
         }
     }
-    subscript (function function: String) -> LLVMFnType? {
+    subscript (function function: String) -> FnType? {
         get {
             if let v = functions[raw: function] { return v }
             return parent?[function: function]
@@ -43,7 +45,7 @@ final class SemaScope {
             functions[function.mangle(newValue!)] = newValue
         }
     }
-    subscript (type type: String) -> LLVMStType? {
+    subscript (type type: String) -> StructType? {
         get {
             if let v = types[type] { return v }
             return parent?[type: type]
@@ -53,7 +55,7 @@ final class SemaScope {
         }
     }
     
-    init(parent: SemaScope?, returnType: LLVMTyped? = LLVMType.Void) {
+    init(parent: SemaScope?, returnType: LLVMTyped? = NativeType.Void) {
         self.parent = parent
         self.returnType = returnType
         self.variables = [:]
@@ -62,7 +64,7 @@ final class SemaScope {
     }
     
     /// Types including parents’ types
-    var allTypes: LazyMapCollection<Dictionary<String, LLVMStType>, LLVMStType> {
+    var allTypes: LazyMapCollection<Dictionary<String, StructType>, StructType> {
         return types + parent?.types
     }
 }
@@ -88,17 +90,17 @@ private func +
     return u.values
 }
 
-extension DictionaryLiteralConvertible
+
+
+
+extension CollectionType
     where
-    Key == String,
-    Value == LLVMFnType,
-    Self : SequenceType,
-    Self.Generator.Element == (Key, Value)
+    Generator.Element == (String, FnType)
 {
     /// Subscript for unmangled names
     ///
     /// Function name is required to be between underscores at the start _foo_...
-    subscript(raw raw: String, paramTypes types: [LLVMTyped]) -> Value? {
+    subscript(raw raw: String, paramTypes types: [LLVMTyped]) -> FnType? {
         get {
             
             for (k, v) in self {
@@ -108,7 +110,7 @@ extension DictionaryLiteralConvertible
         }
     }
     
-    subscript(raw raw: String) -> Value? {
+    subscript(raw raw: String) -> FnType? {
         get {
             for (k, v) in self {
                 if k.demangleName() == raw { return v }
@@ -116,8 +118,6 @@ extension DictionaryLiteralConvertible
             return nil
         }
     }
-
     
 }
-
 
