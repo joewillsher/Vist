@@ -52,68 +52,59 @@ define void @"_$print_b"(i1 zeroext %b) #0 {
   ret void
 }
 
-; Function Attrs: noinline noreturn ssp uwtable
-define void @"_$fatalError_"() #2 {
-  tail call void @abort() #10
-  unreachable
-}
-
-; Function Attrs: noreturn
-declare void @abort() #3
-
 ; Function Attrs: alwaysinline nounwind readnone
-define { i64 } @_Int_S.i64({ i64 } %o) #4 {
+define { i64 } @_Int_S.i64({ i64 } %o) #2 {
 entry:
   ret { i64 } %o
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i64 } @_Int_i64(i64 %v) #4 {
+define { i64 } @_Int_i64(i64 %v) #2 {
 entry:
   %.fca.0.insert = insertvalue { i64 } undef, i64 %v, 0
   ret { i64 } %.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i64 } @_Int_() #4 {
+define { i64 } @_Int_() #2 {
 entry:
   ret { i64 } zeroinitializer
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i1 } @_Bool_S.b({ i1 } %o) #4 {
+define { i1 } @_Bool_S.b({ i1 } %o) #2 {
 entry:
   ret { i1 } %o
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i1 } @_Bool_b(i1 %v) #4 {
+define { i1 } @_Bool_b(i1 %v) #2 {
 entry:
   %.fca.0.insert = insertvalue { i1 } undef, i1 %v, 0
   ret { i1 } %.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i1 } @_Bool_() #4 {
+define { i1 } @_Bool_() #2 {
 entry:
   ret { i1 } zeroinitializer
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { double } @_Double_S.f64({ double } %o) #4 {
+define { double } @_Double_S.f64({ double } %o) #2 {
 entry:
   ret { double } %o
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { double } @_Double_f64(double %v) #4 {
+define { double } @_Double_f64(double %v) #2 {
 entry:
   %.fca.0.insert = insertvalue { double } undef, double %v, 0
   ret { double } %.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 } %"$0", { i64 } %"$1") #4 {
+define { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 } %"$0", { i64 } %"$1") #2 {
 entry:
   %"$0.fca.0.extract" = extractvalue { i64 } %"$0", 0
   %"$1.fca.0.extract" = extractvalue { i64 } %"$1", 0
@@ -123,7 +114,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind
-define void @_print_S.i64({ i64 } %a) #5 {
+define void @_print_S.i64({ i64 } %a) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   tail call void @"_$print_i64"(i64 %value)
@@ -131,7 +122,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind
-define void @_print_S.b({ i1 } %a) #5 {
+define void @_print_S.b({ i1 } %a) #3 {
 entry:
   %value = extractvalue { i1 } %a, 0
   tail call void @"_$print_b"(i1 %value)
@@ -139,22 +130,25 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind
-define void @_print_S.f64({ double } %a) #5 {
+define void @_print_S.f64({ double } %a) #3 {
 entry:
   %value = extractvalue { double } %a, 0
   tail call void @"_$print_f64"(double %value)
   ret void
 }
 
-; Function Attrs: alwaysinline noreturn
-define void @_fatalError_() #6 {
+; Function Attrs: alwaysinline noreturn nounwind
+define void @_fatalError_() #4 {
 entry:
-  tail call void @"_$fatalError_"()
+  tail call void @llvm.trap()
   unreachable
 }
 
-; Function Attrs: alwaysinline
-define void @_assert_S.b({ i1 } %"$0") #7 {
+; Function Attrs: noreturn nounwind
+declare void @llvm.trap() #5
+
+; Function Attrs: alwaysinline nounwind
+define void @_assert_S.b({ i1 } %"$0") #3 {
 entry:
   %value = extractvalue { i1 } %"$0", 0
   br i1 %value, label %then0, label %else1
@@ -163,12 +157,12 @@ then0:                                            ; preds = %entry
   ret void
 
 else1:                                            ; preds = %entry
-  tail call void @"_$fatalError_"()
+  tail call void @llvm.trap()
   unreachable
 }
 
-; Function Attrs: alwaysinline
-define void @_condFail_b(i1 %"$0") #7 {
+; Function Attrs: alwaysinline nounwind
+define void @_condFail_b(i1 %"$0") #3 {
 entry:
   br i1 %"$0", label %then0, label %cont
 
@@ -176,12 +170,12 @@ cont:                                             ; preds = %entry
   ret void
 
 then0:                                            ; preds = %entry
-  tail call void @"_$fatalError_"()
+  tail call void @llvm.trap()
   unreachable
 }
 
-; Function Attrs: alwaysinline
-define { i64 } @"_+_S.i64_S.i64"({ i64 } %a, { i64 } %b) #7 {
+; Function Attrs: alwaysinline nounwind
+define { i64 } @"_+_S.i64_S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
@@ -190,7 +184,7 @@ entry:
   br i1 %add_res.fca.1.extract, label %then0.i, label %_condFail_b.exit
 
 then0.i:                                          ; preds = %entry
-  tail call void @"_$fatalError_"()
+  tail call void @llvm.trap() #7
   unreachable
 
 _condFail_b.exit:                                 ; preds = %entry
@@ -200,10 +194,10 @@ _condFail_b.exit:                                 ; preds = %entry
 }
 
 ; Function Attrs: nounwind readnone
-declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #8
+declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #6
 
-; Function Attrs: alwaysinline
-define { i64 } @_-_S.i64_S.i64({ i64 } %a, { i64 } %b) #7 {
+; Function Attrs: alwaysinline nounwind
+define { i64 } @_-_S.i64_S.i64({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
@@ -212,7 +206,7 @@ entry:
   br i1 %sub_res.fca.1.extract, label %then0.i, label %_condFail_b.exit
 
 then0.i:                                          ; preds = %entry
-  tail call void @"_$fatalError_"()
+  tail call void @llvm.trap() #7
   unreachable
 
 _condFail_b.exit:                                 ; preds = %entry
@@ -222,10 +216,10 @@ _condFail_b.exit:                                 ; preds = %entry
 }
 
 ; Function Attrs: nounwind readnone
-declare { i64, i1 } @llvm.ssub.with.overflow.i64(i64, i64) #8
+declare { i64, i1 } @llvm.ssub.with.overflow.i64(i64, i64) #6
 
-; Function Attrs: alwaysinline
-define { i64 } @"_*_S.i64_S.i64"({ i64 } %a, { i64 } %b) #7 {
+; Function Attrs: alwaysinline nounwind
+define { i64 } @"_*_S.i64_S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
@@ -234,7 +228,7 @@ entry:
   br i1 %mul_res.fca.1.extract, label %then0.i, label %_condFail_b.exit
 
 then0.i:                                          ; preds = %entry
-  tail call void @"_$fatalError_"()
+  tail call void @llvm.trap() #7
   unreachable
 
 _condFail_b.exit:                                 ; preds = %entry
@@ -244,10 +238,10 @@ _condFail_b.exit:                                 ; preds = %entry
 }
 
 ; Function Attrs: nounwind readnone
-declare { i64, i1 } @llvm.smul.with.overflow.i64(i64, i64) #8
+declare { i64, i1 } @llvm.smul.with.overflow.i64(i64, i64) #6
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i64 } @"_/_S.i64_S.i64"({ i64 } %a, { i64 } %b) #4 {
+define { i64 } @"_/_S.i64_S.i64"({ i64 } %a, { i64 } %b) #2 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
@@ -257,7 +251,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i64 } @"_%_S.i64_S.i64"({ i64 } %a, { i64 } %b) #4 {
+define { i64 } @"_%_S.i64_S.i64"({ i64 } %a, { i64 } %b) #2 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
@@ -267,7 +261,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i1 } @"_<_S.i64_S.i64"({ i64 } %a, { i64 } %b) #4 {
+define { i1 } @"_<_S.i64_S.i64"({ i64 } %a, { i64 } %b) #2 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
@@ -277,7 +271,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i1 } @"_<=_S.i64_S.i64"({ i64 } %a, { i64 } %b) #4 {
+define { i1 } @"_<=_S.i64_S.i64"({ i64 } %a, { i64 } %b) #2 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
@@ -287,7 +281,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i1 } @"_>_S.i64_S.i64"({ i64 } %a, { i64 } %b) #4 {
+define { i1 } @"_>_S.i64_S.i64"({ i64 } %a, { i64 } %b) #2 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
@@ -297,7 +291,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i1 } @"_>=_S.i64_S.i64"({ i64 } %a, { i64 } %b) #4 {
+define { i1 } @"_>=_S.i64_S.i64"({ i64 } %a, { i64 } %b) #2 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
@@ -307,7 +301,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i1 } @"_==_S.i64_S.i64"({ i64 } %a, { i64 } %b) #4 {
+define { i1 } @"_==_S.i64_S.i64"({ i64 } %a, { i64 } %b) #2 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
@@ -317,7 +311,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i1 } @"_!=_S.i64_S.i64"({ i64 } %a, { i64 } %b) #4 {
+define { i1 } @"_!=_S.i64_S.i64"({ i64 } %a, { i64 } %b) #2 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
@@ -327,7 +321,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i1 } @"_&&_S.b_S.b"({ i1 } %a, { i1 } %b) #4 {
+define { i1 } @"_&&_S.b_S.b"({ i1 } %a, { i1 } %b) #2 {
 entry:
   %value = extractvalue { i1 } %a, 0
   %value1 = extractvalue { i1 } %b, 0
@@ -337,7 +331,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i1 } @"_||_S.b_S.b"({ i1 } %a, { i1 } %b) #4 {
+define { i1 } @"_||_S.b_S.b"({ i1 } %a, { i1 } %b) #2 {
 entry:
   %value = extractvalue { i1 } %a, 0
   %value1 = extractvalue { i1 } %b, 0
@@ -347,7 +341,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { double } @"_+_S.f64_S.f64"({ double } %a, { double } %b) #4 {
+define { double } @"_+_S.f64_S.f64"({ double } %a, { double } %b) #2 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
@@ -357,7 +351,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { double } @_-_S.f64_S.f64({ double } %a, { double } %b) #4 {
+define { double } @_-_S.f64_S.f64({ double } %a, { double } %b) #2 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
@@ -367,7 +361,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { double } @"_*_S.f64_S.f64"({ double } %a, { double } %b) #4 {
+define { double } @"_*_S.f64_S.f64"({ double } %a, { double } %b) #2 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
@@ -377,7 +371,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { double } @"_/_S.f64_S.f64"({ double } %a, { double } %b) #4 {
+define { double } @"_/_S.f64_S.f64"({ double } %a, { double } %b) #2 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
@@ -387,7 +381,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { double } @"_%_S.f64_S.f64"({ double } %a, { double } %b) #4 {
+define { double } @"_%_S.f64_S.f64"({ double } %a, { double } %b) #2 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
@@ -397,7 +391,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i1 } @"_<_S.f64_S.f64"({ double } %a, { double } %b) #4 {
+define { i1 } @"_<_S.f64_S.f64"({ double } %a, { double } %b) #2 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
@@ -407,7 +401,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i1 } @"_<=_S.f64_S.f64"({ double } %a, { double } %b) #4 {
+define { i1 } @"_<=_S.f64_S.f64"({ double } %a, { double } %b) #2 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
@@ -417,7 +411,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i1 } @"_>_S.f64_S.f64"({ double } %a, { double } %b) #4 {
+define { i1 } @"_>_S.f64_S.f64"({ double } %a, { double } %b) #2 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
@@ -427,7 +421,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i1 } @"_>=_S.f64_S.f64"({ double } %a, { double } %b) #4 {
+define { i1 } @"_>=_S.f64_S.f64"({ double } %a, { double } %b) #2 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
@@ -437,7 +431,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i1 } @"_==_S.f64_S.f64"({ double } %a, { double } %b) #4 {
+define { i1 } @"_==_S.f64_S.f64"({ double } %a, { double } %b) #2 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
@@ -447,7 +441,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i1 } @"_!=_S.f64_S.f64"({ double } %a, { double } %b) #4 {
+define { i1 } @"_!=_S.f64_S.f64"({ double } %a, { double } %b) #2 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
@@ -457,7 +451,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { { i64 }, { i64 } } @_..._S.i64_S.i64({ i64 } %"$0", { i64 } %"$1") #4 {
+define { { i64 }, { i64 } } @_..._S.i64_S.i64({ i64 } %"$0", { i64 } %"$1") #2 {
 entry:
   %"$0.fca.0.extract.i" = extractvalue { i64 } %"$0", 0
   %"$1.fca.0.extract.i" = extractvalue { i64 } %"$1", 0
@@ -466,16 +460,16 @@ entry:
   ret { { i64 }, { i64 } } %.fca.1.0.insert.i
 }
 
-; Function Attrs: alwaysinline
-define { { i64 }, { i64 } } @"_..<_S.i64_S.i64"({ i64 } %"$0", { i64 } %"$1") #7 {
+; Function Attrs: alwaysinline nounwind
+define { { i64 }, { i64 } } @"_..<_S.i64_S.i64"({ i64 } %"$0", { i64 } %"$1") #3 {
 entry:
   %value.i = extractvalue { i64 } %"$1", 0
-  %sub_res.i = tail call { i64, i1 } @llvm.ssub.with.overflow.i64(i64 %value.i, i64 1)
+  %sub_res.i = tail call { i64, i1 } @llvm.ssub.with.overflow.i64(i64 %value.i, i64 1) #7
   %sub_res.fca.1.extract.i = extractvalue { i64, i1 } %sub_res.i, 1
   br i1 %sub_res.fca.1.extract.i, label %then0.i.i, label %_-_S.i64_S.i64.exit
 
 then0.i.i:                                        ; preds = %entry
-  tail call void @"_$fatalError_"()
+  tail call void @llvm.trap() #7
   unreachable
 
 _-_S.i64_S.i64.exit:                              ; preds = %entry
@@ -486,64 +480,67 @@ _-_S.i64_S.i64.exit:                              ; preds = %entry
   ret { { i64 }, { i64 } } %.fca.1.0.insert.i
 }
 
-define i64 @main() {
+; Function Attrs: noreturn nounwind
+define i64 @main() #5 {
 _Foo.sum_S.i64.exit:
-  tail call void @"_$print_i64"(i64 10) #9
-  tail call void @"_$print_i64"(i64 140) #9
-  ret i64 0
+  tail call void @"_$print_i64"(i64 10) #7
+  tail call void @"_$print_i64"(i64 140) #7
+  tail call void @llvm.trap() #7
+  unreachable
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { { i64 }, { i64 }, { i64 } } @_Foo_() #4 {
+define { { i64 }, { i64 }, { i64 } } @_Foo_() #2 {
 entry:
   ret { { i64 }, { i64 }, { i64 } } { { i64 } { i64 10 }, { i64 } { i64 20 }, { i64 } { i64 40 } }
 }
 
-define { i64 } @_Foo.sum_S.i64({ { i64 }, { i64 }, { i64 } } %self, { i64 } %"$0") {
+; Function Attrs: nounwind
+define { i64 } @_Foo.sum_S.i64({ { i64 }, { i64 }, { i64 } } %self, { i64 } %"$0") #7 {
 entry:
   %b = extractvalue { { i64 }, { i64 }, { i64 } } %self, 1
   %c = extractvalue { { i64 }, { i64 }, { i64 } } %self, 2
   %value.i = extractvalue { i64 } %b, 0
   %value1.i = extractvalue { i64 } %c, 0
-  %add_res.i = tail call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %value.i, i64 %value1.i)
+  %add_res.i = tail call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %value.i, i64 %value1.i) #7
   %add_res.fca.1.extract.i = extractvalue { i64, i1 } %add_res.i, 1
   br i1 %add_res.fca.1.extract.i, label %then0.i.i, label %"_+_S.i64_S.i64.exit"
 
 then0.i.i:                                        ; preds = %entry
-  tail call void @"_$fatalError_"()
+  tail call void @llvm.trap() #7
   unreachable
 
 "_+_S.i64_S.i64.exit":                            ; preds = %entry
   %a = extractvalue { { i64 }, { i64 }, { i64 } } %self, 0
   %add_res.fca.0.extract.i = extractvalue { i64, i1 } %add_res.i, 0
-  %value.i1 = extractvalue { i64 } %a, 0
-  %add_res.i3 = tail call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %value.i1, i64 %add_res.fca.0.extract.i)
-  %add_res.fca.1.extract.i4 = extractvalue { i64, i1 } %add_res.i3, 1
-  br i1 %add_res.fca.1.extract.i4, label %then0.i.i5, label %"_+_S.i64_S.i64.exit8"
+  %value.i5 = extractvalue { i64 } %a, 0
+  %add_res.i7 = tail call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %value.i5, i64 %add_res.fca.0.extract.i) #7
+  %add_res.fca.1.extract.i8 = extractvalue { i64, i1 } %add_res.i7, 1
+  br i1 %add_res.fca.1.extract.i8, label %then0.i.i9, label %"_+_S.i64_S.i64.exit12"
 
-then0.i.i5:                                       ; preds = %"_+_S.i64_S.i64.exit"
-  tail call void @"_$fatalError_"()
+then0.i.i9:                                       ; preds = %"_+_S.i64_S.i64.exit"
+  tail call void @llvm.trap() #7
   unreachable
 
-"_+_S.i64_S.i64.exit8":                           ; preds = %"_+_S.i64_S.i64.exit"
-  %add_res.fca.0.extract.i6 = extractvalue { i64, i1 } %add_res.i3, 0
-  %value1.i10 = extractvalue { i64 } %"$0", 0
-  %mul_res.i = tail call { i64, i1 } @llvm.smul.with.overflow.i64(i64 %add_res.fca.0.extract.i6, i64 %value1.i10)
+"_+_S.i64_S.i64.exit12":                          ; preds = %"_+_S.i64_S.i64.exit"
+  %add_res.fca.0.extract.i10 = extractvalue { i64, i1 } %add_res.i7, 0
+  %value1.i2 = extractvalue { i64 } %"$0", 0
+  %mul_res.i = tail call { i64, i1 } @llvm.smul.with.overflow.i64(i64 %add_res.fca.0.extract.i10, i64 %value1.i2) #7
   %mul_res.fca.1.extract.i = extractvalue { i64, i1 } %mul_res.i, 1
-  br i1 %mul_res.fca.1.extract.i, label %then0.i.i11, label %"_*_S.i64_S.i64.exit"
+  br i1 %mul_res.fca.1.extract.i, label %then0.i.i3, label %"_*_S.i64_S.i64.exit"
 
-then0.i.i11:                                      ; preds = %"_+_S.i64_S.i64.exit8"
-  tail call void @"_$fatalError_"()
+then0.i.i3:                                       ; preds = %"_+_S.i64_S.i64.exit12"
+  tail call void @llvm.trap() #7
   unreachable
 
-"_*_S.i64_S.i64.exit":                            ; preds = %"_+_S.i64_S.i64.exit8"
+"_*_S.i64_S.i64.exit":                            ; preds = %"_+_S.i64_S.i64.exit12"
   %mul_res.fca.0.extract.i = extractvalue { i64, i1 } %mul_res.i, 0
-  %.fca.0.insert.i.i12 = insertvalue { i64 } undef, i64 %mul_res.fca.0.extract.i, 0
-  ret { i64 } %.fca.0.insert.i.i12
+  %.fca.0.insert.i.i4 = insertvalue { i64 } undef, i64 %mul_res.fca.0.extract.i, 0
+  ret { i64 } %.fca.0.insert.i.i4
 }
 
 ; Function Attrs: nounwind
-define void @_Foo.sum_S.b({ { i64 }, { i64 }, { i64 } } %self, { i1 } %"$0") #9 {
+define void @_Foo.sum_S.b({ { i64 }, { i64 }, { i64 } } %self, { i1 } %"$0") #7 {
 entry:
   %value = extractvalue { i1 } %"$0", 0
   br i1 %value, label %then0, label %cont
@@ -554,24 +551,21 @@ cont:                                             ; preds = %then0, %entry
 then0:                                            ; preds = %entry
   %a = extractvalue { { i64 }, { i64 }, { i64 } } %self, 0
   %value.i = extractvalue { i64 } %a, 0
-  tail call void @"_$print_i64"(i64 %value.i) #9
+  tail call void @"_$print_i64"(i64 %value.i) #7
   br label %cont
 }
 
 ; Function Attrs: nounwind
-declare i32 @puts(i8* nocapture readonly) #9
+declare i32 @puts(i8* nocapture readonly) #7
 
 attributes #0 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { nounwind "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #2 = { noinline noreturn ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #3 = { noreturn "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #4 = { alwaysinline nounwind readnone }
-attributes #5 = { alwaysinline nounwind }
-attributes #6 = { alwaysinline noreturn }
-attributes #7 = { alwaysinline }
-attributes #8 = { nounwind readnone }
-attributes #9 = { nounwind }
-attributes #10 = { noreturn }
+attributes #2 = { alwaysinline nounwind readnone }
+attributes #3 = { alwaysinline nounwind }
+attributes #4 = { alwaysinline noreturn nounwind }
+attributes #5 = { noreturn nounwind }
+attributes #6 = { nounwind readnone }
+attributes #7 = { nounwind }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}

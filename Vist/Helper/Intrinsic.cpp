@@ -51,7 +51,8 @@ LLVMValueRef getIntrinsic(const char *name,
     GetLLVMIntrinsicIDFromString(name, id);
     
     std::vector<llvm::Type *> arg_types;
-    arg_types.push_back(llvm::unwrap(ty));
+    if (ty != nullptr)
+        arg_types.push_back(llvm::unwrap(ty));
     
     LLVMValueRef rt = llvm::wrap(llvm::Intrinsic::getDeclaration(llvm::unwrap(mod), id, arg_types));
     return rt;

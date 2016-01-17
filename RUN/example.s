@@ -106,22 +106,6 @@ LBB4_2:
 	jmp	_puts                   ## TAILCALL
 	.cfi_endproc
 
-	.globl	__$fatalError_
-	.align	4, 0x90
-__$fatalError_:                         ## @"_$fatalError_"
-	.cfi_startproc
-## BB#0:
-	pushq	%rbp
-Ltmp15:
-	.cfi_def_cfa_offset 16
-Ltmp16:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-Ltmp17:
-	.cfi_def_cfa_register %rbp
-	callq	_abort
-	.cfi_endproc
-
 	.globl	__Int_S.i64
 	.align	4, 0x90
 __Int_S.i64:                            ## @_Int_S.i64
@@ -242,131 +226,83 @@ __print_S.f64:                          ## @_print_S.f64
 	.globl	__fatalError_
 	.align	4, 0x90
 __fatalError_:                          ## @_fatalError_
-	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp18:
-	.cfi_def_cfa_offset 16
-Ltmp19:
-	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp20:
-	.cfi_def_cfa_register %rbp
-	callq	__$fatalError_
-	.cfi_endproc
+	ud2
 
 	.globl	__assert_S.b
 	.align	4, 0x90
 __assert_S.b:                           ## @_assert_S.b
-	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp21:
-	.cfi_def_cfa_offset 16
-Ltmp22:
-	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp23:
-	.cfi_def_cfa_register %rbp
 	testb	$1, %dil
-	je	LBB19_2
+	je	LBB18_2
 ## BB#1:                                ## %then0
 	popq	%rbp
 	retq
-LBB19_2:                                ## %else1
-	callq	__$fatalError_
-	.cfi_endproc
+LBB18_2:                                ## %else1
+	ud2
 
 	.globl	__condFail_b
 	.align	4, 0x90
 __condFail_b:                           ## @_condFail_b
-	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp24:
-	.cfi_def_cfa_offset 16
-Ltmp25:
-	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp26:
-	.cfi_def_cfa_register %rbp
 	testb	$1, %dil
-	jne	LBB20_2
+	jne	LBB19_2
 ## BB#1:                                ## %cont
 	popq	%rbp
 	retq
-LBB20_2:                                ## %then0
-	callq	__$fatalError_
-	.cfi_endproc
+LBB19_2:                                ## %then0
+	ud2
 
 	.globl	"__+_S.i64_S.i64"
 	.align	4, 0x90
 "__+_S.i64_S.i64":                      ## @"_+_S.i64_S.i64"
-	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp27:
-	.cfi_def_cfa_offset 16
-Ltmp28:
-	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp29:
-	.cfi_def_cfa_register %rbp
 	addq	%rsi, %rdi
-	jo	LBB21_2
-## BB#1:                                ## %_condFail_b.exit
+	jo	LBB20_1
+## BB#2:                                ## %_condFail_b.exit
 	movq	%rdi, %rax
 	popq	%rbp
 	retq
-LBB21_2:                                ## %then0.i
-	callq	__$fatalError_
-	.cfi_endproc
+LBB20_1:                                ## %then0.i
+	ud2
 
 	.globl	"__-_S.i64_S.i64"
 	.align	4, 0x90
 "__-_S.i64_S.i64":                      ## @_-_S.i64_S.i64
-	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp30:
-	.cfi_def_cfa_offset 16
-Ltmp31:
-	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp32:
-	.cfi_def_cfa_register %rbp
 	subq	%rsi, %rdi
-	jo	LBB22_2
-## BB#1:                                ## %_condFail_b.exit
+	jo	LBB21_1
+## BB#2:                                ## %_condFail_b.exit
 	movq	%rdi, %rax
 	popq	%rbp
 	retq
-LBB22_2:                                ## %then0.i
-	callq	__$fatalError_
-	.cfi_endproc
+LBB21_1:                                ## %then0.i
+	ud2
 
 	.globl	"__*_S.i64_S.i64"
 	.align	4, 0x90
 "__*_S.i64_S.i64":                      ## @"_*_S.i64_S.i64"
-	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp33:
-	.cfi_def_cfa_offset 16
-Ltmp34:
-	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp35:
-	.cfi_def_cfa_register %rbp
 	imulq	%rsi, %rdi
-	jo	LBB23_2
-## BB#1:                                ## %_condFail_b.exit
+	jo	LBB22_1
+## BB#2:                                ## %_condFail_b.exit
 	movq	%rdi, %rax
 	popq	%rbp
 	retq
-LBB23_2:                                ## %then0.i
-	callq	__$fatalError_
-	.cfi_endproc
+LBB22_1:                                ## %then0.i
+	ud2
 
 	.globl	"__/_S.i64_S.i64"
 	.align	4, 0x90
@@ -612,48 +548,30 @@ __..._S.i64_S.i64:                      ## @_..._S.i64_S.i64
 	.globl	"__..<_S.i64_S.i64"
 	.align	4, 0x90
 "__..<_S.i64_S.i64":                    ## @"_..<_S.i64_S.i64"
-	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp36:
-	.cfi_def_cfa_offset 16
-Ltmp37:
-	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp38:
-	.cfi_def_cfa_register %rbp
 	decq	%rsi
-	jo	LBB46_2
-## BB#1:                                ## %_-_S.i64_S.i64.exit
+	jo	LBB45_1
+## BB#2:                                ## %_-_S.i64_S.i64.exit
 	movq	%rdi, %rax
 	movq	%rsi, %rdx
 	popq	%rbp
 	retq
-LBB46_2:                                ## %then0.i.i
-	callq	__$fatalError_
-	.cfi_endproc
+LBB45_1:                                ## %then0.i.i
+	ud2
 
 	.globl	_main
 	.align	4, 0x90
 _main:                                  ## @main
-	.cfi_startproc
 ## BB#0:                                ## %_Foo.sum_S.i64.exit
 	pushq	%rbp
-Ltmp39:
-	.cfi_def_cfa_offset 16
-Ltmp40:
-	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp41:
-	.cfi_def_cfa_register %rbp
 	movl	$10, %edi
 	callq	__$print_i64
 	movl	$140, %edi
 	callq	__$print_i64
-	xorl	%eax, %eax
-	popq	%rbp
-	retq
-	.cfi_endproc
+	ud2
 
 	.globl	__Foo_
 	.align	4, 0x90
@@ -670,31 +588,23 @@ __Foo_:                                 ## @_Foo_
 	.globl	__Foo.sum_S.i64
 	.align	4, 0x90
 __Foo.sum_S.i64:                        ## @_Foo.sum_S.i64
-	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp42:
-	.cfi_def_cfa_offset 16
-Ltmp43:
-	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp44:
-	.cfi_def_cfa_register %rbp
 	addq	%rdx, %rsi
-	jo	LBB49_4
+	jo	LBB48_4
 ## BB#1:                                ## %_+_S.i64_S.i64.exit
 	addq	%rsi, %rdi
-	jo	LBB49_4
-## BB#2:                                ## %_+_S.i64_S.i64.exit8
+	jo	LBB48_4
+## BB#2:                                ## %_+_S.i64_S.i64.exit12
 	imulq	%rcx, %rdi
-	jo	LBB49_4
+	jo	LBB48_4
 ## BB#3:                                ## %_*_S.i64_S.i64.exit
 	movq	%rdi, %rax
 	popq	%rbp
 	retq
-LBB49_4:                                ## %then0.i.i11
-	callq	__$fatalError_
-	.cfi_endproc
+LBB48_4:                                ## %then0.i.i3
+	ud2
 
 	.globl	__Foo.sum_S.b
 	.align	4, 0x90
@@ -703,11 +613,11 @@ __Foo.sum_S.b:                          ## @_Foo.sum_S.b
 	pushq	%rbp
 	movq	%rsp, %rbp
 	testb	$1, %cl
-	je	LBB50_1
+	je	LBB49_1
 ## BB#2:                                ## %then0
 	popq	%rbp
 	jmp	__$print_i64            ## TAILCALL
-LBB50_1:                                ## %cont
+LBB49_1:                                ## %cont
 	popq	%rbp
 	retq
 

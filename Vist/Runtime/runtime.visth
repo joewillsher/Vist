@@ -6,8 +6,6 @@ func _print: LLVM.Int
 func _print: LLVM.Float
 func _print: LLVM.Double
 func _print: LLVM.Bool
-func _fatalError: ()
-
 
 
 
@@ -43,3 +41,8 @@ func LLVM.f_cmp_gt: LLVM.Double LLVM.Double -> LLVM.Bool
 func LLVM.f_cmp_gte: LLVM.Double LLVM.Double -> LLVM.Bool
 func LLVM.f_eq: LLVM.Double LLVM.Double -> LLVM.Bool
 func LLVM.f_neq: LLVM.Double LLVM.Double -> LLVM.Bool
+
+
+
+
+func LLVM.trap: ()

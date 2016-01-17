@@ -61,14 +61,14 @@ type Array {
 @inline func print: Bool = |a| do _print(a.value)
 @inline func print: Double = |a| do _print(a.value)
 
-// TODO: ! prefix operator
-@inline @noreturn func fatalError: () = do _fatalError()
+// TODO: print message
+@inline @noreturn func fatalError: () = do LLVM.trap()
 @inline func assert: Bool = do
-    if $0 do () else do fatalError()
+    if $0 do () else do LLVM.trap()
 
 // internal function to stdlib, takes a LLVM.Int and fails if true
 @inline func condFail: LLVM.Bool = do
-    if Bool($0) do fatalError()
+    if Bool($0) do LLVM.trap()
 
 
 
@@ -140,6 +140,7 @@ func && : Bool Bool -> Bool = |a b| do
 @inline @operator(10)
 func || : Bool Bool -> Bool = |a b| do
     return Bool(LLVM.b_or(a.value b.value))
+// TODO: ! prefix operator
 
 
 // float

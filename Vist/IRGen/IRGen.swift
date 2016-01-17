@@ -364,9 +364,13 @@ extension FunctionCallExpression : IRGenerator {
         let args = try self.args.elements.map(codeGenIn(stackFrame))
 
         // Lookup
-        if let function = builtinInstruction(name, builder: builder, module: module) {
+        if let function = builtinBinaryInstruction(name, builder: builder, module: module) {
             guard args.count == 2 else { throw IRError.WrongFunctionApplication(name) }
             return try function(args[0], args[1])
+        }
+        else if let function = builtinInstruction(name, builder: builder, module: module) {
+            guard args.count == 0 else { throw IRError.WrongFunctionApplication(name) }
+            return function()
         }
         
         // make function

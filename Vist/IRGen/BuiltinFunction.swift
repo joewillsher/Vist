@@ -9,7 +9,7 @@
 import Foundation
 
 
-func builtinInstruction(named: String, builder: LLVMBuilderRef, module: LLVMModuleRef) -> ((LLVMValueRef, LLVMValueRef) throws -> LLVMValueRef)? {
+func builtinBinaryInstruction(named: String, builder: LLVMBuilderRef, module: LLVMModuleRef) -> ((LLVMValueRef, LLVMValueRef) throws -> LLVMValueRef)? {
     switch named {
         
     case "LLVM.i_add": return {
@@ -69,3 +69,20 @@ func builtinInstruction(named: String, builder: LLVMBuilderRef, module: LLVMModu
     }
 }
 
+func builtinInstruction(named: String, builder: LLVMBuilderRef, module: LLVMModuleRef) -> (() -> LLVMValueRef)? {
+
+    switch named {
+    case "LLVM.trap": return {
+        let l = getIntrinsic("llvm.trap", module, nil)
+        
+        let args = [].ptr()
+        defer { args.dealloc(0) }
+        
+        return LLVMBuildCall(builder, l, args, 0, "")
+        }
+        
+    default:
+        return nil
+    }
+    
+}

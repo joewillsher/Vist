@@ -19,6 +19,7 @@ let u = f.sum(2)
 
 print(u)
 
+fatalError()
 
 
 // TODO: Make sure methods cannot conflict with global functions
