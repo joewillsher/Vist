@@ -487,21 +487,10 @@ _-_S.i64S.i64.exit:                               ; preds = %entry
 }
 
 define i64 @main() {
-entry:
+_Bar.meme_.exit:
   tail call void @"_$print_i64"(i64 140) #9
+  tail call void @"_$print_i64"(i64 100) #9
   ret i64 0
-}
-
-; Function Attrs: alwaysinline nounwind readnone
-define { { i64 }, { i64 }, { i64 } } @_Foo_S.i64S.i64S.i64({ i64 } %"$0", { i64 } %"$1", { i64 } %"$2") #4 {
-entry:
-  %"$0.fca.0.extract" = extractvalue { i64 } %"$0", 0
-  %"$1.fca.0.extract" = extractvalue { i64 } %"$1", 0
-  %"$2.fca.0.extract" = extractvalue { i64 } %"$2", 0
-  %.fca.0.0.insert = insertvalue { { i64 }, { i64 }, { i64 } } undef, i64 %"$0.fca.0.extract", 0, 0
-  %.fca.1.0.insert = insertvalue { { i64 }, { i64 }, { i64 } } %.fca.0.0.insert, i64 %"$1.fca.0.extract", 1, 0
-  %.fca.2.0.insert = insertvalue { { i64 }, { i64 }, { i64 } } %.fca.1.0.insert, i64 %"$2.fca.0.extract", 2, 0
-  ret { { i64 }, { i64 }, { i64 } } %.fca.2.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -551,6 +540,37 @@ then0.i.i11:                                      ; preds = %"_+_S.i64S.i64.exit
   %mul_res.fca.0.extract.i = extractvalue { i64, i1 } %mul_res.i, 0
   %.fca.0.insert.i.i12 = insertvalue { i64 } undef, i64 %mul_res.fca.0.extract.i, 0
   ret { i64 } %.fca.0.insert.i.i12
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { { i1 }, { i64 } } @_Bar_S.i64S.b({ i64 } %"$0", { i1 } %"$1") #4 {
+entry:
+  %"$0.fca.0.extract" = extractvalue { i64 } %"$0", 0
+  %"$1.fca.0.extract" = extractvalue { i1 } %"$1", 0
+  %.fca.0.0.insert = insertvalue { { i1 }, { i64 } } undef, i1 %"$1.fca.0.extract", 0, 0
+  %.fca.1.0.insert = insertvalue { { i1 }, { i64 } } %.fca.0.0.insert, i64 %"$0.fca.0.extract", 1, 0
+  ret { { i1 }, { i64 } } %.fca.1.0.insert
+}
+
+; Function Attrs: nounwind
+define void @_Bar.meme_({ { i1 }, { i64 } } %self) #9 {
+entry:
+  %aay = extractvalue { { i1 }, { i64 } } %self, 0
+  %value = extractvalue { i1 } %aay, 0
+  br i1 %value, label %then0, label %else1
+
+cont:                                             ; preds = %else1, %then0
+  ret void
+
+then0:                                            ; preds = %entry
+  %i = extractvalue { { i1 }, { i64 } } %self, 1
+  %value.i = extractvalue { i64 } %i, 0
+  tail call void @"_$print_i64"(i64 %value.i) #9
+  br label %cont
+
+else1:                                            ; preds = %entry
+  tail call void @"_$print_i64"(i64 0) #9
+  br label %cont
 }
 
 ; Function Attrs: nounwind

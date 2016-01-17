@@ -637,7 +637,7 @@ LBB46_2:                                ## %then0.i.i
 	.align	4, 0x90
 _main:                                  ## @main
 	.cfi_startproc
-## BB#0:                                ## %entry
+## BB#0:                                ## %_Bar.meme_.exit
 	pushq	%rbp
 Ltmp39:
 	.cfi_def_cfa_offset 16
@@ -648,22 +648,12 @@ Ltmp41:
 	.cfi_def_cfa_register %rbp
 	movl	$140, %edi
 	callq	__$print_i64
+	movl	$100, %edi
+	callq	__$print_i64
 	xorl	%eax, %eax
 	popq	%rbp
 	retq
 	.cfi_endproc
-
-	.globl	__Foo_S.i64S.i64S.i64
-	.align	4, 0x90
-__Foo_S.i64S.i64S.i64:                  ## @_Foo_S.i64S.i64S.i64
-## BB#0:                                ## %entry
-	pushq	%rbp
-	movq	%rsp, %rbp
-	movq	%rdx, %rcx
-	movq	%rdi, %rax
-	movq	%rsi, %rdx
-	popq	%rbp
-	retq
 
 	.globl	__Foo_
 	.align	4, 0x90
@@ -691,20 +681,48 @@ Ltmp43:
 Ltmp44:
 	.cfi_def_cfa_register %rbp
 	addq	%rdx, %rsi
-	jo	LBB50_4
+	jo	LBB49_4
 ## BB#1:                                ## %_+_S.i64S.i64.exit
 	addq	%rsi, %rdi
-	jo	LBB50_4
+	jo	LBB49_4
 ## BB#2:                                ## %_+_S.i64S.i64.exit8
 	imulq	%rcx, %rdi
-	jo	LBB50_4
+	jo	LBB49_4
 ## BB#3:                                ## %_*_S.i64S.i64.exit
 	movq	%rdi, %rax
 	popq	%rbp
 	retq
-LBB50_4:                                ## %then0.i.i11
+LBB49_4:                                ## %then0.i.i11
 	callq	__$fatalError_
 	.cfi_endproc
+
+	.globl	__Bar_S.i64S.b
+	.align	4, 0x90
+__Bar_S.i64S.b:                         ## @_Bar_S.i64S.b
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	movb	%sil, %al
+	movq	%rdi, %rdx
+	popq	%rbp
+	retq
+
+	.globl	__Bar.meme_
+	.align	4, 0x90
+__Bar.meme_:                            ## @_Bar.meme_
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	testb	$1, %dil
+	je	LBB51_2
+## BB#1:                                ## %then0
+	movq	%rsi, %rdi
+	popq	%rbp
+	jmp	__$print_i64            ## TAILCALL
+LBB51_2:                                ## %else1
+	xorl	%edi, %edi
+	popq	%rbp
+	jmp	__$print_i64            ## TAILCALL
 
 	.section	__TEXT,__cstring,cstring_literals
 L_.str:                                 ## @.str

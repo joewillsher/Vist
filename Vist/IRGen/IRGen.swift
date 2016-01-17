@@ -361,7 +361,7 @@ extension FunctionCallExpression : IRGenerator {
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
         let argCount = self.args.elements.count
-        let args = try self.args.elements.map { try $0.expressionCodeGen(stackFrame) }
+        let args = try self.args.elements.map(codeGenIn(stackFrame))
 
         // Lookup
         if let function = builtinInstruction(name, builder: builder, module: module) {
@@ -380,10 +380,10 @@ extension FunctionCallExpression : IRGenerator {
             throw IRError.WrongFunctionApplication(name) }
         
         let doNotUseName = type == LLVMType.Void || type == LLVMType.Null || type == nil
-        let n = "\(name)_res"
+        let n = doNotUseName ? "" : "\(name)_res"
         
         // add call to IR
-        return LLVMBuildCall(builder, fn, argBuffer, UInt32(argCount), doNotUseName ? "" : n )
+        return LLVMBuildCall(builder, fn, argBuffer, UInt32(argCount), n)
     }
     
 }
@@ -1072,7 +1072,10 @@ extension MethodCallExpression : IRGenerator {
             .ptr()
         defer { params.dealloc(c) }
         
-        return LLVMBuildCall(builder, f, params, UInt32(c), name)
+        let doNotUseName = type == LLVMType.Void || type == LLVMType.Null || type == nil
+        let n = doNotUseName ? "" : "\(name)_res"
+
+        return LLVMBuildCall(builder, f, params, UInt32(c), n)
     }
 }
 
