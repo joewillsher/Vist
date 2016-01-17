@@ -11,7 +11,7 @@ import Foundation
 
 extension String {
     
-    func mangle(type: LLVMFnType) -> String {
+    func mangle(type: LLVMFnType, parentTypeName: String? = nil) -> String {
         return "_\(sansUnderscores())_\(type.debugDescription)"
     }
     

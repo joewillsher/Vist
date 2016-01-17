@@ -104,7 +104,7 @@ struct LLVMFnType : LLVMTyped {
 final class LLVMStType : LLVMTyped {
     let name: String
     let members: [(String, LLVMTyped, Bool)]
-    let methods: [(String, LLVMFnType)]
+    var methods: [(String, LLVMFnType)]
     
     init(members: [(String, LLVMTyped, Bool)], methods: [(String, LLVMFnType)], name: String) {
         self.name = name

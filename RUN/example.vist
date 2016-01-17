@@ -1,41 +1,18 @@
 
 
-//type Foo {
-//    let a: Int = 10
-//    var b: Int = 20
-//    let c: Int = 40
-//    
-//    init Int Int Int = {
-//        a = $0
-//        b = $1
-//        c = $2
-//    }
-//    
-////    func sum: -> Int = {
-////        return a + b + c
-////    }
-//}
-//
-//
-//let y = Foo(1 2 4)
-//print(y.a + y.b)
-////let s = y.sum()
-////print(s)
-//
-//
-//let a = (1 4 false)
-//
-//print(a.0)
+type Foo {
+    let a: Int = 10
+    var b: Int = 20
+    let c: Int = 40
+    
+    func sum: Int -> Int = do
+        return (self.a + self.b + self.c) * $0
+}
 
 
-//func meme: Int Int -> Int Bool = {
-//    return ( $0 * $1 false)
-//}
+let f = Foo()
+let u = f.sum(2)
 
-//let u = meme(10000000000 10000000000)
-//
-//print(u.0)
-//print(u.1)
+print(u)
 
-let a = 3 + 2
-print(a)
+

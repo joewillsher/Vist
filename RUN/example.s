@@ -646,11 +646,64 @@ Ltmp40:
 	movq	%rsp, %rbp
 Ltmp41:
 	.cfi_def_cfa_register %rbp
-	movl	$5, %edi
+	movl	$140, %edi
 	callq	__$print_i64
 	xorl	%eax, %eax
 	popq	%rbp
 	retq
+	.cfi_endproc
+
+	.globl	__Foo_S.i64S.i64S.i64
+	.align	4, 0x90
+__Foo_S.i64S.i64S.i64:                  ## @_Foo_S.i64S.i64S.i64
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	movq	%rdx, %rcx
+	movq	%rdi, %rax
+	movq	%rsi, %rdx
+	popq	%rbp
+	retq
+
+	.globl	__Foo_
+	.align	4, 0x90
+__Foo_:                                 ## @_Foo_
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	movl	$10, %eax
+	movl	$20, %edx
+	movl	$40, %ecx
+	popq	%rbp
+	retq
+
+	.globl	__Foo.sum_S.i64
+	.align	4, 0x90
+__Foo.sum_S.i64:                        ## @_Foo.sum_S.i64
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp42:
+	.cfi_def_cfa_offset 16
+Ltmp43:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp44:
+	.cfi_def_cfa_register %rbp
+	addq	%rdx, %rsi
+	jo	LBB50_4
+## BB#1:                                ## %_+_S.i64S.i64.exit
+	addq	%rsi, %rdi
+	jo	LBB50_4
+## BB#2:                                ## %_+_S.i64S.i64.exit8
+	imulq	%rcx, %rdi
+	jo	LBB50_4
+## BB#3:                                ## %_*_S.i64S.i64.exit
+	movq	%rdi, %rax
+	popq	%rbp
+	retq
+LBB50_4:                                ## %then0.i.i11
+	callq	__$fatalError_
 	.cfi_endproc
 
 	.section	__TEXT,__cstring,cstring_literals

@@ -257,10 +257,6 @@ final class MutationExpression : Expression {
 }
 
 
-struct OpObj {
-    let precedence: Int
-}
-
 class FunctionPrototypeExpression : Expression, StructMember {
     let name: String
     let fnType: FunctionType
@@ -277,8 +273,12 @@ class FunctionPrototypeExpression : Expression, StructMember {
     
     var mangledName: String
     
+    /// `self` if the function is a member function
+    weak var parent: StructExpression? = nil
+    
     var type: LLVMTyped? = nil
 }
+
 
 final class FunctionImplementationExpression : Expression {
     let params: TupleExpression
@@ -380,7 +380,7 @@ final class ConditionalExpression<BlockType : ScopeExpression> : Expression {
         
         for (index, path) in statements.enumerate() {
             
-            p.append(ElseIfBlockExpression<BlockType>(condition: path.0, block: path.1))
+            p.append(ElseIfBlockExpression(condition: path.0, block: path.1))
             
             // nil condition here is an else block, if there is anything after an else block then throw
             // either because there is more than 1 else or expressions after an else
@@ -544,6 +544,8 @@ final class MethodCallExpression <ObjectType : Expression> : Expression {
         self.params = params
         self.object = object
     }
+    
+    var mangledName: String = ""
     
     var type: LLVMTyped? = nil
 }

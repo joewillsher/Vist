@@ -65,6 +65,8 @@ type Array {
 @inline @noreturn func fatalError: () = do _fatalError()
 @inline func assert: Bool = do
     if $0 do () else do fatalError()
+
+// internal function to stdlib, takes a LLVM.Int and fails if true
 @inline func condFail: LLVM.Bool = do
     if Bool($0) do fatalError()
 

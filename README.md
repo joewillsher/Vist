@@ -30,9 +30,11 @@ func bar: Int = do print($0)
 
 func fact: Int -> Int = |a| do
     if a <= 1 do
-        return foo(0 1)
+        return 1
     else do
         return a * fact(a - 1)
+
+print(foo(100 fact(10)))
 
 type Baz {
     var a: Int

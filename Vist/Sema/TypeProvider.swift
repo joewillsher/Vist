@@ -278,7 +278,12 @@ extension FunctionPrototypeExpression : TypeProvider {
         
         let ty = LLVMFnType(params: try fnType.params(scope.allTypes), returns: try fnType.returnType(scope.allTypes))
         
-        mangledName = name.mangle(ty)
+        if let p = parent?.name {
+            mangledName = "\(p).\(name)".mangle(ty)
+            
+        } else {
+            mangledName = name.mangle(ty)
+        }
         
         scope[function: name] = ty  // update function table
         fnType.type = ty            // store type in fntype
@@ -297,6 +302,10 @@ extension FunctionPrototypeExpression : TypeProvider {
             try v.llvmType(fnScope)
             
             fnScope[variable: n] = t
+        }
+        
+        if let t = parent?.type {
+            fnScope[variable: "self"] = t
         }
         
         // type gen for inner scope
@@ -533,16 +542,18 @@ extension StructExpression : TypeProvider {
             return (a.name, t, a.isMutable)
         }
         
+        let ty = LLVMStType(members: members, methods: [], name: name)
+        
+        scope[type: name] = ty
+        self.type = ty
+        
         let memberFunctions = try methods.flatMap { (f: FunctionPrototypeExpression) -> (String, LLVMFnType) in
             try f.llvmType(structScope)
             guard let t = f.fnType.type as? LLVMFnType else { throw SemaError.StructMethodNotTyped }
             return (f.name, t)
         }
         
-        let ty = LLVMStType(members: members, methods: memberFunctions, name: name)
-        
-        scope[type: name] = ty
-        self.type = ty
+        ty.methods = memberFunctions
         
         if let implicit = implicitIntialiser() {
             initialisers.append(implicit)
@@ -615,7 +626,25 @@ extension MethodCallExpression : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
-        return LLVMType.Null
+        guard let parentType = try object.llvmType(scope) as? LLVMStType else { fatalError("Not struct type") }
+        
+        let params = try self.params.elements.map { try $0.llvmType(scope) }
+        
+        guard let i = parentType.methods.indexOf({ $0.0 == name }) else { throw SemaError.NoFunction(name) }
+        let fnType = parentType.methods[i].1
+        
+        self.mangledName = "\(parentType.name).\(name)".mangle(fnType)
+        
+        guard params == fnType.params else { throw SemaError.WrongFunctionApplications(name: "\(parentType.name).\(name)", applied: params, expected: fnType.params)}
+        
+        // gen types for objects in call
+        for arg in self.params.elements {
+            try arg.llvmType(scope)
+        }
+        
+        // assign type to self and return
+        self.type = fnType.returns
+        return fnType.returns
     }
 }
 

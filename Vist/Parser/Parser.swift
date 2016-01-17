@@ -832,9 +832,15 @@ extension Parser {
         }
         
         let s = StructExpression(name: name, properties: properties, methods: methods, initialisers: initialisers, attrs: a)
+        
+        // associate functions with the struct
         for i in s.initialisers {
             i.parent = s
         }
+        for m in s.methods {
+            m.parent = s
+        }
+        
         return s
     }
     

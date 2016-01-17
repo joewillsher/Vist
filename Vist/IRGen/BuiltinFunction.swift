@@ -39,7 +39,7 @@ func builtinInstruction(named: String, builder: LLVMBuilderRef, module: LLVMModu
         }
     case "LLVM.i_div": return { LLVMBuildUDiv(builder, $0, $1, "div_res") }
     case "LLVM.i_rem": return { LLVMBuildURem(builder, $0, $1, "rem_res") }
-
+        
     case "LLVM.i_cmp_lt": return { return LLVMBuildICmp(builder, LLVMIntSLT, $0, $1, "cmp_lt_res") }
     case "LLVM.i_cmp_lte": return { return LLVMBuildICmp(builder, LLVMIntSLE, $0, $1, "cmp_lte_res") }
     case "LLVM.i_cmp_gt": return { return LLVMBuildICmp(builder, LLVMIntSGT, $0, $1, "cmp_gt_res") }

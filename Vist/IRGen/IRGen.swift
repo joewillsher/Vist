@@ -85,7 +85,11 @@ extension LLVMBool : Swift.BooleanType {
     }
 }
 
-
+private func codeGenIn(stackFrame: StackFrame) -> Expression throws -> LLVMValueRef {
+    return { e in
+        try e.expressionCodeGen(stackFrame)
+    }
+}
 
 
 
@@ -399,70 +403,171 @@ extension FunctionPrototypeExpression : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        let args = fnType.args, argCount = args.elements.count
-        guard let type = self.fnType.type as? LLVMFnType else { throw IRError.TypeNotFound }
-        
-        // If existing function definition
-        let _fn = LLVMGetNamedFunction(module, mangledName)
-        if _fn != nil && LLVMCountParams(_fn) == UInt32(argCount) && LLVMCountBasicBlocks(_fn) != 0 && LLVMGetEntryBasicBlock(_fn) != nil {
-            return _fn
-        }
-        
-        // Set params
-        let argBuffer = try fnType.params().ptr()
-        defer { argBuffer.dealloc(argCount) }
-        
-        // make function
-        let functionType = type.ir()
-        let function = LLVMAddFunction(module, mangledName, functionType)
-        LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
-        
-        for a in attrs {
-            a.addAttrTo(function)
-        }
-        
-        // setup function block
-        let entryBlock = LLVMAppendBasicBlock(function, "entry")
-        LLVMPositionBuilderAtEnd(builder, entryBlock)
-        
-        // Add function type to stack frame
-        stackFrame.addFunctionType(mangledName, val: functionType)
-        
-        // stack frame internal to function, needs params setting and then the block should be added *inside* the bbGen function
-        let functionStackFrame = StackFrame(block: entryBlock, function: function, parentStackFrame: stackFrame)
-        
-        // set function param names and update table
-        for i in 0..<argCount {
-            let param = LLVMGetParam(function, UInt32(i))
-            let name = (impl?.params.elements[i] as? ValueType)?.name ?? ("$\(i)")
-            LLVMSetValueName(param, name)
+        if let parent = self.parent {
             
-            let ty = LLVMTypeOf(param)
-            if LLVMGetTypeKind(ty) == LLVMStructTypeKind {
-                
-                let tyName = (args.elements[i] as! ValueType).name
-                let t = try stackFrame.type(tyName)
-                
-                let memTys = t.members.map { ($0.0, $0.1.ir(), $0.2) }
-                
-                let s = ParameterStructVariable(type: ty, val: param, builder: builder, properties: memTys)
-                functionStackFrame.addVariable(name, val: s)
+            guard let parentType = parent.type as? LLVMStType else { fatalError("Parent not a struct type") }
+            
+            let args = fnType.args, argCount = args.elements.count
+            guard let _t = self.fnType.type as? LLVMFnType else { throw IRError.TypeNotFound }
+            
+            let type = LLVMFnType(params: [parentType] + _t.params, returns: _t.returns)
+            
+            
+            
+            
+            
+            // If existing function definition
+            let _fn = LLVMGetNamedFunction(module, mangledName)
+            if _fn != nil && LLVMCountParams(_fn) == UInt32(argCount) && LLVMCountBasicBlocks(_fn) != 0 && LLVMGetEntryBasicBlock(_fn) != nil {
+                return _fn
             }
-            else {
-                let s = StackVariable(val: param, builder: builder)
-                functionStackFrame.addVariable(name, val: s)
+            
+            // Set params
+            let argBuffer = try fnType.params().ptr()
+            defer { argBuffer.dealloc(argCount) }
+            
+            // make function
+            let functionType = type.ir()
+            let function = LLVMAddFunction(module, mangledName, functionType)
+            LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
+            
+            for a in attrs {
+                a.addAttrTo(function)
             }
+            
+            // setup function block
+            let entryBlock = LLVMAppendBasicBlock(function, "entry")
+            LLVMPositionBuilderAtEnd(builder, entryBlock)
+            
+            // Add function type to stack frame
+            stackFrame.addFunctionType(mangledName, val: functionType)
+            
+            // stack frame internal to function, needs params setting and then the block should be added *inside* the bbGen function
+            let functionStackFrame = StackFrame(block: entryBlock, function: function, parentStackFrame: stackFrame)
+            
+            
+            
+            
+            
+            
+            
+            // set function param names and update table
+            for i in 0..<argCount {
+                let param = LLVMGetParam(function, UInt32(i+1))
+                let name = (impl?.params.elements[i] as? ValueType)?.name ?? ("$\(i)")
+                LLVMSetValueName(param, name)
+                
+                let ty = LLVMTypeOf(param)
+                if LLVMGetTypeKind(ty) == LLVMStructTypeKind {
+                    
+                    let tyName = (args.elements[i] as! ValueType).name
+                    let t = try stackFrame.type(tyName)
+                    
+                    let memTys = t.members.map { ($0.0, $0.1.ir(), $0.2) }
+                    
+                    let s = ParameterStructVariable(type: ty, val: param, builder: builder, properties: memTys)
+                    functionStackFrame.addVariable(name, val: s)
+                }
+                else {
+                    let s = StackVariable(val: param, builder: builder)
+                    functionStackFrame.addVariable(name, val: s)
+                }
+            }
+            
+            
+            
+            let param = LLVMGetParam(function, 0)
+            LLVMSetValueName(param, "self")
+            
+            let memTys = parentType.members.map { ($0.0, $0.1.ir(), $0.2) }
+            
+            let s = ParameterStructVariable(type: parentType.ir(), val: param, builder: builder, properties: memTys)
+            functionStackFrame.addVariable("self", val: s)
+            
+            
+            
+            
+            // generate bb for body
+            do {
+                try impl?.body.bbGen(innerStackFrame: functionStackFrame, ret: type.returns.ir())
+            } catch {
+                LLVMDeleteFunction(function)
+                throw error
+            }
+            
+            return function
+            
+        }
+        else { // free function
+            
+            let args = fnType.args, argCount = args.elements.count
+            guard let type = self.fnType.type as? LLVMFnType else { throw IRError.TypeNotFound }
+            
+            // If existing function definition
+            let _fn = LLVMGetNamedFunction(module, mangledName)
+            if _fn != nil && LLVMCountParams(_fn) == UInt32(argCount) && LLVMCountBasicBlocks(_fn) != 0 && LLVMGetEntryBasicBlock(_fn) != nil {
+                return _fn
+            }
+            
+            // Set params
+            let argBuffer = try fnType.params().ptr()
+            defer { argBuffer.dealloc(argCount) }
+            
+            // make function
+            let functionType = type.ir()
+            let function = LLVMAddFunction(module, mangledName, functionType)
+            LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
+            
+            for a in attrs {
+                a.addAttrTo(function)
+            }
+            
+            // setup function block
+            let entryBlock = LLVMAppendBasicBlock(function, "entry")
+            LLVMPositionBuilderAtEnd(builder, entryBlock)
+            
+            // Add function type to stack frame
+            stackFrame.addFunctionType(mangledName, val: functionType)
+            
+            // stack frame internal to function, needs params setting and then the block should be added *inside* the bbGen function
+            let functionStackFrame = StackFrame(block: entryBlock, function: function, parentStackFrame: stackFrame)
+            
+            // set function param names and update table
+            for i in 0..<argCount {
+                let param = LLVMGetParam(function, UInt32(i))
+                let name = (impl?.params.elements[i] as? ValueType)?.name ?? ("$\(i)")
+                LLVMSetValueName(param, name)
+                
+                let ty = LLVMTypeOf(param)
+                if LLVMGetTypeKind(ty) == LLVMStructTypeKind {
+                    
+                    let tyName = (args.elements[i] as! ValueType).name
+                    let t = try stackFrame.type(tyName)
+                    
+                    let memTys = t.members.map { ($0.0, $0.1.ir(), $0.2) }
+                    
+                    let s = ParameterStructVariable(type: ty, val: param, builder: builder, properties: memTys)
+                    functionStackFrame.addVariable(name, val: s)
+                }
+                else {
+                    let s = StackVariable(val: param, builder: builder)
+                    functionStackFrame.addVariable(name, val: s)
+                }
+            }
+            
+            // generate bb for body
+            do {
+                try impl?.body.bbGen(innerStackFrame: functionStackFrame, ret: type.returns.ir())
+            } catch {
+                LLVMDeleteFunction(function)
+                throw error
+            }
+            
+            return function
         }
         
-        // generate bb for body
-        do {
-            try impl?.body.bbGen(innerStackFrame: functionStackFrame, ret: type.returns.ir())
-        } catch {
-            LLVMDeleteFunction(function)
-            throw error
-        }
         
-        return function
+        
     }
     
 }
@@ -841,6 +946,10 @@ extension StructExpression : IRGenerator {
             try i.codeGen(stackFrame)
         }
         
+        for m in methods {
+            try m.codeGen(stackFrame)
+        }
+
         return nil
     }
     
@@ -955,9 +1064,15 @@ extension MethodCallExpression : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
+        let f = LLVMGetNamedFunction(module, mangledName)
+        let c = self.params.elements.count + 1
         
+        let params = try ([object as Expression] + self.params.elements)
+            .map(codeGenIn(stackFrame))
+            .ptr()
+        defer { params.dealloc(c) }
         
-        return nil
+        return LLVMBuildCall(builder, f, params, UInt32(c), name)
     }
 }
 
@@ -1000,6 +1115,7 @@ extension TupleMemberLookupExpression : IRGenerator {
         return val
     }
 }
+
 
 
 
