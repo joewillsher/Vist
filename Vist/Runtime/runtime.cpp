@@ -39,7 +39,7 @@ _$print_i32(int i)
 extern "C"
 void
 __attribute__ ((noinline))
-_$print_FP64(double d)
+_$print_f64(double d)
 {
     printf("%f\n", d);
 };
@@ -47,7 +47,7 @@ _$print_FP64(double d)
 extern "C"
 void
 __attribute__ ((noinline))
-_$print_FP32(float d)
+_$print_f32(float d)
 {
     printf("%f\n", d);
 };

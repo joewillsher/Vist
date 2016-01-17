@@ -12,7 +12,8 @@ import Foundation
 extension String {
     
     func mangle(type: FnType, parentTypeName: String? = nil) -> String {
-        return "_\(sansUnderscores())_\(type.debugDescription)"
+        let n = parentTypeName == nil ? "" : "\(parentTypeName!)."
+        return "_\(n)\(sansUnderscores())_\(type.debugDescription)"
     }
     
     func sansUnderscores() -> String {
@@ -58,7 +59,7 @@ extension NativeType : CustomStringConvertible, CustomDebugStringConvertible {
         case Bool:                      return "b"
         case .Array(let el, _):         return "A\(el.debugDescription)"
         case .Pointer(let to):          return "P\(to.debugDescription)"
-        case .Float(let s):             return "FP\(s)"
+        case .Float(let s):             return "f\(s)"
         }
     }
 }
@@ -83,14 +84,9 @@ extension StructType: CustomStringConvertible, CustomDebugStringConvertible {
 extension FnType: CustomDebugStringConvertible {
     
     var debugDescription: String {
-        
-        var str = ""
-        
-        for p in params {
-            str += "\(p.debugDescription)"
-        }
-        
-        return str
+        return params
+            .map { $0.debugDescription }
+            .joinWithSeparator("_")
     }
     
 }

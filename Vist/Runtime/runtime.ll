@@ -29,7 +29,7 @@ define void @"_$print_i32"(i32 %i) #0 {
 }
 
 ; Function Attrs: noinline ssp uwtable
-define void @"_$print_FP64"(double %d) #0 {
+define void @"_$print_f64"(double %d) #0 {
   %1 = alloca double, align 8
   store double %d, double* %1, align 8
   %2 = load double* %1, align 8
@@ -38,7 +38,7 @@ define void @"_$print_FP64"(double %d) #0 {
 }
 
 ; Function Attrs: noinline ssp uwtable
-define void @"_$print_FP32"(float %d) #0 {
+define void @"_$print_f32"(float %d) #0 {
   %1 = alloca float, align 4
   store float %d, float* %1, align 4
   %2 = load float* %1, align 4

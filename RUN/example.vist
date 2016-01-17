@@ -20,6 +20,6 @@ let u = f.sum(2)
 print(u)
 
 
-// TODO: Method lookup function from StructType-- need to be able to overload
+
 // TODO: Make sure methods cannot conflict with global functions
 // TODO: Memberwise initialiser

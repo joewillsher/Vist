@@ -57,8 +57,7 @@ extension StructType {
     
     subscript (function function: String, paramTypes types: [LLVMTyped]) -> FnType? {
         get {
-            if let v = methods[raw: function, paramTypes: types] { return v }
-            return nil
+            return methods[raw: "\(name).\(function)", paramTypes: types]
         }
     }
 }

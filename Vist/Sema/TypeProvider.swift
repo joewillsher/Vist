@@ -279,8 +279,7 @@ extension FunctionPrototypeExpression : TypeProvider {
         let ty = FnType(params: try fnType.params(scope.allTypes), returns: try fnType.returnType(scope.allTypes))
         
         if let p = parent?.name {
-            mangledName = "\(p).\(name)".mangle(ty)
-            
+            mangledName = name.mangle(ty, parentTypeName: p)
         } else {
             mangledName = name.mangle(ty)
         }
@@ -632,7 +631,7 @@ extension MethodCallExpression : TypeProvider {
         
         guard let fnType = parentType[function: name, paramTypes: params] else { throw SemaError.NoFunction(name) }
         
-        self.mangledName = "\(parentType.name).\(name)".mangle(fnType)
+        self.mangledName = name.mangle(fnType, parentTypeName: parentType.name)
         
         guard params == fnType.params else {
             throw SemaError.WrongFunctionApplications(name: "\(parentType.name).\(name)", applied: params, expected: fnType.params)

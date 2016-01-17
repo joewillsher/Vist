@@ -978,7 +978,7 @@ extension PropertyLookupExpression : IRGenerator {
         
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        guard let n = object as? Variable else { fatalError("CannotGetPropertyFromNonVariableType") }
+        guard let n = object as? Variable else { fatalError("Cannot Get Property From Non Variable Type") }
         guard let variable = try stackFrame.variable(n.name) as? StructVariable else { throw IRError.NoVariable(n.name) }
         
         let val = try variable.loadPropertyNamed(name)
@@ -1008,6 +1008,8 @@ extension MethodCallExpression : IRGenerator {
         return LLVMBuildCall(builder, f, params, UInt32(c), n)
     }
 }
+
+
 
 
 //-------------------------------------------------------------------------------------------------------------------------

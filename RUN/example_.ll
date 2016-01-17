@@ -29,7 +29,7 @@ define void @"_$print_i32"(i32 %i) #0 {
 }
 
 ; Function Attrs: noinline ssp uwtable
-define void @"_$print_FP64"(double %d) #0 {
+define void @"_$print_f64"(double %d) #0 {
   %1 = alloca double, align 8
   store double %d, double* %1, align 8
   %2 = load double* %1, align 8
@@ -38,7 +38,7 @@ define void @"_$print_FP64"(double %d) #0 {
 }
 
 ; Function Attrs: noinline ssp uwtable
-define void @"_$print_FP32"(float %d) #0 {
+define void @"_$print_f32"(float %d) #0 {
   %1 = alloca float, align 4
   store float %d, float* %1, align 4
   %2 = load float* %1, align 4
@@ -152,7 +152,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { double } @_Double_S.FP64({ double } %o) #3 {
+define { double } @_Double_S.f64({ double } %o) #3 {
 entry:
   %0 = alloca { double }
   %value = extractvalue { double } %o, 0
@@ -163,7 +163,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { double } @_Double_FP64(double %v) #3 {
+define { double } @_Double_f64(double %v) #3 {
 entry:
   %0 = alloca { double }
   %value_ptr = getelementptr inbounds { double }* %0, i32 0, i32 0
@@ -173,7 +173,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { { i64 }, { i64 } } @_Range_S.i64S.i64({ i64 } %"$0", { i64 } %"$1") #3 {
+define { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 } %"$0", { i64 } %"$1") #3 {
 entry:
   %0 = alloca { { i64 }, { i64 } }
   %start_ptr = getelementptr inbounds { { i64 }, { i64 } }* %0, i32 0, i32 0
@@ -201,10 +201,10 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define void @_print_S.FP64({ double } %a) #3 {
+define void @_print_S.f64({ double } %a) #3 {
 entry:
   %value = extractvalue { double } %a, 0
-  call void @"_$print_FP64"(double %value)
+  call void @"_$print_f64"(double %value)
   ret void
 }
 
@@ -251,7 +251,7 @@ then0:                                            ; preds = %entry
 }
 
 ; Function Attrs: alwaysinline
-define { i64 } @"_+_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
+define { i64 } @"_+_S.i64_S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
@@ -271,7 +271,7 @@ entry:
 declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #5
 
 ; Function Attrs: alwaysinline
-define { i64 } @_-_S.i64S.i64({ i64 } %a, { i64 } %b) #3 {
+define { i64 } @_-_S.i64_S.i64({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
@@ -291,7 +291,7 @@ entry:
 declare { i64, i1 } @llvm.ssub.with.overflow.i64(i64, i64) #5
 
 ; Function Attrs: alwaysinline
-define { i64 } @"_*_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
+define { i64 } @"_*_S.i64_S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
@@ -311,7 +311,7 @@ entry:
 declare { i64, i1 } @llvm.smul.with.overflow.i64(i64, i64) #5
 
 ; Function Attrs: alwaysinline
-define { i64 } @"_/_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
+define { i64 } @"_/_S.i64_S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
@@ -321,7 +321,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { i64 } @"_%_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
+define { i64 } @"_%_S.i64_S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
@@ -331,7 +331,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @"_<_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
+define { i1 } @"_<_S.i64_S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
@@ -341,7 +341,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @"_<=_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
+define { i1 } @"_<=_S.i64_S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
@@ -351,7 +351,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @"_>_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
+define { i1 } @"_>_S.i64_S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
@@ -361,7 +361,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @"_>=_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
+define { i1 } @"_>=_S.i64_S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
@@ -371,7 +371,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @"_==_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
+define { i1 } @"_==_S.i64_S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
@@ -381,7 +381,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @"_!=_S.i64S.i64"({ i64 } %a, { i64 } %b) #3 {
+define { i1 } @"_!=_S.i64_S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
@@ -391,7 +391,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @"_&&_S.bS.b"({ i1 } %a, { i1 } %b) #3 {
+define { i1 } @"_&&_S.b_S.b"({ i1 } %a, { i1 } %b) #3 {
 entry:
   %value = extractvalue { i1 } %a, 0
   %value1 = extractvalue { i1 } %b, 0
@@ -401,7 +401,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @"_||_S.bS.b"({ i1 } %a, { i1 } %b) #3 {
+define { i1 } @"_||_S.b_S.b"({ i1 } %a, { i1 } %b) #3 {
 entry:
   %value = extractvalue { i1 } %a, 0
   %value1 = extractvalue { i1 } %b, 0
@@ -411,57 +411,57 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { double } @"_+_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
+define { double } @"_+_S.f64_S.f64"({ double } %a, { double } %b) #3 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %add_res = fadd double %value, %value1
-  %Double_res = call { double } @_Double_FP64(double %add_res)
+  %Double_res = call { double } @_Double_f64(double %add_res)
   ret { double } %Double_res
 }
 
 ; Function Attrs: alwaysinline
-define { double } @_-_S.FP64S.FP64({ double } %a, { double } %b) #3 {
+define { double } @_-_S.f64_S.f64({ double } %a, { double } %b) #3 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %sub_res = fsub double %value, %value1
-  %Double_res = call { double } @_Double_FP64(double %sub_res)
+  %Double_res = call { double } @_Double_f64(double %sub_res)
   ret { double } %Double_res
 }
 
 ; Function Attrs: alwaysinline
-define { double } @"_*_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
+define { double } @"_*_S.f64_S.f64"({ double } %a, { double } %b) #3 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %mul_res = fmul double %value, %value1
-  %Double_res = call { double } @_Double_FP64(double %mul_res)
+  %Double_res = call { double } @_Double_f64(double %mul_res)
   ret { double } %Double_res
 }
 
 ; Function Attrs: alwaysinline
-define { double } @"_/_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
+define { double } @"_/_S.f64_S.f64"({ double } %a, { double } %b) #3 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %div_res = fdiv double %value, %value1
-  %Double_res = call { double } @_Double_FP64(double %div_res)
+  %Double_res = call { double } @_Double_f64(double %div_res)
   ret { double } %Double_res
 }
 
 ; Function Attrs: alwaysinline
-define { double } @"_%_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
+define { double } @"_%_S.f64_S.f64"({ double } %a, { double } %b) #3 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %rem_res = frem double %value, %value1
-  %Double_res = call { double } @_Double_FP64(double %rem_res)
+  %Double_res = call { double } @_Double_f64(double %rem_res)
   ret { double } %Double_res
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @"_<_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
+define { i1 } @"_<_S.f64_S.f64"({ double } %a, { double } %b) #3 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
@@ -471,7 +471,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @"_<=_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
+define { i1 } @"_<=_S.f64_S.f64"({ double } %a, { double } %b) #3 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
@@ -481,7 +481,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @"_>_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
+define { i1 } @"_>_S.f64_S.f64"({ double } %a, { double } %b) #3 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
@@ -491,7 +491,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @"_>=_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
+define { i1 } @"_>=_S.f64_S.f64"({ double } %a, { double } %b) #3 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
@@ -501,7 +501,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @"_==_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
+define { i1 } @"_==_S.f64_S.f64"({ double } %a, { double } %b) #3 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
@@ -511,7 +511,7 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @"_!=_S.FP64S.FP64"({ double } %a, { double } %b) #3 {
+define { i1 } @"_!=_S.f64_S.f64"({ double } %a, { double } %b) #3 {
 entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
@@ -521,18 +521,18 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { { i64 }, { i64 } } @_..._S.i64S.i64({ i64 } %"$0", { i64 } %"$1") #3 {
+define { { i64 }, { i64 } } @_..._S.i64_S.i64({ i64 } %"$0", { i64 } %"$1") #3 {
 entry:
-  %Range_res = call { { i64 }, { i64 } } @_Range_S.i64S.i64({ i64 } %"$0", { i64 } %"$1")
+  %Range_res = call { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 } %"$0", { i64 } %"$1")
   ret { { i64 }, { i64 } } %Range_res
 }
 
 ; Function Attrs: alwaysinline
-define { { i64 }, { i64 } } @"_..<_S.i64S.i64"({ i64 } %"$0", { i64 } %"$1") #3 {
+define { { i64 }, { i64 } } @"_..<_S.i64_S.i64"({ i64 } %"$0", { i64 } %"$1") #3 {
 entry:
   %0 = call { i64 } @_Int_i64(i64 1)
-  %-_res = call { i64 } @_-_S.i64S.i64({ i64 } %"$1", { i64 } %0)
-  %Range_res = call { { i64 }, { i64 } } @_Range_S.i64S.i64({ i64 } %"$0", { i64 } %-_res)
+  %-_res = call { i64 } @_-_S.i64_S.i64({ i64 } %"$1", { i64 } %0)
+  %Range_res = call { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 } %"$0", { i64 } %-_res)
   ret { { i64 }, { i64 } } %Range_res
 }
 
@@ -576,9 +576,9 @@ entry:
   %a = extractvalue { { i64 }, { i64 }, { i64 } } %self, 0
   %b = extractvalue { { i64 }, { i64 }, { i64 } } %self, 1
   %c = extractvalue { { i64 }, { i64 }, { i64 } } %self, 2
-  %"+_res" = call { i64 } @"_+_S.i64S.i64"({ i64 } %b, { i64 } %c)
-  %"+_res1" = call { i64 } @"_+_S.i64S.i64"({ i64 } %a, { i64 } %"+_res")
-  %"*_res" = call { i64 } @"_*_S.i64S.i64"({ i64 } %"+_res1", { i64 } %"$0")
+  %"+_res" = call { i64 } @"_+_S.i64_S.i64"({ i64 } %b, { i64 } %c)
+  %"+_res1" = call { i64 } @"_+_S.i64_S.i64"({ i64 } %a, { i64 } %"+_res")
+  %"*_res" = call { i64 } @"_*_S.i64_S.i64"({ i64 } %"+_res1", { i64 } %"$0")
   ret { i64 } %"*_res"
 }
 
