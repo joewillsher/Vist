@@ -530,63 +530,28 @@ entry:
 
 define i64 @main() {
 entry:
-  %Foo_res = call { { i64 }, { i64 }, { i64 } } @_Foo_()
-  %0 = alloca { { i64 }, { i64 }, { i64 } }
-  store { { i64 }, { i64 }, { i64 } } %Foo_res, { { i64 }, { i64 }, { i64 } }* %0
-  %f = load { { i64 }, { i64 }, { i64 } }* %0
-  %1 = call { i1 } @_Bool_b(i1 true)
-  call void @_Foo.sum_S.b({ { i64 }, { i64 }, { i64 } } %f, { i1 } %1)
-  %f1 = load { { i64 }, { i64 }, { i64 } }* %0
+  %0 = call { i64 } @_Int_i64(i64 1)
+  %1 = alloca { i64 }
+  store { i64 } %0, { i64 }* %1
   %2 = call { i64 } @_Int_i64(i64 2)
-  %sum_res = call { i64 } @_Foo.sum_S.i64({ { i64 }, { i64 }, { i64 } } %f1, { i64 } %2)
   %3 = alloca { i64 }
-  store { i64 } %sum_res, { i64 }* %3
-  %u = load { i64 }* %3
+  store { i64 } %2, { i64 }* %3
+  %4 = call { i64 } @_Int_i64(i64 1)
+  %a = load { i64 }* %1
+  %add_res = call { i64 } @_add_S.i64_S.i64({ i64 } %4, { i64 } %a)
+  %b = load { i64 }* %3
+  %add_res1 = call { i64 } @_add_S.i64_S.i64({ i64 } %add_res, { i64 } %b)
+  %5 = alloca { i64 }
+  store { i64 } %add_res1, { i64 }* %5
+  %u = load { i64 }* %5
   call void @_print_S.i64({ i64 } %u)
-  call void @_fatalError_()
   ret i64 0
 }
 
-; Function Attrs: alwaysinline
-define { { i64 }, { i64 }, { i64 } } @_Foo_() #2 {
+define { i64 } @_add_S.i64_S.i64({ i64 } %"$0", { i64 } %"$1") {
 entry:
-  %0 = alloca { { i64 }, { i64 }, { i64 } }
-  %1 = call { i64 } @_Int_i64(i64 10)
-  %a_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 0
-  store { i64 } %1, { i64 }* %a_ptr
-  %2 = call { i64 } @_Int_i64(i64 20)
-  %b_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 1
-  store { i64 } %2, { i64 }* %b_ptr
-  %3 = call { i64 } @_Int_i64(i64 40)
-  %c_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 2
-  store { i64 } %3, { i64 }* %c_ptr
-  %4 = load { { i64 }, { i64 }, { i64 } }* %0
-  ret { { i64 }, { i64 }, { i64 } } %4
-}
-
-define { i64 } @_Foo.sum_S.i64({ { i64 }, { i64 }, { i64 } } %self, { i64 } %"$0") {
-entry:
-  %a = extractvalue { { i64 }, { i64 }, { i64 } } %self, 0
-  %b = extractvalue { { i64 }, { i64 }, { i64 } } %self, 1
-  %c = extractvalue { { i64 }, { i64 }, { i64 } } %self, 2
-  %"+_res" = call { i64 } @"_+_S.i64_S.i64"({ i64 } %b, { i64 } %c)
-  %"+_res1" = call { i64 } @"_+_S.i64_S.i64"({ i64 } %a, { i64 } %"+_res")
-  %"*_res" = call { i64 } @"_*_S.i64_S.i64"({ i64 } %"+_res1", { i64 } %"$0")
-  ret { i64 } %"*_res"
-}
-
-define void @_Foo.sum_S.b({ { i64 }, { i64 }, { i64 } } %self, { i1 } %"$0") {
-entry:
-  %value = extractvalue { i1 } %"$0", 0
-  br i1 %value, label %then0, label %cont
-
-cont:                                             ; preds = %entry, %then0
-  ret void
-
-then0:                                            ; preds = %entry
-  %a = extractvalue { { i64 }, { i64 }, { i64 } } %self, 0
-  call void @_print_S.i64({ i64 } %a)
-  br label %cont
+  %"+_res" = call { i64 } @"_+_S.i64_S.i64"({ i64 } %"$0", { i64 } %"$1")
+  ret { i64 } %"+_res"
 }
 
 attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

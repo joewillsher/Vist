@@ -23,18 +23,18 @@ Or you can then run the compiler from the command line, use the `-h` flag to see
 ##Examples
 
 ```swift
-func foo: Int Int -> Int = do
-    return $0 + $1
+func foo :: Int Int -> Int = do
+return $0 + $1
 
-func bar: Int = do print($0)
+func bar :: Int = do print $0
 
-func fact: Int -> Int = |a| do
+func fact :: Int -> Int = |a| do
     if a <= 1 do
         return 1
     else do
-        return a * fact(a - 1)
+        return a * fact a - 1
 
-print(foo(100 fact(10)))
+print (foo 100 (fact 10))
 
 type Baz {
     var a: Int

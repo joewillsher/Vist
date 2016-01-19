@@ -66,10 +66,6 @@ struct Parser {
     
     private var attrs: [AttributeExpression]
     
-    /// Contains whether the current parsing context considers new line chatacters
-    private var considerNewLines: Bool = false
-    private var _considerNewLinesTemp: [Bool] = [] // temp var used to reset
-    
     private var precedences: [String: Int] = [
         "<": 30,
         ">": 30,
@@ -111,16 +107,23 @@ struct Parser {
         return tokensWithPos.map{$0.1.range.start}[index+i]
     }
     
-    /// Set the `considerNewLines` flag to b
-    ///
-    /// After this is called, you must use `resetConsiderNewLines()` to reset `considerNewLines`
-    private mutating func setConsiderNewLines(b: Bool) {
-        _considerNewLinesTemp.append(considerNewLines)
-        considerNewLines = b
+    
+    
+    
+    
+    /// Contains whether the current parsing context considers new line chatacters
+    private var considerNewLines: Bool {
+        get {
+            return _considerNewLines.last ?? false
+        }
+        set {
+            _considerNewLines.append(newValue)
+        }
     }
+    private var _considerNewLines: [Bool] = [false] // temp var used to reset
     
     private mutating func resetConsiderNewLines() {
-        considerNewLines = _considerNewLinesTemp.popLast()!
+        _considerNewLines.removeLast()
         
         // if we now dont care about whitespace, move to next non whitespace char
         if !considerNewLines {
@@ -129,6 +132,27 @@ struct Parser {
             }
         }
     }
+    
+    
+    /// When parsing a parameter list we want to lay out function parameters next to eachother
+    ///
+    /// `add a b` parses as `add(a, b)` not `parse(a(b))`
+    ///
+    /// This flag is true if the parser is in a parameter list where identifiers are assumed to be vars not funcs
+    private var inParameterList: Bool {
+        get {
+            return _inParameterList.last ?? false
+        }
+        set {
+            _inParameterList.append(newValue)
+        }
+    }
+    private var _inParameterList: [Bool] = [false]
+    
+    private mutating func revertParameterListState() {
+        _inParameterList.removeLast()
+    }
+
 }
 
 //-------------------------------------------------------------------------------------------------------------------------
@@ -258,9 +282,11 @@ extension Parser {
             getNextToken(2) // eat '()'
             return FunctionCallExpression(name: token, args: TupleExpression.void())
             
-        case let u? where u.isValidParamToken:
+        case let u? where u.isValidParamToken && !inParameterList:
             getNextToken() // eat 'identifier'
             
+            inParameterList = true
+            defer { revertParameterListState() }
             return FunctionCallExpression(name: token, args: try parseParamExpression())
             
         case .SqbrOpen?: // subscript
@@ -310,13 +336,16 @@ extension Parser {
             // property or method
             
             switch inspectNextToken() {
-            case let u? where u.isValidParamToken:
+            case let u? where u.isValidParamToken && !inParameterList:
                 getNextToken() // eat foo
                 
                 if case .OpenParen = currentToken {   // simple itentifier () call
                     getNextToken() // eat `)`
                     return MethodCallExpression(name: name, params: TupleExpression.void(), object: exp)
                 }
+                
+                inParameterList = true
+                defer { revertParameterListState() }
                 
                 return MethodCallExpression(name: name, params: try parseParamExpression(), object: exp)
                 
@@ -383,6 +412,10 @@ extension Parser {
             return try parseBooleanExpression(b)
             
         case .OpenParen:
+            // if in paren expression we allow function parameters to be treated as functions not vars
+            inParameterList = false
+            defer { revertParameterListState() }
+
             return try parseParenExpression(tuple: false)
             
         case .SqbrOpen:
@@ -429,11 +462,10 @@ extension Parser {
         
         var exps: [Expression] = []
         
-        setConsiderNewLines(true)
+        considerNewLines = true
+        
         while case let a = currentToken where a.isValidParamToken {
-            
             exps.append(try parseOperatorExpression())
-            
         }
         resetConsiderNewLines()
         
