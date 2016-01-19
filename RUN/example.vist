@@ -16,10 +16,10 @@ type Foo {
 let f = Foo ()
 f.sum true
 
-let u = (f.sum 2)
+let u = f.sum 2
 
-(print u)
+print u
 
-(fatalError ())
+fatalError ()
 
 

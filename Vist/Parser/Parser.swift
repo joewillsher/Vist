@@ -66,6 +66,10 @@ struct Parser {
     
     private var attrs: [AttributeExpression]
     
+    /// Contains whether the current parsing context considers new line chatacters
+    private var considerNewLines: Bool = false
+    private var _considerNewLinesTemp: [Bool] = [] // temp var used to reset
+    
     private var precedences: [String: Int] = [
         "<": 30,
         ">": 30,
@@ -84,26 +88,47 @@ struct Parser {
         "..<": 40
     ]
     
-    private mutating func getNextToken(n: Int = 1, considerWhitespace: Bool = false) -> Token {
-        index += n
-        if case .WhiteSpace = currentToken where considerWhitespace { getNextToken(n, considerWhitespace: considerWhitespace) }
-        return currentToken
+    private mutating func getNextToken(n: Int = 1) -> Token {
+        if n == 0 { return currentToken }
+        index += 1
+        if case .WhiteSpace = currentToken where !considerNewLines {
+            return getNextToken(n)
+        }
+        return getNextToken(n-1)
     }
-    private func inspectNextToken(i: Int = 1, considerWhitespace: Bool = false) -> Token? { // debug function, acts as getNextToken() but does not mutate
+    private func inspectNextToken(i: Int = 1) -> Token? { // debug function, acts as getNextToken() but does not mutate
         if index+i >= tokens.count-i { return nil }
-        if case .WhiteSpace = currentToken where considerWhitespace {
-            return inspectNextToken(i+1, considerWhitespace: considerWhitespace)
+        if case .WhiteSpace = currentToken where !considerNewLines {
+            return inspectNextToken(i+1)
         }
         return tokens[index+i]
     }
-    private func inspectNextPos(i: Int = 1, considerWhitespace: Bool = false) -> Pos? {
+    private func inspectNextPos(i: Int = 1) -> Pos? {
         if index+i >= tokens.count-i { return nil }
-        if case .WhiteSpace = currentToken where considerWhitespace {
-            return inspectNextPos(i+1, considerWhitespace: considerWhitespace)
+        if case .WhiteSpace = currentToken where !considerNewLines {
+            return inspectNextPos(i+1)
         }
         return tokensWithPos.map{$0.1.range.start}[index+i]
     }
     
+    /// Set the `considerNewLines` flag to b
+    ///
+    /// After this is called, you must use `resetConsiderNewLines()` to reset `considerNewLines`
+    private mutating func setConsiderNewLines(b: Bool) {
+        _considerNewLinesTemp.append(considerNewLines)
+        considerNewLines = b
+    }
+    
+    private mutating func resetConsiderNewLines() {
+        considerNewLines = _considerNewLinesTemp.popLast()!
+        
+        // if we now dont care about whitespace, move to next non whitespace char
+        if !considerNewLines {
+            while case .WhiteSpace = currentToken {
+                index += 1
+            }
+        }
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------------
@@ -282,6 +307,7 @@ extension Parser {
         
         switch currentToken {
         case .Identifier(let name):
+            // property or method
             
             switch inspectNextToken() {
             case let u? where u.isValidParamToken:
@@ -403,9 +429,13 @@ extension Parser {
         
         var exps: [Expression] = []
         
+        setConsiderNewLines(true)
         while case let a = currentToken where a.isValidParamToken {
+            
             exps.append(try parseOperatorExpression())
+            
         }
+        resetConsiderNewLines()
         
         return exps.isEmpty ? TupleExpression.void() : TupleExpression(elements: exps)
     }
@@ -973,6 +1003,7 @@ extension Parser {
         case .At:                   try parseAttrExpression(); return nil
         case .Void:                 index++; return Void()
         case .EOF, .CloseBrace:     index++; return nil
+        case .WhiteSpace:           getNextToken(); return nil
         default:                    throw ParseError.NoToken(token, currentPos)
         }
     }
