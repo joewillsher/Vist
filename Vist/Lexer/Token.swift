@@ -43,6 +43,9 @@ enum Token {
             return false
         }
     }
+    var isCloseParen: Bool {
+        if case .CloseParen = self { return true } else { return false }
+    }
 }
 
 let operators: [String: Token] = [

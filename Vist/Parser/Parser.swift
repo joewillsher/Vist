@@ -272,21 +272,13 @@ extension Parser {
     private mutating func parseIdentifierExpression(token: String) throws -> Expression {
         
         switch inspectNextToken() {
-        case .OpenParen?: // call
-            getNextToken() // eat '('
-            
-            guard case .CloseParen? = inspectNextToken() else {   // simple itentifier() call
-                return FunctionCallExpression(name: token, args: try parseParamExpression())
-            }
-            
-            getNextToken(2) // eat '()'
+        case .OpenParen? where inspectNextToken(2)?.isCloseParen ?? false: // call
+            getNextToken(3) // eat 'func ()'
             return FunctionCallExpression(name: token, args: TupleExpression.void())
             
         case let u? where u.isValidParamToken && !inParameterList:
             getNextToken() // eat 'identifier'
             
-            inParameterList = true
-            defer { revertParameterListState() }
             return FunctionCallExpression(name: token, args: try parseParamExpression())
             
         case .SqbrOpen?: // subscript
@@ -343,9 +335,6 @@ extension Parser {
                     getNextToken() // eat `)`
                     return MethodCallExpression(name: name, params: TupleExpression.void(), object: exp)
                 }
-                
-                inParameterList = true
-                defer { revertParameterListState() }
                 
                 return MethodCallExpression(name: name, params: try parseParamExpression(), object: exp)
                 
@@ -434,45 +423,6 @@ extension Parser {
         }
     }
     
-    private mutating func parseTupleExpression() throws -> TupleExpression {
-        return try parseParenExpression(tuple: true) as! TupleExpression
-    }
-    
-    /// Guarantees if tuple is true, the return type is a TupleExpression
-    private mutating func parseParenExpression(tuple tuple: Bool) throws -> Expression {
-        
-        guard case .OpenParen = currentToken else { throw ParseError.ExpectedParen(currentPos) }
-        getNextToken() // eat `(`
-        
-        var exps: [Expression] = []
-        
-        while case let a = currentToken where a.isValidParamToken {
-            exps.append(try parseOperatorExpression())
-        }
-        getNextToken() // eat `)`
-        
-        switch exps.count {
-        case 0: return TupleExpression.void()
-        case 1: return tuple ? TupleExpression(elements: exps) : exps[0]
-        case _: return TupleExpression(elements: exps)
-        }
-    }
-    
-    private mutating func parseParamExpression() throws -> TupleExpression {
-        
-        var exps: [Expression] = []
-        
-        considerNewLines = true
-        
-        while case let a = currentToken where a.isValidParamToken {
-            exps.append(try parseOperatorExpression())
-        }
-        resetConsiderNewLines()
-        
-        return exps.isEmpty ? TupleExpression.void() : TupleExpression(elements: exps)
-    }
-
-    
     
     private mutating func parseOperationRHS(precedence: Int = 0, lhs: Expression) throws -> Expression {
         
@@ -517,6 +467,48 @@ extension Parser {
         default: // Encountered a different token, return the lhs.
             return lhs
         }
+    }
+    
+    // TODO: Tuple parsing seperate to parens
+    //    private mutating func parseTupleExpression() throws -> TupleExpression {
+    //
+    //    }
+    
+    /// Guarantees if tuple is true, the return type is a TupleExpression
+    private mutating func parseParenExpression(tuple tuple: Bool) throws -> Expression {
+        
+        guard case .OpenParen = currentToken else { throw ParseError.ExpectedParen(currentPos) }
+        getNextToken() // eat `(`
+        
+        var exps: [Expression] = []
+        
+        while case let a = currentToken where a.isValidParamToken {
+            exps.append(try parseOperatorExpression())
+        }
+        getNextToken() // eat `)`
+        
+        switch exps.count {
+        case 0: return TupleExpression.void()
+        case 1: return tuple ? TupleExpression(elements: exps) : exps[0]
+        case _: return TupleExpression(elements: exps)
+        }
+    }
+    
+    private mutating func parseParamExpression() throws -> TupleExpression {
+        
+        var exps: [Expression] = []
+        
+        considerNewLines = true
+        inParameterList = true
+        
+        while case let a = currentToken where a.isValidParamToken {
+            exps.append(try parseOperatorExpression())
+        }
+        
+        revertParameterListState()
+        resetConsiderNewLines()
+        
+        return exps.isEmpty ? TupleExpression.void() : TupleExpression(elements: exps)
     }
     
 }

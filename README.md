@@ -45,7 +45,7 @@ type Baz {
         b = y
     }
     
-    func foo: Int -> Int = do return a + b
+    func foo :: Int -> Int = do return a + b
 }
 ```
 

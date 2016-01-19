@@ -567,9 +567,57 @@ _main:                                  ## @main
 ## BB#0:                                ## %_add_S.i64_S.i64.exit
 	pushq	%rbp
 	movq	%rsp, %rbp
-	movl	$4, %edi
+	movl	$71, %edi
 	callq	__$print_i64
 	xorl	%eax, %eax
+	popq	%rbp
+	retq
+
+	.globl	__Foo_
+	.align	4, 0x90
+__Foo_:                                 ## @_Foo_
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	movl	$10, %eax
+	movl	$20, %edx
+	movl	$40, %ecx
+	popq	%rbp
+	retq
+
+	.globl	__Foo.sumTimes_S.i64
+	.align	4, 0x90
+__Foo.sumTimes_S.i64:                   ## @_Foo.sumTimes_S.i64
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	addq	%rdx, %rsi
+	jo	LBB48_4
+## BB#1:                                ## %_+_S.i64_S.i64.exit
+	addq	%rsi, %rdi
+	jo	LBB48_4
+## BB#2:                                ## %_+_S.i64_S.i64.exit12
+	imulq	%rcx, %rdi
+	jo	LBB48_4
+## BB#3:                                ## %_*_S.i64_S.i64.exit
+	movq	%rdi, %rax
+	popq	%rbp
+	retq
+LBB48_4:                                ## %then0.i.i3
+	ud2
+
+	.globl	__Foo.printA_S.b
+	.align	4, 0x90
+__Foo.printA_S.b:                       ## @_Foo.printA_S.b
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	testb	$1, %cl
+	je	LBB49_1
+## BB#2:                                ## %then0
+	popq	%rbp
+	jmp	__$print_i64            ## TAILCALL
+LBB49_1:                                ## %cont
 	popq	%rbp
 	retq
 
@@ -580,12 +628,12 @@ __add_S.i64_S.i64:                      ## @_add_S.i64_S.i64
 	pushq	%rbp
 	movq	%rsp, %rbp
 	addq	%rsi, %rdi
-	jo	LBB47_1
+	jo	LBB50_1
 ## BB#2:                                ## %_+_S.i64_S.i64.exit
 	movq	%rdi, %rax
 	popq	%rbp
 	retq
-LBB47_1:                                ## %then0.i.i
+LBB50_1:                                ## %then0.i.i
 	ud2
 
 	.section	__TEXT,__cstring,cstring_literals
