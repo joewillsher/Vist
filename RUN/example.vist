@@ -5,22 +5,21 @@ type Foo {
     var b: Int = 20
     let c: Int = 40
     
-    func sum: Int -> Int = do
+    func sum :: Int -> Int = do
         return (self.a + self.b + self.c) * $0
         
-    func sum: Bool = do
-        if $0 do print(self.a)
+    func sum :: Bool = do
+        if $0 do print self.a
 }
 
 
-let f = Foo()
-f.sum(true)
-let u = f.sum(2)
+let f = Foo ()
+f.sum true
 
-print(u)
+let u = (f.sum 2)
 
-fatalError()
+(print u)
+
+(fatalError ())
 
 
-// TODO: Make sure methods cannot conflict with global functions
-// TODO: Memberwise initialiser

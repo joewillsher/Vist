@@ -298,6 +298,9 @@ final class TupleExpression : Expression {
     init(elements: [Expression]) {
         self.elements = elements
     }
+    init(element: Expression) {
+        self.elements = [element]
+    }
     
     static func void() -> TupleExpression{ return TupleExpression(elements: [])}
     

@@ -68,13 +68,6 @@ _$print_b(bool b)
 
 //extern "C" NOINLINE
 //void
-//_$fatalError_()
-//{
-//    abort();
-//};
-
-//extern "C" NOINLINE
-//void
 //_$demangle_Pi8Pi8i64(char* output, char* input, int64_t length) {
 //    if(!input || !output) return;
 //    std::string accum;

@@ -29,10 +29,30 @@
     - Currying & partial application of functions, needs to reference captured objects on the heap
     - https://en.wikipedia.org/wiki/Closure_(computer_programming)#Implementation_and_theory
 
-* Look into guard statements. Like Haskell:
+* Look into guard statements & enums. Like Haskell:
+
+https://wiki.haskell.org/Introduction
 
 ```haskell
 factorial n
     | n < 2     = 1
     | otherwise = n * factorial (n - 1)
+
+data Token
+    = Spc Int                     -- horizontal space of positive length
+    | EoL                         -- line break
+    | Sym String                  -- one contiguous nonspace symbol
+    | Grp String [Token] String   -- a valid bracketing of more tokens
+    | Sub [Token]                 -- a substructure found by parsing
+    deriving (Eq, Ord)            -- anything <= EoL is whitespace
+
+grep printf Foo.c | wc
+
 ```
+
+Haskell:
+    - Function call syntax `foo 1 2`
+    - Pipe operator to chain function calls
+    = Need to get curried functions working
+    - map and filter functions
+

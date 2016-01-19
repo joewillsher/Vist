@@ -14,7 +14,7 @@ extension COpaquePointer {
             return try stdType.loadPropertyNamed(property, from: self, builder: builder)
         }
         else {
-            fatalError("Stdlib type \(type!.description) has no property \(property)")
+            fatalError("not a struct type")
         }
     }
 }
@@ -26,17 +26,19 @@ extension StructType {
         return members.indexOf { $0.0 == name }
     }
     
+    /// Builds load of named property from struct
     func loadPropertyNamed(name: String, from value: LLVMValueRef, builder: LLVMBuilderRef) throws -> LLVMValueRef {
         guard let i = indexOfProperty(name) else { throw SemaError.NoPropertyNamed(name) }
         return LLVMBuildExtractValue(builder, value, UInt32(i), name)
     }
     
+    /// Initialises a builtin type from list of valuerefs
     func initialiseWithBuiltin(val: LLVMValueRef..., module: LLVMModuleRef, builder: LLVMBuilderRef) -> LLVMValueRef {
         let initName = name.mangle(FnType(params: members.map { $0.1 }, returns: NativeType.Void/*we con’t care what this is, its not used in mangling*/))
         let initialiser = LLVMGetNamedFunction(module, initName)
+        guard initialiser != nil else { fatalError("No initialiser for \(name)") }
         let args = val.ptr()
         defer { args.dealloc(members.count) }
-        guard initialiser != nil else { fatalError("No initialiser for \(name)") }
         return LLVMBuildCall(builder, initialiser, args, 1, "")
     }
     

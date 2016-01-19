@@ -47,6 +47,14 @@ private extension Character {
         return (isblank(value) != 1) && operators.keys.reduce("", combine: +).characters.contains(self) || stdlibOperators.reduce("", combine: +).characters.contains(self)
     }
     
+    func isWhiteSpace() -> Bool {
+        return isspace(value) != 0
+    }
+    
+    func isNewLine() -> Bool {
+        return self == "\n" || self == "\r"
+    }
+    
     func isSingleCharSymbol() -> Bool {
         return (isblank(value) != 1) && [":"].contains(self)
     }
@@ -181,9 +189,9 @@ struct Lexer {
     }
     
     private mutating func consumeChar(n: Int = 1) throws {
-        if index == chars.count { throw LexerError.OutOfRange }
         index += n
         try updatePos()
+        guard index < chars.count else { throw LexerError.OutOfRange }
     }
     
     private mutating func addChar() {
@@ -207,6 +215,7 @@ struct Lexer {
         case .Symbol?:          return Token(symbol: str)
         case .StringLiteral?:   return .StringLiteral(str)
         case .Comment?:         return .Comment(str)
+        case .WhiteSpace?:      return .WhiteSpace
         default:                throw LexerError.NoToken
         }
     }
@@ -224,6 +233,16 @@ extension Lexer {
     mutating private func lexString() throws {
         try lexWhilePredicate { $0.isAlNumOr_() }
         try resetContext()
+    }
+    
+    mutating private func lexWhiteSpace() throws {
+        try lexWhilePredicate { $0.isWhiteSpace() }
+        if charsInContext.contains({ $0.isNewLine()}) {
+            try resetContext()
+        } else {
+            context = nil
+            charsInContext = []
+        }
     }
     
     mutating private func lexNumber() throws {
@@ -280,7 +299,7 @@ extension Lexer {
     mutating private func lexWhilePredicate(p: (Character) throws -> Bool) throws {
         while try p(currentChar) {
             addChar()
-            if index<chars.count { try consumeChar() } else { break }
+            guard let _ = try? consumeChar() else { return }
         }
     }
     
@@ -379,8 +398,9 @@ extension Lexer {
                 try lexSymbol()
                 continue
                 
-            case (_, let s) where isspace(s.value) != 0:
-                try consumeChar()
+            case (_, let s) where s.isWhiteSpace():
+                context = .WhiteSpace
+                try lexWhiteSpace()
                 continue
                 
             case _:
@@ -391,7 +411,7 @@ extension Lexer {
             if index<chars.count-1 { try consumeChar() } else { break }
         }
         
-        do {
+        do { // wtf is this
             try resetContext()
         } catch { }
         

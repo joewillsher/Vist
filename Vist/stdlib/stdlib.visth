@@ -31,45 +31,45 @@ type Range {
 
 
 // free functions
-func print: Int
-func print: Bool
-func print: Double
-func assert: Bool
-func fatalError: ()
+func print :: Int
+func print :: Bool
+func print :: Double
+func assert :: Bool
+func fatalError :: ()
 
 
 
 // operators
-@operator(80) func + : Int Int -> Int
-@operator(80) func - : Int Int -> Int
-@operator(100) func * : Int Int -> Int
-@operator(100) func / : Int Int -> Int
-@operator(90) func % : Int Int -> Int
-@operator(30) func < : Int Int -> Bool
-@operator(30) func <= : Int Int -> Bool
-@operator(30) func > : Int Int -> Bool
-@operator(30) func >= : Int Int -> Bool
-@operator(20) func == : Int Int -> Bool
-@operator(20) func != : Int Int -> Bool
+@operator(80) func + :: Int Int -> Int
+@operator(80) func - :: Int Int -> Int
+@operator(100) func * :: Int Int -> Int
+@operator(100) func / :: Int Int -> Int
+@operator(90) func % :: Int Int -> Int
+@operator(30) func < :: Int Int -> Bool
+@operator(30) func <= :: Int Int -> Bool
+@operator(30) func > :: Int Int -> Bool
+@operator(30) func >= :: Int Int -> Bool
+@operator(20) func == :: Int Int -> Bool
+@operator(20) func != :: Int Int -> Bool
 
-@operator(15) func && : Bool Bool -> Bool
-@operator(10) func || : Bool Bool -> Bool
+@operator(15) func && :: Bool Bool -> Bool
+@operator(10) func || :: Bool Bool -> Bool
 
-@operator(80) func + : Double Double -> Double
-@operator(80) func - : Double Double -> Double
-@operator(100) func * : Double Double -> Double
-@operator(100) func / : Double Double -> Double
-@operator(90) func % : Double Double -> Double
-@operator(30) func < : Double Double -> Bool
-@operator(30) func <= : Double Double -> Bool
-@operator(30) func > : Double Double -> Bool
-@operator(30) func >= : Double Double -> Bool
-@operator(20) func == : Double Double -> Bool
-@operator(20) func != : Double Double -> Bool
+@operator(80) func + :: Double Double -> Double
+@operator(80) func - :: Double Double -> Double
+@operator(100) func * :: Double Double -> Double
+@operator(100) func / :: Double Double -> Double
+@operator(90) func % :: Double Double -> Double
+@operator(30) func < :: Double Double -> Bool
+@operator(30) func <= :: Double Double -> Bool
+@operator(30) func > :: Double Double -> Bool
+@operator(30) func >= :: Double Double -> Bool
+@operator(20) func == :: Double Double -> Bool
+@operator(20) func != :: Double Double -> Bool
 
 
-@inline @operator(40) func ... : Int Int -> Range
-@inline @operator(40) func ..< : Int Int -> Range
+@inline @operator(40) func ... :: Int Int -> Range
+@inline @operator(40) func ..< :: Int Int -> Range
 
 
 

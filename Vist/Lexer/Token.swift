@@ -30,8 +30,19 @@ enum Token {
     case Assign, SqbrOpen, SqbrClose, Comma, Period, Colon, Semicolon, OpenParen, CloseParen, Returns, Bar, OpenBrace, CloseBrace
     case InfixOperator(String), PrefixOperator(String), PostfixOperator(String)
     case Identifier(String), FloatingPoint(Double), Integer(Int), Boolean(Bool)
-    case Char(Character), Str(String), Comment(String), StringLiteral(String)
+    case Char(Character), Comment(String), StringLiteral(String)
     case At
+    case WhiteSpace
+    
+    var isValidParamToken: Bool {
+        switch self {
+        case .Identifier, .SqbrOpen, .OpenParen, OpenBrace, FloatingPoint, Integer, Boolean, Char, StringLiteral:
+            return true
+            
+        default:
+            return false
+        }
+    }
 }
 
 let operators: [String: Token] = [

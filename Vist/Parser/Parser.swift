@@ -84,15 +84,24 @@ struct Parser {
         "..<": 40
     ]
     
-    private mutating func getNextToken(n: Int = 1) -> Token {
+    private mutating func getNextToken(n: Int = 1, considerWhitespace: Bool = false) -> Token {
         index += n
+        if case .WhiteSpace = currentToken where considerWhitespace { getNextToken(n, considerWhitespace: considerWhitespace) }
         return currentToken
     }
-    private func inspectNextToken(i: Int = 1) -> Token? { // debug function, acts as getNextToken() but does not mutate
-        return index < tokens.count-i ? tokens[index+i] : nil
+    private func inspectNextToken(i: Int = 1, considerWhitespace: Bool = false) -> Token? { // debug function, acts as getNextToken() but does not mutate
+        if index+i >= tokens.count-i { return nil }
+        if case .WhiteSpace = currentToken where considerWhitespace {
+            return inspectNextToken(i+1, considerWhitespace: considerWhitespace)
+        }
+        return tokens[index+i]
     }
-    private func inspectNextPos(i: Int = 1) -> Pos? {
-        return index < tokens.count-i ? tokensWithPos.map{$0.1.range.start}[index+i] : nil
+    private func inspectNextPos(i: Int = 1, considerWhitespace: Bool = false) -> Pos? {
+        if index+i >= tokens.count-i { return nil }
+        if case .WhiteSpace = currentToken where considerWhitespace {
+            return inspectNextPos(i+1, considerWhitespace: considerWhitespace)
+        }
+        return tokensWithPos.map{$0.1.range.start}[index+i]
     }
     
 }
@@ -215,22 +224,25 @@ extension Parser {
         
         switch inspectNextToken() {
         case .OpenParen?: // call
-            getNextToken() // eat 'identifier'
+            getNextToken() // eat '('
             
-            if case .CloseParen? = inspectNextToken() {   // simple itentifier() call
-                getNextToken(2) // eat '()'
-                return FunctionCallExpression(name: token, args: TupleExpression.void())
+            guard case .CloseParen? = inspectNextToken() else {   // simple itentifier() call
+                return FunctionCallExpression(name: token, args: try parseParamExpression())
             }
             
-            return FunctionCallExpression(name: token, args: try parseTupleExpression())
+            getNextToken(2) // eat '()'
+            return FunctionCallExpression(name: token, args: TupleExpression.void())
+            
+        case let u? where u.isValidParamToken:
+            getNextToken() // eat 'identifier'
+            
+            return FunctionCallExpression(name: token, args: try parseParamExpression())
             
         case .SqbrOpen?: // subscript
             getNextToken(2) // eat 'identifier['
             
             let subscpipt = try parseOperatorExpression()
-            
             getNextToken() // eat ']'
-            
             
             guard case .Assign = currentToken else { // if call
                 return ArraySubscriptExpression(arr: Variable(name: token), index: subscpipt)
@@ -260,6 +272,7 @@ extension Parser {
             return try parseMemberLookupExpression(Variable(name: token))
             
         default: // just identifier
+            
             defer { getNextToken() }
             return try parseOperatorExpression(Variable(name: token))
         }
@@ -270,18 +283,19 @@ extension Parser {
         switch currentToken {
         case .Identifier(let name):
             
-            switch getNextToken() {
-            case .OpenParen:
+            switch inspectNextToken() {
+            case let u? where u.isValidParamToken:
+                getNextToken() // eat foo
                 
-                if case .CloseParen = currentToken {   // simple itentifier() call
-                    getNextToken(2) // eat ')'
+                if case .OpenParen = currentToken {   // simple itentifier () call
+                    getNextToken() // eat `)`
                     return MethodCallExpression(name: name, params: TupleExpression.void(), object: exp)
                 }
                 
-                return MethodCallExpression(name: name, params: try parseTupleExpression(), object: exp)
+                return MethodCallExpression(name: name, params: try parseParamExpression(), object: exp)
                 
-            case .Assign:
-                getNextToken() // eat =
+            case .Assign?:
+                getNextToken(2) // eat `.foo` `=`
                 
                 let property = PropertyLookupExpression(name: name, object: exp)
                 
@@ -289,8 +303,10 @@ extension Parser {
                 return MutationExpression(object: property, value: exp)
                 
             default:
+                defer { getNextToken() }
                 return PropertyLookupExpression(name: name, object: exp)
             }
+            
             
         case .Integer(let i):
             
@@ -371,8 +387,7 @@ extension Parser {
         
         var exps: [Expression] = []
         
-        while true {
-            if case .CloseParen = currentToken { break }
+        while case let a = currentToken where a.isValidParamToken {
             exps.append(try parseOperatorExpression())
         }
         getNextToken() // eat `)`
@@ -383,6 +398,18 @@ extension Parser {
         case _: return TupleExpression(elements: exps)
         }
     }
+    
+    private mutating func parseParamExpression() throws -> TupleExpression {
+        
+        var exps: [Expression] = []
+        
+        while case let a = currentToken where a.isValidParamToken {
+            exps.append(try parseOperatorExpression())
+        }
+        
+        return exps.isEmpty ? TupleExpression.void() : TupleExpression(elements: exps)
+    }
+
     
     
     private mutating func parseOperationRHS(precedence: Int = 0, lhs: Expression) throws -> Expression {
@@ -660,6 +687,8 @@ extension Parser {
         }
         
         guard case .Colon = getNextToken() else { throw ParseError.ExpectedColon(currentPos) }
+        guard case .Colon = getNextToken() else { throw ParseError.ExpectedColon(currentPos) }
+        // TODO: `::` for types?
         
         getNextToken() // eat ':'
         let type = try parseFunctionType()
@@ -940,7 +969,7 @@ extension Parser {
         case .Reference:            getNextToken(); return try parseTypeDeclarationExpression(byRef: true)
         case .Integer(let i):       return  try parseIntExpression(i)
         case .FloatingPoint(let x): return parseFloatingPointExpression(x)
-        case .Str(let str):         return parseStringExpression(str)
+        case .StringLiteral(let str):return parseStringExpression(str)
         case .At:                   try parseAttrExpression(); return nil
         case .Void:                 index++; return Void()
         case .EOF, .CloseBrace:     index++; return nil
