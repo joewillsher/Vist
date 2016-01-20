@@ -15,14 +15,10 @@ final class StdLibExpose {
     }
     
     private var code: String {
-        if isStdLib {
-            return (try? String(contentsOfFile: "\(PROJECT_DIR)/Vist/Runtime/runtime.visth")) ?? ""
+        if !isStdLib {
+            return (try? String(contentsOfFile: "\(PROJECT_DIR)/Vist/stdlib/stdlib.visth")) ?? ""
         }
-        else {
-            return
-                ((try? String(contentsOfFile: "\(PROJECT_DIR)/Vist/Runtime/runtime.visth")) ?? "") +
-                ((try? String(contentsOfFile: "\(PROJECT_DIR)/Vist/stdlib/stdlib.visth")) ?? "")
-        }
+        else { return "" }
     }
     
     private func astGen() throws -> AST {
@@ -61,7 +57,7 @@ final class StdLibExpose {
         guard let ast = ast else { fatalError("Stdlib could not be loaded") }
         
         let fns = ast.exprs
-            .flatMap { ($0 as? FunctionDecl) }
+            .flatMap { ($0 as? FuncDecl) }
             .map { ($0.name, $0.fnType.type as! FnType) }
         
         let structs = ast.exprs
@@ -99,5 +95,6 @@ final class StdLibExpose {
         }
         
     }
+    
     
 }

@@ -694,7 +694,7 @@ extension Parser {
     }
     
     
-    private mutating func parseFunctionDeclaration() throws -> FunctionDecl {
+    private mutating func parseFuncDeclaration() throws -> FuncDecl {
         
         let a = attrs.flatMap { $0 as? FunctionAttributeExpr } ?? []
         let ops = attrs.flatMap { $0 as? ASTAttributeExpr }.flatMap { a -> Int? in if case .Operator(let p) = a { return p } else { return nil } }.last
@@ -737,11 +737,11 @@ extension Parser {
         let type = try parseFunctionType()
         
         guard case .Assign = currentToken else {
-            return FunctionDecl(name: id, type: type, impl: nil, attrs: a)
+            return FuncDecl(name: id, type: type, impl: nil, attrs: a)
         }
         getNextToken() // eat '='
         
-        return FunctionDecl(name: id, type: type, impl: try parseClosureDeclaration(type: type), attrs: a)
+        return FuncDecl(name: id, type: type, impl: try parseClosureDeclaration(type: type), attrs: a)
     }
     
     private mutating func parseClosureNamesExpr() throws -> [ValueType] {
@@ -872,7 +872,7 @@ extension Parser {
         guard case .OpenBrace = currentToken else { throw ParseError.ExpectedBrace(currentPos) }
         getNextToken() // eat '{'
         
-        var properties: [VariableDecl] = [], methods: [FunctionDecl] = [], initialisers: [InitialiserDecl] = []
+        var properties: [VariableDecl] = [], methods: [FuncDecl] = [], initialisers: [InitialiserDecl] = []
         
         while true {
             
@@ -886,7 +886,7 @@ extension Parser {
                 properties.append(try parseVariableAssignmentMutable(false, requiresInitialValue: false))
                 
             case .Func:
-                methods.append(try parseFunctionDeclaration())
+                methods.append(try parseFuncDeclaration())
                 
             case .Init:
                 initialisers.append(try parseInitDeclaration())
@@ -989,7 +989,7 @@ extension Parser {
         switch token {
         case .Let:                  return try parseVariableAssignmentMutable(false)
         case .Var:                  return try parseVariableAssignmentMutable(true)
-        case .Func:                 return try parseFunctionDeclaration()
+        case .Func:                 return try parseFuncDeclaration()
         case .Return:               return try parseReturnExpr()
         case .OpenParen:            return try parseParenExpr(tuple: true)
         case .OpenBrace:            return try parseBraceExpr()

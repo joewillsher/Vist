@@ -46,12 +46,10 @@ extension Printable {
             if let v = child as? Printable where label != "parent" { return (label, v) } else { return nil }
         }
         
-        let i = inline()
-        let n0 = i ? "" : "\n", t1 = i ? " " : t(n+1), te = i ? "" : t(n)
-        let ty = (self as? Typed)?.type
-        let typeItem = ty != nil ? [("type", ty!)] : [] as [(String?, Printable)]
+        let n0 = "\n", t1 = t(n+1), te = t(n)
         
-        return "(\(self.dynamicType)" + (children + typeItem).reduce("") {
+        return "(\(self.dynamicType)" + children
+            .reduce("") {
             
             let a: String
             if let s = $1.0 { a = "\(s):" }
@@ -76,7 +74,7 @@ extension Printable {
 extension String : Printable {
     public func printDirectly() -> String? {
         return "\"\(self)\""
-    }   
+    }
 }
 extension Int : Printable {
     public func printDirectly() -> String? {

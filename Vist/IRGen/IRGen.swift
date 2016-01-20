@@ -175,7 +175,7 @@ extension VariableDecl : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        if let arr = value as? ArrayExpr{
+        if let arr = value as? ArrayExpr {
             //if asigning to array
             
             let a = try arr.arrInstance(stackFrame)
@@ -237,9 +237,15 @@ extension VariableDecl : IRGenerator {
             
             // create variable
             let variable: MutableVariable
-            if let t = value.type as? StructType where value.type is StructType {
+            if let t = value.type as? StructType {
                 let properties = t.members.map {
                     ($0.0, $0.1.ir(), $0.2)
+                }
+                variable = MutableStructVariable.alloc(builder, type: type, mutable: isMutable, properties: properties)
+            }
+            else if let t = value.type as? TupleType {
+                let properties = t.members.enumerate().map {
+                    (String($0.0), $0.1.ir(), false)
                 }
                 variable = MutableStructVariable.alloc(builder, type: type, mutable: isMutable, properties: properties)
             }
@@ -398,7 +404,7 @@ private extension FunctionType {
 }
 
 
-extension FunctionDecl : IRGenerator {
+extension FuncDecl : IRGenerator {
     // function definition
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
@@ -1044,7 +1050,8 @@ extension TupleMemberLookupExpr : IRGenerator {
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
         guard let n = object as? Variable else { fatalError("Cannot Get Property From Non Variable Type") }
-        guard let variable = try stackFrame.variable(n.name) as? StructVariable else { throw IRError.NoVariable(n.name) }
+        guard let variable = try stackFrame.variable(n.name) as? StructVariable else {
+            throw IRError.NoVariable(n.name) }
         
         let val = try variable.loadPropertyNamed(String(index))
         
@@ -1084,7 +1091,7 @@ extension AST {
         
         if isLibrary {
             let e = exprs.filter {
-                $0 is FunctionDecl || $0 is StructExpr
+                $0 is FuncDecl || $0 is StructExpr
             }
             
             for exp in e {

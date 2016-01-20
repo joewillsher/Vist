@@ -15,6 +15,11 @@ extension String {
         let n = parentTypeName == nil ? "" : "\(parentTypeName!)."
         return "_\(n)\(sansUnderscores())_\(type.debugDescription)"
     }
+    func mangle(type: [Ty], parentTypeName: String? = nil) -> String {
+        let n = parentTypeName == nil ? "" : "\(parentTypeName!)."
+        return "_\(n)\(sansUnderscores())_\(FnType(params: type, returns: BuiltinType.Void).debugDescription)"
+    }
+
     
     func sansUnderscores() -> String {
         return stringByReplacingOccurrencesOfString("_", withString: "$")

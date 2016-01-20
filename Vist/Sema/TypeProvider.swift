@@ -221,7 +221,7 @@ private extension FunctionType {
                 
                 let res = try tup.elements.mapAs(ValueType).map(getType(tys))
                 guard res.count == tup.elements.count else { throw SemaError.TypeNotFound }
-                return StructType.withProperties(res, gen: {"\($0)"})
+                return TupleType(members: res)
             }
             else if let f = returns as? FunctionType {
                 
@@ -251,8 +251,12 @@ extension FunctionCallExpr : TypeProvider {
         
         // get from table
         let params = try args.elements.map { try $0.llvmType(scope) }
+        let builtinFn = BuiltinDef.getBuiltinFunction(self.name, args: params)
         
-        guard let fnType = scope[function: name, paramTypes: params] else {
+        let _fnType = builtinFn?.1 ?? scope[function: self.name, paramTypes: params]
+        let name = builtinFn?.0 ?? self.name
+        
+        guard let fnType = _fnType  else {
             if let f = scope[function: name] {
                 throw SemaError.WrongFunctionApplications(name: name, applied: params, expected: f.params)
             }
@@ -273,7 +277,7 @@ extension FunctionCallExpr : TypeProvider {
 }
 
 
-extension FunctionDecl : TypeProvider {
+extension FuncDecl : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
         
@@ -537,7 +541,7 @@ extension StructExpr : TypeProvider {
         scope[type: name] = ty
         self.type = ty
         
-        let memberFunctions = try methods.flatMap { (f: FunctionDecl) -> (String, FnType) in
+        let memberFunctions = try methods.flatMap { (f: FuncDecl) -> (String, FnType) in
             try f.llvmType(structScope)
             guard let t = f.fnType.type as? FnType else { throw SemaError.StructMethodNotTyped }
             return (f.name.mangle(t, parentTypeName: name), t)
@@ -672,8 +676,10 @@ extension TupleMemberLookupExpr : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
         
-        guard let objType = try object.llvmType(scope) as? StructType else { throw SemaError.NoTypeFor(object) }
-        guard let propertyType = try objType.propertyType("\(index)") else { throw SemaError.TupleHasNoObjectAtIndex(index) }
+        guard let objType = try object.llvmType(scope) as? TupleType else {
+            throw SemaError.NoTypeFor(object) }
+        
+        let propertyType = try objType.propertyType(index)
         self.type = propertyType
         return propertyType
     }

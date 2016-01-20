@@ -362,11 +362,11 @@ protocol StructMember {
 final class StructExpr : Expr {
     let name: String
     let properties: [VariableDecl]
-    let methods: [FunctionDecl]
+    let methods: [FuncDecl]
     var initialisers: [InitialiserDecl]
     let attrs: [AttributeExpr]
     
-    init(name: String, properties: [VariableDecl], methods: [FunctionDecl], initialisers: [InitialiserDecl], attrs: [AttributeExpr]) {
+    init(name: String, properties: [VariableDecl], methods: [FuncDecl], initialisers: [InitialiserDecl], attrs: [AttributeExpr]) {
         self.name = name
         self.properties = properties
         self.methods = methods

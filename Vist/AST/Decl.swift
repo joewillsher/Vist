@@ -25,7 +25,7 @@ final class VariableDecl : Decl, StructMember {
     }
 }
 
-class FunctionDecl : Decl, StructMember {
+class FuncDecl : Decl, StructMember {
     let name: String
     let fnType: FunctionType
     let impl: FunctionImplementationExpr?
@@ -41,10 +41,12 @@ class FunctionDecl : Decl, StructMember {
     
     var mangledName: String
     
-    // FIXME: FunctionDecl protocol and 2 implementations
+    // FIXME: FuncDecl protocol and 2 implementations
     /// `self` if the function is a member function
     weak var parent: StructExpr? = nil
 }
+
+
 
 final class InitialiserDecl : Decl, StructMember {
     let ty: FunctionType

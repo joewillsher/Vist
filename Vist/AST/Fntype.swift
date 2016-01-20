@@ -21,8 +21,7 @@ struct FnType : Ty {
             r = returns.ir()
         }
         
-        return LLVMFunctionType(
-            r,
+        return LLVMFunctionType(r,
             nonVoid.map{$0.ir()}.ptr(),
             UInt32(nonVoid.count),
             LLVMBool(false))
