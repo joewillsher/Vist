@@ -28,6 +28,13 @@ struct FnType : Ty {
             LLVMBool(false))
     }
     
+    static func taking(params: Ty..., ret: Ty = BuiltinType.Void) -> FnType {
+        return FnType(params: params, returns: ret)
+    }
+    static func returning(ret: Ty) -> FnType {
+        return FnType(params: [], returns: ret)
+    }
+
     
     var nonVoid: [Ty]  {
         return params.filter { if case BuiltinType.Void = $0 { return false } else { return true } }

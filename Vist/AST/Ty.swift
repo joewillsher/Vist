@@ -1,5 +1,5 @@
 //
-//  TypeLowering.swift
+//  Ty.swift
 //  Vist
 //
 //  Created by Josef Willsher on 27/12/2015.
@@ -28,6 +28,9 @@ extension Ty {
 
 extension BuiltinType : Equatable {}
 extension FnType: Equatable {}
+
+
+
 
 
 

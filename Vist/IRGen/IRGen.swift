@@ -42,17 +42,13 @@ private func isFloatType(t: LLVMTypeKind) -> Bool {
     return [LLVMFloatTypeKind, LLVMDoubleTypeKind, LLVMHalfTypeKind, LLVMFP128TypeKind].contains(t)
 }
 
-extension Expr {
+extension ASTNode {
     
-    private func exprCodeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
+    private func nodeCodeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         if let x = try (self as? IRGenerator)?.codeGen(stackFrame) { return x }
         fatalError("\(self.dynamicType) not IR Generator")
     }
     
-    private func exprbbGen(innerStackFrame stackFrame: StackFrame, fn: LLVMValueRef) throws -> LLVMBasicBlockRef {
-        if let x = try (self as? BasicBlockGenerator)?.bbGen(innerStackFrame: stackFrame, fn: fn) { return x }
-        fatalError("\(self.dynamicType) not IR Generator")
-    }
 }
 
 
@@ -87,7 +83,7 @@ extension LLVMBool : Swift.BooleanType {
 
 private func codeGenIn(stackFrame: StackFrame) -> Expr throws -> LLVMValueRef {
     return { e in
-        try e.exprCodeGen(stackFrame)
+        try e.nodeCodeGen(stackFrame)
     }
 }
 
@@ -175,7 +171,7 @@ extension Variable : IRGenerator {
 }
 
 
-extension AssignmentExpr : IRGenerator {
+extension VariableDecl : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
@@ -202,7 +198,7 @@ extension AssignmentExpr : IRGenerator {
             let fnStackFrame = StackFrame(block: entryBlock, function: fn, parentStackFrame: stackFrame)
             
             // value’s IR, this needs to be called and returned
-            let v = try value.exprCodeGen(fnStackFrame)
+            let v = try value.nodeCodeGen(fnStackFrame)
             
             let num = LLVMCountParams(fn)
             for i in 0..<num {
@@ -232,7 +228,7 @@ extension AssignmentExpr : IRGenerator {
             // all other types
             
             // create value
-            let v = try value.exprCodeGen(stackFrame)
+            let v = try value.nodeCodeGen(stackFrame)
             
             // checks
             guard v != nil else { throw IRError.CannotAssignToType(value.dynamicType) }
@@ -277,7 +273,7 @@ extension MutationExpr : IRGenerator {
                 arrayVariable.assignFrom(builder, arr: newArray)
             }
             else {
-                let new = try value.exprCodeGen(stackFrame)
+                let new = try value.nodeCodeGen(stackFrame)
                 
                 guard let v = variable as? MutableVariable where v.mutable else { throw IRError.NotMutable("") }
                 try v.store(new)
@@ -287,8 +283,8 @@ extension MutationExpr : IRGenerator {
             
             let arr = try sub.backingArrayVariable(stackFrame)
             
-            let i = try sub.index.exprCodeGen(stackFrame)
-            let val = try value.exprCodeGen(stackFrame)
+            let i = try sub.index.nodeCodeGen(stackFrame)
+            let val = try value.nodeCodeGen(stackFrame)
             
             arr.store(val, inElementAtIndex: i)
         }
@@ -304,7 +300,7 @@ extension MutationExpr : IRGenerator {
             guard variable.mutable else { throw IRError.NotMutable(n.name) }
             guard try variable.propertyIsMutable(prop.name) else { throw IRError.NotMutable("\(n.name).\(prop.name)") }
             
-            let val = try value.exprCodeGen(stackFrame)
+            let val = try value.nodeCodeGen(stackFrame)
             
             try variable.store(val, inPropertyNamed: prop.name)
         }
@@ -324,7 +320,7 @@ extension BinaryExpr : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        let lIR = try lhs.exprCodeGen(stackFrame), rIR = try rhs.exprCodeGen(stackFrame)
+        let lIR = try lhs.nodeCodeGen(stackFrame), rIR = try rhs.nodeCodeGen(stackFrame)
         
         // make function
         let fn = LLVMGetNamedFunction(module, mangledName)
@@ -509,7 +505,7 @@ extension FunctionDecl : IRGenerator {
 }
 
 
-extension ReturnExpr : IRGenerator {
+extension ReturnStmt : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
@@ -517,7 +513,7 @@ extension ReturnExpr : IRGenerator {
             return LLVMBuildRetVoid(builder)
         }
         
-        let v = try expr.exprCodeGen(stackFrame)
+        let v = try expr.nodeCodeGen(stackFrame)
         return LLVMBuildRet(builder, v)
     }
     
@@ -530,7 +526,7 @@ extension BlockExpr {
         
         // code gen for function
         for exp in exprs {
-            try exp.exprCodeGen(stackFrame)
+            try exp.nodeCodeGen(stackFrame)
         }
         
         if exprs.isEmpty || (ret != nil && ret == LLVMVoidType()) {
@@ -607,14 +603,14 @@ extension ClosureExpr : IRGenerator {
 //  MARK:                                              Control flow
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension ElseIfBlockExpr {
+extension ElseIfBlockStmt {
     
     private func ifBBID(n n: Int) -> String {
         return condition == nil ? "else\(n)" : "then\(n)"
     }
 }
 
-extension ConditionalExpr : IRGenerator {
+extension ConditionalStmt : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
@@ -630,11 +626,11 @@ extension ConditionalExpr : IRGenerator {
             LLVMPositionBuilderAtEnd(builder, ifIn)
             
             /// States whether the block being appended returns from the current scope
-            let returnsFromScope = statement.block.exprs.contains { $0 is ReturnExpr }
+            let returnsFromScope = statement.block.exprs.contains { $0 is ReturnStmt }
             rets = rets && returnsFromScope
             
             // condition
-            let cond = try statement.condition?.exprCodeGen(stackFrame)
+            let cond = try statement.condition?.nodeCodeGen(stackFrame)
             if i < statements.count-1 {
                 ifOut = LLVMAppendBasicBlock(stackFrame.function, "cont\(i)")
             }
@@ -674,7 +670,7 @@ extension ConditionalExpr : IRGenerator {
 }
 
 
-private extension ElseIfBlockExpr {
+private extension ElseIfBlockStmt {
     
     /// Create the basic block for the if Expr
     private func bbGen(innerStackFrame stackFrame: StackFrame, contBlock: LLVMBasicBlockRef, name: String) throws -> LLVMBasicBlockRef {
@@ -687,7 +683,7 @@ private extension ElseIfBlockExpr {
         try block.bbGenInline(stackFrame: stackFrame)
         
         // if the block does continues to the contBlock, move the builder there
-        let returnsFromScope = block.exprs.contains { $0 is ReturnExpr }
+        let returnsFromScope = block.exprs.contains { $0 is ReturnStmt }
         if !returnsFromScope {
             LLVMBuildBr(builder, contBlock)
             LLVMPositionBuilderAtEnd(builder, contBlock)
@@ -704,7 +700,7 @@ private extension ElseIfBlockExpr {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-extension ForInLoopExpr : IRGenerator {
+extension ForInLoopStmt : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
@@ -712,7 +708,7 @@ extension ForInLoopExpr : IRGenerator {
         let loop = LLVMAppendBasicBlock(stackFrame.function, "loop")
         let afterLoop = LLVMAppendBasicBlock(stackFrame.function, "afterloop")
         
-        let rangeIterator = try iterator.exprCodeGen(stackFrame)
+        let rangeIterator = try iterator.nodeCodeGen(stackFrame)
         
         let start = try rangeIterator.load("start", type: iterator.type, builder: builder)
         let endValue = try rangeIterator.load("end", type: iterator.type, builder: builder).load("value", type: stackFrame.type("Int"), builder: builder)
@@ -773,8 +769,8 @@ extension WhileLoopExpr : IRGenerator {
         let afterLoop = LLVMAppendBasicBlock(stackFrame.function, "afterloop")
         
         // whether to enter the while, first while check
-        let initialCond = try iterator.condition.exprCodeGen(stackFrame)
-        let initialCondV = try initialCond.load("value", type: iterator.condition.type, builder: builder)
+        let initialCond = try condition.nodeCodeGen(stackFrame)
+        let initialCondV = try initialCond.load("value", type: condition.type, builder: builder)
 
         // move into loop block
         LLVMBuildCondBr(builder, initialCondV, loop, afterLoop)
@@ -785,8 +781,8 @@ extension WhileLoopExpr : IRGenerator {
         try block.bbGenInline(stackFrame: loopStackFrame)
         
         // conditional break
-        let conditionalRepeat = try iterator.condition.exprCodeGen(stackFrame)
-        let conditionalRepeatV = try conditionalRepeat.load("value", type: iterator.condition.type, builder: builder)
+        let conditionalRepeat = try condition.nodeCodeGen(stackFrame)
+        let conditionalRepeatV = try conditionalRepeat.load("value", type: condition.type, builder: builder)
         LLVMBuildCondBr(builder, conditionalRepeatV, loop, afterLoop)
         
         // move back to loop / end loop
@@ -799,14 +795,14 @@ extension WhileLoopExpr : IRGenerator {
 }
 
 
-private extension ScopeExpr {
+private extension BlockExpr {
     
     /// Generates children’s code directly into the current scope & block
     private func bbGenInline(stackFrame stackFrame: StackFrame) throws {
         
         // code gen for function
         for exp in exprs {
-            try exp.exprCodeGen(stackFrame)
+            try exp.nodeCodeGen(stackFrame)
         }
     }
 }
@@ -829,7 +825,7 @@ extension ArrayExpr : IRGenerator {
         let a = LLVMBuildArrayAlloca(builder, arrayType, nil, "arr")
         
         // obj
-        let vars = try arr.map { try $0.exprCodeGen(stackFrame) }
+        let vars = try arr.map { try $0.nodeCodeGen(stackFrame) }
         let variable = ArrayVariable(ptr: a, elType: elementType, arrType: arrayType, builder: builder, vars: vars)
         
         return variable
@@ -855,7 +851,7 @@ extension ArraySubscriptExpr : IRGenerator {
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
 
         let arr = try backingArrayVariable(stackFrame)
-        let idx = try index.exprCodeGen(stackFrame)
+        let idx = try index.nodeCodeGen(stackFrame)
         
         return arr.loadElementAtIndex(idx)
     }
@@ -894,13 +890,12 @@ extension InitialiserDecl : IRGenerator {
         
         let args = ty.args, argCount = args.elements.count
         guard let
-            type = type as? FnType,
+            functionType = ty.type?.ir(),
+            parentType = parent?.type as? StructType,
             name = parent?.name,
-            parentType = parent?.type,
             parentProperties = parent?.properties else { throw IRError.TypeNotFound }
         
         // make function
-        let functionType = type.ir()
         let function = LLVMAddFunction(module, mangledName, functionType)
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
         LLVMAddFunctionAttr(function, LLVMAlwaysInlineAttribute)
@@ -966,7 +961,7 @@ extension InitialiserDecl : IRGenerator {
         
         // add args into scope
         for exp in impl.body.exprs {
-            try exp.exprCodeGen(initStackFrame)
+            try exp.nodeCodeGen(initStackFrame)
         }
         
         // return struct instance from init function
@@ -1029,7 +1024,7 @@ extension TupleExpr : IRGenerator {
         guard let type = self.type as? TupleType else { fatalError("No type for tuple") }
         let typeIR = type.ir()
         
-        let memeberIR = try elements.map { try $0.exprCodeGen(stackFrame) }
+        let memeberIR = try elements.map { try $0.nodeCodeGen(stackFrame) }
         
         let membersWithLLVMTypes = type.members.enumerate().map { (String($0), $1.ir(), false) }
         let s = MutableStructVariable.alloc(builder, type: typeIR, mutable: false, properties: membersWithLLVMTypes)
@@ -1091,12 +1086,12 @@ extension AST {
             }
             
             for exp in e {
-                try exp.exprCodeGen(stackFrame)
+                try exp.nodeCodeGen(stackFrame)
             }
         }
         else {
             for exp in exprs {
-                try exp.exprCodeGen(stackFrame)
+                try exp.nodeCodeGen(stackFrame)
             }
         }
         

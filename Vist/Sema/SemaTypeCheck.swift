@@ -8,12 +8,11 @@
 
 
 /// Adds type information to ast nodes and checks type signatures of functions, returns, & operators
-func scopeSemallvmType<ScopeType : ScopeExpr>(forScopeExpression scopeExp: ScopeType, scope: SemaScope) throws {
+func scopeSemallvmType(ast: AST, scope: SemaScope) throws {
     
-    for (_, exp) in scopeExp.exprs.enumerate() {
+    for exp in ast.exprs {
         
         try exp.llvmType(scope)
-        
         
         //-------------------------------
         // TODO: Parse all function declarations first, then go in to define them and everything else

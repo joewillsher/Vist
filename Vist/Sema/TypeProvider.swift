@@ -9,12 +9,13 @@
 protocol TypeProvider {
     /// Function used to traverse AST and get type information for all its objects
     ///
-    /// Each implementation of this function should **call `.llvmType` on all of its sub Exprs**
+    /// Each implementation of this function should **call `.llvmType` on all of its sub exprs**
     ///
     /// The function implementation **should assign the result type to self** as well as returning it
     func llvmType(scope: SemaScope) throws -> Ty
 }
 
+// TODO: make private
 extension TypeProvider {
     func llvmType(scope: SemaScope) throws -> Ty {
         return BuiltinType.Null
@@ -98,7 +99,7 @@ extension Variable : TypeProvider {
 }
 
 
-extension AssignmentExpr : TypeProvider {
+extension VariableDecl : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
         // handle redeclaration
@@ -116,7 +117,6 @@ extension AssignmentExpr : TypeProvider {
         }
         
         value.type = explicitType ?? inferredType       // store type in value’s type
-        type = BuiltinType.Void                            // set type to self
         return BuiltinType.Void                            // return void type for assignment Expr
     }
 }
@@ -286,7 +286,6 @@ extension FunctionDecl : TypeProvider {
         
         scope[function: name] = ty  // update function table
         fnType.type = ty            // store type in fntype
-        type = BuiltinType.Void  // retult of prototype is void
         
         guard let functionScopeExpression = impl?.body else { return BuiltinType.Void }
         // if body construct scope and parse inside it
@@ -308,14 +307,16 @@ extension FunctionDecl : TypeProvider {
         }
         
         // type gen for inner scope
-        try scopeSemallvmType(forScopeExpression: functionScopeExpression, scope: fnScope)
+        for exp in functionScopeExpression.exprs {
+            try exp.llvmType(fnScope)
+        }
         
         return BuiltinType.Void
     }
 }
 
 
-extension ReturnExpr : TypeProvider {
+extension ReturnStmt : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
         
@@ -328,7 +329,6 @@ extension ReturnExpr : TypeProvider {
         
         scope.objectType = nil // reset
         
-        self.type = BuiltinType.Null
         return BuiltinType.Null
     }
     
@@ -372,7 +372,7 @@ extension ClosureExpr : TypeProvider {
 //  MARK:                                                 Control flow
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension ConditionalExpr : TypeProvider {
+extension ConditionalStmt : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
         
@@ -384,25 +384,24 @@ extension ConditionalExpr : TypeProvider {
             try statement.llvmType(ifScope)
         }
         
-        type = BuiltinType.Null
         return BuiltinType.Null
     }
 }
 
 
-extension ElseIfBlockExpr : TypeProvider {
+extension ElseIfBlockStmt : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
         
         // get condition type
-        let cond = try condition?.llvmType(scope)
-        
-        guard cond?.isStdBool ?? true else { throw SemaError.NonBooleanCondition }
+        let c = try condition?.llvmType(scope)
+        guard let cond = c where cond.isStdBool else { throw SemaError.NonBooleanCondition }
         
         // gen types for cond block
-        try scopeSemallvmType(forScopeExpression: block, scope: scope)
+        for exp in block.exprs {
+            try exp.llvmType(scope)
+        }
         
-        self.type = BuiltinType.Null
         return BuiltinType.Null
     }
     
@@ -415,7 +414,7 @@ extension ElseIfBlockExpr : TypeProvider {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-extension ForInLoopExpr : TypeProvider {
+extension ForInLoopStmt : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
         
@@ -429,7 +428,9 @@ extension ForInLoopExpr : TypeProvider {
         guard try iterator.llvmType(scope).isStdRange else { throw SemaError.NotRangeType }
         
         // parse inside of loop in loop scope
-        try scopeSemallvmType(forScopeExpression: block, scope: loopScope)
+        for exp in block.exprs {
+            try exp.llvmType(loopScope)
+        }
         
         return BuiltinType.Null
     }
@@ -445,27 +446,15 @@ extension WhileLoopExpr : TypeProvider {
         let loopScope = SemaScope(parent: scope, returnType: scope.returnType)
         
         // gen types for iterator
-        let it = try iterator.llvmType(scope)
+        let it = try condition.llvmType(scope)
         guard it.isStdBool else { throw SemaError.NonBooleanCondition }
         
         // parse inside of loop in loop scope
-        try scopeSemallvmType(forScopeExpression: block, scope: loopScope)
+        for exp in block.exprs {
+            try exp.llvmType(loopScope)
+        }
         
-        type = BuiltinType.Null
         return BuiltinType.Null
-    }
-}
-
-extension WhileIteratorExpr : TypeProvider {
-    
-    func llvmType(scope: SemaScope) throws -> Ty {
-        
-        // make condition variable and make sure bool
-        let t = try condition.llvmType(scope)
-        guard t.isStdBool else { throw SemaError.NonBooleanCondition }
-        
-        type = t
-        return t
     }
 }
 
@@ -535,7 +524,7 @@ extension StructExpr : TypeProvider {
         let structScope = SemaScope(parent: scope, returnType: nil) // cannot return from Struct scope
         
         // maps over properties and gens types
-        let members = try properties.map { (a: AssignmentExpr) -> (String, Ty, Bool) in
+        let members = try properties.map { (a: VariableDecl) -> (String, Ty, Bool) in
             try a.llvmType(structScope)
             guard let t = a.value.type else { throw SemaError.StructPropertyNotTyped }
             return (a.name, t, a.isMutable)
@@ -573,7 +562,13 @@ extension InitialiserDecl : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
         
-        guard let parentType = parent?.type, parentName = parent?.name else { throw SemaError.InitialiserNotAssociatedWithType }
+        guard
+            let parentType = parent?.type,
+            let parentName = parent?.name,
+            let parentProperties = parent?.properties
+            else {
+                throw SemaError.InitialiserNotAssociatedWithType
+        }
         
         let params = try ty.params(scope.allTypes)
         
@@ -581,7 +576,7 @@ extension InitialiserDecl : TypeProvider {
         self.mangledName = parentName.mangle(t)
         
         scope[function: parentName] = t
-        self.type = t
+        ty.type = t
         
         guard let impl = self.impl else {
             return t
@@ -590,7 +585,7 @@ extension InitialiserDecl : TypeProvider {
         let initScope = SemaScope(parent: scope)
         
         // ad scope properties to initScope
-        for p in parent?.properties ?? [] {
+        for p in parentProperties {
             initScope[variable: p.name] = p.value.type
         }
         

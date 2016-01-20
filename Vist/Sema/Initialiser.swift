@@ -16,7 +16,7 @@ extension StructExpr {
         let names = properties.map { $0.name }
         guard values.count == properties.count else { return nil }
         
-        var initialisations: [Expr] = []
+        var initialisations: [ASTNode] = []
         for (val, name) in zip(values, names) {
             let variable = Variable(name: name)
             let m = MutationExpr(object: variable, value: val)

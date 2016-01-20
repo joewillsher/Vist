@@ -7,26 +7,20 @@
 //
 
 
-protocol Expr : Printable, TypeProvider, TypedExpr {}
+///  - Expression / Expr
+///      - literals, tuples, parens, array, closure
+///      - Call expression, operator, methods, casts
+///      - Sub expressions of syntax structures, like `type name generic params`
+protocol Expr : ASTNode, Typed {}
+///  - Statement / Stmt
+///      - brace, return, conditional, if, while, for in, switch, break, fallthrough, continue
+protocol Stmt : ASTNode {}
+/// - Declaration / Decl
+protocol Decl : ASTNode {}
 
 
-// TODO: make this generic
-// use behaviour delegates (when released in swift 3) to make `let (delated) type: Ty { get }`
-protocol TypedExpr {
-    var type: Ty? { get set }
-}
 
 
-protocol Sized : Expr {
-    var size: UInt32 { get set }
-}
-
-protocol ExplicitlyTyped {
-    var explicitType: String { get }
-}
-
-protocol Literal : Expr {
-}
 
 
 
@@ -40,20 +34,6 @@ struct NullExpr : Expr {
     var type: Ty? = nil
 }
 
-protocol ScopeExpr : Expr, TypeProvider {
-    var exprs: [Expr] { get set }
-    var topLevel: Bool { get }
-}
-
-final class AST : ScopeExpr {
-    var exprs: [Expr]
-    var topLevel = true
-    init(exprs: [Expr]) {
-        self.exprs = exprs
-    }
-    
-    var type: Ty? = nil
-}
 
 
 
@@ -64,10 +44,13 @@ final class AST : ScopeExpr {
 
 
 
-protocol Decl {}
 
 
-final class AssignmentExpr : Decl, Expr, StructMember {
+
+
+
+
+final class VariableDecl : Decl, StructMember {
     let name: String
     let aType: String?
     let isMutable: Bool
@@ -79,11 +62,9 @@ final class AssignmentExpr : Decl, Expr, StructMember {
         self.isMutable = isMutable
         self.value = value
     }
-    
-    var type: Ty? = nil
 }
 
-class FunctionDecl : Decl, Expr, StructMember {
+class FunctionDecl : Decl, StructMember {
     let name: String
     let fnType: FunctionType
     let impl: FunctionImplementationExpr?
@@ -99,13 +80,12 @@ class FunctionDecl : Decl, Expr, StructMember {
     
     var mangledName: String
     
+    // FIXME: FunctionDecl protocol and 2 implementations
     /// `self` if the function is a member function
     weak var parent: StructExpr? = nil
-    
-    var type: Ty? = nil
 }
 
-final class InitialiserDecl : Decl, Expr, StructMember {
+final class InitialiserDecl : Decl, StructMember {
     let ty: FunctionType
     let impl: FunctionImplementationExpr?
     weak var parent: StructExpr?
@@ -118,8 +98,6 @@ final class InitialiserDecl : Decl, Expr, StructMember {
     }
     
     var mangledName: String
-    
-    var type: Ty? = nil
 }
 
 // TODO: Notes from swift:
@@ -152,12 +130,11 @@ final class InitialiserDecl : Decl, Expr, StructMember {
 
 
 
-final class BlockExpr : ScopeExpr {
-    var exprs: [Expr]
+final class BlockExpr : Expr {
+    var exprs: [ASTNode]
     var variables: [ValueType]
     
-    var topLevel = false
-    init(exprs: [Expr], variables: [ValueType] = []) {
+    init(exprs: [ASTNode], variables: [ValueType] = []) {
         self.exprs = exprs
         self.variables = variables
     }
@@ -165,12 +142,12 @@ final class BlockExpr : ScopeExpr {
     var type: Ty? = nil
 }
 
-final class ClosureExpr : Expr {
+final class ClosureExpr : Expr, Typed {
     
-    var exprs: [Expr]
+    var exprs: [ASTNode]
     var parameters: [String]
     
-    init(exprs: [Expr], params: [String]) {
+    init(exprs: [ASTNode], params: [String]) {
         self.exprs = exprs
         self.parameters = params
     }
@@ -179,7 +156,7 @@ final class ClosureExpr : Expr {
 }
 
 
-final class BooleanLiteral : Literal, BooleanType {
+final class BooleanLiteral : Literal, BooleanType, Typed {
     let val: Bool
     
     init(val: Bool) {
@@ -200,7 +177,7 @@ protocol BooleanType {
 }
 
 
-final class FloatingPointLiteral : Literal, ExplicitlyTyped, FloatingPointType, Sized {
+final class FloatingPointLiteral : Literal, ExplicitlyTyped, FloatingPointType, Sized, Typed {
     let val: Double
     var size: UInt32 = 64
     var explicitType: String {
@@ -214,7 +191,7 @@ final class FloatingPointLiteral : Literal, ExplicitlyTyped, FloatingPointType, 
     var type: Ty? = nil
 }
 
-final class IntegerLiteral : Literal, ExplicitlyTyped, IntegerType, Sized {
+final class IntegerLiteral : Literal, ExplicitlyTyped, IntegerType, Sized, Typed {
     let val: Int
     var size: UInt32
     var explicitType: String {
@@ -228,7 +205,7 @@ final class IntegerLiteral : Literal, ExplicitlyTyped, IntegerType, Sized {
     
     var type: Ty? = nil
 }
-final class StringLiteral : Literal, Expr {
+final class StringLiteral : Literal, Expr, Typed {
     let str: String
     var count: Int { return str.characters.count }
     
@@ -255,13 +232,13 @@ struct CommentExpr : Expr {
     let str: String
     init(str: String) {
         self.str = str
-        self.type = nil
     }
+    
     var type: Ty? = nil
 }
 
-final class Void : Expr {
-    var type: Ty? = nil
+final class Void : Expr, Typed {
+    var type: Ty? = BuiltinType.Void
 }
 
 
@@ -270,7 +247,7 @@ protocol AssignableExpr : Expr {}
 /// A variable lookup Expr
 ///
 /// Generic over the variable type, use AnyExpr if this is not known
-final class Variable : AssignableExpr {
+final class Variable : AssignableExpr, Typed {
     let name: String
     
     init(name: String) {
@@ -287,7 +264,7 @@ final class Variable : AssignableExpr {
 
 
 
-final class BinaryExpr : Expr {
+final class BinaryExpr : Expr, Typed {
     let op: String
     let lhs: Expr, rhs: Expr
     
@@ -302,7 +279,7 @@ final class BinaryExpr : Expr {
     var type: Ty? = nil
 }
 
-final class PrefixExpr : Expr {
+final class PrefixExpr : Expr, Typed {
     let op: String
     let expr: Expr
     
@@ -314,7 +291,7 @@ final class PrefixExpr : Expr {
     var type: Ty? = nil
 }
 
-final class PostfixExpr : Expr {
+final class PostfixExpr : Expr, Typed {
     let op: String
     let expr: Expr
     
@@ -336,7 +313,7 @@ final class PostfixExpr : Expr {
 
 
 
-final class FunctionCallExpr : Expr {
+final class FunctionCallExpr : Expr, Typed {
     let name: String
     let args: TupleExpr
     
@@ -411,17 +388,17 @@ final class TupleMemberLookupExpr : AssignableExpr {
     var type: Ty? = nil
 }
 
-final class ReturnExpr : Expr {
+final class ReturnStmt : Stmt {
     let expr: Expr
     
     init(expr: Expr) {
         self.expr = expr
     }
-    
-    var type: Ty? = nil
 }
 
 
+// FIXME: find another way to do this
+/// used to lowe type name information
 final class ValueType : Expr {
     var name: String
     
@@ -450,28 +427,33 @@ final class FunctionType : Expr {
 
 
 
-final class ElseIfBlockExpr<BlockType : ScopeExpr> : Expr {
+
+
+
+
+
+
+
+final class ElseIfBlockStmt : Stmt {
     var condition: Expr?
-    var block: BlockType
+    var block: BlockExpr
     
-    init(condition: Expr?, block: BlockType) {
+    init(condition: Expr?, block: BlockExpr) {
         self.condition = condition
         self.block = block
     }
-    
-    var type: Ty? = nil
 }
 
 
-final class ConditionalExpr<BlockType : ScopeExpr> : Expr {
-    let statements: [ElseIfBlockExpr<BlockType> ]
+final class ConditionalStmt : Stmt {
+    let statements: [ElseIfBlockStmt]
     
-    init(statements: [(condition: Expr?, block: BlockType)]) throws {
-        var p: [ElseIfBlockExpr<BlockType>] = []
+    init(statements: [(condition: Expr?, block: BlockExpr)]) throws {
+        var p: [ElseIfBlockStmt] = []
         
         for (index, path) in statements.enumerate() {
             
-            p.append(ElseIfBlockExpr(condition: path.0, block: path.1))
+            p.append(ElseIfBlockStmt(condition: path.0, block: path.1))
             
             // nil condition here is an else block, if there is anything after an else block then throw
             // either because there is more than 1 else or Exprs after an else
@@ -483,78 +465,58 @@ final class ConditionalExpr<BlockType : ScopeExpr> : Expr {
         
         self.statements = p
     }
-    
-    var type: Ty? = nil
-}
-
-protocol LoopExpr : Expr {
-    
-    typealias BlockType: ScopeExpr
-    
-//    var iterator: Expr { get }
-    var block: BlockType { get }
 }
 
 
-final class ForInLoopExpr
-    <BlockType : ScopeExpr>
-    : LoopExpr {
+
+
+
+
+
+
+
+
+
+
+
+protocol LoopStmt : Stmt {
+    var block: BlockExpr { get }
+}
+
+
+final class ForInLoopStmt : LoopStmt {
     
     let binded: Variable
     let iterator: Expr
-    var block: BlockType
+    var block: BlockExpr
     
-    init(identifier: Variable, iterator: Expr, block: BlockType) {
+    init(identifier: Variable, iterator: Expr, block: BlockExpr) {
         self.binded = identifier
         self.iterator = iterator
         self.block = block
     }
-    
-    var type: Ty? = nil
 }
 
-final class WhileLoopExpr
-    <BlockType : ScopeExpr>
-    : LoopExpr {
-    
-    let iterator: WhileIteratorExpr
-    var block: BlockType
-    
-    init(iterator: WhileIteratorExpr, block: BlockType) {
-        self.iterator = iterator
-        self.block = block
-    }
-    
-    var type: Ty? = nil
-}
-
-
-protocol IteratorExpr : Expr {
-}
-
-final class RangeIteratorExpr : IteratorExpr {
-    
-    let start: Expr, end: Expr
-    
-    init(s: Expr, e: Expr) {
-        start = s
-        end = e
-    }
-    
-    var type: Ty? = nil
-}
-
-final class WhileIteratorExpr : IteratorExpr {
+final class WhileLoopExpr : LoopStmt {
     
     let condition: Expr
+    var block: BlockExpr
     
-    init(condition: Expr) {
+    init(condition: Expr, block: BlockExpr) {
         self.condition = condition
+        self.block = block
     }
-    
-    
-    var type: Ty? = nil
 }
+
+
+
+
+
+
+
+
+
+
 
 final class ArrayExpr : Expr, AssignableExpr {
     
@@ -585,18 +547,30 @@ final class ArraySubscriptExpr : Expr, AssignableExpr {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 protocol StructMember {
 }
 
 
 final class StructExpr : Expr {
     let name: String
-    let properties: [AssignmentExpr]
+    let properties: [VariableDecl]
     let methods: [FunctionDecl]
     var initialisers: [InitialiserDecl]
     let attrs: [AttributeExpr]
     
-    init(name: String, properties: [AssignmentExpr], methods: [FunctionDecl], initialisers: [InitialiserDecl], attrs: [AttributeExpr]) {
+    init(name: String, properties: [VariableDecl], methods: [FunctionDecl], initialisers: [InitialiserDecl], attrs: [AttributeExpr]) {
         self.name = name
         self.properties = properties
         self.methods = methods

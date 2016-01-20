@@ -62,7 +62,7 @@ final class StdLibExpose {
         
         let fns = ast.exprs
             .flatMap { ($0 as? FunctionDecl) }
-            .map { ($0.name, $0.fnType.type as? FnType) }
+            .map { ($0.name, $0.fnType.type as! FnType) }
         
         let structs = ast.exprs
             .flatMap { ($0 as? StructExpr) }
@@ -70,10 +70,10 @@ final class StdLibExpose {
             .map { ($0.name, $0.type as? StructType) }
         let methods = structs
             .flatMap {
-                    $0.methods.flatMap { ($0.name, $0.type as? FnType) }
-                    +
-                    $0.initialisers .flatMap { ($0.parent?.name ?? "", $0.type as? FnType)
-                }
+                $0.methods.flatMap { ($0.name, $0.fnType.type as! FnType) }
+                +
+                $0.initialisers .flatMap { ($0.parent!.name, FnType.returning($0.parent!.type as! StructType))
+            }
         }
         
         for (name, t) in fns + methods {

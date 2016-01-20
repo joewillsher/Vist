@@ -13,15 +13,14 @@ func interfaceASTGen(ast: AST) throws -> AST {
     
     for exp in ast.exprs {
         
-        if let e = exp as? AssignmentExpr {
+        if let e = exp as? VariableDecl {
             interface.exprs.append(e)
         }
         else if let f = exp as? FunctionDecl {
             
             let fun = FunctionDecl(name: f.name, type: f.fnType, impl: nil, attrs: f.attrs)
-            fun.type = f.type
             interface.exprs.append(fun)
-                        
+            
         }
         
         // TODO: Structs / concepts etc need to be exposed in the interface
@@ -37,7 +36,7 @@ func interFileInterfaceASTGen(ast: AST) throws -> AST {
     
     for exp in ast.exprs {
         
-        if let e = exp as? AssignmentExpr {
+        if let e = exp as? VariableDecl {
             interface.exprs.append(e)
         }
         else if let f = exp as? FunctionDecl {

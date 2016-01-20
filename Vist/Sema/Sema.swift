@@ -36,7 +36,7 @@ enum SemaError : ErrorType {
 
 func sema(ast: AST, globalScope: SemaScope) throws {
     
-    try scopeSemallvmType(forScopeExpression: ast, scope: globalScope)
+    try scopeSemallvmType(ast, scope: globalScope)
     
 }
 

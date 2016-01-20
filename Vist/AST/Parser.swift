@@ -56,7 +56,7 @@ struct Parser {
     private var index = 0
     private let tokensWithPos: [(Token, SourceLoc)]
     
-    private var Exprs = [Expr]()
+    private var exprs = [ASTNode]()
     
     private var tokens: [Token]     { return tokensWithPos.map{$0.0} }
     private var currentToken: Token { return tokens[index] }
@@ -515,7 +515,7 @@ extension Parser {
 
 extension Parser {
     
-    private mutating func parseIfExpr() throws -> Expr {
+    private mutating func parseIfExpr() throws -> ConditionalStmt {
         
         getNextToken() // eat `if`
         let condition = try parseOperatorExpr()
@@ -552,11 +552,11 @@ extension Parser {
             blocks.append((condition, block))
         }
         
-        return try ConditionalExpr<BlockExpr>(statements: blocks)
+        return try ConditionalStmt(statements: blocks)
     }
     
     
-    private mutating func parseForInLoopExpr() throws -> ForInLoopExpr<BlockExpr> {
+    private mutating func parseForInLoopExpr() throws -> ForInLoopStmt {
         
         getNextToken() // eat 'for'
         let itentifier = try parseTextExpr() // bind loop label
@@ -566,32 +566,17 @@ extension Parser {
         let loop = try parseOperatorExpr()
         let block = try parseBlockExpr()
         
-        return ForInLoopExpr(identifier: itentifier, iterator: loop, block: block)
+        return ForInLoopStmt(identifier: itentifier, iterator: loop, block: block)
     }
     
-    private mutating func parseWhileLoopExpr() throws -> WhileLoopExpr<BlockExpr> {
+    private mutating func parseWhileLoopExpr() throws -> WhileLoopExpr {
         
         getNextToken() // eat 'while'
         
-        let iterator = try parseWhileIterator()
+        let condition = try parseOperatorExpr()
         let block = try parseBlockExpr()
         
-        return WhileLoopExpr(iterator: iterator, block: block)
-    }
-    
-    
-    private mutating func parseForInIterator() throws -> RangeIteratorExpr {
-        
-        guard let o = try parseOperatorExpr() as? BinaryExpr else { throw ParseError.NotIterator(currentPos) }
-        
-        return RangeIteratorExpr(s: o.lhs, e: o.rhs)
-    }
-    
-    private mutating func parseWhileIterator() throws -> WhileIteratorExpr {
-        
-        let cond = try parseOperatorExpr()
-        
-        return WhileIteratorExpr(condition: cond)
+        return WhileLoopExpr(condition: condition, block: block)
     }
 }
 
@@ -602,7 +587,7 @@ extension Parser {
 
 extension Parser {
     
-    private mutating func parseVariableAssignmentMutable(mutable: Bool, requiresInitialValue: Bool = true) throws -> AssignmentExpr {
+    private mutating func parseVariableAssignmentMutable(mutable: Bool, requiresInitialValue: Bool = true) throws -> VariableDecl {
         
         guard case let .Identifier(id) = getNextToken() else { throw ParseError.NoIdentifier(currentPos) }
         
@@ -628,7 +613,7 @@ extension Parser {
                 throw ParseError.ExpectedAssignment(currentPos)
             }
             else {
-                return AssignmentExpr(name: id, type: explicitType, isMutable: mutable, value: NullExpr())
+                return VariableDecl(name: id, type: explicitType, isMutable: mutable, value: NullExpr())
             }
         }
         getNextToken() // eat '='
@@ -652,7 +637,7 @@ extension Parser {
             }
         }
         
-        return AssignmentExpr(name: id, type: type, isMutable: mutable, value: value)
+        return VariableDecl(name: id, type: type, isMutable: mutable, value: value)
     }
 }
 
@@ -796,25 +781,25 @@ extension Parser {
     private mutating func parseBraceExpr(names: [ValueType] = []) throws -> BlockExpr {
         getNextToken() // eat '{'
         
-        var Exprs = [Expr]()
+        var exprs = [ASTNode]()
         
         while true {
             if case .CloseBrace = currentToken { break }
             
             do {
                 guard let exp = try parseExpr(currentToken) else { throw ParseError.NoToken(currentToken, currentPos) }
-                Exprs.append(exp)
+                exprs.append(exp)
             }
             catch ParseError.NoToken(.CloseParen, _) { break }
         }
         getNextToken() // eat '}'
-        return BlockExpr(exprs: Exprs, variables: names)
+        return BlockExpr(exprs: exprs, variables: names)
     }
     
-    private mutating func parseReturnExpr() throws -> Expr {
+    private mutating func parseReturnExpr() throws -> ReturnStmt {
         getNextToken() // eat `return`
         
-        return ReturnExpr(expr: try parseOperatorExpr())
+        return ReturnStmt(expr: try parseOperatorExpr())
     }
     
     private mutating func parseBracelessDoExpr(names: [ValueType] = []) throws -> BlockExpr {
@@ -887,7 +872,7 @@ extension Parser {
         guard case .OpenBrace = currentToken else { throw ParseError.ExpectedBrace(currentPos) }
         getNextToken() // eat '{'
         
-        var properties: [AssignmentExpr] = [], methods: [FunctionDecl] = [], initialisers: [InitialiserDecl] = []
+        var properties: [VariableDecl] = [], methods: [FunctionDecl] = [], initialisers: [InitialiserDecl] = []
         
         while true {
             
@@ -999,7 +984,7 @@ extension Parser {
     /// parses any token, starts new scopes
     ///
     /// promises that the input token will be consumed
-    private mutating func parseExpr(token: Token) throws -> Expr? {
+    private mutating func parseExpr(token: Token) throws -> ASTNode? {
         
         switch token {
         case .Let:                  return try parseVariableAssignmentMutable(false)
@@ -1040,15 +1025,15 @@ extension Parser {
     mutating func parse() throws -> AST {
         
         index = 0
-        Exprs = []
+        exprs = []
         
         while let tok = tok() {
             if let exp = try parseExpr(tok) {
-                Exprs.append(exp)
+                exprs.append(exp)
             }
         }
         
-        return AST(exprs: Exprs)
+        return AST(exprs: exprs)
     }
 
     init(tokens: [(Token, SourceLoc)], isStdLib: Bool = false) {

@@ -8,7 +8,7 @@
 
 
 private func t(n:Int) -> String {
-    return Array(count: n, repeatedValue: "\t").reduce("", combine: +)
+    return Array(count: n, repeatedValue: "  ").reduce("", combine: +)
 }
 
 
@@ -42,7 +42,7 @@ extension Printable {
         
         let i = inline()
         let n0 = i ? "" : "\n", t1 = i ? " " : t(n+1), te = i ? "" : t(n)
-        let ty = (self as? TypedExpr)?.type
+        let ty = (self as? Typed)?.type
         let typeItem = ty != nil ? [("type", ty!)] : [] as [(String?, Printable)]
         
         return "(\(self.dynamicType)" + ((printList() ?? []) + typeItem).reduce("") {
@@ -144,18 +144,18 @@ extension Optional : Printable {
     }
 }
 
-extension ScopeExpr {
+extension BlockExpr {
     func printList() -> [(String?, Printable)]? {
         return exprs.map { (nil, $0 as Printable) }
     }
 }
-extension BlockExpr {
+extension AST {
     func printList() -> [(String?, Printable)]? {
-        return [("Expressions", exprs), ("variables", variables)]
+        return [("Expressions", exprs)]
     }
 }
 
-extension AssignmentExpr {
+extension VariableDecl {
     func printList() -> [(String?, Printable)]? {
         return [("name", name), ("explicitType", aType), ("value", value), ("mutable", isMutable)]
     }
@@ -253,7 +253,7 @@ extension CommentExpr {
     }
 }
 
-extension ReturnExpr {
+extension ReturnStmt {
     func printList() -> [(String?, Printable)]? {
         return [("Expression", expr)]
     }
@@ -261,18 +261,18 @@ extension ReturnExpr {
 
 
 
-private func ifStr<BlockType>(n n: Int, ex: ElseIfBlockExpr<BlockType>) -> String? {
+private func ifStr(n n: Int, ex: ElseIfBlockStmt) -> String? {
     return ex.condition == nil ? "else" : n == 0 ? "if" : "if else"
 }
 
-extension ConditionalExpr {
+extension ConditionalStmt {
     
     func printList() -> [(String?, Printable)]? {
         return statements.enumerate().map { (ifStr(n: $0, ex: $1), $1) }
     }
 }
 
-extension ElseIfBlockExpr {
+extension ElseIfBlockStmt {
     
     func printList() -> [(String?, Printable)]? {
         return [("cond", condition), ("then", block)]
@@ -285,7 +285,7 @@ extension MutationExpr {
     }
 }
 
-extension ForInLoopExpr {
+extension ForInLoopStmt {
     
     func printList() -> [(String?, Printable)]? {
         return [("for", binded), ("in", iterator), ("do", block)]
@@ -293,29 +293,15 @@ extension ForInLoopExpr {
     
 }
 
-extension RangeIteratorExpr {
-    func printList() -> [(String?, Printable)]? {
-        return [("start", start), ("end", end)]
-    }
-    func inline() -> Bool {
-        return true
-    }
-}
 
 extension WhileLoopExpr {
     
     func printList() -> [(String?, Printable)]? {
-        return [("while", iterator), ("do", block)]
+        return [("while", condition), ("do", block)]
     }
     
 }
 
-extension WhileIteratorExpr {
-    
-    func printList() -> [(String?, Printable)]? {
-        return [("cond", condition)]
-    }
-}
 
 extension ArrayExpr {
     
