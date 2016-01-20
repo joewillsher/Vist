@@ -760,7 +760,7 @@ extension ForInLoopStmt : IRGenerator {
 
 
 // TODO: Break statements and passing break-to bb in scope
-extension WhileLoopExpr : IRGenerator {
+extension WhileLoopStmt : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
@@ -893,7 +893,9 @@ extension InitialiserDecl : IRGenerator {
             functionType = ty.type?.ir(),
             parentType = parent?.type as? StructType,
             name = parent?.name,
-            parentProperties = parent?.properties else { throw IRError.TypeNotFound }
+            parentProperties = parent?.properties else {
+                throw IRError.TypeNotFound
+        }
         
         // make function
         let function = LLVMAddFunction(module, mangledName, functionType)

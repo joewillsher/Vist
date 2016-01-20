@@ -50,5 +50,15 @@ let x = d[raw: "_fatalError"]
 
 
 
+class Foo {
+    var meme: Int = 0
+    var b: Foo? = nil
+}
+
+let a = Foo()
+
+var m = Mirror(reflecting: a).children
+m.first
+m.dropFirst().first
 
 

@@ -6,6 +6,7 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
+// TODO: Split up for expressions and statements
 protocol TypeProvider {
     /// Function used to traverse AST and get type information for all its objects
     ///
@@ -395,7 +396,7 @@ extension ElseIfBlockStmt : TypeProvider {
         
         // get condition type
         let c = try condition?.llvmType(scope)
-        guard let cond = c where cond.isStdBool else { throw SemaError.NonBooleanCondition }
+        guard c?.isStdBool ?? true else { throw SemaError.NonBooleanCondition }
         
         // gen types for cond block
         for exp in block.exprs {
@@ -438,7 +439,7 @@ extension ForInLoopStmt : TypeProvider {
 }
 
 
-extension WhileLoopExpr : TypeProvider {
+extension WhileLoopStmt : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
         
@@ -447,7 +448,8 @@ extension WhileLoopExpr : TypeProvider {
         
         // gen types for iterator
         let it = try condition.llvmType(scope)
-        guard it.isStdBool else { throw SemaError.NonBooleanCondition }
+        guard it.isStdBool else {
+            throw SemaError.NonBooleanCondition }
         
         // parse inside of loop in loop scope
         for exp in block.exprs {

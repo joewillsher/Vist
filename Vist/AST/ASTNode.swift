@@ -26,15 +26,3 @@ final class AST : ASTNode {
     var type: Ty? = nil
 }
 
-
-// other AST prptocols
-protocol Sized : Expr {
-    var size: UInt32 { get set }
-}
-
-protocol ExplicitlyTyped {
-    var explicitType: String { get }
-}
-
-protocol Literal : Expr {
-}

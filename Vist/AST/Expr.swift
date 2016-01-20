@@ -12,27 +12,6 @@
 ///      - Call expression, operator, methods, casts
 ///      - Sub expressions of syntax structures, like `type name generic params`
 protocol Expr : ASTNode, Typed {}
-///  - Statement / Stmt
-///      - brace, return, conditional, if, while, for in, switch, break, fallthrough, continue
-protocol Stmt : ASTNode {}
-/// - Declaration / Decl
-protocol Decl : ASTNode {}
-
-
-
-
-
-
-
-
-
-
-
-
-
-struct NullExpr : Expr {
-    var type: Ty? = nil
-}
 
 
 
@@ -50,55 +29,7 @@ struct NullExpr : Expr {
 
 
 
-final class VariableDecl : Decl, StructMember {
-    let name: String
-    let aType: String?
-    let isMutable: Bool
-    var value: Expr
-    
-    init(name: String, type: String?, isMutable: Bool, value: Expr) {
-        self.name = name
-        self.aType = type
-        self.isMutable = isMutable
-        self.value = value
-    }
-}
 
-class FunctionDecl : Decl, StructMember {
-    let name: String
-    let fnType: FunctionType
-    let impl: FunctionImplementationExpr?
-    let attrs: [FunctionAttributeExpr]
-    
-    init(name: String, type: FunctionType, impl: FunctionImplementationExpr?, attrs: [FunctionAttributeExpr]) {
-        self.name = name
-        self.fnType = type
-        self.impl = impl
-        self.mangledName = name
-        self.attrs = attrs
-    }
-    
-    var mangledName: String
-    
-    // FIXME: FunctionDecl protocol and 2 implementations
-    /// `self` if the function is a member function
-    weak var parent: StructExpr? = nil
-}
-
-final class InitialiserDecl : Decl, StructMember {
-    let ty: FunctionType
-    let impl: FunctionImplementationExpr?
-    weak var parent: StructExpr?
-    
-    init(ty: FunctionType, impl: FunctionImplementationExpr?, parent: StructExpr?) {
-        self.ty = ty
-        self.impl = impl
-        self.parent = parent
-        self.mangledName = ""
-    }
-    
-    var mangledName: String
-}
 
 // TODO: Notes from swift:
 //
@@ -142,7 +73,7 @@ final class BlockExpr : Expr {
     var type: Ty? = nil
 }
 
-final class ClosureExpr : Expr, Typed {
+final class ClosureExpr : Expr {
     
     var exprs: [ASTNode]
     var parameters: [String]
@@ -156,28 +87,22 @@ final class ClosureExpr : Expr, Typed {
 }
 
 
-final class BooleanLiteral : Literal, BooleanType, Typed {
-    let val: Bool
-    
-    init(val: Bool) {
-        self.val = val
-    }
-    
-    var type: Ty? = nil
-}
-
-protocol FloatingPointType {
-    var val: Double { get }
-}
-protocol IntegerType {
-    var val: Int { get }
-}
-protocol BooleanType {
-    var val: Bool { get }
-}
 
 
-final class FloatingPointLiteral : Literal, ExplicitlyTyped, FloatingPointType, Sized, Typed {
+
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                               Literals
+//-------------------------------------------------------------------------------------------------------------------------
+
+protocol SizedExpr : Expr {
+    var size: UInt32 { get set }
+}
+
+protocol ExplicitlyTyped {
+    var explicitType: String { get }
+}
+
+final class FloatingPointLiteral : SizedExpr, ExplicitlyTyped {
     let val: Double
     var size: UInt32 = 64
     var explicitType: String {
@@ -191,7 +116,7 @@ final class FloatingPointLiteral : Literal, ExplicitlyTyped, FloatingPointType, 
     var type: Ty? = nil
 }
 
-final class IntegerLiteral : Literal, ExplicitlyTyped, IntegerType, Sized, Typed {
+final class IntegerLiteral : SizedExpr, ExplicitlyTyped {
     let val: Int
     var size: UInt32
     var explicitType: String {
@@ -205,7 +130,18 @@ final class IntegerLiteral : Literal, ExplicitlyTyped, IntegerType, Sized, Typed
     
     var type: Ty? = nil
 }
-final class StringLiteral : Literal, Expr, Typed {
+
+final class BooleanLiteral : Expr {
+    let val: Bool
+    
+    init(val: Bool) {
+        self.val = val
+    }
+    
+    var type: Ty? = nil
+}
+
+final class StringLiteral : Expr {
     let str: String
     var count: Int { return str.characters.count }
     
@@ -228,26 +164,18 @@ final class StringLiteral : Literal, Expr, Typed {
 //}
 
 
-struct CommentExpr : Expr {
-    let str: String
-    init(str: String) {
-        self.str = str
-    }
-    
-    var type: Ty? = nil
-}
-
-final class Void : Expr, Typed {
-    var type: Ty? = BuiltinType.Void
-}
 
 
-protocol AssignableExpr : Expr {}
+
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                               Variables
+//-------------------------------------------------------------------------------------------------------------------------
+
 
 /// A variable lookup Expr
 ///
 /// Generic over the variable type, use AnyExpr if this is not known
-final class Variable : AssignableExpr, Typed {
+final class Variable : AssignableExpr {
     let name: String
     
     init(name: String) {
@@ -257,77 +185,7 @@ final class Variable : AssignableExpr, Typed {
     var type: Ty? = nil
 }
 
-
-
-
-
-
-
-
-final class BinaryExpr : Expr, Typed {
-    let op: String
-    let lhs: Expr, rhs: Expr
-    
-    init(op: String, lhs: Expr, rhs: Expr) {
-        self.op = op
-        self.lhs = lhs
-        self.rhs = rhs
-    }
-    
-    var mangledName: String = ""
-    
-    var type: Ty? = nil
-}
-
-final class PrefixExpr : Expr, Typed {
-    let op: String
-    let expr: Expr
-    
-    init(op: String, expr: Expr) {
-        self.op = op
-        self.expr = expr
-    }
-    
-    var type: Ty? = nil
-}
-
-final class PostfixExpr : Expr, Typed {
-    let op: String
-    let expr: Expr
-    
-    init(op: String, expr: Expr) {
-        self.op = op
-        self.expr = expr
-    }
-    
-    var type: Ty? = nil
-}
-
-
-
-
-
-
-
-
-
-
-
-final class FunctionCallExpr : Expr, Typed {
-    let name: String
-    let args: TupleExpr
-    
-    init(name: String, args: TupleExpr) {
-        self.name = name
-        self.args = args
-        self.mangledName = name
-    }
-    
-    var mangledName: String
-    
-    var type: Ty? = nil
-}
-
+protocol AssignableExpr : Expr {}
 
 final class MutationExpr : Expr {
     let object: AssignableExpr
@@ -345,6 +203,72 @@ final class MutationExpr : Expr {
 
 
 
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                               Operators
+//-------------------------------------------------------------------------------------------------------------------------
+
+final class BinaryExpr : Expr {
+    let op: String
+    let lhs: Expr, rhs: Expr
+    
+    init(op: String, lhs: Expr, rhs: Expr) {
+        self.op = op
+        self.lhs = lhs
+        self.rhs = rhs
+    }
+    
+    var mangledName: String = ""
+    
+    var type: Ty? = nil
+}
+
+final class PrefixExpr : Expr {
+    let op: String
+    let expr: Expr
+    
+    init(op: String, expr: Expr) {
+        self.op = op
+        self.expr = expr
+    }
+    
+    var type: Ty? = nil
+}
+
+final class PostfixExpr : Expr {
+    let op: String
+    let expr: Expr
+    
+    init(op: String, expr: Expr) {
+        self.op = op
+        self.expr = expr
+    }
+    
+    var type: Ty? = nil
+}
+
+
+
+
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                               Functions
+//-------------------------------------------------------------------------------------------------------------------------
+
+final class FunctionCallExpr : Expr {
+    let name: String
+    let args: TupleExpr
+    
+    init(name: String, args: TupleExpr) {
+        self.name = name
+        self.args = args
+        self.mangledName = name
+    }
+    
+    var mangledName: String
+    
+    var type: Ty? = nil
+}
+
+
 final class FunctionImplementationExpr : Expr {
     let params: TupleExpr
     let body: BlockExpr
@@ -352,25 +276,6 @@ final class FunctionImplementationExpr : Expr {
     init(params: TupleExpr, body: BlockExpr) {
         self.params = params
         self.body = body
-    }
-    
-    var type: Ty? = nil
-}
-
-final class TupleExpr : Expr {
-    let elements: [Expr]
-    
-    init(elements: [Expr]) {
-        self.elements = elements
-    }
-    init(element: Expr) {
-        self.elements = [element]
-    }
-    
-    static func void() -> TupleExpr{ return TupleExpr(elements: [])}
-    
-    func mapAs<T>(_: T.Type) -> [T] {
-        return elements.flatMap { $0 as? T }
     }
     
     var type: Ty? = nil
@@ -397,17 +302,6 @@ final class ReturnStmt : Stmt {
 }
 
 
-// FIXME: find another way to do this
-/// used to lowe type name information
-final class ValueType : Expr {
-    var name: String
-    
-    init(name: String) {
-        self.name = name
-    }
-    
-    var type: Ty? = nil
-}
 
 
 final class FunctionType : Expr {
@@ -424,101 +318,12 @@ final class FunctionType : Expr {
 
 
 
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                               Array
+//-------------------------------------------------------------------------------------------------------------------------
 
 
-
-
-
-
-
-
-
-
-final class ElseIfBlockStmt : Stmt {
-    var condition: Expr?
-    var block: BlockExpr
-    
-    init(condition: Expr?, block: BlockExpr) {
-        self.condition = condition
-        self.block = block
-    }
-}
-
-
-final class ConditionalStmt : Stmt {
-    let statements: [ElseIfBlockStmt]
-    
-    init(statements: [(condition: Expr?, block: BlockExpr)]) throws {
-        var p: [ElseIfBlockStmt] = []
-        
-        for (index, path) in statements.enumerate() {
-            
-            p.append(ElseIfBlockStmt(condition: path.0, block: path.1))
-            
-            // nil condition here is an else block, if there is anything after an else block then throw
-            // either because there is more than 1 else or Exprs after an else
-            guard let _ = path.condition else {
-                if index == statements.count-1 { break }
-                else { self.statements = []; throw ParseError.InvalidIfStatement }
-            }
-        }
-        
-        self.statements = p
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-protocol LoopStmt : Stmt {
-    var block: BlockExpr { get }
-}
-
-
-final class ForInLoopStmt : LoopStmt {
-    
-    let binded: Variable
-    let iterator: Expr
-    var block: BlockExpr
-    
-    init(identifier: Variable, iterator: Expr, block: BlockExpr) {
-        self.binded = identifier
-        self.iterator = iterator
-        self.block = block
-    }
-}
-
-final class WhileLoopExpr : LoopStmt {
-    
-    let condition: Expr
-    var block: BlockExpr
-    
-    init(condition: Expr, block: BlockExpr) {
-        self.condition = condition
-        self.block = block
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-final class ArrayExpr : Expr, AssignableExpr {
+final class ArrayExpr : AssignableExpr {
     
     let arr: [Expr]
     
@@ -530,7 +335,7 @@ final class ArrayExpr : Expr, AssignableExpr {
     var type: Ty? = nil
 }
 
-final class ArraySubscriptExpr : Expr, AssignableExpr {
+final class ArraySubscriptExpr : AssignableExpr {
     let arr: Expr
     let index: Expr
     
@@ -545,18 +350,9 @@ final class ArraySubscriptExpr : Expr, AssignableExpr {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                               Struct
+//-------------------------------------------------------------------------------------------------------------------------
 
 
 protocol StructMember {
@@ -615,5 +411,59 @@ final class PropertyLookupExpr : AssignableExpr {
 
 
 
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                               Other
+//-------------------------------------------------------------------------------------------------------------------------
+
+
+struct NullExpr : Expr {
+    var type: Ty? = nil
+}
+
+
+// FIXME: find another way to do this
+/// used to lowe type name information
+final class ValueType : Expr {
+    var name: String
+    
+    init(name: String) {
+        self.name = name
+    }
+    
+    var type: Ty? = nil
+}
+
+
+final class TupleExpr : Expr {
+    let elements: [Expr]
+    
+    init(elements: [Expr]) {
+        self.elements = elements
+    }
+    init(element: Expr) {
+        self.elements = [element]
+    }
+    
+    static func void() -> TupleExpr{ return TupleExpr(elements: [])}
+    
+    func mapAs<T>(_: T.Type) -> [T] {
+        return elements.flatMap { $0 as? T }
+    }
+    
+    var type: Ty? = nil
+}
+
+struct CommentExpr : Expr {
+    let str: String
+    init(str: String) {
+        self.str = str
+    }
+    
+    var type: Ty? = nil
+}
+
+final class Void : Expr {
+    var type: Ty? = BuiltinType.Void
+}
 
 

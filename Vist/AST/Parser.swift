@@ -569,14 +569,14 @@ extension Parser {
         return ForInLoopStmt(identifier: itentifier, iterator: loop, block: block)
     }
     
-    private mutating func parseWhileLoopExpr() throws -> WhileLoopExpr {
+    private mutating func parseWhileLoopStmt() throws -> WhileLoopStmt {
         
         getNextToken() // eat 'while'
         
         let condition = try parseOperatorExpr()
         let block = try parseBlockExpr()
         
-        return WhileLoopExpr(condition: condition, block: block)
+        return WhileLoopStmt(condition: condition, block: block)
     }
 }
 
@@ -624,7 +624,7 @@ extension Parser {
         if let a = type, let b = explicitType where a != b { throw ParseError.MismatchedType((a, inspectNextPos(-1)!), (b, inspectNextPos(-3)!)) }
         
         // if explicit assignment defines size, add info about this size to object
-        if let ex = explicitType, var sized = value as? Sized  {
+        if let ex = explicitType, var sized = value as? SizedExpr  {
             let s = ex.componentsSeparatedByCharactersInSet(NSCharacterSet.decimalDigitCharacterSet().invertedSet).joinWithSeparator("")
             
             if let n = UInt32(s) {
@@ -999,7 +999,7 @@ extension Parser {
         case .If:                   return try parseIfExpr()
         case .For:                  return try parseForInLoopExpr()
         case .Do:                   return try parseBracelessDoExpr()
-        case .While:                return try parseWhileLoopExpr()
+        case .While:                return try parseWhileLoopStmt()
         case .SqbrOpen:             return try parseArrayExpr()
         case .Type:                 return try parseTypeDeclarationExpr(byRef: false)
         case .Reference:            getNextToken(); return try parseTypeDeclarationExpr(byRef: true)
