@@ -20,9 +20,9 @@ import Foundation
 
 enum SemaError : ErrorType {
     case InvalidType(NativeType)
-    case InvalidRedeclaration(String, Expression)
+    case InvalidRedeclaration(String, Expr)
     case NoVariable(String), NoFunction(String)
-    case WrongApplication, NotTypeProvider, NoTypeFor(Expression)
+    case WrongApplication, NotTypeProvider, NoTypeFor(Expr)
     case HeterogenousArray(String), EmptyArray
     case NotVariableType, CannotSubscriptNonArrayVariable, NonIntegerSubscript
     case NonBooleanCondition, NotRangeType, DifferentTypeForMutation, NonIntegerRange

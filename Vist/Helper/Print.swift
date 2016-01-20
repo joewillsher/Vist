@@ -144,25 +144,25 @@ extension Optional : Printable {
     }
 }
 
-extension ScopeExpression {
+extension ScopeExpr {
     func printList() -> [(String?, Printable)]? {
-        return expressions.map { (nil, $0 as Printable) }
+        return exprs.map { (nil, $0 as Printable) }
     }
 }
-extension BlockExpression {
+extension BlockExpr {
     func printList() -> [(String?, Printable)]? {
-        return [("expressions", expressions), ("variables", variables)]
+        return [("Expressions", exprs), ("variables", variables)]
     }
 }
 
-extension AssignmentExpression {
+extension AssignmentExpr {
     func printList() -> [(String?, Printable)]? {
         return [("name", name), ("explicitType", aType), ("value", value), ("mutable", isMutable)]
     }
     
 }
 
-extension FunctionPrototypeExpression {
+extension FunctionDecl {
     func printList() -> [(String?, Printable)]? {
         return [("name",name), ("mangled", mangledName), ("impl",impl), ("fnType", fnType), ("attrs", attrs)]
     }
@@ -174,13 +174,13 @@ extension FunctionType {
     }
 }
 
-extension FunctionAttributeExpression : Printable {
+extension FunctionAttributeExpr : Printable {
     
     func printVal() -> String? {
         return "@\(self.rawValue)"
     }
 }
-extension ASTAttributeExpression : Printable {
+extension ASTAttributeExpr : Printable {
     
     func printVal() -> String? {
         switch self {
@@ -189,7 +189,7 @@ extension ASTAttributeExpression : Printable {
     }
 }
 
-extension TupleExpression {
+extension TupleExpr {
     func printList() -> [(String?, Printable)]? {
         return elements.isEmpty ? [("Void","()")] : elements.enumerate().map { (Optional(String($0.0)), $0.1 as Printable) }
     }
@@ -198,13 +198,13 @@ extension TupleExpression {
     }
 }
 
-extension FunctionImplementationExpression {
+extension FunctionImplementationExpr {
     func printList() -> [(String?, Printable)]? {
         return [("params", params), ("body", body)]
     }
 }
 
-extension BinaryExpression {
+extension BinaryExpr {
     func printList() -> [(String?, Printable)]? {
         return [("operator", op), ("lhs", lhs), ("rhs", rhs)]
     }
@@ -240,52 +240,52 @@ extension Variable {
     }
 }
 
-extension FunctionCallExpression {
+extension FunctionCallExpr {
     func printList() -> [(String?, Printable)]? {
         return [("name", name), ("args", args), ("mangled", mangledName)]
     }
 }
 
 
-extension CommentExpression {
+extension CommentExpr {
     func printVal() -> String? {
         return "\"\(str.debugDescription)\""
     }
 }
 
-extension ReturnExpression {
+extension ReturnExpr {
     func printList() -> [(String?, Printable)]? {
-        return [("expression", expression)]
+        return [("Expression", expr)]
     }
 }
 
 
 
-private func ifStr<BlockType>(n n: Int, ex: ElseIfBlockExpression<BlockType>) -> String? {
+private func ifStr<BlockType>(n n: Int, ex: ElseIfBlockExpr<BlockType>) -> String? {
     return ex.condition == nil ? "else" : n == 0 ? "if" : "if else"
 }
 
-extension ConditionalExpression {
+extension ConditionalExpr {
     
     func printList() -> [(String?, Printable)]? {
         return statements.enumerate().map { (ifStr(n: $0, ex: $1), $1) }
     }
 }
 
-extension ElseIfBlockExpression {
+extension ElseIfBlockExpr {
     
     func printList() -> [(String?, Printable)]? {
         return [("cond", condition), ("then", block)]
     }
 }
-extension MutationExpression {
+extension MutationExpr {
     
     func printList() -> [(String?, Printable)]? {
         return [("object", object), ("val", value)]
     }
 }
 
-extension ForInLoopExpression {
+extension ForInLoopExpr {
     
     func printList() -> [(String?, Printable)]? {
         return [("for", binded), ("in", iterator), ("do", block)]
@@ -293,7 +293,7 @@ extension ForInLoopExpression {
     
 }
 
-extension RangeIteratorExpression {
+extension RangeIteratorExpr {
     func printList() -> [(String?, Printable)]? {
         return [("start", start), ("end", end)]
     }
@@ -302,7 +302,7 @@ extension RangeIteratorExpression {
     }
 }
 
-extension WhileLoopExpression {
+extension WhileLoopExpr {
     
     func printList() -> [(String?, Printable)]? {
         return [("while", iterator), ("do", block)]
@@ -310,14 +310,14 @@ extension WhileLoopExpression {
     
 }
 
-extension WhileIteratorExpression {
+extension WhileIteratorExpr {
     
     func printList() -> [(String?, Printable)]? {
         return [("cond", condition)]
     }
 }
 
-extension ArrayExpression {
+extension ArrayExpr {
     
     func printList() -> [(String?, Printable)]? {
         return arr.enumerate().map { (String($0), $1) }
@@ -325,14 +325,14 @@ extension ArrayExpression {
     
 }
 
-extension ArraySubscriptExpression {
+extension ArraySubscriptExpr {
     
     func printList() -> [(String?, Printable)]? {
         return [("arr", arr), ("index", index)]
     }
 }
 
-extension StructExpression {
+extension StructExpr {
     
     func printList() -> [(String?, Printable)]? {
         return [("name", name), ("properties", properties), ("methods", methods), ("initialisers", initialisers)]
@@ -360,28 +360,28 @@ extension ValueType : Printable {
     }
 }
 
-extension ClosureExpression : Printable {
+extension ClosureExpr : Printable {
     
     func printList() -> [(String?, Printable)]? {
-        return expressions.map { (nil, $0 as Printable) }
+        return exprs.map { (nil, $0 as Printable) }
     }
 }
 
-extension InitialiserExpression : Printable {
+extension InitialiserDecl : Printable {
     
     func printList() -> [(String?, Printable)]? {
         return [("ty", ty), ("impl", impl), ("mangled", mangledName)]
     }
 }
 
-extension PropertyLookupExpression : Printable {
+extension PropertyLookupExpr : Printable {
     
     func printList() -> [(String?, Printable)]? {
         return [("name", name), ("object", object)]
     }
 }
 
-extension MethodCallExpression : Printable {
+extension MethodCallExpr : Printable {
     
     func printList() -> [(String?, Printable)]? {
         return [("name", name), ("object", object), ("params", params)]

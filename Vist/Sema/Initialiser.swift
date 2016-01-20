@@ -7,34 +7,34 @@
 //
 
 
-extension StructExpression {
+extension StructExpr {
 
     /// Returns an initialiser if all objects in `self` are given an initial value
-    func implicitIntialiser() -> InitialiserExpression? {
+    func implicitIntialiser() -> InitialiserDecl? {
         // filter out non initilaised values, return nil if not all values have an initial value
-        let values = properties.filter { !($0.value is NullExpression) }.map { $0.value }
+        let values = properties.filter { !($0.value is NullExpr) }.map { $0.value }
         let names = properties.map { $0.name }
         guard values.count == properties.count else { return nil }
         
-        var initialisations: [Expression] = []
+        var initialisations: [Expr] = []
         for (val, name) in zip(values, names) {
             let variable = Variable(name: name)
-            let m = MutationExpression(object: variable, value: val)
+            let m = MutationExpr(object: variable, value: val)
             initialisations.append(m)
         }
         
-        let block = BlockExpression(expressions: initialisations)
-        let body = FunctionImplementationExpression(params: TupleExpression.void(), body: block)
+        let block = BlockExpr(exprs: initialisations)
+        let body = FunctionImplementationExpr(params: TupleExpr.void(), body: block)
         
-        let ty = FunctionType(args: TupleExpression.void(), returns: ValueType(name: name))
+        let ty = FunctionType(args: TupleExpr.void(), returns: ValueType(name: name))
         
-        let exp = InitialiserExpression(ty: ty, impl: body, parent: self)
+        let exp = InitialiserDecl(ty: ty, impl: body, parent: self)
         return exp
     }
     
     // TODO: Memberwise init
     /// Returns an initialiser for each element in the struct
-//    func memberwiseInitialiser() -> InitialiserExpression {
+//    func memberwiseInitialiser() -> InitialiserDeclession {
 //        
 //        
 //        

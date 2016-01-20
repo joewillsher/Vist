@@ -9,7 +9,7 @@
 protocol TypeProvider {
     /// Function used to traverse AST and get type information for all its objects
     ///
-    /// Each implementation of this function should **call `.llvmType` on all of its sub expressions**
+    /// Each implementation of this function should **call `.llvmType` on all of its sub Exprs**
     ///
     /// The function implementation **should assign the result type to self** as well as returning it
     func llvmType(scope: SemaScope) throws -> LLVMTyped
@@ -60,7 +60,7 @@ extension StringLiteral : TypeProvider {
         let t = NativeType.Array(el: NativeType.Int(size: 8), size: UInt32(count))
         self.type = t
         return t
-//        let a = str.characters.map { CharacterExpression(c: $0) as Expression }
+//        let a = str.characters.map { CharacterExpression(c: $0) as Expr }
 //        arr = ArrayExpression(arr: a)
 //        
 //        let t = try arr!.llvmType(scope)
@@ -69,7 +69,7 @@ extension StringLiteral : TypeProvider {
     }
 }
 
-//extension CharacterExpression : TypeProvider {
+//extension CharacterExpr : TypeProvider {
 //    
 //    func llvmType(scope: SemaScope) throws -> LLVMTyped {
 //        let t = LLVMType.Int(size: 8)
@@ -98,7 +98,7 @@ extension Variable : TypeProvider {
 }
 
 
-extension AssignmentExpression : TypeProvider {
+extension AssignmentExpr : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         // handle redeclaration
@@ -117,12 +117,12 @@ extension AssignmentExpression : TypeProvider {
         
         value.type = explicitType ?? inferredType       // store type in value’s type
         type = NativeType.Void                            // set type to self
-        return NativeType.Void                            // return void type for assignment expression
+        return NativeType.Void                            // return void type for assignment Expr
     }
 }
 
 
-extension MutationExpression : TypeProvider {
+extension MutationExpr : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
@@ -138,10 +138,10 @@ extension MutationExpression : TypeProvider {
 
 
 //-------------------------------------------------------------------------------------------------------------------------
-//  MARK:                                                 Expressions
+//  MARK:                                                 Exprs
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension BinaryExpression : TypeProvider {
+extension BinaryExpr : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
@@ -214,7 +214,7 @@ private extension FunctionType {
         (tys: TypeCollection)
         throws -> LLVMTyped {
             
-            if let tup = returns as? TupleExpression {
+            if let tup = returns as? TupleExpr {
                 
                 if tup.elements.count == 0 { return NativeType.Void }
                 
@@ -244,7 +244,7 @@ private extension FunctionType {
 }
 
 
-extension FunctionCallExpression : TypeProvider {
+extension FunctionCallExpr : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
@@ -272,7 +272,7 @@ extension FunctionCallExpression : TypeProvider {
 }
 
 
-extension FunctionPrototypeExpression : TypeProvider {
+extension FunctionDecl : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
@@ -315,13 +315,13 @@ extension FunctionPrototypeExpression : TypeProvider {
 }
 
 
-extension ReturnExpression : TypeProvider {
+extension ReturnExpr : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
         scope.objectType = scope.returnType // set hint to return type
         
-        let returnType = try expression.llvmType(scope)
+        let returnType = try expr.llvmType(scope)
         guard let ret = scope.returnType where ret == returnType else {
             throw SemaError.WrongFunctionReturnType(applied: returnType, expected: scope.returnType ?? NativeType.Null)
         }
@@ -335,7 +335,7 @@ extension ReturnExpression : TypeProvider {
 }
 
 
-extension ClosureExpression : TypeProvider {
+extension ClosureExpr : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
@@ -356,7 +356,7 @@ extension ClosureExpression : TypeProvider {
         //  - this is needed for method calls -- as `self` needs to be copied in
         // Make syntax for the users to define this
         
-        for exp in expressions {
+        for exp in exprs {
             try exp.llvmType(innerScope)
         }
         
@@ -372,7 +372,7 @@ extension ClosureExpression : TypeProvider {
 //  MARK:                                                 Control flow
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension ConditionalExpression : TypeProvider {
+extension ConditionalExpr : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
@@ -390,7 +390,7 @@ extension ConditionalExpression : TypeProvider {
 }
 
 
-extension ElseIfBlockExpression : TypeProvider {
+extension ElseIfBlockExpr : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
@@ -415,7 +415,7 @@ extension ElseIfBlockExpression : TypeProvider {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-extension ForInLoopExpression : TypeProvider {
+extension ForInLoopExpr : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
@@ -437,7 +437,7 @@ extension ForInLoopExpression : TypeProvider {
 }
 
 
-extension WhileLoopExpression : TypeProvider {
+extension WhileLoopExpr : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
@@ -456,7 +456,7 @@ extension WhileLoopExpression : TypeProvider {
     }
 }
 
-extension WhileIteratorExpression : TypeProvider {
+extension WhileIteratorExpr : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
@@ -475,7 +475,7 @@ extension WhileIteratorExpression : TypeProvider {
 //  MARK:                                                 Arrays
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension ArrayExpression : TypeProvider {
+extension ArrayExpr : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
@@ -502,7 +502,7 @@ extension ArrayExpression : TypeProvider {
     
 }
 
-extension ArraySubscriptExpression : TypeProvider {
+extension ArraySubscriptExpr : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
@@ -528,14 +528,14 @@ extension ArraySubscriptExpression : TypeProvider {
 //  MARK:                                                 Structs
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension StructExpression : TypeProvider {
+extension StructExpr : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
         let structScope = SemaScope(parent: scope, returnType: nil) // cannot return from Struct scope
         
         // maps over properties and gens types
-        let members = try properties.map { (a: AssignmentExpression) -> (String, LLVMTyped, Bool) in
+        let members = try properties.map { (a: AssignmentExpr) -> (String, LLVMTyped, Bool) in
             try a.llvmType(structScope)
             guard let t = a.value.type else { throw SemaError.StructPropertyNotTyped }
             return (a.name, t, a.isMutable)
@@ -546,7 +546,7 @@ extension StructExpression : TypeProvider {
         scope[type: name] = ty
         self.type = ty
         
-        let memberFunctions = try methods.flatMap { (f: FunctionPrototypeExpression) -> (String, FnType) in
+        let memberFunctions = try methods.flatMap { (f: FunctionDecl) -> (String, FnType) in
             try f.llvmType(structScope)
             guard let t = f.fnType.type as? FnType else { throw SemaError.StructMethodNotTyped }
             return (f.name.mangle(t, parentTypeName: name), t)
@@ -569,7 +569,7 @@ extension StructExpression : TypeProvider {
 
 
 
-extension InitialiserExpression : TypeProvider {
+extension InitialiserDecl : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
@@ -601,7 +601,7 @@ extension InitialiserExpression : TypeProvider {
             }
         }
         
-        for ex in impl.body.expressions {
+        for ex in impl.body.exprs {
             try ex.llvmType(initScope)
         }
         
@@ -609,7 +609,7 @@ extension InitialiserExpression : TypeProvider {
     }
 }
 
-extension PropertyLookupExpression : TypeProvider {
+extension PropertyLookupExpr : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
@@ -621,7 +621,7 @@ extension PropertyLookupExpression : TypeProvider {
     
 }
 
-extension MethodCallExpression : TypeProvider {
+extension MethodCallExpr : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
@@ -656,7 +656,7 @@ extension MethodCallExpression : TypeProvider {
 //  MARK:                                                 Tuples
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension TupleExpression : TypeProvider {
+extension TupleExpr : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         
@@ -674,7 +674,7 @@ extension TupleExpression : TypeProvider {
     }
 }
 
-extension TupleMemberLookupExpression : TypeProvider {
+extension TupleMemberLookupExpr : TypeProvider {
     
     func llvmType(scope: SemaScope) throws -> LLVMTyped {
         

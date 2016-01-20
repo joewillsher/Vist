@@ -21,3 +21,4 @@ let b = 2
 let u = add (add a 1) b
 
 print (add 1 (f.sumTimes 1))
+

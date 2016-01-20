@@ -274,7 +274,7 @@ extension Lexer {
 
         if operators.keys.contains(String(charsInContext)) || stdlibOperators.contains(String(charsInContext)) {
             try resetContext()
-            return // is an expression, return it lexed
+            return // is an Expr, return it lexed
         }
         
         index = start

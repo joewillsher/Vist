@@ -6,13 +6,13 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-protocol AttributeExpression { }
+protocol AttributeExpr { }
 
-enum ASTAttributeExpression : AttributeExpression {
+enum ASTAttributeExpr : AttributeExpr {
     case Operator(prec: Int)
 }
 
-enum FunctionAttributeExpression : String, AttributeExpression {
+enum FunctionAttributeExpr : String, AttributeExpr {
     case Inline = "inline"
     case NoReturn = "noreturn"
     case NoInline = "noinline"

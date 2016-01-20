@@ -24,7 +24,7 @@ Or you can then run the compiler from the command line, use the `-h` flag to see
 
 ```swift
 func foo :: Int Int -> Int = do
-return $0 + $1
+    return $0 + $1
 
 func bar :: Int = do print $0
 

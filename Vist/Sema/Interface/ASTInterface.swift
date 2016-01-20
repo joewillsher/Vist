@@ -8,19 +8,19 @@
 
 func interfaceASTGen(ast: AST) throws -> AST {
     
-    let interface = AST(expressions: [])
+    let interface = AST(exprs: [])
     
     
-    for exp in ast.expressions {
+    for exp in ast.exprs {
         
-        if let e = exp as? AssignmentExpression {
-            interface.expressions.append(e)
+        if let e = exp as? AssignmentExpr {
+            interface.exprs.append(e)
         }
-        else if let f = exp as? FunctionPrototypeExpression {
+        else if let f = exp as? FunctionDecl {
             
-            let fun = FunctionPrototypeExpression(name: f.name, type: f.fnType, impl: nil, attrs: f.attrs)
+            let fun = FunctionDecl(name: f.name, type: f.fnType, impl: nil, attrs: f.attrs)
             fun.type = f.type
-            interface.expressions.append(fun)
+            interface.exprs.append(fun)
                         
         }
         
@@ -32,22 +32,22 @@ func interfaceASTGen(ast: AST) throws -> AST {
 
 func interFileInterfaceASTGen(ast: AST) throws -> AST {
     
-    let interface = AST(expressions: [])
+    let interface = AST(exprs: [])
     
     
-    for exp in ast.expressions {
+    for exp in ast.exprs {
         
-        if let e = exp as? AssignmentExpression {
-            interface.expressions.append(e)
+        if let e = exp as? AssignmentExpr {
+            interface.exprs.append(e)
         }
-        else if let f = exp as? FunctionPrototypeExpression {
+        else if let f = exp as? FunctionDecl {
             
-//            let fun = FunctionPrototypeExpression(name: f.name, type: f.fnType, impl: f.impl, attrs: f.attrs)
+//            let fun = FunctionDecl(name: f.name, type: f.fnType, impl: f.impl, attrs: f.attrs)
 //            fun.type = f.type
-            interface.expressions.append(f)
+            interface.exprs.append(f)
         }
-        else if let s = exp as? StructExpression {
-            interface.expressions.append(s)
+        else if let s = exp as? StructExpr {
+            interface.exprs.append(s)
         }
         
         // TODO: Structs / concepts etc need to be exposed in the interface

@@ -12,7 +12,7 @@ enum IRError : ErrorType {
     case NoOperator
     case MisMatchedTypes, WrongFunctionApplication(String), NoLLVMType
     case NoBody, InvalidFunction, NoVariable(String), NoType(String), NoFunction(String), NoBool, TypeNotFound, NotMutable(String)
-    case CannotAssignToVoid, CannotAssignToType(Expression.Type)
+    case CannotAssignToVoid, CannotAssignToType(Expr.Type)
     case SubscriptingNonVariableTypeNotAllowed, SubscriptOutOfBounds
     case NoProperty(String), NotAStruct, CannotMutateParam
 }
@@ -42,14 +42,14 @@ private func isFloatType(t: LLVMTypeKind) -> Bool {
     return [LLVMFloatTypeKind, LLVMDoubleTypeKind, LLVMHalfTypeKind, LLVMFP128TypeKind].contains(t)
 }
 
-extension Expression {
+extension Expr {
     
-    private func expressionCodeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
+    private func exprCodeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         if let x = try (self as? IRGenerator)?.codeGen(stackFrame) { return x }
         fatalError("\(self.dynamicType) not IR Generator")
     }
     
-    private func expressionbbGen(innerStackFrame stackFrame: StackFrame, fn: LLVMValueRef) throws -> LLVMBasicBlockRef {
+    private func exprbbGen(innerStackFrame stackFrame: StackFrame, fn: LLVMValueRef) throws -> LLVMBasicBlockRef {
         if let x = try (self as? BasicBlockGenerator)?.bbGen(innerStackFrame: stackFrame, fn: fn) { return x }
         fatalError("\(self.dynamicType) not IR Generator")
     }
@@ -85,9 +85,9 @@ extension LLVMBool : Swift.BooleanType {
     }
 }
 
-private func codeGenIn(stackFrame: StackFrame) -> Expression throws -> LLVMValueRef {
+private func codeGenIn(stackFrame: StackFrame) -> Expr throws -> LLVMValueRef {
     return { e in
-        try e.expressionCodeGen(stackFrame)
+        try e.exprCodeGen(stackFrame)
     }
 }
 
@@ -151,7 +151,7 @@ extension StringLiteral : IRGenerator {
     }
 }
 
-//extension CharacterExpression : IRGenerator {
+//extension CharacterExpr : IRGenerator {
 //    
 //    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
 //        
@@ -175,11 +175,11 @@ extension Variable : IRGenerator {
 }
 
 
-extension AssignmentExpression : IRGenerator {
+extension AssignmentExpr : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        if let arr = value as? ArrayExpression {
+        if let arr = value as? ArrayExpr{
             //if asigning to array
             
             let a = try arr.arrInstance(stackFrame)
@@ -202,7 +202,7 @@ extension AssignmentExpression : IRGenerator {
             let fnStackFrame = StackFrame(block: entryBlock, function: fn, parentStackFrame: stackFrame)
             
             // value’s IR, this needs to be called and returned
-            let v = try value.expressionCodeGen(fnStackFrame)
+            let v = try value.exprCodeGen(fnStackFrame)
             
             let num = LLVMCountParams(fn)
             for i in 0..<num {
@@ -232,7 +232,7 @@ extension AssignmentExpression : IRGenerator {
             // all other types
             
             // create value
-            let v = try value.expressionCodeGen(stackFrame)
+            let v = try value.exprCodeGen(stackFrame)
             
             // checks
             guard v != nil else { throw IRError.CannotAssignToType(value.dynamicType) }
@@ -262,7 +262,7 @@ extension AssignmentExpression : IRGenerator {
 }
 
 
-extension MutationExpression : IRGenerator {
+extension MutationExpr : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
@@ -271,28 +271,28 @@ extension MutationExpression : IRGenerator {
             
             let variable = try stackFrame.variable(object.name)
             
-            if let arrayVariable = variable as? ArrayVariable, arrayExpression = value as? ArrayExpression {
+            if let arrayVariable = variable as? ArrayVariable, arrayExpression = value as? ArrayExpr {
                 
                 let newArray = try arrayExpression.arrInstance(stackFrame)
                 arrayVariable.assignFrom(builder, arr: newArray)
             }
             else {
-                let new = try value.expressionCodeGen(stackFrame)
+                let new = try value.exprCodeGen(stackFrame)
                 
                 guard let v = variable as? MutableVariable where v.mutable else { throw IRError.NotMutable("") }
                 try v.store(new)
             }
         }
-        else if let sub = object as? ArraySubscriptExpression {
+        else if let sub = object as? ArraySubscriptExpr {
             
             let arr = try sub.backingArrayVariable(stackFrame)
             
-            let i = try sub.index.expressionCodeGen(stackFrame)
-            let val = try value.expressionCodeGen(stackFrame)
+            let i = try sub.index.exprCodeGen(stackFrame)
+            let val = try value.exprCodeGen(stackFrame)
             
             arr.store(val, inElementAtIndex: i)
         }
-        else if let prop = object as? PropertyLookupExpression {
+        else if let prop = object as? PropertyLookupExpr {
             // foo.bar = meme
             
             guard let n = prop.object as? Variable else { fatalError("CannotGetPropertyFromNonVariableType") }
@@ -304,7 +304,7 @@ extension MutationExpression : IRGenerator {
             guard variable.mutable else { throw IRError.NotMutable(n.name) }
             guard try variable.propertyIsMutable(prop.name) else { throw IRError.NotMutable("\(n.name).\(prop.name)") }
             
-            let val = try value.expressionCodeGen(stackFrame)
+            let val = try value.exprCodeGen(stackFrame)
             
             try variable.store(val, inPropertyNamed: prop.name)
         }
@@ -317,14 +317,14 @@ extension MutationExpression : IRGenerator {
 
 
 //-------------------------------------------------------------------------------------------------------------------------
-//  MARK:                                                 Expressions
+//  MARK:                                                 Exprs
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension BinaryExpression : IRGenerator {
+extension BinaryExpr : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        let lIR = try lhs.expressionCodeGen(stackFrame), rIR = try rhs.expressionCodeGen(stackFrame)
+        let lIR = try lhs.exprCodeGen(stackFrame), rIR = try rhs.exprCodeGen(stackFrame)
         
         // make function
         let fn = LLVMGetNamedFunction(module, mangledName)
@@ -356,7 +356,7 @@ extension Void : IRGenerator {
 //  MARK:                                                 Functions
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension FunctionCallExpression : IRGenerator {
+extension FunctionCallExpr : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
@@ -402,7 +402,7 @@ private extension FunctionType {
 }
 
 
-extension FunctionPrototypeExpression : IRGenerator {
+extension FunctionDecl : IRGenerator {
     // function definition
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
@@ -509,31 +509,31 @@ extension FunctionPrototypeExpression : IRGenerator {
 }
 
 
-extension ReturnExpression : IRGenerator {
+extension ReturnExpr : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        if expression.type?.ir() == LLVMVoidType() {
+        if expr.type?.ir() == LLVMVoidType() {
             return LLVMBuildRetVoid(builder)
         }
         
-        let v = try expression.expressionCodeGen(stackFrame)
+        let v = try expr.exprCodeGen(stackFrame)
         return LLVMBuildRet(builder, v)
     }
     
 }
 
 
-extension BlockExpression {
+extension BlockExpr {
     
     private func bbGen(innerStackFrame stackFrame: StackFrame, ret: LLVMValueRef) throws {
         
         // code gen for function
-        for exp in expressions {
-            try exp.expressionCodeGen(stackFrame)
+        for exp in exprs {
+            try exp.exprCodeGen(stackFrame)
         }
         
-        if expressions.isEmpty || (ret != nil && ret == LLVMVoidType()) {
+        if exprs.isEmpty || (ret != nil && ret == LLVMVoidType()) {
             LLVMBuildRetVoid(builder)
         }
         
@@ -544,7 +544,7 @@ extension BlockExpression {
 }
 
 
-extension ClosureExpression : IRGenerator {
+extension ClosureExpr : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
@@ -592,7 +592,7 @@ extension ClosureExpression : IRGenerator {
         }
         
         do {
-            try BlockExpression(expressions: expressions).bbGen(innerStackFrame: functionStackFrame, ret: type.returns.ir())
+            try BlockExpr(exprs: exprs).bbGen(innerStackFrame: functionStackFrame, ret: type.returns.ir())
         } catch {
             LLVMDeleteFunction(function)
             throw error
@@ -607,14 +607,14 @@ extension ClosureExpression : IRGenerator {
 //  MARK:                                              Control flow
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension ElseIfBlockExpression {
+extension ElseIfBlockExpr {
     
     private func ifBBID(n n: Int) -> String {
         return condition == nil ? "else\(n)" : "then\(n)"
     }
 }
 
-extension ConditionalExpression : IRGenerator {
+extension ConditionalExpr : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
@@ -630,11 +630,11 @@ extension ConditionalExpression : IRGenerator {
             LLVMPositionBuilderAtEnd(builder, ifIn)
             
             /// States whether the block being appended returns from the current scope
-            let returnsFromScope = statement.block.expressions.contains { $0 is ReturnExpression }
+            let returnsFromScope = statement.block.exprs.contains { $0 is ReturnExpr }
             rets = rets && returnsFromScope
             
             // condition
-            let cond = try statement.condition?.expressionCodeGen(stackFrame)
+            let cond = try statement.condition?.exprCodeGen(stackFrame)
             if i < statements.count-1 {
                 ifOut = LLVMAppendBasicBlock(stackFrame.function, "cont\(i)")
             }
@@ -674,9 +674,9 @@ extension ConditionalExpression : IRGenerator {
 }
 
 
-private extension ElseIfBlockExpression {
+private extension ElseIfBlockExpr {
     
-    /// Create the basic block for the if expression
+    /// Create the basic block for the if Expr
     private func bbGen(innerStackFrame stackFrame: StackFrame, contBlock: LLVMBasicBlockRef, name: String) throws -> LLVMBasicBlockRef {
         
         // add block
@@ -687,7 +687,7 @@ private extension ElseIfBlockExpression {
         try block.bbGenInline(stackFrame: stackFrame)
         
         // if the block does continues to the contBlock, move the builder there
-        let returnsFromScope = block.expressions.contains { $0 is ReturnExpression }
+        let returnsFromScope = block.exprs.contains { $0 is ReturnExpr }
         if !returnsFromScope {
             LLVMBuildBr(builder, contBlock)
             LLVMPositionBuilderAtEnd(builder, contBlock)
@@ -704,7 +704,7 @@ private extension ElseIfBlockExpression {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-extension ForInLoopExpression : IRGenerator {
+extension ForInLoopExpr : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
@@ -712,7 +712,7 @@ extension ForInLoopExpression : IRGenerator {
         let loop = LLVMAppendBasicBlock(stackFrame.function, "loop")
         let afterLoop = LLVMAppendBasicBlock(stackFrame.function, "afterloop")
         
-        let rangeIterator = try iterator.expressionCodeGen(stackFrame)
+        let rangeIterator = try iterator.exprCodeGen(stackFrame)
         
         let start = try rangeIterator.load("start", type: iterator.type, builder: builder)
         let endValue = try rangeIterator.load("end", type: iterator.type, builder: builder).load("value", type: stackFrame.type("Int"), builder: builder)
@@ -764,7 +764,7 @@ extension ForInLoopExpression : IRGenerator {
 
 
 // TODO: Break statements and passing break-to bb in scope
-extension WhileLoopExpression : IRGenerator {
+extension WhileLoopExpr : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
@@ -773,7 +773,7 @@ extension WhileLoopExpression : IRGenerator {
         let afterLoop = LLVMAppendBasicBlock(stackFrame.function, "afterloop")
         
         // whether to enter the while, first while check
-        let initialCond = try iterator.condition.expressionCodeGen(stackFrame)
+        let initialCond = try iterator.condition.exprCodeGen(stackFrame)
         let initialCondV = try initialCond.load("value", type: iterator.condition.type, builder: builder)
 
         // move into loop block
@@ -785,7 +785,7 @@ extension WhileLoopExpression : IRGenerator {
         try block.bbGenInline(stackFrame: loopStackFrame)
         
         // conditional break
-        let conditionalRepeat = try iterator.condition.expressionCodeGen(stackFrame)
+        let conditionalRepeat = try iterator.condition.exprCodeGen(stackFrame)
         let conditionalRepeatV = try conditionalRepeat.load("value", type: iterator.condition.type, builder: builder)
         LLVMBuildCondBr(builder, conditionalRepeatV, loop, afterLoop)
         
@@ -799,14 +799,14 @@ extension WhileLoopExpression : IRGenerator {
 }
 
 
-private extension ScopeExpression {
+private extension ScopeExpr {
     
     /// Generates children’s code directly into the current scope & block
     private func bbGenInline(stackFrame stackFrame: StackFrame) throws {
         
         // code gen for function
-        for exp in expressions {
-            try exp.expressionCodeGen(stackFrame)
+        for exp in exprs {
+            try exp.exprCodeGen(stackFrame)
         }
     }
 }
@@ -817,7 +817,7 @@ private extension ScopeExpression {
 //  MARK:                                                 Arrays
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension ArrayExpression : IRGenerator {
+extension ArrayExpr : IRGenerator {
     
     private func arrInstance(stackFrame: StackFrame) throws -> ArrayVariable {
         
@@ -829,7 +829,7 @@ extension ArrayExpression : IRGenerator {
         let a = LLVMBuildArrayAlloca(builder, arrayType, nil, "arr")
         
         // obj
-        let vars = try arr.map { try $0.expressionCodeGen(stackFrame) }
+        let vars = try arr.map { try $0.exprCodeGen(stackFrame) }
         let variable = ArrayVariable(ptr: a, elType: elementType, arrType: arrayType, builder: builder, vars: vars)
         
         return variable
@@ -842,7 +842,7 @@ extension ArrayExpression : IRGenerator {
 }
 
 
-extension ArraySubscriptExpression : IRGenerator {
+extension ArraySubscriptExpr : IRGenerator {
     
     private func backingArrayVariable(stackFrame: StackFrame) throws -> ArrayVariable {
         
@@ -855,7 +855,7 @@ extension ArraySubscriptExpression : IRGenerator {
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
 
         let arr = try backingArrayVariable(stackFrame)
-        let idx = try index.expressionCodeGen(stackFrame)
+        let idx = try index.exprCodeGen(stackFrame)
         
         return arr.loadElementAtIndex(idx)
     }
@@ -868,7 +868,7 @@ extension ArraySubscriptExpression : IRGenerator {
 //  MARK:                                                 Structs
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension StructExpression : IRGenerator {
+extension StructExpr : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
@@ -888,7 +888,7 @@ extension StructExpression : IRGenerator {
 }
 
 
-extension InitialiserExpression : IRGenerator {
+extension InitialiserDecl : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
@@ -965,8 +965,8 @@ extension InitialiserExpression : IRGenerator {
         }
         
         // add args into scope
-        for exp in impl.body.expressions {
-            try exp.expressionCodeGen(initStackFrame)
+        for exp in impl.body.exprs {
+            try exp.exprCodeGen(initStackFrame)
         }
         
         // return struct instance from init function
@@ -978,7 +978,7 @@ extension InitialiserExpression : IRGenerator {
     }
 }
 
-extension PropertyLookupExpression : IRGenerator {
+extension PropertyLookupExpr : IRGenerator {
         
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
@@ -992,7 +992,7 @@ extension PropertyLookupExpression : IRGenerator {
 }
 
 
-extension MethodCallExpression : IRGenerator {
+extension MethodCallExpr : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
@@ -1001,7 +1001,7 @@ extension MethodCallExpression : IRGenerator {
         let c = self.params.elements.count + 1
         
         // need to add self to beginning of params
-        let params = try ([object as Expression] + self.params.elements)
+        let params = try ([object as Expr] + self.params.elements)
             .map(codeGenIn(stackFrame))
             .ptr()
         defer { params.dealloc(c) }
@@ -1020,7 +1020,7 @@ extension MethodCallExpression : IRGenerator {
 //  MARK:                                                 Tuples
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension TupleExpression : IRGenerator {
+extension TupleExpr : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
@@ -1029,7 +1029,7 @@ extension TupleExpression : IRGenerator {
         guard let type = self.type as? StructType else { fatalError("No type for tuple") }
         let typeIR = type.ir()
         
-        let memeberIR = try elements.map { try $0.expressionCodeGen(stackFrame) }
+        let memeberIR = try elements.map { try $0.exprCodeGen(stackFrame) }
         
         let membersWithLLVMTypes = type.members.map { ($0.0, $0.1.ir(), $0.2) }
         let s = MutableStructVariable.alloc(builder, type: typeIR, mutable: false, properties: membersWithLLVMTypes)
@@ -1042,7 +1042,7 @@ extension TupleExpression : IRGenerator {
     }
 }
 
-extension TupleMemberLookupExpression : IRGenerator {
+extension TupleMemberLookupExpr : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
@@ -1086,17 +1086,17 @@ extension AST {
         let stackFrame = StackFrame(block: programEntryBlock, function: mainFunction, parentStackFrame: s)
         
         if isLibrary {
-            let e = expressions.filter {
-                $0 is FunctionPrototypeExpression || $0 is StructExpression
+            let e = exprs.filter {
+                $0 is FunctionDecl || $0 is StructExpr
             }
             
             for exp in e {
-                try exp.expressionCodeGen(stackFrame)
+                try exp.exprCodeGen(stackFrame)
             }
         }
         else {
-            for exp in expressions {
-                try exp.expressionCodeGen(stackFrame)
+            for exp in exprs {
+                try exp.exprCodeGen(stackFrame)
             }
         }
         

@@ -60,12 +60,12 @@ final class StdLibExpose {
     func astToSemaScope(scope globalScope: SemaScope) {
         guard let ast = ast else { fatalError("Stdlib could not be loaded") }
         
-        let fns = ast.expressions
-            .flatMap { ($0 as? FunctionPrototypeExpression) }
+        let fns = ast.exprs
+            .flatMap { ($0 as? FunctionDecl) }
             .map { ($0.name, $0.fnType.type as? FnType) }
         
-        let structs = ast.expressions
-            .flatMap { ($0 as? StructExpression) }
+        let structs = ast.exprs
+            .flatMap { ($0 as? StructExpr) }
         let tys = structs
             .map { ($0.name, $0.type as? StructType) }
         let methods = structs
@@ -89,8 +89,8 @@ final class StdLibExpose {
     func astToStackFrame(frame frame: StackFrame) {
         guard let ast = ast else { fatalError("Stdlib could not be loaded") }
         
-        let structs = ast.expressions
-            .flatMap { ($0 as? StructExpression) }
+        let structs = ast.exprs
+            .flatMap { ($0 as? StructExpr) }
         let tys = structs
             .map { ($0.name, $0.type as? StructType) }
         

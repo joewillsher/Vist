@@ -15,6 +15,6 @@ func astLink(main: AST, other: [AST]) throws -> AST {
 }
 
 func appendAST(head: AST, next: AST) -> AST {
-    return AST(expressions: next.expressions + head.expressions)
+    return AST(exprs: next.exprs + head.exprs)
 }
 
