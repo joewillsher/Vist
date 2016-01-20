@@ -19,7 +19,7 @@
 import Foundation
 
 enum SemaError : ErrorType {
-    case InvalidType(NativeType)
+    case InvalidType(BuiltinType)
     case InvalidRedeclaration(String, Expr)
     case NoVariable(String), NoFunction(String)
     case WrongApplication, NotTypeProvider, NoTypeFor(Expr)
@@ -27,8 +27,8 @@ enum SemaError : ErrorType {
     case NotVariableType, CannotSubscriptNonArrayVariable, NonIntegerSubscript
     case NonBooleanCondition, NotRangeType, DifferentTypeForMutation, NonIntegerRange
     case StructPropertyNotTyped, StructMethodNotTyped, InitialiserNotAssociatedWithType
-    case WrongFunctionReturnType(applied: LLVMTyped, expected: LLVMTyped)
-    case WrongFunctionApplication(applied: LLVMTyped, expected: LLVMTyped, paramNum: Int), WrongFunctionApplications(name: String, applied: [LLVMTyped], expected: [LLVMTyped])
+    case WrongFunctionReturnType(applied: Ty, expected: Ty)
+    case WrongFunctionApplication(applied: Ty, expected: Ty, paramNum: Int), WrongFunctionApplications(name: String, applied: [Ty], expected: [Ty])
     case NoTypeNamed(String), TypeNotFound
     case DifferentTypesForOperator(String)
     case NoPropertyNamed(String), CannotStoreInParameterStruct, TupleHasNoObjectAtIndex(Int)

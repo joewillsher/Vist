@@ -8,10 +8,10 @@
 
 final class SemaScope {
     
-    private var variables: [String: LLVMTyped]
+    private var variables: [String: Ty]
     private var functions: [String: FnType]
     private var types: [String: StructType]
-    var returnType: LLVMTyped?
+    var returnType: Ty?
     let parent: SemaScope?
     
     
@@ -19,9 +19,9 @@ final class SemaScope {
     /// Hint about what type the object should have
     ///
     /// Used for blocks’ types
-    var objectType: LLVMTyped?
+    var objectType: Ty?
     
-    subscript (variable variable: String) -> LLVMTyped? {
+    subscript (variable variable: String) -> Ty? {
         get {
             if let v = variables[variable] { return v }
             return parent?[variable: variable]
@@ -30,7 +30,7 @@ final class SemaScope {
             variables[variable] = newValue
         }
     }
-    subscript (function function: String, paramTypes types: [LLVMTyped]) -> FnType? {
+    subscript (function function: String, paramTypes types: [Ty]) -> FnType? {
         get {
             if let v = functions[raw: function, paramTypes: types] { return v }
             return parent?[function: function, paramTypes: types]
@@ -55,7 +55,7 @@ final class SemaScope {
         }
     }
     
-    init(parent: SemaScope?, returnType: LLVMTyped? = NativeType.Void) {
+    init(parent: SemaScope?, returnType: Ty? = BuiltinType.Void) {
         self.parent = parent
         self.returnType = returnType
         self.variables = [:]
@@ -100,7 +100,7 @@ extension CollectionType
     /// Subscript for unmangled names
     ///
     /// Function name is required to be between underscores at the start _foo_...
-    subscript(raw raw: String, paramTypes types: [LLVMTyped]) -> FnType? {
+    subscript(raw raw: String, paramTypes types: [Ty]) -> FnType? {
         get {
             
             for (k, v) in self {

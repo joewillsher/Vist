@@ -106,7 +106,7 @@ private func codeGenIn(stackFrame: StackFrame) -> Expr throws -> LLVMValueRef {
 extension IntegerLiteral : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) -> LLVMValueRef {
-        let rawType = NativeType.Int(size: size)
+        let rawType = BuiltinType.Int(size: size)
         let value = LLVMConstInt(rawType.ir(), UInt64(val), LLVMBool(false))
         
         guard let type = self.type as? StructType else { fatalError("Int literal with no type") }
@@ -126,7 +126,7 @@ extension FloatingPointLiteral : IRGenerator {
 extension BooleanLiteral : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) -> LLVMValueRef {
-        let rawType = NativeType.Bool
+        let rawType = BuiltinType.Bool
         let value = LLVMConstInt(rawType.ir(), UInt64(val.hashValue), LLVMBool(false))
         
         guard let type = self.type as? StructType else { fatalError("Bool literal with no type") }
@@ -335,7 +335,7 @@ extension BinaryExpr : IRGenerator {
         
         guard fn != nil && LLVMCountParams(fn) == UInt32(2) else { throw IRError.WrongFunctionApplication(op) }
         
-        let doNotUseName = self.type == NativeType.Void || self.type == NativeType.Null || self.type == nil
+        let doNotUseName = self.type == BuiltinType.Void || self.type == BuiltinType.Null || self.type == nil
         let n = doNotUseName ? "" : "\(op)_res"
         
         // add call to IR
@@ -383,7 +383,7 @@ extension FunctionCallExpr : IRGenerator {
         guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else {
             throw IRError.WrongFunctionApplication(name) }
         
-        let doNotUseName = type == NativeType.Void || type == NativeType.Null || type == nil
+        let doNotUseName = type == BuiltinType.Void || type == BuiltinType.Null || type == nil
         let n = doNotUseName ? "" : "\(name)_res"
         
         // add call to IR
@@ -1006,7 +1006,7 @@ extension MethodCallExpr : IRGenerator {
             .ptr()
         defer { params.dealloc(c) }
         
-        let doNotUseName = type == NativeType.Void || type == NativeType.Null || type == nil
+        let doNotUseName = type == BuiltinType.Void || type == BuiltinType.Null || type == nil
         let n = doNotUseName ? "" : "\(name)_res"
         
         return LLVMBuildCall(builder, f, params, UInt32(c), n)
@@ -1026,16 +1026,16 @@ extension TupleExpr : IRGenerator {
         
         if elements.count == 0 { return nil }
         
-        guard let type = self.type as? StructType else { fatalError("No type for tuple") }
+        guard let type = self.type as? TupleType else { fatalError("No type for tuple") }
         let typeIR = type.ir()
         
         let memeberIR = try elements.map { try $0.exprCodeGen(stackFrame) }
         
-        let membersWithLLVMTypes = type.members.map { ($0.0, $0.1.ir(), $0.2) }
+        let membersWithLLVMTypes = type.members.enumerate().map { (String($0), $1.ir(), false) }
         let s = MutableStructVariable.alloc(builder, type: typeIR, mutable: false, properties: membersWithLLVMTypes)
         
         for (i, el) in memeberIR.enumerate() {
-            try s.store(el, inPropertyNamed: "\(i)")
+            try s.store(el, inPropertyNamed: String(i))
         }
         
         return s.load()

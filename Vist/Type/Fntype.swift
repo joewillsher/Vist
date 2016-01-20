@@ -7,15 +7,15 @@
 //
 
 
-struct FnType : LLVMTyped {
-    let params: [LLVMTyped]
-    let returns: LLVMTyped
+struct FnType : Ty {
+    let params: [Ty]
+    let returns: Ty
     
     func ir() -> LLVMTypeRef {
         
         let r: LLVMTypeRef
         if let _ = returns as? FnType {
-            r = NativeType.Pointer(to: returns).ir()
+            r = BuiltinType.Pointer(to: returns).ir()
         }
         else {
             r = returns.ir()
@@ -29,7 +29,7 @@ struct FnType : LLVMTyped {
     }
     
     
-    var nonVoid: [LLVMTyped]  {
-        return params.filter { if case NativeType.Void = $0 { return false } else { return true } }
+    var nonVoid: [Ty]  {
+        return params.filter { if case BuiltinType.Void = $0 { return false } else { return true } }
     }
 }

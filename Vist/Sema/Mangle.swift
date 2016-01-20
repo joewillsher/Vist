@@ -30,7 +30,7 @@ extension String {
 
 
 
-extension NativeType : CustomStringConvertible, CustomDebugStringConvertible {
+extension BuiltinType : CustomStringConvertible, CustomDebugStringConvertible {
     
     var description: String {
         switch self {
@@ -88,5 +88,20 @@ extension FnType: CustomDebugStringConvertible {
             .map { $0.debugDescription }
             .joinWithSeparator("_")
     }
-    
 }
+
+extension TupleType {
+    
+    var description: String {
+        let u = members.map { $0.description }
+        return "(" + u.joinWithSeparator(", ") + ")"
+    }
+    
+    var debugDescription: String {
+        let arr = members
+            .map { $0.debugDescription }
+            .joinWithSeparator(".")
+        return "S.\(arr)"
+    }
+}
+

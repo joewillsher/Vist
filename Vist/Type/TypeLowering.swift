@@ -6,7 +6,7 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-protocol LLVMTyped : Printable, CustomDebugStringConvertible {
+protocol Ty : Printable, CustomDebugStringConvertible {
     func ir() -> LLVMTypeRef
     
     var isStdBool: Bool { get }
@@ -14,7 +14,7 @@ protocol LLVMTyped : Printable, CustomDebugStringConvertible {
     var isStdRange: Bool { get }
 }
 
-extension LLVMTyped {
+extension Ty {
     var isStdBool: Bool {
         return false
     }
@@ -26,7 +26,7 @@ extension LLVMTyped {
     }
 }
 
-extension NativeType : Equatable {}
+extension BuiltinType : Equatable {}
 extension FnType: Equatable {}
 
 
@@ -38,34 +38,34 @@ func == (lhs: StructType, rhs: StructType) -> Bool {
 
 
 
-func ir(val: LLVMTyped) throws -> LLVMValueRef {
+func ir(val: Ty) throws -> LLVMValueRef {
     return val.ir()
 }
 
 
 @warn_unused_result
 func ==
-    <T : LLVMTyped>
+    <T : Ty>
     (lhs: T, rhs: T)
     -> Bool {
         return lhs.ir() == rhs.ir()
 }
 @warn_unused_result
 func ==
-    <T : LLVMTyped>
-    (lhs: LLVMTyped?, rhs: T)
+    <T : Ty>
+    (lhs: Ty?, rhs: T)
     -> Bool {
         return lhs?.ir() == rhs.ir()
 }
 @warn_unused_result
 func ==
-    (lhs: LLVMTyped, rhs: LLVMTyped)
+    (lhs: Ty, rhs: Ty)
     -> Bool {
         return lhs.ir() == rhs.ir()
 }
 @warn_unused_result
 func ==
-    (lhs: [LLVMTyped], rhs: [LLVMTyped])
+    (lhs: [Ty], rhs: [Ty])
     -> Bool {
         if lhs.isEmpty && rhs.isEmpty { return true }
         if lhs.count != rhs.count { return false }

@@ -42,7 +42,7 @@ extension Printable {
         
         let i = inline()
         let n0 = i ? "" : "\n", t1 = i ? " " : t(n+1), te = i ? "" : t(n)
-        let ty = (self as? Typed)?.type
+        let ty = (self as? TypedExpr)?.type
         let typeItem = ty != nil ? [("type", ty!)] : [] as [(String?, Printable)]
         
         return "(\(self.dynamicType)" + ((printList() ?? []) + typeItem).reduce("") {
@@ -346,7 +346,7 @@ extension FnType: Printable {
     }
 }
 
-extension NativeType : Printable {
+extension BuiltinType : Printable {
     
     func printVal() -> String? {
         return "\(self)"

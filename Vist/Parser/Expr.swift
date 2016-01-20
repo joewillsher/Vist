@@ -7,13 +7,13 @@
 //
 
 
-protocol Expr : Printable, TypeProvider, Typed {}
+protocol Expr : Printable, TypeProvider, TypedExpr {}
 
 
 // TODO: make this generic
-// use behaviour delegates (when released in swift 3) to make `let (delated) type: LLVMTyped { get }`
-protocol Typed {
-    var type: LLVMTyped? { get set }
+// use behaviour delegates (when released in swift 3) to make `let (delated) type: Ty { get }`
+protocol TypedExpr {
+    var type: Ty? { get set }
 }
 
 
@@ -37,7 +37,7 @@ protocol Literal : Expr {
 
 
 struct NullExpr : Expr {
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 protocol ScopeExpr : Expr, TypeProvider {
@@ -52,7 +52,7 @@ final class AST : ScopeExpr {
         self.exprs = exprs
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 
@@ -80,7 +80,7 @@ final class AssignmentExpr : Decl, Expr, StructMember {
         self.value = value
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 class FunctionDecl : Decl, Expr, StructMember {
@@ -102,7 +102,7 @@ class FunctionDecl : Decl, Expr, StructMember {
     /// `self` if the function is a member function
     weak var parent: StructExpr? = nil
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 final class InitialiserDecl : Decl, Expr, StructMember {
@@ -119,7 +119,7 @@ final class InitialiserDecl : Decl, Expr, StructMember {
     
     var mangledName: String
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 // TODO: Notes from swift:
@@ -139,6 +139,8 @@ final class InitialiserDecl : Decl, Expr, StructMember {
 //  - TypeRepr & SourceLoc
 //      - ‘Representation of a type as written in source’, generates human readable code to attach to AST objects
 //      - Source code location information
+//
+// Swift has an explicit AST walker function
 
 
 
@@ -160,7 +162,7 @@ final class BlockExpr : ScopeExpr {
         self.variables = variables
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 final class ClosureExpr : Expr {
@@ -173,7 +175,7 @@ final class ClosureExpr : Expr {
         self.parameters = params
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 
@@ -184,7 +186,7 @@ final class BooleanLiteral : Literal, BooleanType {
         self.val = val
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 protocol FloatingPointType {
@@ -209,7 +211,7 @@ final class FloatingPointLiteral : Literal, ExplicitlyTyped, FloatingPointType, 
         self.val = val
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 final class IntegerLiteral : Literal, ExplicitlyTyped, IntegerType, Sized {
@@ -224,7 +226,7 @@ final class IntegerLiteral : Literal, ExplicitlyTyped, IntegerType, Sized {
         self.size = size
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 final class StringLiteral : Literal, Expr {
     let str: String
@@ -236,7 +238,7 @@ final class StringLiteral : Literal, Expr {
     
 //    var arr: ArrayExpr? = nil
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 //final class CharacterExpr : Expr {
 //    let val: Character
@@ -245,7 +247,7 @@ final class StringLiteral : Literal, Expr {
 //        val =  c
 //    }
 //    
-//    var type: LLVMTyped? = nil
+//    var type: Ty? = nil
 //}
 
 
@@ -255,11 +257,11 @@ struct CommentExpr : Expr {
         self.str = str
         self.type = nil
     }
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 final class Void : Expr {
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 
@@ -275,7 +277,7 @@ final class Variable : AssignableExpr {
         self.name = name
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 
@@ -297,7 +299,7 @@ final class BinaryExpr : Expr {
     
     var mangledName: String = ""
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 final class PrefixExpr : Expr {
@@ -309,7 +311,7 @@ final class PrefixExpr : Expr {
         self.expr = expr
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 final class PostfixExpr : Expr {
@@ -321,7 +323,7 @@ final class PostfixExpr : Expr {
         self.expr = expr
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 
@@ -346,7 +348,7 @@ final class FunctionCallExpr : Expr {
     
     var mangledName: String
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 
@@ -359,7 +361,7 @@ final class MutationExpr : Expr {
         self.value = value
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 
@@ -375,7 +377,7 @@ final class FunctionImplementationExpr : Expr {
         self.body = body
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 final class TupleExpr : Expr {
@@ -394,7 +396,7 @@ final class TupleExpr : Expr {
         return elements.flatMap { $0 as? T }
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 final class TupleMemberLookupExpr : AssignableExpr {
@@ -406,7 +408,7 @@ final class TupleMemberLookupExpr : AssignableExpr {
         self.object = object
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 final class ReturnExpr : Expr {
@@ -416,7 +418,7 @@ final class ReturnExpr : Expr {
         self.expr = expr
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 
@@ -427,7 +429,7 @@ final class ValueType : Expr {
         self.name = name
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 
@@ -440,7 +442,7 @@ final class FunctionType : Expr {
         self.returns = returns
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 
@@ -457,7 +459,7 @@ final class ElseIfBlockExpr<BlockType : ScopeExpr> : Expr {
         self.block = block
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 
@@ -482,7 +484,7 @@ final class ConditionalExpr<BlockType : ScopeExpr> : Expr {
         self.statements = p
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 protocol LoopExpr : Expr {
@@ -508,7 +510,7 @@ final class ForInLoopExpr
         self.block = block
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 final class WhileLoopExpr
@@ -523,7 +525,7 @@ final class WhileLoopExpr
         self.block = block
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 
@@ -539,7 +541,7 @@ final class RangeIteratorExpr : IteratorExpr {
         end = e
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 final class WhileIteratorExpr : IteratorExpr {
@@ -551,7 +553,7 @@ final class WhileIteratorExpr : IteratorExpr {
     }
     
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 final class ArrayExpr : Expr, AssignableExpr {
@@ -562,8 +564,8 @@ final class ArrayExpr : Expr, AssignableExpr {
         self.arr = arr
     }
     
-    var elType: LLVMTyped?
-    var type: LLVMTyped? = nil
+    var elType: Ty?
+    var type: Ty? = nil
 }
 
 final class ArraySubscriptExpr : Expr, AssignableExpr {
@@ -575,7 +577,7 @@ final class ArraySubscriptExpr : Expr, AssignableExpr {
         self.index = index
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 
@@ -602,7 +604,7 @@ final class StructExpr : Expr {
         self.attrs = attrs
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 
@@ -620,7 +622,7 @@ final class MethodCallExpr <ObjectType : Expr> : Expr {
     
     var mangledName: String = ""
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 final class PropertyLookupExpr : AssignableExpr {
@@ -632,7 +634,7 @@ final class PropertyLookupExpr : AssignableExpr {
         self.object = object
     }
     
-    var type: LLVMTyped? = nil
+    var type: Ty? = nil
 }
 
 

@@ -9,7 +9,7 @@
 
 extension COpaquePointer {
     
-    func load(property: String, type: LLVMTyped?, builder: LLVMBuilderRef) throws -> LLVMValueRef {
+    func load(property: String, type: Ty?, builder: LLVMBuilderRef) throws -> LLVMValueRef {
         if let stdType = type as? StructType {
             return try stdType.loadPropertyNamed(property, from: self, builder: builder)
         }
@@ -34,7 +34,7 @@ extension StructType {
     
     /// Initialises a builtin type from list of valuerefs
     func initialiseWithBuiltin(val: LLVMValueRef..., module: LLVMModuleRef, builder: LLVMBuilderRef) -> LLVMValueRef {
-        let initName = name.mangle(FnType(params: members.map { $0.1 }, returns: NativeType.Void/*we con’t care what this is, its not used in mangling*/))
+        let initName = name.mangle(FnType(params: members.map { $0.1 }, returns: BuiltinType.Void/*we con’t care what this is, its not used in mangling*/))
         let initialiser = LLVMGetNamedFunction(module, initName)
         guard initialiser != nil else { fatalError("No initialiser for \(name)") }
         let args = val.ptr()

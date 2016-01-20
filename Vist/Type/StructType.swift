@@ -6,12 +6,15 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-final class StructType: LLVMTyped {
+
+
+
+final class StructType: Ty {
     let name: String
-    let members: [(String, LLVMTyped, Bool)]
+    let members: [(String, Ty, Bool)]
     var methods: [(String, FnType)]
     
-    init(members: [(String, LLVMTyped, Bool)], methods: [(String, FnType)], name: String) {
+    init(members: [(String, Ty, Bool)], methods: [(String, FnType)], name: String) {
         self.name = name
         self.members = members
         self.methods = methods
@@ -29,7 +32,7 @@ final class StructType: LLVMTyped {
             LLVMBool(false))
     }
     
-    func propertyType(name: String) throws -> LLVMTyped? {
+    func propertyType(name: String) throws -> Ty? {
         guard let i = (members.indexOf { $0.0 == name }) else { throw SemaError.NoPropertyNamed(name) }
         return members[i].1
     }
@@ -37,7 +40,7 @@ final class StructType: LLVMTyped {
     static func named(n: String) -> StructType {
         return StructType(members: [], methods: [], name: n)
     }
-    static func withProperties(ps: [LLVMTyped], gen: (Int -> String) = { _ in ""}) -> StructType {
+    static func withProperties(ps: [Ty], gen: (Int -> String) = { _ in ""}) -> StructType {
         return StructType(members: ps.enumerate().map {(gen($0), $1, false)}, methods: [], name: "")
     }
     
@@ -55,7 +58,7 @@ final class StructType: LLVMTyped {
 
 extension StructType {
     
-    subscript (function function: String, paramTypes types: [LLVMTyped]) -> FnType? {
+    subscript (function function: String, paramTypes types: [Ty]) -> FnType? {
         get {
             return methods[raw: "\(name).\(function)", paramTypes: types]
         }

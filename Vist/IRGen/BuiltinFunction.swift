@@ -6,9 +6,6 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-import Foundation
-
-
 func builtinBinaryInstruction(named: String, builder: LLVMBuilderRef, module: LLVMModuleRef) -> ((LLVMValueRef, LLVMValueRef) throws -> LLVMValueRef)? {
     switch named {
         
