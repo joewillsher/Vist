@@ -9,7 +9,7 @@
 
 ///  - Statement / Stmt
 ///      - brace, return, conditional, if, while, for in, switch, break, fallthrough, continue
-protocol Stmt : ASTNode {}
+protocol Stmt : ASTNode, StmtTypeProvider {}
 
 
 

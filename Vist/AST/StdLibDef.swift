@@ -10,7 +10,10 @@
 struct StdLibDef {
     
     private static let stdLibFunctions: [String: (BuiltinType, BuiltinType)] = [
-        "LLVM.trap": (.Void, .Void)
+        "print".mangle([BuiltinType.Int(size: 64)])    : (.Int(size: 64), .Void),
+        "print".mangle([BuiltinType.Bool])             : (.Bool, .Void),
+        "print".mangle([BuiltinType.Float(size: 64)])  : (.Float(size: 64), .Void),
+        "print".mangle([BuiltinType.Float(size: 32)])  : (.Float(size: 32), .Void)
     ]
     
     private static func getFunction(param: BuiltinType, res: BuiltinType) -> FnType {

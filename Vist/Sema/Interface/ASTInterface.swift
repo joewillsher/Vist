@@ -13,10 +13,10 @@ func interfaceASTGen(ast: AST) throws -> AST {
     
     for exp in ast.exprs {
         
-        if let e = exp as? VariableDecl {
+        if case let e as VariableDecl = exp {
             interface.exprs.append(e)
         }
-        else if let f = exp as? FuncDecl {
+        else if case let f as FuncDecl = exp {
             
             let fun = FuncDecl(name: f.name, type: f.fnType, impl: nil, attrs: f.attrs)
             interface.exprs.append(fun)
@@ -36,16 +36,16 @@ func interFileInterfaceASTGen(ast: AST) throws -> AST {
     
     for exp in ast.exprs {
         
-        if let e = exp as? VariableDecl {
+        if case let e as VariableDecl = exp {
             interface.exprs.append(e)
         }
-        else if let f = exp as? FuncDecl {
+        else if case let f as FuncDecl = exp {
             
 //            let fun = FuncDecl(name: f.name, type: f.fnType, impl: f.impl, attrs: f.attrs)
 //            fun.type = f.type
             interface.exprs.append(f)
         }
-        else if let s = exp as? StructExpr {
+        else if case let s as StructExpr = exp {
             interface.exprs.append(s)
         }
         

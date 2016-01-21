@@ -624,7 +624,7 @@ extension Parser {
         if let a = type, let b = explicitType where a != b { throw ParseError.MismatchedType((a, inspectNextPos(-1)!), (b, inspectNextPos(-3)!)) }
         
         // if explicit assignment defines size, add info about this size to object
-        if let ex = explicitType, var sized = value as? SizedExpr  {
+        if let ex = explicitType, case var sized as SizedExpr = value  {
             let s = ex.componentsSeparatedByCharactersInSet(NSCharacterSet.decimalDigitCharacterSet().invertedSet).joinWithSeparator("")
             
             if let n = UInt32(s) {
@@ -956,7 +956,7 @@ extension Parser {
             
             switch id {
             case "operator":
-                guard let i = try parseOperatorExpr() as? IntegerLiteral else { throw ParseError.NoPrecedenceForOperator(id, currentPos) }
+                guard case let i as IntegerLiteral = try parseOperatorExpr() else { throw ParseError.NoPrecedenceForOperator(id, currentPos) }
                 attrs.append(ASTAttributeExpr.Operator(prec: i.val))
                 
             default:

@@ -7,7 +7,7 @@
 //
 
 /// - Declaration / Decl
-protocol Decl : ASTNode {}
+protocol Decl : ASTNode, DeclTypeProvider {}
 
 
 

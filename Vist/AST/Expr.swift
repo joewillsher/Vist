@@ -11,9 +11,8 @@
 ///      - literals, tuples, parens, array, closure
 ///      - Call expression, operator, methods, casts
 ///      - Sub expressions of syntax structures, like `type name generic params`
-protocol Expr : ASTNode, Typed {}
-
-
+protocol Expr : ASTNode, _Typed, ExprTypeProvider {}
+protocol TypedExpr : Expr, Typed {}
 
 
 
@@ -61,7 +60,7 @@ protocol Expr : ASTNode, Typed {}
 
 
 
-final class BlockExpr : Expr {
+final class BlockExpr : TypedExpr {
     var exprs: [ASTNode]
     var variables: [ValueType]
     
@@ -70,10 +69,10 @@ final class BlockExpr : Expr {
         self.variables = variables
     }
     
-    var type: Ty? = nil
+    var type: FnType? = nil
 }
 
-final class ClosureExpr : Expr {
+final class ClosureExpr : TypedExpr {
     
     var exprs: [ASTNode]
     var parameters: [String]
@@ -83,7 +82,7 @@ final class ClosureExpr : Expr {
         self.parameters = params
     }
     
-    var type: Ty? = nil
+    var type: FnType? = nil
 }
 
 
@@ -102,7 +101,7 @@ protocol ExplicitlyTyped {
     var explicitType: String { get }
 }
 
-final class FloatingPointLiteral : SizedExpr, ExplicitlyTyped {
+final class FloatingPointLiteral : SizedExpr, Typed, ExplicitlyTyped {
     let val: Double
     var size: UInt32 = 64
     var explicitType: String {
@@ -113,10 +112,10 @@ final class FloatingPointLiteral : SizedExpr, ExplicitlyTyped {
         self.val = val
     }
     
-    var type: Ty? = nil
+    var type: BuiltinType? = nil
 }
 
-final class IntegerLiteral : SizedExpr, ExplicitlyTyped {
+final class IntegerLiteral : SizedExpr, Typed, ExplicitlyTyped {
     let val: Int
     var size: UInt32
     var explicitType: String {
@@ -128,20 +127,20 @@ final class IntegerLiteral : SizedExpr, ExplicitlyTyped {
         self.size = size
     }
     
-    var type: Ty? = nil
+    var type: StructType? = nil
 }
 
-final class BooleanLiteral : Expr {
+final class BooleanLiteral : TypedExpr {
     let val: Bool
     
     init(val: Bool) {
         self.val = val
     }
     
-    var type: Ty? = nil
+    var type: StructType? = nil
 }
 
-final class StringLiteral : Expr {
+final class StringLiteral : TypedExpr {
     let str: String
     var count: Int { return str.characters.count }
     
@@ -151,7 +150,7 @@ final class StringLiteral : Expr {
     
 //    var arr: ArrayExpr? = nil
     
-    var type: Ty? = nil
+    var type: BuiltinType? = nil
 }
 //final class CharacterExpr : Expr {
 //    let val: Character
@@ -182,21 +181,21 @@ final class Variable : AssignableExpr {
         self.name = name
     }
     
-    var type: Ty? = nil
+    var _type: Ty? = nil
 }
 
 protocol AssignableExpr : Expr {}
 
 final class MutationExpr : Expr {
-    let object: AssignableExpr
+    let object: Expr
     let value: Expr
     
-    init(object: AssignableExpr, value: Expr) {
+    init(object: Expr, value: Expr) {
         self.object = object
         self.value = value
     }
     
-    var type: Ty? = nil
+    var _type: Ty? = nil
 }
 
 
@@ -219,7 +218,7 @@ final class BinaryExpr : Expr {
     
     var mangledName: String = ""
     
-    var type: Ty? = nil
+    var _type: Ty? = nil
 }
 
 final class PrefixExpr : Expr {
@@ -231,7 +230,7 @@ final class PrefixExpr : Expr {
         self.expr = expr
     }
     
-    var type: Ty? = nil
+    var _type: Ty? = nil
 }
 
 final class PostfixExpr : Expr {
@@ -243,7 +242,7 @@ final class PostfixExpr : Expr {
         self.expr = expr
     }
     
-    var type: Ty? = nil
+    var _type: Ty? = nil
 }
 
 
@@ -265,7 +264,7 @@ final class FunctionCallExpr : Expr {
     
     var mangledName: String
     
-    var type: Ty? = nil
+    var _type: Ty? = nil
 }
 
 
@@ -278,7 +277,7 @@ final class FunctionImplementationExpr : Expr {
         self.body = body
     }
     
-    var type: Ty? = nil
+    var _type: Ty? = nil
 }
 
 final class TupleMemberLookupExpr : AssignableExpr {
@@ -290,7 +289,7 @@ final class TupleMemberLookupExpr : AssignableExpr {
         self.object = object
     }
     
-    var type: Ty? = nil
+    var _type: Ty? = nil
 }
 
 final class ReturnStmt : Stmt {
@@ -304,7 +303,7 @@ final class ReturnStmt : Stmt {
 
 
 
-final class FunctionType : Expr {
+final class FunctionType : TypedExpr {
     let args: TupleExpr
     let returns: Expr
     
@@ -313,7 +312,7 @@ final class FunctionType : Expr {
         self.returns = returns
     }
     
-    var type: Ty? = nil
+    var type: FnType? = nil
 }
 
 
@@ -323,7 +322,7 @@ final class FunctionType : Expr {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-final class ArrayExpr : AssignableExpr {
+final class ArrayExpr : AssignableExpr, Typed {
     
     let arr: [Expr]
     
@@ -332,7 +331,7 @@ final class ArrayExpr : AssignableExpr {
     }
     
     var elType: Ty?
-    var type: Ty? = nil
+    var type: BuiltinType? = nil
 }
 
 final class ArraySubscriptExpr : AssignableExpr {
@@ -344,7 +343,7 @@ final class ArraySubscriptExpr : AssignableExpr {
         self.index = index
     }
     
-    var type: Ty? = nil
+    var _type: Ty? = nil
 }
 
 
@@ -359,7 +358,7 @@ protocol StructMember {
 }
 
 
-final class StructExpr : Expr {
+final class StructExpr : TypedExpr {
     let name: String
     let properties: [VariableDecl]
     let methods: [FuncDecl]
@@ -374,7 +373,7 @@ final class StructExpr : Expr {
         self.attrs = attrs
     }
     
-    var type: Ty? = nil
+    var type: StructType? = nil
 }
 
 
@@ -392,7 +391,7 @@ final class MethodCallExpr <ObjectType : Expr> : Expr {
     
     var mangledName: String = ""
     
-    var type: Ty? = nil
+    var _type: Ty? = nil
 }
 
 final class PropertyLookupExpr : AssignableExpr {
@@ -404,7 +403,7 @@ final class PropertyLookupExpr : AssignableExpr {
         self.object = object
     }
     
-    var type: Ty? = nil
+    var _type: Ty? = nil
 }
 
 
@@ -417,7 +416,7 @@ final class PropertyLookupExpr : AssignableExpr {
 
 
 struct NullExpr : Expr {
-    var type: Ty? = nil
+    var _type: Ty? = BuiltinType.Null
 }
 
 
@@ -430,11 +429,11 @@ final class ValueType : Expr {
         self.name = name
     }
     
-    var type: Ty? = nil
+    var _type: Ty? = nil
 }
 
 
-final class TupleExpr : Expr {
+final class TupleExpr : TypedExpr {
     let elements: [Expr]
     
     init(elements: [Expr]) {
@@ -450,7 +449,7 @@ final class TupleExpr : Expr {
         return elements.flatMap { $0 as? T }
     }
     
-    var type: Ty? = nil
+    var type: TupleType? = nil
 }
 
 struct CommentExpr : Expr {
@@ -459,11 +458,11 @@ struct CommentExpr : Expr {
         self.str = str
     }
     
-    var type: Ty? = nil
+    var _type: Ty? = nil
 }
 
-final class Void : Expr {
-    var type: Ty? = BuiltinType.Void
+final class Void : TypedExpr {
+    var type: BuiltinType? = .Void
 }
 
 

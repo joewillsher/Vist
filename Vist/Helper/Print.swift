@@ -20,16 +20,16 @@ public protocol Printable : CustomStringConvertible {
     func inline() -> Bool
 }
 
-extension AST {
-    
-    var description: String {
-        return _description(0)
-    }
-}
+//extension AST {
+//    
+//    var description: String {
+//        return _description(0)
+//    }
+//}
 
 extension Printable {
     public var description: String {
-        return "\(self.dynamicType)"
+        return _description(0)
     }
 }
 
@@ -43,7 +43,7 @@ extension Printable {
         let mirror = Mirror(reflecting: self)
         
         let children = mirror.children.flatMap { (label: String?, child: Any) -> (String?, Printable)? in
-            if let v = child as? Printable where label != "parent" { return (label, v) } else { return nil }
+            if case let v as Printable = child where label != "parent" { return (label, v) } else { return nil }
         }
         
         let n0 = "\n", t1 = t(n+1), te = t(n)

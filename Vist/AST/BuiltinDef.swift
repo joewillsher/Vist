@@ -70,7 +70,7 @@ struct BuiltinDef {
     static func getBuiltinFunction(id: String, args: [Ty]) -> (String, FnType)? {
         
         if args.count == 2 && args[0] == args[1] {
-            guard let type = args[0] as? BuiltinType else { return nil }
+            guard case let type as BuiltinType = args[0] else { return nil }
             
             if let name = builtinBinaryWithOverflowFunctions[id] {
                 return (name, getBinaryOperationWithOverflow(type))

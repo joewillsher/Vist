@@ -10,7 +10,7 @@
 extension COpaquePointer {
     
     func load(property: String, type: Ty?, builder: LLVMBuilderRef) throws -> LLVMValueRef {
-        if let stdType = type as? StructType {
+        if case let stdType as StructType = type {
             return try stdType.loadPropertyNamed(property, from: self, builder: builder)
         }
         else {

@@ -45,8 +45,8 @@ private func isFloatType(t: LLVMTypeKind) -> Bool {
 extension ASTNode {
     
     private func nodeCodeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
-        if let x = try (self as? IRGenerator)?.codeGen(stackFrame) { return x }
-        fatalError("\(self.dynamicType) not IR Generator")
+        guard case let gen as IRGenerator = self else { fatalError("\(self.dynamicType) not IR Generator") }
+        return try gen.codeGen(stackFrame)
     }
     
 }
@@ -105,7 +105,7 @@ extension IntegerLiteral : IRGenerator {
         let rawType = BuiltinType.Int(size: size)
         let value = LLVMConstInt(rawType.ir(), UInt64(val), LLVMBool(false))
         
-        guard let type = self.type as? StructType else { fatalError("Int literal with no type") }
+        guard let type = self.type else { fatalError("Int literal with no type") }
         return type.initialiseWithBuiltin(value, module: module, builder: builder)
     }
 }
@@ -125,7 +125,7 @@ extension BooleanLiteral : IRGenerator {
         let rawType = BuiltinType.Bool
         let value = LLVMConstInt(rawType.ir(), UInt64(val.hashValue), LLVMBool(false))
         
-        guard let type = self.type as? StructType else { fatalError("Bool literal with no type") }
+        guard let type = self.type else { fatalError("Bool literal with no type") }
         return type.initialiseWithBuiltin(value, module: module, builder: builder)
     }
 }
@@ -175,7 +175,7 @@ extension VariableDecl : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        if let arr = value as? ArrayExpr {
+        if case let arr as ArrayExpr = value {
             //if asigning to array
             
             let a = try arr.arrInstance(stackFrame)
@@ -184,7 +184,7 @@ extension VariableDecl : IRGenerator {
             
             return a.ptr
         }
-        else if let ty = value.type as? FnType {
+        else if case let ty as FnType = value._type {
             // handle assigning a closure
             
             // Function being made
@@ -237,13 +237,13 @@ extension VariableDecl : IRGenerator {
             
             // create variable
             let variable: MutableVariable
-            if let t = value.type as? StructType {
+            if case let t as StructType = value._type {
                 let properties = t.members.map {
                     ($0.0, $0.1.ir(), $0.2)
                 }
                 variable = MutableStructVariable.alloc(builder, type: type, mutable: isMutable, properties: properties)
             }
-            else if let t = value.type as? TupleType {
+            else if case let t as TupleType = value._type {
                 let properties = t.members.enumerate().map {
                     (String($0.0), $0.1.ir(), false)
                 }
@@ -268,12 +268,13 @@ extension MutationExpr : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        if let object = object as? Variable {
+        switch object {
+        case let object as Variable:
             // object = newValue
             
             let variable = try stackFrame.variable(object.name)
             
-            if let arrayVariable = variable as? ArrayVariable, arrayExpression = value as? ArrayExpr {
+            if case let arrayVariable as ArrayVariable = variable, case let arrayExpression as ArrayExpr = value {
                 
                 let newArray = try arrayExpression.arrInstance(stackFrame)
                 arrayVariable.assignFrom(builder, arr: newArray)
@@ -281,11 +282,10 @@ extension MutationExpr : IRGenerator {
             else {
                 let new = try value.nodeCodeGen(stackFrame)
                 
-                guard let v = variable as? MutableVariable where v.mutable else { throw IRError.NotMutable("") }
+                guard case let v as MutableVariable = variable where v.mutable else { throw IRError.NotMutable("") }
                 try v.store(new)
             }
-        }
-        else if let sub = object as? ArraySubscriptExpr {
+        case let sub as ArraySubscriptExpr:
             
             let arr = try sub.backingArrayVariable(stackFrame)
             
@@ -293,12 +293,12 @@ extension MutationExpr : IRGenerator {
             let val = try value.nodeCodeGen(stackFrame)
             
             arr.store(val, inElementAtIndex: i)
-        }
-        else if let prop = object as? PropertyLookupExpr {
+
+        case let prop as PropertyLookupExpr:
             // foo.bar = meme
             
-            guard let n = prop.object as? Variable else { fatalError("CannotGetPropertyFromNonVariableType") }
-            guard let variable = try stackFrame.variable(n.name) as? MutableStructVariable else {
+            guard case let n as Variable = prop.object else { fatalError("Cannot Get Property From Non Variable Type") }
+            guard case let variable as MutableStructVariable = try stackFrame.variable(n.name) else {
                 if try stackFrame.variable(n.name) is ParameterStructVariable { throw IRError.CannotMutateParam }
                 throw IRError.NoVariable(n.name)
             }
@@ -309,6 +309,9 @@ extension MutationExpr : IRGenerator {
             let val = try value.nodeCodeGen(stackFrame)
             
             try variable.store(val, inPropertyNamed: prop.name)
+        
+        default:
+            break
         }
         
         return nil
@@ -337,7 +340,7 @@ extension BinaryExpr : IRGenerator {
         
         guard fn != nil && LLVMCountParams(fn) == UInt32(2) else { throw IRError.WrongFunctionApplication(op) }
         
-        let doNotUseName = self.type == BuiltinType.Void || self.type == BuiltinType.Null || self.type == nil
+        let doNotUseName = _type == BuiltinType.Void || _type == BuiltinType.Null || _type == nil
         let n = doNotUseName ? "" : "\(op)_res"
         
         // add call to IR
@@ -385,7 +388,7 @@ extension FunctionCallExpr : IRGenerator {
         guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else {
             throw IRError.WrongFunctionApplication(name) }
         
-        let doNotUseName = type == BuiltinType.Void || type == BuiltinType.Null || type == nil
+        let doNotUseName = _type == BuiltinType.Void || _type == BuiltinType.Null || _type == nil
         let n = doNotUseName ? "" : "\(name)_res"
         
         // add call to IR
@@ -398,8 +401,8 @@ extension FunctionCallExpr : IRGenerator {
 private extension FunctionType {
     
     private func params() throws -> [LLVMTypeRef] {
-        guard let res = (type as? FnType)?.nonVoid else { throw IRError.TypeNotFound }
-        return try res.map(ir)
+        guard case let res as FnType = _type else { throw IRError.TypeNotFound }
+        return try res.nonVoid.map(ir)
     }
 }
 
@@ -416,8 +419,8 @@ extension FuncDecl : IRGenerator {
         let args = fnType.args, argCount = args.elements.count
         
         if let parent = self.parent {
-            guard let _parentType = parent.type as? StructType else { fatalError("Parent not a struct type") }
-            guard let _type = self.fnType.type as? FnType else { throw IRError.TypeNotFound }
+            guard case let _parentType as StructType = parent._type else { fatalError("Parent not a struct type") }
+            guard let _type = fnType.type else { throw IRError.TypeNotFound }
             
             type = FnType(params: [_parentType] + _type.params, returns: _type.returns)
             startIndex = 1
@@ -425,7 +428,7 @@ extension FuncDecl : IRGenerator {
         }
         else {
             let args = fnType.args, argCount = args.elements.count
-            guard let t = self.fnType.type as? FnType else { throw IRError.TypeNotFound }
+            guard let t = fnType.type else { throw IRError.TypeNotFound }
             
             type = t
             startIndex = 0
@@ -515,7 +518,7 @@ extension ReturnStmt : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        if expr.type?.ir() == LLVMVoidType() {
+        if expr._type?.ir() == LLVMVoidType() {
             return LLVMBuildRetVoid(builder)
         }
         
@@ -550,7 +553,7 @@ extension ClosureExpr : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        guard let type = type as? FnType else { fatalError() }
+        guard case let type as FnType = _type else { fatalError() }
         
         let argBuffer = try type.params.map(ir).ptr()
         defer { argBuffer.dealloc(type.params.count) }
@@ -656,7 +659,7 @@ extension ConditionalStmt : IRGenerator {
             
             if let cond = cond { //if statement, make conditonal jump
                 
-                let v = try cond.load("value", type: statement.condition?.type, builder: builder)
+                let v = try cond.load("value", type: statement.condition?._type, builder: builder)
                 
                 LLVMBuildCondBr(builder, v, block, ifOut)
             }
@@ -716,8 +719,8 @@ extension ForInLoopStmt : IRGenerator {
         
         let rangeIterator = try iterator.nodeCodeGen(stackFrame)
         
-        let start = try rangeIterator.load("start", type: iterator.type, builder: builder)
-        let endValue = try rangeIterator.load("end", type: iterator.type, builder: builder).load("value", type: stackFrame.type("Int"), builder: builder)
+        let start = try rangeIterator.load("start", type: iterator._type, builder: builder)
+        let endValue = try rangeIterator.load("end", type: iterator._type, builder: builder).load("value", type: stackFrame.type("Int"), builder: builder)
         
         // move into loop block
         LLVMBuildBr(builder, loop)
@@ -776,7 +779,7 @@ extension WhileLoopStmt : IRGenerator {
         
         // whether to enter the while, first while check
         let initialCond = try condition.nodeCodeGen(stackFrame)
-        let initialCondV = try initialCond.load("value", type: condition.type, builder: builder)
+        let initialCondV = try initialCond.load("value", type: condition._type, builder: builder)
 
         // move into loop block
         LLVMBuildCondBr(builder, initialCondV, loop, afterLoop)
@@ -788,7 +791,7 @@ extension WhileLoopStmt : IRGenerator {
         
         // conditional break
         let conditionalRepeat = try condition.nodeCodeGen(stackFrame)
-        let conditionalRepeatV = try conditionalRepeat.load("value", type: condition.type, builder: builder)
+        let conditionalRepeatV = try conditionalRepeat.load("value", type: condition._type, builder: builder)
         LLVMBuildCondBr(builder, conditionalRepeatV, loop, afterLoop)
         
         // move back to loop / end loop
@@ -848,8 +851,8 @@ extension ArraySubscriptExpr : IRGenerator {
     
     private func backingArrayVariable(stackFrame: StackFrame) throws -> ArrayVariable {
         
-        guard let v = arr as? Variable else { throw IRError.SubscriptingNonVariableTypeNotAllowed }
-        guard let arr = try stackFrame.variable(v.name) as? ArrayVariable else { throw IRError.SubscriptingNonVariableTypeNotAllowed }
+        guard case let v as Variable = arr else { throw IRError.SubscriptingNonVariableTypeNotAllowed }
+        guard case let arr as ArrayVariable = try stackFrame.variable(v.name) else { throw IRError.SubscriptingNonVariableTypeNotAllowed }
         
         return arr
     }
@@ -874,7 +877,7 @@ extension StructExpr : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        stackFrame.addType(name, val: self.type! as! StructType)
+        stackFrame.addType(name, val: self._type! as! StructType)
 
         for i in initialisers {
             try i.codeGen(stackFrame)
@@ -897,9 +900,10 @@ extension InitialiserDecl : IRGenerator {
         let args = ty.args, argCount = args.elements.count
         guard let
             functionType = ty.type?.ir(),
-            parentType = parent?.type as? StructType,
             name = parent?.name,
-            parentProperties = parent?.properties else {
+            parentProperties = parent?.properties,
+            case let parentType as StructType = parent?._type
+            else {
                 throw IRError.TypeNotFound
         }
         
@@ -954,7 +958,7 @@ extension InitialiserDecl : IRGenerator {
         
         // property types, names, & mutability for stack frame
         let properties = try parentProperties.map { assignment -> (String, LLVMValueRef, Bool) in
-            if let t = assignment.value.type { return (assignment.name, t.ir(), assignment.isMutable) } else { throw IRError.NoProperty(assignment.name) }
+            if let t = assignment.value._type { return (assignment.name, t.ir(), assignment.isMutable) } else { throw IRError.NoProperty(assignment.name) }
         }
         
         // allocate struct
@@ -985,8 +989,8 @@ extension PropertyLookupExpr : IRGenerator {
         
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        guard let n = object as? Variable else { fatalError("Cannot Get Property From Non Variable Type") }
-        guard let variable = try stackFrame.variable(n.name) as? StructVariable else { throw IRError.NoVariable(n.name) }
+        guard case let n as Variable = object else { fatalError("Cannot Get Property From Non Variable Type") }
+        guard case let variable as StructVariable = try stackFrame.variable(n.name) else { throw IRError.NoVariable(n.name) }
         
         let val = try variable.loadPropertyNamed(name)
         
@@ -1009,7 +1013,7 @@ extension MethodCallExpr : IRGenerator {
             .ptr()
         defer { params.dealloc(c) }
         
-        let doNotUseName = type == BuiltinType.Void || type == BuiltinType.Null || type == nil
+        let doNotUseName = _type == BuiltinType.Void || _type == BuiltinType.Null || _type == nil
         let n = doNotUseName ? "" : "\(name)_res"
         
         return LLVMBuildCall(builder, f, params, UInt32(c), n)
@@ -1029,7 +1033,7 @@ extension TupleExpr : IRGenerator {
         
         if elements.count == 0 { return nil }
         
-        guard let type = self.type as? TupleType else { fatalError("No type for tuple") }
+        guard case let type as TupleType = self._type else { fatalError("No type for tuple") }
         let typeIR = type.ir()
         
         let memeberIR = try elements.map { try $0.nodeCodeGen(stackFrame) }
@@ -1049,8 +1053,8 @@ extension TupleMemberLookupExpr : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        guard let n = object as? Variable else { fatalError("Cannot Get Property From Non Variable Type") }
-        guard let variable = try stackFrame.variable(n.name) as? StructVariable else {
+        guard case let n as Variable = object else { fatalError("Cannot Get Property From Non Variable Type") }
+        guard case let variable as StructVariable = try stackFrame.variable(n.name) else {
             throw IRError.NoVariable(n.name) }
         
         let val = try variable.loadPropertyNamed(String(index))

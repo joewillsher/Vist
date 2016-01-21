@@ -14,7 +14,7 @@ struct FnType : Ty {
     func ir() -> LLVMTypeRef {
         
         let r: LLVMTypeRef
-        if let _ = returns as? FnType {
+        if case _ as FnType = returns {
             r = BuiltinType.Pointer(to: returns).ir()
         }
         else {

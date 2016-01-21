@@ -57,18 +57,18 @@ final class StdLibExpose {
         guard let ast = ast else { fatalError("Stdlib could not be loaded") }
         
         let fns = ast.exprs
-            .flatMap { ($0 as? FuncDecl) }
-            .map { ($0.name, $0.fnType.type as! FnType) }
+            .flatMap { $0 as? FuncDecl }
+            .map { f -> (String, FnType?) in (f.name, f.fnType.type) }
         
         let structs = ast.exprs
-            .flatMap { ($0 as? StructExpr) }
+            .flatMap { $0 as? StructExpr }
         let tys = structs
-            .map { ($0.name, $0.type as? StructType) }
+            .map { s -> (String, StructType?) in (s.name, s.type) }
         let methods = structs
             .flatMap {
-                $0.methods.flatMap { ($0.name, $0.fnType.type as! FnType) }
+                $0.methods.flatMap { ($0.name, $0.fnType.type) }
                 +
-                $0.initialisers .flatMap { ($0.parent!.name, FnType.returning($0.parent!.type as! StructType))
+                $0.initialisers .flatMap { ($0.parent!.name, FnType.returning($0.parent!._type!))
             }
         }
         
@@ -85,10 +85,9 @@ final class StdLibExpose {
     func astToStackFrame(frame frame: StackFrame) {
         guard let ast = ast else { fatalError("Stdlib could not be loaded") }
         
-        let structs = ast.exprs
+        let tys = ast.exprs
             .flatMap { ($0 as? StructExpr) }
-        let tys = structs
-            .map { ($0.name, $0.type as? StructType) }
+            .map { ($0.name, $0._type as? StructType) }
         
         for (name, t) in tys {
             if let t = t { frame.addType(name, val: t) }
