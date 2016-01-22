@@ -341,7 +341,7 @@ extension BinaryExpr : IRGenerator {
         guard fn != nil && LLVMCountParams(fn) == UInt32(2) else { throw IRError.WrongFunctionApplication(op) }
         
         let doNotUseName = _type == BuiltinType.Void || _type == BuiltinType.Null || _type == nil
-        let n = doNotUseName ? "" : "\(op)_res"
+        let n = doNotUseName ? "" : "\(op).res"
         
         // add call to IR
         return LLVMBuildCall(builder, fn, argBuffer, UInt32(2), n)
@@ -615,7 +615,7 @@ extension ClosureExpr : IRGenerator {
 extension ElseIfBlockStmt {
     
     private func ifBBID(n n: Int) -> String {
-        return condition == nil ? "else\(n)" : "then\(n)"
+        return condition == nil ? "else.\(n)" : "then.\(n)"
     }
 }
 
@@ -627,7 +627,7 @@ extension ConditionalStmt : IRGenerator {
         var ifIn: LLVMBasicBlockRef = stackFrame.block
         var ifOut: LLVMBasicBlockRef = nil
         
-        let leaveIf = LLVMAppendBasicBlock(stackFrame.function, "cont")
+        let leaveIf = LLVMAppendBasicBlock(stackFrame.function, "cont.stmt")
         var rets = true // whether all blocks return
         
         for (i, statement) in statements.enumerate() {
@@ -641,7 +641,7 @@ extension ConditionalStmt : IRGenerator {
             // condition
             let cond = try statement.condition?.nodeCodeGen(stackFrame)
             if i < statements.count-1 {
-                ifOut = LLVMAppendBasicBlock(stackFrame.function, "cont\(i)")
+                ifOut = LLVMAppendBasicBlock(stackFrame.function, "cont.\(i)")
             }
             else { //else or final else-if statement
                 if rets { // If the block returns from the current scope, remove the cont block
@@ -711,16 +711,36 @@ private extension ElseIfBlockStmt {
 
 extension ForInLoopStmt : IRGenerator {
     
+//    ; ~~ENTRY~~
+//
+//    br label %loop.body
+//    
+//    loop.body:                                        ; preds = %loop.body, %entry
+//    %loop.count.x = phi { i64 }   [ { i64 1 }, %entry ],
+//                                  [ %.fca.0.insert.i, %loop.body ]
+//    %x.value = extractvalue { i64 } %loop.count.x, 0
+//    %next.x = add i64 %x.value, 1
+//    %.fca.0.insert.i = insertvalue { i64 } undef, i64 %next.x, 0
+//
+//    ; ~~BODY~~
+//
+//    %loop.repeat.test = icmp sgt i64 %next.x, 1000
+//    br i1 %loop.repeat.test, label %loop.exit, label %loop.body
+//    
+//    loop.exit:                                        ; preds = %loop.body
+//
+//    ; ~~EXIT~~
+    
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
         // generate loop and termination blocks
-        let loop = LLVMAppendBasicBlock(stackFrame.function, "loop")
-        let afterLoop = LLVMAppendBasicBlock(stackFrame.function, "afterloop")
+        let loop = LLVMAppendBasicBlock(stackFrame.function, "loop.body")
+        let afterLoop = LLVMAppendBasicBlock(stackFrame.function, "loop.exit")
         
         let rangeIterator = try iterator.nodeCodeGen(stackFrame)
         
-        let start = try rangeIterator.load("start", type: iterator._type, builder: builder)
-        let endValue = try rangeIterator.load("end", type: iterator._type, builder: builder).load("value", type: stackFrame.type("Int"), builder: builder)
+        let start = try rangeIterator.load("start", type: iterator._type, builder: builder, irName: "start")
+        let endValue = try rangeIterator.load("end", type: iterator._type, builder: builder, irName: "end").load("value", type: stackFrame.type("Int"), builder: builder, irName: "end.value")
         
         // move into loop block
         LLVMBuildBr(builder, loop)
@@ -730,7 +750,7 @@ extension ForInLoopStmt : IRGenerator {
         
         // define variable phi node
         let name = binded.name ?? ""
-        let loopCount = LLVMBuildPhi(builder, stdIntType.ir(), name)
+        let loopCount = LLVMBuildPhi(builder, stdIntType.ir(), "loop.count.\(name)")
         
         // add incoming value to phi node
         let num1 = [start].ptr(), incoming1 = [stackFrame.block].ptr()
@@ -739,8 +759,8 @@ extension ForInLoopStmt : IRGenerator {
         
         // iterate and add phi incoming
         let one = LLVMConstInt(LLVMInt64Type(), UInt64(1), LLVMBool(false))
-        let value = try loopCount.load("value", type: stdIntType, builder: builder)
-        let next = LLVMBuildAdd(builder, one, value, "n\(name)")
+        let value = try loopCount.load("value", type: stdIntType, builder: builder, irName: "\(name).value")
+        let next = LLVMBuildAdd(builder, one, value, "next.\(name)")
         
         // initialise next i value with the iterated num
         let nextInt = stdIntType.initialiseWithBuiltin(next, module: module, builder: builder)
@@ -751,7 +771,7 @@ extension ForInLoopStmt : IRGenerator {
         try block.bbGenInline(stackFrame: loopStackFrame)
         
         // conditional break
-        let comp = LLVMBuildICmp(builder, LLVMIntSLE, next, endValue, "looptest")
+        let comp = LLVMBuildICmp(builder, LLVMIntSLE, next, endValue, "loop.repeat.test")
         LLVMBuildCondBr(builder, comp, loop, afterLoop)
         
         // move back to loop / end loop
@@ -774,8 +794,8 @@ extension WhileLoopStmt : IRGenerator {
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
         // generate loop and termination blocks
-        let loop = LLVMAppendBasicBlock(stackFrame.function, "loop")
-        let afterLoop = LLVMAppendBasicBlock(stackFrame.function, "afterloop")
+        let loop = LLVMAppendBasicBlock(stackFrame.function, "loop.body")
+        let afterLoop = LLVMAppendBasicBlock(stackFrame.function, "loop.exit")
         
         // whether to enter the while, first while check
         let initialCond = try condition.nodeCodeGen(stackFrame)
@@ -1014,7 +1034,7 @@ extension MethodCallExpr : IRGenerator {
         defer { params.dealloc(c) }
         
         let doNotUseName = _type == BuiltinType.Void || _type == BuiltinType.Null || _type == nil
-        let n = doNotUseName ? "" : "\(name)_res"
+        let n = doNotUseName ? "" : "\(name).res"
         
         return LLVMBuildCall(builder, f, params, UInt32(c), n)
     }

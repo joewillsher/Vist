@@ -530,77 +530,27 @@ entry:
 
 define i64 @main() {
 entry:
-  %Foo_res = call { { i64 }, { i64 }, { i64 } } @_Foo_()
-  %0 = alloca { { i64 }, { i64 }, { i64 } }
-  store { { i64 }, { i64 }, { i64 } } %Foo_res, { { i64 }, { i64 }, { i64 } }* %0
-  %1 = call { i64 } @_Int_i64(i64 1)
-  %2 = alloca { i64 }
-  store { i64 } %1, { i64 }* %2
+  %0 = call { i64 } @_Int_i64(i64 1)
+  %1 = call { i64 } @_Int_i64(i64 1000)
+  %....res = call { { i64 }, { i64 } } @_..._S.i64_S.i64({ i64 } %0, { i64 } %1)
+  %start = extractvalue { { i64 }, { i64 } } %....res, 0
+  %end = extractvalue { { i64 }, { i64 } } %....res, 1
+  %end.value = extractvalue { i64 } %end, 0
+  br label %loop.body
+
+loop.body:                                        ; preds = %loop.body, %entry
+  %loop.count.x = phi { i64 } [ %start, %entry ], [ %2, %loop.body ]
+  %x.value = extractvalue { i64 } %loop.count.x, 0
+  %next.x = add i64 1, %x.value
+  %2 = call { i64 } @_Int_i64(i64 %next.x)
   %3 = call { i64 } @_Int_i64(i64 2)
-  %4 = alloca { i64 }
-  store { i64 } %3, { i64 }* %4
-  %a = load { i64 }* %2
-  %5 = call { i64 } @_Int_i64(i64 1)
-  %add_res = call { i64 } @_add_S.i64_S.i64({ i64 } %a, { i64 } %5)
-  %b = load { i64 }* %4
-  %add_res1 = call { i64 } @_add_S.i64_S.i64({ i64 } %add_res, { i64 } %b)
-  %6 = alloca { i64 }
-  store { i64 } %add_res1, { i64 }* %6
-  %7 = call { i64 } @_Int_i64(i64 1)
-  %f = load { { i64 }, { i64 }, { i64 } }* %0
-  %8 = call { i64 } @_Int_i64(i64 1)
-  %sumTimes_res = call { i64 } @_Foo.sumTimes_S.i64({ { i64 }, { i64 }, { i64 } } %f, { i64 } %8)
-  %add_res2 = call { i64 } @_add_S.i64_S.i64({ i64 } %7, { i64 } %sumTimes_res)
-  call void @_print_S.i64({ i64 } %add_res2)
+  %"*.res" = call { i64 } @"_*_S.i64_S.i64"({ i64 } %loop.count.x, { i64 } %3)
+  call void @_print_S.i64({ i64 } %"*.res")
+  %loop.repeat.test = icmp sle i64 %next.x, %end.value
+  br i1 %loop.repeat.test, label %loop.body, label %loop.exit
+
+loop.exit:                                        ; preds = %loop.body
   ret i64 0
-}
-
-; Function Attrs: alwaysinline
-define { { i64 }, { i64 }, { i64 } } @_Foo_() #2 {
-entry:
-  %0 = alloca { { i64 }, { i64 }, { i64 } }
-  %1 = call { i64 } @_Int_i64(i64 10)
-  %a_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 0
-  store { i64 } %1, { i64 }* %a_ptr
-  %2 = call { i64 } @_Int_i64(i64 20)
-  %b_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 1
-  store { i64 } %2, { i64 }* %b_ptr
-  %3 = call { i64 } @_Int_i64(i64 40)
-  %c_ptr = getelementptr inbounds { { i64 }, { i64 }, { i64 } }* %0, i32 0, i32 2
-  store { i64 } %3, { i64 }* %c_ptr
-  %4 = load { { i64 }, { i64 }, { i64 } }* %0
-  ret { { i64 }, { i64 }, { i64 } } %4
-}
-
-define { i64 } @_Foo.sumTimes_S.i64({ { i64 }, { i64 }, { i64 } } %self, { i64 } %"$0") {
-entry:
-  %a = extractvalue { { i64 }, { i64 }, { i64 } } %self, 0
-  %b = extractvalue { { i64 }, { i64 }, { i64 } } %self, 1
-  %c = extractvalue { { i64 }, { i64 }, { i64 } } %self, 2
-  %"+_res" = call { i64 } @"_+_S.i64_S.i64"({ i64 } %b, { i64 } %c)
-  %"+_res1" = call { i64 } @"_+_S.i64_S.i64"({ i64 } %a, { i64 } %"+_res")
-  %"*_res" = call { i64 } @"_*_S.i64_S.i64"({ i64 } %"+_res1", { i64 } %"$0")
-  ret { i64 } %"*_res"
-}
-
-define void @_Foo.printA_S.b({ { i64 }, { i64 }, { i64 } } %self, { i1 } %"$0") {
-entry:
-  %value = extractvalue { i1 } %"$0", 0
-  br i1 %value, label %then0, label %cont
-
-cont:                                             ; preds = %entry, %then0
-  ret void
-
-then0:                                            ; preds = %entry
-  %a = extractvalue { { i64 }, { i64 }, { i64 } } %self, 0
-  call void @_print_S.i64({ i64 } %a)
-  br label %cont
-}
-
-define { i64 } @_add_S.i64_S.i64({ i64 } %"$0", { i64 } %"$1") {
-entry:
-  %"+_res" = call { i64 } @"_+_S.i64_S.i64"({ i64 } %"$0", { i64 } %"$1")
-  ret { i64 } %"+_res"
 }
 
 attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

@@ -398,7 +398,7 @@ extension ClosureExpr : ExprTypeProvider {
         
         let ty = (scope.objectType as? FnType) ?? FnType(params: [BuiltinType.Void], returns: BuiltinType.Void)
         self.type = ty
-
+        
         // inner scope should be nil if we dont want implicit captutring
         let innerScope = SemaScope(parent: nil, returnType: ty)
         innerScope.returnType = ty.returns
@@ -577,9 +577,7 @@ extension StructExpr : ExprTypeProvider {
         // maps over properties and gens types
         let members = try properties.map { (a: VariableDecl) -> (String, Ty, Bool) in
             try a.llvmType(structScope)
-            guard let t = a.value._type else {
-                print(self.properties)
-                throw SemaError.StructPropertyNotTyped }
+            guard let t = a.value._type else { throw SemaError.StructPropertyNotTyped }
             return (a.name, t, a.isMutable)
         }
         
@@ -589,7 +587,6 @@ extension StructExpr : ExprTypeProvider {
         self.type = ty
         
         let memberFunctions = try methods.flatMap { (f: FuncDecl) -> (String, FnType) in
-            
             try f.llvmType(structScope)
             guard let t = f.fnType.type else { throw SemaError.StructMethodNotTyped }
             return (f.name.mangle(t, parentTypeName: name), t)

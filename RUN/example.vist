@@ -1,5 +1,5 @@
 
-
+/*
 type Foo {
     let a: Int = 10
     var b: Int = 20
@@ -21,4 +21,10 @@ let b = 2
 let u = add (add a 1) b
 
 print (add 1 (f.sumTimes 1))
+*/
+
+
+for x in 1 ... 1000 do
+    print x * 2
+
 

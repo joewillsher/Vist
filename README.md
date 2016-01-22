@@ -39,14 +39,14 @@ print (foo 100 (fact 10))
 type Baz {
     var a: Int
     let b: Int
-
-    init Int Int = |x y| {
-        a = x
-        b = y
-    }
     
-    func foo :: Int -> Int = do return a + b
+    func foo :: Int -> Int = do return $0 * (a + b)
 }
+
+let baz = Baz 1 4
+let x = baz.foo 2
+print x
+
 ```
 
 ##How it works

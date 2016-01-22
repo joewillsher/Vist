@@ -9,9 +9,9 @@
 
 extension COpaquePointer {
     
-    func load(property: String, type: Ty?, builder: LLVMBuilderRef) throws -> LLVMValueRef {
+    func load(property: String, type: Ty?, builder: LLVMBuilderRef, irName: String? = nil) throws -> LLVMValueRef {
         if case let stdType as StructType = type {
-            return try stdType.loadPropertyNamed(property, from: self, builder: builder)
+            return try stdType.loadPropertyNamed(property, from: self, builder: builder, irName: irName)
         }
         else {
             fatalError("not a struct type")
@@ -27,9 +27,9 @@ extension StructType {
     }
     
     /// Builds load of named property from struct
-    func loadPropertyNamed(name: String, from value: LLVMValueRef, builder: LLVMBuilderRef) throws -> LLVMValueRef {
+    func loadPropertyNamed(name: String, from value: LLVMValueRef, builder: LLVMBuilderRef, irName: String? = nil) throws -> LLVMValueRef {
         guard let i = indexOfProperty(name) else { throw SemaError.NoPropertyNamed(name) }
-        return LLVMBuildExtractValue(builder, value, UInt32(i), name)
+        return LLVMBuildExtractValue(builder, value, UInt32(i), irName ?? name)
     }
     
     /// Initialises a builtin type from list of valuerefs

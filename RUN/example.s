@@ -564,76 +564,31 @@ LBB45_1:                                ## %then0.i.i
 	.globl	_main
 	.align	4, 0x90
 _main:                                  ## @main
-## BB#0:                                ## %_add_S.i64_S.i64.exit
+## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	movl	$71, %edi
+	pushq	%rbx
+	pushq	%rax
+	movl	$1, %ebx
+	.align	4, 0x90
+LBB46_1:                                ## %loop.body
+                                        ## =>This Inner Loop Header: Depth=1
+	movq	%rbx, %rdi
+	addq	%rdi, %rdi
+	jo	LBB46_4
+## BB#2:                                ## %_*_S.i64_S.i64.exit
+                                        ##   in Loop: Header=BB46_1 Depth=1
+	incq	%rbx
 	callq	__$print_i64
+	cmpq	$1001, %rbx             ## imm = 0x3E9
+	jl	LBB46_1
+## BB#3:                                ## %loop.exit
 	xorl	%eax, %eax
+	addq	$8, %rsp
+	popq	%rbx
 	popq	%rbp
 	retq
-
-	.globl	__Foo_
-	.align	4, 0x90
-__Foo_:                                 ## @_Foo_
-## BB#0:                                ## %entry
-	pushq	%rbp
-	movq	%rsp, %rbp
-	movl	$10, %eax
-	movl	$20, %edx
-	movl	$40, %ecx
-	popq	%rbp
-	retq
-
-	.globl	__Foo.sumTimes_S.i64
-	.align	4, 0x90
-__Foo.sumTimes_S.i64:                   ## @_Foo.sumTimes_S.i64
-## BB#0:                                ## %entry
-	pushq	%rbp
-	movq	%rsp, %rbp
-	addq	%rdx, %rsi
-	jo	LBB48_4
-## BB#1:                                ## %_+_S.i64_S.i64.exit
-	addq	%rsi, %rdi
-	jo	LBB48_4
-## BB#2:                                ## %_+_S.i64_S.i64.exit12
-	imulq	%rcx, %rdi
-	jo	LBB48_4
-## BB#3:                                ## %_*_S.i64_S.i64.exit
-	movq	%rdi, %rax
-	popq	%rbp
-	retq
-LBB48_4:                                ## %then0.i.i3
-	ud2
-
-	.globl	__Foo.printA_S.b
-	.align	4, 0x90
-__Foo.printA_S.b:                       ## @_Foo.printA_S.b
-## BB#0:                                ## %entry
-	pushq	%rbp
-	movq	%rsp, %rbp
-	testb	$1, %cl
-	je	LBB49_1
-## BB#2:                                ## %then0
-	popq	%rbp
-	jmp	__$print_i64            ## TAILCALL
-LBB49_1:                                ## %cont
-	popq	%rbp
-	retq
-
-	.globl	__add_S.i64_S.i64
-	.align	4, 0x90
-__add_S.i64_S.i64:                      ## @_add_S.i64_S.i64
-## BB#0:                                ## %entry
-	pushq	%rbp
-	movq	%rsp, %rbp
-	addq	%rsi, %rdi
-	jo	LBB50_1
-## BB#2:                                ## %_+_S.i64_S.i64.exit
-	movq	%rdi, %rax
-	popq	%rbp
-	retq
-LBB50_1:                                ## %then0.i.i
+LBB46_4:                                ## %then0.i.i
 	ud2
 
 	.section	__TEXT,__cstring,cstring_literals
