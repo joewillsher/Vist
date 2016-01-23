@@ -33,13 +33,13 @@ extension StructType {
     }
     
     /// Initialises a builtin type from list of valuerefs
-    func initialiseWithBuiltin(val: LLVMValueRef..., module: LLVMModuleRef, builder: LLVMBuilderRef) -> LLVMValueRef {
+    func initialiseWithBuiltin(val: LLVMValueRef..., module: LLVMModuleRef, builder: LLVMBuilderRef, irName: String? = nil) -> LLVMValueRef {
         let initName = name.mangle(FnType(params: members.map { $0.1 }, returns: BuiltinType.Void/*we con’t care what this is, its not used in mangling*/))
         let initialiser = LLVMGetNamedFunction(module, initName)
         guard initialiser != nil else { fatalError("No initialiser for \(name)") }
         let args = val.ptr()
         defer { args.dealloc(members.count) }
-        return LLVMBuildCall(builder, initialiser, args, 1, "")
+        return LLVMBuildCall(builder, initialiser, args, 1, irName ?? "")
     }
     
 }

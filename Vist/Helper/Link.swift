@@ -26,6 +26,19 @@ func linkModule(inout module: LLVMModuleRef, withFile file: String) {
     
     LLVMGetBitcodeModule(buffer.memory, &helperModule, str)
     
+//    var f = LLVMGetFirstFunction(helperModule)
+//    
+//    while f != nil {
+//        
+//        let n = String.fromCString(LLVMGetValueName(f))
+//        print(n)
+//        LLVMSetValueName(f, <#T##Name: UnsafePointer<Int8>##UnsafePointer<Int8>#>)
+//
+//        f = LLVMGetNextFunction(f)
+//
+//    }
+//    
+    
     LLVMLinkModules(module, helperModule, LLVMLinkerDestroySource, str)
     
     

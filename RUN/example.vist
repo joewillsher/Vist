@@ -24,7 +24,6 @@ print (add 1 (f.sumTimes 1))
 */
 
 
-for x in 1 ... 1000 do
-    print x * 2
-
+for x in 1 ... 1000000 do
+    if x % 2 == 0 do print x * 2
 

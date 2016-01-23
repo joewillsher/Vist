@@ -211,20 +211,20 @@ declare void @llvm.trap() #4
 define void @_assert_S.b({ i1 } %"$0") #2 {
 entry:
   %value = extractvalue { i1 } %"$0", 0
-  br i1 %value, label %then0, label %cont0
+  br i1 %value, label %then.0, label %cont.0
 
-cont:                                             ; preds = %else1, %then0
+cont.stmt:                                        ; preds = %else.1, %then.0
   ret void
 
-cont0:                                            ; preds = %entry
-  br label %else1
+cont.0:                                           ; preds = %entry
+  br label %else.1
 
-then0:                                            ; preds = %entry
-  br label %cont
+then.0:                                           ; preds = %entry
+  br label %cont.stmt
 
-else1:                                            ; preds = %cont0
+else.1:                                           ; preds = %cont.0
   call void @llvm.trap()
-  br label %cont
+  br label %cont.stmt
 }
 
 ; Function Attrs: alwaysinline
@@ -232,14 +232,14 @@ define void @_condFail_b(i1 %"$0") #2 {
 entry:
   %Bool_res = call { i1 } @_Bool_b(i1 %"$0")
   %value = extractvalue { i1 } %Bool_res, 0
-  br i1 %value, label %then0, label %cont
+  br i1 %value, label %then.0, label %cont.stmt
 
-cont:                                             ; preds = %then0, %entry
+cont.stmt:                                        ; preds = %then.0, %entry
   ret void
 
-then0:                                            ; preds = %entry
+then.0:                                           ; preds = %entry
   call void @llvm.trap()
-  br label %cont
+  br label %cont.stmt
 }
 
 ; Function Attrs: alwaysinline
@@ -523,34 +523,51 @@ entry:
 define { { i64 }, { i64 } } @"_..<_S.i64_S.i64"({ i64 } %"$0", { i64 } %"$1") #2 {
 entry:
   %0 = call { i64 } @_Int_i64(i64 1)
-  %-_res = call { i64 } @_-_S.i64_S.i64({ i64 } %"$1", { i64 } %0)
-  %Range_res = call { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 } %"$0", { i64 } %-_res)
+  %-.res = call { i64 } @_-_S.i64_S.i64({ i64 } %"$1", { i64 } %0)
+  %Range_res = call { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 } %"$0", { i64 } %-.res)
   ret { { i64 }, { i64 } } %Range_res
 }
 
 define i64 @main() {
 entry:
   %0 = call { i64 } @_Int_i64(i64 1)
-  %1 = call { i64 } @_Int_i64(i64 1000)
+  %1 = call { i64 } @_Int_i64(i64 1000000)
   %....res = call { { i64 }, { i64 } } @_..._S.i64_S.i64({ i64 } %0, { i64 } %1)
   %start = extractvalue { { i64 }, { i64 } } %....res, 0
+  %start.value = extractvalue { i64 } %start, 0
   %end = extractvalue { { i64 }, { i64 } } %....res, 1
   %end.value = extractvalue { i64 } %end, 0
+  br label %loop.header
+
+loop.header:                                      ; preds = %loop.latch, %entry
+  %loop.count.x = phi i64 [ %start.value, %entry ], [ %next.x, %loop.latch ]
+  %next.x = add i64 1, %loop.count.x
+  %x = call { i64 } @_Int_i64(i64 %loop.count.x)
   br label %loop.body
+  %2 = call { i64 } @_Int_i64(i64 2)
+  %"%.res" = call { i64 } @"_%_S.i64_S.i64"({ i64 } %x, { i64 } %2)
+  %3 = call { i64 } @_Int_i64(i64 0)
+  %"==.res" = call { i1 } @"_==_S.i64_S.i64"({ i64 } %"%.res", { i64 } %3)
+  %value = extractvalue { i1 } %"==.res", 0
+  br i1 %value, label %then.0, label %cont.stmt
 
-loop.body:                                        ; preds = %loop.body, %entry
-  %loop.count.x = phi { i64 } [ %start, %entry ], [ %2, %loop.body ]
-  %x.value = extractvalue { i64 } %loop.count.x, 0
-  %next.x = add i64 1, %x.value
-  %2 = call { i64 } @_Int_i64(i64 %next.x)
-  %3 = call { i64 } @_Int_i64(i64 2)
-  %"*.res" = call { i64 } @"_*_S.i64_S.i64"({ i64 } %loop.count.x, { i64 } %3)
-  call void @_print_S.i64({ i64 } %"*.res")
+loop.body:                                        ; preds = %loop.header
+
+loop.latch:                                       ; preds = %cont.stmt
   %loop.repeat.test = icmp sle i64 %next.x, %end.value
-  br i1 %loop.repeat.test, label %loop.body, label %loop.exit
+  br i1 %loop.repeat.test, label %loop.header, label %loop.exit
 
-loop.exit:                                        ; preds = %loop.body
+loop.exit:                                        ; preds = %loop.latch
   ret i64 0
+
+cont.stmt:                                        ; preds = %loop.header, %then.0
+  br label %loop.latch
+
+then.0:                                           ; preds = %loop.header
+  %4 = call { i64 } @_Int_i64(i64 2)
+  %"*.res" = call { i64 } @"_*_S.i64_S.i64"({ i64 } %x, { i64 } %4)
+  call void @_print_S.i64({ i64 } %"*.res")
+  br label %cont.stmt
 }
 
 attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

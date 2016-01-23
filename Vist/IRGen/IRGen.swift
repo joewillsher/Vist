@@ -711,71 +711,104 @@ private extension ElseIfBlockStmt {
 
 extension ForInLoopStmt : IRGenerator {
     
-//    ; ~~ENTRY~~
-//
-//    br label %loop.body
-//    
-//    loop.body:                                        ; preds = %loop.body, %entry
-//    %loop.count.x = phi { i64 }   [ { i64 1 }, %entry ],
-//                                  [ %.fca.0.insert.i, %loop.body ]
-//    %x.value = extractvalue { i64 } %loop.count.x, 0
-//    %next.x = add i64 %x.value, 1
-//    %.fca.0.insert.i = insertvalue { i64 } undef, i64 %next.x, 0
-//
-//    ; ~~BODY~~
-//
-//    %loop.repeat.test = icmp sgt i64 %next.x, 1000
-//    br i1 %loop.repeat.test, label %loop.exit, label %loop.body
-//    
-//    loop.exit:                                        ; preds = %loop.body
-//
-//    ; ~~EXIT~~
+    //    ; ~~ENTRY~~
+    //
+    //    br label %loop.body
+    //
+    //    loop.body:                                        ; preds = %loop.body, %entry
+    //    %loop.count.x = phi { i64 }   [ { i64 1 }, %entry ],
+    //                                  [ %.fca.0.insert.i, %loop.body ]
+    //    %x.value = extractvalue { i64 } %loop.count.x, 0
+    //    %next.x = add i64 %x.value, 1
+    //    %.fca.0.insert.i = insertvalue { i64 } undef, i64 %next.x, 0
+    //
+    //    ; ~~BODY~~
+    //
+    //    %loop.repeat.test = icmp sgt i64 %next.x, 1000
+    //    br i1 %loop.repeat.test, label %loop.exit, label %loop.body
+    //
+    //    loop.exit:                                        ; preds = %loop.body
+    //
+    //    ; ~~EXIT~~
     
+    
+    //    ; ENTRY
+    //    br label %loop.header
+    //
+    // loop.header:                                       ; preds = %loop.latch, %entry
+    //    %loop.count.x = phi i64   [ i64 %start.value, %entry ],
+    //                              [ %next.x, %loop.latch ]
+    //    %x = insertvalue { i64 } undef, i64 %loop.count.x, 0
+    //
+    // loop.body:                                         ; preds = %loop.header
+    //    ; BODY...
+    //    br label %loop.latch
+    //
+    // loop.latch:                                        ; preds = %loop.body
+    //    %next.x = add i64 %loop.count.x, 1
+    //    %loop.repeat.test = icmp sgt i64 %next.x, i64 %end.value
+    //    br i1 %loop.repeat.test, label %loop.exit, label %loop.header
+    //
+    // loop.exit:                                         ; preds = %loop.body
+    //
+    //    ; EXIT
+
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
         // generate loop and termination blocks
-        let loop = LLVMAppendBasicBlock(stackFrame.function, "loop.body")
-        let afterLoop = LLVMAppendBasicBlock(stackFrame.function, "loop.exit")
+        let loopHeader = LLVMAppendBasicBlock(stackFrame.function, "loop.header")
+        let loopBody =   LLVMAppendBasicBlock(stackFrame.function, "loop.body")
+        let loopLatch =  LLVMAppendBasicBlock(stackFrame.function, "loop.latch")
+        let afterLoop =  LLVMAppendBasicBlock(stackFrame.function, "loop.exit")
         
         let rangeIterator = try iterator.nodeCodeGen(stackFrame)
         
-        let start = try rangeIterator.load("start", type: iterator._type, builder: builder, irName: "start")
-        let endValue = try rangeIterator.load("end", type: iterator._type, builder: builder, irName: "end").load("value", type: stackFrame.type("Int"), builder: builder, irName: "end.value")
+        let startValue =     try rangeIterator
+            .load("start", type: iterator._type,         builder: builder, irName: "start")
+            .load("value", type: stackFrame.type("Int"), builder: builder, irName: "start.value")
+        let endValue =  try rangeIterator
+            .load("end",   type: iterator._type,         builder: builder, irName: "end")
+            .load("value", type: stackFrame.type("Int"), builder: builder, irName: "end.value")
         
         // move into loop block
-        LLVMBuildBr(builder, loop)
-        LLVMPositionBuilderAtEnd(builder, loop)
+        LLVMBuildBr(builder, loopHeader)
+        LLVMPositionBuilderAtEnd(builder, loopHeader)
         
         let stdIntType = try stackFrame.type("Int")
+        let intType = BuiltinType.Int(size: 64)
         
         // define variable phi node
-        let name = binded.name ?? ""
-        let loopCount = LLVMBuildPhi(builder, stdIntType.ir(), "loop.count.\(name)")
+        let name = binded.name
+        let loopCount = LLVMBuildPhi(builder, intType.ir(), "loop.count.\(name)")
         
         // add incoming value to phi node
-        let num1 = [start].ptr(), incoming1 = [stackFrame.block].ptr()
+        let num1 = [startValue].ptr(), incoming1 = [stackFrame.block].ptr()
         defer { num1.dealloc(1); incoming1.dealloc(1) }
         LLVMAddIncoming(loopCount, num1, incoming1, 1)
         
         // iterate and add phi incoming
         let one = LLVMConstInt(LLVMInt64Type(), UInt64(1), LLVMBool(false))
-        let value = try loopCount.load("value", type: stdIntType, builder: builder, irName: "\(name).value")
-        let next = LLVMBuildAdd(builder, one, value, "next.\(name)")
-        
-        // initialise next i value with the iterated num
-        let nextInt = stdIntType.initialiseWithBuiltin(next, module: module, builder: builder)
+        let next = LLVMBuildAdd(builder, one, loopCount, "next.\(name)")
         
         // gen the IR for the inner block
-        let lv = StackVariable(val: loopCount, builder: builder)
-        let loopStackFrame = StackFrame(block: loop, vars: [name: lv], function: stackFrame.function, parentStackFrame: stackFrame)
+        let loopCountInt = stdIntType.initialiseWithBuiltin(loopCount, module: module, builder: builder, irName: name)
+        let loopVariable = StackVariable(val: loopCountInt, builder: builder)
+        let loopStackFrame = StackFrame(block: loopHeader, vars: [name: loopVariable], function: stackFrame.function, parentStackFrame: stackFrame)
+        
+        // Generate loop body
+        LLVMBuildBr(builder, loopBody)
+        LLVMPositionBuilderAtEnd(builder, loopBody)
         try block.bbGenInline(stackFrame: loopStackFrame)
+        
+        LLVMBuildBr(builder, loopLatch)
+        LLVMPositionBuilderAtEnd(builder, loopLatch)
         
         // conditional break
         let comp = LLVMBuildICmp(builder, LLVMIntSLE, next, endValue, "loop.repeat.test")
-        LLVMBuildCondBr(builder, comp, loop, afterLoop)
+        LLVMBuildCondBr(builder, comp, loopHeader, afterLoop)
         
         // move back to loop / end loop
-        let num2 = [nextInt].ptr(), incoming2 = [loopStackFrame.block].ptr()
+        let num2 = [next].ptr(), incoming2 = [loopLatch].ptr()
         defer { num2.dealloc(1); incoming2.dealloc(1) }
         LLVMAddIncoming(loopCount, num2, incoming2, 1)
         

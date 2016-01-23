@@ -10,8 +10,6 @@ To use, install the following with homebrew
 ``` 
 brew update
 brew install llvm
-brew install llvm36
-brew install homebrew/versions/llvm-gcc28
 ``` 
 
 Then clone this repo and run the Xcode project to build the compiler binary.

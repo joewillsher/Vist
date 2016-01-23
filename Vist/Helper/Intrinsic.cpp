@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-#include "Intrinsic.h"
+#include "Intrinsic.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>

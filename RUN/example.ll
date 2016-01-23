@@ -483,26 +483,24 @@ _-_S.i64_S.i64.exit:                              ; preds = %entry
 ; Function Attrs: nounwind
 define i64 @main() #7 {
 entry:
-  br label %loop.body
+  br label %loop.header
 
-loop.body:                                        ; preds = %"_*_S.i64_S.i64.exit", %entry
-  %loop.count.x = phi { i64 } [ { i64 1 }, %entry ], [ %.fca.0.insert.i, %"_*_S.i64_S.i64.exit" ]
-  %x.value = extractvalue { i64 } %loop.count.x, 0
-  %next.x = add i64 %x.value, 1
-  %mul_res.i = tail call { i64, i1 } @llvm.smul.with.overflow.i64(i64 %x.value, i64 2) #7
+loop.header:                                      ; preds = %"_*_S.i64_S.i64.exit", %entry
+  %loop.count.x = phi i64 [ 1, %entry ], [ %next.x, %"_*_S.i64_S.i64.exit" ]
+  %mul_res.i = tail call { i64, i1 } @llvm.smul.with.overflow.i64(i64 %loop.count.x, i64 2) #7
   %mul_res.fca.1.extract.i = extractvalue { i64, i1 } %mul_res.i, 1
   br i1 %mul_res.fca.1.extract.i, label %then0.i.i, label %"_*_S.i64_S.i64.exit"
 
-then0.i.i:                                        ; preds = %loop.body
+then0.i.i:                                        ; preds = %loop.header
   tail call void @llvm.trap() #7
   unreachable
 
-"_*_S.i64_S.i64.exit":                            ; preds = %loop.body
-  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %next.x, 0
+"_*_S.i64_S.i64.exit":                            ; preds = %loop.header
+  %next.x = add nuw nsw i64 %loop.count.x, 1
   %mul_res.fca.0.extract.i = extractvalue { i64, i1 } %mul_res.i, 0
   tail call void @"_$print_i64"(i64 %mul_res.fca.0.extract.i) #7
-  %loop.repeat.test = icmp sgt i64 %next.x, 1000
-  br i1 %loop.repeat.test, label %loop.exit, label %loop.body
+  %loop.repeat.test = icmp sgt i64 %loop.count.x, 999999
+  br i1 %loop.repeat.test, label %loop.exit, label %loop.header
 
 loop.exit:                                        ; preds = %"_*_S.i64_S.i64.exit"
   ret i64 0

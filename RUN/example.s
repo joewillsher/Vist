@@ -13,10 +13,13 @@ Ltmp1:
 	movq	%rsp, %rbp
 Ltmp2:
 	.cfi_def_cfa_register %rbp
-	movq	%rdi, %rcx
-	leaq	L_.str(%rip), %rdi
-	xorl	%eax, %eax
-	movq	%rcx, %rsi
+	leaq	L_.str(%rip), %rax
+	xorl	%ecx, %ecx
+	movb	%cl, %dl
+	movq	%rdi, -8(%rbp)          ## 8-byte Spill
+	movq	%rax, %rdi
+	movq	-8(%rbp), %rsi          ## 8-byte Reload
+	movb	%dl, %al
 	popq	%rbp
 	jmp	_printf                 ## TAILCALL
 	.cfi_endproc
@@ -34,10 +37,13 @@ Ltmp4:
 	movq	%rsp, %rbp
 Ltmp5:
 	.cfi_def_cfa_register %rbp
-	movl	%edi, %ecx
-	leaq	L_.str1(%rip), %rdi
-	xorl	%eax, %eax
-	movl	%ecx, %esi
+	leaq	L_.str1(%rip), %rax
+	xorl	%ecx, %ecx
+	movb	%cl, %dl
+	movl	%edi, -4(%rbp)          ## 4-byte Spill
+	movq	%rax, %rdi
+	movl	-4(%rbp), %esi          ## 4-byte Reload
+	movb	%dl, %al
 	popq	%rbp
 	jmp	_printf                 ## TAILCALL
 	.cfi_endproc
@@ -94,16 +100,24 @@ Ltmp13:
 	movq	%rsp, %rbp
 Ltmp14:
 	.cfi_def_cfa_register %rbp
-	testb	%dil, %dil
-	je	LBB4_2
-## BB#1:
+	subq	$16, %rsp
+	movb	%dil, %al
+	testb	$1, %al
+	jne	LBB4_1
+	jmp	LBB4_2
+LBB4_1:
 	leaq	L_str1(%rip), %rdi
-	popq	%rbp
-	jmp	_puts                   ## TAILCALL
+	callq	_puts
+	movl	%eax, -4(%rbp)          ## 4-byte Spill
+	jmp	LBB4_3
 LBB4_2:
 	leaq	L_str(%rip), %rdi
+	callq	_puts
+	movl	%eax, -8(%rbp)          ## 4-byte Spill
+LBB4_3:
+	addq	$16, %rsp
 	popq	%rbp
-	jmp	_puts                   ## TAILCALL
+	retq
 	.cfi_endproc
 
 	.globl	__Int_S.i64
@@ -133,6 +147,7 @@ __Int_:                                 ## @_Int_
 	pushq	%rbp
 	movq	%rsp, %rbp
 	xorl	%eax, %eax
+                                        ## kill: RAX<def> EAX<kill>
 	popq	%rbp
 	retq
 
@@ -163,6 +178,8 @@ __Bool_:                                ## @_Bool_
 	pushq	%rbp
 	movq	%rsp, %rbp
 	xorl	%eax, %eax
+	movb	%al, %cl
+	movb	%cl, %al
 	popq	%rbp
 	retq
 
@@ -210,6 +227,8 @@ __print_S.b:                            ## @_print_S.b
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
+	movb	%dil, %al
+	movzbl	%al, %edi
 	andl	$1, %edi
 	popq	%rbp
 	jmp	__$print_b              ## TAILCALL
@@ -237,9 +256,11 @@ __assert_S.b:                           ## @_assert_S.b
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	testb	$1, %dil
-	je	LBB18_2
-## BB#1:                                ## %then0
+	movb	%dil, %al
+	testb	$1, %al
+	jne	LBB18_1
+	jmp	LBB18_2
+LBB18_1:                                ## %then0
 	popq	%rbp
 	retq
 LBB18_2:                                ## %else1
@@ -251,9 +272,11 @@ __condFail_b:                           ## @_condFail_b
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	testb	$1, %dil
+	movb	%dil, %al
+	testb	$1, %al
 	jne	LBB19_2
-## BB#1:                                ## %cont
+	jmp	LBB19_1
+LBB19_1:                                ## %cont
 	popq	%rbp
 	retq
 LBB19_2:                                ## %then0
@@ -266,13 +289,17 @@ LBB19_2:                                ## %then0
 	pushq	%rbp
 	movq	%rsp, %rbp
 	addq	%rsi, %rdi
+	seto	%al
+	movq	%rdi, -8(%rbp)          ## 8-byte Spill
+	movb	%al, -9(%rbp)           ## 1-byte Spill
 	jo	LBB20_1
-## BB#2:                                ## %_condFail_b.exit
-	movq	%rdi, %rax
-	popq	%rbp
-	retq
+	jmp	LBB20_2
 LBB20_1:                                ## %then0.i
 	ud2
+LBB20_2:                                ## %_condFail_b.exit
+	movq	-8(%rbp), %rax          ## 8-byte Reload
+	popq	%rbp
+	retq
 
 	.globl	"__-_S.i64_S.i64"
 	.align	4, 0x90
@@ -281,13 +308,17 @@ LBB20_1:                                ## %then0.i
 	pushq	%rbp
 	movq	%rsp, %rbp
 	subq	%rsi, %rdi
+	seto	%al
+	movq	%rdi, -8(%rbp)          ## 8-byte Spill
+	movb	%al, -9(%rbp)           ## 1-byte Spill
 	jo	LBB21_1
-## BB#2:                                ## %_condFail_b.exit
-	movq	%rdi, %rax
-	popq	%rbp
-	retq
+	jmp	LBB21_2
 LBB21_1:                                ## %then0.i
 	ud2
+LBB21_2:                                ## %_condFail_b.exit
+	movq	-8(%rbp), %rax          ## 8-byte Reload
+	popq	%rbp
+	retq
 
 	.globl	"__*_S.i64_S.i64"
 	.align	4, 0x90
@@ -296,13 +327,17 @@ LBB21_1:                                ## %then0.i
 	pushq	%rbp
 	movq	%rsp, %rbp
 	imulq	%rsi, %rdi
+	seto	%al
+	movq	%rdi, -8(%rbp)          ## 8-byte Spill
+	movb	%al, -9(%rbp)           ## 1-byte Spill
 	jo	LBB22_1
-## BB#2:                                ## %_condFail_b.exit
-	movq	%rdi, %rax
-	popq	%rbp
-	retq
+	jmp	LBB22_2
 LBB22_1:                                ## %then0.i
 	ud2
+LBB22_2:                                ## %_condFail_b.exit
+	movq	-8(%rbp), %rax          ## 8-byte Reload
+	popq	%rbp
+	retq
 
 	.globl	"__/_S.i64_S.i64"
 	.align	4, 0x90
@@ -310,7 +345,8 @@ LBB22_1:                                ## %then0.i
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	xorl	%edx, %edx
+	xorl	%eax, %eax
+	movl	%eax, %edx
 	movq	%rdi, %rax
 	divq	%rsi
 	popq	%rbp
@@ -322,7 +358,8 @@ LBB22_1:                                ## %then0.i
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	xorl	%edx, %edx
+	xorl	%eax, %eax
+	movl	%eax, %edx
 	movq	%rdi, %rax
 	divq	%rsi
 	movq	%rdx, %rax
@@ -335,8 +372,9 @@ LBB22_1:                                ## %then0.i
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	cmpq	%rsi, %rdi
+	subq	%rsi, %rdi
 	setl	%al
+	movq	%rdi, -8(%rbp)          ## 8-byte Spill
 	popq	%rbp
 	retq
 
@@ -346,8 +384,9 @@ LBB22_1:                                ## %then0.i
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	cmpq	%rsi, %rdi
+	subq	%rsi, %rdi
 	setle	%al
+	movq	%rdi, -8(%rbp)          ## 8-byte Spill
 	popq	%rbp
 	retq
 
@@ -357,8 +396,9 @@ LBB22_1:                                ## %then0.i
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	cmpq	%rsi, %rdi
+	subq	%rsi, %rdi
 	setg	%al
+	movq	%rdi, -8(%rbp)          ## 8-byte Spill
 	popq	%rbp
 	retq
 
@@ -368,8 +408,9 @@ LBB22_1:                                ## %then0.i
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	cmpq	%rsi, %rdi
+	subq	%rsi, %rdi
 	setge	%al
+	movq	%rdi, -8(%rbp)          ## 8-byte Spill
 	popq	%rbp
 	retq
 
@@ -379,8 +420,9 @@ LBB22_1:                                ## %then0.i
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	cmpq	%rsi, %rdi
+	subq	%rsi, %rdi
 	sete	%al
+	movq	%rdi, -8(%rbp)          ## 8-byte Spill
 	popq	%rbp
 	retq
 
@@ -390,8 +432,9 @@ LBB22_1:                                ## %then0.i
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	cmpq	%rsi, %rdi
+	subq	%rsi, %rdi
 	setne	%al
+	movq	%rdi, -8(%rbp)          ## 8-byte Spill
 	popq	%rbp
 	retq
 
@@ -401,8 +444,10 @@ LBB22_1:                                ## %then0.i
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	andl	%esi, %edi
-	movb	%dil, %al
+	movb	%sil, %al
+	movb	%dil, %cl
+	andb	%al, %cl
+	movb	%cl, %al
 	popq	%rbp
 	retq
 
@@ -412,8 +457,10 @@ LBB22_1:                                ## %then0.i
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	orl	%esi, %edi
-	movb	%dil, %al
+	movb	%sil, %al
+	movb	%dil, %cl
+	orb	%al, %cl
+	movb	%cl, %al
 	popq	%rbp
 	retq
 
@@ -518,8 +565,10 @@ LBB22_1:                                ## %then0.i
 	movq	%rsp, %rbp
 	cmpeqsd	%xmm1, %xmm0
 	movd	%xmm0, %rax
-	andl	$1, %eax
-                                        ## kill: AL<def> AL<kill> RAX<kill>
+	movl	%eax, %ecx
+	andl	$1, %ecx
+	movb	%cl, %dl
+	movb	%dl, %al
 	popq	%rbp
 	retq
 
@@ -552,14 +601,19 @@ __..._S.i64_S.i64:                      ## @_..._S.i64_S.i64
 	pushq	%rbp
 	movq	%rsp, %rbp
 	decq	%rsi
+	seto	%al
+	movq	%rdi, -8(%rbp)          ## 8-byte Spill
+	movq	%rsi, -16(%rbp)         ## 8-byte Spill
+	movb	%al, -17(%rbp)          ## 1-byte Spill
 	jo	LBB45_1
-## BB#2:                                ## %_-_S.i64_S.i64.exit
-	movq	%rdi, %rax
-	movq	%rsi, %rdx
-	popq	%rbp
-	retq
+	jmp	LBB45_2
 LBB45_1:                                ## %then0.i.i
 	ud2
+LBB45_2:                                ## %_-_S.i64_S.i64.exit
+	movq	-8(%rbp), %rax          ## 8-byte Reload
+	movq	-16(%rbp), %rdx         ## 8-byte Reload
+	popq	%rbp
+	retq
 
 	.globl	_main
 	.align	4, 0x90
@@ -567,29 +621,44 @@ _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	pushq	%rbx
-	pushq	%rax
-	movl	$1, %ebx
-	.align	4, 0x90
-LBB46_1:                                ## %loop.body
+	subq	$48, %rsp
+	movl	$1, %eax
+	movl	%eax, %ecx
+	movq	%rcx, -8(%rbp)          ## 8-byte Spill
+	jmp	LBB46_1
+LBB46_1:                                ## %loop.header
                                         ## =>This Inner Loop Header: Depth=1
-	movq	%rbx, %rdi
-	addq	%rdi, %rdi
-	jo	LBB46_4
-## BB#2:                                ## %_*_S.i64_S.i64.exit
+	movq	-8(%rbp), %rax          ## 8-byte Reload
+	movl	$2, %ecx
+	movl	%ecx, %edx
+	movq	%rax, %rsi
+	imulq	%rdx, %rsi
+	seto	%dil
+	movq	%rax, -16(%rbp)         ## 8-byte Spill
+	movq	%rsi, -24(%rbp)         ## 8-byte Spill
+	movb	%dil, -25(%rbp)         ## 1-byte Spill
+	jo	LBB46_2
+	jmp	LBB46_3
+LBB46_2:                                ## %then0.i.i
+	ud2
+LBB46_3:                                ## %_*_S.i64_S.i64.exit
                                         ##   in Loop: Header=BB46_1 Depth=1
-	incq	%rbx
+	movq	-16(%rbp), %rax         ## 8-byte Reload
+	addq	$1, %rax
+	movq	-24(%rbp), %rdi         ## 8-byte Reload
+	movq	%rax, -40(%rbp)         ## 8-byte Spill
 	callq	__$print_i64
-	cmpq	$1001, %rbx             ## imm = 0x3E9
-	jl	LBB46_1
-## BB#3:                                ## %loop.exit
+	movq	-16(%rbp), %rax         ## 8-byte Reload
+	cmpq	$999999, %rax           ## imm = 0xF423F
+	movq	-40(%rbp), %rdi         ## 8-byte Reload
+	movq	%rdi, -8(%rbp)          ## 8-byte Spill
+	jle	LBB46_1
+## BB#4:                                ## %loop.exit
 	xorl	%eax, %eax
-	addq	$8, %rsp
-	popq	%rbx
+                                        ## kill: RAX<def> EAX<kill>
+	addq	$48, %rsp
 	popq	%rbp
 	retq
-LBB46_4:                                ## %then0.i.i
-	ud2
 
 	.section	__TEXT,__cstring,cstring_literals
 L_.str:                                 ## @.str

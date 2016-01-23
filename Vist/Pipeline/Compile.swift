@@ -8,6 +8,10 @@
 
 import Foundation
 
+private let llvmDirectory = "/usr/local/Cellar/llvm/3.6.2/bin"
+private let stdLibDirectory = "\(PROJECT_DIR)/Vist/stdlib"
+private let runtimeDirectory = "\(PROJECT_DIR)/Vist/Runtime"
+
 
 public func compileDocuments(fileNames: [String],
     verbose: Bool = true,
@@ -22,8 +26,6 @@ public func compileDocuments(fileNames: [String],
     isStdLib: Bool = false)
     throws {
         
-        let stdLibDirectory = "\(PROJECT_DIR)/Vist/stdlib"
-        let runtimeDirectory = "\(PROJECT_DIR)/Vist/Runtime"
         let currentDirectory = isStdLib ? stdLibDirectory : NSTask().currentDirectoryPath
         
         var head: AST? = nil
@@ -126,13 +128,13 @@ public func compileDocuments(fileNames: [String],
         if optim && !isStdLib {
             
             let flags = ["-O3"]
-//            let flags = ["-inline"]
-//            let flags = ["-mem2reg"]
+            //            let flags = ["-inline"]
+            //            let flags = ["-mem2reg"]
             
             // Optimiser
             let optimTask = NSTask()
             optimTask.currentDirectoryPath = currentDirectory
-            optimTask.launchPath = "/usr/local/Cellar/llvm/3.6.2/bin/opt"
+            optimTask.launchPath = "\(llvmDirectory)/opt"
             optimTask.arguments = ["-S"] + flags + ["-o", "\(file).ll", "\(file)_.ll"]
             
             optimTask.launch()
@@ -168,8 +170,8 @@ public func compileDocuments(fileNames: [String],
             /// compiles the LLVM IR to assembly
             let compileIRtoASMTask = NSTask()
             compileIRtoASMTask.currentDirectoryPath = currentDirectory
-            compileIRtoASMTask.launchPath = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/bin/llc"
-            compileIRtoASMTask.arguments = ["\(file).ll"]
+            compileIRtoASMTask.launchPath = "/usr/bin/clang"
+            compileIRtoASMTask.arguments = ["-S", "\(file).ll"]
             
             compileIRtoASMTask.launch()
             compileIRtoASMTask.waitUntilExit()
@@ -184,14 +186,14 @@ public func compileDocuments(fileNames: [String],
         if generateLibrary || isStdLib {
             
             // for o & dylib gen
-//            let objFileTask = NSTask()
-//            objFileTask.currentDirectoryPath = currentDirectory
-//            objFileTask.launchPath = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/bin/clang"
-//            objFileTask.arguments = ["-c", "\(file).ll"]
-//            
-//            objFileTask.launch()
-//            objFileTask.waitUntilExit()
-//            
+            let objFileTask = NSTask()
+            objFileTask.currentDirectoryPath = currentDirectory
+            objFileTask.launchPath = "/usr/bin/clang"
+            objFileTask.arguments = ["-c", "\(file).ll"]
+            
+            objFileTask.launch()
+            objFileTask.waitUntilExit()
+            
 //            let libGen = NSTask()
 //            libGen.currentDirectoryPath = currentDirectory
 //            libGen.launchPath = "/usr/bin/libtool"
@@ -214,7 +216,7 @@ public func compileDocuments(fileNames: [String],
             
             let bitcodeTask = NSTask()
             bitcodeTask.currentDirectoryPath = currentDirectory
-            bitcodeTask.launchPath = "/usr/local/Cellar/llvm/3.6.2/bin/llvm-as"
+            bitcodeTask.launchPath = "\(llvmDirectory)/llvm-as"
             bitcodeTask.arguments = ["\(file).ll", "-o", "\(file).bc"]
             
             bitcodeTask.launch()
@@ -222,10 +224,16 @@ public func compileDocuments(fileNames: [String],
         }
         else {
             
+//            ~/desktop $ clang -c a.ll
+//            ~/desktop $ clang -c b.ll
+//            ~/desktop $ clang -o c a.o b.o
+//            ~/desktop $ ./c
+//            meme
+
             /// Compile IR Code task
             let compileTask = NSTask()
             compileTask.currentDirectoryPath = currentDirectory
-            compileTask.launchPath = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/bin/clang"
+            compileTask.launchPath = "/usr/bin/clang"
             compileTask.arguments = ["\(file).ll", "-o", "\(file)"]
             
             compileTask.launch()
@@ -300,7 +308,7 @@ func buildRuntime() {
     /// Turn that LLVM IR code into LLVM bytecode
     let assembleTask = NSTask()
     assembleTask.currentDirectoryPath = runtimeDirectory
-    assembleTask.launchPath = "/usr/local/Cellar/llvm/3.6.2/bin/llvm-as"
+    assembleTask.launchPath = "\(llvmDirectory)/llvm-as"
     assembleTask.arguments = ["runtime.ll"]
     
     assembleTask.launch()

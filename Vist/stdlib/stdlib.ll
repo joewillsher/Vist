@@ -211,20 +211,20 @@ declare void @llvm.trap() #4
 define void @_assert_S.b({ i1 } %"$0") #2 {
 entry:
   %value = extractvalue { i1 } %"$0", 0
-  br i1 %value, label %then0, label %cont0
+  br i1 %value, label %then.0, label %cont.0
 
-cont:                                             ; preds = %else1, %then0
+cont.stmt:                                        ; preds = %else.1, %then.0
   ret void
 
-cont0:                                            ; preds = %entry
-  br label %else1
+cont.0:                                           ; preds = %entry
+  br label %else.1
 
-then0:                                            ; preds = %entry
-  br label %cont
+then.0:                                           ; preds = %entry
+  br label %cont.stmt
 
-else1:                                            ; preds = %cont0
+else.1:                                           ; preds = %cont.0
   call void @llvm.trap()
-  br label %cont
+  br label %cont.stmt
 }
 
 ; Function Attrs: alwaysinline
@@ -232,14 +232,14 @@ define void @_condFail_b(i1 %"$0") #2 {
 entry:
   %Bool_res = call { i1 } @_Bool_b(i1 %"$0")
   %value = extractvalue { i1 } %Bool_res, 0
-  br i1 %value, label %then0, label %cont
+  br i1 %value, label %then.0, label %cont.stmt
 
-cont:                                             ; preds = %entry, %then0
+cont.stmt:                                        ; preds = %entry, %then.0
   ret void
 
-then0:                                            ; preds = %entry
+then.0:                                           ; preds = %entry
   call void @llvm.trap()
-  br label %cont
+  br label %cont.stmt
 }
 
 ; Function Attrs: alwaysinline
@@ -523,8 +523,8 @@ entry:
 define { { i64 }, { i64 } } @"_..<_S.i64_S.i64"({ i64 } %"$0", { i64 } %"$1") #2 {
 entry:
   %0 = call { i64 } @_Int_i64(i64 1)
-  %-_res = call { i64 } @_-_S.i64_S.i64({ i64 } %"$1", { i64 } %0)
-  %Range_res = call { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 } %"$0", { i64 } %-_res)
+  %-.res = call { i64 } @_-_S.i64_S.i64({ i64 } %"$1", { i64 } %0)
+  %Range_res = call { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 } %"$0", { i64 } %-.res)
   ret { { i64 }, { i64 } } %Range_res
 }
 
