@@ -180,7 +180,7 @@ extension VariableDecl : IRGenerator {
             
             let a = try arr.arrInstance(stackFrame)
             a.allocHead(builder, name: name, mutable: isMutable)
-            stackFrame.addVariable(name, val: a)
+            stackFrame.addVariable(a, named: name)
             
             return a.ptr
         }
@@ -256,7 +256,7 @@ extension VariableDecl : IRGenerator {
             try variable.store(v)
             
             // update stack frame variables
-            stackFrame.addVariable(name, val: variable)
+            stackFrame.addVariable(variable, named: name)
             
             return v
         }
@@ -277,7 +277,7 @@ extension MutationExpr : IRGenerator {
             if case let arrayVariable as ArrayVariable = variable, case let arrayExpression as ArrayExpr = value {
                 
                 let newArray = try arrayExpression.arrInstance(stackFrame)
-                arrayVariable.assignFrom(builder, arr: newArray)
+                arrayVariable.assignFrom(newArray, builder: builder)
             }
             else {
                 let new = try value.nodeCodeGen(stackFrame)
@@ -309,7 +309,7 @@ extension MutationExpr : IRGenerator {
             let val = try value.nodeCodeGen(stackFrame)
             
             try variable.store(val, inPropertyNamed: prop.name)
-        
+            
         default:
             break
         }
@@ -330,9 +330,16 @@ extension BinaryExpr : IRGenerator {
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
         let lIR = try lhs.nodeCodeGen(stackFrame), rIR = try rhs.nodeCodeGen(stackFrame)
+        guard let argTypes = [lhs, rhs].stableOptionalMap({ $0._type }) else { fatalError("args not typed") }
         
-        // make function
-        let fn = LLVMGetNamedFunction(module, mangledName)
+        let fn: LLVMValueRef
+        
+        if let fnIR = StdLibFunctions.getFunctionIR(op, args: argTypes, module: module) {
+            fn = fnIR
+        }
+        else {
+            fn = LLVMGetNamedFunction(module, mangledName)
+        }
         
         // arguments
         let argBuffer = [lIR, rIR].ptr()
@@ -367,6 +374,7 @@ extension FunctionCallExpr : IRGenerator {
         
         let argCount = self.args.elements.count
         let args = try self.args.elements.map(codeGenIn(stackFrame))
+        guard let argTypes = self.args.elements.stableOptionalMap({ $0._type }) else { fatalError("args not typed") }
 
         // Lookup
         if let function = builtinBinaryInstruction(name, builder: builder, module: module) {
@@ -378,15 +386,22 @@ extension FunctionCallExpr : IRGenerator {
             return function()
         }
         
-        // make function
-        let fn = LLVMGetNamedFunction(module, mangledName)
+        let fn: LLVMValueRef
+        
+        // if its in the stdlib return it
+        if let f = StdLibFunctions.getFunctionIR(name, args: argTypes, module: module) {
+            fn = f
+        }
+        else {
+            // make function
+            fn = LLVMGetNamedFunction(module, mangledName)
+        }
         
         // arguments
         let argBuffer = args.ptr()
         defer { argBuffer.dealloc(argCount) }
         
-        guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else {
-            throw IRError.WrongFunctionApplication(name) }
+        guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else { throw IRError.WrongFunctionApplication(name) }
         
         let doNotUseName = _type == BuiltinType.Void || _type == BuiltinType.Null || _type == nil
         let n = doNotUseName ? "" : "\(name)_res"
@@ -460,7 +475,7 @@ extension FuncDecl : IRGenerator {
         LLVMPositionBuilderAtEnd(builder, entryBlock)
         
         // Add function type to stack frame
-        stackFrame.addFunctionType(mangledName, val: functionType)
+        stackFrame.addFunctionType(functionType, named: mangledName)
         
         // stack frame internal to function, needs params setting and then the block should be added *inside* the bbGen function
         let functionStackFrame = StackFrame(block: entryBlock, function: function, parentStackFrame: stackFrame)
@@ -480,11 +495,11 @@ extension FuncDecl : IRGenerator {
                 let memTys = t.members.map { ($0.0, $0.1.ir(), $0.2) }
                 
                 let s = ParameterStructVariable(type: ty, val: param, builder: builder, properties: memTys)
-                functionStackFrame.addVariable(name, val: s)
+                functionStackFrame.addVariable(s, named: name)
             }
             else {
                 let s = StackVariable(val: param, builder: builder)
-                functionStackFrame.addVariable(name, val: s)
+                functionStackFrame.addVariable(s, named: name)
             }
         }
         
@@ -497,7 +512,7 @@ extension FuncDecl : IRGenerator {
             let memTys = parentType.members.map { ($0.0, $0.1.ir(), $0.2) }
             
             let s = ParameterStructVariable(type: parentType.ir(), val: param, builder: builder, properties: memTys)
-            functionStackFrame.addVariable("self", val: s)
+            functionStackFrame.addVariable(s, named: "self")
         }
         
         // generate bb for body
@@ -567,7 +582,7 @@ extension ClosureExpr : IRGenerator {
         let entryBlock = LLVMAppendBasicBlock(function, "entry")
         LLVMPositionBuilderAtEnd(builder, entryBlock)
         
-        stackFrame.addFunctionType(name, val: functionType)
+        stackFrame.addFunctionType(functionType, named: name)
         
         let functionStackFrame = StackFrame(function: function, parentStackFrame: stackFrame)
         
@@ -592,7 +607,7 @@ extension ClosureExpr : IRGenerator {
 //            }
 //            else {
                 let s = StackVariable(val: param, builder: builder)
-                functionStackFrame.addVariable(name, val: s)
+                functionStackFrame.addVariable(s, named: name)
 //            }
         }
         
@@ -929,8 +944,9 @@ extension ArraySubscriptExpr : IRGenerator {
 extension StructExpr : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
+        guard let type = self.type else { fatalError("No type") }
         
-        stackFrame.addType(name, val: self._type! as! StructType)
+        stackFrame.addType(type, named: name)
 
         for i in initialisers {
             try i.codeGen(stackFrame)
@@ -973,7 +989,7 @@ extension InitialiserDecl : IRGenerator {
         LLVMPositionBuilderAtEnd(builder, entry)
 
         // Add function type to stack frame
-        stackFrame.addFunctionType(name, val: functionType)
+        stackFrame.addFunctionType(functionType, named: name)
         
         // stack frame internal to initialiser, cannot capture from surrounding scope
         let initStackFrame = StackFrame(function: function, parentStackFrame: nil)
@@ -995,12 +1011,12 @@ extension InitialiserDecl : IRGenerator {
                 let memTys = t.members.map { ($0.0, $0.1.ir(), $0.2) }
                 
                 let s = ParameterStructVariable(type: ty, val: param, builder: builder, properties: memTys)
-                initStackFrame.addVariable(name, val: s)
+                initStackFrame.addVariable(s, named: name)
                 
             }
             else {
                 let s = StackVariable(val: param, builder: builder)
-                initStackFrame.addVariable(name, val: s)
+                initStackFrame.addVariable(s, named: name)
             }
         }
         // 3 ways of passing a struct into a function
@@ -1016,12 +1032,12 @@ extension InitialiserDecl : IRGenerator {
         
         // allocate struct
         let s = MutableStructVariable.alloc(builder, type: parentType.ir(), mutable: true, properties: properties)
-        stackFrame.addVariable(name, val: s)
+        stackFrame.addVariable(s, named: name)
         
         // add struct properties into scope
         for el in parentProperties {
             let p = AssignablePropertyVariable(name: el.name, str: s)
-            initStackFrame.addVariable(el.name, val: p)
+            initStackFrame.addVariable(p, named: el.name)
         }
         
         // add args into scope

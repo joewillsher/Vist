@@ -33,7 +33,7 @@ class ArrayVariable : RuntimeVariable {
         return ptr != nil
     }
     
-    func assignFrom(builder: LLVMBuilderRef, arr: ArrayVariable) {
+    func assignFrom(arr: ArrayVariable, builder: LLVMBuilderRef) {
         
         precondition(elementType == arr.elementType)
         

@@ -25,7 +25,7 @@ final class StdLibExpose {
         var l = Lexer(code: code)
         var p = Parser(tokens: try l.getTokens(), isStdLib: true)
         let a = try p.parse()
-        let s = SemaScope(parent: nil)
+        let s = SemaScope(isStdLib: isStdLib)
         try sema(a, globalScope: s)
         return a
     }
@@ -56,25 +56,25 @@ final class StdLibExpose {
     func astToSemaScope(scope globalScope: SemaScope) {
         guard let ast = ast else { fatalError("Stdlib could not be loaded") }
         
-        let fns = ast.exprs
-            .flatMap { $0 as? FuncDecl }
-            .map { f -> (String, FnType?) in (f.name, f.fnType.type) }
+//        let fns = ast.exprs
+//            .flatMap { $0 as? FuncDecl }
+//            .map { f -> (String, FnType?) in (f.name, f.fnType.type) }
         
         let structs = ast.exprs
             .flatMap { $0 as? StructExpr }
         let tys = structs
             .map { s -> (String, StructType?) in (s.name, s.type) }
-        let methods = structs
-            .flatMap {
-                $0.methods.flatMap { ($0.name, $0.fnType.type) }
-                +
-                $0.initialisers .flatMap { ($0.parent!.name, FnType.returning($0.parent!._type!))
-            }
-        }
-        
-        for (name, t) in fns + methods {
-            globalScope[function: name] = t
-        }
+//        let methods = structs
+//            .flatMap {
+//                $0.methods.flatMap { ($0.name, $0.fnType.type) }
+//                +
+//                $0.initialisers .flatMap { ($0.parent!.name, FnType.returning($0.parent!._type!))
+//            }
+//        }
+//        
+//        for (name, t) in fns + methods {
+//            globalScope[function: name] = t
+//        }
         
         for (name, t) in tys {
             globalScope[type: name] = t
@@ -90,7 +90,7 @@ final class StdLibExpose {
             .map { ($0.name, $0._type as? StructType) }
         
         for (name, t) in tys {
-            if let t = t { frame.addType(name, val: t) }
+            if let t = t { frame.addType(t, named: name) }
         }
         
     }

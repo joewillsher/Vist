@@ -201,13 +201,23 @@ extension BinaryExpr : ExprTypeProvider {
         let args = [lhs, rhs]
         
         guard let params = try args.stableOptionalMap({ try $0.llvmType(scope) }) else { fatalError("params not typed") }
+        let fnType: FnType
         
-        guard let fnType = scope[function: op, paramTypes: params] else {
-            if let f = scope[function: op] { throw SemaError.WrongFunctionApplications(name: op, applied: params, expected: f.params) }
-            throw SemaError.NoFunction(op)
+        if let (mangledName, stdLibType) = StdLibFunctions.getStdLibFunction(op, args: params) where !scope.isStdLib {
+            self.mangledName = mangledName
+            fnType = stdLibType
+            print(stdLibType)
+            
         }
-        
-        self.mangledName = op.mangle(fnType)
+        else {
+            guard let ty = scope[function: op, paramTypes: params]  else {
+                if let f = scope[function: op] { throw SemaError.WrongFunctionApplications(name: op, applied: params, expected: f.params) }
+                throw SemaError.NoFunction(op)
+            }
+            
+            self.mangledName = op.mangle(ty)
+            fnType = ty
+        }
         
         // gen types for objects in call
         for arg in args {
@@ -305,18 +315,31 @@ extension FunctionCallExpr : ExprTypeProvider {
         // get from table
         guard let params = try args.elements.stableOptionalMap({ try $0.llvmType(scope) }) else { fatalError("params not typed") }
         let builtinFn = BuiltinDef.getBuiltinFunction(self.name, args: params)
+        let fnType: FnType
         
-        let _fnType = builtinFn?.1 ?? scope[function: self.name, paramTypes: params]
-        let name = builtinFn?.0 ?? self.name
-        
-        guard let fnType = _fnType  else {
-            if let f = scope[function: name] {
-                throw SemaError.WrongFunctionApplications(name: name, applied: params, expected: f.params)
-            }
-            throw SemaError.NoFunction(name)
+        // if its in the stdlib return it
+        if let (mangledName, type) = StdLibFunctions.getStdLibFunction(self.name, args: params) where !scope.isStdLib {
+            self.mangledName = mangledName
+            fnType = type
+            
         }
-        
-        self.mangledName = name.mangle(fnType)
+        else {
+            
+            let _fnType = builtinFn?.1 ?? scope[function: self.name, paramTypes: params]
+            let name = builtinFn?.0 ?? self.name
+            
+            //!scope.isStdLib
+            
+            guard let ty = _fnType  else {
+                if let f = scope[function: name] {
+                    throw SemaError.WrongFunctionApplications(name: name, applied: params, expected: f.params)
+                }
+                throw SemaError.NoFunction(name)
+            }
+            
+            self.mangledName = name.mangle(ty)
+            fnType = ty
+        }
         
         // gen types for objects in call
         for arg in args.elements {
@@ -400,7 +423,7 @@ extension ClosureExpr : ExprTypeProvider {
         self.type = ty
         
         // inner scope should be nil if we dont want implicit captutring
-        let innerScope = SemaScope(parent: nil, returnType: ty)
+        let innerScope = SemaScope(parent: nil, returnType: ty, isStdLib: scope.isStdLib)
         innerScope.returnType = ty.returns
         
         for (i, t) in ty.params.enumerate() {
@@ -450,7 +473,8 @@ extension ElseIfBlockStmt : StmtTypeProvider {
         
         // get condition type
         let c = try condition?.llvmType(scope)
-        guard c?.isStdBool ?? true else { throw SemaError.NonBooleanCondition }
+        guard c?.isStdBool ?? true else {
+            throw SemaError.NonBooleanCondition }
         
         // gen types for cond block
         for exp in block.exprs {

@@ -23,7 +23,7 @@ struct BuiltinDef {
         "LLVM.i_cmp_gte": (.Int(size: 64), .Bool),
         "LLVM.i_eq": (.Int(size: 64), .Bool),
         "LLVM.i_neq": (.Int(size: 64), .Bool),
-
+        
         
         "LLVM.b_and": (.Bool, .Bool),
         "LLVM.b_or": (.Bool, .Bool),

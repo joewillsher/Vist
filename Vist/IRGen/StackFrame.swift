@@ -24,18 +24,18 @@ final class StackFrame {
         self.parentStackFrame = parentStackFrame
         self.function = function
         
-        functionTypes.forEach(addFunctionType)
-        vars.forEach { addVariable($0.0, val: $0.1) }
-        types.forEach { addType($0.0, val: $0.1) }
+        functionTypes.forEach { addFunctionType($1, named: $0) }
+        vars.forEach { addVariable($1, named: $0) }
+        types.forEach { addType($1, named: $0) }
     }
     
-    func addVariable(name: String, val: RuntimeVariable) {
+    func addVariable(val: RuntimeVariable, named name: String) {
         runtimeVariables[name] = val
     }
-    func addFunctionType(name: String, val: LLVMValueRef) {
+    func addFunctionType(val: LLVMValueRef, named name: String) {
         functionTypes[name] = val
     }
-    func addType(name: String, val: StructType) {
+    func addType(val: StructType, named name: String) {
         types[name] = val
     }
     

@@ -31,7 +31,7 @@ public func compileDocuments(fileNames: [String],
         var head: AST? = nil
         var all: [AST] = []
         
-        let globalScope = SemaScope(parent: nil, returnType: nil)
+        let globalScope = SemaScope(isStdLib: isStdLib)
         
         for (index, fileName) in fileNames.enumerate() {
             
@@ -99,7 +99,7 @@ public func compileDocuments(fileNames: [String],
             linkModule(&module, withFile: "\(runtimeDirectory)/runtime.bc")
         }
         else {
-            linkModule(&module, withFile: "\(stdLibDirectory)/stdlib.bc")
+//            linkModule(&module, withFile: "\(stdLibDirectory)/stdlib.bc")
         }
         
         configModule(module)
@@ -204,6 +204,19 @@ public func compileDocuments(fileNames: [String],
             
             
             
+            
+            // make .o file from .ll
+            // currently the .bc file is being used made and loaded at IRGen time
+            // TODO: make a way to call stdlib functions and add their decls to the module
+            
+            // IDEA to have multiple file compilation:
+            //   - A FunctionPrototype AST object which is added to ast of other files
+            //   - When IRGen'd it adds the function decl to the module
+            //      - Is this how a FnDecl behaves with nil impl already?
+            //   - Also need a way to do this out-of-order so all functions (and types) are defined first
+            
+            
+            
             for f in ["\(file)_.ll", "\(file).bc"] {
                 let rmTask = NSTask()
                 rmTask.currentDirectoryPath = currentDirectory
@@ -228,13 +241,16 @@ public func compileDocuments(fileNames: [String],
 //            ~/desktop $ clang -c b.ll
 //            ~/desktop $ clang -o c a.o b.o
 //            ~/desktop $ ./c
-//            meme
-
+            
+            // make .o file from .ll
+            // link with stdlib.o to make linked.o
+            // compile linked.o
+            
             /// Compile IR Code task
             let compileTask = NSTask()
             compileTask.currentDirectoryPath = currentDirectory
             compileTask.launchPath = "/usr/bin/clang"
-            compileTask.arguments = ["\(file).ll", "-o", "\(file)"]
+            compileTask.arguments = ["-o", "\(file)", "\(stdLibDirectory)/stdlib.o", "\(file).ll"]
             
             compileTask.launch()
             compileTask.waitUntilExit()

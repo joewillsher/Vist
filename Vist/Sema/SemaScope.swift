@@ -11,6 +11,7 @@ final class SemaScope {
     private var variables: [String: Ty]
     private var functions: [String: FnType]
     private var types: [String: StructType]
+    let isStdLib: Bool
     var returnType: Ty?
     let parent: SemaScope?
     
@@ -55,14 +56,32 @@ final class SemaScope {
         }
     }
     
-    init(parent: SemaScope?, returnType: Ty? = BuiltinType.Void) {
+    init(parent: SemaScope, returnType: Ty? = BuiltinType.Void) {
         self.parent = parent
         self.returnType = returnType
         self.variables = [:]
         self.functions = [:]
         self.types = [:]
+        self.isStdLib = parent.isStdLib
     }
-    
+    init(parent: SemaScope?, returnType: Ty? = BuiltinType.Void, isStdLib: Bool) {
+        self.parent = parent
+        self.returnType = returnType
+        self.variables = [:]
+        self.functions = [:]
+        self.types = [:]
+        self.isStdLib = isStdLib
+    }
+
+    init(isStdLib: Bool) {
+        self.parent = nil
+        self.returnType = BuiltinType.Void
+        self.variables = [:]
+        self.functions = [:]
+        self.types = [:]
+        self.isStdLib = isStdLib
+    }
+
     /// Types including parents’ types
     var allTypes: LazyMapCollection<Dictionary<String, StructType>, StructType> {
         return types + parent?.types
