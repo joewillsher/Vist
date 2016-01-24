@@ -40,16 +40,11 @@ func interFileInterfaceASTGen(ast: AST) throws -> AST {
             interface.exprs.append(e)
         }
         else if case let f as FuncDecl = exp {
-            
-//            let fun = FuncDecl(name: f.name, type: f.fnType, impl: f.impl, attrs: f.attrs)
-//            fun.type = f.type
             interface.exprs.append(f)
         }
         else if case let s as StructExpr = exp {
             interface.exprs.append(s)
         }
-        
-        // TODO: Structs / concepts etc need to be exposed in the interface
     }
     
     return interface

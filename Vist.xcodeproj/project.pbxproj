@@ -11,6 +11,7 @@
 		D40FC4CC1C4932F200122397 /* Initialiser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D40FC4CB1C4932F100122397 /* Initialiser.swift */; };
 		D40FC4CE1C4AAB0E00122397 /* Intrinsic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D40FC4CD1C4AAB0E00122397 /* Intrinsic.cpp */; };
 		D4249F561C1AF9B200B15530 /* fn.vist in Resources */ = {isa = PBXBuildFile; fileRef = D4249F551C1AF9B200B15530 /* fn.vist */; };
+		D431F4BF1C556DE7005D439F /* TrivialInitialiser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D431F4BE1C556DE7005D439F /* TrivialInitialiser.swift */; };
 		D485DD281C1667E900B72F81 /* VistTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D485DD271C1667E900B72F81 /* VistTest.swift */; };
 		D497A76B1C3B003A00DFE39E /* Compile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7691C3B003A00DFE39E /* Compile.swift */; };
 		D497A76C1C3B003A00DFE39E /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A76A1C3B003A00DFE39E /* main.swift */; };
@@ -37,7 +38,7 @@
 		D4A2CC031C4FF52D00BB9A12 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC021C4FF52D00BB9A12 /* Parser.swift */; };
 		D4A2CC0A1C4FF56500BB9A12 /* ASTNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC041C4FF56500BB9A12 /* ASTNode.swift */; };
 		D4A2CC0B1C4FF56500BB9A12 /* BuiltinType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC051C4FF56500BB9A12 /* BuiltinType.swift */; };
-		D4A2CC0C1C4FF56500BB9A12 /* Fntype.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC061C4FF56500BB9A12 /* Fntype.swift */; };
+		D4A2CC0C1C4FF56500BB9A12 /* FnType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC061C4FF56500BB9A12 /* FnType.swift */; };
 		D4A2CC0D1C4FF56500BB9A12 /* StructType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC071C4FF56500BB9A12 /* StructType.swift */; };
 		D4A2CC0E1C4FF56500BB9A12 /* TupleType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC081C4FF56500BB9A12 /* TupleType.swift */; };
 		D4A2CC0F1C4FF56500BB9A12 /* Ty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC091C4FF56500BB9A12 /* Ty.swift */; };
@@ -67,6 +68,8 @@
 		D40FC4CF1C4AAB2800122397 /* Intrinsic.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = Intrinsic.hpp; path = Helper/Intrinsic.hpp; sourceTree = "<group>"; };
 		D40FC4D01C4AAB7C00122397 /* LLVM.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = LLVM.h; path = Helper/LLVM.h; sourceTree = "<group>"; };
 		D4249F551C1AF9B200B15530 /* fn.vist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = fn.vist; sourceTree = "<group>"; };
+		D431F4BE1C556DE7005D439F /* TrivialInitialiser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TrivialInitialiser.swift; path = Optimiser/TrivialInitialiser.swift; sourceTree = "<group>"; };
+		D43DF1EC1C5540AF0049EC2F /* stdlib_.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib_.ll; path = stdlib/stdlib_.ll; sourceTree = "<group>"; };
 		D4644BE31C40619800364B99 /* stdlib.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib.ll; path = stdlib/stdlib.ll; sourceTree = "<group>"; };
 		D4644BE51C40619800364B99 /* stdlib.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = stdlib.vist; path = stdlib/stdlib.vist; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D4644BE61C4072D600364B99 /* runtime.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = runtime.cpp; path = Runtime/runtime.cpp; sourceTree = "<group>"; };
@@ -105,33 +108,15 @@
 		D4A2CC021C4FF52D00BB9A12 /* Parser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Parser.swift; path = AST/Parser.swift; sourceTree = "<group>"; };
 		D4A2CC041C4FF56500BB9A12 /* ASTNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ASTNode.swift; path = AST/ASTNode.swift; sourceTree = "<group>"; };
 		D4A2CC051C4FF56500BB9A12 /* BuiltinType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BuiltinType.swift; path = AST/BuiltinType.swift; sourceTree = "<group>"; };
-		D4A2CC061C4FF56500BB9A12 /* Fntype.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Fntype.swift; path = AST/Fntype.swift; sourceTree = "<group>"; };
+		D4A2CC061C4FF56500BB9A12 /* FnType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FnType.swift; path = AST/FnType.swift; sourceTree = "<group>"; };
 		D4A2CC071C4FF56500BB9A12 /* StructType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StructType.swift; path = AST/StructType.swift; sourceTree = "<group>"; };
 		D4A2CC081C4FF56500BB9A12 /* TupleType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TupleType.swift; path = AST/TupleType.swift; sourceTree = "<group>"; };
 		D4A2CC091C4FF56500BB9A12 /* Ty.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Ty.swift; path = AST/Ty.swift; sourceTree = "<group>"; };
 		D4A2CC101C4FF58C00BB9A12 /* BuiltinDef.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BuiltinDef.swift; path = AST/BuiltinDef.swift; sourceTree = "<group>"; };
 		D4A2CC121C503D1800BB9A12 /* StdLibDef.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StdLibDef.swift; path = AST/StdLibDef.swift; sourceTree = "<group>"; };
-		D4A2E0D31C52C5E900F9DB11 /* Analysis.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Analysis.h; path = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/include/llvm-c/Analysis.h"; sourceTree = "<absolute>"; };
-		D4A2E0D41C52C5E900F9DB11 /* BitReader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = BitReader.h; path = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/include/llvm-c/BitReader.h"; sourceTree = "<absolute>"; };
-		D4A2E0D51C52C5E900F9DB11 /* BitWriter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = BitWriter.h; path = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/include/llvm-c/BitWriter.h"; sourceTree = "<absolute>"; };
-		D4A2E0D61C52C5E900F9DB11 /* Core.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Core.h; path = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/include/llvm-c/Core.h"; sourceTree = "<absolute>"; };
-		D4A2E0D71C52C5E900F9DB11 /* Disassembler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Disassembler.h; path = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/include/llvm-c/Disassembler.h"; sourceTree = "<absolute>"; };
-		D4A2E0D81C52C5E900F9DB11 /* ExecutionEngine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ExecutionEngine.h; path = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/include/llvm-c/ExecutionEngine.h"; sourceTree = "<absolute>"; };
-		D4A2E0D91C52C5E900F9DB11 /* Initialization.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Initialization.h; path = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/include/llvm-c/Initialization.h"; sourceTree = "<absolute>"; };
-		D4A2E0DA1C52C5E900F9DB11 /* IRReader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = IRReader.h; path = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/include/llvm-c/IRReader.h"; sourceTree = "<absolute>"; };
-		D4A2E0DB1C52C5E900F9DB11 /* Linker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Linker.h; path = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/include/llvm-c/Linker.h"; sourceTree = "<absolute>"; };
-		D4A2E0DC1C52C5E900F9DB11 /* LinkTimeOptimizer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = LinkTimeOptimizer.h; path = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/include/llvm-c/LinkTimeOptimizer.h"; sourceTree = "<absolute>"; };
-		D4A2E0DD1C52C5E900F9DB11 /* lto.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = lto.h; path = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/include/llvm-c/lto.h"; sourceTree = "<absolute>"; };
-		D4A2E0DE1C52C5E900F9DB11 /* Object.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Object.h; path = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/include/llvm-c/Object.h"; sourceTree = "<absolute>"; };
-		D4A2E0DF1C52C5E900F9DB11 /* Support.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Support.h; path = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/include/llvm-c/Support.h"; sourceTree = "<absolute>"; };
-		D4A2E0E01C52C5E900F9DB11 /* Target.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Target.h; path = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/include/llvm-c/Target.h"; sourceTree = "<absolute>"; };
-		D4A2E0E11C52C5E900F9DB11 /* TargetMachine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TargetMachine.h; path = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/include/llvm-c/TargetMachine.h"; sourceTree = "<absolute>"; };
-		D4A2E0E21C52C5E900F9DB11 /* Transforms */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Transforms; path = "/usr/local/Cellar/llvm36/3.6.2/lib/llvm-3.6/include/llvm-c/Transforms"; sourceTree = "<absolute>"; };
 		D4B1FA011C2E1F58001E7BCC /* TODO.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = TODO.md; sourceTree = "<group>"; };
 		D4BBE4191C4157E7001B8934 /* runtime.bc */ = {isa = PBXFileReference; lastKnownFileType = file; name = runtime.bc; path = Runtime/runtime.bc; sourceTree = "<group>"; };
 		D4BBE41A1C4157E7001B8934 /* runtime.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = runtime.ll; path = Runtime/runtime.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
-		D4BBE41C1C415835001B8934 /* stdlib.bc */ = {isa = PBXFileReference; lastKnownFileType = file; name = stdlib.bc; path = stdlib/stdlib.bc; sourceTree = "<group>"; };
-		D4BBE41D1C415835001B8934 /* stdlib.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = stdlib.dylib; path = stdlib/stdlib.dylib; sourceTree = "<group>"; };
 		D4BBE41E1C41584C001B8934 /* stdlib.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = stdlib.o; path = stdlib/stdlib.o; sourceTree = "<group>"; };
 		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
 		D4FAE4561C3B018000C9EE05 /* Test.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; name = Test.playground; path = Helper/Test.playground; sourceTree = "<group>"; };
@@ -166,6 +151,14 @@
 			name = Headers;
 			sourceTree = "<group>";
 		};
+		D431F4C01C556DF5005D439F /* Optimiser */ = {
+			isa = PBXGroup;
+			children = (
+				D431F4BE1C556DE7005D439F /* TrivialInitialiser.swift */,
+			);
+			name = Optimiser;
+			sourceTree = "<group>";
+		};
 		D44DB8881C316DA500EBCD9F /* Runtime */ = {
 			isa = PBXGroup;
 			children = (
@@ -180,9 +173,9 @@
 			isa = PBXGroup;
 			children = (
 				D4644BE51C40619800364B99 /* stdlib.vist */,
+				D43DF1EC1C5540AF0049EC2F /* stdlib_.ll */,
 				D4644BE31C40619800364B99 /* stdlib.ll */,
-				D4BBE41C1C415835001B8934 /* stdlib.bc */,
-				D4BBE41F1C415856001B8934 /* Unused */,
+				D4BBE41E1C41584C001B8934 /* stdlib.o */,
 			);
 			name = StdLib;
 			sourceTree = "<group>";
@@ -221,7 +214,6 @@
 				D40FC4CF1C4AAB2800122397 /* Intrinsic.hpp */,
 				D40FC4CD1C4AAB0E00122397 /* Intrinsic.cpp */,
 				D40FC4D11C4AB98600122397 /* Headers */,
-				D4A2E0E31C52C5F000F9DB11 /* C API */,
 			);
 			name = Helper;
 			sourceTree = "<group>";
@@ -272,6 +264,7 @@
 				D4C4FEAD1C4C11B3009DE28C /* AST */,
 				D4B1FA041C300AA8001E7BCC /* Sema */,
 				D46DA5F51C297ADA006AF1BE /* IRGen */,
+				D431F4C01C556DF5005D439F /* Optimiser */,
 				D44DB8881C316DA500EBCD9F /* Runtime */,
 				D44DB8891C316DB400EBCD9F /* StdLib */,
 				D46DA5F61C297AED006AF1BE /* Helper */,
@@ -294,7 +287,7 @@
 			children = (
 				D4A2CC091C4FF56500BB9A12 /* Ty.swift */,
 				D4A2CC051C4FF56500BB9A12 /* BuiltinType.swift */,
-				D4A2CC061C4FF56500BB9A12 /* Fntype.swift */,
+				D4A2CC061C4FF56500BB9A12 /* FnType.swift */,
 				D4A2CC071C4FF56500BB9A12 /* StructType.swift */,
 				D4A2CC081C4FF56500BB9A12 /* TupleType.swift */,
 				D4A2CC101C4FF58C00BB9A12 /* BuiltinDef.swift */,
@@ -312,29 +305,6 @@
 				D4A2CBFC1C4FF52400BB9A12 /* Decl.swift */,
 			);
 			name = Expression;
-			sourceTree = "<group>";
-		};
-		D4A2E0E31C52C5F000F9DB11 /* C API */ = {
-			isa = PBXGroup;
-			children = (
-				D4A2E0D31C52C5E900F9DB11 /* Analysis.h */,
-				D4A2E0D41C52C5E900F9DB11 /* BitReader.h */,
-				D4A2E0D51C52C5E900F9DB11 /* BitWriter.h */,
-				D4A2E0D61C52C5E900F9DB11 /* Core.h */,
-				D4A2E0D71C52C5E900F9DB11 /* Disassembler.h */,
-				D4A2E0D81C52C5E900F9DB11 /* ExecutionEngine.h */,
-				D4A2E0D91C52C5E900F9DB11 /* Initialization.h */,
-				D4A2E0DA1C52C5E900F9DB11 /* IRReader.h */,
-				D4A2E0DB1C52C5E900F9DB11 /* Linker.h */,
-				D4A2E0DC1C52C5E900F9DB11 /* LinkTimeOptimizer.h */,
-				D4A2E0DD1C52C5E900F9DB11 /* lto.h */,
-				D4A2E0DE1C52C5E900F9DB11 /* Object.h */,
-				D4A2E0DF1C52C5E900F9DB11 /* Support.h */,
-				D4A2E0E01C52C5E900F9DB11 /* Target.h */,
-				D4A2E0E11C52C5E900F9DB11 /* TargetMachine.h */,
-				D4A2E0E21C52C5E900F9DB11 /* Transforms */,
-			);
-			name = "C API";
 			sourceTree = "<group>";
 		};
 		D4B1FA041C300AA8001E7BCC /* Sema */ = {
@@ -358,15 +328,6 @@
 				D497A7691C3B003A00DFE39E /* Compile.swift */,
 			);
 			name = Compile;
-			sourceTree = "<group>";
-		};
-		D4BBE41F1C415856001B8934 /* Unused */ = {
-			isa = PBXGroup;
-			children = (
-				D4BBE41D1C415835001B8934 /* stdlib.dylib */,
-				D4BBE41E1C41584C001B8934 /* stdlib.o */,
-			);
-			name = Unused;
 			sourceTree = "<group>";
 		};
 		D4C4FEAD1C4C11B3009DE28C /* AST */ = {
@@ -514,7 +475,8 @@
 				D4A2CC0E1C4FF56500BB9A12 /* TupleType.swift in Sources */,
 				D4A2CC0F1C4FF56500BB9A12 /* Ty.swift in Sources */,
 				D4A2CC011C4FF52400BB9A12 /* Stmt.swift in Sources */,
-				D4A2CC0C1C4FF56500BB9A12 /* Fntype.swift in Sources */,
+				D4A2CC0C1C4FF56500BB9A12 /* FnType.swift in Sources */,
+				D431F4BF1C556DE7005D439F /* TrivialInitialiser.swift in Sources */,
 				D497A77C1C3B00C600DFE39E /* Sema.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

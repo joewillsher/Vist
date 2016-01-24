@@ -218,6 +218,7 @@ final class BinaryExpr : Expr {
     
     var mangledName: String = ""
     
+    var fnType: FnType? = nil
     var _type: Ty? = nil
 }
 
@@ -264,6 +265,7 @@ final class FunctionCallExpr : Expr {
     
     var mangledName: String
     
+    var fnType: FnType? = nil
     var _type: Ty? = nil
 }
 

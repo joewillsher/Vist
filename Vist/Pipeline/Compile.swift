@@ -117,12 +117,14 @@ public func compileDocuments(fileNames: [String],
         if verbose { print(ir) }
         
         
-        
-        //run muy optimisation passes
-        
+        //run my optimisation passes
         
         
-        if optim && !isStdLib {
+        
+        
+        LLVMDisposeModule(module)
+
+        if optim || isStdLib {
             
             let flags = ["-O3"]
             
@@ -204,24 +206,6 @@ public func compileDocuments(fileNames: [String],
             //      - Is this how a FnDecl behaves with nil impl already?
             //   - Also need a way to do this out-of-order so all functions (and types) are defined first
             
-            
-            for f in ["\(file)_.ll", "\(file).bc"] {
-                let rmTask = NSTask()
-                rmTask.currentDirectoryPath = currentDirectory
-                rmTask.launchPath = "/bin/rm"
-                rmTask.arguments = [f]
-                
-                rmTask.launch()
-                rmTask.waitUntilExit()
-            }
-            
-            let bitcodeTask = NSTask()
-            bitcodeTask.currentDirectoryPath = currentDirectory
-            bitcodeTask.launchPath = "\(llvmDirectory)/llvm-as"
-            bitcodeTask.arguments = ["\(file).ll", "-o", "\(file).bc"]
-            
-            bitcodeTask.launch()
-            bitcodeTask.waitUntilExit()
         }
         else {
 

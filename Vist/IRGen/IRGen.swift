@@ -330,11 +330,11 @@ extension BinaryExpr : IRGenerator {
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
         let lIR = try lhs.nodeCodeGen(stackFrame), rIR = try rhs.nodeCodeGen(stackFrame)
-        guard let argTypes = [lhs, rhs].stableOptionalMap({ $0._type }) else { fatalError("args not typed") }
+        guard let argTypes = [lhs, rhs].stableOptionalMap({ $0._type }), fnType = self.fnType else { fatalError("args not typed") }
         
         let fn: LLVMValueRef
         
-        if let fnIR = StdLibFunctions.getFunctionIR(op, args: argTypes, module: module) {
+        if let (type, fnIR) = StdLibFunctions.getFunctionIR(op, args: argTypes, module: module) {
             fn = fnIR
         }
         else {
@@ -351,8 +351,9 @@ extension BinaryExpr : IRGenerator {
         let n = doNotUseName ? "" : "\(op).res"
         
         // add call to IR
-        return LLVMBuildCall(builder, fn, argBuffer, UInt32(2), n)
-        
+        let call = LLVMBuildCall(builder, fn, argBuffer, UInt32(2), n)
+        addMetadata(fnType.metadata, to: call)
+        return call
     }
 }
 
@@ -389,13 +390,17 @@ extension FunctionCallExpr : IRGenerator {
         let fn: LLVMValueRef
         
         // if its in the stdlib return it
-        if let f = StdLibFunctions.getFunctionIR(name, args: argTypes, module: module) {
+        if let (type, f) = StdLibFunctions.getFunctionIR(name, args: argTypes, module: module) {
             fn = f
+            self.fnType = type
         }
         else {
             // make function
             fn = LLVMGetNamedFunction(module, mangledName)
         }
+        
+//        let ty = try stackFrame.functionType(mangledName)
+        guard let fnType = self.fnType else { fatalError("Function call not typed") }
         
         // arguments
         let argBuffer = args.ptr()
@@ -407,7 +412,9 @@ extension FunctionCallExpr : IRGenerator {
         let n = doNotUseName ? "" : "\(name)_res"
         
         // add call to IR
-        return LLVMBuildCall(builder, fn, argBuffer, UInt32(argCount), n)
+        let call = LLVMBuildCall(builder, fn, argBuffer, UInt32(argCount), n)
+        addMetadata(fnType.metadata, to: call)
+        return call
     }
     
 }
@@ -464,7 +471,8 @@ extension FuncDecl : IRGenerator {
         let functionType = type.ir()
         let function = LLVMAddFunction(module, mangledName, functionType)
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
-        
+        LLVMSetLinkage(function, LLVMExternalLinkage)
+
         // add attrs
         for a in attrs {
             a.addAttrTo(function)
@@ -472,7 +480,7 @@ extension FuncDecl : IRGenerator {
         
         // setup function block
         let entryBlock = LLVMAppendBasicBlock(function, "entry")
-        LLVMPositionBuilderAtEnd(builder, entryBlock)
+        LLVMPositionBuilderAtEnd(builder, entryBlock) // TODO: If isStdLib
         
         // Add function type to stack frame
         stackFrame.addFunctionType(functionType, named: mangledName)
@@ -483,7 +491,7 @@ extension FuncDecl : IRGenerator {
         // set function param names and update table
         for i in 0..<argCount {
             let param = LLVMGetParam(function, UInt32(i + startIndex))
-            let name = (impl?.params.elements[i] as? ValueType)?.name ?? ("$\(i)")
+            let name = (impl?.params.elements[i] as? ValueType)?.name ?? "$\(i)"
             LLVMSetValueName(param, name)
             
             let ty = LLVMTypeOf(param)
@@ -1183,6 +1191,8 @@ extension AST {
         else {
             LLVMBuildRet(builder, LLVMConstInt(LLVMInt64Type(), 0, LLVMBool(false)))
         }
+        
+        LLVMDisposeBuilder(builder)
     }
 }
 

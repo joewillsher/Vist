@@ -41,11 +41,11 @@ private struct FunctionContainer {
 
 final class StdLibFunctions {
     
-    private static let IntType = StructType(members: [("value", BuiltinType.Int(size: 64), true)], methods: [], name: "Int")
-    private static let BoolType = StructType(members: [("value", BuiltinType.Bool, true)], methods: [], name: "Bool")
-    private static let DoubleType = StructType(members: [("value", BuiltinType.Float(size: 64), true)], methods: [], name: "Double")
-    private static let RangeType = StructType(members: [("start", IntType, true), ("end", IntType, true)], methods: [], name: "Range")
-    private static let VoidType = BuiltinType.Void
+    private static let IntType =    StructType(members: [("value", BuiltinType.Int(size: 64), true)],       methods: [], name: "Int")
+    private static let BoolType =   StructType(members: [("value", BuiltinType.Bool, true)],                methods: [], name: "Bool")
+    private static let DoubleType = StructType(members: [("value", BuiltinType.Float(size: 64), true)],     methods: [], name: "Double")
+    private static let RangeType =  StructType(members: [("start", IntType, true), ("end", IntType, true)], methods: [], name: "Range")
+    private static let VoidType =   BuiltinType.Void
     
     private static let types: [StructType] = [IntType, BoolType, DoubleType, RangeType]
     
@@ -57,9 +57,9 @@ final class StdLibFunctions {
         ("/", FnType(params: [IntType, IntType], returns: IntType)),
         ("%", FnType(params: [IntType, IntType], returns: IntType)),
         
-        (">", FnType(params: [IntType, IntType], returns: BoolType)),
+        (">",  FnType(params: [IntType, IntType], returns: BoolType)),
         (">=", FnType(params: [IntType, IntType], returns: BoolType)),
-        ("<", FnType(params: [IntType, IntType], returns: BoolType)),
+        ("<",  FnType(params: [IntType, IntType], returns: BoolType)),
         ("<=", FnType(params: [IntType, IntType], returns: BoolType)),
         ("==", FnType(params: [IntType, IntType], returns: BoolType)),
         ("!=", FnType(params: [IntType, IntType], returns: BoolType)),
@@ -75,9 +75,9 @@ final class StdLibFunctions {
         ("/", FnType(params: [DoubleType, DoubleType], returns: DoubleType)),
         ("%", FnType(params: [DoubleType, DoubleType], returns: DoubleType)),
         
-        (">", FnType(params: [DoubleType, DoubleType], returns: BoolType)),
+        (">",  FnType(params: [DoubleType, DoubleType], returns: BoolType)),
         (">=", FnType(params: [DoubleType, DoubleType], returns: BoolType)),
-        ("<", FnType(params: [DoubleType, DoubleType], returns: BoolType)),
+        ("<",  FnType(params: [DoubleType, DoubleType], returns: BoolType)),
         ("<=", FnType(params: [DoubleType, DoubleType], returns: BoolType)),
         ("==", FnType(params: [DoubleType, DoubleType], returns: BoolType)),
         ("!=", FnType(params: [DoubleType, DoubleType], returns: BoolType)),
@@ -89,19 +89,19 @@ final class StdLibFunctions {
         
         
         // fns
-        ("print", FnType(params: [IntType], returns: VoidType)),
-        ("print", FnType(params: [BoolType], returns: VoidType)),
-        ("print", FnType(params: [DoubleType], returns: VoidType)),
-        ("assert", FnType(params: [BoolType], returns: VoidType)),
-        ("fatalError", FnType(params: [], returns: VoidType)),
+        ("print",      FnType(params: [IntType],    returns: VoidType)),
+        ("print",      FnType(params: [BoolType],   returns: VoidType)),
+        ("print",      FnType(params: [DoubleType], returns: VoidType)),
+        ("assert",     FnType(params: [BoolType],   returns: VoidType)),
+        ("fatalError", FnType(params: [],           returns: VoidType)),
         
         
-        ("Int", FnType(params: [BuiltinType.Int(size: 64)], returns: IntType)),
-        ("Int", FnType(params: [IntType], returns: IntType)),
-        ("Bool", FnType(params: [BuiltinType.Bool], returns: BoolType)),
-        ("Bool", FnType(params: [BoolType], returns: IntType)),
-        ("Float", FnType(params: [BuiltinType.Float(size: 64)], returns: DoubleType)),
-        ("Float", FnType(params: [DoubleType], returns: IntType))
+        ("Int",     FnType(params: [BuiltinType.Int(size: 64)],   returns: IntType,    metadata: ["trivialInitialiser"])),
+        ("Int",     FnType(params: [IntType],                     returns: IntType,    metadata: ["trivialInitialiser"])),
+        ("Bool",    FnType(params: [BuiltinType.Bool],            returns: BoolType,   metadata: ["trivialInitialiser"])),
+        ("Bool",    FnType(params: [BoolType],                    returns: IntType,    metadata: ["trivialInitialiser"])),
+        ("Float",   FnType(params: [BuiltinType.Float(size: 64)], returns: DoubleType, metadata: ["trivialInitialiser"])),
+        ("Float",   FnType(params: [DoubleType],                  returns: IntType,    metadata: ["trivialInitialiser"]))
     ]
     
     /// Container initialised with functions, provides subscript to look up functions by name and type
@@ -111,19 +111,27 @@ final class StdLibFunctions {
         return functionContainer[type: id]
     }
     
-    static func getStdLibFunction(id: String, args: [Ty]) -> (String, FnType)? {
+    private static func getStdLibFunctionWithInitInfo(id: String, args: [Ty]) -> (String, FnType)? {
         return functionContainer[fn: id, types: args]
     }
     
-    static func getFunctionIR(name: String, args: [Ty], module: LLVMModuleRef) -> LLVMValueRef? {
+    static func getStdLibFunction(id: String, args: [Ty]) -> (String, FnType)? {
+        guard let fn = functionContainer[fn: id, types: args] else { return nil }
+        return (fn.0, fn.1)
+    }
+    
+    
+    static func getFunctionIR(name: String, args: [Ty], module: LLVMModuleRef) -> (FnType, LLVMValueRef)? {
        
-        if let (mangledName, type) = StdLibFunctions.getStdLibFunction(name, args: args) {
+        if let (mangledName, type) = StdLibFunctions.getStdLibFunctionWithInitInfo(name, args: args) {
             let functionType = type.ir()
             
-            let a = LLVMGetNamedFunction(module, mangledName)
-            if a != nil { return a }
+            let found = LLVMGetNamedFunction(module, mangledName)
+            if found != nil { return (type, found) }
             
-            return LLVMAddFunction(module, mangledName, functionType)
+            // move to call site
+            
+            return (type, LLVMAddFunction(module, mangledName, functionType))
         }
         return nil
     }

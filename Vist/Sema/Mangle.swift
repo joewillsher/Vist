@@ -16,10 +16,9 @@ extension String {
         return "_\(n)\(sansUnderscores())_\(type.debugDescription)"
     }
     func mangle(type: [Ty], parentTypeName: String? = nil) -> String {
-        let n = parentTypeName == nil ? "" : "\(parentTypeName!)."
-        return "_\(n)\(sansUnderscores())_\(FnType(params: type, returns: BuiltinType.Void).debugDescription)"
+        return mangle(FnType(params: type, returns: BuiltinType.Void/*Doesnt matter*/), parentTypeName: parentTypeName)
     }
-
+    
     
     func sansUnderscores() -> String {
         return stringByReplacingOccurrencesOfString("_", withString: "$")
@@ -32,6 +31,35 @@ extension String {
             .stringByReplacingOccurrencesOfString("$", withString: "_")
     }
 }
+//extension String {
+//
+//    func mangle(type: FnType, parentTypeName: String? = nil, isTrivialInit: Bool) -> String {
+//        let i = isTrivialInit ? "_trivinit_" : "_"
+//        let n = parentTypeName == nil ? "" : "\(parentTypeName!)."
+//        return "_\(n)\(sansUnderscores())\(i)\(type.debugDescription)"
+//    }
+//    func mangle(type: [Ty], parentTypeName: String? = nil, isTrivialInit: Bool) -> String {
+//        return mangle(FnType(params: type, returns: BuiltinType.Void/*Doesnt matter*/), parentTypeName: parentTypeName, isTrivialInit: isTrivialInit)
+//    }
+//
+//
+//    func sansUnderscores() -> String {
+//        return stringByReplacingOccurrencesOfString("_", withString: "$")
+//    }
+//
+//    // TODO: Add globalinit to mangled names for initalisers
+//    func demangleName() -> String {
+//        let kk = characters.dropFirst()
+//        return String(kk.prefixUpTo(kk.indexOf("_")!))
+//            .stringByReplacingOccurrencesOfString("$", withString: "_")
+//    }
+//
+//    func isTrivialInit() -> Bool {
+//        let kk = characters.dropFirst()
+//        return String(kk.prefixUpTo(kk.indexOf("_")!))
+//            .containsString("trivinit")
+//    }
+//}
 
 
 

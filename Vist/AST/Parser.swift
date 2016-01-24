@@ -731,9 +731,8 @@ extension Parser {
         
         guard case .Colon = getNextToken() else { throw ParseError.ExpectedColon(currentPos) }
         guard case .Colon = getNextToken() else { throw ParseError.ExpectedColon(currentPos) }
-        // TODO: `::` for types?
         
-        getNextToken() // eat ':'
+        getNextToken() // eat '='
         let type = try parseFunctionType()
         
         guard case .Assign = currentToken else {

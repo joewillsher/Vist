@@ -11,6 +11,8 @@ struct FnType : Ty {
     let params: [Ty]
     let returns: Ty
     
+    let metadata: [String]
+    
     func ir() -> LLVMTypeRef {
         
         let r: LLVMTypeRef
@@ -27,15 +29,40 @@ struct FnType : Ty {
             LLVMBool(false))
     }
     
+    init(params: [Ty], returns: Ty = BuiltinType.Void, metadata: [String] = []) {
+        self.params = params
+        self.returns = returns
+        self.metadata = metadata
+    }
+    
     static func taking(params: Ty..., ret: Ty = BuiltinType.Void) -> FnType {
         return FnType(params: params, returns: ret)
     }
     static func returning(ret: Ty) -> FnType {
         return FnType(params: [], returns: ret)
     }
-
     
     var nonVoid: [Ty]  {
         return params.filter { if case BuiltinType.Void = $0 { return false } else { return true } }
     }
 }
+
+
+func addMetadata(metadata: [String], to call: LLVMValueRef) {
+    
+    for metadata in metadata {
+        
+        let attrLength = UInt32(metadata.characters.count)
+        let mdString = LLVMMDString(metadata, attrLength)
+        
+        let attrs = [mdString].ptr()
+        defer { attrs.dealloc(1) }
+        let mdNode = LLVMMDNode(attrs, 1)
+        
+        let kindID = LLVMGetMDKindID(metadata, attrLength)
+        
+        LLVMSetMetadata(call, kindID, mdNode)
+    }
+}
+
+

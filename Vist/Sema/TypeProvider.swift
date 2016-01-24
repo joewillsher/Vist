@@ -224,6 +224,7 @@ extension BinaryExpr : ExprTypeProvider {
         }
         
         // assign type to self and return
+        self.fnType = fnType
         self._type = fnType.returns
         return fnType.returns
     }
@@ -314,7 +315,6 @@ extension FunctionCallExpr : ExprTypeProvider {
         if let (mangledName, type) = StdLibFunctions.getStdLibFunction(self.name, args: params) where !scope.isStdLib {
             self.mangledName = mangledName
             fnType = type
-            
         }
         else {
             
@@ -340,6 +340,7 @@ extension FunctionCallExpr : ExprTypeProvider {
         }
         
         // assign type to self and return
+        self.fnType = fnType
         self._type = fnType.returns
         return fnType.returns
     }
