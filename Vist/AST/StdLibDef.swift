@@ -10,15 +10,18 @@
 private struct FunctionContainer {
     
     private let functions: [String: FnType]
+    private let types: [StructType]
     
-    init (types: [(String, FnType)]) {
+    init (functions: [(String, FnType)], types: [StructType]) {
         var t: [String: FnType] = [:]
         
-        for (n, ty) in types {
+        for (n, ty) in functions {
             let mangled = n.mangle(ty.params)
             t[mangled] = ty
         }
-        functions = t
+        
+        self.functions = t
+        self.types = types
     }
     
     subscript(fn fn: String, types types: [Ty]) -> (String, FnType)? {
@@ -28,6 +31,11 @@ private struct FunctionContainer {
             return (mangled, ty)
         }
     }
+    subscript(type type: String) -> StructType? {
+        get {
+            if let i = types.indexOf({ $0.name == type }) { return types[i] } else { return nil }
+        }
+    }
 }
 
 
@@ -35,10 +43,12 @@ final class StdLibFunctions {
     
     private static let IntType = StructType(members: [("value", BuiltinType.Int(size: 64), true)], methods: [], name: "Int")
     private static let BoolType = StructType(members: [("value", BuiltinType.Bool, true)], methods: [], name: "Bool")
-    private static let FloatType = StructType(members: [("value", BuiltinType.Float(size: 64), true)], methods: [], name: "Float")
-    private static let RangeType = StructType(members: [("start", BuiltinType.Int(size: 64), true), ("end", BuiltinType.Int(size: 64), true)], methods: [], name: "Range")
+    private static let DoubleType = StructType(members: [("value", BuiltinType.Float(size: 64), true)], methods: [], name: "Double")
+    private static let RangeType = StructType(members: [("start", IntType, true), ("end", IntType, true)], methods: [], name: "Range")
     private static let VoidType = BuiltinType.Void
-   
+    
+    private static let types: [StructType] = [IntType, BoolType, DoubleType, RangeType]
+    
     private static let functions: [(String, FnType)] = [
         // int
         ("+", FnType(params: [IntType, IntType], returns: IntType)),
@@ -59,18 +69,18 @@ final class StdLibFunctions {
         ("||", FnType(params: [BoolType, BoolType], returns: BoolType)),
         
         // double
-        ("+", FnType(params: [FloatType, FloatType], returns: FloatType)),
-        ("-", FnType(params: [FloatType, FloatType], returns: FloatType)),
-        ("*", FnType(params: [FloatType, FloatType], returns: FloatType)),
-        ("/", FnType(params: [FloatType, FloatType], returns: FloatType)),
-        ("%", FnType(params: [FloatType, FloatType], returns: FloatType)),
+        ("+", FnType(params: [DoubleType, DoubleType], returns: DoubleType)),
+        ("-", FnType(params: [DoubleType, DoubleType], returns: DoubleType)),
+        ("*", FnType(params: [DoubleType, DoubleType], returns: DoubleType)),
+        ("/", FnType(params: [DoubleType, DoubleType], returns: DoubleType)),
+        ("%", FnType(params: [DoubleType, DoubleType], returns: DoubleType)),
         
-        (">", FnType(params: [FloatType, FloatType], returns: BoolType)),
-        (">=", FnType(params: [FloatType, FloatType], returns: BoolType)),
-        ("<", FnType(params: [FloatType, FloatType], returns: BoolType)),
-        ("<=", FnType(params: [FloatType, FloatType], returns: BoolType)),
-        ("==", FnType(params: [FloatType, FloatType], returns: BoolType)),
-        ("!=", FnType(params: [FloatType, FloatType], returns: BoolType)),
+        (">", FnType(params: [DoubleType, DoubleType], returns: BoolType)),
+        (">=", FnType(params: [DoubleType, DoubleType], returns: BoolType)),
+        ("<", FnType(params: [DoubleType, DoubleType], returns: BoolType)),
+        ("<=", FnType(params: [DoubleType, DoubleType], returns: BoolType)),
+        ("==", FnType(params: [DoubleType, DoubleType], returns: BoolType)),
+        ("!=", FnType(params: [DoubleType, DoubleType], returns: BoolType)),
 
         // range
         ("...", FnType(params: [IntType, IntType], returns: RangeType)),
@@ -81,7 +91,7 @@ final class StdLibFunctions {
         // fns
         ("print", FnType(params: [IntType], returns: VoidType)),
         ("print", FnType(params: [BoolType], returns: VoidType)),
-        ("print", FnType(params: [FloatType], returns: VoidType)),
+        ("print", FnType(params: [DoubleType], returns: VoidType)),
         ("assert", FnType(params: [BoolType], returns: VoidType)),
         ("fatalError", FnType(params: [], returns: VoidType)),
         
@@ -90,16 +100,16 @@ final class StdLibFunctions {
         ("Int", FnType(params: [IntType], returns: IntType)),
         ("Bool", FnType(params: [BuiltinType.Bool], returns: BoolType)),
         ("Bool", FnType(params: [BoolType], returns: IntType)),
-        ("Float", FnType(params: [BuiltinType.Float(size: 64)], returns: FloatType)),
-        ("Float", FnType(params: [FloatType], returns: IntType))
+        ("Float", FnType(params: [BuiltinType.Float(size: 64)], returns: DoubleType)),
+        ("Float", FnType(params: [DoubleType], returns: IntType))
     ]
     
     /// Container initialised with functions, provides subscript to look up functions by name and type
-    private static let functionContainer = FunctionContainer(types: functions)
+    private static let functionContainer = FunctionContainer(functions: functions, types: types)
     
-    
-    
-    
+    static func getStdLibType(id: String) -> StructType? {
+        return functionContainer[type: id]
+    }
     
     static func getStdLibFunction(id: String, args: [Ty]) -> (String, FnType)? {
         return functionContainer[fn: id, types: args]

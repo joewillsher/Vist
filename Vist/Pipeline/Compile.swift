@@ -78,16 +78,13 @@ public func compileDocuments(fileNames: [String],
         let ast = main
         
         
-        let stdlib = StdLibExpose(isStdLib: isStdLib)
-        
-        // add ast info from stdlib to globalScope
-        stdlib.astToSemaScope(scope: globalScope)
         
         try sema(ast, globalScope: globalScope)
         if verbose { print(ast) }
         
         let file = fileNames.first!.stringByReplacingOccurrencesOfString(".vist", withString: "")
-
+        
+        
         
         
         if verbose { print("\n\n-----------------------------LINK------------------------------") }
@@ -97,9 +94,6 @@ public func compileDocuments(fileNames: [String],
 
         if isStdLib {
             linkModule(&module, withFile: "\(runtimeDirectory)/runtime.bc")
-        }
-        else {
-//            linkModule(&module, withFile: "\(stdLibDirectory)/stdlib.bc")
         }
         
         configModule(module)
@@ -114,8 +108,6 @@ public func compileDocuments(fileNames: [String],
         
         let s = StackFrame()
         
-        stdlib.astToStackFrame(frame: s)
-        
         try ast.IRGen(module: module, isLibrary: generateLibrary, stackFrame: s)
         
         // print and write to file
@@ -125,11 +117,14 @@ public func compileDocuments(fileNames: [String],
         if verbose { print(ir) }
         
         
+        
+        //run muy optimisation passes
+        
+        
+        
         if optim && !isStdLib {
             
             let flags = ["-O3"]
-            //            let flags = ["-inline"]
-            //            let flags = ["-mem2reg"]
             
             // Optimiser
             let optimTask = NSTask()
@@ -183,7 +178,7 @@ public func compileDocuments(fileNames: [String],
         }
         
         
-        if generateLibrary || isStdLib {
+        if isStdLib {
             
             // for o & dylib gen
             let objFileTask = NSTask()
@@ -203,18 +198,11 @@ public func compileDocuments(fileNames: [String],
 //            libGen.waitUntilExit()
             
             
-            
-            
-            // make .o file from .ll
-            // currently the .bc file is being used made and loaded at IRGen time
-            // TODO: make a way to call stdlib functions and add their decls to the module
-            
             // IDEA to have multiple file compilation:
             //   - A FunctionPrototype AST object which is added to ast of other files
             //   - When IRGen'd it adds the function decl to the module
             //      - Is this how a FnDecl behaves with nil impl already?
             //   - Also need a way to do this out-of-order so all functions (and types) are defined first
-            
             
             
             for f in ["\(file)_.ll", "\(file).bc"] {
@@ -236,17 +224,8 @@ public func compileDocuments(fileNames: [String],
             bitcodeTask.waitUntilExit()
         }
         else {
-            
-//            ~/desktop $ clang -c a.ll
-//            ~/desktop $ clang -c b.ll
-//            ~/desktop $ clang -o c a.o b.o
-//            ~/desktop $ ./c
-            
-            // make .o file from .ll
-            // link with stdlib.o to make linked.o
-            // compile linked.o
-            
-            /// Compile IR Code task
+
+            /// link file to stdlib and compile
             let compileTask = NSTask()
             compileTask.currentDirectoryPath = currentDirectory
             compileTask.launchPath = "/usr/bin/clang"

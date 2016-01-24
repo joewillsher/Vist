@@ -206,7 +206,6 @@ extension BinaryExpr : ExprTypeProvider {
         if let (mangledName, stdLibType) = StdLibFunctions.getStdLibFunction(op, args: params) where !scope.isStdLib {
             self.mangledName = mangledName
             fnType = stdLibType
-            print(stdLibType)
             
         }
         else {
@@ -256,6 +255,7 @@ private func getType<
         
         if let builtin = BuiltinType(ty.name) { return builtin as Ty }
         else if let i = tys.indexOf({ ty.name == $0.name }) { return tys[i] as Ty }
+        else if let std = StdLibFunctions.getStdLibType(ty.name) { return std }
         throw SemaError.TypeNotFound
     }
 }
@@ -281,7 +281,8 @@ private extension FunctionType {
                 if tup.elements.count == 0 { return BuiltinType.Void }
                 
                 let res = try tup.elements.mapAs(ValueType).map(getType(tys))
-                guard res.count == tup.elements.count else { throw SemaError.TypeNotFound }
+                guard res.count == tup.elements.count else {
+                    throw SemaError.TypeNotFound }
                 return TupleType(members: res)
 
             case let f as FunctionType:
@@ -289,16 +290,8 @@ private extension FunctionType {
 
             case let x as ValueType:
                 
-                if let val = BuiltinType(x.name) {
-                    return val
-                }
-                else if let i = (tys.indexOf { $0.name == x.name }) {
-                    return tys[i]
-                }
-                else {
-                    throw SemaError.NoTypeNamed(x.name)
-                }
-                
+                return try getType(tys)(x)
+                                
             default:
                 break
             }

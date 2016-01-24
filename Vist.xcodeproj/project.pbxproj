@@ -43,7 +43,6 @@
 		D4A2CC0F1C4FF56500BB9A12 /* Ty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC091C4FF56500BB9A12 /* Ty.swift */; };
 		D4A2CC111C4FF58C00BB9A12 /* BuiltinDef.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC101C4FF58C00BB9A12 /* BuiltinDef.swift */; };
 		D4A2CC131C503D1800BB9A12 /* StdLibDef.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC121C503D1800BB9A12 /* StdLibDef.swift */; };
-		D4BBE4211C419A6C001B8934 /* StdLibExpose.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4BBE4201C419A6C001B8934 /* StdLibExpose.swift */; };
 		D4FAE45C1C3DCEEE00C9EE05 /* BuiltinFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4FAE45B1C3DCEEE00C9EE05 /* BuiltinFunction.swift */; };
 		D4FAE45E1C3DDE3100C9EE05 /* FunctionAttribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4FAE45D1C3DDE3100C9EE05 /* FunctionAttribute.swift */; };
 /* End PBXBuildFile section */
@@ -134,10 +133,8 @@
 		D4BBE41C1C415835001B8934 /* stdlib.bc */ = {isa = PBXFileReference; lastKnownFileType = file; name = stdlib.bc; path = stdlib/stdlib.bc; sourceTree = "<group>"; };
 		D4BBE41D1C415835001B8934 /* stdlib.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = stdlib.dylib; path = stdlib/stdlib.dylib; sourceTree = "<group>"; };
 		D4BBE41E1C41584C001B8934 /* stdlib.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = stdlib.o; path = stdlib/stdlib.o; sourceTree = "<group>"; };
-		D4BBE4201C419A6C001B8934 /* StdLibExpose.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StdLibExpose.swift; path = Sema/Interface/StdLibExpose.swift; sourceTree = "<group>"; };
 		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
 		D4FAE4561C3B018000C9EE05 /* Test.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; name = Test.playground; path = Helper/Test.playground; sourceTree = "<group>"; };
-		D4FAE45A1C3DA10600C9EE05 /* stdlib.visth */ = {isa = PBXFileReference; lastKnownFileType = text; name = stdlib.visth; path = stdlib/stdlib.visth; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D4FAE45B1C3DCEEE00C9EE05 /* BuiltinFunction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BuiltinFunction.swift; path = IRGen/BuiltinFunction.swift; sourceTree = "<group>"; };
 		D4FAE45D1C3DDE3100C9EE05 /* FunctionAttribute.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FunctionAttribute.swift; path = IRGen/FunctionAttribute.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -182,7 +179,6 @@
 		D44DB8891C316DB400EBCD9F /* StdLib */ = {
 			isa = PBXGroup;
 			children = (
-				D4FAE45A1C3DA10600C9EE05 /* stdlib.visth */,
 				D4644BE51C40619800364B99 /* stdlib.vist */,
 				D4644BE31C40619800364B99 /* stdlib.ll */,
 				D4BBE41C1C415835001B8934 /* stdlib.bc */,
@@ -235,7 +231,6 @@
 			children = (
 				D497A7811C3B00FE00DFE39E /* ASTInterface.swift */,
 				D497A7821C3B00FE00DFE39E /* LinkAST.swift */,
-				D4BBE4201C419A6C001B8934 /* StdLibExpose.swift */,
 			);
 			name = Interface;
 			sourceTree = "<group>";
@@ -494,7 +489,6 @@
 				D40FC4CC1C4932F200122397 /* Initialiser.swift in Sources */,
 				D497A7931C3B015700DFE39E /* Link.swift in Sources */,
 				D4FAE45E1C3DDE3100C9EE05 /* FunctionAttribute.swift in Sources */,
-				D4BBE4211C419A6C001B8934 /* StdLibExpose.swift in Sources */,
 				D497A78A1C3B012700DFE39E /* ArrayVariable.swift in Sources */,
 				D497A7841C3B00FE00DFE39E /* LinkAST.swift in Sources */,
 				D4A2CC0A1C4FF56500BB9A12 /* ASTNode.swift in Sources */,

@@ -61,6 +61,7 @@ final class StackFrame {
     }
     
     func type(name: String) throws -> StructType {
+        if let t = StdLibFunctions.getStdLibType(name) { return t }
         if let v = types[name] { return v }
         
         let inParent = try parentStackFrame?.type(name)
