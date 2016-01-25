@@ -17,15 +17,8 @@ public protocol Printable : CustomStringConvertible {
     func printList() -> [(String?, Printable)]?
     func printVal() -> String?
     func printDirectly() -> String?
-    func inline() -> Bool
 }
 
-//extension AST {
-//    
-//    var description: String {
-//        return _description(0)
-//    }
-//}
 
 extension Printable {
     public var description: String {
@@ -64,9 +57,6 @@ extension Printable {
     /// should represent this object
     public func printVal() -> String? { return nil }
     
-    /// return true to run children inline
-    public func inline() -> Bool { return false }
-    
     /// Print the object, not a _description of it
     public func printDirectly() -> String? { return nil }
 }
@@ -104,21 +94,9 @@ extension Bool : Printable {
 
 extension Array : Printable {
     
-    public func inline() -> Bool {
-        return isEmpty
-    }
-    
     public func printVal() -> String? {
         return isEmpty ? "[]" : nil
     }
-    public func printList() -> [(String?, Printable)]? {
-        
-        return self
-            .flatMap { $0 as? Printable }
-            .enumerate()
-            .map { (String?("\($0)"), $1) }
-    }
-    
 }
 
 extension Optional : Printable {
@@ -134,14 +112,6 @@ extension Optional : Printable {
         switch self {
         case .None: return "nil"
         case .Some(let a) where a is Printable: return (a as! Printable).printVal()
-        case _: return nil
-        }
-    }
-    
-    public func printList() -> [(String?, Printable)]? {
-        switch self {
-        case .None: return nil
-        case .Some(let a) where a is Printable: return (a as! Printable).printList()
         case _: return nil
         }
     }

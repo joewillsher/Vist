@@ -1,5 +1,5 @@
 //
-//  TrivialInitialiser.swift
+//  InitialiserPass.swift
 //  Vist
 //
 //  Created by Josef Willsher on 24/01/2016.

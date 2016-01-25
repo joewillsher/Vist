@@ -41,6 +41,7 @@ extension StructType {
         
         let args = val.ptr()
         defer { args.dealloc(members.count) }
+        
         let call = LLVMBuildCall(builder, initialiser, args, 1, irName ?? "")
         addMetadata(type.metadata, to: call)
         return call

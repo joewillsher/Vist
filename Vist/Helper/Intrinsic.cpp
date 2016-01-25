@@ -22,7 +22,7 @@ static const char *const intrinsicNames[] = {
 #include "llvm/IR/Module.h"
 
 
-// http://stackoverflow.com/questions/27681500/generate-call-to-intrinsic-using-llvm-c-api
+// uses code from here: http://stackoverflow.com/questions/27681500/generate-call-to-intrinsic-using-llvm-c-api
 
 static int search(const void *p1,
                   const void *p2) {
@@ -41,12 +41,18 @@ int GetLLVMIntrinsicIDFromString(const char* str,
     return 1;
 }
 
-
-
+/// Returns ptr to intrinsic function
 LLVMValueRef getIntrinsic(const char *name,
                           LLVMModuleRef mod,
                           LLVMTypeRef ty
                           ) {
+    auto m = llvm::unwrap(mod);
+    auto found = m->getFunction(name);
+    
+    // if intrinsic is already declared, return that
+    if (found != nullptr)
+        return llvm::wrap(found);
+    
     llvm::Intrinsic::ID id;
     GetLLVMIntrinsicIDFromString(name, id);
     
@@ -54,7 +60,7 @@ LLVMValueRef getIntrinsic(const char *name,
     if (ty != nullptr)
         arg_types.push_back(llvm::unwrap(ty));
     
-    LLVMValueRef rt = llvm::wrap(llvm::Intrinsic::getDeclaration(llvm::unwrap(mod), id, arg_types));
+    LLVMValueRef rt = llvm::wrap(llvm::Intrinsic::getDeclaration(m, id, arg_types));
     return rt;
 }
 

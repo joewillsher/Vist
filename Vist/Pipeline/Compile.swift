@@ -120,6 +120,11 @@ public func compileDocuments(fileNames: [String],
         //run my optimisation passes
         
         
+        let passManager = LLVMCreateFunctionPassManagerForModule(module)
+        
+        initialiserPass(passManager)
+        
+        LLVMRunPassManager(passManager, module)
         
         
         LLVMDisposeModule(module)
@@ -142,6 +147,11 @@ public func compileDocuments(fileNames: [String],
             if irOnly { print(ir); return }
             if verbose { print(ir) }
         }
+//        else if isStdLib {
+//            
+//            // run stdlib optimisation pass
+//            
+//        }
         else {
             
             let fileTask = NSTask()
