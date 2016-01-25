@@ -120,11 +120,11 @@ public func compileDocuments(fileNames: [String],
         //run my optimisation passes
         
         
-        let passManager = LLVMCreateFunctionPassManagerForModule(module)
-        
-        initialiserPass(passManager)
-        
-        LLVMRunPassManager(passManager, module)
+//        let passManager = LLVMCreateFunctionPassManagerForModule(module)
+//        
+//        initialiserPass(passManager, module)
+
+        performLLVMOptimisations(module)
         
         
         LLVMDisposeModule(module)

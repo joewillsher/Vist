@@ -13,6 +13,7 @@
 		D4249F561C1AF9B200B15530 /* fn.vist in Resources */ = {isa = PBXBuildFile; fileRef = D4249F551C1AF9B200B15530 /* fn.vist */; };
 		D431F4BF1C556DE7005D439F /* InitialiserPass.swift in Sources */ = {isa = PBXBuildFile; fileRef = D431F4BE1C556DE7005D439F /* InitialiserPass.swift */; };
 		D431F4C31C55743C005D439F /* InitialiserPass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D431F4C11C55743C005D439F /* InitialiserPass.cpp */; };
+		D470D7AE1C56A98100791B40 /* Optimiser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D470D7AC1C56A98100791B40 /* Optimiser.cpp */; };
 		D485DD281C1667E900B72F81 /* VistTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D485DD271C1667E900B72F81 /* VistTest.swift */; };
 		D497A76B1C3B003A00DFE39E /* Compile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7691C3B003A00DFE39E /* Compile.swift */; };
 		D497A76C1C3B003A00DFE39E /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A76A1C3B003A00DFE39E /* main.swift */; };
@@ -76,6 +77,8 @@
 		D4644BE31C40619800364B99 /* stdlib.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib.ll; path = stdlib/stdlib.ll; sourceTree = "<group>"; };
 		D4644BE51C40619800364B99 /* stdlib.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = stdlib.vist; path = stdlib/stdlib.vist; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D4644BE61C4072D600364B99 /* runtime.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = runtime.cpp; path = Runtime/runtime.cpp; sourceTree = "<group>"; };
+		D470D7AC1C56A98100791B40 /* Optimiser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Optimiser.cpp; path = Optimiser/Optimiser.cpp; sourceTree = "<group>"; };
+		D470D7AD1C56A98100791B40 /* Optimiser.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Optimiser.hpp; path = Optimiser/Optimiser.hpp; sourceTree = "<group>"; };
 		D47E66581B88D9A20051D586 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		D47FF07A1B812052003F9920 /* vist */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = vist; sourceTree = BUILT_PRODUCTS_DIR; };
 		D4851F491C28A0820009233E /* example_.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = example_.ll; path = RUN/example_.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
@@ -157,6 +160,8 @@
 		D431F4C01C556DF5005D439F /* Optimiser */ = {
 			isa = PBXGroup;
 			children = (
+				D470D7AD1C56A98100791B40 /* Optimiser.hpp */,
+				D470D7AC1C56A98100791B40 /* Optimiser.cpp */,
 				D431F4BE1C556DE7005D439F /* InitialiserPass.swift */,
 				D431F4C21C55743C005D439F /* InitialiserPass.hpp */,
 				D431F4C11C55743C005D439F /* InitialiserPass.cpp */,
@@ -480,6 +485,7 @@
 				D497A7701C3B005600DFE39E /* Token.swift in Sources */,
 				D497A7801C3B00C600DFE39E /* TypeProvider.swift in Sources */,
 				D40FC4CE1C4AAB0E00122397 /* Intrinsic.cpp in Sources */,
+				D470D7AE1C56A98100791B40 /* Optimiser.cpp in Sources */,
 				D497A77E1C3B00C600DFE39E /* SemaTypeCheck.swift in Sources */,
 				D497A7921C3B015700DFE39E /* Config.swift in Sources */,
 				D497A76F1C3B005600DFE39E /* Lexer.swift in Sources */,

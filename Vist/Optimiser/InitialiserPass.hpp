@@ -12,19 +12,20 @@
 #include <stdio.h>
 #include "LLVM.h"
 
-#ifdef __cplusplus
-extern "C"
-#endif
-void initialiserPass(LLVMPassManagerRef);
 
 
-#ifdef __cplusplus
 #include "llvm/PassRegistry.h"
+#include "llvm/Transforms/IPO/PassManagerBuilder.h"
+#include "llvm/IR/LegacyPassManager.h"
+
 namespace llvm {
     /// Used by macro
     void initializeInitialiserSimplificationPass(llvm::PassRegistry &Registry);
 }
-#endif
+
+using namespace llvm;
+
+void addInitialiserSimplificationPass(const PassManagerBuilder&, PassManagerBase&);
 
 
 
