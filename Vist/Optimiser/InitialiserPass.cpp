@@ -8,25 +8,17 @@
 
 #include "InitialiserPass.hpp"
 
-#include "llvm/IR/Module.h"
 #include "llvm/PassManager.h"
 #include "llvm/PassInfo.h"
 #include "llvm/PassSupport.h"
-#include "llvm/Support/CommandLine.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/Support/DynamicLibrary.h"
-#include "llvm/Target/TargetMachine.h"
-#include "llvm/Transforms/IPO.h"
-#include "llvm/Transforms/IPO/PassManagerBuilder.h"
-#include "llvm/Transforms/Scalar.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/Function.h"
-#include "llvm/IR/IRBuilder.h"
 #include "llvm/Pass.h"
-#include "llvm/ADT/Statistic.h"
 #include <stdio.h>
 
 // useful instructions here: http://llvm.org/docs/WritingAnLLVMPass.html
+// swift example here https://github.com/apple/swift/blob/master/lib/LLVMPasses/LLVMStackPromotion.cpp
 
 #define DEBUG_TYPE "initialiser-pass"
 
