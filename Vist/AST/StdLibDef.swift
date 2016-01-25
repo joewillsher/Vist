@@ -101,7 +101,9 @@ final class StdLibFunctions {
         ("Bool",    FnType(params: [BuiltinType.Bool],            returns: BoolType,   metadata: ["trivialInitialiser"])),
         ("Bool",    FnType(params: [BoolType],                    returns: IntType,    metadata: ["trivialInitialiser"])),
         ("Float",   FnType(params: [BuiltinType.Float(size: 64)], returns: DoubleType, metadata: ["trivialInitialiser"])),
-        ("Float",   FnType(params: [DoubleType],                  returns: IntType,    metadata: ["trivialInitialiser"]))
+        ("Float",   FnType(params: [DoubleType],                  returns: IntType,    metadata: ["trivialInitialiser"])),
+        ("Range",   FnType(params: [IntType, IntType],            returns: RangeType,  metadata: ["trivialInitialiser"])),
+        ("Range",   FnType(params: [RangeType],                   returns: RangeType,  metadata: ["trivialInitialiser"]))
     ]
     
     /// Container initialised with functions, provides subscript to look up functions by name and type

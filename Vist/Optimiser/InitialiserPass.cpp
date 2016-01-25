@@ -110,11 +110,12 @@ bool InitialiserSimplification::runOnFunction(Function &function) {
                 for (uint i = 0; i < undef->getNumElements(); i++) {
                     auto arg = call->getArgOperand(i);
                     
-                    auto ins = InsertValueInst::Create(undef, arg, {i}, "");
+                    auto ins = InsertValueInst::Create(target, arg, {i}, "");
                     builder.Insert(ins);
                     target = ins;
                 };
                 
+                target->setName(call->getName());
                 call->removeFromParent();
                 call->replaceAllUsesWith(target);
                 call->dropAllReferences();

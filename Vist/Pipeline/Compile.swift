@@ -129,17 +129,17 @@ public func compileDocuments(fileNames: [String],
             let flags = ["-O3"]
             
             // Optimiser
-//            let optimTask = NSTask()
-//            optimTask.currentDirectoryPath = currentDirectory
-//            optimTask.launchPath = "\(llvmDirectory)/opt"
-//            optimTask.arguments = ["-S"] + flags + ["-o", "\(file).ll", "\(file)_.ll"]
-//            
-//            optimTask.launch()
-//            optimTask.waitUntilExit()
-//            
-//            let ir = try String(contentsOfFile: "\(currentDirectory)/\(file).ll") ?? ""
-//            if irOnly { print(ir); return }
-//            if verbose { print(ir) }
+            let optimTask = NSTask()
+            optimTask.currentDirectoryPath = currentDirectory
+            optimTask.launchPath = "\(llvmDirectory)/opt"
+            optimTask.arguments = ["-S"] + flags + ["-o", "\(file).ll", "\(file).ll"]
+            
+            optimTask.launch()
+            optimTask.waitUntilExit()
+            
+            let ir = try String(contentsOfFile: "\(currentDirectory)/\(file).ll") ?? ""
+            if irOnly { print(ir); return }
+            if verbose { print(ir) }
         }
         else {
             
