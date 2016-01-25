@@ -28,10 +28,12 @@
 
 // useful instructions here: http://llvm.org/docs/WritingAnLLVMPass.html
 
-//#define DEBUG_TYPE "initialiser-pass"
+#define DEBUG_TYPE "initialiser-pass"
+
+// MARK: InitialiserSimplification pass decl
 
 class InitialiserSimplification : public llvm::FunctionPass {
-
+    
     virtual bool runOnFunction(llvm::Function &F) override;
     
 public:
@@ -39,35 +41,34 @@ public:
     InitialiserSimplification() : llvm::FunctionPass(ID) {}
 };
 
+// we dont care about the ID
+char InitialiserSimplification::ID = 0;
+
 
 using namespace llvm;
 
+// MARK: bullshit llvm macros
 
+// defines `initializeInitialiserSimplificationPassOnce(PassRegistry &Registry)` function
 INITIALIZE_PASS_BEGIN(InitialiserSimplification,
                       "initialiser-pass", "Vist initialiser folding pass",
                       false, false)
-
-InitialiserSimplification::ID = 0;
-
+// implements `llvm::initializeInitialiserSimplificationPass(PassRegistry &Registry)` function, declared in header
+// adds it to the pass registry
 INITIALIZE_PASS_END(InitialiserSimplification,
                     "initialiser-pass", "Vist initialiser folding pass",
                     false, false)
 
-//PassInfo *PI = new PassInfo("Vist initialiser folding pass", "initialiser-pass", & InitialiserSimplification::ID, PassInfo::NormalCtor_t(callDefaultCtor<InitialiserSimplification>), false, false);
-//Registry.registerPass(*PI, true);
-//return PI;
-//}
 
-//void initializeInitialiserSimplificationPass(PassRegistry &Registry) {
-//    CALL_ONCE_INITIALIZATION(initializeInitialiserSimplificationPassOnce);
-//}
+// MARK: InitialiserSimplification Functions
 
+/// returns instance of the InitialiserSimplification pass
 llvm::FunctionPass *createInitialiserSimplificationPass() {
     initializeInitialiserSimplificationPass(*llvm::PassRegistry::getPassRegistry());
     return new InitialiserSimplification();
 }
 
-
+/// Called on functions in module, this is where the optimisations happen
 bool InitialiserSimplification::runOnFunction(llvm::Function &F) {
     
     printf("mrmr");
@@ -77,8 +78,8 @@ bool InitialiserSimplification::runOnFunction(llvm::Function &F) {
 
 
 
-
-extern "C" bool
+/// Adds a named pass, not used yet
+bool
 LLVMAddPass(LLVMPassManagerRef PM, const char *PassName) {
     llvm::PassManagerBase *pm = llvm::unwrap(PM);
     
@@ -94,23 +95,12 @@ LLVMAddPass(LLVMPassManagerRef PM, const char *PassName) {
 }
 
 
-
+/// Function called by swift to add the initialiser simplification pass to the pass manager
 void initialiserPass(LLVMPassManagerRef pm) {
-    
-//    InitialiserPass *pass = createInitialiserPass();
-    
-//    PassManagerBase *PM = unwrap(pm);
-    LLVMAddPass(pm, "verify");
-    
-    llvm::PassRegistry *reg = llvm::PassRegistry::getPassRegistry();
     
     auto a = createInitialiserSimplificationPass();
     
-    //    PassInfo x = Passinfo;
-    
-    //    PassRegistry *PR = PassRegistry::getPassRegistry();
-    
-    
+    // ...
 }
 
 

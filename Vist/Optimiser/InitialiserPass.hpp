@@ -21,6 +21,7 @@ void initialiserPass(LLVMPassManagerRef);
 #ifdef __cplusplus
 #include "llvm/PassRegistry.h"
 namespace llvm {
+    /// Used by macro
     void initializeInitialiserSimplificationPass(llvm::PassRegistry &Registry);
 }
 #endif
