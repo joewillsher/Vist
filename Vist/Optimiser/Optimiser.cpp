@@ -25,24 +25,29 @@
 
 using namespace llvm;
 
+// swift impl here https://github.com/apple/swift/blob/master/lib/IRGen/IRGen.cpp
 
-void performLLVMOptimisations(Module *Module) {
+/// Runs the optimisations
+void performLLVMOptimisations(Module *Module, int optLevel) {
     
     PassManagerBuilder PMBuilder;
     
-    PMBuilder.OptLevel = 3;
-    PMBuilder.Inliner = llvm::createFunctionInliningPass(200);
+    PMBuilder.OptLevel = optLevel;
+    PMBuilder.Inliner = optLevel ? llvm::createFunctionInliningPass(200) : nullptr;
     PMBuilder.SLPVectorize = true;
     PMBuilder.LoopVectorize = true;
     PMBuilder.MergeFunctions = true;
     
-    PMBuilder.addExtension(PassManagerBuilder::EP_ModuleOptimizerEarly, addInitialiserSimplificationPass);
+    PMBuilder.addExtension(PassManagerBuilder::EP_EarlyAsPossible,  // Run first thing
+                           addInitialiserSimplificationPass);       // The initialiaser pass
     
     // Configure the function passes.
     legacy::FunctionPassManager FunctionPasses(Module);
 
     FunctionPasses.add(createVerifierPass());
     PMBuilder.populateFunctionPassManager(FunctionPasses);
+    // TODO: Dont run all optimisations in -O0
+    // TODO: also make it so you *can* run this and not the command line `opt` tool
     
     FunctionPasses.doInitialization();
     for (auto I = Module->begin(), E = Module->end(); I != E; ++I)
@@ -54,16 +59,20 @@ void performLLVMOptimisations(Module *Module) {
     legacy::PassManager ModulePasses;
     PMBuilder.populateModulePassManager(ModulePasses);
     
-    
     ModulePasses.add(createVerifierPass());
     
-    // Do it.
+    // add custom module passes here
+    // FunctionPasses.add(createAnyModulePass());
+    
+    // then run optimisations
     ModulePasses.run(*Module);
     
 }
 
-void performLLVMOptimisations(LLVMModuleRef mod) {
+/// Called from swift code
+void performLLVMOptimisations(LLVMModuleRef mod, int optLevel) {
     Module *module = unwrap(mod);
-    performLLVMOptimisations(module);
+    performLLVMOptimisations(module, optLevel);
+    
 }
 

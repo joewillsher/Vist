@@ -111,49 +111,42 @@ public func compileDocuments(fileNames: [String],
         try ast.IRGen(module: module, isLibrary: generateLibrary, stackFrame: s)
         
         // print and write to file
-        let ir = String.fromCString(LLVMPrintModuleToString(module))!
-        try ir.writeToFile("\(currentDirectory)/\(file)_.ll", atomically: true, encoding: NSUTF8StringEncoding)
+        try String.fromCString(LLVMPrintModuleToString(module))?.writeToFile("\(currentDirectory)/\(file)_.ll", atomically: true, encoding: NSUTF8StringEncoding)
         
-        if verbose { print(ir) }
+        if verbose { LLVMDumpModule(module) }
         
         
         //run my optimisation passes
-        
-        
-//        let passManager = LLVMCreateFunctionPassManagerForModule(module)
-//        
-//        initialiserPass(passManager, module)
-
-        performLLVMOptimisations(module)
-        
-        
-        LLVMDisposeModule(module)
+                
+        if verbose { print("\n\n----------------------------OPTIM----------------------------\n") }
 
         if optim || isStdLib {
+            
+            performLLVMOptimisations(module, 3)
+            
+            try String.fromCString(LLVMPrintModuleToString(module))?.writeToFile("\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
             
             let flags = ["-O3"]
             
             // Optimiser
-            let optimTask = NSTask()
-            optimTask.currentDirectoryPath = currentDirectory
-            optimTask.launchPath = "\(llvmDirectory)/opt"
-            optimTask.arguments = ["-S"] + flags + ["-o", "\(file).ll", "\(file)_.ll"]
-            
-            optimTask.launch()
-            optimTask.waitUntilExit()
-            
-            if verbose { print("\n\n----------------------------OPTIM----------------------------\n") }
-            let ir = try String(contentsOfFile: "\(currentDirectory)/\(file).ll") ?? ""
-            if irOnly { print(ir); return }
-            if verbose { print(ir) }
+//            let optimTask = NSTask()
+//            optimTask.currentDirectoryPath = currentDirectory
+//            optimTask.launchPath = "\(llvmDirectory)/opt"
+//            optimTask.arguments = ["-S"] + flags + ["-o", "\(file).ll", "\(file)_.ll"]
+//            
+//            optimTask.launch()
+//            optimTask.waitUntilExit()
+//            
+//            let ir = try String(contentsOfFile: "\(currentDirectory)/\(file).ll") ?? ""
+//            if irOnly { print(ir); return }
+//            if verbose { print(ir) }
         }
-//        else if isStdLib {
-//            
-//            // run stdlib optimisation pass
-//            
-//        }
         else {
             
+            performLLVMOptimisations(module, 0)
+            
+            try String.fromCString(LLVMPrintModuleToString(module))?.writeToFile("\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
+
             let fileTask = NSTask()
             fileTask.currentDirectoryPath = currentDirectory
             fileTask.launchPath = "/usr/bin/touch"
@@ -162,8 +155,10 @@ public func compileDocuments(fileNames: [String],
             fileTask.launch()
             fileTask.waitUntilExit()
             
-            try ir.writeToFile("\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
+            try String.fromCString(LLVMPrintModuleToString(module))?.writeToFile("\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
         }
+        
+        LLVMDisposeModule(module)
         
         if irOnly { return }
         

@@ -16,7 +16,7 @@
 extern "C" {
 #endif
     
-    void performLLVMOptimisations(LLVMModuleRef);
+    void performLLVMOptimisations(LLVMModuleRef, int);
     
 #ifdef __cplusplus
 }
