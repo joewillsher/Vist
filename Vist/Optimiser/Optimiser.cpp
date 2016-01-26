@@ -21,7 +21,11 @@
 
 #include "llvm/Transforms/Instrumentation.h"
 #include "llvm/Transforms/IPO.h"
+#include "llvm/Transforms/Scalar.h"
+#include "llvm/Transforms/Vectorize.h"
 #include "llvm/IR/Verifier.h"
+#include "llvm/Analysis/Passes.h"
+
 
 using namespace llvm;
 
@@ -33,10 +37,10 @@ void performLLVMOptimisations(Module *Module, int optLevel) {
     PassManagerBuilder PMBuilder;
     
     PMBuilder.OptLevel = optLevel;
-    PMBuilder.Inliner = optLevel ? llvm::createFunctionInliningPass(200) : nullptr;
-    PMBuilder.SLPVectorize = true;
-    PMBuilder.LoopVectorize = true;
-    PMBuilder.MergeFunctions = true;
+    PMBuilder.Inliner = optLevel > 0 ? llvm::createFunctionInliningPass(200) : nullptr;
+    PMBuilder.SLPVectorize = optLevel > 0;
+    PMBuilder.LoopVectorize = optLevel > 0;
+    PMBuilder.MergeFunctions = optLevel > 0;
     
     PMBuilder.addExtension(PassManagerBuilder::EP_EarlyAsPossible,  // Run first thing
                            addInitialiserSimplificationPass);       // The initialiaser pass
@@ -45,6 +49,18 @@ void performLLVMOptimisations(Module *Module, int optLevel) {
     legacy::FunctionPassManager FunctionPasses(Module);
 
     FunctionPasses.add(createVerifierPass());
+    
+    if (optLevel == 0) { // we want some optimisations, even at -O0
+        FunctionPasses.add(createBasicAliasAnalysisPass());
+        FunctionPasses.add(createInstructionCombiningPass());
+        
+        // needed as compiler produces a lot of redundant memory code assuming it will be optimied away
+        FunctionPasses.add(createPromoteMemoryToRegisterPass());
+        
+        FunctionPasses.add(createReassociatePass());
+        FunctionPasses.add(createConstantPropagationPass());
+    }
+    
     PMBuilder.populateFunctionPassManager(FunctionPasses);
     // TODO: Dont run all optimisations in -O0
     // TODO: also make it so you *can* run this and not the command line `opt` tool
@@ -66,13 +82,11 @@ void performLLVMOptimisations(Module *Module, int optLevel) {
     
     // then run optimisations
     ModulePasses.run(*Module);
-    
 }
 
 /// Called from swift code
 void performLLVMOptimisations(LLVMModuleRef mod, int optLevel) {
     Module *module = unwrap(mod);
     performLLVMOptimisations(module, optLevel);
-    
 }
 

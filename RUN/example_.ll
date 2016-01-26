@@ -5,7 +5,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 define i64 @main() {
 entry:
   %0 = call { i64 } @_Int_i64(i64 1), !trivialInitialiser !0
-  %1 = call { i64 } @_Int_i64(i64 500), !trivialInitialiser !0
+  %1 = call { i64 } @_Int_i64(i64 20), !trivialInitialiser !0
   %Range_res = call { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 } %0, { i64 } %1), !trivialInitialiser !0
   %2 = alloca { { i64 }, { i64 } }
   store { { i64 }, { i64 } } %Range_res, { { i64 }, { i64 } }* %2

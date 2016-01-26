@@ -1,34 +1,4 @@
 
-/*
-type Foo {
-    let a: Int = 10
-    var b: Int = 20
-    let c: Int = 40
-    
-    func sumTimes :: Int -> Int = do
-        return (self.a + self.b + self.c) * $0
-        
-    func printA :: Bool = do
-        if $0 do print self.a
-}
-
-let f = Foo ()
-
-func add :: Int Int -> Int = do return $0 + $1
-
-let a = 1
-let b = 2
-let u = add (add a 1) b
-
-print (add 1 (f.sumTimes 1))
-
-
-let w = 4
-
-for i in 0 ... w do print i
-*/
-
-let u = Range 1 500
+let u = Range 1 20
 
 for a in u do print a
-

@@ -87,7 +87,6 @@ public func compileDocuments(fileNames: [String],
         
         
         
-        if verbose { print("\n\n-----------------------------LINK------------------------------") }
         
         var module = LLVMModuleCreateWithName("vist_module")
         // Create vist program module and link against the helper bytecode
@@ -120,44 +119,25 @@ public func compileDocuments(fileNames: [String],
                 
         if verbose { print("\n\n----------------------------OPTIM----------------------------\n") }
 
+        let fileTask = NSTask()
+        fileTask.currentDirectoryPath = currentDirectory
+        fileTask.launchPath = "/usr/bin/touch"
+        fileTask.arguments = ["\(file).ll"]
+        
+        fileTask.launch()
+        fileTask.waitUntilExit()
+
         if optim || isStdLib {
-            
             performLLVMOptimisations(module, 3)
-            
-            try String.fromCString(LLVMPrintModuleToString(module))?.writeToFile("\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
-            
-            let flags = ["-O3"]
-            
-            // Optimiser
-            let optimTask = NSTask()
-            optimTask.currentDirectoryPath = currentDirectory
-            optimTask.launchPath = "\(llvmDirectory)/opt"
-            optimTask.arguments = ["-S"] + flags + ["-o", "\(file).ll", "\(file).ll"]
-            
-            optimTask.launch()
-            optimTask.waitUntilExit()
-            
-            let ir = try String(contentsOfFile: "\(currentDirectory)/\(file).ll") ?? ""
-            if irOnly { print(ir); return }
-            if verbose { print(ir) }
         }
         else {
-            
             performLLVMOptimisations(module, 0)
-            
-            try String.fromCString(LLVMPrintModuleToString(module))?.writeToFile("\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
-
-            let fileTask = NSTask()
-            fileTask.currentDirectoryPath = currentDirectory
-            fileTask.launchPath = "/usr/bin/touch"
-            fileTask.arguments = ["\(file).ll"]
-            
-            fileTask.launch()
-            fileTask.waitUntilExit()
-            
-            try String.fromCString(LLVMPrintModuleToString(module))?.writeToFile("\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
         }
         
+        try String.fromCString(LLVMPrintModuleToString(module))?.writeToFile("\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
+        
+        if verbose { LLVMDumpModule(module) }
+
         LLVMDisposeModule(module)
         
         if irOnly { return }
@@ -196,21 +176,11 @@ public func compileDocuments(fileNames: [String],
             objFileTask.launch()
             objFileTask.waitUntilExit()
             
-//            let libGen = NSTask()
-//            libGen.currentDirectoryPath = currentDirectory
-//            libGen.launchPath = "/usr/bin/libtool"
-//            libGen.arguments = ["-dynamic", "\(file).o", "-o", "\(file).dylib", "-lSystem"]
-//            
-//            libGen.launch()
-//            libGen.waitUntilExit()
-            
-            
             // IDEA to have multiple file compilation:
             //   - A FunctionPrototype AST object which is added to ast of other files
             //   - When IRGen'd it adds the function decl to the module
             //      - Is this how a FnDecl behaves with nil impl already?
             //   - Also need a way to do this out-of-order so all functions (and types) are defined first
-            
         }
         else {
 
