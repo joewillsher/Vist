@@ -2253,11 +2253,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Optimiser/InitialiserPass.cpp"
-            timestampString = "475457851.363413"
+            timestampString = "475498614.327656"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "130"
-            endingLineNumber = "130"
+            startingLineNumber = "173"
+            endingLineNumber = "173"
             landmarkName = "InitialiserSimplification::runOnFunction(Function &amp;function)"
             landmarkType = "5">
          </BreakpointContent>
@@ -2269,11 +2269,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Optimiser/Optimiser.cpp"
-            timestampString = "475459102.185065"
+            timestampString = "475492425.466191"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "36"
-            endingLineNumber = "36"
+            startingLineNumber = "38"
+            endingLineNumber = "38"
             landmarkName = "performLLVMOptimisations(Module *Module, int optLevel)"
             landmarkType = "7">
          </BreakpointContent>
@@ -2285,11 +2285,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Optimiser/InitialiserPass.cpp"
-            timestampString = "475455557.34393"
+            timestampString = "475498614.327656"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "96"
-            endingLineNumber = "96"
+            startingLineNumber = "139"
+            endingLineNumber = "139"
             landmarkName = "InitialiserSimplification::runOnFunction(Function &amp;function)"
             landmarkType = "5">
          </BreakpointContent>
@@ -2317,11 +2317,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Optimiser/InitialiserPass.cpp"
-            timestampString = "475457851.363413"
+            timestampString = "475498614.327656"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "123"
-            endingLineNumber = "123"
+            startingLineNumber = "166"
+            endingLineNumber = "166"
             landmarkName = "InitialiserSimplification::runOnFunction(Function &amp;function)"
             landmarkType = "5">
             <Actions>
@@ -2341,13 +2341,139 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Optimiser/Optimiser.cpp"
-            timestampString = "475459552.001509"
+            timestampString = "475492425.466191"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "93"
-            endingLineNumber = "93"
-            landmarkName = "performLLVMOptimisations(LLVMModuleRef mod, int optLevel)"
-            landmarkType = "7">
+            startingLineNumber = "100"
+            endingLineNumber = "100">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Vist/Optimiser/InitialiserPass.cpp"
+            timestampString = "475497758.746095"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "92"
+            endingLineNumber = "92"
+            landmarkName = "InitialiserSimplification::runOnFunction(Function &amp;function)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Vist/Optimiser/InitialiserPass.cpp"
+            timestampString = "475497758.746095"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "52"
+            endingLineNumber = "52"
+            landmarkName = "InitialiserSimplification()"
+            landmarkType = "5">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "InitialiserSimplification::InitialiserSimplification()"
+                  moduleName = "vist"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/JoeWillsher/Developer/Vist/Vist/Optimiser/InitialiserPass.cpp"
+                  timestampString = "475496884.408033"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "56"
+                  endingLineNumber = "56"
+                  offsetFromSymbolStart = "21">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "InitialiserSimplification::InitialiserSimplification()"
+                  moduleName = "vist"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/JoeWillsher/Developer/Vist/Vist/Optimiser/InitialiserPass.cpp"
+                  timestampString = "475496884.408141"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "56"
+                  endingLineNumber = "56"
+                  offsetFromSymbolStart = "875">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Vist/Optimiser/InitialiserPass.cpp"
+            timestampString = "475498614.327656"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "127"
+            endingLineNumber = "127"
+            landmarkName = "InitialiserSimplification::runOnFunction(Function &amp;function)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Vist/Optimiser/InitialiserPass.cpp"
+            timestampString = "475498614.327656"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "121"
+            endingLineNumber = "121"
+            landmarkName = "InitialiserSimplification::runOnFunction(Function &amp;function)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Vist/Optimiser/InitialiserPass.cpp"
+            timestampString = "475498614.327656"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "118"
+            endingLineNumber = "118"
+            landmarkName = "InitialiserSimplification::runOnFunction(Function &amp;function)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Vist/Optimiser/InitialiserPass.cpp"
+            timestampString = "475498614.327656"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "118"
+            endingLineNumber = "118"
+            landmarkName = "InitialiserSimplification::runOnFunction(Function &amp;function)"
+            landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

@@ -4,15 +4,12 @@ target triple = "x86_64-apple-macosx10.11.0"
 
 define i64 @main() {
 entry:
-  %0 = call { i64 } @_Int_i64(i64 1), !trivialInitialiser !0
-  %1 = call { i64 } @_Int_i64(i64 20), !trivialInitialiser !0
-  %Range_res = call { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 } %0, { i64 } %1), !trivialInitialiser !0
-  %2 = alloca { { i64 }, { i64 } }
-  store { { i64 }, { i64 } } %Range_res, { { i64 }, { i64 } }* %2
-  %u = load { { i64 }, { i64 } }* %2
-  %start = extractvalue { { i64 }, { i64 } } %u, 0
+  %0 = call { i64 } @_Int_i64(i64 0), !trivialInitialiser !0
+  %1 = call { i64 } @_Int_i64(i64 100), !trivialInitialiser !0
+  %....res = call { { i64 }, { i64 } } @_..._S.i64_S.i64({ i64 } %0, { i64 } %1)
+  %start = extractvalue { { i64 }, { i64 } } %....res, 0
   %start.value = extractvalue { i64 } %start, 0
-  %end = extractvalue { { i64 }, { i64 } } %u, 1
+  %end = extractvalue { { i64 }, { i64 } } %....res, 1
   %end.value = extractvalue { i64 } %end, 0
   br label %loop.header
 
@@ -36,7 +33,7 @@ loop.exit:                                        ; preds = %loop.latch
 
 declare { i64 } @_Int_i64(i64)
 
-declare { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 }, { i64 })
+declare { { i64 }, { i64 } } @_..._S.i64_S.i64({ i64 }, { i64 })
 
 declare void @_print_S.i64({ i64 })
 

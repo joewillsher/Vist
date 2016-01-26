@@ -1,4 +1,4 @@
 
-let u = Range 1 20
+for a in 0 ... 100 do
+    print a
 
-for a in u do print a

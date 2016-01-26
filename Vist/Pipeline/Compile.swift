@@ -9,8 +9,8 @@
 import Foundation
 
 private let llvmDirectory = "/usr/local/Cellar/llvm/3.6.2/bin"
-private let stdLibDirectory = "\(PROJECT_DIR)/Vist/stdlib"
-private let runtimeDirectory = "\(PROJECT_DIR)/Vist/Runtime"
+private let stdLibDirectory = "\(SOURCE_ROOT)/Vist/stdlib"
+private let runtimeDirectory = "\(SOURCE_ROOT)/Vist/Runtime"
 
 
 public func compileDocuments(fileNames: [String],
@@ -248,7 +248,7 @@ public func compileDocuments(fileNames: [String],
 
 func buildRuntime() {
     
-    let runtimeDirectory = "\(PROJECT_DIR)/Vist/Runtime"
+    let runtimeDirectory = "\(SOURCE_ROOT)/Vist/Runtime"
 
     /// Generate LLVM IR File for the helper c++ code
     let runtimeIRGenTask = NSTask()

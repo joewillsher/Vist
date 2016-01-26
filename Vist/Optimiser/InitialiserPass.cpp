@@ -21,6 +21,8 @@
 #include "llvm/Pass.h"
 #include "llvm/IR/Metadata.h"
 #include "llvm/IR/LLVMContext.h"
+#include "llvm/Bitcode/ReaderWriter.h"
+#include "llvm-c/BitReader.h"
 
 #include "LLVM.h"
 
@@ -38,11 +40,17 @@ using namespace llvm;
 
 class InitialiserSimplification : public FunctionPass {
     
+    MemoryBuffer *stdLibModuleBuffer;
+
     virtual bool runOnFunction(Function &F) override;
     
 public:
     static char ID;
-    InitialiserSimplification() : FunctionPass(ID) {}
+    
+    InitialiserSimplification() : FunctionPass(ID) {
+        std::string path = "/Users/JoeWillsher/Developer/Vist/Vist/stdlib/stdlib.bc";
+        stdLibModuleBuffer = MemoryBuffer::getFile(path.c_str()).get().get();
+    }
 };
 
 // we dont care about the ID
@@ -62,6 +70,7 @@ INITIALIZE_PASS_END(InitialiserSimplification,
                     "initialiser-pass", "Vist initialiser folding pass",
                     false, false)
 
+//#define PATH(a) = ##a;
 
 
 
@@ -77,17 +86,51 @@ FunctionPass *createInitialiserSimplificationPass() {
 bool InitialiserSimplification::runOnFunction(Function &function) {
     
     bool changed = false;
+
+//    stdLibModule->dump();
+    
     
     Module *module = function.getParent();
-    LLVMContext *context = &module->getContext();
-    IRBuilder<> builder = IRBuilder<>(*context);
+    LLVMContext &context = module->getContext();
+    IRBuilder<> builder = IRBuilder<>(context);
+    
+//    func linkModule(inout module: LLVMModuleRef, withFile file: String) {
+//        
+//        let buffer = UnsafeMutablePointer<LLVMMemoryBufferRef>.alloc(1)
+//        let str = UnsafeMutablePointer<UnsafeMutablePointer<Int8>>.alloc(1)
+//        
+//        LLVMCreateMemoryBufferWithContentsOfFile(file, buffer, str)
+//        
+//        var helperModule = LLVMModuleCreateWithName("_module")
+//        
+//        LLVMGetBitcodeModule(buffer.memory, &helperModule, str)
+//        
+//        LLVMLinkModules(module, helperModule, LLVMLinkerDestroySource, str)
+//    }
+    
+    printf("%i\n", stdLibModuleBuffer);
+    
+    
+    
+    Module *stdLibModule = new Module(StringRef("std"), context);
+    
+    
+    LLVMMemoryBufferRef buff = wrap(stdLibModuleBuffer);
+    LLVMModuleRef m = wrap(stdLibModule);
+    LLVMGetBitcodeModule(buff, &m, nullptr);
+    
+    unwrap(m)->dump();
+    
+    
+//    Module *stdLibModule = parseBitcodeFile(stdLibModuleBuffer->getMemBufferRef(), context).get();
+    
     
     auto s = StringRef("trivialInitialiser");
     auto id = LLVMGetMDKindID(s.data(), int32_t(s.size()));
     
     for (BasicBlock &basicBlock : function) {
         for (auto index = basicBlock.begin(); index != basicBlock.end(); ) {
-            Instruction *instruction = &*index;
+            Instruction *instruction = index;
             index++;
             
             if (auto *call = dyn_cast<CallInst>(instruction)) {

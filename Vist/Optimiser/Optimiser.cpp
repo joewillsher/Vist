@@ -21,6 +21,8 @@
 
 #include "llvm/Transforms/Instrumentation.h"
 #include "llvm/Transforms/IPO.h"
+#include "llvm/LTO/LTOModule.h"
+#include "llvm/LTO/LTOCodeGenerator.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/Vectorize.h"
 #include "llvm/IR/Verifier.h"
@@ -77,11 +79,16 @@ void performLLVMOptimisations(Module *Module, int optLevel) {
     
     ModulePasses.add(createVerifierPass());
     
-    // add custom module passes here
-    // FunctionPasses.add(createAnyModulePass());
+    /// add custom module passes here
+    // eg... ModulePasses.add(<#createAnyModulePass()#>);
     
     // then run optimisations
     ModulePasses.run(*Module);
+    
+    legacy::PassManager LTOPasses;
+    /// add custom link time optimisations
+//    LTOPasses.addLTOOptimizationPasses(<#createAnyLTOPass()#>);
+    PMBuilder.populateLTOPassManager(LTOPasses);
 }
 
 /// Called from swift code
