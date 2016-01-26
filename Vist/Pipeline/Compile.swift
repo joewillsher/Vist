@@ -13,6 +13,13 @@ private let stdLibDirectory = "\(SOURCE_ROOT)/Vist/stdlib"
 private let runtimeDirectory = "\(SOURCE_ROOT)/Vist/Runtime"
 
 
+// IDEA to have multiple file compilation:
+//   - A FunctionPrototype AST object which is added to ast of other files
+//   - When IRGen'd it adds the function decl to the module
+//      - Is this how a FnDecl behaves with nil impl already?
+//   - Also need a way to do this out-of-order so all functions (and types) are defined first
+
+
 public func compileDocuments(fileNames: [String],
     verbose: Bool = true,
     dumpAST: Bool = false,
@@ -167,7 +174,7 @@ public func compileDocuments(fileNames: [String],
         
         if isStdLib {
             
-            // for o & dylib gen
+            // generate .o file to link against program
             let objFileTask = NSTask()
             objFileTask.currentDirectoryPath = currentDirectory
             objFileTask.launchPath = "/usr/bin/clang"
@@ -176,11 +183,14 @@ public func compileDocuments(fileNames: [String],
             objFileTask.launch()
             objFileTask.waitUntilExit()
             
-            // IDEA to have multiple file compilation:
-            //   - A FunctionPrototype AST object which is added to ast of other files
-            //   - When IRGen'd it adds the function decl to the module
-            //      - Is this how a FnDecl behaves with nil impl already?
-            //   - Also need a way to do this out-of-order so all functions (and types) are defined first
+            // generate .bc file for optimiser
+            let assembleTask = NSTask()
+            assembleTask.currentDirectoryPath = runtimeDirectory
+            assembleTask.launchPath = "\(llvmDirectory)/llvm-as"
+            assembleTask.arguments = ["\(file).ll"]
+            
+            assembleTask.launch()
+            assembleTask.waitUntilExit()
         }
         else {
 

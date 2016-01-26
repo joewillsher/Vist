@@ -13,31 +13,13 @@ Ltmp1:
 	movq	%rsp, %rbp
 Ltmp2:
 	.cfi_def_cfa_register %rbp
-	subq	$32, %rsp
-	xorl	%eax, %eax
+	movl	$3, %eax
 	movl	%eax, %edi
-	movl	$100, %eax
-	movl	%eax, %esi
-	callq	__..._S.i64_S.i64
-	movq	%rdx, -8(%rbp)          ## 8-byte Spill
-	movq	%rax, -16(%rbp)         ## 8-byte Spill
-LBB0_1:                                 ## %loop.header
-                                        ## =>This Inner Loop Header: Depth=1
-	movq	-16(%rbp), %rax         ## 8-byte Reload
-	movq	%rax, %rcx
-	incq	%rcx
+	callq	__Int_i64
 	movq	%rax, %rdi
-	movq	%rcx, -24(%rbp)         ## 8-byte Spill
 	callq	__print_S.i64
-	movq	-24(%rbp), %rax         ## 8-byte Reload
-	movq	-8(%rbp), %rcx          ## 8-byte Reload
-	cmpq	%rcx, %rax
-	movq	%rax, -16(%rbp)         ## 8-byte Spill
-	jle	LBB0_1
-## BB#2:                                ## %loop.exit
-	xorl	%eax, %eax
-                                        ## kill: RAX<def> EAX<kill>
-	addq	$32, %rsp
+	xorl	%ecx, %ecx
+	movl	%ecx, %eax
 	popq	%rbp
 	retq
 	.cfi_endproc

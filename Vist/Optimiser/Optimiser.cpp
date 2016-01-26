@@ -18,6 +18,7 @@
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/Function.h"
 #include "llvm/Pass.h"
+#include "llvm/IR/LLVMContext.h"
 
 #include "llvm/Transforms/Instrumentation.h"
 #include "llvm/Transforms/IPO.h"
@@ -45,7 +46,9 @@ void performLLVMOptimisations(Module *Module, int optLevel) {
     PMBuilder.MergeFunctions = optLevel > 0;
     
     PMBuilder.addExtension(PassManagerBuilder::EP_EarlyAsPossible,  // Run first thing
-                           addInitialiserSimplificationPass);       // The initialiaser pass
+                           addStdLibInlinePass);       // The initialiaser pass
+    
+    
     
     // Configure the function passes.
     legacy::FunctionPassManager FunctionPasses(Module);
@@ -96,4 +99,19 @@ void performLLVMOptimisations(LLVMModuleRef mod, int optLevel) {
     Module *module = unwrap(mod);
     performLLVMOptimisations(module, optLevel);
 }
+
+
+void LLVMAddMetadata(LLVMValueRef val, const char * String) {
+    auto s = StringRef(String);
+    auto id = LLVMGetMDKindID(s.data(), int32_t(s.size()));
+    
+    LLVMValueRef md = LLVMMDString(s.data(), uint(s.size()));
+    LLVMSetMetadata(val, id, md);
+}
+
+int LLVMMetadataID(const char * String) {
+    auto s = StringRef(String);
+    return LLVMGetMDKindID(s.data(), int32_t(s.size()));
+}
+
 

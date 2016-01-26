@@ -18,6 +18,9 @@ extern "C" {
     
     void performLLVMOptimisations(LLVMModuleRef, int);
     
+    void LLVMAddMetadata(LLVMValueRef val, const char * String);
+    int LLVMMetadataID(const char * String);
+    
 #ifdef __cplusplus
 }
 #endif

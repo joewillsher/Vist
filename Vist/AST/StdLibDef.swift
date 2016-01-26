@@ -96,14 +96,14 @@ final class StdLibFunctions {
         ("fatalError", FnType(params: [],           returns: VoidType)),
         
         
-        ("Int",     FnType(params: [BuiltinType.Int(size: 64)],   returns: IntType,    metadata: ["trivialInitialiser"])),
-        ("Int",     FnType(params: [IntType],                     returns: IntType,    metadata: ["trivialInitialiser"])),
-        ("Bool",    FnType(params: [BuiltinType.Bool],            returns: BoolType,   metadata: ["trivialInitialiser"])),
-        ("Bool",    FnType(params: [BoolType],                    returns: IntType,    metadata: ["trivialInitialiser"])),
-        ("Float",   FnType(params: [BuiltinType.Float(size: 64)], returns: DoubleType, metadata: ["trivialInitialiser"])),
-        ("Float",   FnType(params: [DoubleType],                  returns: IntType,    metadata: ["trivialInitialiser"])),
-        ("Range",   FnType(params: [IntType, IntType],            returns: RangeType,  metadata: ["trivialInitialiser"])),
-        ("Range",   FnType(params: [RangeType],                   returns: RangeType,  metadata: ["trivialInitialiser"]))
+        ("Int",     FnType(params: [BuiltinType.Int(size: 64)],   returns: IntType,    metadata: ["stdlib.init"])),
+        ("Int",     FnType(params: [IntType],                     returns: IntType,    metadata: ["stdlib.init"])),
+        ("Bool",    FnType(params: [BuiltinType.Bool],            returns: BoolType,   metadata: ["stdlib.init"])),
+        ("Bool",    FnType(params: [BoolType],                    returns: IntType,    metadata: ["stdlib.init"])),
+        ("Float",   FnType(params: [BuiltinType.Float(size: 64)], returns: DoubleType, metadata: ["stdlib.init"])),
+        ("Float",   FnType(params: [DoubleType],                  returns: IntType,    metadata: ["stdlib.init"])),
+        ("Range",   FnType(params: [IntType, IntType],            returns: RangeType,  metadata: ["stdlib.init"])),
+        ("Range",   FnType(params: [RangeType],                   returns: RangeType,  metadata: ["stdlib.init"]))
     ]
     
     /// Container initialised with functions, provides subscript to look up functions by name and type

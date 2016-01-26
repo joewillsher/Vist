@@ -20,12 +20,12 @@
 
 namespace llvm {
     /// Used by macro
-    void initializeInitialiserSimplificationPass(llvm::PassRegistry &Registry);
+    void initializeStdLibInlinePass(llvm::PassRegistry &Registry);
 }
 
 using namespace llvm;
 /// used by Optimiser.cpp to add the Initialiser Simplification pass, implemented in InitialiserPass.cpp
-void addInitialiserSimplificationPass(const PassManagerBuilder&, PassManagerBase&);
+void addStdLibInlinePass(const PassManagerBuilder&, PassManagerBase&);
 
 
 #endif /* InitialiserPass_hpp */
