@@ -16,7 +16,7 @@
 extern "C" {
 #endif
     
-    void performLLVMOptimisations(LLVMModuleRef, int);
+    void performLLVMOptimisations(LLVMModuleRef, int, bool);
     
     void LLVMAddMetadata(LLVMValueRef val, const char * String);
     int LLVMMetadataID(const char * String);

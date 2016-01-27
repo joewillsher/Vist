@@ -11,7 +11,7 @@ struct FnType : Ty {
     let params: [Ty]
     let returns: Ty
     
-    let metadata: [String]
+    var metadata: [String]
     
     func ir() -> LLVMTypeRef {
         

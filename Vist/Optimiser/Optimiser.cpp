@@ -35,7 +35,7 @@ using namespace llvm;
 // swift impl here https://github.com/apple/swift/blob/master/lib/IRGen/IRGen.cpp
 
 /// Runs the optimisations
-void performLLVMOptimisations(Module *Module, int optLevel) {
+void performLLVMOptimisations(Module *Module, int optLevel, bool isStdLib) {
     
     PassManagerBuilder PMBuilder;
     
@@ -45,10 +45,9 @@ void performLLVMOptimisations(Module *Module, int optLevel) {
     PMBuilder.LoopVectorize = optLevel > 0;
     PMBuilder.MergeFunctions = optLevel > 0;
     
-    PMBuilder.addExtension(PassManagerBuilder::EP_EarlyAsPossible,  // Run first thing
-                           addStdLibInlinePass);       // The initialiaser pass
-    
-    
+    if (!isStdLib)
+        PMBuilder.addExtension(PassManagerBuilder::EP_EarlyAsPossible,  // Run first thing
+                               addStdLibInlinePass);                    // The initialiaser pass
     
     // Configure the function passes.
     legacy::FunctionPassManager FunctionPasses(Module);
@@ -95,9 +94,9 @@ void performLLVMOptimisations(Module *Module, int optLevel) {
 }
 
 /// Called from swift code
-void performLLVMOptimisations(LLVMModuleRef mod, int optLevel) {
+void performLLVMOptimisations(LLVMModuleRef mod, int optLevel, bool isStdLib) {
     Module *module = unwrap(mod);
-    performLLVMOptimisations(module, optLevel);
+    performLLVMOptimisations(module, optLevel, isStdLib);
 }
 
 

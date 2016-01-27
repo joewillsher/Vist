@@ -1,5 +1,5 @@
 
 let a = 3
-let b = 4
 print a
-print b
+
+// do addition next

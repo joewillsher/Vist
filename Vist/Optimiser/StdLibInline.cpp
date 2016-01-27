@@ -72,31 +72,30 @@ public:
             return;
         }
         
-        // FIXME: why am I using the C API?
         MemoryBufferRef stdLibModuleBuffer = b.get().get()->getMemBufferRef();
         auto res = parseBitcodeFile(stdLibModuleBuffer, getGlobalContext());
         
         stdLibModule = res.get();
     }
     
-    ~StdLibInline() {
-        delete stdLibModule;
-    }
+//    ~StdLibInline() {
+//        delete stdLibModule;
+//    }
 };
 
-// we dont care about the ID
+// we dont care about the ID -- make 0
 char StdLibInline::ID = 0;
 
 
 
-// MARK: bullshit llvm macros
+// MARK: pass setup
 
 // defines `initializeStdLibInlinePassOnce(PassRegistry &Registry)` function
 INITIALIZE_PASS_BEGIN(StdLibInline,
                       "initialiser-pass", "Vist initialiser folding pass",
                       false, false)
-// implements `llvm::initializeStdLibInlinePass(PassRegistry &Registry)` function, declared in header
-// adds it to the pass registry
+// implements `llvm::initializeStdLibInlinePass(PassRegistry &Registry)`
+// function, declared in header adds it to the pass registry
 INITIALIZE_PASS_END(StdLibInline,
                     "initialiser-pass", "Vist initialiser folding pass",
                     false, false)
@@ -115,34 +114,33 @@ FunctionPass *createStdLibInlinePass() {
 /// Called on functions in module, this is where the optimisations happen
 bool StdLibInline::runOnFunction(Function &function) {
     
+    // flag for whether the pass changed anything
     bool changed = false;
     
+    // we need a ref to the stdlib
     if (stdLibModule == nullptr)
-        return false;
+        return false; // return if we don’t have it
     
     Module *module = function.getParent();
     LLVMContext &context = module->getContext();
     IRBuilder<> builder = IRBuilder<>(context);
     
-    int initiID = LLVMMetadataID("stdlib.init");
-//    int fnID = LLVMMetadataID("stdlib.fn");
+    // id of the function call metadata we will optimise
+    int initiID = LLVMMetadataID("stdlib.call.optim");
+    uint index = 0; // current bb index
     
-    
-    uint index = 0;
-    
-    // for each block in the function
+    // loops over blocks in function
     while (true) {
         
-        BasicBlock *it = function.begin();
-        it += index;
-        BasicBlock &basicBlock = *it;
-        ++index;
+        BasicBlock *it = function.begin();  // `it` is our pointer to the current element
+        it += index;                        // move to the indexth element
+        BasicBlock &basicBlock = *it;       // reference to it
         
-        function.back().dump();
+        if (index >= function.size())
+            break;      // if we’re out of blocks break out of loop
+        else
+            ++index;    // otherwise iterate count for the next pass
         
-        if (index > function.size())
-            break;
-                
         // For each instruction in the block
         for (Instruction &instruction : basicBlock) {
             
@@ -152,7 +150,7 @@ bool StdLibInline::runOnFunction(Function &function) {
                 // which is a standardlib one
                 MDNode *metadata = call->getMetadata(initiID);
                 if (metadata == nullptr)
-                    continue;
+                    continue; // if isn’t a `stdlib.init` call
                 
                 // Run the stdlib inline pass
                 
@@ -160,12 +158,11 @@ bool StdLibInline::runOnFunction(Function &function) {
                 StringRef fnName = call->getCalledFunction()->getName();
                 Type *returnType = call->getType();
                 Function *stdLibCalledFunction = stdLibModule->getFunction(fnName);
+                bool isVoidFunction = returnType->isVoidTy();
                 
                 if (stdLibCalledFunction == nullptr)
                     continue;
                 
-                // move builder to call
-                builder.SetInsertPoint(call);
 
                 // make copy of function (which we can mutate)
                 ValueToValueMapTy VMap;
@@ -174,30 +171,63 @@ bool StdLibInline::runOnFunction(Function &function) {
                 if (calledFunction == nullptr)
                     continue;
                 
-                // add bb at call
+                // move builder to call
+                builder.SetInsertPoint(call);
+
                 // allocate the *return* value
-                Value *returnValueStorage = builder.CreateAlloca(returnType);
+                Value *returnValueStorage = nullptr;
+                if (!isVoidFunction) {
+                    returnValueStorage = builder.CreateAlloca(returnType);
+                }
                 
                 // split the current bb, and do all temp work in `inlinedBlock`
                 BasicBlock *rest = basicBlock.splitBasicBlock(call, Twine(basicBlock.getName() + ".rest"));
                 BasicBlock *inlinedBlock = BasicBlock::Create(context, Twine("inlined." + fnName), &function, rest);
-                
+                call->removeFromParent();
+
                 rest->replaceAllUsesWith(inlinedBlock); // move predecessors into `inlinedBlock`
-                builder.SetInsertPoint(inlinedBlock); // add IR code here
+                builder.SetInsertPoint(inlinedBlock);   // add IR code here
                 
-                // for block & instruction in the stdlib function's definition
+                // for block & instruction in the stdlib function’s definition
                 for (BasicBlock &fnBlock : *calledFunction) {
                     for (Instruction &inst : fnBlock) {
                         
-                        // if the instruction is a return, assign to the `returnValueStorage` and jump out of temp block
-                        if (auto *ret = dyn_cast<ReturnInst>(inst.clone())) {
-                            Value *res = ret->getReturnValue();
-                            builder.CreateStore(res, returnValueStorage);
+                        // if the instruction is a return, assign to
+                        // the `returnValueStorage` and jump out of temp block
+                        Instruction *newInst = inst.clone();
+                        if (auto *ret = dyn_cast<ReturnInst>(newInst)) {
+                            
+                            if (!isVoidFunction) {
+                                Value *res = ret->getReturnValue();
+                                builder.CreateStore(res, returnValueStorage);
+                            }
+                            
                             builder.CreateBr(rest);
+                        }
+                        // if its a function, we need to make sure its declared in our module
+                        else if (auto *call = dyn_cast<CallInst>(newInst)) {
+                            
+                            ValueToValueMapTy VMap;
+                            Function *fnThisModule = CloneFunction(call->getCalledFunction(), VMap, false);
+                            
+                            
+                            module->getOrInsertFunction(fnThisModule->getName(),
+                                                        fnThisModule->getFunctionType(),
+                                                        fnThisModule->getAttributes());
+                            
+                            Function *newProto = module->getFunction(fnThisModule->getName());
+                            
+                            call->setCalledFunction(newProto);
+                            
+                            inst.replaceAllUsesWith(call);
+                            builder.Insert(call, call->getName());
+                            
+                            
+                            
+                            std::cout << '\n';
                         }
                         // otherwise add the inst to the inlined block
                         else {
-                            Instruction *newInst = inst.clone();
                             inst.replaceAllUsesWith(newInst);
                             builder.Insert(newInst, newInst->getName());
                         }
@@ -217,12 +247,13 @@ bool StdLibInline::runOnFunction(Function &function) {
                 }
                 
                 // finalise -- store result in return val, and remove call from bb
-                Value *returnValue = builder.CreateLoad(returnValueStorage, fnName);
-                call->replaceAllUsesWith(returnValue);
-                call->removeFromParent();
+                if (!isVoidFunction) {
+                    Value *returnValue = builder.CreateLoad(returnValueStorage, fnName);
+                    call->replaceAllUsesWith(returnValue);
+                }
                 call->dropAllReferences();
                 
-                // merge inlined block's head with the predecessor block
+                // merge inlined block’s head with the predecessor block
                 MergeBlockIntoPredecessor(inlinedBlock);
                 
                 // if exit can only come from one place, merge it in too
@@ -237,8 +268,12 @@ bool StdLibInline::runOnFunction(Function &function) {
                     proto->dropAllReferences();
                 }
                 
+                // we have modified the function -- this tells the pass manager
                 changed = true;
+                // we want to iterate over the block again to make sure
+                // the stuff we added and the stuff after it is optimised
                 --index;
+                // go back to do the block again
                 break;
             }
             
@@ -251,7 +286,7 @@ bool StdLibInline::runOnFunction(Function &function) {
 
 /// Expose to the general optimiser function
 void addStdLibInlinePass(const PassManagerBuilder &Builder, PassManagerBase &PM) {
-    PM.add(createStdLibInlinePass());  // run my opt pass
+    PM.add(createStdLibInlinePass());               // run my opt pass
     PM.add(createPromoteMemoryToRegisterPass());    // remove the extra load & store
 }
 

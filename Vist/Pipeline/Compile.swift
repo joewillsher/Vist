@@ -134,11 +134,14 @@ public func compileDocuments(fileNames: [String],
         fileTask.launch()
         fileTask.waitUntilExit()
 
-        if optim || isStdLib {
-            performLLVMOptimisations(module, 3)
+        if isStdLib {
+            performLLVMOptimisations(module, 3, true)
+        }
+        else if optim {
+            performLLVMOptimisations(module, 3, false)
         }
         else {
-            performLLVMOptimisations(module, 0)
+            performLLVMOptimisations(module, 0, false)
         }
         
         try String.fromCString(LLVMPrintModuleToString(module))?.writeToFile("\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)

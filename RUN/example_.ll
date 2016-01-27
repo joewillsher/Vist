@@ -4,16 +4,11 @@ target triple = "x86_64-apple-macosx10.11.0"
 
 define i64 @main() {
 entry:
-  %0 = call { i64 } @_Int_i64(i64 3), !stdlib.init !0
+  %0 = call { i64 } @_Int_i64(i64 3), !stdlib.call.optim !0
   %1 = alloca { i64 }
   store { i64 } %0, { i64 }* %1
-  %2 = call { i64 } @_Int_i64(i64 4), !stdlib.init !0
-  %3 = alloca { i64 }
-  store { i64 } %2, { i64 }* %3
   %a = load { i64 }* %1
-  call void @_print_S.i64({ i64 } %a)
-  %b = load { i64 }* %3
-  call void @_print_S.i64({ i64 } %b)
+  call void @_print_S.i64({ i64 } %a), !stdlib.call.optim !0
   ret i64 0
 }
 
@@ -21,4 +16,4 @@ declare { i64 } @_Int_i64(i64)
 
 declare void @_print_S.i64({ i64 })
 
-!0 = !{!"stdlib.init"}
+!0 = !{!"stdlib.call.optim"}

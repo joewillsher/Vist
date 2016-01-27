@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-// struct type and tuple type both 1 protocol
+// TODO: struct type and tuple type both 1 protocol
 
 final class TupleType : Ty {
     var members: [Ty]

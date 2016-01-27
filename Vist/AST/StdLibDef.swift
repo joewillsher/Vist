@@ -6,39 +6,6 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-/// Holds functions, mangles them on initialisation and subscript
-private struct FunctionContainer {
-    
-    private let functions: [String: FnType]
-    private let types: [StructType]
-    
-    init (functions: [(String, FnType)], types: [StructType]) {
-        var t: [String: FnType] = [:]
-        
-        for (n, ty) in functions {
-            let mangled = n.mangle(ty.params)
-            t[mangled] = ty
-        }
-        
-        self.functions = t
-        self.types = types
-    }
-    
-    subscript(fn fn: String, types types: [Ty]) -> (String, FnType)? {
-        get {
-            let mangled = fn.mangle(types)
-            guard let ty = functions[mangled] else { return nil }
-            return (mangled, ty)
-        }
-    }
-    subscript(type type: String) -> StructType? {
-        get {
-            if let i = types.indexOf({ $0.name == type }) { return types[i] } else { return nil }
-        }
-    }
-}
-
-
 final class StdLibFunctions {
     
     private static let IntType =    StructType(members: [("value", BuiltinType.Int(size: 64), true)],       methods: [], name: "Int")
@@ -96,18 +63,18 @@ final class StdLibFunctions {
         ("fatalError", FnType(params: [],           returns: VoidType)),
         
         
-        ("Int",     FnType(params: [BuiltinType.Int(size: 64)],   returns: IntType,    metadata: ["stdlib.init"])),
-        ("Int",     FnType(params: [IntType],                     returns: IntType,    metadata: ["stdlib.init"])),
-        ("Bool",    FnType(params: [BuiltinType.Bool],            returns: BoolType,   metadata: ["stdlib.init"])),
-        ("Bool",    FnType(params: [BoolType],                    returns: IntType,    metadata: ["stdlib.init"])),
-        ("Float",   FnType(params: [BuiltinType.Float(size: 64)], returns: DoubleType, metadata: ["stdlib.init"])),
-        ("Float",   FnType(params: [DoubleType],                  returns: IntType,    metadata: ["stdlib.init"])),
-        ("Range",   FnType(params: [IntType, IntType],            returns: RangeType,  metadata: ["stdlib.init"])),
-        ("Range",   FnType(params: [RangeType],                   returns: RangeType,  metadata: ["stdlib.init"]))
+        ("Int",     FnType(params: [BuiltinType.Int(size: 64)],   returns: IntType)),
+        ("Int",     FnType(params: [IntType],                     returns: IntType)),
+        ("Bool",    FnType(params: [BuiltinType.Bool],            returns: BoolType)),
+        ("Bool",    FnType(params: [BoolType],                    returns: IntType)),
+        ("Float",   FnType(params: [BuiltinType.Float(size: 64)], returns: DoubleType)),
+        ("Float",   FnType(params: [DoubleType],                  returns: IntType)),
+        ("Range",   FnType(params: [IntType, IntType],            returns: RangeType)),
+        ("Range",   FnType(params: [RangeType],                   returns: RangeType))
     ]
     
     /// Container initialised with functions, provides subscript to look up functions by name and type
-    private static let functionContainer = FunctionContainer(functions: functions, types: types)
+    private static let functionContainer = FunctionContainer(functions: functions, types: types, metadata: ["stdlib.call.optim"])
     
     static func getStdLibType(id: String) -> StructType? {
         return functionContainer[type: id]
@@ -117,12 +84,31 @@ final class StdLibFunctions {
         return functionContainer[fn: id, types: args]
     }
     
+    
+    // MARK: Exposed functions
+    
+    /// Get a named function from the standard library
+    ///
+    /// - parameter id: Unmangled name
+    ///
+    /// - parameter args: Applied arg types
+    ///
+    /// - returns: An optional tuple of `(mangled-name, type)`
+    ///
     static func getStdLibFunction(id: String, args: [Ty]) -> (String, FnType)? {
         guard let fn = functionContainer[fn: id, types: args] else { return nil }
         return (fn.0, fn.1)
     }
     
     
+    /// Get the IR for a named function from the standard library
+    ///
+    /// - parameter id: Unmangled name
+    ///
+    /// - parameter args: Applied arg types
+    ///
+    /// - returns: An optional tuple of `(type, function-ir-ref)`
+    ///
     static func getFunctionIR(name: String, args: [Ty], module: LLVMModuleRef) -> (FnType, LLVMValueRef)? {
        
         if let (mangledName, type) = StdLibFunctions.getStdLibFunctionWithInitInfo(name, args: args) {
