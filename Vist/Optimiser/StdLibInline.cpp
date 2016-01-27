@@ -35,6 +35,8 @@
 #include "llvm/ADT/ilist_node.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/Utils/Cloning.h"
+#include "llvm/IR/Dominators.h"
+#include "llvm/IR/Instructions.h"
 
 #include "LLVM.h"
 
@@ -125,9 +127,22 @@ bool StdLibInline::runOnFunction(Function &function) {
     int initiID = LLVMMetadataID("stdlib.init");
 //    int fnID = LLVMMetadataID("stdlib.fn");
     
+    
+    uint index = 0;
+    
     // for each block in the function
-    for (BasicBlock &basicBlock : function) {
+    while (true) {
         
+        BasicBlock *it = function.begin();
+        it += index;
+        BasicBlock &basicBlock = *it;
+        ++index;
+        
+        function.back().dump();
+        
+        if (index > function.size())
+            break;
+                
         // For each instruction in the block
         for (Instruction &instruction : basicBlock) {
             
@@ -135,7 +150,7 @@ bool StdLibInline::runOnFunction(Function &function) {
             if (auto *call = dyn_cast<CallInst>(&instruction)) {
                 
                 // which is a standardlib one
-                auto metadata = call->getMetadata(initiID);
+                MDNode *metadata = call->getMetadata(initiID);
                 if (metadata == nullptr)
                     continue;
                 
@@ -146,6 +161,12 @@ bool StdLibInline::runOnFunction(Function &function) {
                 Type *returnType = call->getType();
                 Function *stdLibCalledFunction = stdLibModule->getFunction(fnName);
                 
+                if (stdLibCalledFunction == nullptr)
+                    continue;
+                
+                // move builder to call
+                builder.SetInsertPoint(call);
+
                 // make copy of function (which we can mutate)
                 ValueToValueMapTy VMap;
                 Function *calledFunction = CloneFunction(stdLibCalledFunction, VMap, false);
@@ -153,9 +174,7 @@ bool StdLibInline::runOnFunction(Function &function) {
                 if (calledFunction == nullptr)
                     continue;
                 
-                // move builder to call
-                // add bb here
-                builder.SetInsertPoint(call);
+                // add bb at call
                 // allocate the *return* value
                 Value *returnValueStorage = builder.CreateAlloca(returnType);
                 
@@ -165,10 +184,9 @@ bool StdLibInline::runOnFunction(Function &function) {
                 
                 rest->replaceAllUsesWith(inlinedBlock); // move predecessors into `inlinedBlock`
                 builder.SetInsertPoint(inlinedBlock); // add IR code here
-
                 
                 // for block & instruction in the stdlib function's definition
-                for (BasicBlock &fnBlock : *stdLibCalledFunction) {
+                for (BasicBlock &fnBlock : *calledFunction) {
                     for (Instruction &inst : fnBlock) {
                         
                         // if the instruction is a return, assign to the `returnValueStorage` and jump out of temp block
@@ -191,7 +209,7 @@ bool StdLibInline::runOnFunction(Function &function) {
                 
                 // replace uses of %0, %1 in the function with the parameters passed into it
                 uint i = 0;
-                for (Argument &fnArg : stdLibCalledFunction->args()) {
+                for (Argument &fnArg : calledFunction->args()) {
                     Value *calledArg = call->getOperand(i);
                     
                     fnArg.replaceAllUsesWith(calledArg);
@@ -204,14 +222,13 @@ bool StdLibInline::runOnFunction(Function &function) {
                 call->removeFromParent();
                 call->dropAllReferences();
                 
-                // merge blocks
+                // merge inlined block's head with the predecessor block
                 MergeBlockIntoPredecessor(inlinedBlock);
                 
                 // if exit can only come from one place, merge it in too
                 if (rest->getUniquePredecessor()) {
                     MergeBlockIntoPredecessor(rest);
                 }
-                
                 
                 // reference to in module definition of stdlib function
                 Function *proto = module->getFunction(fnName);
@@ -221,6 +238,7 @@ bool StdLibInline::runOnFunction(Function &function) {
                 }
                 
                 changed = true;
+                --index;
                 break;
             }
             

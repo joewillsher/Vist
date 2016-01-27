@@ -13,19 +13,14 @@ Ltmp1:
 	movq	%rsp, %rbp
 Ltmp2:
 	.cfi_def_cfa_register %rbp
-	subq	$16, %rsp
+	movl	$3, %eax
+	movl	%eax, %edi
+	callq	__print_S.i64
 	movl	$4, %eax
 	movl	%eax, %edi
-	callq	__Int_i64
-	movl	$3, %ecx
-	movl	%ecx, %edi
-	movq	%rax, -8(%rbp)          ## 8-byte Spill
 	callq	__print_S.i64
-	movq	-8(%rbp), %rdi          ## 8-byte Reload
-	callq	__print_S.i64
-	xorl	%ecx, %ecx
-	movl	%ecx, %eax
-	addq	$16, %rsp
+	xorl	%eax, %eax
+                                        ## kill: RAX<def> EAX<kill>
 	popq	%rbp
 	retq
 	.cfi_endproc
