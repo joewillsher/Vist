@@ -46,6 +46,9 @@
 		D4A2CC111C4FF58C00BB9A12 /* BuiltinDef.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC101C4FF58C00BB9A12 /* BuiltinDef.swift */; };
 		D4A2CC131C503D1800BB9A12 /* StdLibDef.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC121C503D1800BB9A12 /* StdLibDef.swift */; };
 		D4DE28141C5906830096E798 /* FunctionContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4DE28131C5906830096E798 /* FunctionContainer.swift */; };
+		D4DE28191C5969830096E798 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4DE28181C5969830096E798 /* libz.tbd */; };
+		D4DE281C1C596B250096E798 /* Assemble.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D4DE281A1C596B250096E798 /* Assemble.cpp */; };
+		D4DE281F1C596BFE0096E798 /* TargetMachine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D4DE281D1C596BFE0096E798 /* TargetMachine.cpp */; };
 		D4FAE45C1C3DCEEE00C9EE05 /* BuiltinFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4FAE45B1C3DCEEE00C9EE05 /* BuiltinFunction.swift */; };
 		D4FAE45E1C3DDE3100C9EE05 /* FunctionAttribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4FAE45D1C3DDE3100C9EE05 /* FunctionAttribute.swift */; };
 /* End PBXBuildFile section */
@@ -72,8 +75,8 @@
 		D4249F551C1AF9B200B15530 /* fn.vist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = fn.vist; sourceTree = "<group>"; };
 		D431F4C11C55743C005D439F /* StdLibInline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StdLibInline.cpp; path = Optimiser/StdLibInline.cpp; sourceTree = "<group>"; };
 		D431F4C21C55743C005D439F /* StdLibInline.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = StdLibInline.hpp; path = Optimiser/StdLibInline.hpp; sourceTree = "<group>"; };
-		D43DF1EC1C5540AF0049EC2F /* stdlib_.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib_.ll; path = stdlib/stdlib_.ll; sourceTree = "<group>"; };
-		D4644BE31C40619800364B99 /* stdlib.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib.ll; path = stdlib/stdlib.ll; sourceTree = "<group>"; };
+		D43DF1EC1C5540AF0049EC2F /* stdlib_.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib_.ll; path = stdlib/stdlib_.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
+		D4644BE31C40619800364B99 /* stdlib.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib.ll; path = stdlib/stdlib.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D4644BE51C40619800364B99 /* stdlib.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = stdlib.vist; path = stdlib/stdlib.vist; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D4644BE61C4072D600364B99 /* runtime.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = runtime.cpp; path = Runtime/runtime.cpp; sourceTree = "<group>"; };
 		D470D7AC1C56A98100791B40 /* Optimiser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Optimiser.cpp; path = Optimiser/Optimiser.cpp; sourceTree = "<group>"; };
@@ -123,8 +126,13 @@
 		D4BBE4191C4157E7001B8934 /* runtime.bc */ = {isa = PBXFileReference; lastKnownFileType = file; name = runtime.bc; path = Runtime/runtime.bc; sourceTree = "<group>"; };
 		D4BBE41A1C4157E7001B8934 /* runtime.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = runtime.ll; path = Runtime/runtime.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
 		D4BBE41E1C41584C001B8934 /* stdlib.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = stdlib.o; path = stdlib/stdlib.o; sourceTree = "<group>"; };
-		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
+		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D4DE28131C5906830096E798 /* FunctionContainer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FunctionContainer.swift; path = AST/FunctionContainer.swift; sourceTree = "<group>"; };
+		D4DE28181C5969830096E798 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		D4DE281A1C596B250096E798 /* Assemble.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Assemble.cpp; path = Pipeline/Assemble.cpp; sourceTree = "<group>"; };
+		D4DE281B1C596B250096E798 /* Assemble.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Assemble.hpp; path = Pipeline/Assemble.hpp; sourceTree = "<group>"; };
+		D4DE281D1C596BFE0096E798 /* TargetMachine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TargetMachine.cpp; path = Pipeline/TargetMachine.cpp; sourceTree = "<group>"; };
+		D4DE281E1C596BFE0096E798 /* TargetMachine.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = TargetMachine.hpp; path = Pipeline/TargetMachine.hpp; sourceTree = "<group>"; };
 		D4FAE4561C3B018000C9EE05 /* Test.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; name = Test.playground; path = Helper/Test.playground; sourceTree = "<group>"; };
 		D4FAE45B1C3DCEEE00C9EE05 /* BuiltinFunction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BuiltinFunction.swift; path = IRGen/BuiltinFunction.swift; sourceTree = "<group>"; };
 		D4FAE45D1C3DDE3100C9EE05 /* FunctionAttribute.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FunctionAttribute.swift; path = IRGen/FunctionAttribute.swift; sourceTree = "<group>"; };
@@ -135,6 +143,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D4DE28191C5969830096E798 /* libz.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -255,6 +264,7 @@
 		D47FF0711B812052003F9920 = {
 			isa = PBXGroup;
 			children = (
+				D4DE28181C5969830096E798 /* libz.tbd */,
 				D4DB9D641C1DFB8700503153 /* Source */,
 				D47D4BE01C38427200B22B3C /* Docs */,
 				D47FF07C1B812052003F9920 /* Vist */,
@@ -344,6 +354,10 @@
 			children = (
 				D497A76A1C3B003A00DFE39E /* main.swift */,
 				D497A7691C3B003A00DFE39E /* Compile.swift */,
+				D4DE281B1C596B250096E798 /* Assemble.hpp */,
+				D4DE281A1C596B250096E798 /* Assemble.cpp */,
+				D4DE281E1C596BFE0096E798 /* TargetMachine.hpp */,
+				D4DE281D1C596BFE0096E798 /* TargetMachine.cpp */,
 			);
 			name = Compile;
 			sourceTree = "<group>";
@@ -468,6 +482,7 @@
 				D4A2CC131C503D1800BB9A12 /* StdLibDef.swift in Sources */,
 				D40FC4CC1C4932F200122397 /* Initialiser.swift in Sources */,
 				D497A7931C3B015700DFE39E /* Link.swift in Sources */,
+				D4DE281C1C596B250096E798 /* Assemble.cpp in Sources */,
 				D4FAE45E1C3DDE3100C9EE05 /* FunctionAttribute.swift in Sources */,
 				D497A78A1C3B012700DFE39E /* ArrayVariable.swift in Sources */,
 				D497A7841C3B00FE00DFE39E /* LinkAST.swift in Sources */,
@@ -481,6 +496,7 @@
 				D497A7831C3B00FE00DFE39E /* ASTInterface.swift in Sources */,
 				D497A78B1C3B012700DFE39E /* IRGen.swift in Sources */,
 				D4DE28141C5906830096E798 /* FunctionContainer.swift in Sources */,
+				D4DE281F1C596BFE0096E798 /* TargetMachine.cpp in Sources */,
 				D497A78C1C3B012700DFE39E /* RuntimeVariable.swift in Sources */,
 				D40FC4CA1C48323E00122397 /* StdTypes.swift in Sources */,
 				D497A7701C3B005600DFE39E /* Token.swift in Sources */,
@@ -745,6 +761,7 @@
 					"-fvisibility-inlines-hidden",
 					"-Wl,-search_paths_first",
 					"-Wl,-headerpad_max_install_names",
+					"-lclangAnalysis\n-lclangARCMigrate\n-lclangAST\n-lclangASTMatchers\n-lclangBasic\n-lclangCodeGen\n-lclangDriver\n-lclangDynamicASTMatchers\n-lclangEdit\n-lclangFormat\n-lclangFrontend\n-lclangFrontendTool\n-lclangIndex\n-lclangLex\n-lclangParse\n-lclangRewrite\n-lclangRewriteFrontend\n-lclangSema\n-lclangSerialization\n-lclangStaticAnalyzerCheckers\n-lclangStaticAnalyzerCore\n-lclangStaticAnalyzerFrontend\n-lclangTooling\n-lclangToolingCore",
 				);
 				OTHER_SWIFT_FLAGS = "-DDEBUG";
 				PRELINK_LIBS = "";
@@ -910,6 +927,7 @@
 					"-fvisibility-inlines-hidden",
 					"-Wl,-search_paths_first",
 					"-Wl,-headerpad_max_install_names",
+					"-lclangAnalysis\n-lclangARCMigrate\n-lclangAST\n-lclangASTMatchers\n-lclangBasic\n-lclangCodeGen\n-lclangDriver\n-lclangDynamicASTMatchers\n-lclangEdit\n-lclangFormat\n-lclangFrontend\n-lclangFrontendTool\n-lclangIndex\n-lclangLex\n-lclangParse\n-lclangRewrite\n-lclangRewriteFrontend\n-lclangSema\n-lclangSerialization\n-lclangStaticAnalyzerCheckers\n-lclangStaticAnalyzerCore\n-lclangStaticAnalyzerFrontend\n-lclangTooling\n-lclangToolingCore",
 				);
 				OTHER_SWIFT_FLAGS = "-DDEBUG";
 				PRELINK_LIBS = "";

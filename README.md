@@ -9,7 +9,7 @@ To use, install the following with homebrew
 
 ``` 
 brew update
-brew install llvm
+brew install llvm --with-clang
 ``` 
 
 Then clone this repo and run the Xcode project to build the compiler binary.

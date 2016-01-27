@@ -28,4 +28,16 @@ LLVMValueRef getIntrinsic(const char *name,
 
 
 
+#ifdef __cplusplus // only for c++
+#include "llvm/IR/Value.h"
+#import "llvm/ADT/StringRef.h"
+
+using namespace llvm;
+Function *getIntrinsic(StringRef name,
+                    Module *mod,
+                    Type *ty);
+#endif
+
+
+
 #endif /* Intrinsic_h */

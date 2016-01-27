@@ -29,22 +29,42 @@
 #include "llvm/IR/Verifier.h"
 #include "llvm/Analysis/Passes.h"
 
+#include <iostream>
+
 
 using namespace llvm;
 
-// swift impl here https://github.com/apple/swift/blob/master/lib/IRGen/IRGen.cpp
+// swift impl here
+// https://github.com/apple/swift/blob/master/lib/IRGen/IRGen.cpp
+// https://github.com/apple/swift/blob/master/tools/swift-llvm-opt/LLVMOpt.cpp
 
 /// Runs the optimisations
 void performLLVMOptimisations(Module *Module, int optLevel, bool isStdLib) {
     
     PassManagerBuilder PMBuilder;
+
     
-    PMBuilder.OptLevel = optLevel;
-    PMBuilder.Inliner = optLevel > 0 ? llvm::createFunctionInliningPass(200) : nullptr;
-    PMBuilder.SLPVectorize = optLevel > 0;
-    PMBuilder.LoopVectorize = optLevel > 0;
-    PMBuilder.MergeFunctions = optLevel > 0;
-    
+    if (optLevel != 0) { // we want some optimisations, even at -O0
+        PMBuilder.OptLevel = 3;
+        PMBuilder.Inliner = createFunctionInliningPass(3, 0);
+        PMBuilder.DisableTailCalls = false;
+        PMBuilder.DisableUnitAtATime = false;
+        PMBuilder.DisableUnrollLoops = false;
+        PMBuilder.BBVectorize = true;
+        PMBuilder.SLPVectorize = true;
+        PMBuilder.LoopVectorize = true;
+        PMBuilder.RerollLoops = true;
+        PMBuilder.LoadCombine = true;
+        PMBuilder.DisableGVNLoadPRE = true;
+        PMBuilder.VerifyInput = true;
+        PMBuilder.VerifyOutput = true;
+        PMBuilder.StripDebug = true;
+        PMBuilder.MergeFunctions = true;
+    }
+    else {
+        PMBuilder.OptLevel = 0;
+        PMBuilder.Inliner = createAlwaysInlinerPass(false);
+    }
     if (!isStdLib)
         PMBuilder.addExtension(PassManagerBuilder::EP_EarlyAsPossible,  // Run first thing
                                addStdLibInlinePass);                    // The initialiaser pass
@@ -54,6 +74,7 @@ void performLLVMOptimisations(Module *Module, int optLevel, bool isStdLib) {
 
     FunctionPasses.add(createVerifierPass());
     
+
     if (optLevel == 0) { // we want some optimisations, even at -O0
         FunctionPasses.add(createBasicAliasAnalysisPass());
         FunctionPasses.add(createInstructionCombiningPass());
@@ -64,8 +85,11 @@ void performLLVMOptimisations(Module *Module, int optLevel, bool isStdLib) {
         FunctionPasses.add(createReassociatePass());
         FunctionPasses.add(createConstantPropagationPass());
     }
-    
+    else {
+//        FunctionPasses.add(createPromoteMemoryToRegisterPass());
+    }
     PMBuilder.populateFunctionPassManager(FunctionPasses);
+    
     // TODO: Dont run all optimisations in -O0
     // TODO: also make it so you *can* run this and not the command line `opt` tool
     
@@ -79,7 +103,7 @@ void performLLVMOptimisations(Module *Module, int optLevel, bool isStdLib) {
     legacy::PassManager ModulePasses;
     PMBuilder.populateModulePassManager(ModulePasses);
     
-    ModulePasses.add(createVerifierPass());
+//    ModulePasses.add(createVerifierPass());
     
     /// add custom module passes here
     // eg... ModulePasses.add(<#createAnyModulePass()#>);
@@ -87,16 +111,18 @@ void performLLVMOptimisations(Module *Module, int optLevel, bool isStdLib) {
     // then run optimisations
     ModulePasses.run(*Module);
     
-    legacy::PassManager LTOPasses;
-    /// add custom link time optimisations
-//    LTOPasses.addLTOOptimizationPasses(<#createAnyLTOPass()#>);
-    PMBuilder.populateLTOPassManager(LTOPasses);
+//    if (!isStdLib) {
+//        legacy::PassManager LTOPasses;
+//        /// add custom link time optimisations
+//        //    LTOPasses.addLTOOptimizationPasses(<#createAnyLTOPass()#>);
+//        PMBuilder.populateLTOPassManager(LTOPasses);
+//        LTOPasses.run(*Module);
+//    }
 }
 
 /// Called from swift code
 void performLLVMOptimisations(LLVMModuleRef mod, int optLevel, bool isStdLib) {
-    Module *module = unwrap(mod);
-    performLLVMOptimisations(module, optLevel, isStdLib);
+    performLLVMOptimisations(unwrap(mod), optLevel, isStdLib);
 }
 
 

@@ -39,6 +39,7 @@
 #include "llvm/IR/Instructions.h"
 
 #include "LLVM.h"
+#include "Intrinsic.hpp"
 
 #include <stdio.h>
 #include <iostream>
@@ -207,24 +208,31 @@ bool StdLibInline::runOnFunction(Function &function) {
                         // if its a function, we need to make sure its declared in our module
                         else if (auto *call = dyn_cast<CallInst>(newInst)) {
                             
-                            ValueToValueMapTy VMap;
-                            Function *fnThisModule = CloneFunction(call->getCalledFunction(), VMap, false);
-                            
-                            
-                            module->getOrInsertFunction(fnThisModule->getName(),
-                                                        fnThisModule->getFunctionType(),
-                                                        fnThisModule->getAttributes());
-                            
-                            Function *newProto = module->getFunction(fnThisModule->getName());
-                            
-                            call->setCalledFunction(newProto);
+                            if (call->getCalledFunction()->isIntrinsic()) {
+                                std::cout << call->getCalledFunction()->getName().data() << "\n";
+                                
+                                
+                                
+                                Function *intrinsic = getIntrinsic(call->getCalledFunction()->getName(),
+                                                                   module,
+                                                                   call->getOperand(0)->getType());
+                                call->setCalledFunction(intrinsic);
+                            }
+                            else {
+                                ValueToValueMapTy VMap;
+                                Function *fnThisModule = CloneFunction(call->getCalledFunction(), VMap, false);
+                                
+                                module->getOrInsertFunction(fnThisModule->getName(),
+                                                            fnThisModule->getFunctionType(),
+                                                            fnThisModule->getAttributes());
+                                
+                                Function *newProto = module->getFunction(fnThisModule->getName());
+                                
+                                call->setCalledFunction(newProto);
+                            }
                             
                             inst.replaceAllUsesWith(call);
                             builder.Insert(call, call->getName());
-                            
-                            
-                            
-                            std::cout << '\n';
                         }
                         // otherwise add the inst to the inlined block
                         else {
