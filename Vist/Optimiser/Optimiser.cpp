@@ -7,7 +7,7 @@
 //
 
 #include "Optimiser.hpp"
-#include "InitialiserPass.hpp"
+#include "StdLibInline.hpp"
 
 #include "llvm/PassManager.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"

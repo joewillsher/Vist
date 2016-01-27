@@ -1,12 +1,12 @@
 //
-//  InitialiserPass.cpp
+//  StdLibInline.cpp
 //  Vist
 //
 //  Created by Josef Willsher on 24/01/2016.
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-#include "InitialiserPass.hpp"
+#include "StdLibInline.hpp"
 #include "Optimiser.hpp"
 
 #include "llvm/PassManager.h"
@@ -122,22 +122,14 @@ bool StdLibInline::runOnFunction(Function &function) {
     LLVMContext &context = module->getContext();
     IRBuilder<> builder = IRBuilder<>(context);
     
-    
     int initiID = LLVMMetadataID("stdlib.init");
 //    int fnID = LLVMMetadataID("stdlib.fn");
     
     // for each block in the function
-    for (BasicBlock *index = function.begin(); index != function.end();) {
-        BasicBlock &basicBlock = *index;
-        index++;
-        
-        if (index == nullptr)
-            break;
+    for (BasicBlock &basicBlock : function) {
         
         // For each instruction in the block
         for (Instruction &instruction : basicBlock) {
-            
-            std::cout << function.size() << '\n';
             
             // If its a function call
             if (auto *call = dyn_cast<CallInst>(&instruction)) {
@@ -164,25 +156,33 @@ bool StdLibInline::runOnFunction(Function &function) {
                 Value *returnValueStorage = builder.CreateAlloca(returnType);
 
                 // split the current bb, and do all temp work in `inlinedBlock`
-                BasicBlock *rest = basicBlock.splitBasicBlock(call, Twine("rest"));
+                BasicBlock *rest = basicBlock.splitBasicBlock(call, Twine(basicBlock.getName() + ".rest"));
                 BasicBlock *inlinedBlock = BasicBlock::Create(context, Twine("inlined." + fnName), &function, rest);
                 
                 rest->replaceAllUsesWith(inlinedBlock); // move predecessors into `inlinedBlock`
                 builder.SetInsertPoint(inlinedBlock); // add IR code here
 
+                
+//                Instruction does not dominate all uses!
+//                %.fca.0.insert = insertvalue { i64 } undef, i64 3, 0
+//                tail call void @_print_S.i64({ i64 } %.fca.0.insert)
+//                LLVM ERROR: Broken function found, compilation aborted!
+                // TODO: FIx this -- I think it has something to do with how the res gets copied from the other module, and here they don't know about eachother
+                
                 // for block & instruction in the stdlib function's definition
                 for (BasicBlock &fnBlock : *calledFunction) {
                     
                     for (Instruction &inst : fnBlock) {
                         
                         // if the instruction is a return, assign to the `returnValueStorage` and jump out of temp block
-                        if (auto *ret = dyn_cast<ReturnInst>(&inst)) {
-                            builder.CreateStore(ret->getReturnValue(), returnValueStorage);
+                        if (auto *ret = dyn_cast<ReturnInst>(inst.clone())) {
+                            Value *res = ret->getReturnValue();
+                            builder.CreateStore(res, returnValueStorage);
                             builder.CreateBr(rest);
                         }
                         // otherwise add the inst to the inlined block
                         else {
-                            builder.Insert(inst.clone());
+                            builder.Insert(inst.clone(), inst.getName());
                         }
                     }
                 }
@@ -203,11 +203,24 @@ bool StdLibInline::runOnFunction(Function &function) {
                 Value *returnValue = builder.CreateLoad(returnValueStorage, fnName);
                 call->replaceAllUsesWith(returnValue);
                 call->removeFromParent();
-                
+                call->dropAllReferences();
+
                 // merge blocks
                 MergeBlockIntoPredecessor(inlinedBlock);
                 
-                index--;
+                // if exit can only come from one place, merge it in too
+                if (rest->getUniquePredecessor()) {
+                    MergeBlockIntoPredecessor(rest);
+                }
+                
+                
+                // reference to in module definition of stdlib function
+                Function *proto = module->getFunction(fnName);
+                if (proto->getNumUses() == 0) {
+                    proto->removeFromParent();
+                    proto->dropAllReferences();
+                }
+                
                 changed = true;
                 break;
             }
@@ -222,7 +235,6 @@ bool StdLibInline::runOnFunction(Function &function) {
 /// Expose to the general optimiser function
 void addStdLibInlinePass(const PassManagerBuilder &Builder, PassManagerBase &PM) {
     PM.add(createStdLibInlinePass());  // run my opt pass
-    PM.add(createCFGSimplificationPass());          // remove the `inlinedBlock`
     PM.add(createPromoteMemoryToRegisterPass());    // remove the extra load & store
 }
 
