@@ -26,6 +26,7 @@
 #include "llvm-c/BitReader.h"
 #include "llvm/IR/CallSite.h"
 #include "llvm/Transforms/Utils/Cloning.h"
+#include "llvm/Transforms/Utils/ValueMapper.h"
 #include "llvm/Transforms/Utils/Local.h"
 #include "llvm/Transforms/IPO/InlinerPass.h"
 #include "llvm/IR/IntrinsicInst.h"
@@ -59,6 +60,7 @@ public:
     static char ID;
     
     StdLibInline() : FunctionPass(ID) {
+        // FIXME: make a safer way of getting the directory path
         std::string path = "/Users/JoeWillsher/Developer/Vist/Vist/stdlib/stdlib.bc";
         auto b = MemoryBuffer::getFile(path.c_str());
         
@@ -75,9 +77,9 @@ public:
         stdLibModule = res.get();
     }
     
-//    ~StdLibInline() {
-//        delete stdLibModule;
-//    }
+    ~StdLibInline() {
+        delete stdLibModule;
+    }
 };
 
 // we dont care about the ID
@@ -96,8 +98,6 @@ INITIALIZE_PASS_BEGIN(StdLibInline,
 INITIALIZE_PASS_END(StdLibInline,
                     "initialiser-pass", "Vist initialiser folding pass",
                     false, false)
-
-//#define PATH(a) = ##a;
 
 
 
@@ -144,8 +144,12 @@ bool StdLibInline::runOnFunction(Function &function) {
                 // get info about caller and callee
                 StringRef fnName = call->getCalledFunction()->getName();
                 Type *returnType = call->getType();
-                Function *calledFunction = stdLibModule->getFunction(fnName);
-
+                Function *stdLibCalledFunction = stdLibModule->getFunction(fnName);
+                
+                // make copy of function (which we can mutate)
+                ValueToValueMapTy VMap;
+                Function *calledFunction = CloneFunction(stdLibCalledFunction, VMap, false);
+                
                 if (calledFunction == nullptr)
                     continue;
                 
@@ -154,7 +158,7 @@ bool StdLibInline::runOnFunction(Function &function) {
                 builder.SetInsertPoint(call);
                 // allocate the *return* value
                 Value *returnValueStorage = builder.CreateAlloca(returnType);
-
+                
                 // split the current bb, and do all temp work in `inlinedBlock`
                 BasicBlock *rest = basicBlock.splitBasicBlock(call, Twine(basicBlock.getName() + ".rest"));
                 BasicBlock *inlinedBlock = BasicBlock::Create(context, Twine("inlined." + fnName), &function, rest);
@@ -163,15 +167,8 @@ bool StdLibInline::runOnFunction(Function &function) {
                 builder.SetInsertPoint(inlinedBlock); // add IR code here
 
                 
-//                Instruction does not dominate all uses!
-//                %.fca.0.insert = insertvalue { i64 } undef, i64 3, 0
-//                tail call void @_print_S.i64({ i64 } %.fca.0.insert)
-//                LLVM ERROR: Broken function found, compilation aborted!
-                // TODO: FIx this -- I think it has something to do with how the res gets copied from the other module, and here they don't know about eachother
-                
                 // for block & instruction in the stdlib function's definition
-                for (BasicBlock &fnBlock : *calledFunction) {
-                    
+                for (BasicBlock &fnBlock : *stdLibCalledFunction) {
                     for (Instruction &inst : fnBlock) {
                         
                         // if the instruction is a return, assign to the `returnValueStorage` and jump out of temp block
@@ -182,7 +179,9 @@ bool StdLibInline::runOnFunction(Function &function) {
                         }
                         // otherwise add the inst to the inlined block
                         else {
-                            builder.Insert(inst.clone(), inst.getName());
+                            Instruction *newInst = inst.clone();
+                            inst.replaceAllUsesWith(newInst);
+                            builder.Insert(newInst, newInst->getName());
                         }
                     }
                 }
@@ -192,7 +191,7 @@ bool StdLibInline::runOnFunction(Function &function) {
                 
                 // replace uses of %0, %1 in the function with the parameters passed into it
                 uint i = 0;
-                for (Argument &fnArg : calledFunction->args()) {
+                for (Argument &fnArg : stdLibCalledFunction->args()) {
                     Value *calledArg = call->getOperand(i);
                     
                     fnArg.replaceAllUsesWith(calledArg);
@@ -204,7 +203,7 @@ bool StdLibInline::runOnFunction(Function &function) {
                 call->replaceAllUsesWith(returnValue);
                 call->removeFromParent();
                 call->dropAllReferences();
-
+                
                 // merge blocks
                 MergeBlockIntoPredecessor(inlinedBlock);
                 
