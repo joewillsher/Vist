@@ -37,6 +37,10 @@
 
 using namespace llvm;
 
+
+// http://jonathan2251.github.io/lbd/backendstructure.html
+// look at those instructions
+
 TargetMachine *createTargetMachine() {
     
     InitializeAllTargets();

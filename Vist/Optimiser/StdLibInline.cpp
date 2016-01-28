@@ -43,6 +43,8 @@
 
 #include <stdio.h>
 #include <iostream>
+#include <iterator>
+#include <vector>
 
 
 // useful instructions here: http://llvm.org/docs/WritingAnLLVMPass.html
@@ -128,19 +130,27 @@ bool StdLibInline::runOnFunction(Function &function) {
     
     // id of the function call metadata we will optimise
     int initiID = LLVMMetadataID("stdlib.call.optim");
-    uint index = 0; // current bb index
+    unsigned index = 0; // current bb index
     
     // loops over blocks in function
     while (true) {
+        printf("\n\n\n");
         
-        BasicBlock *it = function.begin();  // `it` is our pointer to the current element
-        it += index;                        // move to the indexth element
-        BasicBlock &basicBlock = *it;       // reference to it
+        BasicBlock *it = function.begin();
+        it->dump();
+        
+        BasicBlock &basicBlock = *std::next(it, index);
+//        basicBlock.dump();
+        
         
         if (index >= function.size())
             break;      // if we’re out of blocks break out of loop
         else
             ++index;    // otherwise iterate count for the next pass
+        
+        //
+        //  crashing in all blocks----------------
+        // kill me
         
         // For each instruction in the block
         for (Instruction &instruction : basicBlock) {
@@ -172,25 +182,49 @@ bool StdLibInline::runOnFunction(Function &function) {
                 if (calledFunction == nullptr)
                     continue;
                 
+//                unsigned long blocksBefore = function.getBasicBlockList().size();
+                
                 // move builder to call
                 builder.SetInsertPoint(call);
 
                 // allocate the *return* value
                 Value *returnValueStorage = nullptr;
-                if (!isVoidFunction) {
+                if (!isVoidFunction)
                     returnValueStorage = builder.CreateAlloca(returnType);
-                }
                 
                 // split the current bb, and do all temp work in `inlinedBlock`
                 BasicBlock *rest = basicBlock.splitBasicBlock(call, Twine(basicBlock.getName() + ".rest"));
-                BasicBlock *inlinedBlock = BasicBlock::Create(context, Twine("inlined." + fnName), &function, rest);
+                BasicBlock *inlinedBlock = BasicBlock::Create(context,
+                                                              Twine("inlined." + calledFunction->getName() +
+                                                                    "." + calledFunction->getEntryBlock().getName()),
+                                                              &function,
+                                                              rest);
+                basicBlock.replaceSuccessorsPhiUsesWith(inlinedBlock);
                 call->removeFromParent();
-
+                
                 rest->replaceAllUsesWith(inlinedBlock); // move predecessors into `inlinedBlock`
                 builder.SetInsertPoint(inlinedBlock);   // add IR code here
                 
+                
+                unsigned fnBBcount = 0;
                 // for block & instruction in the stdlib function’s definition
                 for (BasicBlock &fnBlock : *calledFunction) {
+                    
+                    BasicBlock *currentBlock;
+                    
+                    if (fnBBcount == 0) // if its the first
+                        currentBlock = inlinedBlock;
+                    else
+                        currentBlock = BasicBlock::Create(context, Twine("inlined." + calledFunction->getName() + "." + fnBlock.getName()), &function, rest);
+                    
+                    ++fnBBcount;
+                    
+                    builder.SetInsertPoint(currentBlock);
+                    
+                    fnBlock.replaceSuccessorsPhiUsesWith(currentBlock);
+                    fnBlock.replaceAllUsesWith(currentBlock);
+                    
+                    
                     for (Instruction &inst : fnBlock) {
                         
                         // if the instruction is a return, assign to
@@ -198,26 +232,26 @@ bool StdLibInline::runOnFunction(Function &function) {
                         Instruction *newInst = inst.clone();
                         if (auto *ret = dyn_cast<ReturnInst>(newInst)) {
                             
-                            if (!isVoidFunction) {
-                                Value *res = ret->getReturnValue();
-                                builder.CreateStore(res, returnValueStorage);
-                            }
+                            if (!isVoidFunction)
+                                builder.CreateStore(ret->getReturnValue(), returnValueStorage);
                             
                             builder.CreateBr(rest);
                         }
                         // if its a function, we need to make sure its declared in our module
                         else if (auto *call = dyn_cast<CallInst>(newInst)) {
                             
+                            // if its an intrinsic we need to make sure its in this module
                             if (call->getCalledFunction()->isIntrinsic()) {
-                                std::cout << call->getCalledFunction()->getName().data() << "\n";
                                 
-                                
+                                Type *optionalFirstArgument = call->getNumOperands() == 1 ? nullptr : call->getOperand(0)->getType();
                                 
                                 Function *intrinsic = getIntrinsic(call->getCalledFunction()->getName(),
                                                                    module,
-                                                                   call->getOperand(0)->getType());
+                                                                   optionalFirstArgument);
                                 call->setCalledFunction(intrinsic);
+                                
                             }
+                            // otherwise we copy in the body
                             else {
                                 ValueToValueMapTy VMap;
                                 Function *fnThisModule = CloneFunction(call->getCalledFunction(), VMap, false);
@@ -239,6 +273,7 @@ bool StdLibInline::runOnFunction(Function &function) {
                             inst.replaceAllUsesWith(newInst);
                             builder.Insert(newInst, newInst->getName());
                         }
+                        
                     }
                 }
                 
@@ -246,7 +281,7 @@ bool StdLibInline::runOnFunction(Function &function) {
                 builder.SetInsertPoint(rest, rest->begin());
                 
                 // replace uses of %0, %1 in the function with the parameters passed into it
-                uint i = 0;
+                unsigned i = 0;
                 for (Argument &fnArg : calledFunction->args()) {
                     Value *calledArg = call->getOperand(i);
                     
@@ -255,10 +290,9 @@ bool StdLibInline::runOnFunction(Function &function) {
                 }
                 
                 // finalise -- store result in return val, and remove call from bb
-                if (!isVoidFunction) {
-                    Value *returnValue = builder.CreateLoad(returnValueStorage, fnName);
-                    call->replaceAllUsesWith(returnValue);
-                }
+                if (!isVoidFunction)
+                    call->replaceAllUsesWith(builder.CreateLoad(returnValueStorage, fnName));
+                
                 call->dropAllReferences();
                 
                 // merge inlined block’s head with the predecessor block
@@ -276,11 +310,13 @@ bool StdLibInline::runOnFunction(Function &function) {
                     proto->dropAllReferences();
                 }
                 
-                // we have modified the function -- this tells the pass manager
-                changed = true;
+                
+//                unsigned long blocksAfter = function.getBasicBlockList().size();
                 // we want to iterate over the block again to make sure
                 // the stuff we added and the stuff after it is optimised
                 --index;
+                // we have modified the function -- this tells the pass manager
+                changed = true;
                 // go back to do the block again
                 break;
             }

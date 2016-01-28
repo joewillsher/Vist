@@ -87,10 +87,8 @@ Function *getIntrinsic(StringRef name,
     std::vector<Type *> arg_types;
     if (ty != nullptr)
         arg_types.push_back(ty);
-    
-    Function *intrinsic = Intrinsic::getDeclaration(mod, id, arg_types);
         
-    return intrinsic;
+    return Intrinsic::getDeclaration(mod, id, arg_types);
 }
 
 
