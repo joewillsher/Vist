@@ -2515,11 +2515,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Optimiser/StdLibInline.cpp"
-            timestampString = "475670283.777245"
+            timestampString = "475707659.521524"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "326"
-            endingLineNumber = "326"
+            startingLineNumber = "335"
+            endingLineNumber = "335"
             landmarkName = "StdLibInline::runOnFunction(Function &amp;function)"
             landmarkType = "5">
             <Actions>
@@ -2539,91 +2539,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Optimiser/StdLibInline.cpp"
-            timestampString = "475670283.777245"
+            timestampString = "475706648.973812"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "157"
-            endingLineNumber = "157"
-            landmarkName = "StdLibInline::runOnFunction(Function &amp;function)"
-            landmarkType = "5">
-            <Actions>
-               <BreakpointActionProxy
-                  ActionExtensionID = "Xcode.BreakpointAction.DebuggerCommand">
-                  <ActionContent
-                     consoleCommand = "po instruction-&gt;dump()">
-                  </ActionContent>
-               </BreakpointActionProxy>
-            </Actions>
-            <Locations>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "StdLibInline::runOnFunction(llvm::Function&amp;)"
-                  moduleName = "vist"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/JoeWillsher/Developer/Vist/Vist/Optimiser/StdLibInline.cpp"
-                  timestampString = "475669101.257789"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "159"
-                  endingLineNumber = "159"
-                  offsetFromSymbolStart = "464">
-               </Location>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "StdLibInline::runOnFunction(llvm::Function&amp;)"
-                  moduleName = "vist"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/JoeWillsher/Developer/Vist/Vist/Optimiser/StdLibInline.cpp"
-                  timestampString = "475669101.25847"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "159"
-                  endingLineNumber = "159"
-                  offsetFromSymbolStart = "491">
-               </Location>
-            </Locations>
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Vist/Optimiser/StdLibInline.cpp"
-            timestampString = "475670283.777245"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "178"
-            endingLineNumber = "178"
-            landmarkName = "StdLibInline::runOnFunction(Function &amp;function)"
-            landmarkType = "5">
-            <Actions>
-               <BreakpointActionProxy
-                  ActionExtensionID = "Xcode.BreakpointAction.DebuggerCommand">
-                  <ActionContent
-                     consoleCommand = "po stdLibCalledFunction-&gt;dump()">
-                  </ActionContent>
-               </BreakpointActionProxy>
-            </Actions>
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Vist/Optimiser/StdLibInline.cpp"
-            timestampString = "475670283.777245"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "179"
-            endingLineNumber = "179"
+            startingLineNumber = "183"
+            endingLineNumber = "183"
             landmarkName = "StdLibInline::runOnFunction(Function &amp;function)"
             landmarkType = "5">
          </BreakpointContent>
@@ -2635,11 +2555,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Optimiser/StdLibInline.cpp"
-            timestampString = "475670283.777245"
+            timestampString = "475706648.973812"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "188"
-            endingLineNumber = "188"
+            startingLineNumber = "192"
+            endingLineNumber = "192"
             landmarkName = "StdLibInline::runOnFunction(Function &amp;function)"
             landmarkType = "5">
          </BreakpointContent>
@@ -2736,21 +2656,37 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             shouldBeEnabled = "No"
+            ignoreCount = "2"
+            continueAfterRunningActions = "No"
+            filePath = "Vist/Optimiser/StdLibInline.cpp"
+            timestampString = "475707555.730607"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "231"
+            endingLineNumber = "231"
+            landmarkName = "StdLibInline::runOnFunction(Function &amp;function)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Optimiser/StdLibInline.cpp"
-            timestampString = "475670283.777245"
+            timestampString = "475707360.031773"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "229"
-            endingLineNumber = "229"
+            startingLineNumber = "286"
+            endingLineNumber = "286"
             landmarkName = "StdLibInline::runOnFunction(Function &amp;function)"
             landmarkType = "5">
             <Actions>
                <BreakpointActionProxy
                   ActionExtensionID = "Xcode.BreakpointAction.DebuggerCommand">
                   <ActionContent
-                     consoleCommand = "po inst.dump()">
+                     consoleCommand = "po function.begin()-&gt;dump();">
                   </ActionContent>
                </BreakpointActionProxy>
             </Actions>
@@ -2763,51 +2699,11 @@
             ignoreCount = "2"
             continueAfterRunningActions = "No"
             filePath = "Vist/Optimiser/StdLibInline.cpp"
-            timestampString = "475670283.777245"
+            timestampString = "475707555.730607"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "225"
-            endingLineNumber = "225"
-            landmarkName = "StdLibInline::runOnFunction(Function &amp;function)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "2"
-            continueAfterRunningActions = "No"
-            filePath = "Vist/Optimiser/StdLibInline.cpp"
-            timestampString = "475670283.777245"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "279"
-            endingLineNumber = "279"
-            landmarkName = "StdLibInline::runOnFunction(Function &amp;function)"
-            landmarkType = "5">
-            <Actions>
-               <BreakpointActionProxy
-                  ActionExtensionID = "Xcode.BreakpointAction.DebuggerCommand">
-                  <ActionContent
-                     consoleCommand = "po module-&gt;dump();">
-                  </ActionContent>
-               </BreakpointActionProxy>
-            </Actions>
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "2"
-            continueAfterRunningActions = "No"
-            filePath = "Vist/Optimiser/StdLibInline.cpp"
-            timestampString = "475670283.777245"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "208"
-            endingLineNumber = "208"
+            startingLineNumber = "212"
+            endingLineNumber = "212"
             landmarkName = "StdLibInline::runOnFunction(Function &amp;function)"
             landmarkType = "5">
             <Actions>
@@ -2827,11 +2723,35 @@
             ignoreCount = "1"
             continueAfterRunningActions = "No"
             filePath = "Vist/Optimiser/StdLibInline.cpp"
-            timestampString = "475670283.777245"
+            timestampString = "475707555.730607"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "251"
-            endingLineNumber = "251"
+            startingLineNumber = "258"
+            endingLineNumber = "258"
+            landmarkName = "StdLibInline::runOnFunction(Function &amp;function)"
+            landmarkType = "5">
+            <Actions>
+               <BreakpointActionProxy
+                  ActionExtensionID = "Xcode.BreakpointAction.DebuggerCommand">
+                  <ActionContent
+                     consoleCommand = "po module-&gt;dump()">
+                  </ActionContent>
+               </BreakpointActionProxy>
+            </Actions>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "4"
+            continueAfterRunningActions = "No"
+            filePath = "Vist/Optimiser/StdLibInline.cpp"
+            timestampString = "475706648.973812"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "143"
+            endingLineNumber = "143"
             landmarkName = "StdLibInline::runOnFunction(Function &amp;function)"
             landmarkType = "5">
             <Actions>
@@ -2851,27 +2771,35 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Optimiser/StdLibInline.cpp"
-            timestampString = "475670283.777245"
+            timestampString = "475707555.730607"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "276"
-            endingLineNumber = "276"
+            startingLineNumber = "236"
+            endingLineNumber = "236"
             landmarkName = "StdLibInline::runOnFunction(Function &amp;function)"
             landmarkType = "5">
+            <Actions>
+               <BreakpointActionProxy
+                  ActionExtensionID = "Xcode.BreakpointAction.DebuggerCommand">
+                  <ActionContent
+                     consoleCommand = "po function.begin()-&gt;dump();">
+                  </ActionContent>
+               </BreakpointActionProxy>
+            </Actions>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "4"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Optimiser/StdLibInline.cpp"
-            timestampString = "475670283.777245"
+            timestampString = "475707659.521524"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "144"
-            endingLineNumber = "144"
+            startingLineNumber = "328"
+            endingLineNumber = "328"
             landmarkName = "StdLibInline::runOnFunction(Function &amp;function)"
             landmarkType = "5">
             <Actions>
