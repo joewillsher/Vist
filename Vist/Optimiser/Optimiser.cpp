@@ -51,15 +51,15 @@ void performLLVMOptimisations(Module *Module, int optLevel, bool isStdLib) {
         PMBuilder.DisableUnitAtATime = false;
         PMBuilder.DisableUnrollLoops = false;
         PMBuilder.BBVectorize = true;
-        PMBuilder.SLPVectorize = true;
-        PMBuilder.LoopVectorize = true;
+//        PMBuilder.SLPVectorize = true;
+//        PMBuilder.LoopVectorize = true;
         PMBuilder.RerollLoops = true;
         PMBuilder.LoadCombine = true;
-        PMBuilder.DisableGVNLoadPRE = true;
-        PMBuilder.VerifyInput = true;
-        PMBuilder.VerifyOutput = true;
-        PMBuilder.StripDebug = true;
-        PMBuilder.MergeFunctions = true;
+//        PMBuilder.DisableGVNLoadPRE = true;
+//        PMBuilder.VerifyInput = true;
+//        PMBuilder.VerifyOutput = true;
+//        PMBuilder.StripDebug = true;
+//        PMBuilder.MergeFunctions = true;
     }
     else {
         PMBuilder.OptLevel = 0;
@@ -71,10 +71,9 @@ void performLLVMOptimisations(Module *Module, int optLevel, bool isStdLib) {
     
     // Configure the function passes.
     legacy::FunctionPassManager FunctionPasses(Module);
-
+    
     FunctionPasses.add(createVerifierPass());
     
-
     if (optLevel == 0) { // we want some optimisations, even at -O0
         FunctionPasses.add(createBasicAliasAnalysisPass());
         FunctionPasses.add(createInstructionCombiningPass());

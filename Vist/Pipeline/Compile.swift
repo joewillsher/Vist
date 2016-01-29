@@ -70,7 +70,7 @@ public func compileDocuments(fileNames: [String],
             if let h = head {
                 head = try astLink(h, other: [ast])
             }
-
+            
             if index == 0 {
                 head = ast
             }
@@ -97,13 +97,13 @@ public func compileDocuments(fileNames: [String],
         
         var module = LLVMModuleCreateWithName("vist_module")
         // Create vist program module and link against the helper bytecode
-
+        
         if isStdLib {
             linkModule(&module, withFile: "\(runtimeDirectory)/runtime.bc")
         }
         
         configModule(module)
-
+        
         
         
         
@@ -123,9 +123,9 @@ public func compileDocuments(fileNames: [String],
         
         
         //run my optimisation passes
-                
+        
         if verbose { print("\n\n----------------------------OPTIM----------------------------\n") }
-
+        
         let fileTask = NSTask()
         fileTask.currentDirectoryPath = currentDirectory
         fileTask.launchPath = "/usr/bin/touch"
@@ -133,15 +133,24 @@ public func compileDocuments(fileNames: [String],
         
         fileTask.launch()
         fileTask.waitUntilExit()
-
+        
         if optim || isStdLib {
             performLLVMOptimisations(module, 3, isStdLib)
+            try String.fromCString(LLVMPrintModuleToString(module))?.writeToFile("\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
+            
+            let optimTask = NSTask()
+            optimTask.currentDirectoryPath = currentDirectory
+            optimTask.launchPath = "\(llvmDirectory)/opt"
+            optimTask.arguments = ["-S", "-O3", "-o", "\(file).ll", "\(file).ll"]
+            
+            optimTask.launch()
+            optimTask.waitUntilExit()
         }
         else {
             performLLVMOptimisations(module, 0, false)
+            try String.fromCString(LLVMPrintModuleToString(module))?.writeToFile("\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
         }
-        try String.fromCString(LLVMPrintModuleToString(module))?.writeToFile("\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
-
+        
         if verbose { print(try String(contentsOfFile: "\(currentDirectory)/\(file).ll", encoding: NSUTF8StringEncoding) ?? "") }
         
         
@@ -153,7 +162,7 @@ public func compileDocuments(fileNames: [String],
         
         if verbose { print("\n\n-----------------------------ASM-----------------------------\n") }
         
-
+        
         if !isStdLib {
             /// compiles the LLVM IR to assembly
             let compileIRtoASMTask = NSTask()
@@ -192,7 +201,7 @@ public func compileDocuments(fileNames: [String],
             assembleTask.waitUntilExit()
         }
         else {
-
+            
             /// link file to stdlib and compile
             let compileTask = NSTask()
             compileTask.currentDirectoryPath = currentDirectory
@@ -229,7 +238,7 @@ public func compileDocuments(fileNames: [String],
                 f.minimumFractionDigits = 2
                 print("\n--------\nTime elapsed: \(f.stringFromNumber(t)!)s")
             }
-
+            
         }
         
         
@@ -249,7 +258,7 @@ public func compileDocuments(fileNames: [String],
         }
         
         
-
+        
         
 }
 
@@ -258,7 +267,7 @@ public func compileDocuments(fileNames: [String],
 func buildRuntime() {
     
     let runtimeDirectory = "\(SOURCE_ROOT)/Vist/Runtime"
-
+    
     /// Generate LLVM IR File for the helper c++ code
     let runtimeIRGenTask = NSTask()
     runtimeIRGenTask.currentDirectoryPath = runtimeDirectory
