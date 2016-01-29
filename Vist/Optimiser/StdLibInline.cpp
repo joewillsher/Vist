@@ -61,6 +61,7 @@ class StdLibInline : public FunctionPass {
     Module *stdLibModule;
     
     virtual bool runOnFunction(Function &F) override;
+    virtual bool doFinalization(Module &) override;
     
 public:
     static char ID;
@@ -131,30 +132,12 @@ bool StdLibInline::runOnFunction(Function &function) {
     
     // id of the function call metadata we will optimise
     int initiID = LLVMMetadataID("stdlib.call.optim");
-    unsigned index = 0; // current bb index
-    
-//    ValueToValueMapTy VMap;
-//    Function *inlinedFunction = CloneFunction(inlinedFunction, VMap, false);
-
     
     // loops over blocks in function
-    while (true) {
-        printf("\n\n\n");
-        
-        BasicBlock *it = function.begin();
-        it->dump();
-        
-        BasicBlock &basicBlock = *std::next(it, index);
-        
-        
-        if (index >= function.size())
-            break;      // if we’re out of blocks break out of loop
-        else
-            ++index;    // otherwise iterate count for the next pass
-        
-        //
-        //  crashing in all blocks----------------
-        //  kill me
+    for (BasicBlock &basicBlock : function) {
+
+        if (changed)
+            break;
         
         // For each instruction in the block
         for (Instruction &instruction : basicBlock) {
@@ -310,7 +293,7 @@ bool StdLibInline::runOnFunction(Function &function) {
             MergeBlockIntoPredecessor(inlinedBlock);
             
             // if exit can only come from one place, merge it in too
-            if (rest->getUniquePredecessor()) {
+            if (rest->getSinglePredecessor()) {
                 MergeBlockIntoPredecessor(rest);
             }
             
@@ -321,21 +304,20 @@ bool StdLibInline::runOnFunction(Function &function) {
                 proto->dropAllReferences();
             }
             
-            
-            unsigned long blocksAfter = function.getBasicBlockList().size();
-            if (blocksAfter > 1)
-                return true;
-            
+                        
             // we want to iterate over the block again to make sure
             // the stuff we added and the stuff after it is optimised
-            --index;
             // we have modified the function -- this tells the pass manager
             changed = true;
             // go back to do the block again
             break;
-            
         }
     }
+    
+    if (changed)
+        while (true) {
+            if (!runOnFunction(function)) break;
+        }
     
     return changed;
 }
@@ -347,6 +329,12 @@ void addStdLibInlinePass(const PassManagerBuilder &Builder, PassManagerBase &PM)
     PM.add(createPromoteMemoryToRegisterPass());    // remove the extra load & store
 }
 
+bool StdLibInline::doFinalization(Module &module) {
+    
+    
+    
+    return true;
+}
 
 
 

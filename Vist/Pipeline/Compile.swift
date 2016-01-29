@@ -148,6 +148,7 @@ public func compileDocuments(fileNames: [String],
         }
         else {
             performLLVMOptimisations(module, 0, false)
+            
             try String.fromCString(LLVMPrintModuleToString(module))?.writeToFile("\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
         }
         
