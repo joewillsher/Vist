@@ -26,7 +26,7 @@ func foo :: Int Int -> Int = do
 
 func bar :: Int = do print $0
 
-func fact :: Int -> Int = |a| do
+func fact :: Int -> Int = (a) do
     if a <= 1 do
         return 1
     else do

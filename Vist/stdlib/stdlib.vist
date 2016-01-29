@@ -7,8 +7,8 @@
 type Int {
     var value: LLVM.Int64
     
-    init Int = |o| do value = o.value
-    init LLVM.Int = |v| do value = v
+    init Int = (o) do value = o.value
+    init LLVM.Int = (v) do value = v
     init () = {
         let v = 0
         value = v.value
@@ -18,8 +18,8 @@ type Int {
 type Bool {
     var value: LLVM.Bool
 
-    init Bool = |o| do value = o.value
-    init LLVM.Bool = |v| do value = v
+    init Bool = (o) do value = o.value
+    init LLVM.Bool = (v) do value = v
     init () = {
         let b = false
         value = b.value
@@ -29,8 +29,8 @@ type Bool {
 type Double {
     var value: LLVM.Double
 
-    init Double = |o| do value = o.value
-    init LLVM.Double = |v| do value = v
+    init Double = (o) do value = o.value
+    init LLVM.Double = (v) do value = v
 }
 
 type Range {
@@ -57,9 +57,9 @@ type Array {
 // free functions
 // ----------------------------------------------------
 
-@inline func print :: Int = |a| do _print a.value
-@inline func print :: Bool = |a| do _print a.value
-@inline func print :: Double = |a| do _print a.value
+@inline func print :: Int = (a) do _print a.value
+@inline func print :: Bool = (a) do _print a.value
+@inline func print :: Double = (a) do _print a.value
 
 // TODO: print message
 @inline @noreturn func fatalError :: () = do LLVM.trap ()
@@ -79,113 +79,113 @@ type Array {
 
 // int
 @inline @operator(80)
-func + :: Int Int -> Int = |a b| {
+func + :: Int Int -> Int = (a b) {
     let v = LLVM.i_add a.value b.value
     condFail v.1
     return Int v.0
 }
 
 @inline @operator(80)
-func - :: Int Int -> Int = |a b| {
+func - :: Int Int -> Int = (a b) {
     let v = LLVM.i_sub a.value b.value
     condFail v.1
     return Int v.0
 }
 
 @inline @operator(100)
-func * :: Int Int -> Int = |a b| {
+func * :: Int Int -> Int = (a b) {
     let v = LLVM.i_mul a.value b.value
     condFail v.1
     return Int v.0
 }
 
 @inline @operator(100)
-func / :: Int Int -> Int = |a b| do
+func / :: Int Int -> Int = (a b) do
     return Int (LLVM.i_div a.value b.value)
 
 @inline @operator(90)
-func % :: Int Int -> Int = |a b| do
+func % :: Int Int -> Int = (a b) do
     return Int (LLVM.i_rem a.value b.value)
 
 @inline @operator(30)
-func < :: Int Int -> Bool = |a b| do
+func < :: Int Int -> Bool = (a b) do
     return Bool (LLVM.i_cmp_lt a.value b.value)
 
 @inline @operator(30)
-func <= :: Int Int -> Bool = |a b| do
+func <= :: Int Int -> Bool = (a b) do
     return Bool (LLVM.i_cmp_lte a.value b.value)
 
 @inline @operator(30)
-func > :: Int Int -> Bool = |a b| do
+func > :: Int Int -> Bool = (a b) do
     return Bool (LLVM.i_cmp_gt a.value b.value)
 
 @inline @operator(30)
-func >= :: Int Int -> Bool = |a b| do
+func >= :: Int Int -> Bool = (a b) do
     return Bool (LLVM.i_cmp_gte a.value b.value)
 
 @inline @operator(20)
-func == :: Int Int -> Bool = |a b| do
+func == :: Int Int -> Bool = (a b) do
     return Bool (LLVM.i_eq a.value b.value)
 
 @inline @operator(20)
-func != :: Int Int -> Bool = |a b| do
+func != :: Int Int -> Bool = (a b) do
     return Bool (LLVM.i_neq a.value b.value)
 
 
 // bool
 @inline @operator(15)
-func && :: Bool Bool -> Bool = |a b| do
+func && :: Bool Bool -> Bool = (a b) do
     return Bool (LLVM.b_and a.value b.value)
 
 @inline @operator(10)
-func || :: Bool Bool -> Bool = |a b| do
+func || :: Bool Bool -> Bool = (a b) do
     return Bool (LLVM.b_or a.value b.value)
 // TODO:: ! prefix operator
 
 
 // float
 @inline @operator(80)
-func + :: Double Double -> Double = |a b| do
+func + :: Double Double -> Double = (a b) do
     return Double (LLVM.f_add a.value b.value)
 
 @inline @operator(80)
-func - :: Double Double -> Double = |a b| do
+func - :: Double Double -> Double = (a b) do
     return Double (LLVM.f_sub a.value b.value)
 
 @inline @operator(100)
-func * :: Double Double -> Double = |a b| do
+func * :: Double Double -> Double = (a b) do
     return Double (LLVM.f_mul a.value b.value)
 
 @inline @operator(100)
-func / :: Double Double -> Double = |a b| do
+func / :: Double Double -> Double = (a b) do
     return Double (LLVM.f_div a.value b.value)
 
 @inline @operator(90)
-func % :: Double Double -> Double = |a b| do
+func % :: Double Double -> Double = (a b) do
     return Double (LLVM.f_rem a.value b.value)
 
 @inline @operator(30)
-func < :: Double Double -> Bool = |a b| do
+func < :: Double Double -> Bool = (a b) do
     return Bool (LLVM.f_cmp_lt a.value b.value)
 
 @inline @operator(30)
-func <= :: Double Double -> Bool = |a b| do
+func <= :: Double Double -> Bool = (a b) do
     return Bool (LLVM.f_cmp_lte a.value b.value)
 
 @inline @operator(30)
-func > :: Double Double -> Bool = |a b| do
+func > :: Double Double -> Bool = (a b) do
     return Bool (LLVM.f_cmp_gt a.value b.value)
 
 @inline @operator(30)
-func >= :: Double Double -> Bool = |a b| do
+func >= :: Double Double -> Bool = (a b) do
     return Bool (LLVM.f_cmp_gte a.value b.value)
 
 @inline @operator(20)
-func == :: Double Double -> Bool = |a b| do
+func == :: Double Double -> Bool = (a b) do
     return Bool (LLVM.f_eq a.value b.value)
 
 @inline @operator(20)
-func != :: Double Double -> Bool = |a b| do
+func != :: Double Double -> Bool = (a b) do
     return Bool (LLVM.f_neq a.value b.value)
 
 

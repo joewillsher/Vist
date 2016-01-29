@@ -449,7 +449,7 @@ extension Parser {
         case let .StringLiteral(str):
             return parseStringExpr(str)
             
-        case .OpenBrace, .Do, .Bar:
+        case .OpenBrace, .Do, .OpenParen:
             let block = try parseBlockExpr()
             let closure = ClosureExpr(exprs: block.exprs, params: block.variables.map { $0.name })
             return closure
@@ -745,7 +745,7 @@ extension Parser {
     
     private mutating func parseClosureNamesExpr() throws -> [ValueType] {
         
-        guard case .Bar = currentToken else { return [] }
+        guard case .OpenParen = currentToken else { return [] }
         getNextToken() // eat '|'
         
         var nms: [String] = []
@@ -753,7 +753,7 @@ extension Parser {
             nms.append(name)
             getNextToken()
         }
-        guard case .Bar = currentToken else { throw ParseError.ExpectedBar(currentPos) }
+        guard case .CloseParen = currentToken else { throw ParseError.ExpectedParen(currentPos) }
         guard getNextToken().isControlToken() else { throw ParseError.NotBlock(currentPos) }
         
         return nms.map { ValueType.init(name: $0) }
@@ -762,7 +762,7 @@ extension Parser {
     private mutating func parseClosureDeclaration(anon anon: Bool = false, type: FunctionType) throws -> FunctionImplementationExpr {
         let names: [Expr]
         
-        if case .Bar = currentToken {
+        if case .OpenParen = currentToken {
             names = try parseClosureNamesExpr()
                 .map { $0 as Expr }
         }
@@ -812,7 +812,7 @@ extension Parser {
     private mutating func parseBlockExpr(names: [ValueType] = []) throws -> BlockExpr {
         
         switch currentToken {
-        case .Bar:          return try parseBlockExpr(try parseClosureNamesExpr())
+        case .OpenParen:    return try parseBlockExpr(try parseClosureNamesExpr())
         case .OpenBrace:    return try parseBraceExpr(names)
         case .Do, .Else:    return try parseBracelessDoExpr(names)
         default:            throw ParseError.NotBlock(currentPos)

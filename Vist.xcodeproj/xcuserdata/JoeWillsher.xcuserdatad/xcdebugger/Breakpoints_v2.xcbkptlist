@@ -360,11 +360,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Pipeline/Compile.swift"
-            timestampString = "475721919.957313"
+            timestampString = "475793974.556695"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "245"
-            endingLineNumber = "245"
+            startingLineNumber = "233"
+            endingLineNumber = "233"
             landmarkName = "compileDocuments(_:verbose:dumpAST:irOnly:asmOnly:buildOnly:profile:optim:preserve:generateLibrary:isStdLib:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -728,11 +728,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Pipeline/Compile.swift"
-            timestampString = "475721919.957313"
+            timestampString = "475793974.556695"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "185"
-            endingLineNumber = "185"
+            startingLineNumber = "173"
+            endingLineNumber = "173"
             landmarkName = "compileDocuments(_:verbose:dumpAST:irOnly:asmOnly:buildOnly:profile:optim:preserve:generateLibrary:isStdLib:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -2623,38 +2623,6 @@
             startingLineNumber = "119"
             endingLineNumber = "119"
             landmarkName = "performLLVMOptimisations(Module *Module, int optLevel, bool isStdLib)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Vist/Pipeline/Compile.swift"
-            timestampString = "475721919.957313"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "153"
-            endingLineNumber = "153"
-            landmarkName = "compileDocuments(_:verbose:dumpAST:irOnly:asmOnly:buildOnly:profile:optim:preserve:generateLibrary:isStdLib:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Vist/Pipeline/Compile.swift"
-            timestampString = "475721919.957313"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "149"
-            endingLineNumber = "149"
-            landmarkName = "compileDocuments(_:verbose:dumpAST:irOnly:asmOnly:buildOnly:profile:optim:preserve:generateLibrary:isStdLib:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

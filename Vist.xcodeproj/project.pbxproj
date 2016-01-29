@@ -238,6 +238,7 @@
 				D4FAE4561C3B018000C9EE05 /* Test.playground */,
 				D497A78F1C3B015700DFE39E /* Config.swift */,
 				D497A7911C3B015700DFE39E /* Print.swift */,
+				D4DE28181C5969830096E798 /* libz.tbd */,
 				D40FC4D11C4AB98600122397 /* Headers */,
 			);
 			name = Helper;
@@ -264,7 +265,6 @@
 		D47FF0711B812052003F9920 = {
 			isa = PBXGroup;
 			children = (
-				D4DE28181C5969830096E798 /* libz.tbd */,
 				D4DB9D641C1DFB8700503153 /* Source */,
 				D47D4BE01C38427200B22B3C /* Docs */,
 				D47FF07C1B812052003F9920 /* Vist */,
