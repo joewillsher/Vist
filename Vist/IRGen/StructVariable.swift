@@ -118,6 +118,8 @@ class ParameterStructVariable : StructVariable {
     func loadPropertyNamed(name: String) throws -> LLVMValueRef {
         guard let i = indexOfProperty(name) else { throw SemaError.NoPropertyNamed(name) }
         return LLVMBuildExtractValue(builder, value, UInt32(i), name)
+        // TODO: if its a struct with 1 element, make this a bitcast tbh
+        // TODO: opt pass to transform successive extracts/insertvalues to bitcasts
     }
     
     func store(val: LLVMValueRef, inPropertyNamed name: String) throws {

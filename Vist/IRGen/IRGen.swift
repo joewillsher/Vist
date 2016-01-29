@@ -471,7 +471,7 @@ extension FuncDecl : IRGenerator {
         let functionType = type.ir()
         let function = LLVMAddFunction(module, mangledName, functionType)
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
-        LLVMSetLinkage(function, LLVMExternalLinkage)
+        LLVMSetLinkage(function, LLVMExternalLinkage) // TODO: only external linkage for stdlib -- this is a performance problem
 
         // add attrs
         for a in attrs {

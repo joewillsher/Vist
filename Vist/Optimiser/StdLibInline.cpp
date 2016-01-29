@@ -116,6 +116,18 @@ FunctionPass *createStdLibInlinePass() {
 }
 
 
+// TODO: fix recursive bullshit i've done
+// http://comments.gmane.org/gmane.comp.compilers.llvm.devel/31198
+//
+//First, you may be invalidating the iterator i by erasing the value
+//inside the loop.  In my code, I almost always iterate through the
+//instructions once and record them in a std::vector.  I think loop
+//through the std::vector, processing the end element and then remove it
+//from the std::vector.  It is less efficient but ensures no nasty
+//iterator invalidation errors.
+//
+
+
 /// Called on functions in module, this is where the optimisations happen
 bool StdLibInline::runOnFunction(Function &function) {
     
@@ -135,7 +147,7 @@ bool StdLibInline::runOnFunction(Function &function) {
     
     // loops over blocks in function
     for (BasicBlock &basicBlock : function) {
-
+        
         if (changed)
             break;
         
@@ -157,6 +169,7 @@ bool StdLibInline::runOnFunction(Function &function) {
             
             // Run the stdlib inline pass
             
+            
             // get info about caller and callee
             StringRef fnName = call->getCalledFunction()->getName();
             Type *returnType = call->getType();
@@ -174,8 +187,6 @@ bool StdLibInline::runOnFunction(Function &function) {
             if (calledFunction == nullptr)
                 continue;
             
-//                unsigned long blocksBefore = function.getBasicBlockList().size();
-            
             // move builder to call
             builder.SetInsertPoint(call);
             
@@ -190,8 +201,25 @@ bool StdLibInline::runOnFunction(Function &function) {
                                                           Twine("inlined." + calledFunction->getName() + "." + calledFunction->getEntryBlock().getName()),
                                                           &function,
                                                           rest);
-            basicBlock.replaceSuccessorsPhiUsesWith(inlinedBlock);
-            call->removeFromParent();
+            
+            // finalise -- store result in return val, and remove call from bb
+            builder.SetInsertPoint(rest, rest->begin()); // start of `rest`
+            Value *loadReturnValue = nullptr;
+            if (!isVoidFunction) {
+                loadReturnValue = builder.CreateLoad(returnValueStorage, fnName);
+                call->replaceAllUsesWith(loadReturnValue);
+            }
+            
+            // replace uses of %0, %1 in the function definition with the parameters passed into it
+            unsigned i = 0;
+            for (Argument &fnArg : calledFunction->args()) {
+                Value *calledArg = call->getOperand(i);
+                
+                fnArg.replaceAllUsesWith(calledArg);
+                i++;
+            }
+            
+            basicBlock.replaceSuccessorsPhiUsesWith(rest);
             
             rest->replaceAllUsesWith(inlinedBlock); // move predecessors into `inlinedBlock`
             builder.SetInsertPoint(inlinedBlock);   // add IR code here
@@ -220,15 +248,17 @@ bool StdLibInline::runOnFunction(Function &function) {
                 
                 for (Instruction &inst : fnBlock) {
                     
-                    
                     // if the instruction is a return, assign to
                     // the `returnValueStorage` and jump out of temp block
                     Instruction *newInst = inst.clone();
+                    newInst->setName(inst.getName());
+                    
+                    inst.replaceAllUsesWith(newInst);
+
                     if (auto *ret = dyn_cast<ReturnInst>(newInst)) {
                         
                         if (!isVoidFunction)
                             builder.CreateStore(ret->getReturnValue(), returnValueStorage);
-                        
                         builder.CreateBr(rest);
                     }
                     // if its a function, we need to make sure its declared in our module
@@ -237,13 +267,14 @@ bool StdLibInline::runOnFunction(Function &function) {
                         // if its an intrinsic we need to make sure its in this module
                         if (call->getCalledFunction()->isIntrinsic()) {
                             
-                            Type *optionalFirstArgument = call->getNumOperands() == 1 ? nullptr : call->getOperand(0)->getType();
+                            Type *optionalFirstArgument = call->getNumOperands() == 1
+                                ? nullptr // if no arguments, we are not overloading
+                                : call->getOperand(0)->getType();
                             
                             Function *intrinsic = getIntrinsic(call->getCalledFunction()->getName(),
                                                                module,
                                                                optionalFirstArgument);
                             call->setCalledFunction(intrinsic);
-                            
                         }
                         // otherwise we copy in the body
                         else {
@@ -259,43 +290,32 @@ bool StdLibInline::runOnFunction(Function &function) {
                             call->setCalledFunction(newProto);
                         }
                         
-                        inst.replaceAllUsesWith(call);
                         builder.Insert(call, call->getName());
                     }
                     // otherwise add the inst to the inlined block
                     else {
-                        inst.replaceAllUsesWith(newInst);
-                        builder.Insert(newInst, newInst->getName());
+                        builder.Insert(newInst, inst.getName());
                     }
                     
+                    std::cout << inst.getNumUses() << '\n';
                 }
+                
             }
+            
+            calledFunction->dropAllReferences();
+            
+            call->dropAllReferences();
+            call->removeFromParent();
             
             // move out of `inlinedBlock`
             builder.SetInsertPoint(rest, rest->begin());
-            
-            // replace uses of %0, %1 in the function with the parameters passed into it
-            unsigned i = 0;
-            for (Argument &fnArg : calledFunction->args()) {
-                Value *calledArg = call->getOperand(i);
-                
-                fnArg.replaceAllUsesWith(calledArg);
-                i++;
-            }
-            
-            // finalise -- store result in return val, and remove call from bb
-            if (!isVoidFunction)
-                call->replaceAllUsesWith(builder.CreateLoad(returnValueStorage, fnName));
-            
-            call->dropAllReferences();
             
             // merge inlined block’s head with the predecessor block
             MergeBlockIntoPredecessor(inlinedBlock);
             
             // if exit can only come from one place, merge it in too
-            if (rest->getSinglePredecessor()) {
+            if (rest->getSinglePredecessor())
                 MergeBlockIntoPredecessor(rest);
-            }
             
             // reference to in module definition of stdlib function
             Function *proto = module->getFunction(fnName);
@@ -303,21 +323,22 @@ bool StdLibInline::runOnFunction(Function &function) {
                 proto->removeFromParent();
                 proto->dropAllReferences();
             }
-            
                         
-            // we want to iterate over the block again to make sure
-            // the stuff we added and the stuff after it is optimised
-            // we have modified the function -- this tells the pass manager
+            
             changed = true;
-            // go back to do the block again
-            break;
+            while (true) {
+                if (!runOnFunction(function)) break;
+            }
+            return changed;
         }
     }
     
-    if (changed)
-        while (true) {
-            if (!runOnFunction(function)) break;
-        }
+//    if (changed)
+//        while (true) {
+//            if (!runOnFunction(function)) break;
+//        }
+    
+    
     
     return changed;
 }
@@ -327,6 +348,7 @@ bool StdLibInline::runOnFunction(Function &function) {
 void addStdLibInlinePass(const PassManagerBuilder &Builder, PassManagerBase &PM) {
     PM.add(createStdLibInlinePass());               // run my opt pass
     PM.add(createPromoteMemoryToRegisterPass());    // remove the extra load & store
+    PM.add(createCFGSimplificationPass());
 }
 
 bool StdLibInline::doFinalization(Module &module) {

@@ -137,7 +137,8 @@ public func compileDocuments(fileNames: [String],
         if optim || isStdLib {
 
             performLLVMOptimisations(module, 3, isStdLib)
-            
+            try String.fromCString(LLVMPrintModuleToString(module))?.writeToFile("\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
+
             let optimTask = NSTask()
             optimTask.currentDirectoryPath = currentDirectory
             optimTask.launchPath = "\(llvmDirectory)/opt"
@@ -145,6 +146,7 @@ public func compileDocuments(fileNames: [String],
             
             optimTask.launch()
             optimTask.waitUntilExit()
+
         }
         else {
             performLLVMOptimisations(module, 0, false)
@@ -153,8 +155,8 @@ public func compileDocuments(fileNames: [String],
         }
         
         if verbose { print(try String(contentsOfFile: "\(currentDirectory)/\(file).ll", encoding: NSUTF8StringEncoding) ?? "") }
-
-//        LLVMDisposeModule(module)
+        
+        
         
         if irOnly { return }
         

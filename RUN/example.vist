@@ -1,3 +1,9 @@
 
-let a = 3 + 4
-print a
+func fact :: Int -> Int = |a| do
+    if a <= 1 do
+        return 1
+    else do
+        return a * fact a - 1
+
+print (fact 8)
+
