@@ -10,7 +10,7 @@ func builtinBinaryInstruction(named: String, builder: LLVMBuilderRef, module: LL
     switch named {
         
     case "LLVM.i_add": return {
-        let l = getIntrinsic("llvm.sadd.with.overflow", module, LLVMTypeOf($0))
+        let l = getIntrinsic("llvm.sadd.with.overflow", module, LLVMTypeOf($0), false)
         
         let args = [$0, $1].ptr()
         defer { args.dealloc(2) }
@@ -19,7 +19,7 @@ func builtinBinaryInstruction(named: String, builder: LLVMBuilderRef, module: LL
         }
         
     case "LLVM.i_sub": return {
-        let l = getIntrinsic("llvm.ssub.with.overflow", module, LLVMTypeOf($0))
+        let l = getIntrinsic("llvm.ssub.with.overflow", module, LLVMTypeOf($0), false)
         
         let args = [$0, $1].ptr()
         defer { args.dealloc(2) }
@@ -27,7 +27,7 @@ func builtinBinaryInstruction(named: String, builder: LLVMBuilderRef, module: LL
         return LLVMBuildCall(builder, l, args, 2, "sub_res")
         }
     case "LLVM.i_mul": return {
-        let l = getIntrinsic("llvm.smul.with.overflow", module, LLVMTypeOf($0))
+        let l = getIntrinsic("llvm.smul.with.overflow", module, LLVMTypeOf($0), false)
         
         let args = [$0, $1].ptr()
         defer { args.dealloc(2) }
@@ -70,7 +70,7 @@ func builtinInstruction(named: String, builder: LLVMBuilderRef, module: LLVMModu
 
     switch named {
     case "LLVM.trap": return {
-        let l = getIntrinsic("llvm.trap", module, nil)
+        let l = getIntrinsic("llvm.trap", module, nil, false)
         
         let args = [].ptr()
         defer { args.dealloc(0) }

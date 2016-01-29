@@ -215,8 +215,6 @@ bool StdLibInline::runOnFunction(Function &function) {
                 
                 fnArg.replaceAllUsesWith(calledArg);
                 i++;
-                calledArg->dump(); // what is this when the arg is an inlined stdlib function
-                // param seems to be holding a reference to the old value
             }
             
             basicBlock.replaceSuccessorsPhiUsesWith(rest);
@@ -271,7 +269,8 @@ bool StdLibInline::runOnFunction(Function &function) {
                             
                             Function *intrinsic = getIntrinsic(call->getCalledFunction()->getName(),
                                                                module,
-                                                               optionalFirstArgument);
+                                                               optionalFirstArgument,
+                                                               true);
                             call->setCalledFunction(intrinsic);
                         }
                         // otherwise we copy in the body

@@ -24,7 +24,8 @@ extern "C"
 
 LLVMValueRef getIntrinsic(const char *name,
                           LLVMModuleRef mod,
-                          LLVMTypeRef ty);
+                          LLVMTypeRef ty,
+                          bool removeOverload);
 
 
 
@@ -34,8 +35,9 @@ LLVMValueRef getIntrinsic(const char *name,
 
 using namespace llvm;
 Function *getIntrinsic(StringRef name,
-                    Module *mod,
-                    Type *ty);
+                       Module *mod,
+                       Type *ty,
+                       bool removeOverload);
 #endif
 
 

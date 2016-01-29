@@ -52,23 +52,16 @@ bool GetLLVMIntrinsicIDFromString(const char* str,
 }
 
 
-/// Returns ptr to intrinsic function
-LLVMValueRef getIntrinsic(const char *name,
-                          LLVMModuleRef mod,
-                          LLVMTypeRef ty
-                          ) {
-    return wrap(getIntrinsic(StringRef(name), unwrap(mod), unwrap(ty)));
-}
-
 Function *getIntrinsic(StringRef name,
                        Module *mod,
-                       Type *ty ) {
+                       Type *ty,
+                       bool removeOverload) {
     auto found = mod->getFunction(name);
     
     // horrible hack
     // if overloaded (foo.i64), drop the .i64
     // TODO: an impl using the target machine
-    if (ty != nullptr) {
+    if (ty != nullptr && removeOverload) {
         auto u = name.str();
         u.erase(u.length()-4, u.length());
         name = StringRef(u);
@@ -91,6 +84,13 @@ Function *getIntrinsic(StringRef name,
     return Intrinsic::getDeclaration(mod, id, arg_types);
 }
 
+/// Returns ptr to intrinsic function
+LLVMValueRef getIntrinsic(const char *name,
+                          LLVMModuleRef mod,
+                          LLVMTypeRef ty,
+                          bool removeOverload) {
+    return wrap(getIntrinsic(StringRef(name), unwrap(mod), unwrap(ty), removeOverload));
+}
 
 
 
