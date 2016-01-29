@@ -56,6 +56,8 @@ using namespace llvm;
 
 // MARK: StdLibInline pass decl
 
+// TODO: make a subclass of `Inliner`
+// http://llvm.org/docs/doxygen/html/Inliner_8cpp_source.html#l00358
 class StdLibInline : public FunctionPass {
     
     Module *stdLibModule;
@@ -82,10 +84,6 @@ public:
         
         stdLibModule = res.get();
     }
-    
-    //    ~StdLibInline() {
-    //        delete stdLibModule;
-    //    }
 };
 
 // we dont care about the ID -- make 0
@@ -217,6 +215,8 @@ bool StdLibInline::runOnFunction(Function &function) {
                 
                 fnArg.replaceAllUsesWith(calledArg);
                 i++;
+                calledArg->dump(); // what is this when the arg is an inlined stdlib function
+                // param seems to be holding a reference to the old value
             }
             
             basicBlock.replaceSuccessorsPhiUsesWith(rest);
@@ -226,7 +226,7 @@ bool StdLibInline::runOnFunction(Function &function) {
             
             
             unsigned fnBBcount = 0;
-            // for block & instruction in the stdlib function’s definition
+//             for block & instruction in the stdlib function’s definition
             for (BasicBlock &fnBlock : *calledFunction) {
                 
                 BasicBlock *currentBlock;
@@ -245,7 +245,6 @@ bool StdLibInline::runOnFunction(Function &function) {
                 fnBlock.replaceSuccessorsPhiUsesWith(currentBlock);
                 fnBlock.replaceAllUsesWith(currentBlock);
                 
-                
                 for (Instruction &inst : fnBlock) {
                     
                     // if the instruction is a return, assign to
@@ -253,13 +252,12 @@ bool StdLibInline::runOnFunction(Function &function) {
                     Instruction *newInst = inst.clone();
                     newInst->setName(inst.getName());
                     
-                    inst.replaceAllUsesWith(newInst);
-
                     if (auto *ret = dyn_cast<ReturnInst>(newInst)) {
                         
                         if (!isVoidFunction)
                             builder.CreateStore(ret->getReturnValue(), returnValueStorage);
                         builder.CreateBr(rest);
+                        ret->dropAllReferences();
                     }
                     // if its a function, we need to make sure its declared in our module
                     else if (auto *call = dyn_cast<CallInst>(newInst)) {
@@ -291,17 +289,20 @@ bool StdLibInline::runOnFunction(Function &function) {
                         }
                         
                         builder.Insert(call, call->getName());
+                        inst.replaceAllUsesWith(newInst);
                     }
                     // otherwise add the inst to the inlined block
                     else {
+                        
                         builder.Insert(newInst, inst.getName());
+                        inst.replaceAllUsesWith(newInst);
                     }
                     
-                    std::cout << inst.getNumUses() << '\n';
+                    
                 }
                 
             }
-            
+
             calledFunction->dropAllReferences();
             
             call->dropAllReferences();
@@ -323,7 +324,7 @@ bool StdLibInline::runOnFunction(Function &function) {
                 proto->removeFromParent();
                 proto->dropAllReferences();
             }
-                        
+            
             
             changed = true;
             while (true) {
