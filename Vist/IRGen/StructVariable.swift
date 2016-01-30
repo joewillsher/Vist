@@ -89,7 +89,7 @@ class MutableStructVariable : StructVariable, MutableVariable {
     
 }
 
-/// Struct param, load from value not ptr
+/// function param struct, load by value not ptr
 class ParameterStructVariable : StructVariable {
     var type: LLVMTypeRef
     var ptr: LLVMValueRef = nil
@@ -130,17 +130,18 @@ class ParameterStructVariable : StructVariable {
 
 
 
-
+// rename to StructPropertyVariable
 /// Variable kind referenced by initialisers
-final class AssignablePropertyVariable : MutableVariable {
+final class StructPropertyVariable : MutableVariable {
     var type: LLVMTypeRef = nil // dont care -- initialiser has this info
     var name: String
-    let mutable = true // initialiser can always assign
+    let mutable: Bool
     private unowned var str: StructVariable // unowned ref to struct this belongs to
     
-    init(name: String, str: StructVariable) {
+    init(name: String, str: StructVariable, mutable: Bool) {
         self.name = name
         self.str = str
+        self.mutable = mutable
     }
     
     func store(val: LLVMValueRef) throws {

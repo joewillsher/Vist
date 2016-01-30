@@ -1,39 +1,33 @@
 
+
+
 // type foo, { i64 i64 } type
 // implicit memberwise initialser is added
 type StackOf2 {
     var a: Int
     var b: Int
     
-    // a complex initialiser
-    init Int = (v) {
-        a = v
-        b = v * 2
-    }
-    
-    func sum :: -> Int = do return a + b
-
-    func pop :: -> Int = do return b
-    
-    func push :: Int = (u) {
-        a = b
-        b = u
-    }
-    
-    func clear :: () = {
-        a = 0
-        b = 0
-    }
+    func sum :: () -> Int = do return a + b
+    func pop :: () -> Int = do return b
 }
+
+func push :: Int StackOf2 -> StackOf2 = (val stack) do
+    return StackOf2 stack.b val
+
+func empty :: -> StackOf2 = do
+    return StackOf2 0 0
+
 
 var stack = StackOf2 2 10
 
-print stack.sum () + stack.pop ()
+print (stack.sum ())
 
-stack.push 3
-print stack.pop ()
+stack = push 3 stack
+print (stack.pop ())
 
-stack.clear
+stack = empty ()
+
 print stack.a == stack.b
+
 
 let stack2 = StackOf2 12

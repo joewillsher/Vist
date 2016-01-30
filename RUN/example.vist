@@ -17,25 +17,32 @@ type StackOf2 {
     
     func pop :: () -> Int = do return b
     
+    @mutating
     func push :: Int = (u) {
         a = b
         b = u
     }
     
-    func clear :: () = {
-        a = 0
-        b = 0
-    }
 }
+
+/*
+ Currently `self` is accessed by passing in the first arg
+ This `ParameterStructVariable` isnt able to be mutated :9
+ We need a way of mutating state in methods
+ */
+
+
+
+
+//print (stack-pop 1) // syntax idea
 
 var stack = StackOf2 2 10
 
-print (stack.sum ())
+print (stack.sum () + stack.pop ())
 
 stack.push 3
-print stack.pop ()
+print (stack.pop ())
 
-stack.clear
 print stack.a == stack.b
 
 let stack2 = StackOf2 12

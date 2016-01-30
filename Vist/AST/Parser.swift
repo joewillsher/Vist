@@ -364,11 +364,11 @@ extension Parser {
             // property or method
             
             switch inspectNextToken() {
-            case let u? where u.isValidParamToken && !inParameterList:
+            case let u? where u.isValidParamToken && !inParameterList: // method call
                 getNextToken() // eat foo
                 
                 if case .OpenParen = currentToken {   // simple itentifier () call
-                    getNextToken() // eat `)`
+                    getNextToken(2) // eat `)`
                     return MethodCallExpr(name: name, params: TupleExpr.void(), object: exp)
                 }
                 
@@ -382,7 +382,7 @@ extension Parser {
                 let exp = try parseOperatorExpr()
                 return MutationExpr(object: property, value: exp)
                 
-            default:
+            default: // otherwise its a property
                 defer { getNextToken() }
                 return PropertyLookupExpr(name: name, object: exp)
             }

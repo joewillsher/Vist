@@ -4,52 +4,40 @@ target triple = "x86_64-apple-macosx10.11.0"
 
 define void @main() {
 entry:
-  %0 = call { i64 } @_Int_i64(i64 20), !stdlib.call.optim !0
-  %fact_res = call { i64 } @_fact_S.i64({ i64 } %0)
-  call void @_print_S.i64({ i64 } %fact_res), !stdlib.call.optim !0
-  %1 = call { i64 } @_Int_i64(i64 4), !stdlib.call.optim !0
-  %2 = alloca { i64 }
-  store { i64 } %1, { i64 }* %2
-  %a = load { i64 }* %2
-  %3 = call { i64 } @_Int_i64(i64 6), !stdlib.call.optim !0
-  %"*.res" = call { i64 } @"_*_S.i64_S.i64"({ i64 } %a, { i64 } %3), !stdlib.call.optim !0
-  %4 = alloca { i64 }
-  store { i64 } %"*.res", { i64 }* %4
-  %b = load { i64 }* %4
-  call void @_print_S.i64({ i64 } %b), !stdlib.call.optim !0
+  %0 = call { i64 } @_Int_i64(i64 2), !stdlib.call.optim !0
+  %Foo_res = call { { i64 } } @_Foo_S.i64({ i64 } %0)
+  %1 = alloca { { i64 } }
+  store { { i64 } } %Foo_res, { { i64 } }* %1
   ret void
 }
 
-define internal { i64 } @_fact_S.i64({ i64 } %a) {
+; Function Attrs: alwaysinline
+define { { i64 } } @_Foo_S.i64({ i64 } %w) #0 {
 entry:
-  %0 = call { i64 } @_Int_i64(i64 1), !stdlib.call.optim !0
-  %"<=.res" = call { i1 } @"_<=_S.i64_S.i64"({ i64 } %a, { i64 } %0), !stdlib.call.optim !0
-  %value = extractvalue { i1 } %"<=.res", 0
-  br i1 %value, label %then.0, label %cont.0
+  %0 = alloca { { i64 } }
+  %a_ptr = getelementptr inbounds { { i64 } }* %0, i32 0, i32 0
+  store { i64 } %w, { i64 }* %a_ptr
+  %a_ptr1 = getelementptr inbounds { { i64 } }* %0, i32 0, i32 0
+  %a = load { i64 }* %a_ptr1
+  call void @_print_S.i64({ i64 } %a), !stdlib.call.optim !0
+  %1 = load { { i64 } }* %0
+  ret { { i64 } } %1
+}
 
-cont.0:                                           ; preds = %entry
-  br label %else.1
+declare void @_print_S.i64({ i64 })
 
-then.0:                                           ; preds = %entry
-  %1 = call { i64 } @_Int_i64(i64 1), !stdlib.call.optim !0
-  ret { i64 } %1
-
-else.1:                                           ; preds = %cont.0
-  %2 = call { i64 } @_Int_i64(i64 1), !stdlib.call.optim !0
-  %-.res = call { i64 } @_-_S.i64_S.i64({ i64 } %a, { i64 } %2), !stdlib.call.optim !0
-  %fact_res = call { i64 } @_fact_S.i64({ i64 } %-.res)
-  %"*.res" = call { i64 } @"_*_S.i64_S.i64"({ i64 } %a, { i64 } %fact_res), !stdlib.call.optim !0
-  ret { i64 } %"*.res"
+; Function Attrs: alwaysinline
+define { { i64 } } @_Foo_S.i641({ i64 } %"$0") #0 {
+entry:
+  %0 = alloca { { i64 } }
+  %a_ptr = getelementptr inbounds { { i64 } }* %0, i32 0, i32 0
+  store { i64 } %"$0", { i64 }* %a_ptr
+  %1 = load { { i64 } }* %0
+  ret { { i64 } } %1
 }
 
 declare { i64 } @_Int_i64(i64)
 
-declare { i1 } @"_<=_S.i64_S.i64"({ i64 }, { i64 })
-
-declare { i64 } @_-_S.i64_S.i64({ i64 }, { i64 })
-
-declare { i64 } @"_*_S.i64_S.i64"({ i64 }, { i64 })
-
-declare void @_print_S.i64({ i64 })
+attributes #0 = { alwaysinline }
 
 !0 = !{!"stdlib.call.optim"}

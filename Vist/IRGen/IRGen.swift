@@ -528,6 +528,11 @@ extension FuncDecl : IRGenerator {
             
             let s = ParameterStructVariable(type: parentType.ir(), val: param, builder: builder, properties: memTys)
             functionStackFrame.addVariable(s, named: "self")
+            
+            for el in parent?.properties ?? [] {
+                let p = StructPropertyVariable(name: el.name, str: s, mutable: el.isMutable)
+                functionStackFrame.addVariable(p, named: el.name)
+            }
         }
         
         // generate bb for body
@@ -606,6 +611,8 @@ extension ClosureExpr : IRGenerator {
             let param = LLVMGetParam(function, UInt32(i))
             let name = parameters.isEmpty ? i.implicitArgName() : parameters[i]
             LLVMSetValueName(param, name)
+            
+            // FIXME: It looks like i'm lazy -- fix this when doing closures again 
             
 //            let ty = LLVMTypeOf(param)
 //            if LLVMGetTypeKind(ty) == LLVMStructTypeKind {
@@ -740,27 +747,6 @@ private extension ElseIfBlockStmt {
 
 
 extension ForInLoopStmt : IRGenerator {
-    
-    //    ; ~~ENTRY~~
-    //
-    //    br label %loop.body
-    //
-    //    loop.body:                                        ; preds = %loop.body, %entry
-    //    %loop.count.x = phi { i64 }   [ { i64 1 }, %entry ],
-    //                                  [ %.fca.0.insert.i, %loop.body ]
-    //    %x.value = extractvalue { i64 } %loop.count.x, 0
-    //    %next.x = add i64 %x.value, 1
-    //    %.fca.0.insert.i = insertvalue { i64 } undef, i64 %next.x, 0
-    //
-    //    ; ~~BODY~~
-    //
-    //    %loop.repeat.test = icmp sgt i64 %next.x, 1000
-    //    br i1 %loop.repeat.test, label %loop.exit, label %loop.body
-    //
-    //    loop.exit:                                        ; preds = %loop.body
-    //
-    //    ; ~~EXIT~~
-    
     
     //    ; ENTRY
     //    br label %loop.header
@@ -1040,9 +1026,11 @@ extension InitialiserDecl : IRGenerator {
         //  - Expand struct to params of function, so a fn taking ({i64 i32} i32) becomes (i64 i32 i32)
         //      - This is harder bacause all property lookups have to be remapped to a param
         
-        // property types, names, & mutability for stack frame
+        // get properties to add to the stack frame
         let properties = try parentProperties.map { assignment -> (String, LLVMValueRef, Bool) in
-            if let t = assignment.value._type { return (assignment.name, t.ir(), assignment.isMutable) } else { throw IRError.NoProperty(assignment.name) }
+            if let t = assignment.value._type {
+                return (assignment.name, t.ir(), assignment.isMutable) }
+            else { throw IRError.NoProperty(assignment.name) }
         }
         
         // allocate struct
@@ -1051,7 +1039,7 @@ extension InitialiserDecl : IRGenerator {
         
         // add struct properties into scope
         for el in parentProperties {
-            let p = AssignablePropertyVariable(name: el.name, str: s)
+            let p = StructPropertyVariable(name: el.name, str: s, mutable: true) // initialiser can always assign
             initStackFrame.addVariable(p, named: el.name)
         }
         
