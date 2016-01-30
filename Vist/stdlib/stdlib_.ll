@@ -513,18 +513,18 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { { i64 }, { i64 } } @_..._S.i64_S.i64({ i64 } %"$0", { i64 } %"$1") #2 {
+define { { i64 }, { i64 } } @_..._S.i64_S.i64({ i64 } %a, { i64 } %b) #2 {
 entry:
-  %Range_res = call { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 } %"$0", { i64 } %"$1"), !stdlib.call.optim !2
+  %Range_res = call { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 } %a, { i64 } %b), !stdlib.call.optim !2
   ret { { i64 }, { i64 } } %Range_res
 }
 
 ; Function Attrs: alwaysinline
-define { { i64 }, { i64 } } @"_..<_S.i64_S.i64"({ i64 } %"$0", { i64 } %"$1") #2 {
+define { { i64 }, { i64 } } @"_..<_S.i64_S.i64"({ i64 } %a, { i64 } %b) #2 {
 entry:
   %0 = call { i64 } @_Int_i64(i64 1), !stdlib.call.optim !2
-  %-.res = call { i64 } @_-_S.i64_S.i64({ i64 } %"$1", { i64 } %0)
-  %Range_res = call { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 } %"$0", { i64 } %-.res), !stdlib.call.optim !2
+  %-.res = call { i64 } @_-_S.i64_S.i64({ i64 } %b, { i64 } %0)
+  %Range_res = call { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 } %a, { i64 } %-.res), !stdlib.call.optim !2
   ret { { i64 }, { i64 } } %Range_res
 }
 

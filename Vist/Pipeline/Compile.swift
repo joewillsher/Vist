@@ -22,6 +22,7 @@ private let runtimeDirectory = "\(SOURCE_ROOT)/Vist/Runtime"
 
 func compileDocuments(fileNames: [String],
     inDirectory: String,
+    out: NSPipe? = nil,
     verbose: Bool = true,
     dumpAST: Bool = false,
     irOnly: Bool = false,
@@ -107,7 +108,23 @@ func compileDocuments(fileNames: [String],
         
         
         
-        
+        defer {
+            
+            // remove files
+            if !preserve {
+                for file in ["\(file).ll", "\(file)_.ll", "\(file).s"] {
+                    
+                    let rmTask = NSTask()
+                    rmTask.currentDirectoryPath = currentDirectory
+                    rmTask.launchPath = "/bin/rm"
+                    rmTask.arguments = [file]
+                    
+                    rmTask.launch()
+                    rmTask.waitUntilExit()
+                }
+            }
+            
+        }
         
         if verbose { print("\n---------------------------LLVM IR----------------------------\n") }
         
@@ -127,13 +144,13 @@ func compileDocuments(fileNames: [String],
         
         if verbose { print("\n\n----------------------------OPTIM----------------------------\n") }
         
-        let fileTask = NSTask()
-        fileTask.currentDirectoryPath = currentDirectory
-        fileTask.launchPath = "/usr/bin/touch"
-        fileTask.arguments = ["\(file).ll"]
-        
-        fileTask.launch()
-        fileTask.waitUntilExit()
+//        let fileTask = NSTask()
+//        fileTask.currentDirectoryPath = currentDirectory
+//        fileTask.launchPath = "/usr/bin/touch"
+//        fileTask.arguments = ["\(file).ll"]
+//        
+//        fileTask.launch()
+//        fileTask.waitUntilExit()
         
         if optim || isStdLib {
             performLLVMOptimisations(module, 3, isStdLib)
@@ -194,7 +211,7 @@ func compileDocuments(fileNames: [String],
             
             // generate .bc file for optimiser
             let assembleTask = NSTask()
-            assembleTask.currentDirectoryPath = runtimeDirectory
+            assembleTask.currentDirectoryPath = currentDirectory
             assembleTask.launchPath = "\(llvmDirectory)/llvm-as"
             assembleTask.arguments = ["\(file).ll"]
             
@@ -222,6 +239,9 @@ func compileDocuments(fileNames: [String],
             runTask.currentDirectoryPath = currentDirectory
             runTask.launchPath = "\(currentDirectory)/\(file)"
             
+            if let out = out {
+                runTask.standardOutput = out
+            }
             
             runTask.launch()
             let t0 = CFAbsoluteTimeGetCurrent()
@@ -242,21 +262,6 @@ func compileDocuments(fileNames: [String],
             
         }
         
-        
-        
-        // remove files
-        if !preserve {
-            for file in ["\(file).ll", "\(file)_.ll", "\(file).s"] {
-                
-                let rmTask = NSTask()
-                rmTask.currentDirectoryPath = currentDirectory
-                rmTask.launchPath = "/bin/rm"
-                rmTask.arguments = [file]
-                
-                rmTask.launch()
-                rmTask.waitUntilExit()
-            }
-        }
         
         
         

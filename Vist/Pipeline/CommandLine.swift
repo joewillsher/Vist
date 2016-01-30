@@ -9,14 +9,12 @@
 import Foundation
 
 
-public func compileWithOptions(flags: [String], inDirectory dir: String) throws {
+public func compileWithOptions(flags: [String], inDirectory dir: String, out: NSPipe? = nil) throws {
     
     guard !flags.isEmpty else { fatalError("No input files") }
     
     let files = flags.filter { $0.containsString(".vist") }
     
-    guard !files.isEmpty else { fatalError("No input files") }
-
     let verbose = flags.contains("-verbose") || flags.contains("-v")
     let ast = flags.contains("-dump-ast")
     let ir = flags.contains("-emit-ir")
@@ -54,7 +52,8 @@ public func compileWithOptions(flags: [String], inDirectory dir: String) throws 
         
         if buildStdLib {
             try compileDocuments(["stdlib.vist"],
-                inDirectory: dir,
+                inDirectory: "",
+                out: out,
                 verbose: verbose,
                 dumpAST: ast,
                 irOnly: ir,
@@ -67,20 +66,22 @@ public func compileWithOptions(flags: [String], inDirectory dir: String) throws 
                 isStdLib: true
             )
         }
-        
-        try compileDocuments(files,
-            inDirectory: dir,
-            verbose: verbose,
-            dumpAST: ast,
-            irOnly: ir,
-            asmOnly: asm,
-            buildOnly: b,
-            profile: profile,
-            optim: o,
-            preserve: preserveIntermediate,
-            generateLibrary: lib,
-            isStdLib: false
-        )
+        if !files.isEmpty {
+            try compileDocuments(files,
+                inDirectory: dir,
+                out: out,
+                verbose: verbose,
+                dumpAST: ast,
+                irOnly: ir,
+                asmOnly: asm,
+                buildOnly: b,
+                profile: profile,
+                optim: o,
+                preserve: preserveIntermediate,
+                generateLibrary: lib,
+                isStdLib: false
+            )
+        }
         
         #if DEBUG
             print("Compile took \(CFAbsoluteTimeGetCurrent() - s)s")

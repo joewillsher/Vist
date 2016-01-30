@@ -7,37 +7,58 @@
 //
 
 import XCTest
+import Foundation
 
 private let testDir = "\(SOURCE_ROOT)/Tests/TestCases"
+private let stdlibDir = "\(SOURCE_ROOT)/Vist/StdLib"
 
 
-class Tests: XCTestCase {
+class Tests : XCTestCase {
+    
+    /// pipe used as the stdout of the test cases
+    var pipe: NSPipe? = nil
     
     override func setUp() {
         super.setUp()
-        // Put setup code here
-    }
-    
-    override func tearDown() {
-        // Put teardown code here
-        super.tearDown()
+        pipe = NSPipe()
     }
     
     // MARK: Test cases
     
     func testControlFlow() {
+        do {
+            try compileWithOptions(["-O", "Control.vist"], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, "100\n")
+        }
+        catch {
+            print(error)
+            XCTFail("Compilation failed")
+        }
+    }
+    
+    func testForInLoops() {
+        do {
+            try compileWithOptions(["-O", "Loops.vist"], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, "1\n2\n3\n")
+        }
+        catch {
+            print(error)
+            XCTFail("Compilation failed")
+        }
+    }
+
+    func testStdLibCompile() {
         self.measureBlock {
             do {
-                try compileWithOptions(["-O", "Control.vist"], inDirectory: testDir)
+                try compileWithOptions(["-O", "-build-stdlib"], inDirectory: stdlibDir, out: nil)
             }
             catch {
                 print(error)
-                XCTFail()
+                XCTFail("Compilation failed")
             }
         }
     }
     
     
-    
-    
 }
+

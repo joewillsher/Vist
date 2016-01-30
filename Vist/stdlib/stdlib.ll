@@ -451,19 +451,19 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { { i64 }, { i64 } } @_..._S.i64_S.i64({ i64 } %"$0", { i64 } %"$1") #2 {
+define { { i64 }, { i64 } } @_..._S.i64_S.i64({ i64 } %a, { i64 } %b) #2 {
 entry:
-  %"$0.fca.0.extract" = extractvalue { i64 } %"$0", 0
-  %"$1.fca.0.extract" = extractvalue { i64 } %"$1", 0
-  %.fca.0.0.insert = insertvalue { { i64 }, { i64 } } undef, i64 %"$0.fca.0.extract", 0, 0
-  %.fca.1.0.insert = insertvalue { { i64 }, { i64 } } %.fca.0.0.insert, i64 %"$1.fca.0.extract", 1, 0
+  %a.fca.0.extract = extractvalue { i64 } %a, 0
+  %b.fca.0.extract = extractvalue { i64 } %b, 0
+  %.fca.0.0.insert = insertvalue { { i64 }, { i64 } } undef, i64 %a.fca.0.extract, 0, 0
+  %.fca.1.0.insert = insertvalue { { i64 }, { i64 } } %.fca.0.0.insert, i64 %b.fca.0.extract, 1, 0
   ret { { i64 }, { i64 } } %.fca.1.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind
-define { { i64 }, { i64 } } @"_..<_S.i64_S.i64"({ i64 } %"$0", { i64 } %"$1") #3 {
+define { { i64 }, { i64 } } @"_..<_S.i64_S.i64"({ i64 } %a, { i64 } %b) #3 {
 entry:
-  %value.i = extractvalue { i64 } %"$1", 0
+  %value.i = extractvalue { i64 } %b, 0
   %sub_res.i = tail call { i64, i1 } @llvm.ssub.with.overflow.i64(i64 %value.i, i64 1) #7
   %sub_res.i.fca.1.extract = extractvalue { i64, i1 } %sub_res.i, 1
   br i1 %sub_res.i.fca.1.extract, label %then.0.i.i, label %_-_S.i64_S.i64.exit
@@ -474,8 +474,8 @@ then.0.i.i:                                       ; preds = %entry
 
 _-_S.i64_S.i64.exit:                              ; preds = %entry
   %sub_res.i.fca.0.extract = extractvalue { i64, i1 } %sub_res.i, 0
-  %"$0.fca.0.extract" = extractvalue { i64 } %"$0", 0
-  %.fca.0.0.insert = insertvalue { { i64 }, { i64 } } undef, i64 %"$0.fca.0.extract", 0, 0
+  %a.fca.0.extract = extractvalue { i64 } %a, 0
+  %.fca.0.0.insert = insertvalue { { i64 }, { i64 } } undef, i64 %a.fca.0.extract, 0, 0
   %.fca.1.0.insert = insertvalue { { i64 }, { i64 } } %.fca.0.0.insert, i64 %sub_res.i.fca.0.extract, 1, 0
   ret { { i64 }, { i64 } } %.fca.1.0.insert
 }

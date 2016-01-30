@@ -196,7 +196,7 @@ func ... :: Int Int -> Range = (a b) do
     return Range a b
 
 @inline @operator(40)
-func ..< :: Int Int -> Range = do
+func ..< :: Int Int -> Range = (a b) do
     return Range a b-1
 
 

@@ -405,7 +405,6 @@ extension ReturnStmt : StmtTypeProvider {
         scope.objectType = nil // reset
         
     }
-    
 }
 
 

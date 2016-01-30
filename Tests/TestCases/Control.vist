@@ -1,2 +1,6 @@
 
-print 2
+let a = 3
+
+if a < 2 * 100 do print 100
+
+
