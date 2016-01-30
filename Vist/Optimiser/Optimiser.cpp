@@ -43,31 +43,31 @@ void performLLVMOptimisations(Module *Module, int optLevel, bool isStdLib) {
     
     PassManagerBuilder PMBuilder;
     
-    
-    if (optLevel != 0) { // we want some optimisations, even at -O0
+    if (optLevel != 0) {
         PMBuilder.OptLevel = 3;
         PMBuilder.Inliner = createFunctionInliningPass(3, 0);
         PMBuilder.DisableTailCalls = false;
         PMBuilder.DisableUnitAtATime = false;
         PMBuilder.DisableUnrollLoops = false;
         PMBuilder.BBVectorize = true;
-//        PMBuilder.SLPVectorize = true;
-//        PMBuilder.LoopVectorize = true;
+        PMBuilder.SLPVectorize = true;
+        PMBuilder.LoopVectorize = true;
         PMBuilder.RerollLoops = true;
         PMBuilder.LoadCombine = true;
-//        PMBuilder.DisableGVNLoadPRE = true;
-//        PMBuilder.VerifyInput = true;
-//        PMBuilder.VerifyOutput = true;
-//        PMBuilder.StripDebug = true;
-//        PMBuilder.MergeFunctions = true;
+        PMBuilder.DisableGVNLoadPRE = true;
+        PMBuilder.VerifyInput = true;
+        PMBuilder.VerifyOutput = true;
+        PMBuilder.StripDebug = true;
+        PMBuilder.MergeFunctions = true;
     }
-    else {
+    else { // we want some optimisations, even at -O0
         PMBuilder.OptLevel = 0;
         PMBuilder.Inliner = createAlwaysInlinerPass(false);
     }
+    
     if (!isStdLib)
-        PMBuilder.addExtension(PassManagerBuilder::EP_EarlyAsPossible,  // Run first thing
-                               addStdLibInlinePass);                    // The initialiaser pass
+        PMBuilder.addExtension(PassManagerBuilder::EP_ModuleOptimizerEarly,  // Run first thing
+                               addStdLibInlinePass);                         // The initialiaser pass
     
     // Configure the function passes.
     legacy::FunctionPassManager FunctionPasses(Module);

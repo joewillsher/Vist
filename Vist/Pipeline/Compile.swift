@@ -112,7 +112,7 @@ public func compileDocuments(fileNames: [String],
         
         // Generate LLVM IR code for program
         
-        let s = StackFrame()
+        let s = StackFrame(_isStdLib: isStdLib)
         
         try ast.IRGen(module: module, isLibrary: generateLibrary, stackFrame: s)
         

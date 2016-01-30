@@ -471,8 +471,14 @@ extension FuncDecl : IRGenerator {
         let functionType = type.ir()
         let function = LLVMAddFunction(module, mangledName, functionType)
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
-        LLVMSetLinkage(function, LLVMExternalLinkage) // TODO: only external linkage for stdlib -- this is a performance problem
-
+        
+        if stackFrame.isStdLib {
+            LLVMSetLinkage(function, LLVMExternalLinkage)
+        }
+        else { // set internal. Will set external or private if has the attribute
+            LLVMSetLinkage(function, LLVMInternalLinkage)
+        }
+        
         // add attrs
         for a in attrs {
             a.addAttrTo(function)
@@ -1000,7 +1006,7 @@ extension InitialiserDecl : IRGenerator {
         stackFrame.addFunctionType(functionType, named: name)
         
         // stack frame internal to initialiser, cannot capture from surrounding scope
-        let initStackFrame = StackFrame(function: function, parentStackFrame: nil)
+        let initStackFrame = StackFrame(function: function, parentStackFrame: nil, _isStdLib: stackFrame.isStdLib)
         
         // set function param names and update table
         // TODO: Split this out into a function for funcs & closures to use as well
@@ -1161,7 +1167,7 @@ extension AST {
         defer { argBuffer.dealloc(0) }
         
         // make main function & add to IR
-        let functionType = LLVMFunctionType(LLVMInt64Type(), argBuffer, UInt32(0), LLVMBool(false))
+        let functionType = LLVMFunctionType(LLVMVoidType(), argBuffer, UInt32(0), LLVMBool(false))
         let mainFunction = LLVMAddFunction(module, "main", functionType)
         
         // Setup BB & stack frame
@@ -1189,7 +1195,7 @@ extension AST {
             LLVMDeleteFunction(mainFunction)
         }
         else {
-            LLVMBuildRet(builder, LLVMConstInt(LLVMInt64Type(), 0, LLVMBool(false)))
+            LLVMBuildRetVoid(builder)
         }
         
         LLVMDisposeBuilder(builder)

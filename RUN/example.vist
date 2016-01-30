@@ -1,11 +1,16 @@
 
-func foo :: Int Int -> Int = do return $0 + $1
 
 func fact :: Int -> Int = (a) do
-    if a <= 1 do
-        return 1
-    else do
-        return a * fact a - 1
+    if a <= 1   do return 1
+    else        do return a * fact a - 1
 
-print (foo (fact 8) (foo 1 4)
+print (fact 20)
+
+var a = 4
+var b = a * 6
+print b
+
+
+// Loops and inlining
+// 
 

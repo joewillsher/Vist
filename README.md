@@ -38,7 +38,8 @@ type Baz {
     var a: Int
     let b: Int
     
-    func foo :: Int -> Int = do return $0 * (a + b)
+    func foo :: Int -> Int = do 
+        return $0 * (a + b)
 }
 
 let baz = Baz 1 4

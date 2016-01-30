@@ -15,14 +15,16 @@ final class StackFrame {
     private var types: [String: StructType]
     var block: LLVMBasicBlockRef, function: LLVMValueRef
     var parentStackFrame: StackFrame?
+    private var _isStdLib: Bool?
     
-    init(vars: [String: RuntimeVariable] = [:], functionTypes: [String: LLVMTypeRef] = [:], types: [String: StructType] = [:], block: LLVMBasicBlockRef = nil, function: LLVMValueRef = nil, parentStackFrame: StackFrame? = nil) {
+    init(vars: [String: RuntimeVariable] = [:], functionTypes: [String: LLVMTypeRef] = [:], types: [String: StructType] = [:], block: LLVMBasicBlockRef = nil, function: LLVMValueRef = nil, parentStackFrame: StackFrame? = nil, _isStdLib: Bool? = nil) {
         self.runtimeVariables = [:]
         self.functionTypes = [:]
         self.types = [:]
         self.block = block
         self.parentStackFrame = parentStackFrame
         self.function = function
+        self._isStdLib = _isStdLib ?? parentStackFrame?._isStdLib
         
         functionTypes.forEach { addFunctionType($1, named: $0) }
         vars.forEach { addVariable($1, named: $0) }
@@ -69,7 +71,11 @@ final class StackFrame {
         
         throw IRError.NoType(name)
     }
-
+    
+    var isStdLib: Bool {
+        return parentStackFrame?.isStdLib ?? _isStdLib!
+    }
+    
 }
 
 
