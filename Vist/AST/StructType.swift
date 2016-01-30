@@ -29,7 +29,7 @@ final class StructType: Ty {
         return LLVMStructType(
             arr,
             UInt32(members.count),
-            LLVMBool(false))
+            false)
     }
     
     func propertyType(name: String) throws -> Ty? {

@@ -71,9 +71,10 @@ extension CollectionType where
     
 }
 
-extension LLVMBool : Swift.BooleanType {
-    init(_ b: Bool) {
-        self.init(b ? 1 : 0)
+extension LLVMBool : Swift.BooleanType, BooleanLiteralConvertible {
+    
+    public init(booleanLiteral value: Bool) {
+        self.init(value ? 1 : 0)
     }
     
     public var boolValue: Bool {
@@ -103,7 +104,7 @@ extension IntegerLiteral : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) -> LLVMValueRef {
         let rawType = BuiltinType.Int(size: size)
-        let value = LLVMConstInt(rawType.ir(), UInt64(val), LLVMBool(false))
+        let value = LLVMConstInt(rawType.ir(), UInt64(val), false)
         
         guard let type = self.type else { fatalError("Int literal with no type") }
         return type.initialiseWithBuiltin(value, module: module, builder: builder)
@@ -123,7 +124,7 @@ extension BooleanLiteral : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) -> LLVMValueRef {
         let rawType = BuiltinType.Bool
-        let value = LLVMConstInt(rawType.ir(), UInt64(val.hashValue), LLVMBool(false))
+        let value = LLVMConstInt(rawType.ir(), UInt64(val.hashValue), false)
         
         guard let type = self.type else { fatalError("Bool literal with no type") }
         return type.initialiseWithBuiltin(value, module: module, builder: builder)
@@ -139,7 +140,7 @@ extension StringLiteral : IRGenerator {
         str
             .cStringUsingEncoding(NSUTF8StringEncoding)?
             .withUnsafeBufferPointer { ptr in
-            s = LLVMConstString(ptr.baseAddress, UInt32(ptr.count), LLVMBool(true))
+            s = LLVMConstString(ptr.baseAddress, UInt32(ptr.count), true)
         }
         
         return s
@@ -152,7 +153,7 @@ extension StringLiteral : IRGenerator {
 //    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
 //        
 //        let x = String(val).cStringUsingEncoding(NSUTF8StringEncoding)![0]
-//        return LLVMConstInt(LLVMIntType(8), UInt64(x), LLVMBool(false))
+//        return LLVMConstInt(LLVMIntType(8), UInt64(x), false)
 //    }
 //}
 
@@ -816,7 +817,7 @@ extension ForInLoopStmt : IRGenerator {
         LLVMAddIncoming(loopCount, num1, incoming1, 1)
         
         // iterate and add phi incoming
-        let one = LLVMConstInt(LLVMInt64Type(), UInt64(1), LLVMBool(false))
+        let one = LLVMConstInt(LLVMInt64Type(), UInt64(1), false)
         let next = LLVMBuildAdd(builder, one, loopCount, "next.\(name)")
         
         // gen the IR for the inner block
@@ -1167,7 +1168,7 @@ extension AST {
         defer { argBuffer.dealloc(0) }
         
         // make main function & add to IR
-        let functionType = LLVMFunctionType(LLVMVoidType(), argBuffer, UInt32(0), LLVMBool(false))
+        let functionType = LLVMFunctionType(LLVMVoidType(), argBuffer, UInt32(0), false)
         let mainFunction = LLVMAddFunction(module, "main", functionType)
         
         // Setup BB & stack frame

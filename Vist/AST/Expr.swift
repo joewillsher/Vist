@@ -14,52 +14,6 @@
 protocol Expr : ASTNode, _Typed, ExprTypeProvider {}
 protocol TypedExpr : Expr, Typed {}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// TODO: Notes from swift:
-//
-// they have different types -
-//
-//  - Pattern, as in pattern matching
-//      - `is` pattern, tuple pattern, enum element pattern, case statement 'bool' patterns, x?
-//  - Declarations / Decl
-//      - Vars, funcs, types, and initalisers
-//  - Statement / Stmt
-//      - brace, return, defer, conditional, do/catch, if, while, for, for each, switch, break, fallthrough, continue, throw
-//  - Expression / expr
-//      - literals, tuples, parens, array, closure
-//      - Call expression, operator, methods, casts,
-//      - Sub expressions of syntax structures, like `type name generic params`
-//  - TypeRepr & SourceLoc
-//      - ‘Representation of a type as written in source’, generates human readable code to attach to AST objects
-//      - Source code location information
-//
-// Swift has an explicit AST walker function
-
-
-
-
-
-
-
-
-
-
-
 final class BlockExpr : TypedExpr {
     var exprs: [ASTNode]
     var variables: [ValueType]

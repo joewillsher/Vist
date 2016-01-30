@@ -3,20 +3,32 @@
 
 * Standard library
     - write stdlib array type
+    - Strings
 
 * Structs
     - Initialisers
-        - Generate one which takes params of struct order
         - Generate one which does that but including objects with initial values
     - Generics & concepts (as constriants and existentials)
-    - Reference semantics implemented
-    - Initialiser taking pointer to unallocated mem and initalising it, currently it returns an initialised instance
-
-* Strings
+    - Reference semantics implemented -- using `ref type` or `ref let a = b`??
     
 * AST context object to help type inference when in sema
 
 * Move more checks at IR level to sema pass
+
+* Loops and inlining fixes
+    - currently crashing in loops or late stage tail-recursion-removed functions
+
+* Compile pipeling in process (in c++)
+
+* Multiple file compiliation
+    - linking AST & interface gen
+    - Multi thread IRGen
+
+
+
+
+
+
 
 * Arrays
     - Implement append by hooking into a compiler-magic function to modify array buffer size

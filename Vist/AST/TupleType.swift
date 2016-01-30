@@ -24,7 +24,7 @@ final class TupleType : Ty {
         return LLVMStructType(
             arr,
             UInt32(members.count),
-            LLVMBool(false))
+            false)
     }
     
     func propertyType(index: Int) throws -> Ty {

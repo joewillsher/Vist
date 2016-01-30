@@ -10,7 +10,3 @@ var a = 4
 var b = a * 6
 print b
 
-
-// Loops and inlining
-// 
-

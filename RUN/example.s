@@ -20,13 +20,10 @@ Ltmp2:
 	callq	__$print_i64
 	movl	$24, %ecx
 	movl	%ecx, %edi
-	callq	__$print_i64
-	xorl	%edi, %edi
 	popq	%rbp
-	jmp	__$print_b              ## TAILCALL
+	jmp	__$print_i64            ## TAILCALL
 	.cfi_endproc
 
-	.globl	__fact_S.i64
 	.align	4, 0x90
 __fact_S.i64:                           ## @_fact_S.i64
 	.cfi_startproc

@@ -51,7 +51,7 @@ class ArrayVariable : RuntimeVariable {
         
         for n in 0..<vars.count {
             // llvm num type as the index
-            let index = [LLVMConstInt(LLVMInt64Type(), UInt64(n), LLVMBool(false))].ptr()
+            let index = [LLVMConstInt(LLVMInt64Type(), UInt64(n), false)].ptr()
             // Get pointer to element n
             let el = LLVMBuildGEP(builder, base, index, 1, "el\(n)")
             

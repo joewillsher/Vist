@@ -10,10 +10,11 @@
 		D40FC4CA1C48323E00122397 /* StdTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D40FC4C91C48323E00122397 /* StdTypes.swift */; };
 		D40FC4CC1C4932F200122397 /* Initialiser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D40FC4CB1C4932F100122397 /* Initialiser.swift */; };
 		D40FC4CE1C4AAB0E00122397 /* Intrinsic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D40FC4CD1C4AAB0E00122397 /* Intrinsic.cpp */; };
-		D4249F561C1AF9B200B15530 /* fn.vist in Resources */ = {isa = PBXBuildFile; fileRef = D4249F551C1AF9B200B15530 /* fn.vist */; };
+		D41BF54D1C5CD797004A1962 /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41BF54C1C5CD797004A1962 /* Tests.swift */; };
+		D41BF5531C5CD996004A1962 /* CommandLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41BF5521C5CD996004A1962 /* CommandLine.swift */; };
+		D41BF5551C5CDC8C004A1962 /* TestCases in Resources */ = {isa = PBXBuildFile; fileRef = D41BF5541C5CDC8C004A1962 /* TestCases */; };
 		D431F4C31C55743C005D439F /* StdLibInline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D431F4C11C55743C005D439F /* StdLibInline.cpp */; };
 		D470D7AE1C56A98100791B40 /* Optimiser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D470D7AC1C56A98100791B40 /* Optimiser.cpp */; };
-		D485DD281C1667E900B72F81 /* VistTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D485DD271C1667E900B72F81 /* VistTest.swift */; };
 		D497A76B1C3B003A00DFE39E /* Compile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7691C3B003A00DFE39E /* Compile.swift */; };
 		D497A76C1C3B003A00DFE39E /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A76A1C3B003A00DFE39E /* main.swift */; };
 		D497A76F1C3B005600DFE39E /* Lexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A76D1C3B005600DFE39E /* Lexer.swift */; };
@@ -49,9 +50,62 @@
 		D4DE28191C5969830096E798 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4DE28181C5969830096E798 /* libz.tbd */; };
 		D4DE281C1C596B250096E798 /* Assemble.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D4DE281A1C596B250096E798 /* Assemble.cpp */; };
 		D4DE281F1C596BFE0096E798 /* TargetMachine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D4DE281D1C596BFE0096E798 /* TargetMachine.cpp */; };
+		D4E35B4E1C5D0CA000683486 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A76A1C3B003A00DFE39E /* main.swift */; };
+		D4E35B4F1C5D0CA000683486 /* CommandLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41BF5521C5CD996004A1962 /* CommandLine.swift */; };
+		D4E35B501C5D0CA000683486 /* Compile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7691C3B003A00DFE39E /* Compile.swift */; };
+		D4E35B521C5D0CA000683486 /* Assemble.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D4DE281A1C596B250096E798 /* Assemble.cpp */; };
+		D4E35B541C5D0CA000683486 /* TargetMachine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D4DE281D1C596BFE0096E798 /* TargetMachine.cpp */; };
+		D4E35B551C5D0CA000683486 /* Lexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A76D1C3B005600DFE39E /* Lexer.swift */; };
+		D4E35B561C5D0CA000683486 /* Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A76E1C3B005600DFE39E /* Token.swift */; };
+		D4E35B571C5D0CA000683486 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC021C4FF52D00BB9A12 /* Parser.swift */; };
+		D4E35B581C5D0CA000683486 /* ASTNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC041C4FF56500BB9A12 /* ASTNode.swift */; };
+		D4E35B591C5D0CA000683486 /* Expr.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CBFD1C4FF52400BB9A12 /* Expr.swift */; };
+		D4E35B5A1C5D0CA000683486 /* Stmt.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CBFE1C4FF52400BB9A12 /* Stmt.swift */; };
+		D4E35B5B1C5D0CA000683486 /* Decl.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CBFC1C4FF52400BB9A12 /* Decl.swift */; };
+		D4E35B5C1C5D0CA000683486 /* Ty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC091C4FF56500BB9A12 /* Ty.swift */; };
+		D4E35B5D1C5D0CA000683486 /* BuiltinType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC051C4FF56500BB9A12 /* BuiltinType.swift */; };
+		D4E35B5E1C5D0CA000683486 /* FnType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC061C4FF56500BB9A12 /* FnType.swift */; };
+		D4E35B5F1C5D0CA000683486 /* StructType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC071C4FF56500BB9A12 /* StructType.swift */; };
+		D4E35B601C5D0CA000683486 /* TupleType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC081C4FF56500BB9A12 /* TupleType.swift */; };
+		D4E35B611C5D0CA000683486 /* FunctionContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4DE28131C5906830096E798 /* FunctionContainer.swift */; };
+		D4E35B621C5D0CA000683486 /* BuiltinDef.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC101C4FF58C00BB9A12 /* BuiltinDef.swift */; };
+		D4E35B631C5D0CA000683486 /* StdLibDef.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC121C503D1800BB9A12 /* StdLibDef.swift */; };
+		D4E35B641C5D0CA000683486 /* Sema.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7761C3B00C600DFE39E /* Sema.swift */; };
+		D4E35B651C5D0CA000683486 /* SemaTypeCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7781C3B00C600DFE39E /* SemaTypeCheck.swift */; };
+		D4E35B661C5D0CA000683486 /* SemaScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7771C3B00C600DFE39E /* SemaScope.swift */; };
+		D4E35B671C5D0CA000683486 /* Mangle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7751C3B00C600DFE39E /* Mangle.swift */; };
+		D4E35B681C5D0CA000683486 /* Initialiser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D40FC4CB1C4932F100122397 /* Initialiser.swift */; };
+		D4E35B691C5D0CA000683486 /* TypeProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A77A1C3B00C600DFE39E /* TypeProvider.swift */; };
+		D4E35B6A1C5D0CA000683486 /* ASTInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7811C3B00FE00DFE39E /* ASTInterface.swift */; };
+		D4E35B6B1C5D0CA000683486 /* LinkAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7821C3B00FE00DFE39E /* LinkAST.swift */; };
+		D4E35B6C1C5D0CA000683486 /* IRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7861C3B012700DFE39E /* IRGen.swift */; };
+		D4E35B6D1C5D0CA000683486 /* StackFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7881C3B012700DFE39E /* StackFrame.swift */; };
+		D4E35B6E1C5D0CA000683486 /* RuntimeVariable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7871C3B012700DFE39E /* RuntimeVariable.swift */; };
+		D4E35B6F1C5D0CA000683486 /* ArrayVariable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7851C3B012700DFE39E /* ArrayVariable.swift */; };
+		D4E35B701C5D0CA000683486 /* StructVariable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7891C3B012700DFE39E /* StructVariable.swift */; };
+		D4E35B711C5D0CA000683486 /* BuiltinFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4FAE45B1C3DCEEE00C9EE05 /* BuiltinFunction.swift */; };
+		D4E35B731C5D0CA000683486 /* Intrinsic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D40FC4CD1C4AAB0E00122397 /* Intrinsic.cpp */; };
+		D4E35B741C5D0CA000683486 /* StdTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D40FC4C91C48323E00122397 /* StdTypes.swift */; };
+		D4E35B751C5D0CA000683486 /* FunctionAttribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4FAE45D1C3DDE3100C9EE05 /* FunctionAttribute.swift */; };
+		D4E35B771C5D0CA000683486 /* Optimiser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D470D7AC1C56A98100791B40 /* Optimiser.cpp */; };
+		D4E35B791C5D0CA000683486 /* StdLibInline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D431F4C11C55743C005D439F /* StdLibInline.cpp */; };
+		D4E35B7A1C5D0CA000683486 /* Link.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7901C3B015700DFE39E /* Link.swift */; };
+		D4E35B7B1C5D0E5A00683486 /* Print.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7911C3B015700DFE39E /* Print.swift */; };
+		D4E35B7C1C5D0E7100683486 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A78F1C3B015700DFE39E /* Config.swift */; };
+		D4E35B7D1C5D0F0700683486 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4DE28181C5969830096E798 /* libz.tbd */; };
 		D4FAE45C1C3DCEEE00C9EE05 /* BuiltinFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4FAE45B1C3DCEEE00C9EE05 /* BuiltinFunction.swift */; };
 		D4FAE45E1C3DDE3100C9EE05 /* FunctionAttribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4FAE45D1C3DDE3100C9EE05 /* FunctionAttribute.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		D4E35B4C1C5D0C0700683486 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D47FF0721B812052003F9920 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D47FF0791B812052003F9920;
+			remoteInfo = vist;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		D47FF0781B812052003F9920 /* Copy Files */ = {
@@ -72,7 +126,11 @@
 		D40FC4CD1C4AAB0E00122397 /* Intrinsic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Intrinsic.cpp; path = Helper/Intrinsic.cpp; sourceTree = "<group>"; };
 		D40FC4CF1C4AAB2800122397 /* Intrinsic.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = Intrinsic.hpp; path = Helper/Intrinsic.hpp; sourceTree = "<group>"; };
 		D40FC4D01C4AAB7C00122397 /* LLVM.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = LLVM.h; path = Helper/LLVM.h; sourceTree = "<group>"; };
-		D4249F551C1AF9B200B15530 /* fn.vist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = fn.vist; sourceTree = "<group>"; };
+		D41BF54A1C5CD797004A1962 /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D41BF54C1C5CD797004A1962 /* Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests.swift; sourceTree = "<group>"; };
+		D41BF54E1C5CD797004A1962 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D41BF5521C5CD996004A1962 /* CommandLine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CommandLine.swift; path = Pipeline/CommandLine.swift; sourceTree = "<group>"; };
+		D41BF5541C5CDC8C004A1962 /* TestCases */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TestCases; sourceTree = "<group>"; };
 		D431F4C11C55743C005D439F /* StdLibInline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StdLibInline.cpp; path = Optimiser/StdLibInline.cpp; sourceTree = "<group>"; };
 		D431F4C21C55743C005D439F /* StdLibInline.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = StdLibInline.hpp; path = Optimiser/StdLibInline.hpp; sourceTree = "<group>"; };
 		D43DF1EC1C5540AF0049EC2F /* stdlib_.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib_.ll; path = stdlib/stdlib_.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
@@ -85,9 +143,6 @@
 		D47FF07A1B812052003F9920 /* vist */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = vist; sourceTree = BUILT_PRODUCTS_DIR; };
 		D4851F491C28A0820009233E /* example_.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = example_.ll; path = RUN/example_.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
 		D4851F4A1C28A08A0009233E /* example.s */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; name = example.s; path = RUN/example.s; sourceTree = "<group>"; };
-		D485DD251C1667E900B72F81 /* VistTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VistTest.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		D485DD271C1667E900B72F81 /* VistTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VistTest.swift; sourceTree = "<group>"; };
-		D485DD291C1667E900B72F81 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D489F3BD1C1E392D00254FFC /* example.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vist; path = RUN/example.vist; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D489F3C01C1E396E00254FFC /* example */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = example; path = RUN/example; sourceTree = "<group>"; };
 		D497A7691C3B003A00DFE39E /* Compile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Compile.swift; path = Pipeline/Compile.swift; sourceTree = "<group>"; };
@@ -139,18 +194,19 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		D41BF5471C5CD797004A1962 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D4E35B7D1C5D0F0700683486 /* libz.tbd in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D47FF0771B812052003F9920 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				D4DE28191C5969830096E798 /* libz.tbd in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D485DD221C1667E900B72F81 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -164,6 +220,16 @@
 				D40FC4D01C4AAB7C00122397 /* LLVM.h */,
 			);
 			name = Headers;
+			sourceTree = "<group>";
+		};
+		D41BF54B1C5CD797004A1962 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				D41BF54C1C5CD797004A1962 /* Tests.swift */,
+				D41BF5541C5CDC8C004A1962 /* TestCases */,
+				D41BF54E1C5CD797004A1962 /* Info.plist */,
+			);
+			path = Tests;
 			sourceTree = "<group>";
 		};
 		D431F4C01C556DF5005D439F /* Optimiser */ = {
@@ -268,7 +334,7 @@
 				D4DB9D641C1DFB8700503153 /* Source */,
 				D47D4BE01C38427200B22B3C /* Docs */,
 				D47FF07C1B812052003F9920 /* Vist */,
-				D485DD261C1667E900B72F81 /* VistTest */,
+				D41BF54B1C5CD797004A1962 /* Tests */,
 				D47FF07B1B812052003F9920 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -277,7 +343,7 @@
 			isa = PBXGroup;
 			children = (
 				D47FF07A1B812052003F9920 /* vist */,
-				D485DD251C1667E900B72F81 /* VistTest.xctest */,
+				D41BF54A1C5CD797004A1962 /* Tests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -297,16 +363,6 @@
 				D46DA5F61C297AED006AF1BE /* Helper */,
 			);
 			path = Vist;
-			sourceTree = "<group>";
-		};
-		D485DD261C1667E900B72F81 /* VistTest */ = {
-			isa = PBXGroup;
-			children = (
-				D485DD271C1667E900B72F81 /* VistTest.swift */,
-				D4249F551C1AF9B200B15530 /* fn.vist */,
-				D485DD291C1667E900B72F81 /* Info.plist */,
-			);
-			path = VistTest;
 			sourceTree = "<group>";
 		};
 		D4A2CBF21C4FB22D00BB9A12 /* Type */ = {
@@ -353,6 +409,7 @@
 			isa = PBXGroup;
 			children = (
 				D497A76A1C3B003A00DFE39E /* main.swift */,
+				D41BF5521C5CD996004A1962 /* CommandLine.swift */,
 				D497A7691C3B003A00DFE39E /* Compile.swift */,
 				D4DE281B1C596B250096E798 /* Assemble.hpp */,
 				D4DE281A1C596B250096E798 /* Assemble.cpp */,
@@ -387,6 +444,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		D41BF5491C5CD797004A1962 /* Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D41BF54F1C5CD797004A1962 /* Build configuration list for PBXNativeTarget "Tests" */;
+			buildPhases = (
+				D41BF5461C5CD797004A1962 /* Sources */,
+				D41BF5471C5CD797004A1962 /* Frameworks */,
+				D41BF5481C5CD797004A1962 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D4E35B4D1C5D0C0700683486 /* PBXTargetDependency */,
+			);
+			name = Tests;
+			productName = Tests;
+			productReference = D41BF54A1C5CD797004A1962 /* Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		D47FF0791B812052003F9920 /* vist */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D47FF0811B812052003F9920 /* Build configuration list for PBXNativeTarget "vist" */;
@@ -404,38 +479,21 @@
 			productReference = D47FF07A1B812052003F9920 /* vist */;
 			productType = "com.apple.product-type.tool";
 		};
-		D485DD241C1667E900B72F81 /* VistTest */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = D485DD2C1C1667E900B72F81 /* Build configuration list for PBXNativeTarget "VistTest" */;
-			buildPhases = (
-				D485DD211C1667E900B72F81 /* Sources */,
-				D485DD231C1667E900B72F81 /* Resources */,
-				D485DD221C1667E900B72F81 /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = VistTest;
-			productName = VistTest;
-			productReference = D485DD251C1667E900B72F81 /* VistTest.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		D47FF0721B812052003F9920 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0710;
+				LastSwiftUpdateCheck = 0730;
 				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = vistlang;
 				TargetAttributes = {
+					D41BF5491C5CD797004A1962 = {
+						CreatedOnToolsVersion = 7.3;
+					};
 					D47FF0791B812052003F9920 = {
 						CreatedOnToolsVersion = 7.0;
-					};
-					D485DD241C1667E900B72F81 = {
-						CreatedOnToolsVersion = 7.1.1;
 					};
 				};
 			};
@@ -452,23 +510,73 @@
 			projectRoot = "";
 			targets = (
 				D47FF0791B812052003F9920 /* vist */,
-				D485DD241C1667E900B72F81 /* VistTest */,
+				D41BF5491C5CD797004A1962 /* Tests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		D485DD231C1667E900B72F81 /* Resources */ = {
+		D41BF5481C5CD797004A1962 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D4249F561C1AF9B200B15530 /* fn.vist in Resources */,
+				D41BF5551C5CDC8C004A1962 /* TestCases in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		D41BF5461C5CD797004A1962 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D4E35B4E1C5D0CA000683486 /* main.swift in Sources */,
+				D4E35B4F1C5D0CA000683486 /* CommandLine.swift in Sources */,
+				D4E35B501C5D0CA000683486 /* Compile.swift in Sources */,
+				D4E35B521C5D0CA000683486 /* Assemble.cpp in Sources */,
+				D4E35B541C5D0CA000683486 /* TargetMachine.cpp in Sources */,
+				D4E35B551C5D0CA000683486 /* Lexer.swift in Sources */,
+				D4E35B561C5D0CA000683486 /* Token.swift in Sources */,
+				D4E35B571C5D0CA000683486 /* Parser.swift in Sources */,
+				D4E35B581C5D0CA000683486 /* ASTNode.swift in Sources */,
+				D4E35B591C5D0CA000683486 /* Expr.swift in Sources */,
+				D4E35B5A1C5D0CA000683486 /* Stmt.swift in Sources */,
+				D4E35B7C1C5D0E7100683486 /* Config.swift in Sources */,
+				D4E35B5B1C5D0CA000683486 /* Decl.swift in Sources */,
+				D4E35B5C1C5D0CA000683486 /* Ty.swift in Sources */,
+				D4E35B5D1C5D0CA000683486 /* BuiltinType.swift in Sources */,
+				D4E35B5E1C5D0CA000683486 /* FnType.swift in Sources */,
+				D4E35B5F1C5D0CA000683486 /* StructType.swift in Sources */,
+				D4E35B601C5D0CA000683486 /* TupleType.swift in Sources */,
+				D4E35B611C5D0CA000683486 /* FunctionContainer.swift in Sources */,
+				D4E35B621C5D0CA000683486 /* BuiltinDef.swift in Sources */,
+				D4E35B631C5D0CA000683486 /* StdLibDef.swift in Sources */,
+				D4E35B641C5D0CA000683486 /* Sema.swift in Sources */,
+				D4E35B651C5D0CA000683486 /* SemaTypeCheck.swift in Sources */,
+				D4E35B661C5D0CA000683486 /* SemaScope.swift in Sources */,
+				D4E35B671C5D0CA000683486 /* Mangle.swift in Sources */,
+				D4E35B681C5D0CA000683486 /* Initialiser.swift in Sources */,
+				D4E35B691C5D0CA000683486 /* TypeProvider.swift in Sources */,
+				D4E35B6A1C5D0CA000683486 /* ASTInterface.swift in Sources */,
+				D4E35B6B1C5D0CA000683486 /* LinkAST.swift in Sources */,
+				D4E35B6C1C5D0CA000683486 /* IRGen.swift in Sources */,
+				D4E35B6D1C5D0CA000683486 /* StackFrame.swift in Sources */,
+				D4E35B6E1C5D0CA000683486 /* RuntimeVariable.swift in Sources */,
+				D4E35B6F1C5D0CA000683486 /* ArrayVariable.swift in Sources */,
+				D4E35B701C5D0CA000683486 /* StructVariable.swift in Sources */,
+				D4E35B711C5D0CA000683486 /* BuiltinFunction.swift in Sources */,
+				D4E35B731C5D0CA000683486 /* Intrinsic.cpp in Sources */,
+				D4E35B741C5D0CA000683486 /* StdTypes.swift in Sources */,
+				D4E35B751C5D0CA000683486 /* FunctionAttribute.swift in Sources */,
+				D4E35B7B1C5D0E5A00683486 /* Print.swift in Sources */,
+				D4E35B771C5D0CA000683486 /* Optimiser.cpp in Sources */,
+				D4E35B791C5D0CA000683486 /* StdLibInline.cpp in Sources */,
+				D4E35B7A1C5D0CA000683486 /* Link.swift in Sources */,
+				D41BF54D1C5CD797004A1962 /* Tests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D47FF0761B812052003F9920 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -506,6 +614,7 @@
 				D497A77E1C3B00C600DFE39E /* SemaTypeCheck.swift in Sources */,
 				D497A7921C3B015700DFE39E /* Config.swift in Sources */,
 				D497A76F1C3B005600DFE39E /* Lexer.swift in Sources */,
+				D41BF5531C5CD996004A1962 /* CommandLine.swift in Sources */,
 				D4FAE45C1C3DCEEE00C9EE05 /* BuiltinFunction.swift in Sources */,
 				D4A2CC0D1C4FF56500BB9A12 /* StructType.swift in Sources */,
 				D4A2CC031C4FF52D00BB9A12 /* Parser.swift in Sources */,
@@ -517,17 +626,121 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D485DD211C1667E900B72F81 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				D485DD281C1667E900B72F81 /* VistTest.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		D4E35B4D1C5D0C0700683486 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D47FF0791B812052003F9920 /* vist */;
+			targetProxy = D4E35B4C1C5D0C0700683486 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		D41BF5501C5CD797004A1962 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"SOURCE_ROOT=@\\\"$(PROJECT_DIR)\\\"",
+					__STDC_CONSTANT_MACROS,
+					__STDC_LIMIT_MACROS,
+					__STDC_FORMAT_MACROS,
+				);
+				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
+				INFOPLIST_FILE = Tests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = /usr/local/opt/llvm/lib;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-Wall",
+					"-W",
+					"-Wno-unused-parameter",
+					"-Wwrite-strings",
+					"-Wcast-qual",
+					"-Wmissing-field-initializers",
+					"-Wcovered-switch-default",
+					"-Wnon-virtual-dtor",
+					"-Werror=date-time",
+					"-Wdocumentation",
+					"-Wimplicit-fallthrough",
+					"-Wunreachable-code",
+					"-Woverloaded-virtual",
+					"-fno-exceptions",
+					"-fno-rtti",
+					"-target",
+					"x86_64-apple-macosx10.9",
+					"-isysroot",
+					/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk,
+					"-arch",
+					x86_64,
+					"-F",
+					/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/../../../Developer/Library/Frameworks,
+					"-mmacosx-version-min=10.9",
+					"-UNDEBUG",
+				);
+				OTHER_LDFLAGS = (
+					"-std=c++11\n-lcurses\n-lLLVMLTO\n-lLLVMObjCARCOpts\n-lLLVMLinker\n-lLLVMBitWriter\n-lLLVMIRReader\n-lLLVMAsmParser\n-lLLVMXCoreDisassembler\n-lLLVMXCoreCodeGen\n-lLLVMXCoreDesc\n-lLLVMXCoreInfo\n-lLLVMXCoreAsmPrinter\n-lLLVMSystemZDisassembler\n-lLLVMSystemZCodeGen\n-lLLVMSystemZAsmParser\n-lLLVMSystemZDesc\n-lLLVMSystemZInfo\n-lLLVMSystemZAsmPrinter\n-lLLVMSparcDisassembler\n-lLLVMSparcCodeGen\n-lLLVMSparcAsmParser\n-lLLVMSparcDesc\n-lLLVMSparcInfo\n-lLLVMSparcAsmPrinter\n-lLLVMR600CodeGen\n-lLLVMipo\n-lLLVMVectorize\n-lLLVMR600AsmParser\n-lLLVMR600Desc\n-lLLVMR600Info\n-lLLVMR600AsmPrinter\n-lLLVMPowerPCDisassembler\n-lLLVMPowerPCCodeGen\n-lLLVMPowerPCAsmParser\n-lLLVMPowerPCDesc\n-lLLVMPowerPCInfo\n-lLLVMPowerPCAsmPrinter\n-lLLVMNVPTXCodeGen\n-lLLVMNVPTXDesc\n-lLLVMNVPTXInfo\n-lLLVMNVPTXAsmPrinter\n-lLLVMMSP430CodeGen\n-lLLVMMSP430Desc\n-lLLVMMSP430Info\n-lLLVMMSP430AsmPrinter\n-lLLVMMipsDisassembler\n-lLLVMMipsCodeGen\n-lLLVMMipsAsmParser\n-lLLVMMipsDesc\n-lLLVMMipsInfo\n-lLLVMMipsAsmPrinter\n-lLLVMHexagonDisassembler\n-lLLVMHexagonCodeGen\n-lLLVMHexagonDesc\n-lLLVMHexagonInfo\n-lLLVMCppBackendCodeGen\n-lLLVMCppBackendInfo\n-lLLVMARMDisassembler\n-lLLVMARMCodeGen\n-lLLVMARMAsmParser\n-lLLVMARMDesc\n-lLLVMARMInfo\n-lLLVMARMAsmPrinter\n-lLLVMAArch64Disassembler\n-lLLVMAArch64CodeGen\n-lLLVMAArch64AsmParser\n-lLLVMAArch64Desc\n-lLLVMAArch64Info\n-lLLVMAArch64AsmPrinter\n-lLLVMAArch64Utils\n-lLLVMTableGen\n-lLLVMDebugInfo\n-lLLVMOption\n-lLLVMX86Disassembler\n-lLLVMX86AsmParser\n-lLLVMX86CodeGen\n-lLLVMSelectionDAG\n-lLLVMAsmPrinter\n-lLLVMX86Desc\n-lLLVMMCDisassembler\n-lLLVMX86Info\n-lLLVMX86AsmPrinter\n-lLLVMX86Utils\n-lLLVMMCJIT\n-lLLVMLineEditor\n-lLLVMInstrumentation\n-lLLVMInterpreter\n-lLLVMExecutionEngine\n-lLLVMRuntimeDyld\n-lLLVMCodeGen\n-lLLVMScalarOpts\n-lLLVMProfileData\n-lLLVMObject\n-lLLVMMCParser\n-lLLVMBitReader\n-lLLVMInstCombine\n-lLLVMTransformUtils\n-lLLVMipa\n-lLLVMAnalysis\n-lLLVMTarget\n-lLLVMMC\n-lLLVMCore\n-lLLVMSupport\n-fPIC\n-fvisibility-inlines-hidden\n-Wl,-search_paths_first\n-Wl,-headerpad_max_install_names\n-lclangAnalysis\n-lclangARCMigrate\n-lclangAST\n-lclangASTMatchers\n-lclangBasic\n-lclangCodeGen\n-lclangDriver\n-lclangDynamicASTMatchers\n-lclangEdit\n-lclangFormat\n-lclangFrontend\n-lclangFrontendTool\n-lclangIndex\n-lclangLex\n-lclangParse\n-lclangRewrite\n-lclangRewriteFrontend\n-lclangSema\n-lclangSerialization\n-lclangStaticAnalyzerCheckers\n-lclangStaticAnalyzerCore\n-lclangStaticAnalyzerFrontend\n-lclangTooling\n-lclangToolingCore",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.vist-lang.Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/$(PROJECT_NAME)/Helper/Vist-Bridging-Header.h";
+			};
+			name = Debug;
+		};
+		D41BF5511C5CD797004A1962 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"SOURCE_ROOT=@\\\"$(PROJECT_DIR)\\\"",
+					__STDC_CONSTANT_MACROS,
+					__STDC_LIMIT_MACROS,
+					__STDC_FORMAT_MACROS,
+				);
+				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
+				INFOPLIST_FILE = Tests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = /usr/local/opt/llvm/lib;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-Wall",
+					"-W",
+					"-Wno-unused-parameter",
+					"-Wwrite-strings",
+					"-Wcast-qual",
+					"-Wmissing-field-initializers",
+					"-Wcovered-switch-default",
+					"-Wnon-virtual-dtor",
+					"-Werror=date-time",
+					"-Wdocumentation",
+					"-Wimplicit-fallthrough",
+					"-Wunreachable-code",
+					"-Woverloaded-virtual",
+					"-fno-exceptions",
+					"-fno-rtti",
+					"-target",
+					"x86_64-apple-macosx10.9",
+					"-isysroot",
+					/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk,
+					"-arch",
+					x86_64,
+					"-F",
+					/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/../../../Developer/Library/Frameworks,
+					"-mmacosx-version-min=10.9",
+					"-UNDEBUG",
+				);
+				OTHER_LDFLAGS = (
+					"-std=c++11\n-lcurses\n-lLLVMLTO\n-lLLVMObjCARCOpts\n-lLLVMLinker\n-lLLVMBitWriter\n-lLLVMIRReader\n-lLLVMAsmParser\n-lLLVMXCoreDisassembler\n-lLLVMXCoreCodeGen\n-lLLVMXCoreDesc\n-lLLVMXCoreInfo\n-lLLVMXCoreAsmPrinter\n-lLLVMSystemZDisassembler\n-lLLVMSystemZCodeGen\n-lLLVMSystemZAsmParser\n-lLLVMSystemZDesc\n-lLLVMSystemZInfo\n-lLLVMSystemZAsmPrinter\n-lLLVMSparcDisassembler\n-lLLVMSparcCodeGen\n-lLLVMSparcAsmParser\n-lLLVMSparcDesc\n-lLLVMSparcInfo\n-lLLVMSparcAsmPrinter\n-lLLVMR600CodeGen\n-lLLVMipo\n-lLLVMVectorize\n-lLLVMR600AsmParser\n-lLLVMR600Desc\n-lLLVMR600Info\n-lLLVMR600AsmPrinter\n-lLLVMPowerPCDisassembler\n-lLLVMPowerPCCodeGen\n-lLLVMPowerPCAsmParser\n-lLLVMPowerPCDesc\n-lLLVMPowerPCInfo\n-lLLVMPowerPCAsmPrinter\n-lLLVMNVPTXCodeGen\n-lLLVMNVPTXDesc\n-lLLVMNVPTXInfo\n-lLLVMNVPTXAsmPrinter\n-lLLVMMSP430CodeGen\n-lLLVMMSP430Desc\n-lLLVMMSP430Info\n-lLLVMMSP430AsmPrinter\n-lLLVMMipsDisassembler\n-lLLVMMipsCodeGen\n-lLLVMMipsAsmParser\n-lLLVMMipsDesc\n-lLLVMMipsInfo\n-lLLVMMipsAsmPrinter\n-lLLVMHexagonDisassembler\n-lLLVMHexagonCodeGen\n-lLLVMHexagonDesc\n-lLLVMHexagonInfo\n-lLLVMCppBackendCodeGen\n-lLLVMCppBackendInfo\n-lLLVMARMDisassembler\n-lLLVMARMCodeGen\n-lLLVMARMAsmParser\n-lLLVMARMDesc\n-lLLVMARMInfo\n-lLLVMARMAsmPrinter\n-lLLVMAArch64Disassembler\n-lLLVMAArch64CodeGen\n-lLLVMAArch64AsmParser\n-lLLVMAArch64Desc\n-lLLVMAArch64Info\n-lLLVMAArch64AsmPrinter\n-lLLVMAArch64Utils\n-lLLVMTableGen\n-lLLVMDebugInfo\n-lLLVMOption\n-lLLVMX86Disassembler\n-lLLVMX86AsmParser\n-lLLVMX86CodeGen\n-lLLVMSelectionDAG\n-lLLVMAsmPrinter\n-lLLVMX86Desc\n-lLLVMMCDisassembler\n-lLLVMX86Info\n-lLLVMX86AsmPrinter\n-lLLVMX86Utils\n-lLLVMMCJIT\n-lLLVMLineEditor\n-lLLVMInstrumentation\n-lLLVMInterpreter\n-lLLVMExecutionEngine\n-lLLVMRuntimeDyld\n-lLLVMCodeGen\n-lLLVMScalarOpts\n-lLLVMProfileData\n-lLLVMObject\n-lLLVMMCParser\n-lLLVMBitReader\n-lLLVMInstCombine\n-lLLVMTransformUtils\n-lLLVMipa\n-lLLVMAnalysis\n-lLLVMTarget\n-lLLVMMC\n-lLLVMCore\n-lLLVMSupport\n-fPIC\n-fvisibility-inlines-hidden\n-Wl,-search_paths_first\n-Wl,-headerpad_max_install_names\n-lclangAnalysis\n-lclangARCMigrate\n-lclangAST\n-lclangASTMatchers\n-lclangBasic\n-lclangCodeGen\n-lclangDriver\n-lclangDynamicASTMatchers\n-lclangEdit\n-lclangFormat\n-lclangFrontend\n-lclangFrontendTool\n-lclangIndex\n-lclangLex\n-lclangParse\n-lclangRewrite\n-lclangRewriteFrontend\n-lclangSema\n-lclangSerialization\n-lclangStaticAnalyzerCheckers\n-lclangStaticAnalyzerCore\n-lclangStaticAnalyzerFrontend\n-lclangTooling\n-lclangToolingCore",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.vist-lang.Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/$(PROJECT_NAME)/Helper/Vist-Bridging-Header.h";
+			};
+			name = Release;
+		};
 		D47FF07F1B812052003F9920 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -592,6 +805,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -611,7 +825,7 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
-				EMBEDDED_CONTENT_CONTAINS_SWIFT = NO;
+				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"SOURCE_ROOT=@\\\"$(PROJECT_DIR)\\\"",
@@ -623,7 +837,9 @@
 				"LD_MAP_FILE_PATH[arch=*]" = "$(TARGET_TEMP_DIR)/$(PRODUCT_NAME)-LinkMap-$(CURRENT_VARIANT)-$(CURRENT_ARCH).txt";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = /usr/local/opt/llvm/lib;
-				MODULE_NAME = "";
+				LLVM_LTO = YES;
+				MODULE_NAME = vist;
+				MODULE_VERSION = 1.0;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-Wall",
@@ -761,12 +977,36 @@
 					"-fvisibility-inlines-hidden",
 					"-Wl,-search_paths_first",
 					"-Wl,-headerpad_max_install_names",
-					"-lclangAnalysis\n-lclangARCMigrate\n-lclangAST\n-lclangASTMatchers\n-lclangBasic\n-lclangCodeGen\n-lclangDriver\n-lclangDynamicASTMatchers\n-lclangEdit\n-lclangFormat\n-lclangFrontend\n-lclangFrontendTool\n-lclangIndex\n-lclangLex\n-lclangParse\n-lclangRewrite\n-lclangRewriteFrontend\n-lclangSema\n-lclangSerialization\n-lclangStaticAnalyzerCheckers\n-lclangStaticAnalyzerCore\n-lclangStaticAnalyzerFrontend\n-lclangTooling\n-lclangToolingCore",
+					"-lclangAnalysis",
+					"-lclangARCMigrate",
+					"-lclangAST",
+					"-lclangASTMatchers",
+					"-lclangBasic",
+					"-lclangCodeGen",
+					"-lclangDriver",
+					"-lclangDynamicASTMatchers",
+					"-lclangEdit",
+					"-lclangFormat",
+					"-lclangFrontend",
+					"-lclangFrontendTool",
+					"-lclangIndex",
+					"-lclangLex",
+					"-lclangParse",
+					"-lclangRewrite",
+					"-lclangRewriteFrontend",
+					"-lclangSema",
+					"-lclangSerialization",
+					"-lclangStaticAnalyzerCheckers",
+					"-lclangStaticAnalyzerCore",
+					"-lclangStaticAnalyzerFrontend",
+					"-lclangTooling",
+					"-lclangToolingCore",
 				);
 				OTHER_SWIFT_FLAGS = "-DDEBUG";
 				PRELINK_LIBS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REEXPORTED_LIBRARY_NAMES = "";
+				STRIP_INSTALLED_PRODUCT = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "Vist/Helper/Vist-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				USER_HEADER_SEARCH_PATHS = "";
@@ -778,8 +1018,8 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
-				EMBEDDED_CONTENT_CONTAINS_SWIFT = NO;
-				ENABLE_TESTABILITY = NO;
+				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"SOURCE_ROOT=@\\\"$(PROJECT_DIR)\\\"",
 					__STDC_CONSTANT_MACROS,
@@ -789,7 +1029,9 @@
 				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = /usr/local/opt/llvm/lib;
-				MODULE_NAME = "";
+				LLVM_LTO = YES;
+				MODULE_NAME = vist;
+				MODULE_VERSION = 1.0;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-Wall",
@@ -927,45 +1169,54 @@
 					"-fvisibility-inlines-hidden",
 					"-Wl,-search_paths_first",
 					"-Wl,-headerpad_max_install_names",
-					"-lclangAnalysis\n-lclangARCMigrate\n-lclangAST\n-lclangASTMatchers\n-lclangBasic\n-lclangCodeGen\n-lclangDriver\n-lclangDynamicASTMatchers\n-lclangEdit\n-lclangFormat\n-lclangFrontend\n-lclangFrontendTool\n-lclangIndex\n-lclangLex\n-lclangParse\n-lclangRewrite\n-lclangRewriteFrontend\n-lclangSema\n-lclangSerialization\n-lclangStaticAnalyzerCheckers\n-lclangStaticAnalyzerCore\n-lclangStaticAnalyzerFrontend\n-lclangTooling\n-lclangToolingCore",
+					"-lclangAnalysis",
+					"-lclangARCMigrate",
+					"-lclangAST",
+					"-lclangASTMatchers",
+					"-lclangBasic",
+					"-lclangCodeGen",
+					"-lclangDriver",
+					"-lclangDynamicASTMatchers",
+					"-lclangEdit",
+					"-lclangFormat",
+					"-lclangFrontend",
+					"-lclangFrontendTool",
+					"-lclangIndex",
+					"-lclangLex",
+					"-lclangParse",
+					"-lclangRewrite",
+					"-lclangRewriteFrontend",
+					"-lclangSema",
+					"-lclangSerialization",
+					"-lclangStaticAnalyzerCheckers",
+					"-lclangStaticAnalyzerCore",
+					"-lclangStaticAnalyzerFrontend",
+					"-lclangTooling",
+					"-lclangToolingCore",
 				);
 				OTHER_SWIFT_FLAGS = "-DDEBUG";
 				PRELINK_LIBS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REEXPORTED_LIBRARY_NAMES = "";
+				STRIP_INSTALLED_PRODUCT = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "Vist/Helper/Vist-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Release;
 		};
-		D485DD2A1C1667E900B72F81 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_IDENTITY = "-";
-				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = VistTest/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.Josef-Willsher.VistTest";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Debug;
-		};
-		D485DD2B1C1667E900B72F81 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_IDENTITY = "-";
-				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = VistTest/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.Josef-Willsher.VistTest";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		D41BF54F1C5CD797004A1962 /* Build configuration list for PBXNativeTarget "Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D41BF5501C5CD797004A1962 /* Debug */,
+				D41BF5511C5CD797004A1962 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		D47FF0751B812052003F9920 /* Build configuration list for PBXProject "Vist" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -980,15 +1231,6 @@
 			buildConfigurations = (
 				D47FF0821B812052003F9920 /* Debug */,
 				D47FF0831B812052003F9920 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		D485DD2C1C1667E900B72F81 /* Build configuration list for PBXNativeTarget "VistTest" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				D485DD2A1C1667E900B72F81 /* Debug */,
-				D485DD2B1C1667E900B72F81 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

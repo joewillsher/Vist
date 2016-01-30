@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0710"
+   LastUpgradeVersion = "0730"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -16,9 +16,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D485DD241C1667E900B72F81"
-               BuildableName = "VistTest.xctest"
-               BlueprintName = "VistTest"
+               BlueprintIdentifier = "D41BF5491C5CD797004A1962"
+               BuildableName = "Tests.xctest"
+               BlueprintName = "Tests"
                ReferencedContainer = "container:Vist.xcodeproj">
             </BuildableReference>
          </TestableReference>

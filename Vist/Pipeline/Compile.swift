@@ -20,7 +20,8 @@ private let runtimeDirectory = "\(SOURCE_ROOT)/Vist/Runtime"
 //   - Also need a way to do this out-of-order so all functions (and types) are defined first
 
 
-public func compileDocuments(fileNames: [String],
+func compileDocuments(fileNames: [String],
+    inDirectory: String,
     verbose: Bool = true,
     dumpAST: Bool = false,
     irOnly: Bool = false,
@@ -33,7 +34,7 @@ public func compileDocuments(fileNames: [String],
     isStdLib: Bool = false)
     throws {
         
-        let currentDirectory = isStdLib ? stdLibDirectory : NSTask().currentDirectoryPath
+        let currentDirectory = isStdLib ? stdLibDirectory : inDirectory
         
         var head: AST? = nil
         var all: [AST] = []

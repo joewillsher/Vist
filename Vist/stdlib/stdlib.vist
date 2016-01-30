@@ -192,12 +192,12 @@ func != :: Double Double -> Bool = (a b) do
 
 // ranges
 @inline @operator(40)
-func ... :: Int Int -> Range = do
-    return Range $0 $1
+func ... :: Int Int -> Range = (a b) do
+    return Range a b
 
 @inline @operator(40)
 func ..< :: Int Int -> Range = do
-    return Range $0 $1-1 
+    return Range a b-1
 
 
 

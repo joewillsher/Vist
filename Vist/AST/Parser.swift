@@ -443,16 +443,16 @@ extension Parser {
 
             return try parseParenExpr(tuple: false)
             
+        case .OpenBrace, .Do /*, .OpenParen */: // FIXME: closures want to be abel to do `let a = (u) do print u`
+            let block = try parseBlockExpr()
+            let closure = ClosureExpr(exprs: block.exprs, params: block.variables.map { $0.name })
+            return closure
+
         case .SqbrOpen:
             return try parseArrayExpr()
             
         case let .StringLiteral(str):
             return parseStringExpr(str)
-            
-        case .OpenBrace, .Do, .OpenParen:
-            let block = try parseBlockExpr()
-            let closure = ClosureExpr(exprs: block.exprs, params: block.variables.map { $0.name })
-            return closure
             
         default:
             throw ParseError.NoIdentifier(currentPos)

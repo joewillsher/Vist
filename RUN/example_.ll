@@ -17,14 +17,10 @@ entry:
   store { i64 } %"*.res", { i64 }* %4
   %b = load { i64 }* %4
   call void @_print_S.i64({ i64 } %b), !stdlib.call.optim !0
-  %a1 = load { i64 }* %2
-  %b2 = load { i64 }* %4
-  %">=.res" = call { i1 } @"_>=_S.i64_S.i64"({ i64 } %a1, { i64 } %b2), !stdlib.call.optim !0
-  call void @_print_S.b({ i1 } %">=.res"), !stdlib.call.optim !0
   ret void
 }
 
-define { i64 } @_fact_S.i64({ i64 } %a) {
+define internal { i64 } @_fact_S.i64({ i64 } %a) {
 entry:
   %0 = call { i64 } @_Int_i64(i64 1), !stdlib.call.optim !0
   %"<=.res" = call { i1 } @"_<=_S.i64_S.i64"({ i64 } %a, { i64 } %0), !stdlib.call.optim !0
@@ -55,9 +51,5 @@ declare { i64 } @_-_S.i64_S.i64({ i64 }, { i64 })
 declare { i64 } @"_*_S.i64_S.i64"({ i64 }, { i64 })
 
 declare void @_print_S.i64({ i64 })
-
-declare { i1 } @"_>=_S.i64_S.i64"({ i64 }, { i64 })
-
-declare void @_print_S.b({ i1 })
 
 !0 = !{!"stdlib.call.optim"}

@@ -26,7 +26,7 @@ struct FnType : Ty {
         return LLVMFunctionType(r,
             nonVoid.map{$0.ir()}.ptr(),
             UInt32(nonVoid.count),
-            LLVMBool(false))
+            false)
     }
     
     init(params: [Ty], returns: Ty = BuiltinType.Void, metadata: [String] = []) {

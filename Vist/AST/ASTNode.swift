@@ -8,14 +8,12 @@
 
 protocol ASTNode : Printable {}
 
-// make this generic when protocols with associated type requirements can be used existentially
 // use behaviour delegates (when released in swift 3) to make `let (delated) type: Ty { get }`
+///
 /// AST walker node
-//protocol Typed {
-//    var type: Ty? { get set }
-//}
-
-
+///
+/// Provides common interfaces for expressions, declarations, and statements
+///
 final class AST : ASTNode {
     var exprs: [ASTNode]
     
@@ -26,12 +24,25 @@ final class AST : ASTNode {
     var type: Ty? = nil
 }
 
-
-
-
-
-
-
+// TODO: Notes from swift:
+//
+// they have different types -
+//
+//  - Pattern, as in pattern matching
+//      - `is` pattern, tuple pattern, enum element pattern, case statement 'bool' patterns, x?
+//  - Declarations / Decl
+//      - Vars, funcs, types, and initalisers
+//  - Statement / Stmt
+//      - brace, return, defer, conditional, do/catch, if, while, for, for each, switch, break, fallthrough, continue, throw
+//  - Expression / expr
+//      - literals, tuples, parens, array, closure
+//      - Call expression, operator, methods, casts,
+//      - Sub expressions of syntax structures, like `type name generic params`
+//  - TypeRepr & SourceLoc
+//      - ‘Representation of a type as written in source’, generates human readable code to attach to AST objects
+//      - Source code location information
+//
+// Swift has an explicit AST walker function
 
 
 protocol _Typed {
@@ -59,72 +70,3 @@ extension Typed {
         }
     }
 }
-
-
-
-
-///// SomeType provides a method to return a Ty
-//protocol SomeType {
-//    func getType() -> Ty
-//}
-//
-//// All Ty objects conform by returning self
-//extension SomeType where Self : Ty {
-//    func getType() -> Ty {
-//        return self
-//    }
-//}
-//
-//
-//protocol AnyType : Ty {
-//    
-//    init()
-//    init<Type where Type : Ty>(_ s: Type)
-//    
-//    /// Some type object is a `Ty` behind a `.getType()`
-//    var type: SomeType? { get set }
-//    
-//    /// Returns the Ty object inside the SomeType
-//    func getType() -> Ty?
-//}
-//
-//extension AnyType {
-//    
-//    init<Type where Type : Ty>(_ s: Type) {
-//        self.init()
-//        type = s
-//    }
-//    
-//    func getType() -> Ty? {
-//        return type?.getType()
-//    }
-//}
-//
-//
-//// AnyType forwards its methods/properties to its SomeType wrapper
-//extension AnyType {
-//    func ir() -> LLVMTypeRef {
-//        return getType()!.ir()
-//    }
-//    var debugDescription: String {
-//        return getType()!.debugDescription
-//    }
-//}
-//
-//// TODO: work this out
-//extension Typed where Type : AnyType {
-//    
-//    func getType() -> Ty? {
-//        return type?.getType()
-//    }
-//}
-
-
-
-
-
-
-
-
-
-
