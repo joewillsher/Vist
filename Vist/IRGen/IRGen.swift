@@ -204,7 +204,7 @@ extension VariableDecl : IRGenerator {
             let num = LLVMCountParams(fn)
             for i in 0..<num {
                 let param = LLVMGetParam(fn, i)
-                let name = ("$\(Int(i))")
+                let name = i.implicitArgName()
                 LLVMSetValueName(param, name)
             }
             
@@ -498,7 +498,7 @@ extension FuncDecl : IRGenerator {
         // set function param names and update table
         for i in 0..<argCount {
             let param = LLVMGetParam(function, UInt32(i + startIndex))
-            let name = (impl?.params.elements[i] as? ValueType)?.name ?? "$\(i)"
+            let name = (impl?.params.elements[i] as? ValueType)?.name ?? i.implicitArgName()
             LLVMSetValueName(param, name)
             
             let ty = LLVMTypeOf(param)
@@ -604,7 +604,7 @@ extension ClosureExpr : IRGenerator {
         // set function param names and update table
         for i in 0..<type.params.count {
             let param = LLVMGetParam(function, UInt32(i))
-            let name = parameters.isEmpty ? "$\(i)" : parameters[i]
+            let name = parameters.isEmpty ? i.implicitArgName() : parameters[i]
             LLVMSetValueName(param, name)
             
 //            let ty = LLVMTypeOf(param)
@@ -1013,7 +1013,7 @@ extension InitialiserDecl : IRGenerator {
         // TODO: Split this out into a function for funcs & closures to use as well
         for i in 0..<argCount {
             let param = LLVMGetParam(function, UInt32(i))
-            let name = (impl.params.elements[i] as? ValueType)?.name ?? ("$\(i)")
+            let name = (impl.params.elements[i] as? ValueType)?.name ?? i.implicitArgName()
             LLVMSetValueName(param, name)
             
             let ty = LLVMTypeOf(param)

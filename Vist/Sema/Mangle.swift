@@ -31,55 +31,29 @@ extension String {
             .stringByReplacingOccurrencesOfString("$", withString: "_")
     }
 }
-//extension String {
-//
-//    func mangle(type: FnType, parentTypeName: String? = nil, isTrivialInit: Bool) -> String {
-//        let i = isTrivialInit ? "_trivinit_" : "_"
-//        let n = parentTypeName == nil ? "" : "\(parentTypeName!)."
-//        return "_\(n)\(sansUnderscores())\(i)\(type.debugDescription)"
-//    }
-//    func mangle(type: [Ty], parentTypeName: String? = nil, isTrivialInit: Bool) -> String {
-//        return mangle(FnType(params: type, returns: BuiltinType.Void/*Doesnt matter*/), parentTypeName: parentTypeName, isTrivialInit: isTrivialInit)
-//    }
-//
-//
-//    func sansUnderscores() -> String {
-//        return stringByReplacingOccurrencesOfString("_", withString: "$")
-//    }
-//
-//    // TODO: Add globalinit to mangled names for initalisers
-//    func demangleName() -> String {
-//        let kk = characters.dropFirst()
-//        return String(kk.prefixUpTo(kk.indexOf("_")!))
-//            .stringByReplacingOccurrencesOfString("$", withString: "_")
-//    }
-//
-//    func isTrivialInit() -> Bool {
-//        let kk = characters.dropFirst()
-//        return String(kk.prefixUpTo(kk.indexOf("_")!))
-//            .containsString("trivinit")
-//    }
-//}
 
-
+func implicitArgName<I : IntegerType>(n: I) -> String { return "$\(n)"}
+extension IntegerType {
+    func implicitArgName() -> String { return "$\(self)"}
+}
 
 extension BuiltinType : CustomStringConvertible, CustomDebugStringConvertible {
     
     var description: String {
         switch self {
-        case .Null:                     return "Null"
-        case .Void:                     return "Void"
-        case .Int(let s):               return "Int\(s)"
-        case .Bool:                     return "Bool"
-        case .Array(let el, let size):  return "[\(size) x \(el)]"
-        case .Pointer(let to):          return "\(to)*"
+        case .Null:                     return "LLVM.Null"
+        case .Void:                     return "LLVM.Void"
+        case .Int(let s):               return "LLVM.Int\(s)"
+        case .Bool:                     return "LLVM.Bool"
+        case .Array(let el, let size):  return "[\(size) x \(el)]" // not implemented
+        case .Pointer(let to):          return "\(to)*"            // will never be implemented
         case .Float(let s):
             switch s {
-            case 16:                    return "Half"
-            case 32:                    return "Float"
-            case 64:                    return "Double"
-            case 128:                   return "FP128"
-            default:                    return "<<invalid type>>"
+            case 16:                    return "LLVM.Half"
+            case 32:                    return "LLVM.Float"
+            case 64:                    return "LLVM.Double"
+            case 128:                   return "LLVM.FP128"
+            default:                    fatalError("Bad float type")
             }
         }
     }
@@ -100,10 +74,7 @@ extension BuiltinType : CustomStringConvertible, CustomDebugStringConvertible {
 extension StructType: CustomStringConvertible, CustomDebugStringConvertible {
     
     var description: String {
-        let arr = members
-            .map { $0.1.description }
-            .joinWithSeparator(", ")
-        return "Struct(\(arr))"
+        return name
     }
     
     var debugDescription: String {

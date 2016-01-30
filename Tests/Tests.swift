@@ -39,7 +39,20 @@ class Tests : XCTestCase {
     func testForInLoops() {
         do {
             try compileWithOptions(["-O", "Loops.vist"], inDirectory: testDir, out: pipe)
+            print(pipe?.string)
             XCTAssertEqual(pipe?.string, "1\n2\n3\n")
+        }
+        catch {
+            print(error)
+            XCTFail("Compilation failed")
+        }
+    }
+    
+    func testStackOf2Type() {
+        do {
+            try compileWithOptions(["-O", "StackOf2Type.vist"], inDirectory: testDir, out: pipe)
+            print(pipe?.string)
+            XCTAssertEqual(pipe?.string, "22\n3\ntrue\n")
         }
         catch {
             print(error)
@@ -48,7 +61,7 @@ class Tests : XCTestCase {
     }
 
     func testStdLibCompile() {
-        self.measureBlock {
+//        self.measureBlock {
             do {
                 try compileWithOptions(["-O", "-build-stdlib"], inDirectory: stdlibDir, out: nil)
             }
@@ -56,7 +69,7 @@ class Tests : XCTestCase {
                 print(error)
                 XCTFail("Compilation failed")
             }
-        }
+//        }
     }
     
     

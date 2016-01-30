@@ -344,11 +344,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Pipeline/Compile.swift"
-            timestampString = "475865574.233871"
+            timestampString = "475866444.074221"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "263"
-            endingLineNumber = "263"
+            startingLineNumber = "261"
+            endingLineNumber = "261"
             landmarkName = "compileDocuments(_:inDirectory:out:verbose:dumpAST:irOnly:asmOnly:buildOnly:profile:optim:preserve:generateLibrary:isStdLib:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -360,11 +360,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Pipeline/Compile.swift"
-            timestampString = "475865574.233871"
+            timestampString = "475866444.074221"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "132"
-            endingLineNumber = "132"
+            startingLineNumber = "130"
+            endingLineNumber = "130"
             landmarkName = "compileDocuments(_:inDirectory:out:verbose:dumpAST:irOnly:asmOnly:buildOnly:profile:optim:preserve:generateLibrary:isStdLib:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -456,11 +456,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Sema/TypeProvider.swift"
-            timestampString = "475863846.279937"
+            timestampString = "475867626.45809"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "662"
-            endingLineNumber = "662"
+            startingLineNumber = "665"
+            endingLineNumber = "665"
             landmarkName = "llvmType(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -472,11 +472,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Sema/TypeProvider.swift"
-            timestampString = "475863846.279937"
+            timestampString = "475867626.45809"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "669"
-            endingLineNumber = "669"
+            startingLineNumber = "672"
+            endingLineNumber = "672"
             landmarkName = "llvmType(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -568,11 +568,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Pipeline/Compile.swift"
-            timestampString = "475865574.233871"
+            timestampString = "475866444.074221"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "134"
-            endingLineNumber = "134"
+            startingLineNumber = "132"
+            endingLineNumber = "132"
             landmarkName = "compileDocuments(_:inDirectory:out:verbose:dumpAST:irOnly:asmOnly:buildOnly:profile:optim:preserve:generateLibrary:isStdLib:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -696,11 +696,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Pipeline/Compile.swift"
-            timestampString = "475865574.233871"
+            timestampString = "475866444.074221"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "142"
-            endingLineNumber = "142"
+            startingLineNumber = "140"
+            endingLineNumber = "140"
             landmarkName = "compileDocuments(_:inDirectory:out:verbose:dumpAST:irOnly:asmOnly:buildOnly:profile:optim:preserve:generateLibrary:isStdLib:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -712,11 +712,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Pipeline/Compile.swift"
-            timestampString = "475865574.233871"
+            timestampString = "475866444.074221"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "200"
-            endingLineNumber = "200"
+            startingLineNumber = "198"
+            endingLineNumber = "198"
             landmarkName = "compileDocuments(_:inDirectory:out:verbose:dumpAST:irOnly:asmOnly:buildOnly:profile:optim:preserve:generateLibrary:isStdLib:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -1031,86 +1031,6 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Vist/Sema/Initialiser.swift"
-            timestampString = "474561168.387304"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "30"
-            endingLineNumber = "30"
-            landmarkName = "implicitIntialiser()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Vist/Sema/Initialiser.swift"
-            timestampString = "474562387.539588"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "17"
-            endingLineNumber = "17"
-            landmarkName = "implicitIntialiser()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Vist/Sema/Initialiser.swift"
-            timestampString = "474562388.406134"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "16"
-            endingLineNumber = "16"
-            landmarkName = "implicitIntialiser()"
-            landmarkType = "5">
-            <Locations>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "vist.StructExpression.implicitIntialiser (vist.StructExpression)() -&gt; Swift.Optional&lt;vist.InitialiserExpression&gt;"
-                  moduleName = "vist"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/JoeWillsher/Developer/Vist/Vist/Sema/Initialiser.swift"
-                  timestampString = "474562388.408737"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "16"
-                  endingLineNumber = "16"
-                  offsetFromSymbolStart = "901">
-               </Location>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "vist.StructExpression.(implicitIntialiser (vist.StructExpression) -&gt; () -&gt; Swift.Optional&lt;vist.InitialiserExpression&gt;).(closure #3)"
-                  moduleName = "vist"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/JoeWillsher/Developer/Vist/Vist/Sema/Initialiser.swift"
-                  timestampString = "474562388.410016"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "16"
-                  endingLineNumber = "16"
-                  offsetFromSymbolStart = "12">
-               </Location>
-            </Locations>
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
             filePath = "Vist/IRGen/IRGen.swift"
             timestampString = "475857871.296877"
             startingColumnNumber = "9223372036854775807"
@@ -1300,11 +1220,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Sema/TypeProvider.swift"
-            timestampString = "475863846.279937"
+            timestampString = "475867626.45809"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "701"
-            endingLineNumber = "701"
+            startingLineNumber = "704"
+            endingLineNumber = "704"
             landmarkName = "llvmType(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -1492,11 +1412,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Sema/TypeProvider.swift"
-            timestampString = "475863846.279937"
+            timestampString = "475867626.45809"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "743"
-            endingLineNumber = "743"
+            startingLineNumber = "746"
+            endingLineNumber = "746"
             landmarkName = "llvmType(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -1540,11 +1460,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Sema/TypeProvider.swift"
-            timestampString = "475863846.279937"
+            timestampString = "475867626.45809"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "744"
-            endingLineNumber = "744"
+            startingLineNumber = "747"
+            endingLineNumber = "747"
             landmarkName = "llvmType(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -1905,11 +1825,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Sema/TypeProvider.swift"
-            timestampString = "475863846.279937"
+            timestampString = "475867626.45809"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "754"
-            endingLineNumber = "754">
+            startingLineNumber = "757"
+            endingLineNumber = "757">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -2006,38 +1926,6 @@
             endingLineNumber = "470"
             landmarkName = "llvmType(_:)"
             landmarkType = "5">
-            <Locations>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "function signature specialization &lt;Arg[0] = Owned To Guaranteed&gt; of Tests.ConditionalStmt.llvmType (Tests.ConditionalStmt)(Tests.SemaScope) throws -&gt; ()"
-                  moduleName = "Tests"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/JoeWillsher/Developer/Vist/Vist/Sema/TypeProvider.swift"
-                  timestampString = "475865590.42509"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "470"
-                  endingLineNumber = "470"
-                  offsetFromSymbolStart = "1928">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "function signature specialization &lt;Arg[0] = Owned To Guaranteed&gt; of Tests.ElseIfBlockStmt.llvmType (Tests.ElseIfBlockStmt)(Tests.SemaScope) throws -&gt; ()"
-                  moduleName = "Tests"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/JoeWillsher/Developer/Vist/Vist/Sema/TypeProvider.swift"
-                  timestampString = "475865590.425285"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "470"
-                  endingLineNumber = "470"
-                  offsetFromSymbolStart = "1229">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -2182,38 +2070,6 @@
             endingLineNumber = "260"
             landmarkName = "getType(_:)"
             landmarkType = "7">
-            <Locations>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "generic specialization &lt;Swift.LazyMapCollection&lt;Swift.Dictionary&lt;Swift.String, Tests.StructType&gt;, Tests.StructType&gt; with Swift.LazyMapCollection&lt;Swift.Dictionary&lt;Swift.String, Tests.StructType&gt;, Tests.StructType&gt; : Swift.CollectionType in Swift, Swift.LazyMapGenerator&lt;Swift.DictionaryGenerator&lt;Swift.String, Tests.StructType&gt;, Tests.StructType&gt; with Swift.LazyMapGenerator&lt;Swift.DictionaryGenerator&lt;Swift.String, Tests.StructType&gt;, Tests.StructType&gt; : Swift.GeneratorType in Swift, Swift.DictionaryIndex&lt;Swift.String, Tests.StructType&gt; with Swift.DictionaryIndex&lt;Swift.String, Tests.StructType&gt; : Swift.ForwardIndexType in Swift, Swift.Int with Swift.Int : Swift._SignedIntegerType in Swift, Swift.Int with Swift.Int : Swift._BuiltinIntegerLiteralConvertible in Swift, Swift._DisabledRangeIndex_, Swift.Slice&lt;Swift.LazyMapCollection&lt;Swift.Dictionary&lt;Swift.String, Tests.StructType&gt;, Tests.StructType&gt;&gt; with Swift.Slice&lt;Swift.LazyMapCollection&lt;Swift.Dictionary&lt;Swift.String, Tests.StructType&gt;, Tests.StructType&gt;&gt; : Swift.Indexable in Swift and Swift.Slice&lt;Swift.LazyMapCollection&lt;Swift.Dictionary&lt;Swift.String, Tests.StructType&gt;, Tests.StructType&gt;&gt; : Swift.SequenceType in Swift, Swift.IndexingGenerator&lt;Swift.Slice&lt;Swift.LazyMapCollection&lt;Swift.Dictionary&lt;Swift.String, Tests.StructType&gt;, Tests.StructType&gt;&gt;&gt; with Swift.IndexingGenerator&lt;Swift.Slice&lt;Swift.LazyMapCollection&lt;Swift.Dictionary&lt;Swift.String, Tests.StructType&gt;, Tests.StructType&gt;&gt;&gt; : Swift.GeneratorType in Swift, Tests.StructType, Swift.DictionaryIndex&lt;Swift.String, Tests.StructType&gt; with Swift.DictionaryIndex&lt;Swift.String, Tests.StructType&gt; : Swift.ForwardIndexType in Swift, Swift.Int with Swift.Int : Swift._SignedIntegerType in Swift, Swift.Int with Swift.Int : Swift._BuiltinIntegerLiteralConvertible in Swift, Swift._DisabledRangeIndex_, Swift.Slice&lt;Swift.LazyMapCollection&lt;Swift.Dictionary&lt;Swift.String, Tests.StructType&gt;, Tests.StructType&gt;&gt;, Tests.StructType, Tests.StructType&gt; of Tests.FunctionType.(returnType in _ADD946EE4668903B9C8E16A0C8915BD3) &lt;A where A: Swift.CollectionType, A.Generator.Element == Tests.StructType&gt; (Tests.FunctionType)(A) throws -&gt; Tests.Ty"
-                  moduleName = "Tests"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/JoeWillsher/Developer/Vist/Vist/Sema/TypeProvider.swift"
-                  timestampString = "475865590.428801"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "260"
-                  endingLineNumber = "260"
-                  offsetFromSymbolStart = "3531">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "generic specialization &lt;Swift.LazyMapCollection&lt;Swift.Dictionary&lt;Swift.String, Tests.StructType&gt;, Tests.StructType&gt; with Swift.LazyMapCollection&lt;Swift.Dictionary&lt;Swift.String, Tests.StructType&gt;, Tests.StructType&gt; : Swift.CollectionType in Swift, Swift.LazyMapGenerator&lt;Swift.DictionaryGenerator&lt;Swift.String, Tests.StructType&gt;, Tests.StructType&gt; with Swift.LazyMapGenerator&lt;Swift.DictionaryGenerator&lt;Swift.String, Tests.StructType&gt;, Tests.StructType&gt; : Swift.GeneratorType in Swift, Swift.DictionaryIndex&lt;Swift.String, Tests.StructType&gt; with Swift.DictionaryIndex&lt;Swift.String, Tests.StructType&gt; : Swift.ForwardIndexType in Swift, Swift.Int with Swift.Int : Swift._SignedIntegerType in Swift, Swift.Int with Swift.Int : Swift._BuiltinIntegerLiteralConvertible in Swift, Swift._DisabledRangeIndex_, Swift.Slice&lt;Swift.LazyMapCollection&lt;Swift.Dictionary&lt;Swift.String, Tests.StructType&gt;, Tests.StructType&gt;&gt; with Swift.Slice&lt;Swift.LazyMapCollection&lt;Swift.Dictionary&lt;Swift.String, Tests.StructType&gt;, Tests.StructType&gt;&gt; : Swift.Indexable in Swift and Swift.Slice&lt;Swift.LazyMapCollection&lt;Swift.Dictionary&lt;Swift.String, Tests.StructType&gt;, Tests.StructType&gt;&gt; : Swift.SequenceType in Swift, Swift.IndexingGenerator&lt;Swift.Slice&lt;Swift.LazyMapCollection&lt;Swift.Dictionary&lt;Swift.String, Tests.StructType&gt;, Tests.StructType&gt;&gt;&gt; with Swift.IndexingGenerator&lt;Swift.Slice&lt;Swift.LazyMapCollection&lt;Swift.Dictionary&lt;Swift.String, Tests.StructType&gt;, Tests.StructType&gt;&gt;&gt; : Swift.GeneratorType in Swift, Tests.StructType, Swift.DictionaryIndex&lt;Swift.String, Tests.StructType&gt; with Swift.DictionaryIndex&lt;Swift.String, Tests.StructType&gt; : Swift.ForwardIndexType in Swift, Swift.Int with Swift.Int : Swift._SignedIntegerType in Swift, Swift.Int with Swift.Int : Swift._BuiltinIntegerLiteralConvertible in Swift, Swift._DisabledRangeIndex_, Swift.Slice&lt;Swift.LazyMapCollection&lt;Swift.Dictionary&lt;Swift.String, Tests.StructType&gt;, Tests.StructType&gt;&gt;, Tests.StructType, Tests.StructType&gt; of Tests.((getType in _ADD946EE4668903B9C8E16A0C8915BD3) &lt;A where A: Swift.CollectionType, A.Generator.Element == Tests.StructType&gt; (A) -&gt; (Tests.ValueType) throws -&gt; Tests.Ty).(closure #1)"
-                  moduleName = "Tests"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/JoeWillsher/Developer/Vist/Vist/Sema/TypeProvider.swift"
-                  timestampString = "475865590.428925"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "260"
-                  endingLineNumber = "260"
-                  offsetFromSymbolStart = "819">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -2794,6 +2650,22 @@
             endingLineNumber = "17"
             landmarkName = "compileWithOptions(_:inDirectory:out:)"
             landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Tests/Tests.swift"
+            timestampString = "475869023.004772"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "59"
+            endingLineNumber = "59"
+            landmarkName = "testStackOf2Type()"
+            landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

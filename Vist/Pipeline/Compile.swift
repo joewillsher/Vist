@@ -109,7 +109,6 @@ func compileDocuments(fileNames: [String],
         
         
         defer {
-            
             // remove files
             if !preserve {
                 for file in ["\(file).ll", "\(file)_.ll", "\(file).s"] {
@@ -123,7 +122,6 @@ func compileDocuments(fileNames: [String],
                     rmTask.waitUntilExit()
                 }
             }
-            
         }
         
         if verbose { print("\n---------------------------LLVM IR----------------------------\n") }

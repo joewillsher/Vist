@@ -6,7 +6,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 @.str1 = private unnamed_addr constant [4 x i8] c"%i\0A\00", align 1
 @.str2 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
 @str = private unnamed_addr constant [6 x i8] c"false\00"
-@str1 = private unnamed_addr constant [5 x i8] c"true\00"
+@str5 = private unnamed_addr constant [5 x i8] c"true\00"
 
 ; Function Attrs: noinline nounwind ssp uwtable
 define void @"_$print_i64"(i64 %i) #0 {
@@ -41,7 +41,7 @@ define void @"_$print_b"(i1 zeroext %b) #0 {
   br i1 %b, label %1, label %2
 
 ; <label>:1                                       ; preds = %0
-  %puts1 = tail call i32 @puts(i8* getelementptr inbounds ([5 x i8]* @str1, i64 0, i64 0))
+  %puts1 = tail call i32 @puts(i8* getelementptr inbounds ([5 x i8]* @str5, i64 0, i64 0))
   br label %3
 
 ; <label>:2                                       ; preds = %0
@@ -482,6 +482,33 @@ _-_S.i64_S.i64.exit:                              ; preds = %entry
 
 ; Function Attrs: nounwind
 declare i32 @puts(i8* nocapture readonly) #7
+
+; Function Attrs: alwaysinline nounwind readnone
+define { i64 } @_Int_i641(i64) #2 {
+  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %0, 0
+  ret { i64 } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { i1 } @_Bool_b2(i1) #2 {
+  %.fca.0.insert.i = insertvalue { i1 } undef, i1 %0, 0
+  ret { i1 } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { double } @_Double_f643(double) #2 {
+  %.fca.0.insert.i = insertvalue { double } undef, double %0, 0
+  ret { double } %.fca.0.insert.i
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define { { i64 }, { i64 } } @_Range_S.i64_S.i644({ i64 }, { i64 }) #2 {
+  %"$0.fca.0.extract.i" = extractvalue { i64 } %0, 0
+  %"$1.fca.0.extract.i" = extractvalue { i64 } %1, 0
+  %.fca.0.0.insert.i = insertvalue { { i64 }, { i64 } } undef, i64 %"$0.fca.0.extract.i", 0, 0
+  %.fca.1.0.insert.i = insertvalue { { i64 }, { i64 } } %.fca.0.0.insert.i, i64 %"$1.fca.0.extract.i", 1, 0
+  ret { { i64 }, { i64 } } %.fca.1.0.insert.i
+}
 
 attributes #0 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { nounwind "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

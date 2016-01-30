@@ -1,6 +1,4 @@
 
-
-
 // type foo, { i64 i64 } type
 // implicit memberwise initialser is added
 type StackOf2 {
@@ -13,9 +11,9 @@ type StackOf2 {
         b = v * 2
     }
     
-    func sum :: () -> Int = do return a + b
-    
-    func pop :: () -> Int = do return b
+    func sum :: -> Int = do return a + b
+
+    func pop :: -> Int = do return b
     
     func push :: Int = (u) {
         a = b
@@ -30,7 +28,7 @@ type StackOf2 {
 
 var stack = StackOf2 2 10
 
-print (stack.sum ())
+print stack.sum () + stack.pop ()
 
 stack.push 3
 print stack.pop ()

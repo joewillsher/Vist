@@ -768,7 +768,7 @@ extension Parser {
         }
         else {
             names = (0..<type.args.elements.count)
-                .map {"$\($0)"}
+                .map (implicitArgName)
                 .map { ValueType.init(name: $0) }
         }
         

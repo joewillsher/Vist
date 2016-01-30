@@ -28,17 +28,34 @@ extension StructExpr {
         
         let ty = FunctionType(args: TupleExpr.void(), returns: ValueType(name: name))
         
+        return InitialiserDecl(ty: ty, impl: body, parent: self)
+    }
+    
+    /// Returns an initialiser for each element in the struct
+    func memberwiseInitialiser() -> InitialiserDecl {
+        // filter out non initilaised values, return nil if not all values have an initial value
+        let names = properties.map { $0.name }
+        guard let types = properties.stableOptionalMap({ $0.value._type?.description })?.map(ValueType.init) else { fatalError("Could Not Construct Memberwise Initialiser") }
+        
+        var initialisations: [ASTNode] = []
+        for (i, name) in names.enumerate() {
+            let object = Variable(name: name)
+            let value = Variable(name: i.implicitArgName())
+            let m = MutationExpr(object: object, value: value)
+            initialisations.append(m)
+        }
+        
+        let params = TupleExpr(elements: types.mapAs(Expr))
+        let args = (0..<params.elements.count).map(implicitArgName).map(ValueType.init).mapAs(Expr)
+        
+        let block = BlockExpr(exprs: initialisations)
+        let body = FunctionImplementationExpr(params: TupleExpr(elements: args), body: block)
+        
+        let ty = FunctionType(args: params, returns: ValueType(name: name))
+        
         let exp = InitialiserDecl(ty: ty, impl: body, parent: self)
         return exp
     }
-    
-    // TODO: Memberwise init
-    /// Returns an initialiser for each element in the struct
-//    func memberwiseInitialiser() -> InitialiserDeclession {
-//        
-//        
-//        
-//    }
     
 }
 

@@ -268,7 +268,7 @@ private extension FunctionType {
         where TypeCollection.Generator.Element == StructType>
         (tys: TypeCollection)
         throws -> [Ty] {
-            return try args.elements.mapAs(ValueType).map(getType(tys))
+            return try args.mapAs(ValueType).map(getType(tys))
     }
     
     func returnType<
@@ -281,7 +281,7 @@ private extension FunctionType {
             case let tup as TupleExpr:
                 if tup.elements.count == 0 { return BuiltinType.Void }
                 
-                let res = try tup.elements.mapAs(ValueType).map(getType(tys))
+                let res = try tup.mapAs(ValueType).map(getType(tys))
                 guard res.count == tup.elements.count else {
                     throw SemaError.TypeNotFound }
                 return TupleType(members: res)
@@ -370,7 +370,7 @@ extension FuncDecl : DeclTypeProvider {
         
         for (i, v) in (impl?.params.elements ?? []).enumerate() {
             
-            let n = (v as? ValueType)?.name ?? "$\(i)"
+            let n = (v as? ValueType)?.name ?? i.implicitArgName()
             let t = params[i]
             
             try v.llvmType(fnScope)
@@ -420,7 +420,7 @@ extension ClosureExpr : ExprTypeProvider {
         innerScope.returnType = ty.returns
         
         for (i, t) in ty.params.enumerate() {
-            let name = parameters.isEmpty ? "$\(i)" : parameters[i]
+            let name = parameters.isEmpty ? i.implicitArgName() : parameters[i]
             innerScope[variable: name] = t
         }
         
@@ -614,6 +614,9 @@ extension StructExpr : ExprTypeProvider {
         if let implicit = implicitIntialiser() {
             initialisers.append(implicit)
         }
+        
+        let memberwise = memberwiseInitialiser()
+        initialisers.append(memberwise)
         
         for i in initialisers {
             try i.llvmType(scope)

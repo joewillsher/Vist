@@ -105,6 +105,16 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
+define { i64 } @_Int_i641(i64 %"$0") #2 {
+entry:
+  %0 = alloca { i64 }
+  %value_ptr = getelementptr inbounds { i64 }* %0, i32 0, i32 0
+  store i64 %"$0", i64* %value_ptr
+  %1 = load { i64 }* %0
+  ret { i64 } %1
+}
+
+; Function Attrs: alwaysinline
 define { i1 } @_Bool_S.b({ i1 } %o) #2 {
 entry:
   %0 = alloca { i1 }
@@ -141,6 +151,16 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
+define { i1 } @_Bool_b2(i1 %"$0") #2 {
+entry:
+  %0 = alloca { i1 }
+  %value_ptr = getelementptr inbounds { i1 }* %0, i32 0, i32 0
+  store i1 %"$0", i1* %value_ptr
+  %1 = load { i1 }* %0
+  ret { i1 } %1
+}
+
+; Function Attrs: alwaysinline
 define { double } @_Double_S.f64({ double } %o) #2 {
 entry:
   %0 = alloca { double }
@@ -162,7 +182,29 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
+define { double } @_Double_f643(double %"$0") #2 {
+entry:
+  %0 = alloca { double }
+  %value_ptr = getelementptr inbounds { double }* %0, i32 0, i32 0
+  store double %"$0", double* %value_ptr
+  %1 = load { double }* %0
+  ret { double } %1
+}
+
+; Function Attrs: alwaysinline
 define { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 } %"$0", { i64 } %"$1") #2 {
+entry:
+  %0 = alloca { { i64 }, { i64 } }
+  %start_ptr = getelementptr inbounds { { i64 }, { i64 } }* %0, i32 0, i32 0
+  store { i64 } %"$0", { i64 }* %start_ptr
+  %end_ptr = getelementptr inbounds { { i64 }, { i64 } }* %0, i32 0, i32 1
+  store { i64 } %"$1", { i64 }* %end_ptr
+  %1 = load { { i64 }, { i64 } }* %0
+  ret { { i64 }, { i64 } } %1
+}
+
+; Function Attrs: alwaysinline
+define { { i64 }, { i64 } } @_Range_S.i64_S.i644({ i64 } %"$0", { i64 } %"$1") #2 {
 entry:
   %0 = alloca { { i64 }, { i64 } }
   %start_ptr = getelementptr inbounds { { i64 }, { i64 } }* %0, i32 0, i32 0
