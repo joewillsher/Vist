@@ -119,7 +119,7 @@ All thats left is a call to the `_$print_i64` function—one of the [runtime fun
 
 And thats it, we now link my code with the standard library (to allow some last minute, link-time optimisations) and assemble the object files to generate the executable. The assembly looks like this
 
-```assembly
+```GAS
 _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
