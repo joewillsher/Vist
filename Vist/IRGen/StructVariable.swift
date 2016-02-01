@@ -11,6 +11,7 @@
 protocol StructVariable : class, RuntimeVariable {
     var type: LLVMTypeRef { get }
     var ptr: LLVMValueRef { get set }
+    var name: String { get }
     
     var mutable: Bool { get }
     
@@ -31,7 +32,7 @@ extension StructVariable {
     }
     
     func propertyIsMutable(name: String) throws -> Bool {
-        guard let i = indexOfProperty(name) else { throw SemaError.NoPropertyNamed(name) }
+        guard let i = indexOfProperty(name) else { throw error(SemaError.NoPropertyNamed(type: self.name, property: name)) }
         return properties[i].2
     }
 }
@@ -43,26 +44,28 @@ class MutableStructVariable : StructVariable, MutableVariable {
     var type: LLVMTypeRef
     var ptr: LLVMValueRef
     let mutable: Bool
+    let name: String
     
     var builder: LLVMBuilderRef
     var properties: [(String, LLVMTypeRef, Bool)]
     
-    required init(type: LLVMTypeRef, ptr: LLVMValueRef, mutable: Bool, builder: LLVMBuilderRef, properties: [(String, LLVMTypeRef, Bool)]) {
+    required init(type: LLVMTypeRef, ptr: LLVMValueRef, name: String, mutable: Bool, builder: LLVMBuilderRef, properties: [(String, LLVMTypeRef, Bool)]) {
         self.type = type
         self.mutable = mutable
         self.ptr = ptr
         self.builder = builder
         self.properties = properties
+        self.name = name
     }
     
     /// returns pointer to allocated memory
-    class func alloc(builder: LLVMBuilderRef, type: LLVMTypeRef, name: String = "", mutable: Bool, properties: [(String, LLVMTypeRef, Bool)]) -> MutableStructVariable {
+    class func alloc(builder: LLVMBuilderRef, type: LLVMTypeRef, name: String, mutable: Bool, properties: [(String, LLVMTypeRef, Bool)]) -> MutableStructVariable {
         let ptr = LLVMBuildAlloca(builder, type, name)
-        return MutableStructVariable(type: type, ptr: ptr, mutable: mutable, builder: builder, properties: properties)
+        return MutableStructVariable(type: type, ptr: ptr, name: name, mutable: mutable, builder: builder, properties: properties)
     }
     
     private func ptrToPropertyNamed(name: String) throws -> LLVMValueRef {
-        guard let i = indexOfProperty(name) else { throw SemaError.NoPropertyNamed(name) }
+        guard let i = indexOfProperty(name) else { throw error(SemaError.NoPropertyNamed(type: self.name, property: name)) }
         
         return LLVMBuildStructGEP(builder, ptr, UInt32(i), "\(name)_ptr")
     }
@@ -94,17 +97,19 @@ class ParameterStructVariable : StructVariable {
     var type: LLVMTypeRef
     var ptr: LLVMValueRef = nil
     let mutable: Bool = false
+    let name: String
     
     var value: LLVMValueRef
     
     var builder: LLVMBuilderRef
     var properties: [(String, LLVMTypeRef, Bool)]
     
-    required init(type: LLVMTypeRef, val: LLVMValueRef, builder: LLVMBuilderRef, properties: [(String, LLVMTypeRef, Bool)]) {
+    required init(type: LLVMTypeRef, val: LLVMValueRef, builder: LLVMBuilderRef, name: String, properties: [(String, LLVMTypeRef, Bool)]) {
         self.type = type
         self.builder = builder
         self.properties = properties
         self.value = val
+        self.name = name
     }
     
     func load(name: String) -> LLVMValueRef {
@@ -116,14 +121,14 @@ class ParameterStructVariable : StructVariable {
     }
     
     func loadPropertyNamed(name: String) throws -> LLVMValueRef {
-        guard let i = indexOfProperty(name) else { throw SemaError.NoPropertyNamed(name) }
+        guard let i = indexOfProperty(name) else { throw error(SemaError.NoPropertyNamed(type: self.name, property: name)) }
         return LLVMBuildExtractValue(builder, value, UInt32(i), name)
         // TODO: if its a struct with 1 element, make this a bitcast tbh
         // TODO: opt pass to transform successive extracts/insertvalues to bitcasts
     }
     
     func store(val: LLVMValueRef, inPropertyNamed name: String) throws {
-        throw SemaError.CannotStoreInParameterStruct
+        throw error(SemaError.CannotStoreInParameterStruct(propertyName: name))
     }
     
 }

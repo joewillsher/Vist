@@ -1006,8 +1006,8 @@ extension Parser {
         case .FloatingPoint(let x): return parseFloatingPointExpr(x)
         case .StringLiteral(let str):return parseStringExpr(str)
         case .At:                   try parseAttrExpr(); return nil
-        case .Void:                 index++; return Void()
-        case .EOF, .CloseBrace:     index++; return nil
+        case .Void:                 index += 1; return Void()
+        case .EOF, .CloseBrace:     index += 1; return nil
         case .WhiteSpace:           getNextToken(); return nil
         default:                    throw ParseError.NoToken(token, currentPos)
         }

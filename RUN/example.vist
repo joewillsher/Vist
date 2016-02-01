@@ -1,3 +1,5 @@
 
-let a = 1 + 2
-print a
+func foo :: Int = do print $0
+
+foo 1.0
+

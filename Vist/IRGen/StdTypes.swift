@@ -28,7 +28,7 @@ extension StructType {
     
     /// Builds load of named property from struct
     func loadPropertyNamed(name: String, from value: LLVMValueRef, builder: LLVMBuilderRef, irName: String? = nil) throws -> LLVMValueRef {
-        guard let i = indexOfProperty(name) else { throw SemaError.NoPropertyNamed(name) }
+        guard let i = indexOfProperty(name) else { throw error(SemaError.NoPropertyNamed(type: name, property: self.name)) }
         return LLVMBuildExtractValue(builder, value, UInt32(i), irName ?? name)
     }
     
@@ -43,7 +43,7 @@ extension StructType {
         defer { args.dealloc(members.count) }
         
         let call = LLVMBuildCall(builder, initialiser, args, 1, irName ?? "")
-        addMetadata(type.metadata, to: call)
+        type.addMetadata(call)
         return call
     }
     

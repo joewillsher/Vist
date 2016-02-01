@@ -24,7 +24,8 @@ struct FunctionContainer {
     init (functions: [(String, FnType)], types: [StructType], metadata: [String] = []) {
         var t: [String: FnType] = [:]
         
-        for var (n, ty) in functions {
+        for (n, _ty) in functions {
+            var ty = _ty
             let mangled = n.mangle(ty.params)
             ty.metadata += metadata
             t[mangled] = ty

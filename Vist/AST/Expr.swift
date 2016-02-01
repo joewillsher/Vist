@@ -136,15 +136,21 @@ final class Variable : AssignableExpr {
     }
     
     var _type: Ty? = nil
+    
+    var desc: String {
+        return name
+    }
 }
 
-protocol AssignableExpr : Expr {}
+protocol AssignableExpr : Expr {
+    var desc: String { get }
+}
 
 final class MutationExpr : Expr {
-    let object: Expr
+    let object: AssignableExpr
     let value: Expr
     
-    init(object: Expr, value: Expr) {
+    init(object: AssignableExpr, value: Expr) {
         self.object = object
         self.value = value
     }
@@ -246,6 +252,10 @@ final class TupleMemberLookupExpr : AssignableExpr {
     }
     
     var _type: Ty? = nil
+    
+    var desc: String {
+        return "tuple.\(index)"
+    }
 }
 
 final class ReturnStmt : Stmt {
@@ -288,6 +298,10 @@ final class ArrayExpr : AssignableExpr, Typed {
     
     var elType: Ty?
     var type: BuiltinType? = nil
+    
+    var desc: String {
+        return "array"
+    }
 }
 
 final class ArraySubscriptExpr : AssignableExpr {
@@ -300,6 +314,10 @@ final class ArraySubscriptExpr : AssignableExpr {
     }
     
     var _type: Ty? = nil
+    
+    var desc: String {
+        return "array[\(index)]"
+    }
 }
 
 
@@ -360,6 +378,10 @@ final class PropertyLookupExpr : AssignableExpr {
     }
     
     var _type: Ty? = nil
+    
+    var desc: String {
+        return "object.\(name)"
+    }
 }
 
 

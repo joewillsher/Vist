@@ -242,13 +242,13 @@ extension VariableDecl : IRGenerator {
                 let properties = t.members.map {
                     ($0.0, $0.1.ir(), $0.2)
                 }
-                variable = MutableStructVariable.alloc(builder, type: type, mutable: isMutable, properties: properties)
+                variable = MutableStructVariable.alloc(builder, type: type, name: t.name, mutable: isMutable, properties: properties)
             }
             else if case let t as TupleType = value._type {
                 let properties = t.members.enumerate().map {
                     (String($0.0), $0.1.ir(), false)
                 }
-                variable = MutableStructVariable.alloc(builder, type: type, mutable: isMutable, properties: properties)
+                variable = MutableStructVariable.alloc(builder, type: type, name: "tuple", mutable: isMutable, properties: properties)
             }
             else {
                 variable = ReferenceVariable.alloc(builder, type: type, name: name ?? "", mutable: isMutable)
@@ -353,7 +353,7 @@ extension BinaryExpr : IRGenerator {
         
         // add call to IR
         let call = LLVMBuildCall(builder, fn, argBuffer, UInt32(2), n)
-        addMetadata(fnType.metadata, to: call)
+        fnType.addMetadata(call)
         return call
     }
 }
@@ -414,7 +414,7 @@ extension FunctionCallExpr : IRGenerator {
         
         // add call to IR
         let call = LLVMBuildCall(builder, fn, argBuffer, UInt32(argCount), n)
-        addMetadata(fnType.metadata, to: call)
+        fnType.addMetadata(call)
         return call
     }
     
@@ -509,7 +509,7 @@ extension FuncDecl : IRGenerator {
                 
                 let memTys = t.members.map { ($0.0, $0.1.ir(), $0.2) }
                 
-                let s = ParameterStructVariable(type: ty, val: param, builder: builder, properties: memTys)
+                let s = ParameterStructVariable(type: ty, val: param, builder: builder, name: tyName, properties: memTys)
                 functionStackFrame.addVariable(s, named: name)
             }
             else {
@@ -526,7 +526,7 @@ extension FuncDecl : IRGenerator {
             
             let memTys = parentType.members.map { ($0.0, $0.1.ir(), $0.2) }
             
-            let s = ParameterStructVariable(type: parentType.ir(), val: param, builder: builder, properties: memTys)
+            let s = ParameterStructVariable(type: parentType.ir(), val: param, builder: builder, name: parentType.name, properties: memTys)
             functionStackFrame.addVariable(s, named: "self")
             
             for el in parent?.properties ?? [] {
@@ -1011,7 +1011,7 @@ extension InitialiserDecl : IRGenerator {
                 
                 let memTys = t.members.map { ($0.0, $0.1.ir(), $0.2) }
                 
-                let s = ParameterStructVariable(type: ty, val: param, builder: builder, properties: memTys)
+                let s = ParameterStructVariable(type: ty, val: param, builder: builder, name: tyName, properties: memTys)
                 initStackFrame.addVariable(s, named: name)
                 
             }
@@ -1034,7 +1034,7 @@ extension InitialiserDecl : IRGenerator {
         }
         
         // allocate struct
-        let s = MutableStructVariable.alloc(builder, type: parentType.ir(), mutable: true, properties: properties)
+        let s = MutableStructVariable.alloc(builder, type: parentType.ir(), name: parentType.name, mutable: true, properties: properties)
         stackFrame.addVariable(s, named: name)
         
         // add struct properties into scope
@@ -1111,7 +1111,7 @@ extension TupleExpr : IRGenerator {
         let memeberIR = try elements.map { try $0.nodeCodeGen(stackFrame) }
         
         let membersWithLLVMTypes = type.members.enumerate().map { (String($0), $1.ir(), false) }
-        let s = MutableStructVariable.alloc(builder, type: typeIR, mutable: false, properties: membersWithLLVMTypes)
+        let s = MutableStructVariable.alloc(builder, type: typeIR, name: "tuple", mutable: false, properties: membersWithLLVMTypes)
         
         for (i, el) in memeberIR.enumerate() {
             try s.store(el, inPropertyNamed: String(i))

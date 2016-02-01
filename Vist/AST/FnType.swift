@@ -45,24 +45,27 @@ struct FnType : Ty {
     var nonVoid: [Ty]  {
         return params.filter { if case BuiltinType.Void = $0 { return false } else { return true } }
     }
-}
-
-
-func addMetadata(metadata: [String], to call: LLVMValueRef) {
     
-    for metadata in metadata {
+    func addMetadata(call: LLVMValueRef) {
         
-        let attrLength = UInt32(metadata.characters.count)
-        let mdString = LLVMMDString(metadata, attrLength)
-        
-        let attrs = [mdString].ptr()
-        defer { attrs.dealloc(1) }
-        let mdNode = LLVMMDNode(attrs, 1)
-        
-        let kindID = LLVMGetMDKindID(metadata, attrLength)
-        
-        LLVMSetMetadata(call, kindID, mdNode)
+        for metadata in self.metadata {
+            
+            let attrLength = UInt32(metadata.characters.count)
+            let mdString = LLVMMDString(metadata, attrLength)
+            
+            let attrs = [mdString].ptr()
+            defer { attrs.dealloc(1) }
+            let mdNode = LLVMMDNode(attrs, 1)
+            
+            let kindID = LLVMGetMDKindID(metadata, attrLength)
+            
+            LLVMSetMetadata(call, kindID, mdNode)
+        }
     }
+    
 }
+
+
+
 
 

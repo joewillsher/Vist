@@ -6,6 +6,10 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
+func sema(ast: AST, globalScope: SemaScope) throws {
+    
+    try scopeSemallvmType(ast, scope: globalScope)
+}
 
 /// Adds type information to ast nodes and checks type signatures of functions, returns, & operators
 func scopeSemallvmType(ast: AST, scope: SemaScope) throws {

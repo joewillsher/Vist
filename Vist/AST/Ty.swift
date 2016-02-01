@@ -31,9 +31,6 @@ extension FnType: Equatable {}
 
 
 
-
-
-
 @warn_unused_result
 func == (lhs: StructType, rhs: StructType) -> Bool {
     return lhs.name == rhs.name
@@ -65,6 +62,12 @@ func ==
     (lhs: Ty, rhs: Ty)
     -> Bool {
         return lhs.ir() == rhs.ir()
+}
+@warn_unused_result
+func !=
+    (lhs: Ty, rhs: Ty)
+    -> Bool {
+        return lhs.ir() != rhs.ir()
 }
 @warn_unused_result
 func ==

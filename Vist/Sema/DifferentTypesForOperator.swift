@@ -72,7 +72,7 @@ extension CollectionType where Index == Int {
 extension IntegerLiteral : ExprTypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
-        guard let ty = scope[type: "Int"] else { fatalError("No Std Int type") }
+        guard let ty = scope[type: "Int"] else { throw error(SemaError.NoStdIntType, userVisible: false) }
         self.type = ty
         return ty
     }
@@ -90,7 +90,7 @@ extension FloatingPointLiteral : ExprTypeProvider {
 extension BooleanLiteral : ExprTypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
-        guard let ty = scope[type: "Bool"] else { fatalError("No Std Bool type") }
+        guard let ty = scope[type: "Bool"] else { throw error(SemaError.NoStdBoolType, userVisible: false) }
         self.type = ty
         return ty
     }
@@ -138,7 +138,7 @@ extension Variable : ExprTypeProvider {
         
         // lookup variable type in scope
         guard let v = scope[variable: name] else {
-            throw SemaError.NoVariable(name)
+            throw error(SemaError.NoVariable(name))
         }
         
         // assign type to self and return
@@ -153,7 +153,7 @@ extension VariableDecl : DeclTypeProvider {
     
     func llvmType(scope: SemaScope) throws {
         // handle redeclaration
-        if let _ = scope[variable: name] { throw SemaError.InvalidRedeclaration(name, value) }
+        if let _ = scope[variable: name] { throw error(SemaError.InvalidRedeclaration(name, value)) }
         
         // get val type
         let explicitType = BuiltinType(aType ?? "") as? Ty ?? scope[type: aType ?? ""]
@@ -182,7 +182,7 @@ extension MutationExpr : ExprTypeProvider {
         // gen types for variable and value
         let old = try object.llvmType(scope)
         let new = try value.llvmType(scope)
-        guard old == new else { throw SemaError.DifferentTypeForMutation }
+        guard old == new else { throw error(SemaError.DifferentTypeForMutation(object.desc, old, new)) }
         
         return BuiltinType.Null
     }
@@ -210,8 +210,8 @@ extension BinaryExpr : ExprTypeProvider {
         }
         else {
             guard let ty = scope[function: op, paramTypes: params]  else {
-                if let f = scope[function: op] { throw SemaError.WrongFunctionApplications(name: op, applied: params, expected: f.params) }
-                throw SemaError.NoFunction(op)
+                if let f = scope[function: op] { throw error(SemaError.WrongFunctionApplications(name: op, applied: params, expected: f.params)) }
+                else                           { throw error(SemaError.NoFunction(op, params)) }
             }
             
             self.mangledName = op.mangle(ty)
@@ -254,10 +254,10 @@ private func getType<
     
     return { (ty: ValueType) -> Ty in
         
-        if let builtin = BuiltinType(ty.name) { return builtin as Ty }
-        else if let i = tys.indexOf({ ty.name == $0.name }) { return tys[i] as Ty }
-        else if let std = StdLibFunctions.getStdLibType(ty.name) { return std }
-        throw SemaError.TypeNotFound
+        if let builtin = BuiltinType(ty.name)                       { return builtin as Ty }
+        else if let i = tys.indexOf({ ty.name == $0.name })         { return tys[i] as Ty }
+        else if let std = StdLibFunctions.getStdLibType(ty.name)    { return std }
+        else                                                        { throw error(SemaError.TypeNotFound) }
     }
 }
 
@@ -282,22 +282,19 @@ private extension FunctionType {
                 if tup.elements.count == 0 { return BuiltinType.Void }
                 
                 let res = try tup.mapAs(ValueType).map(getType(tys))
-                guard res.count == tup.elements.count else {
-                    throw SemaError.TypeNotFound }
+                guard res.count == tup.elements.count else { throw error(SemaError.TypeNotFound) }
+                
                 return TupleType(members: res)
 
             case let f as FunctionType:
                 return FnType(params: try f.params(tys), returns: try f.returnType(tys))
 
             case let x as ValueType:
-                
                 return try getType(tys)(x)
                                 
-            default:
-                break
+            default: // TODO: handle error?
+                return BuiltinType.Null
             }
-            // TODO: handle error?
-            return BuiltinType.Null
     }
 }
 
@@ -323,10 +320,8 @@ extension FunctionCallExpr : ExprTypeProvider {
             //!scope.isStdLib
             
             guard let ty = _fnType  else {
-                if let f = scope[function: name] {
-                    throw SemaError.WrongFunctionApplications(name: name, applied: params, expected: f.params)
-                }
-                throw SemaError.NoFunction(name)
+                if let f = scope[function: name] { throw error(SemaError.WrongFunctionApplications(name: name, applied: params, expected: f.params)) }
+                else                             { throw error(SemaError.NoFunction(name, params)) }
             }
             
             self.mangledName = name.mangle(ty)
@@ -398,11 +393,10 @@ extension ReturnStmt : StmtTypeProvider {
         
         let returnType = try expr.llvmType(scope)
         guard let ret = scope.returnType where ret == returnType else {
-            throw SemaError.WrongFunctionReturnType(applied: returnType, expected: scope.returnType ?? BuiltinType.Null)
+            throw error(SemaError.WrongFunctionReturnType(applied: returnType, expected: scope.returnType ?? BuiltinType.Null))
         }
         
         scope.objectType = nil // reset
-        
     }
 }
 
@@ -465,8 +459,7 @@ extension ElseIfBlockStmt : StmtTypeProvider {
         
         // get condition type
         let c = try condition?.llvmType(scope)
-        guard c?.isStdBool ?? true else {
-            throw SemaError.NonBooleanCondition }
+        guard c?.isStdBool ?? true else { throw error(SemaError.NonBooleanCondition) }
         
         // gen types for cond block
         for exp in block.exprs {
@@ -495,7 +488,7 @@ extension ForInLoopStmt : StmtTypeProvider {
         loopScope[variable: binded.name] = scope[type: "Int"]
         
         // gen types for iterator
-        guard try iterator.llvmType(scope).isStdRange else { throw SemaError.NotRangeType }
+        guard try iterator.llvmType(scope).isStdRange else { throw error(SemaError.NotRangeType) }
         
         // parse inside of loop in loop scope
         for exp in block.exprs {
@@ -515,8 +508,7 @@ extension WhileLoopStmt : StmtTypeProvider {
         
         // gen types for iterator
         let it = try condition.llvmType(scope)
-        guard it.isStdBool else {
-            throw SemaError.NonBooleanCondition }
+        guard it.isStdBool else { throw error(SemaError.NonBooleanCondition) }
         
         // parse inside of loop in loop scope
         for exp in block.exprs {
@@ -544,10 +536,10 @@ extension ArrayExpr : ExprTypeProvider {
         }
         
         // make sure array is homogeneous
-        guard Set(types.map { $0.ir() }).count == 1 else { throw SemaError.HeterogenousArray(description) }
+        guard Set(types.map { $0.ir() }).count == 1 else { throw error(SemaError.HeterogenousArray(types)) }
         
         // get element type and assign to self
-        guard let elementType = types.first else { throw SemaError.EmptyArray }
+        guard let elementType = types.first else { throw error(SemaError.EmptyArray) }
         self.elType = elementType
         
         // assign array type to self and return
@@ -561,15 +553,12 @@ extension ArrayExpr : ExprTypeProvider {
 extension ArraySubscriptExpr : ExprTypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
-        
-        // get array variable
-        guard case let v as Variable = arr else { throw SemaError.NotVariableType }
-        
+                
         // make sure its an array
-        guard case BuiltinType.Array(let type, _)? = scope[variable: v.name] else { throw SemaError.CannotSubscriptNonArrayVariable }
+        guard case let v as Variable = arr, case BuiltinType.Array(let type, _)? = scope[variable: v.name] else { throw error(SemaError.CannotSubscriptNonArrayVariable) }
         
         // gen type for subscripting value
-        guard case BuiltinType.Int = try index.llvmType(scope) else { throw SemaError.NonIntegerSubscript }
+        guard case BuiltinType.Int = try index.llvmType(scope) else { throw error(SemaError.NonIntegerSubscript) }
         
         // assign type to self and return
         self._type = type
@@ -593,7 +582,7 @@ extension StructExpr : ExprTypeProvider {
         // maps over properties and gens types
         let members = try properties.map { (a: VariableDecl) -> (String, Ty, Bool) in
             try a.llvmType(structScope)
-            guard let t = a.value._type else { throw SemaError.StructPropertyNotTyped }
+            guard let t = a.value._type else { throw error(SemaError.StructPropertyNotTyped) }
             return (a.name, t, a.isMutable)
         }
         
@@ -604,7 +593,7 @@ extension StructExpr : ExprTypeProvider {
         
         let memberFunctions = try methods.flatMap { (f: FuncDecl) -> (String, FnType) in
             try f.llvmType(structScope)
-            guard let t = f.fnType.type else { throw SemaError.StructMethodNotTyped }
+            guard let t = f.fnType.type else { throw error(SemaError.StructMethodNotTyped) }
             return (f.name.mangle(t, parentTypeName: name), t)
         }
         
@@ -636,8 +625,7 @@ extension InitialiserDecl : DeclTypeProvider {
             let parentType = parent?._type,
             let parentName = parent?.name,
             let parentProperties = parent?.properties
-            else {
-                throw SemaError.InitialiserNotAssociatedWithType
+            else { throw error(SemaError.InitialiserNotAssociatedWithType)
         }
         
         let params = try ty.params(scope.allTypes)
@@ -677,8 +665,8 @@ extension PropertyLookupExpr : ExprTypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
         
-        guard case let objType as StructType = try object.llvmType(scope) else { throw SemaError.NoTypeFor(object) }
-        guard let propertyType = try objType.propertyType(name) else { throw SemaError.NoPropertyNamed(name) }
+        guard case let objType as StructType = try object.llvmType(scope) else  { throw error(SemaError.NoTypeFor(object), userVisible: false) }
+        guard let propertyType = try objType.propertyType(name) else            { throw error(SemaError.NoPropertyNamed(type: objType.name, property: name)) }
         self._type = propertyType
         return propertyType
     }
@@ -689,17 +677,16 @@ extension MethodCallExpr : ExprTypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
         
-        guard case let parentType as StructType = try object.llvmType(scope) else { fatalError("Not struct type") }
+        let ty = try object.llvmType(scope)
+        guard case let parentType as StructType = ty else { throw error(SemaError.NotStructType(ty), userVisible: false) }
         
         let params = try self.params.elements.map { try $0.llvmType(scope) }
         
-        guard let fnType = parentType[function: name, paramTypes: params] else { throw SemaError.NoFunction(name) }
+        guard let fnType = parentType[function: name, paramTypes: params] else { throw error(SemaError.NoFunction(name, params)) }
         
         self.mangledName = name.mangle(fnType, parentTypeName: parentType.name)
         
-        guard params == fnType.params else {
-            throw SemaError.WrongFunctionApplications(name: "\(parentType.name).\(name)", applied: params, expected: fnType.params)
-        }
+        guard params == fnType.params else { throw error(SemaError.WrongFunctionApplications(name: "\(parentType.name).\(name)", applied: params, expected: fnType.params)) }
         
         // gen types for objects in call
         for arg in self.params.elements {
@@ -739,7 +726,7 @@ extension TupleMemberLookupExpr : ExprTypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
         
-        guard case let objType as TupleType = try object.llvmType(scope) else { throw SemaError.NoTypeFor(object) }
+        guard case let objType as TupleType = try object.llvmType(scope) else { throw error(SemaError.NoTypeFor(object), userVisible: false) }
         
         let propertyType = try objType.propertyType(index)
         self._type = propertyType

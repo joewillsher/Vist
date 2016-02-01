@@ -51,8 +51,10 @@ print x
 ##How It Works
 
 Vist is a strongly typed language which compiles to [LLVM’s](https://en.wikipedia.org/wiki/LLVM#LLVM_Intermediate_Representation) [IR](http://llvm.org/docs/LangRef.html)—a high level assembly language. Vist’s compiler structure was inspired by the implementation of other languages such as [Rust](https://github.com/rust-lang/rust) and particularly [Swift](https://github.com/apple/swift).
-
+ 
 The compile process involves transforming the source code from one representation to another—the text is [lexed](https://en.wikipedia.org/wiki/Lexical_analysis) into a series of tokens, which is [parsed](https://en.wikipedia.org/wiki/Parsing#Computer_languages) to form the [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree). The [semantic analysis](https://en.wikibooks.org/wiki/Compiler_Construction/Semantic_Analysis) pass then walks the tree, adding type information, and then to generate the IR code.
+
+The [lexing](Vist/Lexer/Lexer.swift) separates Vist’s keywords and characters into a stream of tokens. [Parsing](Vist/AST/Parser.swift) extracts the program’s meaning, and constructs the [AST](Vist/AST/Expr.swift). The [sema](Vist/Sema/Sema.swift) pass type checks the source and does other static checks, like making sure variables are declared before they’re used. The [IRGen](Vist/IRGen/IRGen.swift) phase then creates the LLVM IR code, which is optimised and compiled.
 
 [Like Swift](http://arstechnica.com/apple/2014/10/os-x-10-10/22/), Vist tries to keep the standard library defined separately from the compiler; this allows the language implementation to be separated from its compilation which while theoretically more elegant, imposes implementation obstacles. The difficulty here is maintaining performance—I need to guarantee that calls to these functions will be transformed into the native calls and that they will be inlined *as early as possible*, so LLVM can work its magic.
 
@@ -124,19 +126,19 @@ And thats it, we now link my code with the standard library (to allow some last 
 	.macosx_version_min 10, 11
 	.globl	_main
 	.align	4, 0x90
-_main:                  ; @main function
-## BB#0:                ; %entry block
+_main:                  # @main function
+## BB#0:                # %entry block
 	pushq	%rbp
 	movq	%rsp, %rbp
-	movl	$3, %eax    ; call on 3
+	movl	$3, %eax    # call on 3
 	movl	%eax, %edi
 	popq	%rbp
-	jmp	__$print_i64    ; call @_$print_i64
+	jmp	__$print_i64    # call @_$print_i64
 
 	.globl	__$print_i64
 	.align	4, 0x90
-__$print_i64:           ; @"_$print_i64" function
-## BB#0:                ; %entry block
+__$print_i64:           # @"_$print_i64" function
+## BB#0:                # %entry block
 	pushq	%rbp
 	movq	%rsp, %rbp
 	leaq	L_.str(%rip), %rax
@@ -147,12 +149,10 @@ __$print_i64:           ; @"_$print_i64" function
 	movq	-8(%rbp), %rsi
 	movb	%dl, %al
 	popq	%rbp
-	jmp	_printf         ; call @printf
+	jmp	_printf         # call @printf
 
 	.section	__TEXT,__cstring,cstring_literals
 L_.str:
-	.asciz	"%lli\n"    ; @.str string used to print the int
-
-
+	.asciz	"%lli\n"    # @.str string used to print the int
 .subsections_via_symbols
 ```

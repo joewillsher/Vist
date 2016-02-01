@@ -76,9 +76,6 @@ final class StdLibFunctions {
     /// Container initialised with functions, provides subscript to look up functions by name and type
     private static let functionContainer = FunctionContainer(functions: functions, types: types, metadata: ["stdlib.call.optim"])
     
-    static func getStdLibType(id: String) -> StructType? {
-        return functionContainer[type: id]
-    }
     
     private static func getStdLibFunctionWithInitInfo(id: String, args: [Ty]) -> (String, FnType)? {
         return functionContainer[fn: id, types: args]
@@ -87,6 +84,12 @@ final class StdLibFunctions {
     
     // MARK: Exposed functions
     
+    /// Returns the struct type of a named StdLib object
+    ///
+    static func getStdLibType(id: String) -> StructType? {
+        return functionContainer[type: id]
+    }
+
     /// Get a named function from the standard library
     ///
     /// - parameter id: Unmangled name
@@ -117,8 +120,6 @@ final class StdLibFunctions {
             let found = LLVMGetNamedFunction(module, mangledName)
             if found != nil { return (type, found) }
             
-            // move to call site
-            
             return (type, LLVMAddFunction(module, mangledName, functionType))
         }
         return nil
@@ -126,8 +127,6 @@ final class StdLibFunctions {
     
     
 }
-
-
 
 
 

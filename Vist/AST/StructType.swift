@@ -33,7 +33,7 @@ final class StructType: Ty {
     }
     
     func propertyType(name: String) throws -> Ty? {
-        guard let i = (members.indexOf { $0.0 == name }) else { throw SemaError.NoPropertyNamed(name) }
+        guard let i = (members.indexOf { $0.0 == name }) else { throw error(SemaError.NoPropertyNamed(type: self.name, property: name)) }
         return members[i].1
     }
     
