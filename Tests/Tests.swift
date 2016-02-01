@@ -61,15 +61,13 @@ class Tests : XCTestCase {
     }
     
     func testStdLibCompile() {
-//        self.measureBlock {
-            do {
-                try compileWithOptions(["-O", "-build-stdlib"], inDirectory: stdlibDir, out: nil)
-            }
-            catch {
-                print(error)
-                XCTFail("Compilation failed")
-            }
-//        }
+        do {
+            try compileWithOptions(["-O", "-build-stdlib"], inDirectory: stdlibDir, out: nil)
+        }
+        catch {
+            print(error)
+            XCTFail("Compilation failed")
+        }
     }
     
     

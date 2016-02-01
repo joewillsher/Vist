@@ -6,7 +6,7 @@ _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	movl	$3, %eax
+	movl	$1, %eax
 	movl	%eax, %edi
 	popq	%rbp
 	jmp	__$print_i64            ## TAILCALL

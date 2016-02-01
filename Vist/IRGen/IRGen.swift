@@ -8,16 +8,6 @@
 
 import Foundation
 
-enum IRError : ErrorType {
-    case NoOperator
-    case MisMatchedTypes, WrongFunctionApplication(String), NoLLVMType
-    case NoBody, InvalidFunction, NoVariable(String), NoType(String), NoFunction(String), NoBool, TypeNotFound, NotMutable(String)
-    case CannotAssignToVoid, CannotAssignToType(Expr.Type)
-    case SubscriptingNonVariableTypeNotAllowed, SubscriptOutOfBounds
-    case NoProperty(String), NotAStruct, CannotMutateParam
-}
-
-
 // global builder and module references
 private var builder: LLVMBuilderRef = nil
 private var module: LLVMModuleRef = nil

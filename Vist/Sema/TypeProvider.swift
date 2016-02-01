@@ -6,17 +6,6 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-//// TODO: Split up for expressions and statements
-//protocol TypeProvider {
-//    /// Function used to traverse AST and get type information for all its objects
-//    ///
-//    /// Each implementation of this function should **call `.llvmType` on all of its sub exprs**
-//    ///
-//    /// The function implementation **should assign the result type to self** as well as returning it
-//    func llvmType(scope: SemaScope) throws -> Ty
-//}
-
-
 protocol ExprTypeProvider {
     func llvmType(scope: SemaScope) throws -> Ty
 }
@@ -27,8 +16,6 @@ protocol StmtTypeProvider {
 protocol DeclTypeProvider {
     func llvmType(scope: SemaScope) throws
 }
-
-
 
 // TODO: make private
 extension ExprTypeProvider {
@@ -102,23 +89,8 @@ extension StringLiteral : ExprTypeProvider {
         let t = BuiltinType.Array(el: BuiltinType.Int(size: 8), size: UInt32(count))
         self.type = t
         return t
-//        let a = str.characters.map { CharacterExpression(c: $0) as Expr }
-//        arr = ArrayExpression(arr: a)
-//        
-//        let t = try arr!.llvmType(scope)
-//        self.type = t
-//        return t
     }
 }
-
-//extension CharacterExpr : TypeProvider {
-//    
-//    func llvmType(scope: SemaScope) throws -> Ty {
-//        let t = LLVMType.Int(size: 8)
-//        self.type = t
-//        return t
-//    }
-//}
 
 extension NullExpr : ExprTypeProvider {
     
@@ -167,8 +139,12 @@ extension VariableDecl : DeclTypeProvider {
             scope[variable: name] = ty      // store in arr
         }
         
-        if let e = explicitType where value._type == BuiltinType.Null {
+        // if its a null expression
+        if let e = explicitType where value._type == BuiltinType.Null && value is NullExpr {
             value._type = e
+        } // otherwise, if the type is null, we are assigning to something we shouldn't be
+        else if ty == BuiltinType.Null {
+            throw error(SemaError.CannotAssignToNullExpression(name))
         }
         
     }
@@ -582,7 +558,7 @@ extension StructExpr : ExprTypeProvider {
         // maps over properties and gens types
         let members = try properties.map { (a: VariableDecl) -> (String, Ty, Bool) in
             try a.llvmType(structScope)
-            guard let t = a.value._type else { throw error(SemaError.StructPropertyNotTyped) }
+            guard let t = a.value._type else { throw error(SemaError.StructPropertyNotTyped(type: name, property: a.name)) }
             return (a.name, t, a.isMutable)
         }
         
@@ -593,7 +569,7 @@ extension StructExpr : ExprTypeProvider {
         
         let memberFunctions = try methods.flatMap { (f: FuncDecl) -> (String, FnType) in
             try f.llvmType(structScope)
-            guard let t = f.fnType.type else { throw error(SemaError.StructMethodNotTyped) }
+            guard let t = f.fnType.type else { throw error(SemaError.StructMethodNotTyped(type: name, methodName: f.name)) }
             return (f.name.mangle(t, parentTypeName: name), t)
         }
         
@@ -665,7 +641,7 @@ extension PropertyLookupExpr : ExprTypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
         
-        guard case let objType as StructType = try object.llvmType(scope) else  { throw error(SemaError.NoTypeFor(object), userVisible: false) }
+        guard case let objType as StructType = try object.llvmType(scope) else  { throw error(SemaError.NoTypeForStruct, userVisible: false) }
         guard let propertyType = try objType.propertyType(name) else            { throw error(SemaError.NoPropertyNamed(type: objType.name, property: name)) }
         self._type = propertyType
         return propertyType
@@ -726,17 +702,12 @@ extension TupleMemberLookupExpr : ExprTypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
         
-        guard case let objType as TupleType = try object.llvmType(scope) else { throw error(SemaError.NoTypeFor(object), userVisible: false) }
+        guard case let objType as TupleType = try object.llvmType(scope) else { throw error(SemaError.NoTypeForTuple, userVisible: false) }
         
         let propertyType = try objType.propertyType(index)
         self._type = propertyType
         return propertyType
     }
 }
-
-
-
-
-
 
 

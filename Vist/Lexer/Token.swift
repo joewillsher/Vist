@@ -11,6 +11,19 @@ typealias Pos = (Int, Int)
 struct SourceRange {
     let start: Pos
     let end: Pos
+    
+    static func at(pos: Pos) -> SourceRange { return SourceRange(start: pos, end: pos) }
+}
+
+extension SourceRange : CustomStringConvertible {
+    
+    var description: String {
+        if start == end {
+            return "(line:\(start.0), char:\(start.1))"
+        } else {
+            return "from:(line:\(start.0), char:\(start.1)) to:(line:\(end.0), char:\(end.1))"
+        }
+    }
 }
 
 struct SourceLoc {

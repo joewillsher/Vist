@@ -8,27 +8,10 @@
 
 import Foundation
 
-enum ParseError: ErrorType {
-    case ExpectedParen(Pos),  ExpectedCloseBracket(Pos), NoToken(Token, Pos), ExpectedComma(Pos), ExpectedBrace(Pos)
-    case InvalidOperator(Pos), InvalidCall(String, Pos) // cant call (*2) or (.print())
-    case NoIdentifier(Pos), NoBracket(Pos)
-    case ExpectedColon(Pos), NoReturnType(Pos)
-    case ExpectedAssignment(Pos), ExpectedBar(Pos)
-    case NoExpr(Pos)
-    case NoOperator(Pos)
-    case MismatchedType((String, Pos), (String, Pos))
-    case InvalidIfStatement
-    case ExpectedIn(Pos), ExpectedDo(Pos)
-    case NotIterator(Pos)
-    case NotBlock(Pos)
-    case SubscriptNotIntegerType(Pos)
-    case ObjectNotAllowedInTopLevelOfTypeImpl(Token, Pos), NoTypeName(Pos)
-    case NoPrecedenceForOperator(String, Pos), OpDoesNotHaveParams(Pos), CannotChangeOpPrecedence(String, Int, Pos)
-}
 
 private extension Array {
     mutating func removeLastSafely(str str: String, pos: Pos) throws -> Generator.Element {
-        if self.isEmpty { throw ParseError.InvalidCall(str, pos) } else { return removeLast() }
+        if self.isEmpty { throw error(ParseError.InvalidCall(str), loc: SourceRange.at(pos)) } else { return removeLast() }
     }
 }
 
@@ -108,6 +91,9 @@ struct Parser {
     }
     
     
+    private func rangeOfCurrentToken() -> SourceRange? {
+        if let n = inspectNextPos() { return SourceRange(start: currentPos, end: n) } else { return nil }
+    }
     
     
     /// Contains whether the current parsing context considers new line chatacters
@@ -226,7 +212,7 @@ extension Parser {
                 }
 
             case .SqbrOpen:
-                guard case .Identifier(let id) = getNextToken() else { throw ParseError.NoIdentifier(currentPos) }
+                guard case .Identifier(let id) = getNextToken() else { throw error(ParseError.NoIdentifier, loc: rangeOfCurrentToken()) }
                 
                 // handle native llvm type in stdlib
                 if case .Period? = inspectNextToken(), case .Identifier(let n)? = inspectNextToken(2) where id == "LLVM" && isStdLib {
@@ -237,7 +223,7 @@ extension Parser {
                     elements.append(ValueType(name: id))    // param
                     getNextToken()
                 }
-                guard case .SqbrClose = getNextToken() else { throw ParseError.NoBracket(currentPos) }
+                guard case .SqbrClose = getNextToken() else { throw error(ParseError.ExpectedCloseBracket, loc: SourceRange.at(currentPos)) }
                 getNextToken() // eat ]
                 
             default:
@@ -256,7 +242,7 @@ extension Parser {
     /// Guarantees if tuple is true, the return type is a TupleExpression
     private mutating func parseParenExpr(tuple tuple: Bool) throws -> Expr {
         
-        guard case .OpenParen = currentToken else { throw ParseError.ExpectedParen(currentPos) }
+        guard case .OpenParen = currentToken else { throw error(ParseError.ExpectedParen, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat `(`
         
         var exps: [Expr] = []
@@ -264,6 +250,7 @@ extension Parser {
         while case let a = currentToken where a.isValidParamToken {
             exps.append(try parseOperatorExpr())
         }
+        guard case .CloseParen = currentToken else { throw error(ParseError.ExpectedParen, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat `)`
         
         switch exps.count {
@@ -299,8 +286,7 @@ extension Parser {
 extension Parser {
     
     private mutating func parseTextExpr() throws -> Variable {
-        guard case .Identifier(let i) = currentToken else {
-            throw ParseError.NoIdentifier(currentPos) }
+        guard case .Identifier(let i) = currentToken else { throw error(ParseError.NoIdentifier, loc: rangeOfCurrentToken()) }
         return Variable(name: i)
     }
     
@@ -404,7 +390,7 @@ extension Parser {
             }
             
         default:
-            throw ParseError.NoIdentifier(currentPos)
+            throw error(ParseError.NoIdentifier, loc: rangeOfCurrentToken())
         }
         
     }
@@ -455,7 +441,7 @@ extension Parser {
             return parseStringExpr(str)
             
         default:
-            throw ParseError.NoIdentifier(currentPos)
+            throw error(ParseError.NoIdentifier, loc: rangeOfCurrentToken())
         }
     }
     
@@ -464,7 +450,7 @@ extension Parser {
         
         switch currentToken {
         case .InfixOperator(let op):
-            guard let tokenPrecedence = precedences[op] else { throw ParseError.NoOperator(currentPos) }
+            guard let tokenPrecedence = precedences[op] else { throw error(ParseError.NoOperator(op), loc: rangeOfCurrentToken()) }
             // If the token we have encountered does not bind as tightly as the current precedence, return the current Expr
             if tokenPrecedence < precedence {
                 return lhs
@@ -478,7 +464,7 @@ extension Parser {
             
             // Get next operator
             guard case .InfixOperator(let nextOp) = currentToken else { return BinaryExpr(op: op, lhs: lhs, rhs: rhs) }
-            guard let nextTokenPrecedence = precedences[nextOp] else { throw ParseError.NoOperator(currentPos) }
+            guard let nextTokenPrecedence = precedences[nextOp] else { throw error(ParseError.NoOperator(op), loc: rangeOfCurrentToken()) }
             
             let newRhs = try parseOperationRHS(tokenPrecedence, lhs: rhs)
             
@@ -525,7 +511,7 @@ extension Parser {
         
         let usesBraces = currentToken.isBrace()
         // get if block & append
-        guard currentToken.isControlToken() else { throw ParseError.ExpectedBrace(currentPos) }
+        guard currentToken.isControlToken() else { throw error(ParseError.NotBlock, loc: SourceRange.at(currentPos)) }
         let block = try parseBlockExpr()
         blocks.append((condition, block))
         
@@ -539,7 +525,7 @@ extension Parser {
                 condition = try parseOperatorExpr()
                 
                 if usesBraces {
-                    guard currentToken.isControlToken() else { throw ParseError.ExpectedBrace(currentPos) }
+                    guard currentToken.isControlToken() else { throw error(ParseError.NotBlock, loc: SourceRange.at(currentPos)) }
                 }
             }
             else {
@@ -560,7 +546,7 @@ extension Parser {
         
         getNextToken() // eat 'for'
         let itentifier = try parseTextExpr() // bind loop label
-        guard case .In = getNextToken() else { throw ParseError.ExpectedIn(currentPos) }
+        guard case .In = getNextToken() else { throw error(ParseError.ExpectedIn, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat 'in'
         
         let loop = try parseOperatorExpr()
@@ -589,7 +575,7 @@ extension Parser {
     
     private mutating func parseVariableAssignmentMutable(mutable: Bool, requiresInitialValue: Bool = true) throws -> VariableDecl {
         
-        guard case let .Identifier(id) = getNextToken() else { throw ParseError.NoIdentifier(currentPos) }
+        guard case let .Identifier(id) = getNextToken() else { throw error(ParseError.NoIdentifier, loc: rangeOfCurrentToken()) }
         
         var explicitType: String?
         if case .Colon = getNextToken(), case let .Identifier(t) = getNextToken() {
@@ -610,7 +596,7 @@ extension Parser {
         
         guard case .Assign = currentToken else {
             if requiresInitialValue || explicitType == nil {
-                throw ParseError.ExpectedAssignment(currentPos)
+                throw error(ParseError.ExpectedAssignment, loc: SourceRange.at(currentPos))
             }
             else {
                 return VariableDecl(name: id, type: explicitType, isMutable: mutable, value: NullExpr())
@@ -621,7 +607,6 @@ extension Parser {
         var value = try parseOperatorExpr()
         
         let type = explicitType ?? (value as? ExplicitlyTyped)?.explicitType
-        if let a = type, let b = explicitType where a != b { throw ParseError.MismatchedType((a, inspectNextPos(-1)!), (b, inspectNextPos(-3)!)) }
         
         // if explicit assignment defines size, add info about this size to object
         if let ex = explicitType, case var sized as SizedExpr = value  {
@@ -710,14 +695,14 @@ extension Parser {
             
             let found = precedences[o]
             if let x = found where x != ops { // make sure uses op’s predetermined prec
-                throw ParseError.CannotChangeOpPrecedence(o, x, currentPos)
+                throw error(ParseError.CannotChangeOpPrecedence(o, x), loc: SourceRange.at(currentPos))
             }
             else if found == nil {
                 precedences[o] = pp // update prec table if not found
             }
         }
         else {
-            throw ParseError.NoIdentifier(currentPos)
+            throw error(ParseError.NoIdentifier, loc: rangeOfCurrentToken())
         }
         
         let id: String
@@ -729,8 +714,10 @@ extension Parser {
             id = s
         }
         
-        guard case .Colon = getNextToken() else { throw ParseError.ExpectedColon(currentPos) }
-        guard case .Colon = getNextToken() else { throw ParseError.ExpectedColon(currentPos) }
+        let start = inspectNextPos()!
+        guard case .Colon = getNextToken(), case .Colon = getNextToken() else {
+            throw error(ParseError.ExpectedDoubleColon, loc: SourceRange(start: start, end: currentPos))
+        }
         
         getNextToken() // eat '='
         let type = try parseFunctionType()
@@ -753,8 +740,9 @@ extension Parser {
             nms.append(name)
             getNextToken()
         }
-        guard case .CloseParen = currentToken else { throw ParseError.ExpectedParen(currentPos) }
-        guard getNextToken().isControlToken() else { throw ParseError.NotBlock(currentPos) }
+        guard case .CloseParen = currentToken else { throw error(ParseError.ExpectedParen, loc: SourceRange.at(currentPos)) }
+        guard let next = inspectNextToken() where next.isControlToken() else { throw error(ParseError.NotBlock, loc: SourceRange.at(currentPos)) }
+        getNextToken() // eat 'do' or '{'
         
         return nms.map { ValueType.init(name: $0) }
     }
@@ -772,7 +760,7 @@ extension Parser {
                 .map { ValueType.init(name: $0) }
         }
         
-        guard currentToken.isControlToken() else { throw ParseError.ExpectedBrace(currentPos) }
+        guard currentToken.isControlToken() else { throw error(ParseError.NotBlock, loc: SourceRange.at(currentPos)) }
         
         return FunctionImplementationExpr(params: TupleExpr(elements: names), body: try parseBlockExpr())
     }
@@ -784,12 +772,8 @@ extension Parser {
         
         while true {
             if case .CloseBrace = currentToken { break }
-            
-            do {
-                guard let exp = try parseExpr(currentToken) else { throw ParseError.NoToken(currentToken, currentPos) }
-                exprs.append(exp)
-            }
-            catch ParseError.NoToken(.CloseParen, _) { break }
+            guard let exp = try parseExpr(currentToken) else { throw error(ParseError.NoToken(currentToken), loc: SourceRange.at(currentPos)) }
+            exprs.append(exp)
         }
         getNextToken() // eat '}'
         return BlockExpr(exprs: exprs, variables: names)
@@ -804,7 +788,7 @@ extension Parser {
     private mutating func parseBracelessDoExpr(names: [ValueType] = []) throws -> BlockExpr {
         getNextToken() // eat 'do'
         
-        guard let ex = try parseExpr(currentToken) else { throw ParseError.NoToken(currentToken, currentPos) }
+        guard let ex = try parseExpr(currentToken) else { throw error(ParseError.NoToken(currentToken), loc: SourceRange.at(currentPos)) }
         
         return BlockExpr(exprs: [ex], variables: names)
     }
@@ -815,7 +799,7 @@ extension Parser {
         case .OpenParen:    return try parseBlockExpr(try parseClosureNamesExpr())
         case .OpenBrace:    return try parseBraceExpr(names)
         case .Do, .Else:    return try parseBracelessDoExpr(names)
-        default:            throw ParseError.NotBlock(currentPos)
+        default:            throw error(ParseError.NotBlock, loc: SourceRange.at(currentPos))
         }
         
     }
@@ -866,9 +850,9 @@ extension Parser {
         
         getNextToken() // eat 'type'
         
-        guard case .Identifier(let name) = currentToken else { throw ParseError.NoTypeName(currentPos) }
+        guard case .Identifier(let name) = currentToken else { throw error(ParseError.NoTypeName, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat name
-        guard case .OpenBrace = currentToken else { throw ParseError.ExpectedBrace(currentPos) }
+        guard case .OpenBrace = currentToken else { throw error(ParseError.ExpectedOpenBrace, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat '{'
         
         var properties: [VariableDecl] = [], methods: [FuncDecl] = [], initialisers: [InitialiserDecl] = []
@@ -897,7 +881,7 @@ extension Parser {
                 try parseCommentExpr(c)
                 
             default:
-                throw ParseError.ObjectNotAllowedInTopLevelOfTypeImpl(currentToken, currentPos)
+                throw error(ParseError.ObjectNotAllowedInTopLevelOfTypeImpl(currentToken), loc: SourceRange.at(currentPos))
             }
             
         }
@@ -955,14 +939,14 @@ extension Parser {
             
             switch id {
             case "operator":
-                guard case let i as IntegerLiteral = try parseOperatorExpr() else { throw ParseError.NoPrecedenceForOperator(id, currentPos) }
+                guard case let i as IntegerLiteral = try parseOperatorExpr() else { throw error(ParseError.NoPrecedenceForOperator, loc: SourceRange.at(currentPos)) }
                 attrs.append(ASTAttributeExpr.Operator(prec: i.val))
                 
             default:
-                throw ParseError.OpDoesNotHaveParams(currentPos)
+                throw error(ParseError.AttrDoesNotHaveParams, loc: SourceRange.at(currentPos))
             }
             
-            guard case .CloseParen = currentToken else { throw ParseError.ExpectedParen(currentPos) }
+            guard case .CloseParen = currentToken else { throw error(ParseError.ExpectedParen, loc: SourceRange.at(currentPos)) }
             getNextToken()
         }
         else if let a = FunctionAttributeExpr(rawValue: id) {
@@ -1009,7 +993,7 @@ extension Parser {
         case .Void:                 index += 1; return Void()
         case .EOF, .CloseBrace:     index += 1; return nil
         case .WhiteSpace:           getNextToken(); return nil
-        default:                    throw ParseError.NoToken(token, currentPos)
+        default:                    throw error(ParseError.NoToken(token), loc: SourceRange.at(currentPos))
         }
     }
     

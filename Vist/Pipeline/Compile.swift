@@ -8,6 +8,9 @@
 
 import Foundation
 
+// ugh, preprocessor macros broke in 2.2
+let SOURCE_ROOT = "/Users/JoeWillsher/Developer/Vist"
+
 private let llvmDirectory = "/usr/local/Cellar/llvm/3.6.2/bin"
 private let stdLibDirectory = "\(SOURCE_ROOT)/Vist/stdlib"
 private let runtimeDirectory = "\(SOURCE_ROOT)/Vist/Runtime"
@@ -18,7 +21,6 @@ private let runtimeDirectory = "\(SOURCE_ROOT)/Vist/Runtime"
 //   - When IRGen'd it adds the function decl to the module
 //      - Is this how a FnDecl behaves with nil impl already?
 //   - Also need a way to do this out-of-order so all functions (and types) are defined first
-
 
 func compileDocuments(fileNames: [String],
     inDirectory: String,

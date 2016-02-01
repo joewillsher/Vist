@@ -13,6 +13,7 @@ enum SemaError : ErrorType, CustomStringConvertible {
     case HeterogenousArray([Ty]), EmptyArray
     case CannotSubscriptNonArrayVariable, NonIntegerSubscript
     case NonBooleanCondition, NotRangeType, DifferentTypeForMutation(String, Ty, Ty)
+    case CannotAssignToNullExpression(String)
     
     case NoFunction(String, [Ty])
     case WrongFunctionReturnType(applied: Ty, expected: Ty)
@@ -21,10 +22,10 @@ enum SemaError : ErrorType, CustomStringConvertible {
     case NoPropertyNamed(type: String, property: String), CannotStoreInParameterStruct(propertyName: String), NotStructType(Ty)
     
     
-    
-    case NoStdBoolType, NoStdIntType, NotTypeProvider, NoTypeFor(Expr)
-    case StructPropertyNotTyped, StructMethodNotTyped, InitialiserNotAssociatedWithType
-    case TypeNotFound
+    // not user visible
+    case NoStdBoolType, NoStdIntType, NotTypeProvider, NoTypeForStruct, NoTypeForTuple
+    case StructPropertyNotTyped(type: String, property: String), StructMethodNotTyped(type: String, methodName: String), InitialiserNotAssociatedWithType
+    case TypeNotFound, ParamsNotTyped
     
     var description: String {
         switch self {
@@ -49,6 +50,9 @@ enum SemaError : ErrorType, CustomStringConvertible {
             return "Expression is not of type 'Range'"
         case let .DifferentTypeForMutation(name, from, to):
             return "Cannot change type of '\(name)' from '\(from)' to '\(to)'"
+        case let .CannotAssignToNullExpression(name):
+            return "Variable '\(name)' cannot be assigned to null typed expression"
+            
             
         case let .WrongFunctionReturnType(applied, expected):
             return "Invalid return from function. \(applied) is not convertible to \(expected)"
@@ -65,27 +69,20 @@ enum SemaError : ErrorType, CustomStringConvertible {
         case let .NotStructType(t):
             return "'\(t)' is not a struct type"
             
-        default: print(self); return ""
+            // not user visiblt
+        case .NoStdBoolType: return "Stdlib did not provide a Bool type"
+        case .NoStdIntType: return "Stdlib did not provide an Int type"
+        case .NotTypeProvider: return "ASTNode does not conform to `TypeProvider` and does not provide an implementation of `llvmType(_:)"
+        case .NoTypeForStruct, .NoTypeForTuple: return "Lookup's parent does not have a type"
+        case let .StructPropertyNotTyped(type, property): return "Property '\(property)' in '\(type)' was not typed"
+        case let .StructMethodNotTyped(type, method): return "Method '\(method)' in '\(type)' was not typed"
+        case .InitialiserNotAssociatedWithType: return "Initialiser's parent type was unexpectedly nil"
+        case .TypeNotFound: return "Type not found"
+        case .ParamsNotTyped: return "Params not typed"
         }
     }
 }
 
-
-func semaError(err: SemaError, userVisible: Bool = true, file: StaticString = __FILE__, line: UInt = __LINE__) -> SemaError {
-    
-    #if DEBUG
-        print("Vist error in ‘\(file)’, line \(line)")
-        return err
-    #else
-        if userVisible {
-            return err
-        }
-        else {
-            fatalError("Compiler assertion failed \(err)", file: file, line: line)
-        }
-    #endif
-    
-}
 
 
 
