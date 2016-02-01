@@ -61,9 +61,9 @@ The standard library has access to a special set of native functions and types w
 ```swift
 @inline @operator(80)
 func + :: Int Int -> Int = (a b) {
-let v = LLVM.i_add a.value b.value
-condFail v.1
-return Int v.0
+	let v = LLVM.i_add a.value b.value
+	condFail v.1
+	return Int v.0
 }
 ```
 
