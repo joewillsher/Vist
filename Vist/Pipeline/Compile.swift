@@ -221,7 +221,7 @@ func compileDocuments(fileNames: [String],
             let compileTask = NSTask()
             compileTask.currentDirectoryPath = currentDirectory
             compileTask.launchPath = "/usr/bin/clang"
-            compileTask.arguments = ["-o", "\(file)", "\(stdLibDirectory)/stdlib.o", "\(file).ll"]
+            compileTask.arguments = ["-o", file, "\(stdLibDirectory)/stdlib.o", "\(file).ll"]
             
             compileTask.launch()
             compileTask.waitUntilExit()

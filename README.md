@@ -119,13 +119,40 @@ All thats left is a call to the `_$print_i64` function—one of the [runtime fun
 
 And thats it, we now link my code with the standard library (to allow some last minute, link-time optimisations) and assemble the object files to generate the executable. The assembly looks like this
 
-```GAS
-_main:                                  ## @main
-## BB#0:                                ## %entry
+```assembly
+	.section	__TEXT,__text,regular,pure_instructions
+	.macosx_version_min 10, 11
+	.globl	_main
+	.align	4, 0x90
+_main:                  ; @main function
+## BB#0:                ; %entry block
 	pushq	%rbp
 	movq	%rsp, %rbp
-	movl	$3, %eax
+	movl	$3, %eax    ; call on 3
 	movl	%eax, %edi
 	popq	%rbp
-	jmp	__$print_i64            ## TAILCALL
+	jmp	__$print_i64    ; call @_$print_i64
+
+	.globl	__$print_i64
+	.align	4, 0x90
+__$print_i64:           ; @"_$print_i64" function
+## BB#0:                ; %entry block
+	pushq	%rbp
+	movq	%rsp, %rbp
+	leaq	L_.str(%rip), %rax
+	xorl	%ecx, %ecx
+	movb	%cl, %dl
+	movq	%rdi, -8(%rbp)
+	movq	%rax, %rdi
+	movq	-8(%rbp), %rsi
+	movb	%dl, %al
+	popq	%rbp
+	jmp	_printf         ; call @printf
+
+	.section	__TEXT,__cstring,cstring_literals
+L_.str:
+	.asciz	"%lli\n"    ; @.str string used to print the int
+
+
+.subsections_via_symbols
 ```
