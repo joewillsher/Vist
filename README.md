@@ -75,7 +75,7 @@ The Int type has 1 property `value` of type `LLVM.Int64`, which is the native ha
 
 This is how the compiler turns literals like `50`, `true`, and `40.1` into the Int, Bool, and Double types the Vist writers can use; the compiler gets special knowledge of these initialisers and functions existing [baked into it](Vist/AST/StdLibDef.swift), and wraps any literal with a call to that function. This means code like
 
-```
+```swift
 let a = 1 + 2
 print a
 ```
