@@ -59,7 +59,7 @@ class Tests : XCTestCase {
             XCTFail("Compilation failed")
         }
     }
-
+    
     func testStdLibCompile() {
 //        self.measureBlock {
             do {

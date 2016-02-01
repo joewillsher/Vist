@@ -53,12 +53,6 @@ define void @"_$print_b"(i1 zeroext %b) #0 {
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i64 } @_Int_S.i64({ i64 } %o) #2 {
-entry:
-  ret { i64 } %o
-}
-
-; Function Attrs: alwaysinline nounwind readnone
 define { i64 } @_Int_i64(i64 %v) #2 {
 entry:
   %.fca.0.insert = insertvalue { i64 } undef, i64 %v, 0
@@ -72,12 +66,6 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { i1 } @_Bool_S.b({ i1 } %o) #2 {
-entry:
-  ret { i1 } %o
-}
-
-; Function Attrs: alwaysinline nounwind readnone
 define { i1 } @_Bool_b(i1 %v) #2 {
 entry:
   %.fca.0.insert = insertvalue { i1 } undef, i1 %v, 0
@@ -88,12 +76,6 @@ entry:
 define { i1 } @_Bool_() #2 {
 entry:
   ret { i1 } zeroinitializer
-}
-
-; Function Attrs: alwaysinline nounwind readnone
-define { double } @_Double_S.f64({ double } %o) #2 {
-entry:
-  ret { double } %o
 }
 
 ; Function Attrs: alwaysinline nounwind readnone

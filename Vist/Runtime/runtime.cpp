@@ -7,7 +7,7 @@
 //
 
 //  This file implements the Vist runtime. It exposes functions to Vist code
-//  by calling to C APIs. These functions are made accessible in runtime.visth.
+//  by calling to C APIs
 //
 //  All functions here are declared using their mangled names
 

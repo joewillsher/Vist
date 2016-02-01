@@ -7,16 +7,16 @@ A programming language using LLVM, inspired by Swift, Haskell, and Rust.
 ##Installing
 To use, install the following with homebrew
 
-``` 
+``` bash
 brew update
 brew install llvm --with-clang
 ``` 
 
 Then clone this repo and run the Xcode project to build the compiler binary.
 
-To run the binary in Xcode, go to ‘Edit Scheme’ (⌘<) and set the *arguments* to `-O -verbose -preserve example.vist` and under *Options* set the ‘Custom Working Directory’ to `$(SRCROOT)/RUN`
+To work on it in Xcode, go to ‘Edit Scheme’ (⌘<) and set the *arguments* to `-O -verbose -preserve example.vist` and under *Options* set the ‘Custom Working Directory’ to `$(SRCROOT)/RUN`.
 
-Or you can then run the compiler from the command line, use the `-h` flag to see options.
+Alternatively, after building it, you can then run the compiler from the command line, use the `-h` flag to see all options.
 
 ##Examples
 
@@ -67,13 +67,13 @@ func + :: Int Int -> Int = (a b) {
 }
 ```
 
-The call to `LLVM.i_add` returns a tuple of type `(Int Bool)`—the first element is used as a check for overflow, which is done by a call to the stdlib’s `condFail` function. Then the result (of type LLVM.Int64) is wrapped in an Int type using `Int`’s initialiser.
+The call to `LLVM.i_add` returns a tuple of type `(Int Bool)`—the second element is used as a check for overflow, which is done by a call to the stdlib’s `condFail` function. Then the result (of type LLVM.Int64) is wrapped in an Int type using `Int`’s initialiser.
 
 (`@inline` declares that this function requires being inlined, and `@operator(80)` declares that `+` is an infix operator with precedence 80.)
 
-The Int type has 1 property `value` of type `LLVM.Int64`, which is the native hardware supported i64 object. The stdlib functions which take `Int`’s (such as `+`) extract this value using to pass into the hardware supported functions. Vist automatically generates a *memberwise initialiser* which lets you create an `Int` instance by passing the initialiser a `LLVM.Int64`.
+The `Int` type has 1 property `value` of type `LLVM.Int64`, which is the native hardware supported i64 object. The stdlib functions which take `Int`s (such as `+`) extract this value using to pass into the hardware supported functions. Vist automatically generates a *memberwise initialiser* which lets you create an `Int` instance by passing the initialiser a `LLVM.Int64`.
 
-This is how the compiler turns literals like `50`, `true`, and `40.1` into the Int, Bool, and Double types the Vist writers can use; the compiler gets special knowledge of these initialisers and functions existing [baked into it](Vist/AST/StdLibDef.swift), and wraps any literal with a call to that function. This means code like
+This is how the compiler turns literals like `50`, `true`, and `40.1` into the `Int`, `Bool`, and `Double` types the Vist writers can use; the compiler gets special knowledge of these initialisers and functions existing [baked into it](Vist/AST/StdLibDef.swift), and wraps any literal with a call to that function. This means code like
 
 ```swift
 let a = 1 + 2
@@ -91,6 +91,9 @@ entry:
 	call void @_print_S.i64({ i64 } %"+.res"), !stdlib.call.optim !0
 	ret void
 }
+declare { i64 } @_Int_i64(i64)
+declare { i64 } @"_+_S.i64_S.i64"({ i64 }, { i64 })
+declare void @_print_S.i64({ i64 })
 ```
 
 This is obviously too complicated! Our efforts to simplify the compiler’s architecture has led to our IR getting much more complex, and our generated program slower. Moreover, our added indirection is stopping important optimisations being performed—as LLVM’s optimiser has no knowledge of what `_+_S.i64_S.i64` (the `+` function’s mangled name) does, it cannot reason about its behaviour, and fold the `1 + 2` to a `3` as we would hope.
@@ -103,6 +106,7 @@ entry:
 	tail call void @"_$print_i64"(i64 3)
 	ret void
 }
+declare void @"_$print_i64"(i64) #1
 ```
 
 Much better, I’d say.
@@ -113,7 +117,15 @@ Even better, inlining the `+` function lets [the optimiser](http://llvm.org/docs
 
 All thats left is a call to the `_$print_i64` function—one of the [runtime functions](Vist/Runtime/runtime.cpp) which just calls `printf` from the c standard library on my number.
 
-And thats it, we now link my code with the standard library (to allow some last minute, link-time optimisations) and assemble the object files to generate the executable.
+And thats it, we now link my code with the standard library (to allow some last minute, link-time optimisations) and assemble the object files to generate the executable. The assembly looks like this
 
-
-
+```assembly
+_main:                                  ## @main
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	movl	$3, %eax
+	movl	%eax, %edi
+	popq	%rbp
+	jmp	__$print_i64            ## TAILCALL
+```

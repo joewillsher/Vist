@@ -69,17 +69,6 @@ define void @"_$print_b"(i1 zeroext %b) #0 {
 }
 
 ; Function Attrs: alwaysinline
-define { i64 } @_Int_S.i64({ i64 } %o) #2 {
-entry:
-  %0 = alloca { i64 }
-  %value = extractvalue { i64 } %o, 0
-  %value_ptr = getelementptr inbounds { i64 }* %0, i32 0, i32 0
-  store i64 %value, i64* %value_ptr
-  %1 = load { i64 }* %0
-  ret { i64 } %1
-}
-
-; Function Attrs: alwaysinline
 define { i64 } @_Int_i64(i64 %v) #2 {
 entry:
   %0 = alloca { i64 }
@@ -115,17 +104,6 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define { i1 } @_Bool_S.b({ i1 } %o) #2 {
-entry:
-  %0 = alloca { i1 }
-  %value = extractvalue { i1 } %o, 0
-  %value_ptr = getelementptr inbounds { i1 }* %0, i32 0, i32 0
-  store i1 %value, i1* %value_ptr
-  %1 = load { i1 }* %0
-  ret { i1 } %1
-}
-
-; Function Attrs: alwaysinline
 define { i1 } @_Bool_b(i1 %v) #2 {
 entry:
   %0 = alloca { i1 }
@@ -158,17 +136,6 @@ entry:
   store i1 %"$0", i1* %value_ptr
   %1 = load { i1 }* %0
   ret { i1 } %1
-}
-
-; Function Attrs: alwaysinline
-define { double } @_Double_S.f64({ double } %o) #2 {
-entry:
-  %0 = alloca { double }
-  %value = extractvalue { double } %o, 0
-  %value_ptr = getelementptr inbounds { double }* %0, i32 0, i32 0
-  store double %value, double* %value_ptr
-  %1 = load { double }* %0
-  ret { double } %1
 }
 
 ; Function Attrs: alwaysinline
