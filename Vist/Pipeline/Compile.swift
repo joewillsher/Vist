@@ -52,8 +52,7 @@ func compileDocuments(fileNames: [String],
             
             
             // Lex code
-            var lexer = Lexer(code: doc)
-            let tokens = try lexer.getTokens()
+            let tokens = try doc.getTokens()
             
             if verbose { tokens
                 .map {"\($0.0): \t\t\t\t\t\($0.1.range.start)--\($0.1.range.end)"}

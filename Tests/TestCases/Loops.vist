@@ -1,3 +1,14 @@
 
-for i in 0 ... 3
-    do print i
+for i in 0 ... 3 do
+    print i
+
+// test: 0 1 2 3
+
+
+var x = 1
+for i in 2 ..< 5 {
+    print i * x
+    x = x + 1
+}
+
+// test: 2 6 12

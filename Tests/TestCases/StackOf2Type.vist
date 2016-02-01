@@ -21,13 +21,14 @@ func empty :: -> StackOf2 = do
 var stack = StackOf2 2 10
 
 print (stack.sum ())
+// test: 12
 
 stack = push 3 stack
 print (stack.pop ())
+// test: 3
 
 stack = empty ()
 
 print stack.a == stack.b
+// test: true
 
-
-let stack2 = StackOf2 12

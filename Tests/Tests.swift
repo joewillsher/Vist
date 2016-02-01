@@ -9,9 +9,11 @@
 import XCTest
 import Foundation
 
-private let testDir = "\(SOURCE_ROOT)/Tests/TestCases"
-private let stdlibDir = "\(SOURCE_ROOT)/Vist/StdLib"
+let testDir = "\(SOURCE_ROOT)/Tests/TestCases"
+let stdlibDir = "\(SOURCE_ROOT)/Vist/StdLib"
 
+// tests can define comments which define the expected output of the program
+// `// test: 1 2` will add "1\n2\n" to the expected result of the program
 
 class Tests : XCTestCase {
     
@@ -28,7 +30,7 @@ class Tests : XCTestCase {
     func testControlFlow() {
         do {
             try compileWithOptions(["-O", "Control.vist"], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, "100\n")
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: "Control.vist"))
         }
         catch {
             print(error)
@@ -38,9 +40,8 @@ class Tests : XCTestCase {
     
     func testForInLoops() {
         do {
-            try compileWithOptions(["-O", "Loops.vist"], inDirectory: testDir, out: pipe)
-            print(pipe?.string)
-            XCTAssertEqual(pipe?.string, "1\n2\n3\n")
+            try compileWithOptions(["Loops.vist"], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: "Loops.vist"))
         }
         catch {
             print(error)
@@ -51,8 +52,7 @@ class Tests : XCTestCase {
     func testStackOf2Type() {
         do {
             try compileWithOptions(["-O", "StackOf2Type.vist"], inDirectory: testDir, out: pipe)
-            print(pipe?.string)
-            XCTAssertEqual(pipe?.string, "22\n3\ntrue\n")
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: "StackOf2Type.vist"))
         }
         catch {
             print(error)

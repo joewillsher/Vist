@@ -123,9 +123,17 @@ private extension Token {
 //  MARK:                                              Lexer state
 //-------------------------------------------------------------------------------------------------------------------------
 
+extension String {
+    
+    func getTokens() throws -> [(Token, SourceLoc)] {
+        var lexer = Lexer(code: self)
+        return try lexer.getTokens()
+    }
+    
+}
 
 /// Lexer object which manages token generation
-struct Lexer {
+private struct Lexer {
     
     let code: String
     let chars: [Character]

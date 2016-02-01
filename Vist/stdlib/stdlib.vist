@@ -7,7 +7,6 @@
 type Int {
     var value: LLVM.Int64
     
-    init Int = (o) do value = o.value
     init LLVM.Int = (v) do value = v
     init () = {
         let v = 0
@@ -18,7 +17,6 @@ type Int {
 type Bool {
     var value: LLVM.Bool
 
-    init Bool = (o) do value = o.value
     init LLVM.Bool = (v) do value = v
     init () = {
         let b = false
@@ -29,7 +27,6 @@ type Bool {
 type Double {
     var value: LLVM.Double
 
-    init Double = (o) do value = o.value
     init LLVM.Double = (v) do value = v
 }
 

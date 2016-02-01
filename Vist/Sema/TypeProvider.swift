@@ -317,7 +317,6 @@ extension FunctionCallExpr : ExprTypeProvider {
             fnType = type
         }
         else {
-            
             let _fnType = builtinFn?.1 ?? scope[function: self.name, paramTypes: params]
             let name = builtinFn?.0 ?? self.name
             
