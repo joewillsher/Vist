@@ -69,6 +69,8 @@ func + :: Int Int -> Int = (a b) {
 
 The call to `LLVM.i_add` returns a tuple of type `(Int Bool)`—the first element is used as a check for overflow, which is done by a call to the stdlib’s `condFail` function. Then the result (of type LLVM.Int64) is wrapped in an Int type using `Int`’s initialiser.
 
+(`@inline` declares that this function requires being inlined, and `@operator(80)` declares that `+` is an infix operator with precedence 80.)
+
 The Int type has 1 property `value` of type `LLVM.Int64`, which is the native hardware supported i64 object. The stdlib functions which take `Int`’s (such as `+`) extract this value using to pass into the hardware supported functions. Vist automatically generates a *memberwise initialiser* which lets you create an `Int` instance by passing the initialiser a `LLVM.Int64`.
 
 This is how the compiler turns literals like `50`, `true`, and `40.1` into the Int, Bool, and Double types the Vist writers can use; the compiler gets special knowledge of these initialisers and functions existing [baked into it](Vist/AST/StdLibDef.swift), and wraps any literal with a call to that function. This means code like
