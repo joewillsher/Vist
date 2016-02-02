@@ -23,7 +23,7 @@ func error(err: ErrorType, loc: SourceRange? = nil, userVisible: Bool = true, fi
             fatalError("Compiler assertion failed \(err)", file: file, line: line)
         }
     #endif
-
+    
     if let loc = loc { // if a source is provided, put the error in a PositionedError
         return PositionedError(error: err, range: loc)
     } else {
@@ -47,4 +47,41 @@ struct PositionedError : ErrorType, CustomStringConvertible {
     }
     
 }
+
+/// Equality operator for error types
+///
+/// Extends the default one, and allows matching of boxed errors against non boxed ones
+///
+@warn_unused_result
+func == (lhs: ErrorType, rhs: ErrorType) -> Bool {
+    switch (lhs, rhs) {
+    case (let l as PositionedError, let r as PositionedError):
+        return l.error == r.error
+        
+    case (let l as PositionedError, _):
+        return l.error == rhs
+        
+    case (_, let r as PositionedError):
+        return r.error == lhs
+        
+    default:
+        return lhs._code == rhs._code
+    }
+}
+
+
+/// Allows matching of pattern against a boxed pattern
+///
+/// `catch let error where unwrap(ParseError.NoTypeName, ParseError.NoIdentifier)(error) {...`
+///
+/// - parameter errors: A series of errors to match against
+///
+/// - returns: A function which takes an error instance and matches against the applied errors
+func unwrap(errors: ErrorType...) -> ErrorType -> Bool {
+    return { value in
+        return errors.contains { $0 == value }
+    }
+}
+
+
 

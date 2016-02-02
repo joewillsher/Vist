@@ -11,6 +11,10 @@ do {
     let flags = Array(Process.arguments.dropFirst())
     try compileWithOptions(flags, inDirectory: NSTask().currentDirectoryPath)
 }
+catch let error where unwrap(ParseError.NoTypeName, ParseError.NoIdentifier)(error) {
+    // handle specific errors
+    print(error)
+}
 catch {
     print(error)
 }
