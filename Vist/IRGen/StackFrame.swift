@@ -50,7 +50,7 @@ final class StackFrame {
         let inParent = try parentStackFrame?.variable(name)
         if let p = inParent where p.isValid() { return p }
         
-        throw IRError.NoVariable(name)
+        throw error(IRError.NoVariable(name))
     }
 
     func functionType(name: String) throws -> LLVMValueRef {
@@ -59,7 +59,7 @@ final class StackFrame {
         let inParent = try parentStackFrame?.functionType(name)
         if let p = inParent where p != nil { return p }
         
-        throw IRError.NoFunction(name)
+        throw error(IRError.NoFunction(name))
     }
     
     func type(name: String) throws -> StructType {
@@ -69,7 +69,7 @@ final class StackFrame {
         let inParent = try parentStackFrame?.type(name)
         if let p = inParent { return p }
         
-        throw IRError.NoType(name)
+        throw error(IRError.NoType(name))
     }
     
     var isStdLib: Bool {

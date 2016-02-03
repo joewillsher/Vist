@@ -7,7 +7,7 @@
 //
 
 enum SemaError : ErrorType {
-    case InvalidType(BuiltinType)
+    case InvalidType(BuiltinType), InvalidFloatType(UInt32)
     case InvalidRedeclaration(String, Expr)
     case NoVariable(String)
     case HeterogenousArray([Ty]), EmptyArray
@@ -33,6 +33,8 @@ extension SemaError : CustomStringConvertible {
         switch self {
         case let .InvalidType(t):
             return "Invalid type '\(t)'"
+        case let .InvalidFloatType(s):
+            return "Invalid float of size \(s)"
         case let .InvalidRedeclaration(t, _):
             return "Variable '\(t)' is already declared"
         case let .NoVariable(v):

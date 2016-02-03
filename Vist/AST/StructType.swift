@@ -7,14 +7,15 @@
 //
 
 
-
+typealias StructMember = (name: String, type: Ty, mutable: Bool)
+typealias StructMethod = (name: String, type: FnType)
 
 final class StructType: Ty {
     let name: String
-    let members: [(String, Ty, Bool)]
-    var methods: [(String, FnType)]
+    let members: [StructMember]
+    var methods: [StructMethod]
     
-    init(members: [(String, Ty, Bool)], methods: [(String, FnType)], name: String) {
+    init(members: [StructMember], methods: [StructMethod], name: String) {
         self.name = name
         self.members = members
         self.methods = methods
@@ -22,7 +23,7 @@ final class StructType: Ty {
     
     func ir() -> LLVMTypeRef {
         let arr = members
-            .map { $0.1.ir() }
+            .map { $0.type.ir() }
             .ptr()
         defer { arr.dealloc(members.count) }
         
@@ -33,26 +34,23 @@ final class StructType: Ty {
     }
     
     func propertyType(name: String) throws -> Ty? {
-        guard let i = (members.indexOf { $0.0 == name }) else { throw error(SemaError.NoPropertyNamed(type: self.name, property: name)) }
-        return members[i].1
+        guard let i = members.indexOf({ $0.name == name }) else { throw error(SemaError.NoPropertyNamed(type: self.name, property: name)) }
+        return members[i].type
     }
     
     static func named(n: String) -> StructType {
         return StructType(members: [], methods: [], name: n)
     }
-    static func withProperties(ps: [Ty], gen: (Int -> String) = { _ in ""}) -> StructType {
-        return StructType(members: ps.enumerate().map {(gen($0), $1, false)}, methods: [], name: "")
-    }
     
     var isStdBool: Bool {
-        return name == "Bool" && members[0].0 == "value"
+        return name == "Bool" && members[0].name == "value"
     }
     var isStdInt: Bool {
-        return name == "Int" && members[0].0 == "value"
+        return name == "Int" && members[0].name == "value"
     }
     var isStdRange: Bool {
         // TODO: make these `contains` functions indep of layout
-        return name == "Range" && members[0].0 == "start" && members[1].0 == "end"
+        return name == "Range" && members[0].name == "start" && members[1].name == "end"
     }
 }
 

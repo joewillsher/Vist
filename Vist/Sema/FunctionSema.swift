@@ -93,9 +93,12 @@ extension FuncDecl : DeclTypeProvider {
             fnScope[variable: n] = t
         }
         
+        // if is a method
         if let t = parent?.type {
+            // add self
             fnScope[variable: "self"] = t
             
+            // add self's memebrs implicitly
             for (name, type, _) in t.members {
                 fnScope[variable: name] = type
             }

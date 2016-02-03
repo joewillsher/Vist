@@ -11,4 +11,4 @@ let a = StackOf2 1
 
 let q = a.sum ()
 
-print q
+print q q

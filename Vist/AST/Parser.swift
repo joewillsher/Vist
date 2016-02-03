@@ -285,9 +285,9 @@ extension Parser {
 //-------------------------------------------------------------------------------------------------------------------------
 extension Parser {
     
-    private mutating func parseTextExpr() throws -> Variable {
+    private mutating func parseTextExpr() throws -> VariableExpr {
         guard case .Identifier(let i) = currentToken else { throw error(ParseError.NoIdentifier, loc: rangeOfCurrentToken()) }
-        return Variable(name: i)
+        return VariableExpr(name: i)
     }
     
     /// Handles parsing of a text token
@@ -310,20 +310,20 @@ extension Parser {
             getNextToken() // eat ']'
             
             guard case .Assign = currentToken else { // if call
-                return ArraySubscriptExpr(arr: Variable(name: token), index: subscpipt)
+                return ArraySubscriptExpr(arr: VariableExpr(name: token), index: subscpipt)
             }
             getNextToken() // eat '='
             
             let exp = try parseOperatorExpr()
             // if assigning to subscripted value
-            return MutationExpr(object: ArraySubscriptExpr(arr: Variable(name: token), index: subscpipt), value: exp)
+            return MutationExpr(object: ArraySubscriptExpr(arr: VariableExpr(name: token), index: subscpipt), value: exp)
             
         case .Assign?: // mutation
             getNextToken(2)// eat 'identifier ='
             
             let exp = try parseOperatorExpr()
             
-            return MutationExpr(object: Variable(name: token), value: exp)
+            return MutationExpr(object: VariableExpr(name: token), value: exp)
             
         case .Period? where token == "LLVM" && isStdLib:
             getNextToken(2) // eat 'LLVM.'
@@ -334,12 +334,12 @@ extension Parser {
         case .Period?: // property or fn
             getNextToken(2) // eat `.`
             
-            return try parseMemberLookupExpr(Variable(name: token))
+            return try parseMemberLookupExpr(VariableExpr(name: token))
             
         default: // just identifier
             
             defer { getNextToken() }
-            return try parseOperatorExpr(Variable(name: token))
+            return try parseOperatorExpr(VariableExpr(name: token))
         }
     }
     

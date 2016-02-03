@@ -17,7 +17,7 @@ extension StructExpr : ExprTypeProvider {
         let structScope = SemaScope(parent: scope, returnType: nil) // cannot return from Struct scope
         
         // maps over properties and gens types
-        let members = try properties.map { (a: VariableDecl) -> (String, Ty, Bool) in
+        let members = try properties.map { (a: VariableDecl) -> StructMember in
             try a.llvmType(structScope)
             guard let t = a.value._type else { throw error(SemaError.StructPropertyNotTyped(type: name, property: a.name)) }
             return (a.name, t, a.isMutable)
@@ -28,7 +28,7 @@ extension StructExpr : ExprTypeProvider {
         scope[type: name] = ty
         self.type = ty
         
-        let memberFunctions = try methods.flatMap { (f: FuncDecl) -> (String, FnType) in
+        let memberFunctions = try methods.flatMap { (f: FuncDecl) -> StructMethod in
             try f.llvmType(structScope)
             guard let t = f.fnType.type else { throw error(SemaError.StructMethodNotTyped(type: name, methodName: f.name)) }
             return (f.name.mangle(t, parentTypeName: name), t)
@@ -62,8 +62,7 @@ extension InitialiserDecl : DeclTypeProvider {
             let parentType = parent?.type,
             let parentName = parent?.name,
             let parentProperties = parent?.properties
-            else { throw error(SemaError.InitialiserNotAssociatedWithType)
-        }
+            else { throw error(SemaError.InitialiserNotAssociatedWithType) }
         
         let params = try ty.params(scope.allTypes)
         

@@ -29,6 +29,7 @@ class Tests : XCTestCase {
     
     func testControlFlow() {
         let file = "Control.vist"
+        // url://rile.d
         do {
             try compileWithOptions(["-O", file], inDirectory: testDir, out: pipe)
             XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file))
@@ -61,7 +62,7 @@ class Tests : XCTestCase {
             print(error)
             XCTFail("Compilation failed")
         }
-    }
+    }   
     
     func testArray() {
         let file = "Array.vist"

@@ -11,7 +11,7 @@ protocol Decl : ASTNode, DeclTypeProvider {}
 
 
 
-final class VariableDecl : Decl, StructMember {
+final class VariableDecl : Decl, StructMemberExpr {
     let name: String
     let aType: String?
     let isMutable: Bool
@@ -25,7 +25,7 @@ final class VariableDecl : Decl, StructMember {
     }
 }
 
-class FuncDecl : Decl, StructMember {
+class FuncDecl : Decl, StructMemberExpr {
     let name: String
     let fnType: FunctionType
     let impl: FunctionImplementationExpr?
@@ -48,7 +48,7 @@ class FuncDecl : Decl, StructMember {
 
 
 
-final class InitialiserDecl : Decl, StructMember {
+final class InitialiserDecl : Decl, StructMemberExpr {
     let ty: FunctionType
     let impl: FunctionImplementationExpr?
     weak var parent: StructExpr?

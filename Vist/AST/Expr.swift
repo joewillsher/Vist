@@ -128,7 +128,7 @@ final class StringLiteral : TypedExpr {
 /// A variable lookup Expr
 ///
 /// Generic over the variable type, use AnyExpr if this is not known
-final class Variable : AssignableExpr {
+final class VariableExpr : AssignableExpr {
     let name: String
     
     init(name: String) {
@@ -328,7 +328,7 @@ final class ArraySubscriptExpr : AssignableExpr {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-protocol StructMember {
+protocol StructMemberExpr {
 }
 
 

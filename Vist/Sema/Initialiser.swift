@@ -18,7 +18,7 @@ extension StructExpr {
         
         var initialisations: [ASTNode] = []
         for (val, name) in zip(values, names) {
-            let variable = Variable(name: name)
+            let variable = VariableExpr(name: name)
             let m = MutationExpr(object: variable, value: val)
             initialisations.append(m)
         }
@@ -39,8 +39,8 @@ extension StructExpr {
         
         var initialisations: [ASTNode] = []
         for (i, name) in names.enumerate() {
-            let object = Variable(name: name)
-            let value = Variable(name: i.implicitArgName())
+            let object = VariableExpr(name: name)
+            let value = VariableExpr(name: i.implicitArgName())
             let m = MutationExpr(object: object, value: value)
             initialisations.append(m)
         }

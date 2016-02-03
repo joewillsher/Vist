@@ -59,7 +59,7 @@ extension NullExpr : ExprTypeProvider {
 //  MARK:                                                 Variables
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension Variable : ExprTypeProvider {
+extension VariableExpr : ExprTypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
         
@@ -249,7 +249,7 @@ extension ArraySubscriptExpr : ExprTypeProvider {
     func llvmType(scope: SemaScope) throws -> Ty {
         
         // make sure its an array
-        guard case let v as Variable = arr, case BuiltinType.Array(let type, _)? = scope[variable: v.name] else { throw error(SemaError.CannotSubscriptNonArrayVariable) }
+        guard case let v as VariableExpr = arr, case BuiltinType.Array(let type, _)? = scope[variable: v.name] else { throw error(SemaError.CannotSubscriptNonArrayVariable) }
         
         // gen type for subscripting value
         guard case BuiltinType.Int = try index.llvmType(scope) else { throw error(SemaError.NonIntegerSubscript) }
