@@ -43,7 +43,7 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
                 "  -build-only -b\t- Do not run the program\n" +
                 "  -build-stdlib\t\t- Build the standard library too\n" +
                 "  -build-runtime\t\t- Build the runtime too\n" +
-            "  -preserve\t\t- Keep intermediate LLVM IR and ASM files")
+                "  -preserve\t\t- Keep intermediate LLVM IR and ASM files")
     }
     else {
         #if DEBUG

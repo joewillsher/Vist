@@ -70,6 +70,5 @@ class Tests : XCTestCase {
         }
     }
     
-    
 }
 

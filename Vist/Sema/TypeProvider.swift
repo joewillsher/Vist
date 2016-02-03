@@ -348,7 +348,7 @@ extension FuncDecl : DeclTypeProvider {
             fnScope[variable: n] = t
         }
         
-        if let t = parent?._type {
+        if let t = parent?.type {
             fnScope[variable: "self"] = t
         }
         
@@ -598,7 +598,7 @@ extension InitialiserDecl : DeclTypeProvider {
     func llvmType(scope: SemaScope) throws {
         
         guard
-            let parentType = parent?._type,
+            let parentType = parent?.type,
             let parentName = parent?.name,
             let parentProperties = parent?.properties
             else { throw error(SemaError.InitialiserNotAssociatedWithType)

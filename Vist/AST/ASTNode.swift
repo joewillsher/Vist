@@ -24,37 +24,29 @@ final class AST : ASTNode {
     var type: Ty? = nil
 }
 
-// TODO: Notes from swift:
-//
-// they have different types -
-//
-//  - Pattern, as in pattern matching
-//      - `is` pattern, tuple pattern, enum element pattern, case statement 'bool' patterns, x?
-//  - Declarations / Decl
-//      - Vars, funcs, types, and initalisers
-//  - Statement / Stmt
-//      - brace, return, defer, conditional, do/catch, if, while, for, for each, switch, break, fallthrough, continue, throw
-//  - Expression / expr
-//      - literals, tuples, parens, array, closure
-//      - Call expression, operator, methods, casts,
-//      - Sub expressions of syntax structures, like `type name generic params`
-//  - TypeRepr & SourceLoc
-//      - ‘Representation of a type as written in source’, generates human readable code to attach to AST objects
-//      - Source code location information
-//
-// Swift has an explicit AST walker function
-
-
+/// Type erased `Typed` protocol
+///
+/// Conformants have a `_type` member which is an existential type
+///
 protocol _Typed {
     var _type: Ty? { get set }
 }
 
+/// Typed protocol which defines a generic type
+///
 protocol Typed : _Typed {
     typealias Type: Ty
     var type: Type? { get set }
 }
 
+// extending `Typed` to conform to `_Typed`
 extension Typed {
+    
+    /// This property gets from and sets to the specifically typed `type` property
+    /// 
+    /// It should only be used by API, use the `type` property instead
+    ///
+    @available(*, unavailable, message="Use the `type` property")
     var _type: Ty? {
         get {
             return type as? Ty

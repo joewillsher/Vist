@@ -187,6 +187,7 @@
 		D4A2CC091C4FF56500BB9A12 /* Ty.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Ty.swift; path = AST/Ty.swift; sourceTree = "<group>"; };
 		D4A2CC101C4FF58C00BB9A12 /* BuiltinDef.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BuiltinDef.swift; path = AST/BuiltinDef.swift; sourceTree = "<group>"; };
 		D4A2CC121C503D1800BB9A12 /* StdLibDef.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StdLibDef.swift; path = AST/StdLibDef.swift; sourceTree = "<group>"; };
+		D4AE04821C622323008F7950 /* Utils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Utils.h; path = Helper/Utils.h; sourceTree = "<group>"; };
 		D4B1FA011C2E1F58001E7BCC /* TODO.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = TODO.md; sourceTree = "<group>"; };
 		D4BBE4191C4157E7001B8934 /* runtime.bc */ = {isa = PBXFileReference; lastKnownFileType = file; name = runtime.bc; path = Runtime/runtime.bc; sourceTree = "<group>"; };
 		D4BBE41A1C4157E7001B8934 /* runtime.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = runtime.ll; path = Runtime/runtime.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
@@ -230,6 +231,7 @@
 			isa = PBXGroup;
 			children = (
 				D497A7951C3B016400DFE39E /* Vist-Bridging-Header.h */,
+				D4AE04821C622323008F7950 /* Utils.h */,
 				D40FC4D01C4AAB7C00122397 /* LLVM.h */,
 			);
 			name = Headers;
@@ -712,7 +714,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.vist-lang.Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/$(PROJECT_NAME)/Helper/Vist-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Vist/Helper/Vist-Bridging-Header.h";
 			};
 			name = Debug;
 		};
@@ -764,7 +766,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.vist-lang.Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/$(PROJECT_NAME)/Helper/Vist-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Vist/Helper/Vist-Bridging-Header.h";
 			};
 			name = Release;
 		};
@@ -855,10 +857,10 @@
 				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					"PROJECT_DIR=@\\\"$(PROJECT_DIR)\\\"",
 					__STDC_CONSTANT_MACROS,
 					__STDC_LIMIT_MACROS,
 					__STDC_FORMAT_MACROS,
-					"SOURCE_ROOT=@\\\"$(PROJECT_DIR)\\\"",
 				);
 				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
 				"LD_MAP_FILE_PATH[arch=*]" = "$(TARGET_TEMP_DIR)/$(PRODUCT_NAME)-LinkMap-$(CURRENT_VARIANT)-$(CURRENT_ARCH).txt";
@@ -1048,10 +1050,10 @@
 				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					"PROJECT_DIR=@\\\"$(PROJECT_DIR)\\\"",
 					__STDC_CONSTANT_MACROS,
 					__STDC_LIMIT_MACROS,
 					__STDC_FORMAT_MACROS,
-					"SOURCE_ROOT=@\\\"$(PROJECT_DIR)\\\"",
 				);
 				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";

@@ -8,9 +8,7 @@
 
 import Foundation
 
-// ugh, preprocessor macros broke in 2.2
-let SOURCE_ROOT = "/Users/JoeWillsher/Developer/Vist"
-
+// ugh, preprocessor macros broke in 2.2. to fix use `PROJECT_DIR`
 private let llvmDirectory = "/usr/local/Cellar/llvm/3.6.2/bin"
 private let stdLibDirectory = "\(SOURCE_ROOT)/Vist/stdlib"
 private let runtimeDirectory = "\(SOURCE_ROOT)/Vist/Runtime"

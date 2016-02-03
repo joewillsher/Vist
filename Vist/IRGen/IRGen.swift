@@ -414,7 +414,7 @@ extension FunctionCallExpr : IRGenerator {
 private extension FunctionType {
     
     private func params() throws -> [LLVMTypeRef] {
-        guard case let res as FnType = _type else { throw IRError.TypeNotFound }
+        guard let res = type else { throw IRError.TypeNotFound }
         return try res.nonVoid.map(ir)
     }
 }
@@ -432,7 +432,7 @@ extension FuncDecl : IRGenerator {
         let args = fnType.args, argCount = args.elements.count
         
         if let parent = self.parent {
-            guard case let _parentType as StructType = parent._type else { fatalError("Parent not a struct type") }
+            guard let _parentType = parent.type else { fatalError("Parent not a struct type") }
             guard let _type = fnType.type else { throw IRError.TypeNotFound }
             
             type = FnType(params: [_parentType] + _type.params, returns: _type.returns)
@@ -578,7 +578,7 @@ extension ClosureExpr : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        guard case let type as FnType = _type else { fatalError() }
+        guard let type = self.type else { fatalError() }
         
         let argBuffer = try type.params.map(ir).ptr()
         defer { argBuffer.dealloc(type.params.count) }
@@ -962,7 +962,7 @@ extension InitialiserDecl : IRGenerator {
             functionType = ty.type?.ir(),
             name = parent?.name,
             parentProperties = parent?.properties,
-            case let parentType as StructType = parent?._type
+            parentType = parent?.type
             else {
                 throw IRError.TypeNotFound
         }
@@ -1095,7 +1095,7 @@ extension TupleExpr : IRGenerator {
         
         if elements.count == 0 { return nil }
         
-        guard case let type as TupleType = self._type else { fatalError("No type for tuple") }
+        guard let type = self.type else { fatalError("No type for tuple") }
         let typeIR = type.ir()
         
         let memeberIR = try elements.map { try $0.nodeCodeGen(stackFrame) }
