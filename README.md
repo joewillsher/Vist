@@ -53,7 +53,7 @@ Vist is a strongly typed language which compiles to [LLVM’s](https://en.wikipe
  
 The compile process involves transforming the source code from one representation to another—the text is [lexed](https://en.wikipedia.org/wiki/Lexical_analysis) into a series of tokens, which is [parsed](https://en.wikipedia.org/wiki/Parsing#Computer_languages) to form the [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree). The [semantic analysis](https://en.wikibooks.org/wiki/Compiler_Construction/Semantic_Analysis) pass then walks the tree, adding type information, and then to generate the IR code.
 
-The [lexing](Vist/Lexer/Lexer.swift) separates Vist’s keywords and characters into a stream of tokens. [Parsing](Vist/AST/Parser.swift) extracts the program’s meaning, and constructs the [AST](Vist/AST/Expr.swift). The [sema](Vist/Sema/Sema.swift) pass type checks the source and does other static checks, like making sure variables are declared before they’re used. The [IRGen](Vist/IRGen/IRGen.swift) phase then creates the LLVM IR code, which is optimised and compiled.
+The [lexing](../VistLexer/Lexer.swift) separates Vist’s keywords and characters into a stream of tokens. [Parsing](../VistAST/Parser.swift) extracts the program’s meaning, and constructs the [AST](../VistAST/Expr.swift). The [sema](../VistSema/Sema.swift) pass type checks the source and does other static checks, like making sure variables are declared before they’re used. The [IRGen](../VistIRGen/IRGen.swift) phase then creates the LLVM IR code, which is optimised and compiled.
 
 
 ##Writing
