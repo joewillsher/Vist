@@ -40,7 +40,7 @@ func compileDocuments(fileNames: [String],
         var head: AST? = nil
         var all: [AST] = []
         
-        let globalScope = SemaScope(isStdLib: isStdLib)
+        let globalScope = SemaScope.globalScope(isStdLib)
         
         for (index, fileName) in fileNames.enumerate() {
             

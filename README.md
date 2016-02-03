@@ -6,7 +6,6 @@ A programming language using LLVM, inspired by Swift, Haskell, and Rust.
 
 ##Installing
 To use, install the following with homebrew
-
 ``` bash
 brew update
 brew install llvm --with-clang
@@ -14,7 +13,7 @@ brew install llvm --with-clang
 
 Then clone this repo and run the Xcode project to build the compiler binary.
 
-To work on it in Xcode, go to ‘Edit Scheme’ (⌘<) and set the *arguments* to `-O -verbose -preserve example.vist` and under *Options* set the ‘Custom Working Directory’ to `$(SRCROOT)/RUN`.
+To develop in Xcode, go to ‘Edit Scheme’ (⌘<) and set the *arguments* to `-O -verbose -preserve example.vist` and under *Options* set the ‘Custom Working Directory’ to `$(SRCROOT)/RUN`.
 
 Alternatively, after building it, you can then run the compiler from the command line, use the `-h` flag to see all options.
 
@@ -47,7 +46,7 @@ var variable = 10
 variable = 3
 ```
 
-Functions are called by writing the argument list after the function name. To disambiguate other function calls as parameters, wrap that in parentheses. Operators also take precedence over functions in parameter lists
+Functions are called by writing the argument list after the function name. To disambiguate other function calls as parameters, wrap them in parentheses. Operators also take precedence over functions in parameter lists
 ```swift
 print constant * variable		// > 300
 print (add 10 (factorial 10))	// > 3628810
@@ -57,18 +56,18 @@ Vist supports declaring types with *stored properties* and *methods*
 ```swift
 type Baz {
     var a: Int
-    let b: Int = 1
+    let b: Int
     
-    func foo :: Int -> Int = do 
+    func sumAndTimesBy :: Int -> Int = do 
         return $0 * (a + b)
 }
 ```
 
 Vist automatically constructs a *memberwise initialiser* for a type. This is a constructor function which takes a list of parameters in the order of the type’s stored properties
 ```swift
-let baz = Baz 1 4
-let x = baz.foo 2
-print x // > 10
+let bazInstance = Baz 1 4
+let sum = bazInstance.sumAndTimesBy 2
+print sum // > 10
 ```
 
 

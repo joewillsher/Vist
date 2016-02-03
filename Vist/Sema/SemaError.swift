@@ -24,7 +24,7 @@ enum SemaError : ErrorType {
     // not user visible
     case NoStdBoolType, NoStdIntType, NotTypeProvider, NoTypeForStruct, NoTypeForTuple
     case StructPropertyNotTyped(type: String, property: String), StructMethodNotTyped(type: String, methodName: String), InitialiserNotAssociatedWithType
-    case TypeNotFound, ParamsNotTyped
+    case TypeNotFound, ParamsNotTyped, IntegerNotTyped, BoolNotTyped
 }
 
 extension SemaError : CustomStringConvertible {
@@ -81,14 +81,14 @@ extension SemaError : CustomStringConvertible {
         case .InitialiserNotAssociatedWithType: return "Initialiser's parent type was unexpectedly nil"
         case .TypeNotFound: return "Type not found"
         case .ParamsNotTyped: return "Params not typed"
+        case .IntegerNotTyped: return "Integer literal not typed"
+        case .BoolNotTyped: return "Bool literal not typed"
         }
     }
 }
 
 
-
-
-
+// used for array's error messages
 private extension CollectionType where Generator.Element == Ty {
     
     /// Returns info about the collection

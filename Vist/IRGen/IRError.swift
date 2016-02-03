@@ -13,16 +13,14 @@ enum IRError : ErrorType {
     case CannotAssignToVoid, CannotAssignToType(Expr.Type)
     case SubscriptingNonVariableTypeNotAllowed, SubscriptOutOfBounds
     case NoProperty(String), NotAStruct, CannotMutateParam
-    
 }
 
 extension IRError : CustomStringConvertible {
 
     var description: String {
-        // TODO: update IR errors
         switch self {
         default:
-            return self._domain
+            return _domain
         }
         
     }

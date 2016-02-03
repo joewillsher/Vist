@@ -54,6 +54,14 @@
 		D4DE28191C5969830096E798 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4DE28181C5969830096E798 /* libz.tbd */; };
 		D4DE281C1C596B250096E798 /* Assemble.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D4DE281A1C596B250096E798 /* Assemble.cpp */; };
 		D4DE281F1C596BFE0096E798 /* TargetMachine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D4DE281D1C596BFE0096E798 /* TargetMachine.cpp */; };
+		D4E347241C6253D700CC2F8E /* ExprSema.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E347231C6253D700CC2F8E /* ExprSema.swift */; };
+		D4E347251C6253D700CC2F8E /* ExprSema.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E347231C6253D700CC2F8E /* ExprSema.swift */; };
+		D4E347271C62545400CC2F8E /* FunctionSema.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E347261C62545400CC2F8E /* FunctionSema.swift */; };
+		D4E347281C62545400CC2F8E /* FunctionSema.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E347261C62545400CC2F8E /* FunctionSema.swift */; };
+		D4E3472B1C62550D00CC2F8E /* StructSema.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E3472A1C62550D00CC2F8E /* StructSema.swift */; };
+		D4E3472C1C62550D00CC2F8E /* StructSema.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E3472A1C62550D00CC2F8E /* StructSema.swift */; };
+		D4E3472E1C62552B00CC2F8E /* StmtSema.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E3472D1C62552B00CC2F8E /* StmtSema.swift */; };
+		D4E3472F1C62552B00CC2F8E /* StmtSema.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E3472D1C62552B00CC2F8E /* StmtSema.swift */; };
 		D4E35B4E1C5D0CA000683486 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A76A1C3B003A00DFE39E /* main.swift */; };
 		D4E35B4F1C5D0CA000683486 /* CommandLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41BF5521C5CD996004A1962 /* CommandLine.swift */; };
 		D4E35B501C5D0CA000683486 /* Compile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7691C3B003A00DFE39E /* Compile.swift */; };
@@ -199,6 +207,10 @@
 		D4DE281B1C596B250096E798 /* Assemble.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Assemble.hpp; path = Pipeline/Assemble.hpp; sourceTree = "<group>"; };
 		D4DE281D1C596BFE0096E798 /* TargetMachine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TargetMachine.cpp; path = Pipeline/TargetMachine.cpp; sourceTree = "<group>"; };
 		D4DE281E1C596BFE0096E798 /* TargetMachine.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = TargetMachine.hpp; path = Pipeline/TargetMachine.hpp; sourceTree = "<group>"; };
+		D4E347231C6253D700CC2F8E /* ExprSema.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ExprSema.swift; path = Sema/ExprSema.swift; sourceTree = "<group>"; };
+		D4E347261C62545400CC2F8E /* FunctionSema.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FunctionSema.swift; path = Sema/FunctionSema.swift; sourceTree = "<group>"; };
+		D4E3472A1C62550D00CC2F8E /* StructSema.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StructSema.swift; path = Sema/StructSema.swift; sourceTree = "<group>"; };
+		D4E3472D1C62552B00CC2F8E /* StmtSema.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StmtSema.swift; path = Sema/StmtSema.swift; sourceTree = "<group>"; };
 		D4E35B7E1C5D216600683486 /* Pipe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pipe.swift; sourceTree = "<group>"; };
 		D4E35B801C5E3EC600683486 /* Expected.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Expected.swift; sourceTree = "<group>"; };
 		D4FAE4561C3B018000C9EE05 /* Test.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; name = Test.playground; path = Helper/Test.playground; sourceTree = "<group>"; };
@@ -263,6 +275,8 @@
 		D431F4C41C557795005D439F /* Linking */ = {
 			isa = PBXGroup;
 			children = (
+				D497A7811C3B00FE00DFE39E /* ASTInterface.swift */,
+				D497A7821C3B00FE00DFE39E /* LinkAST.swift */,
 				D497A7901C3B015700DFE39E /* Link.swift */,
 			);
 			name = Linking;
@@ -327,15 +341,6 @@
 				D40FC4D11C4AB98600122397 /* Headers */,
 			);
 			name = Helper;
-			sourceTree = "<group>";
-		};
-		D47D4BDF1C34B59C00B22B3C /* Interface */ = {
-			isa = PBXGroup;
-			children = (
-				D497A7811C3B00FE00DFE39E /* ASTInterface.swift */,
-				D497A7821C3B00FE00DFE39E /* LinkAST.swift */,
-			);
-			name = Interface;
 			sourceTree = "<group>";
 		};
 		D47D4BE01C38427200B22B3C /* Docs */ = {
@@ -418,8 +423,7 @@
 				D497A7771C3B00C600DFE39E /* SemaScope.swift */,
 				D497A7751C3B00C600DFE39E /* Mangle.swift */,
 				D40FC4CB1C4932F100122397 /* Initialiser.swift */,
-				D497A77A1C3B00C600DFE39E /* TypeProvider.swift */,
-				D47D4BDF1C34B59C00B22B3C /* Interface */,
+				D4E347291C6254E200CC2F8E /* Sema */,
 			);
 			name = Sema;
 			sourceTree = "<group>";
@@ -459,6 +463,18 @@
 				D489F3C01C1E396E00254FFC /* example */,
 			);
 			name = Source;
+			sourceTree = "<group>";
+		};
+		D4E347291C6254E200CC2F8E /* Sema */ = {
+			isa = PBXGroup;
+			children = (
+				D497A77A1C3B00C600DFE39E /* TypeProvider.swift */,
+				D4E347231C6253D700CC2F8E /* ExprSema.swift */,
+				D4E3472A1C62550D00CC2F8E /* StructSema.swift */,
+				D4E3472D1C62552B00CC2F8E /* StmtSema.swift */,
+				D4E347261C62545400CC2F8E /* FunctionSema.swift */,
+			);
+			name = Sema;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -569,9 +585,11 @@
 				D4E35B5C1C5D0CA000683486 /* Ty.swift in Sources */,
 				D4E35B5D1C5D0CA000683486 /* BuiltinType.swift in Sources */,
 				D4E35B5E1C5D0CA000683486 /* FnType.swift in Sources */,
+				D4E347281C62545400CC2F8E /* FunctionSema.swift in Sources */,
 				D4E35B5F1C5D0CA000683486 /* StructType.swift in Sources */,
 				D4E35B601C5D0CA000683486 /* TupleType.swift in Sources */,
 				D4E35B611C5D0CA000683486 /* FunctionContainer.swift in Sources */,
+				D4E3472C1C62550D00CC2F8E /* StructSema.swift in Sources */,
 				D4E35B621C5D0CA000683486 /* BuiltinDef.swift in Sources */,
 				D4E35B631C5D0CA000683486 /* StdLibDef.swift in Sources */,
 				D47802AD1C5FAEA800D2FA9C /* ParseError.swift in Sources */,
@@ -588,10 +606,12 @@
 				D4E35B6D1C5D0CA000683486 /* StackFrame.swift in Sources */,
 				D4E35B6E1C5D0CA000683486 /* RuntimeVariable.swift in Sources */,
 				D4E35B6F1C5D0CA000683486 /* ArrayVariable.swift in Sources */,
+				D4E347251C6253D700CC2F8E /* ExprSema.swift in Sources */,
 				D4E35B821C5E3ECE00683486 /* Expected.swift in Sources */,
 				D4E35B701C5D0CA000683486 /* StructVariable.swift in Sources */,
 				D4E35B711C5D0CA000683486 /* BuiltinFunction.swift in Sources */,
 				D4E35B731C5D0CA000683486 /* Intrinsic.cpp in Sources */,
+				D4E3472F1C62552B00CC2F8E /* StmtSema.swift in Sources */,
 				D4E35B741C5D0CA000683486 /* StdTypes.swift in Sources */,
 				D4E35B751C5D0CA000683486 /* FunctionAttribute.swift in Sources */,
 				D4E35B7B1C5D0E5A00683486 /* Print.swift in Sources */,
@@ -613,6 +633,7 @@
 				D4A2CC111C4FF58C00BB9A12 /* BuiltinDef.swift in Sources */,
 				D4A2CBFF1C4FF52400BB9A12 /* Decl.swift in Sources */,
 				D497A76C1C3B003A00DFE39E /* main.swift in Sources */,
+				D4E3472B1C62550D00CC2F8E /* StructSema.swift in Sources */,
 				D497A77B1C3B00C600DFE39E /* Mangle.swift in Sources */,
 				D4A2CC131C503D1800BB9A12 /* StdLibDef.swift in Sources */,
 				D40FC4CC1C4932F200122397 /* Initialiser.swift in Sources */,
@@ -620,6 +641,7 @@
 				D497A7931C3B015700DFE39E /* Link.swift in Sources */,
 				D41775641C5FA7EF006FD013 /* Error.swift in Sources */,
 				D4DE281C1C596B250096E798 /* Assemble.cpp in Sources */,
+				D4E347271C62545400CC2F8E /* FunctionSema.swift in Sources */,
 				D4FAE45E1C3DDE3100C9EE05 /* FunctionAttribute.swift in Sources */,
 				D497A78A1C3B012700DFE39E /* ArrayVariable.swift in Sources */,
 				D497A7841C3B00FE00DFE39E /* LinkAST.swift in Sources */,
@@ -651,7 +673,9 @@
 				D4A2CC0F1C4FF56500BB9A12 /* Ty.swift in Sources */,
 				D4A2CC011C4FF52400BB9A12 /* Stmt.swift in Sources */,
 				D4A2CC0C1C4FF56500BB9A12 /* FnType.swift in Sources */,
+				D4E347241C6253D700CC2F8E /* ExprSema.swift in Sources */,
 				D497A77C1C3B00C600DFE39E /* SemaError.swift in Sources */,
+				D4E3472E1C62552B00CC2F8E /* StmtSema.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

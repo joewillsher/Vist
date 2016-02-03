@@ -92,11 +92,11 @@ private func codeGenIn(stackFrame: StackFrame) -> Expr throws -> LLVMValueRef {
 
 extension IntegerLiteral : IRGenerator {
     
-    private func codeGen(stackFrame: StackFrame) -> LLVMValueRef {
+    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         let rawType = BuiltinType.Int(size: size)
         let value = LLVMConstInt(rawType.ir(), UInt64(val), false)
         
-        guard let type = self.type else { fatalError("Int literal with no type") }
+        guard let type = self.type else { throw error(SemaError.IntegerNotTyped, userVisible: false) }
         return type.initialiseWithBuiltin(value, module: module, builder: builder)
     }
 }
@@ -112,11 +112,11 @@ extension FloatingPointLiteral : IRGenerator {
 
 extension BooleanLiteral : IRGenerator {
     
-    private func codeGen(stackFrame: StackFrame) -> LLVMValueRef {
+    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         let rawType = BuiltinType.Bool
         let value = LLVMConstInt(rawType.ir(), UInt64(val.hashValue), false)
         
-        guard let type = self.type else { fatalError("Bool literal with no type") }
+        guard let type = self.type else { throw error(SemaError.BoolNotTyped, userVisible: false) }
         return type.initialiseWithBuiltin(value, module: module, builder: builder)
     }
 }
@@ -134,19 +134,8 @@ extension StringLiteral : IRGenerator {
         }
         
         return s
-//        return arr!.codeGen(stackFrame)
     }
 }
-
-//extension CharacterExpr : IRGenerator {
-//    
-//    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
-//        
-//        let x = String(val).cStringUsingEncoding(NSUTF8StringEncoding)![0]
-//        return LLVMConstInt(LLVMIntType(8), UInt64(x), false)
-//    }
-//}
-
 
 //-------------------------------------------------------------------------------------------------------------------------
 //  MARK:                                                 Variables
@@ -366,7 +355,7 @@ extension FunctionCallExpr : IRGenerator {
         
         let argCount = self.args.elements.count
         let args = try self.args.elements.map(codeGenIn(stackFrame))
-        guard let argTypes = self.args.elements.stableOptionalMap({ $0._type }) else { fatalError("args not typed") }
+        guard let argTypes = self.args.elements.stableOptionalMap({ $0._type }) else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
 
         // Lookup
         if let function = builtinBinaryInstruction(name, builder: builder, module: module) {

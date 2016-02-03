@@ -4,37 +4,39 @@ target triple = "x86_64-apple-macosx10.11.0"
 
 define void @main() {
 entry:
-  %0 = call { i64 } @_Int_i64(i64 0), !stdlib.call.optim !0
-  %1 = call { i64 } @_Int_i64(i64 100), !stdlib.call.optim !0
-  %....res = call { { i64 }, { i64 } } @_..._S.i64_S.i64({ i64 } %0, { i64 } %1), !stdlib.call.optim !0
-  %start = extractvalue { { i64 }, { i64 } } %....res, 0
-  %start.value = extractvalue { i64 } %start, 0
-  %end = extractvalue { { i64 }, { i64 } } %....res, 1
-  %end.value = extractvalue { i64 } %end, 0
-  br label %loop.header
-
-loop.header:                                      ; preds = %loop.latch, %entry
-  %loop.count.i = phi i64 [ %start.value, %entry ], [ %next.i, %loop.latch ]
-  %next.i = add i64 1, %loop.count.i
-  %i = call { i64 } @_Int_i64(i64 %loop.count.i), !stdlib.call.optim !0
-  br label %loop.body
-
-loop.body:                                        ; preds = %loop.header
-  call void @_print_S.i64({ i64 } %i), !stdlib.call.optim !0
-  br label %loop.latch
-
-loop.latch:                                       ; preds = %loop.body
-  %loop.repeat.test = icmp sle i64 %next.i, %end.value
-  br i1 %loop.repeat.test, label %loop.header, label %loop.exit
-
-loop.exit:                                        ; preds = %loop.latch
+  %0 = call { i64 } @_Int_i64(i64 1), !stdlib.call.optim !0
+  %StackOf2_res = call { { i64 } } @_StackOf2_S.i64({ i64 } %0)
+  %StackOf2 = alloca { { i64 } }
+  store { { i64 } } %StackOf2_res, { { i64 } }* %StackOf2
+  %a = load { { i64 } }* %StackOf2
+  %sum.res = call { i64 } @_StackOf2.sum_({ { i64 } } %a)
+  %Int = alloca { i64 }
+  store { i64 } %sum.res, { i64 }* %Int
+  %q = load { i64 }* %Int
+  call void @_print_S.i64({ i64 } %q), !stdlib.call.optim !0
   ret void
+}
+
+; Function Attrs: alwaysinline
+define { { i64 } } @_StackOf2_S.i64({ i64 } %"$0") #0 {
+entry:
+  %StackOf2 = alloca { { i64 } }
+  %a_ptr = getelementptr inbounds { { i64 } }* %StackOf2, i32 0, i32 0
+  store { i64 } %"$0", { i64 }* %a_ptr
+  %0 = load { { i64 } }* %StackOf2
+  ret { { i64 } } %0
+}
+
+define internal { i64 } @_StackOf2.sum_({ { i64 } } %self) {
+entry:
+  %a = extractvalue { { i64 } } %self, 0
+  ret { i64 } %a
 }
 
 declare { i64 } @_Int_i64(i64)
 
-declare { { i64 }, { i64 } } @_..._S.i64_S.i64({ i64 }, { i64 })
-
 declare void @_print_S.i64({ i64 })
+
+attributes #0 = { alwaysinline }
 
 !0 = !{!"stdlib.call.optim"}

@@ -28,9 +28,10 @@ class Tests : XCTestCase {
     // MARK: Test cases
     
     func testControlFlow() {
+        let file = "Control.vist"
         do {
-            try compileWithOptions(["-O", "Control.vist"], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: "Control.vist"))
+            try compileWithOptions(["-O", file], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file))
         }
         catch {
             print(error)
@@ -39,9 +40,10 @@ class Tests : XCTestCase {
     }
     
     func testForInLoops() {
+        let file = "Loops.vist"
         do {
-            try compileWithOptions(["Loops.vist"], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: "Loops.vist"))
+            try compileWithOptions([file], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file))
         }
         catch {
             print(error)
@@ -50,9 +52,10 @@ class Tests : XCTestCase {
     }
     
     func testStackOf2Type() {
+        let file = "StackOf2Type.vist"
         do {
-            try compileWithOptions(["-O", "StackOf2Type.vist"], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: "StackOf2Type.vist"))
+            try compileWithOptions(["-O", file], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file))
         }
         catch {
             print(error)
@@ -60,6 +63,18 @@ class Tests : XCTestCase {
         }
     }
     
+    func testArray() {
+        let file = "Array.vist"
+        do {
+            try compileWithOptions(["-O", file], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file))
+        }
+        catch {
+            print(error)
+            XCTFail("Compilation failed")
+        }
+    }
+
     func testStdLibCompile() {
         do {
             try compileWithOptions(["-O", "-build-stdlib"], inDirectory: stdlibDir, out: nil)
@@ -69,6 +84,7 @@ class Tests : XCTestCase {
             XCTFail("Compilation failed")
         }
     }
+    
     
 }
 

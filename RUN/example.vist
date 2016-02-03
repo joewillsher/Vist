@@ -1,3 +1,14 @@
 
-for i in 0 ... 100 do
-    print i
+
+
+type StackOf2 {
+    var a: Int
+    
+    func sum :: () -> Int = do return a
+}
+
+let a = StackOf2 1
+
+let q = a.sum ()
+
+print q
