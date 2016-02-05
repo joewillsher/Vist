@@ -63,6 +63,8 @@ final class StdLib {
         ("fatalError", FnType(params: [],           returns: VoidType)),
         
         
+        // initialisers
+        // ones which take Builtin types are used to wrap literals
         ("Int",     FnType(params: [BuiltinType.Int(size: 64)],   returns: IntType)),
         ("Int",     FnType(params: [IntType],                     returns: IntType)),
         ("Bool",    FnType(params: [BuiltinType.Bool],            returns: BoolType)),
@@ -74,6 +76,9 @@ final class StdLib {
     ]
     
     /// Container initialised with functions, provides subscript to look up functions by name and type
+    ///
+    /// Adds the `stdlib.call.optim` metadata tag to all of them
+    ///
     private static let functionContainer = FunctionContainer(functions: functions, types: types, metadata: ["stdlib.call.optim"])
     
     

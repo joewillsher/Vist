@@ -45,7 +45,7 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
                 "  -build-runtime\t\t- Build the runtime too\n" +
                 "  -preserve\t\t- Keep intermediate LLVM IR and ASM files")
     }
-    else {
+    else if !files.isEmpty || buildStdLib {
         #if DEBUG
             let s = CFAbsoluteTimeGetCurrent()
         #endif

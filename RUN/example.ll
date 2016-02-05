@@ -5,7 +5,10 @@ target triple = "x86_64-apple-macosx10.11.0"
 ; Function Attrs: nounwind
 define void @main() #0 {
 entry:
-  tail call void @"_$print_i64"(i64 100)
+  tail call void @"_$print_i64"(i64 4)
+  tail call void @"_$print_i64"(i64 6)
+  tail call void @"_$print_i64"(i64 18)
+  tail call void @"_$print_i64"(i64 1)
   ret void
 }
 

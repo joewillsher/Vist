@@ -34,8 +34,16 @@ private extension Token {
 //-------------------------------------------------------------------------------------------------------------------------
 
 /// Parser object, initialised with tokenised code and exposes methods to generare AST
-struct Parser {
+final class Parser {
     
+    init(tokens: [(Token, SourceLoc)], isStdLib: Bool = false) {
+        self.tokensWithPos = tokens.filter {
+            if case .Comment = $0.0 { return false } else { return true }
+        }
+        self.isStdLib = isStdLib
+        self.attrs = []
+    }
+
     private var index = 0
     private let tokensWithPos: [(Token, SourceLoc)]
     
@@ -67,7 +75,7 @@ struct Parser {
         "..<": 40
     ]
     
-    private mutating func getNextToken(n: Int = 1) -> Token {
+    private func getNextToken(n: Int = 1) -> Token {
         if n == 0 { return currentToken }
         index += 1
         if case .WhiteSpace = currentToken where !considerNewLines {
@@ -107,7 +115,7 @@ struct Parser {
     }
     private var _considerNewLines: [Bool] = [false] // temp var used to reset
     
-    private mutating func resetConsiderNewLines() {
+    private func resetConsiderNewLines() {
         _considerNewLines.removeLast()
         
         // if we now dont care about whitespace, move to next non whitespace char
@@ -134,7 +142,7 @@ struct Parser {
     }
     private var _inParameterList: [Bool] = [false]
     
-    private mutating func revertParameterListState() {
+    private func revertParameterListState() {
         _inParameterList.removeLast()
     }
 
@@ -146,7 +154,7 @@ struct Parser {
 
 extension Parser {
     
-    private mutating func parseIntExpr(token: Int) throws -> Expr {
+    private func parseIntExpr(token: Int) throws -> Expr {
         getNextToken()
         let i = IntegerLiteral(val: token)
         
@@ -157,15 +165,15 @@ extension Parser {
         
         return i
     }
-    private mutating func parseFloatingPointExpr(token: Double) -> FloatingPointLiteral {
+    private func parseFloatingPointExpr(token: Double) -> FloatingPointLiteral {
         getNextToken()
         return FloatingPointLiteral(val: token)
     }
-    private mutating func parseStringExpr(token: String) -> StringLiteral {
+    private func parseStringExpr(token: String) -> StringLiteral {
         getNextToken()
         return StringLiteral(str: token)
     }
-    private mutating func parseBooleanExpr(token: Bool) throws -> Expr {
+    private func parseBooleanExpr(token: Bool) throws -> Expr {
         getNextToken()
         let b = BooleanLiteral(val: token)
         
@@ -188,7 +196,7 @@ extension Parser {
 extension Parser {
     
     ///parses Expr like Int String, of type _identifier _identifier
-    private mutating func parseTypeExpr() throws -> TupleExpr {
+    private func parseTypeExpr() throws -> TupleExpr {
         
         // if () type
         if case .OpenParen = currentToken, case .CloseParen = getNextToken() {
@@ -235,12 +243,12 @@ extension Parser {
     }
     
     // TODO: Tuple parsing seperate to parens
-    //    private mutating func parseTupleExpr() throws -> TupleExpr {
+    //    private func parseTupleExpr() throws -> TupleExpr {
     //
     //    }
     
     /// Guarantees if tuple is true, the return type is a TupleExpression
-    private mutating func parseParenExpr(tuple tuple: Bool) throws -> Expr {
+    private func parseParenExpr(tuple tuple: Bool) throws -> Expr {
         
         guard case .OpenParen = currentToken else { throw error(ParseError.ExpectedParen, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat `(`
@@ -260,7 +268,7 @@ extension Parser {
         }
     }
     
-    private mutating func parseParamExpr() throws -> TupleExpr {
+    private func parseParamExpr() throws -> TupleExpr {
         
         var exps: [Expr] = []
         
@@ -285,13 +293,13 @@ extension Parser {
 //-------------------------------------------------------------------------------------------------------------------------
 extension Parser {
     
-    private mutating func parseTextExpr() throws -> VariableExpr {
+    private func parseTextExpr() throws -> VariableExpr {
         guard case .Identifier(let i) = currentToken else { throw error(ParseError.NoIdentifier, loc: rangeOfCurrentToken()) }
         return VariableExpr(name: i)
     }
     
     /// Handles parsing of a text token
-    private mutating func parseIdentifierExpr(token: String) throws -> Expr {
+    private func parseIdentifierExpr(token: String) throws -> Expr {
         
         switch inspectNextToken() {
         case .OpenParen? where inspectNextToken(2)?.isCloseParen ?? false: // call
@@ -343,7 +351,7 @@ extension Parser {
         }
     }
     
-    private mutating func parseMemberLookupExpr<Exp : Expr>(exp: Exp) throws -> Expr {
+    private func parseMemberLookupExpr<Exp : Expr>(exp: Exp) throws -> Expr {
         
         switch currentToken {
         case .Identifier(let name):
@@ -399,11 +407,11 @@ extension Parser {
     /// Function called on `return a + 1` and `if a < 3` etc
     ///
     /// exp can be optionally defined as a known lhs operand to give more info to the parser
-    private mutating func parseOperatorExpr(exp: Expr? = nil, prec: Int = 0) throws -> Expr {
+    private func parseOperatorExpr(exp: Expr? = nil, prec: Int = 0) throws -> Expr {
         return try parseOperationRHS(prec, lhs: exp ?? (try parsePrimary()))
     }
     
-    private mutating func parsePrimary() throws -> Expr {
+    private func parsePrimary() throws -> Expr {
         
         switch currentToken {
         case let .Identifier(id):
@@ -446,7 +454,7 @@ extension Parser {
     }
     
     
-    private mutating func parseOperationRHS(precedence: Int = 0, lhs: Expr) throws -> Expr {
+    private func parseOperationRHS(precedence: Int = 0, lhs: Expr) throws -> Expr {
         
         switch currentToken {
         case .InfixOperator(let op):
@@ -501,7 +509,7 @@ extension Parser {
 
 extension Parser {
     
-    private mutating func parseIfExpr() throws -> ConditionalStmt {
+    private func parseIfExpr() throws -> ConditionalStmt {
         
         getNextToken() // eat `if`
         let condition = try parseOperatorExpr()
@@ -542,7 +550,7 @@ extension Parser {
     }
     
     
-    private mutating func parseForInLoopExpr() throws -> ForInLoopStmt {
+    private func parseForInLoopExpr() throws -> ForInLoopStmt {
         
         getNextToken() // eat 'for'
         let itentifier = try parseTextExpr() // bind loop label
@@ -555,7 +563,7 @@ extension Parser {
         return ForInLoopStmt(identifier: itentifier, iterator: loop, block: block)
     }
     
-    private mutating func parseWhileLoopStmt() throws -> WhileLoopStmt {
+    private func parseWhileLoopStmt() throws -> WhileLoopStmt {
         
         getNextToken() // eat 'while'
         
@@ -573,7 +581,7 @@ extension Parser {
 
 extension Parser {
     
-    private mutating func parseVariableAssignmentMutable(mutable: Bool, requiresInitialValue: Bool = true) throws -> VariableDecl {
+    private func parseVariableAssignmentMutable(mutable: Bool, requiresInitialValue: Bool = true) throws -> VariableDecl {
         
         guard case let .Identifier(id) = getNextToken() else { throw error(ParseError.NoIdentifier, loc: rangeOfCurrentToken()) }
         
@@ -644,7 +652,7 @@ private extension TupleExpr {
 extension Parser {
     
     /// Parses the function type signature
-    private mutating func parseFunctionType() throws -> FunctionType {
+    private func parseFunctionType() throws -> FunctionType {
         
         // param type
         let p = try parseTypeExpr()
@@ -679,7 +687,7 @@ extension Parser {
     }
     
     
-    private mutating func parseFuncDeclaration() throws -> FuncDecl {
+    private func parseFuncDeclaration() throws -> FuncDecl {
         
         let a = attrs.flatMap { $0 as? FunctionAttributeExpr } ?? []
         let ops = attrs.flatMap { $0 as? ASTAttributeExpr }.flatMap { a -> Int? in if case .Operator(let p) = a { return p } else { return nil } }.last
@@ -730,7 +738,7 @@ extension Parser {
         return FuncDecl(name: id, type: type, impl: try parseClosureDeclaration(type: type), attrs: a)
     }
     
-    private mutating func parseClosureNamesExpr() throws -> [ValueType] {
+    private func parseClosureNamesExpr() throws -> [ValueType] {
         
         guard case .OpenParen = currentToken else { return [] }
         getNextToken() // eat '|'
@@ -747,7 +755,7 @@ extension Parser {
         return nms.map { ValueType.init(name: $0) }
     }
     
-    private mutating func parseClosureDeclaration(anon anon: Bool = false, type: FunctionType) throws -> FunctionImplementationExpr {
+    private func parseClosureDeclaration(anon anon: Bool = false, type: FunctionType) throws -> FunctionImplementationExpr {
         let names: [Expr]
         
         if case .OpenParen = currentToken {
@@ -765,7 +773,7 @@ extension Parser {
         return FunctionImplementationExpr(params: TupleExpr(elements: names), body: try parseBlockExpr())
     }
     
-    private mutating func parseBraceExpr(names: [ValueType] = []) throws -> BlockExpr {
+    private func parseBraceExpr(names: [ValueType] = []) throws -> BlockExpr {
         getNextToken() // eat '{'
         
         var exprs = [ASTNode]()
@@ -779,13 +787,13 @@ extension Parser {
         return BlockExpr(exprs: exprs, variables: names)
     }
     
-    private mutating func parseReturnExpr() throws -> ReturnStmt {
+    private func parseReturnExpr() throws -> ReturnStmt {
         getNextToken() // eat `return`
         
         return ReturnStmt(expr: try parseOperatorExpr())
     }
     
-    private mutating func parseBracelessDoExpr(names: [ValueType] = []) throws -> BlockExpr {
+    private func parseBracelessDoExpr(names: [ValueType] = []) throws -> BlockExpr {
         getNextToken() // eat 'do'
         
         guard let ex = try parseExpr(currentToken) else { throw error(ParseError.NoToken(currentToken), loc: SourceRange.at(currentPos)) }
@@ -793,7 +801,7 @@ extension Parser {
         return BlockExpr(exprs: [ex], variables: names)
     }
     
-    private mutating func parseBlockExpr(names: [ValueType] = []) throws -> BlockExpr {
+    private func parseBlockExpr(names: [ValueType] = []) throws -> BlockExpr {
         
         switch currentToken {
         case .OpenParen:    return try parseBlockExpr(try parseClosureNamesExpr())
@@ -812,7 +820,7 @@ extension Parser {
 
 extension Parser {
     
-    private mutating func parseArrayExpr() throws -> Expr {
+    private func parseArrayExpr() throws -> Expr {
         
         getNextToken() // eat '['
         
@@ -843,7 +851,7 @@ extension Parser {
 
 extension Parser {
     
-    private mutating func parseTypeDeclarationExpr(byRef byRef: Bool) throws -> StructExpr {
+    private func parseTypeDeclarationExpr(byRef byRef: Bool) throws -> StructExpr {
         
         let a = attrs
         attrs = []
@@ -899,7 +907,7 @@ extension Parser {
         return s
     }
     
-    private mutating func parseInitDeclaration() throws -> InitialiserDecl {
+    private func parseInitDeclaration() throws -> InitialiserDecl {
         
         getNextToken() // eat `init`
         let type = try parseFunctionType()
@@ -924,12 +932,12 @@ extension Parser {
 extension Parser {
     
     // TODO: Fix how this gets in the way of other things
-    private mutating func parseCommentExpr(str: String) throws -> Expr {
+    private func parseCommentExpr(str: String) throws -> Expr {
         getNextToken() //eat comment
         return CommentExpr(str: str)
     }
     
-    private mutating func parseAttrExpr() throws {
+    private func parseAttrExpr() throws {
         getNextToken() // eat @
         
         guard case .Identifier(let id) = currentToken else { return }
@@ -967,7 +975,7 @@ extension Parser {
     /// parses any token, starts new scopes
     ///
     /// promises that the input token will be consumed
-    private mutating func parseExpr(token: Token) throws -> ASTNode? {
+    private func parseExpr(token: Token) throws -> ASTNode? {
         
         switch token {
         case .Let:                  return try parseVariableAssignmentMutable(false)
@@ -1005,7 +1013,7 @@ extension Parser {
     /// Returns abstract syntax tree from an instance of a parser
     ///
     /// [Detailed here](http://llvm.org/docs/tutorial/LangImpl2.html)
-    mutating func parse() throws -> AST {
+    func parse() throws -> AST {
         
         index = 0
         exprs = []
@@ -1017,14 +1025,6 @@ extension Parser {
         }
         
         return AST(exprs: exprs)
-    }
-
-    init(tokens: [(Token, SourceLoc)], isStdLib: Bool = false) {
-        self.tokensWithPos = tokens.filter {
-            if case .Comment = $0.0 { return false } else { return true }
-        }
-        self.isStdLib = isStdLib
-        self.attrs = []
     }
     
 }

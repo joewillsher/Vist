@@ -341,6 +341,7 @@ extension Lexer {
                 if (multiLine && (n == "/" && charPtrSafe(-1) == "*")) || (!multiLine && (n == "\n" || n == "\r")) {
                     try resetContext()
                     try consumeChar()
+                    if !multiLine { tokens.append((.WhiteSpace, SourceLoc(range: SourceRange.at(pos), string: "\n"))) } // if not multi line, add a new line token after it
                     continue
                 }
                 addChar()
@@ -353,7 +354,7 @@ extension Lexer {
                 try consumeChar()
                 try lexNumber()
                 continue
-
+                
             case (_, "/") where charPtrSafe(+1) == "/": // new comment
                 context = .Comment(false)
                 try consumeChar(2)
