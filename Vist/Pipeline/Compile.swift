@@ -216,7 +216,6 @@ func compileDocuments(fileNames: [String],
             assembleTask.waitUntilExit()
         }
         else {
-            
             /// link file to stdlib and compile
             let compileTask = NSTask()
             compileTask.currentDirectoryPath = currentDirectory
@@ -258,10 +257,6 @@ func compileDocuments(fileNames: [String],
             }
             
         }
-        
-        
-        
-        
         
 }
 

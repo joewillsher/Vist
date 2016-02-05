@@ -29,9 +29,15 @@ final class Tests : XCTestCase {
     }
 }
 
+/// Tests regarding runtime performance
+final class RuntimePerformanceTests : XCTestCase {
+    
+}
+
 /// Testing building the stdlib & runtime
 ///
 final class CoreTests : XCTestCase {
+    
 }
 
 
@@ -98,7 +104,6 @@ extension Tests {
             XCTFail("Compilation failed  with error:\n\(error)\n\n")
         }
     }
-
     
     /// Function.vist
     ///
@@ -114,8 +119,36 @@ extension Tests {
             XCTFail("Compilation failed  with error:\n\(error)\n\n")
         }
     }
-
+    
 }
+
+
+extension RuntimePerformanceTests {
+    
+    func testLoop() {
+        
+        let fileName = "LoopPerf"
+        do {
+            try compileWithOptions(["-O", "-build-only", "\(fileName).vist"], inDirectory: testDir)
+        }
+        catch {
+            XCTFail("Compilation failed  with error:\n\(error)\n\n")
+        }
+        
+        measureBlock {
+            let runTask = NSTask()
+            runTask.currentDirectoryPath = testDir
+            runTask.launchPath = "\(testDir)/\(fileName)"
+            runTask.standardOutput = NSFileHandle.fileHandleWithNullDevice()
+
+            runTask.launch()
+            runTask.waitUntilExit()
+        }
+    }
+    
+}
+
+
 
 
 extension CoreTests {

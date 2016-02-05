@@ -676,9 +676,7 @@ extension ConditionalStmt : IRGenerator {
             LLVMPositionBuilderAtEnd(builder, ifIn)
             
             if let cond = cond { //if statement, make conditonal jump
-                
                 let v = try cond.load("value", type: statement.condition?._type, builder: builder)
-                
                 LLVMBuildCondBr(builder, v, block, ifOut)
             }
             else { // else statement, uncondtional jump
@@ -790,7 +788,7 @@ extension ForInLoopStmt : IRGenerator {
         // gen the IR for the inner block
         let loopCountInt = stdIntType.initialiseWithBuiltin(loopCount, module: module, builder: builder, irName: name)
         let loopVariable = StackVariable(val: loopCountInt, builder: builder)
-        let loopStackFrame = StackFrame(block: loopHeader, vars: [name: loopVariable], function: stackFrame.function, parentStackFrame: stackFrame)
+        let loopStackFrame = StackFrame(block: loopBody, vars: [name: loopVariable], function: stackFrame.function, parentStackFrame: stackFrame)
         
         // Generate loop body
         LLVMBuildBr(builder, loopBody)

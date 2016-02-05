@@ -1,0 +1,10 @@
+
+
+for i in 0 ... 10000000 do
+    if i % 3 == 0 do
+        print i * 3
+    else if i % 1000 == 0 do
+        print 1000000
+    else do
+        print i
+
