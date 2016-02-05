@@ -164,11 +164,16 @@ bool StdLibInline::runOnFunction(Function &function) {
                 returnValueStorage = builder.CreateAlloca(returnType);
             
             // split the current bb, and do all temp work in `inlinedBlock`
-            BasicBlock *rest = basicBlock.splitBasicBlock(call, Twine(basicBlock.getName() + ".rest"));
+            BasicBlock *rest = basicBlock.splitBasicBlock(call, Twine("inlined." + calledFunction->getName() + "." + calledFunction->getEntryBlock().getName()));
             BasicBlock *inlinedBlock = BasicBlock::Create(context,
-                                                          Twine("inlined." + calledFunction->getName() + "." + calledFunction->getEntryBlock().getName()),
+                                                          Twine("rest." + calledFunction->getName() + "." + calledFunction->getEntryBlock().getName()),
                                                           &function,
                                                           rest);
+            
+            // replace the target of the branch inst at the end of `basicBlock`
+            // with the inlined block, not the rest.
+            auto *brInst = dyn_cast<BranchInst>(&basicBlock.back());
+            brInst->setSuccessor(0, inlinedBlock);
             
             // finalise -- store result in return val, and remove call from bb
             builder.SetInsertPoint(rest, rest->begin()); // start of `rest`
@@ -187,10 +192,9 @@ bool StdLibInline::runOnFunction(Function &function) {
                 i++;
             }
             
-            basicBlock.replaceSuccessorsPhiUsesWith(rest);
-            
-            rest->replaceAllUsesWith(inlinedBlock); // move predecessors into `inlinedBlock`
             builder.SetInsertPoint(inlinedBlock);   // add IR code here
+            
+            basicBlock.replaceSuccessorsPhiUsesWith(rest); //
             
             
             unsigned fnBBcount = 0;
@@ -266,14 +270,11 @@ bool StdLibInline::runOnFunction(Function &function) {
                         builder.Insert(newInst, inst.getName());
                         inst.replaceAllUsesWith(newInst);
                     }
-                    
-                    
                 }
-                
             }
-
-            calledFunction->dropAllReferences();
             
+            // remove refs to calls and
+            calledFunction->dropAllReferences();
             call->dropAllReferences();
             call->removeFromParent();
             
@@ -294,7 +295,7 @@ bool StdLibInline::runOnFunction(Function &function) {
                 proto->dropAllReferences();
             }
             
-            
+            // call on the rest of the function
             runOnFunction(function);
             return true;
         }

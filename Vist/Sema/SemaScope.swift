@@ -48,7 +48,7 @@ final class SemaScope {
     }
     subscript (type type: String) -> StructType? {
         get {
-            if let t = StdLibFunctions.getStdLibType(type) { return t }
+            if let t = StdLib.getStdLibType(type) { return t }
             if let v = types[type] { return v }
             return parent?[type: type]
         }

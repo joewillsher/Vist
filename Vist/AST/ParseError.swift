@@ -18,6 +18,7 @@ enum ParseError: ErrorType {
     case InvalidIfStatement
     case ObjectNotAllowedInTopLevelOfTypeImpl(Token), NoTypeName
     case NoPrecedenceForOperator, AttrDoesNotHaveParams, CannotChangeOpPrecedence(String, Int)
+    case StdLibExprInvalid
 }
 extension ParseError : CustomStringConvertible {
     
@@ -43,6 +44,7 @@ extension ParseError : CustomStringConvertible {
         case .AttrDoesNotHaveParams: return "Attribute expected param in parentheses"
         case let .CannotChangeOpPrecedence(op, prec): return "Operator '\(op)' has precedence \(prec), which can't be changed"
         case .ExpectedAssignment: return "Expected assignment expression"
+        case .StdLibExprInvalid: return "Stdlib expression involving 'LLVM.' could not be parsed"
         }
         
     }

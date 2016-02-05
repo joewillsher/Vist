@@ -6,20 +6,10 @@ _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	movl	$1, %eax
+	movl	$100, %eax
 	movl	%eax, %edi
 	popq	%rbp
 	jmp	__$print_i64            ## TAILCALL
-
-	.globl	__StackOf2_S.i64
-	.align	4, 0x90
-__StackOf2_S.i64:                       ## @_StackOf2_S.i64
-## BB#0:                                ## %entry
-	pushq	%rbp
-	movq	%rsp, %rbp
-	movq	%rdi, %rax
-	popq	%rbp
-	retq
 
 
 .subsections_via_symbols

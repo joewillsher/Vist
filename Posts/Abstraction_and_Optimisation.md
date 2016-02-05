@@ -2,7 +2,7 @@
 
 [Like Swift](http://arstechnica.com/apple/2014/10/os-x-10-10/22/), Vist tries to keep the standard library defined separately from the compiler; this allows the language implementation to be separated from its compilation which while theoretically more elegant, imposes implementation obstacles. The difficulty here is maintaining performance—I need to guarantee that calls to these functions will be transformed into the native calls and that they will be inlined *as early as possible*, so LLVM can work its magic.
 
-The standard library has access to a special set of native functions and types with prefix `LLVM.` For example, the standard library’s `+` operator is [defined as](../Vist/stdlib/stdlib.vist):
+The standard library has access to a special set of native functions and types with prefix `LLVM.` For example, the standard library’s `+` operator is [defined as](../Vist/stdlib/stdlib.vist)
 
 ```swift
 @inline @operator(80)
@@ -13,7 +13,7 @@ func + :: Int Int -> Int = (a b) {
 }
 ```
 
-The call to `LLVM.i_add` returns a tuple of type `(Int Bool)`—the second element is used as a check for overflow, which is done by a call to the stdlib’s `condFail` function. Then the result (of type LLVM.Int64) is wrapped in an Int type using `Int`’s initialiser.
+The call to `LLVM.i_add` returns a tuple of type `(LLVM.Int LLVM.Bool)`—the second element is used as a check for overflow, which is done by a call to the stdlib’s `condFail` function. Then the result (of type LLVM.Int64) is wrapped in an Int type using `Int`’s initialiser.
 
 (`@inline` declares that this function requires being inlined, and `@operator(80)` declares that `+` is an infix operator with precedence 80.)
 

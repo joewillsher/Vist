@@ -328,7 +328,7 @@ extension Parser {
         case .Period? where token == "LLVM" && isStdLib:
             getNextToken(2) // eat 'LLVM.'
             
-            guard case .Identifier(let id) = currentToken else { fatalError() }
+            guard case .Identifier(let id) = currentToken else { throw error(ParseError.StdLibExprInvalid, userVisible: false) }
             return try parseIdentifierExpr("LLVM.\(id)")
             
         case .Period?: // property or fn

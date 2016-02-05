@@ -14,7 +14,7 @@ extension COpaquePointer {
             return try stdType.loadPropertyNamed(property, from: self, builder: builder, irName: irName)
         }
         else {
-            fatalError("not a struct type")
+            throw error(IRError.NotStructType, userVisible: false)
         }
     }
 }
@@ -37,7 +37,7 @@ extension StructType {
         let tys = members.map { $0.1 }
         let initName = name.mangle(FnType(params: tys, returns: BuiltinType.Void/*we con’t care what this is, its not used in mangling*/))
         
-        guard let (type, initialiser) = StdLibFunctions.getFunctionIR(name, args: tys, module: module) where initialiser != nil else { return nil }
+        guard let (type, initialiser) = StdLib.getFunctionIR(name, args: tys, module: module) where initialiser != nil else { return nil }
         
         let args = val.ptr()
         defer { args.dealloc(members.count) }

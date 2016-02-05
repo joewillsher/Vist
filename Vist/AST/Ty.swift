@@ -8,22 +8,6 @@
 
 protocol Ty : Printable, CustomDebugStringConvertible {
     func ir() -> LLVMTypeRef
-    
-    var isStdBool: Bool { get }
-    var isStdInt: Bool { get }
-    var isStdRange: Bool { get }
-}
-
-extension Ty {
-    var isStdBool: Bool {
-        return false
-    }
-    var isStdInt: Bool {
-        return false
-    }
-    var isStdRange: Bool {
-        return false
-    }
 }
 
 extension BuiltinType : Equatable {}

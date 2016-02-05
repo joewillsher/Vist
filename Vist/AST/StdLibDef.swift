@@ -6,13 +6,13 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-final class StdLibFunctions {
+final class StdLib {
     
-    private static let IntType =    StructType(members: [("value", BuiltinType.Int(size: 64), true)],       methods: [], name: "Int")
-    private static let BoolType =   StructType(members: [("value", BuiltinType.Bool, true)],                methods: [], name: "Bool")
-    private static let DoubleType = StructType(members: [("value", BuiltinType.Float(size: 64), true)],     methods: [], name: "Double")
-    private static let RangeType =  StructType(members: [("start", IntType, true), ("end", IntType, true)], methods: [], name: "Range")
-    private static let VoidType =   BuiltinType.Void
+    static let IntType =    StructType(members: [("value", BuiltinType.Int(size: 64), true)],       methods: [], name: "Int")
+    static let BoolType =   StructType(members: [("value", BuiltinType.Bool, true)],                methods: [], name: "Bool")
+    static let DoubleType = StructType(members: [("value", BuiltinType.Float(size: 64), true)],     methods: [], name: "Double")
+    static let RangeType =  StructType(members: [("start", IntType, true), ("end", IntType, true)], methods: [], name: "Range")
+    static let VoidType =   BuiltinType.Void
     
     private static let types: [StructType] = [IntType, BoolType, DoubleType, RangeType]
     
@@ -114,7 +114,7 @@ final class StdLibFunctions {
     ///
     static func getFunctionIR(name: String, args: [Ty], module: LLVMModuleRef) -> (FnType, LLVMValueRef)? {
        
-        if let (mangledName, type) = StdLibFunctions.getStdLibFunctionWithInitInfo(name, args: args) {
+        if let (mangledName, type) = StdLib.getStdLibFunctionWithInitInfo(name, args: args) {
             let functionType = type.ir()
             
             let found = LLVMGetNamedFunction(module, mangledName)

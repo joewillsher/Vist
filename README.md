@@ -54,7 +54,7 @@ print (add 10 (factorial 10))	// > 3628810
 
 Vist supports declaring types with *stored properties* and *methods*
 ```swift
-type Baz {
+type Foo {
     var a: Int
     let b: Int
     
@@ -65,8 +65,8 @@ type Baz {
 
 Vist automatically constructs a *memberwise initialiser* for a type. This is a constructor function which takes a list of parameters in the order of the type’s stored properties
 ```swift
-let bazInstance = Baz 1 4
-let sum = bazInstance.sumAndTimesBy 2
+let fooInstance = Foo 1 4
+let sum = fooInstance.sumAndTimesBy 2
 print sum // > 10
 ```
 

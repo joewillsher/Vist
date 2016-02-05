@@ -10,7 +10,7 @@
 typealias StructMember = (name: String, type: Ty, mutable: Bool)
 typealias StructMethod = (name: String, type: FnType)
 
-final class StructType: Ty {
+final class StructType : Ty {
     let name: String
     let members: [StructMember]
     var methods: [StructMethod]
@@ -40,17 +40,6 @@ final class StructType: Ty {
     
     static func named(n: String) -> StructType {
         return StructType(members: [], methods: [], name: n)
-    }
-    
-    var isStdBool: Bool {
-        return name == "Bool" && members[0].name == "value"
-    }
-    var isStdInt: Bool {
-        return name == "Int" && members[0].name == "value"
-    }
-    var isStdRange: Bool {
-        // TODO: make these `contains` functions indep of layout
-        return name == "Range" && members[0].name == "start" && members[1].name == "end"
     }
 }
 

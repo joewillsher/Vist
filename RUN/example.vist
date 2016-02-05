@@ -1,14 +1,6 @@
 
+let a = 3
+
+if a < 2 * 100 do print 100
 
 
-type StackOf2 {
-    var a: Int
-    
-    func sum :: () -> Int = do return a
-}
-
-let a = StackOf2 1
-
-let q = a.sum ()
-
-print q q

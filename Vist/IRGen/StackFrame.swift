@@ -63,7 +63,7 @@ final class StackFrame {
     }
     
     func type(name: String) throws -> StructType {
-        if let t = StdLibFunctions.getStdLibType(name) { return t }
+        if let t = StdLib.getStdLibType(name) { return t }
         if let v = types[name] { return v }
         
         let inParent = try parentStackFrame?.type(name)
@@ -72,6 +72,7 @@ final class StackFrame {
         throw error(IRError.NoType(name))
     }
     
+    /// Whether this module is the standard library
     var isStdLib: Bool {
         return parentStackFrame?.isStdLib ?? _isStdLib!
     }

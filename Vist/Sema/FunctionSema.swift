@@ -19,7 +19,7 @@ private func getType<
         
         if let builtin = BuiltinType(ty.name)                       { return builtin as Ty }
         else if let i = tys.indexOf({ ty.name == $0.name })         { return tys[i] as Ty }
-        else if let std = StdLibFunctions.getStdLibType(ty.name)    { return std }
+        else if let std = StdLib.getStdLibType(ty.name)    { return std }
         else                                                        { throw error(SemaError.TypeNotFound) }
     }
 }
@@ -123,7 +123,7 @@ extension FunctionCallExpr : ExprTypeProvider {
         let fnType: FnType
         
         // if its in the stdlib return it
-        if let (mangledName, type) = StdLibFunctions.getStdLibFunction(self.name, args: params) where !scope.isStdLib {
+        if let (mangledName, type) = StdLib.getStdLibFunction(self.name, args: params) where !scope.isStdLib {
             self.mangledName = mangledName
             fnType = type
         }

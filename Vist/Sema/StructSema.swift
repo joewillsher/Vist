@@ -40,7 +40,7 @@ extension StructExpr : ExprTypeProvider {
             initialisers.append(implicit)
         }
         
-        let memberwise = memberwiseInitialiser()
+        let memberwise = try memberwiseInitialiser()
         initialisers.append(memberwise)
         
         for i in initialisers {

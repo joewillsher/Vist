@@ -25,11 +25,12 @@ class Tests : XCTestCase {
         pipe = NSPipe()
     }
     
-    // MARK: Test cases
+    // MARK: Test Cases
     
+    /// tests `if` statements & variables
+    ///
     func testControlFlow() {
         let file = "Control.vist"
-        // url://rile.d
         do {
             try compileWithOptions(["-O", file], inDirectory: testDir, out: pipe)
             XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file))
@@ -40,10 +41,13 @@ class Tests : XCTestCase {
         }
     }
     
-    func testForInLoops() {
+    /// tests `for in` loops and `while` loops
+    /// tests mutation
+    ///
+    func testLoops() {
         let file = "Loops.vist"
         do {
-            try compileWithOptions([file], inDirectory: testDir, out: pipe)
+            try compileWithOptions(["-O", file], inDirectory: testDir, out: pipe)
             XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file))
         }
         catch {
@@ -52,6 +56,9 @@ class Tests : XCTestCase {
         }
     }
     
+    /// tests type sytem
+    /// tests default initialisers & methods
+    ///
     func testStackOf2Type() {
         let file = "StackOf2Type.vist"
         do {
@@ -64,18 +71,20 @@ class Tests : XCTestCase {
         }
     }   
     
-    func testArray() {
-        let file = "Array.vist"
-        do {
-            try compileWithOptions(["-O", file], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file))
-        }
-        catch {
-            print(error)
-            XCTFail("Compilation failed")
-        }
-    }
+//    func testArray() {
+//        let file = "Array.vist"
+//        do {
+//            try compileWithOptions([file], inDirectory: testDir, out: pipe)
+//            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file))
+//        }
+//        catch {
+//            print(error)
+//            XCTFail("Compilation failed")
+//        }
+//    }
 
+    /// Runs a compilation of the standard library
+    ///
     func testStdLibCompile() {
         do {
             try compileWithOptions(["-O", "-build-stdlib"], inDirectory: stdlibDir, out: nil)

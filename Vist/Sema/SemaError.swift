@@ -25,6 +25,7 @@ enum SemaError : ErrorType {
     case NoStdBoolType, NoStdIntType, NotTypeProvider, NoTypeForStruct, NoTypeForTuple
     case StructPropertyNotTyped(type: String, property: String), StructMethodNotTyped(type: String, methodName: String), InitialiserNotAssociatedWithType
     case TypeNotFound, ParamsNotTyped, IntegerNotTyped, BoolNotTyped
+    case NoMemberwiseInit
 }
 
 extension SemaError : CustomStringConvertible {
@@ -85,6 +86,7 @@ extension SemaError : CustomStringConvertible {
         case .ParamsNotTyped: return "Params not typed"
         case .IntegerNotTyped: return "Integer literal not typed"
         case .BoolNotTyped: return "Bool literal not typed"
+        case .NoMemberwiseInit: return "Could not construct memberwise initialiser"
         }
     }
 }

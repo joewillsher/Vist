@@ -14,7 +14,7 @@
 extension IntegerLiteral : ExprTypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
-        guard let ty = scope[type: "Int"] else { throw error(SemaError.NoStdIntType, userVisible: false) }
+        let ty = StdLib.IntType
         self.type = ty
         return ty
     }
@@ -23,7 +23,7 @@ extension IntegerLiteral : ExprTypeProvider {
 extension FloatingPointLiteral : ExprTypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
-        let ty = BuiltinType.Float(size: size) // TODO: Float stdlib
+        let ty = StdLib.DoubleType
         self.type = ty
         return ty
     }
@@ -32,7 +32,7 @@ extension FloatingPointLiteral : ExprTypeProvider {
 extension BooleanLiteral : ExprTypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
-        guard let ty = scope[type: "Bool"] else { throw error(SemaError.NoStdBoolType, userVisible: false) }
+        let ty = StdLib.BoolType
         self.type = ty
         return ty
     }
@@ -136,10 +136,10 @@ extension BinaryExpr : ExprTypeProvider {
         
         let args = [lhs, rhs]
         
-        guard let params = try args.stableOptionalMap({ try $0.llvmType(scope) }) else { fatalError("params not typed") }
+        guard let params = try args.stableOptionalMap({ try $0.llvmType(scope) }) else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
         let fnType: FnType
         
-        if let (mangledName, stdLibType) = StdLibFunctions.getStdLibFunction(op, args: params) where !scope.isStdLib {
+        if let (mangledName, stdLibType) = StdLib.getStdLibFunction(op, args: params) where !scope.isStdLib {
             self.mangledName = mangledName
             fnType = stdLibType
             
@@ -252,7 +252,7 @@ extension ArraySubscriptExpr : ExprTypeProvider {
         guard case let v as VariableExpr = arr, case BuiltinType.Array(let type, _)? = scope[variable: v.name] else { throw error(SemaError.CannotSubscriptNonArrayVariable) }
         
         // gen type for subscripting value
-        guard case BuiltinType.Int = try index.llvmType(scope) else { throw error(SemaError.NonIntegerSubscript) }
+        guard try index.llvmType(scope) == StdLib.IntType else { throw error(SemaError.NonIntegerSubscript) }
         
         // assign type to self and return
         self._type = type

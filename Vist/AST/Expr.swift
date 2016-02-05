@@ -66,7 +66,7 @@ final class FloatingPointLiteral : SizedExpr, Typed, ExplicitlyTyped {
         self.val = val
     }
     
-    var type: BuiltinType? = nil
+    var type: StructType? = nil
 }
 
 final class IntegerLiteral : SizedExpr, Typed, ExplicitlyTyped {

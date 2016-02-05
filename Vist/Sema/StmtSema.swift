@@ -47,13 +47,17 @@ extension ElseIfBlockStmt : StmtTypeProvider {
         
         // get condition type
         let c = try condition?.llvmType(scope)
-        guard c?.isStdBool ?? true else { throw error(SemaError.NonBooleanCondition) }
         
         // gen types for cond block
         for exp in block.exprs {
             try exp.llvmType(scope)
         }
+
+        // if no condition we're done
+        if condition == nil { return }
         
+        // otherwise make sure its an Int
+        guard let condition = c where condition == StdLib.BoolType else { throw error(SemaError.NonBooleanCondition) }
     }
     
 }
@@ -72,10 +76,10 @@ extension ForInLoopStmt : StmtTypeProvider {
         let loopScope = SemaScope(parent: scope, returnType: scope.returnType)
         
         // add bound name to scopes
-        loopScope[variable: binded.name] = scope[type: "Int"]
+        loopScope[variable: binded.name] = StdLib.IntType
         
         // gen types for iterator
-        guard try iterator.llvmType(scope).isStdRange else { throw error(SemaError.NotRangeType) }
+        guard try iterator.llvmType(scope) == StdLib.RangeType else { throw error(SemaError.NotRangeType) }
         
         // parse inside of loop in loop scope
         for exp in block.exprs {
@@ -94,8 +98,7 @@ extension WhileLoopStmt : StmtTypeProvider {
         let loopScope = SemaScope(parent: scope, returnType: scope.returnType)
         
         // gen types for iterator
-        let it = try condition.llvmType(scope)
-        guard it.isStdBool else { throw error(SemaError.NonBooleanCondition) }
+        guard try condition.llvmType(scope) == StdLib.BoolType else { throw error(SemaError.NonBooleanCondition) }
         
         // parse inside of loop in loop scope
         for exp in block.exprs {

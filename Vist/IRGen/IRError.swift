@@ -16,7 +16,7 @@ enum IRError : ErrorType {
     
     case CannotLookupPropertyFromNonVariable, NotGenerator(ASTNode.Type), NoParentType
     
-    case NotTyped
+    case NotTyped, NotStructType
 }
 
 extension IRError : CustomStringConvertible {
@@ -46,6 +46,7 @@ extension IRError : CustomStringConvertible {
         case let .NotGenerator(t): return "'\(t)' is not an IR generator"
         case .NoParentType: return "Parent type is not a struct or does not exist"
         case .NotTyped: return "Expression is not typed"
+        case .NotStructType: return "Expression was not a struct type"
         }
     }
 }

@@ -1,6 +1,4 @@
 
-
-
 // type foo, { i64 i64 } type
 // implicit memberwise initialser is added
 type StackOf2 {

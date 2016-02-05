@@ -86,13 +86,10 @@ void performLLVMOptimisations(Module *Module, int optLevel, bool isStdLib) {
         FunctionPasses.add(createConstantPropagationPass());
     }
     else {
-//        FunctionPasses.add(createPromoteMemoryToRegisterPass());
+        FunctionPasses.add(createPromoteMemoryToRegisterPass());
     }
     PMBuilder.populateFunctionPassManager(FunctionPasses);
-    
-    // TODO: Dont run all optimisations in -O0
-    // TODO: also make it so you *can* run this and not the command line `opt` tool
-    
+        
     FunctionPasses.doInitialization();
     for (auto I = Module->begin(), E = Module->end(); I != E; ++I)
         if (!I->isDeclaration())
@@ -103,21 +100,8 @@ void performLLVMOptimisations(Module *Module, int optLevel, bool isStdLib) {
     legacy::PassManager ModulePasses;
     PMBuilder.populateModulePassManager(ModulePasses);
     
-//    ModulePasses.add(createVerifierPass());
-    
-    /// add custom module passes here
-    // eg... ModulePasses.add(<#createAnyModulePass()#>);
-    
     // then run optimisations
     ModulePasses.run(*Module);
-    
-//    if (!isStdLib) {
-//        legacy::PassManager LTOPasses;
-//        /// add custom link time optimisations
-//        //    LTOPasses.addLTOOptimizationPasses(<#createAnyLTOPass()#>);
-//        PMBuilder.populateLTOPassManager(LTOPasses);
-//        LTOPasses.run(*Module);
-//    }
 }
 
 /// Called from swift code

@@ -311,11 +311,11 @@ extension BinaryExpr : IRGenerator {
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
         let lIR = try lhs.nodeCodeGen(stackFrame), rIR = try rhs.nodeCodeGen(stackFrame)
-        guard let argTypes = [lhs, rhs].stableOptionalMap({ $0._type }), fnType = self.fnType else { fatalError("args not typed") }
+        guard let argTypes = [lhs, rhs].stableOptionalMap({ $0._type }), fnType = self.fnType else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
         
         let fn: LLVMValueRef
         
-        if let (type, fnIR) = StdLibFunctions.getFunctionIR(op, args: argTypes, module: module) {
+        if let (type, fnIR) = StdLib.getFunctionIR(op, args: argTypes, module: module) {
             fn = fnIR
         }
         else {
@@ -371,7 +371,7 @@ extension FunctionCallExpr : IRGenerator {
         let fn: LLVMValueRef
         
         // if its in the stdlib return it
-        if let (type, f) = StdLibFunctions.getFunctionIR(name, args: argTypes, module: module) {
+        if let (type, f) = StdLib.getFunctionIR(name, args: argTypes, module: module) {
             fn = f
             self.fnType = type
         }
@@ -381,7 +381,7 @@ extension FunctionCallExpr : IRGenerator {
         }
         
 //        let ty = try stackFrame.functionType(mangledName)
-        guard let fnType = self.fnType else { fatalError("Function call not typed") }
+        guard let fnType = self.fnType else { throw error(IRError.NotTyped, userVisible: false) }
         
         // arguments
         let argBuffer = args.ptr()
