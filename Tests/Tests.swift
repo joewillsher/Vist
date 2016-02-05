@@ -39,58 +39,76 @@ final class CoreTests : XCTestCase {
 
 extension Tests {
     
-    /// tests `if` statements & variables
+    /// ControlFlow.vist
+    ///
+    /// tests `if` statements, variables
     ///
     func testControlFlow() {
         let file = "Control.vist"
         do {
             try compileWithOptions(["-O", file], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file), "Invalid output")
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed  with error:\n\(error)\n\n")
         }
     }
     
-    /// tests `for in` loops and `while` loops
+    /// Loops.vist
     ///
-    /// tests mutation
+    /// tests `for in` loops, `while` loops, mutation
     ///
     func testLoops() {
         let file = "Loops.vist"
         do {
             try compileWithOptions(["-O", file], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file), "Invalid output")
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed  with error:\n\(error)\n\n")
         }
     }
     
-    /// tests type sytem
+    /// Type.vist
     ///
-    /// tests default initialisers & methods
+    /// tests type sytem, default initialisers, & methods
     ///
-    func testStackOf2Type() {
-        let file = "StackOf2Type.vist"
+    func testType() {
+        let file = "Type.vist"
         do {
             try compileWithOptions(["-O", file], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file), "Invalid output")
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed  with error:\n\(error)\n\n")
         }
     }   
     
+    /// IntegerOps.vist
+    ///
     /// tests integer operations
     ///
     func testIntegerOps() {
         let file = "IntegerOps.vist"
         do {
             try compileWithOptions(["-O", file], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file), "Invalid output")
-            // TODO: locate part of file not correct
-            // TODO: \ to escape
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file), "Incorrect output")
+        }
+        catch {
+            XCTFail("Compilation failed  with error:\n\(error)\n\n")
+        }
+    }
+
+    
+    /// Function.vist
+    ///
+    /// tests function decls and calling, tuples & type param labels
+    ///
+    func testFunctions() {
+        let file = "Function.vist"
+        do {
+            try compileWithOptions(["-O", file], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed  with error:\n\(error)\n\n")
@@ -110,10 +128,14 @@ extension CoreTests {
             XCTAssertTrue(NSFileManager.defaultManager().fileExistsAtPath("\(runtimeDir)/runtime.bc"))
         }
         catch {
-            XCTFail("Stdlib build failed with error:\n\(error)")
+            XCTFail("Stdlib build failed with error:\n\(error)\n\n")
         }
     }
     
+    /// Builds the runtime
+    ///
+    /// Tests the compile function (not vist compiler)
+    ///
     func testRuntimeBuild() {
         do {
             try compileWithOptions(["-build-runtime"], inDirectory: runtimeDir)
@@ -121,7 +143,7 @@ extension CoreTests {
             XCTAssertTrue(NSFileManager.defaultManager().fileExistsAtPath("\(stdlibDir)/stdlib.o")) // file used by linker
         }
         catch {
-            XCTFail("Runtime build failed with error:\n\(error)")
+            XCTFail("Runtime build failed with error:\n\(error)\n\n")
         }
     }
     

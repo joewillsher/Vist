@@ -132,18 +132,18 @@ final class Parser {
     /// `add a b` parses as `add(a, b)` not `parse(a(b))`
     ///
     /// This flag is true if the parser is in a parameter list where identifiers are assumed to be vars not funcs
-    private var inParameterList: Bool {
+    private var inTuple: Bool {
         get {
-            return _inParameterList.last ?? false
+            return _inTuple.last ?? false
         }
         set {
-            _inParameterList.append(newValue)
+            _inTuple.append(newValue)
         }
     }
-    private var _inParameterList: [Bool] = [false]
+    private var _inTuple: [Bool] = [false]
     
-    private func revertParameterListState() {
-        _inParameterList.removeLast()
+    private func revertInTupleState() {
+        _inTuple.removeLast()
     }
 
 }
@@ -242,21 +242,42 @@ extension Parser {
         return TupleExpr(elements: elements)
     }
     
-    // TODO: Tuple parsing seperate to parens
-    //    private func parseTupleExpr() throws -> TupleExpr {
-    //
-    //    }
     
     /// Guarantees if tuple is true, the return type is a TupleExpression
-    private func parseParenExpr(tuple tuple: Bool) throws -> Expr {
+    private func parseParenExpr(wrapInTuple tuple: Bool) throws -> Expr {
         
+        // if in paren Expr we allow function parameters to be treated as functions not vars
+        inTuple = false
+        defer { revertInTupleState() }
+
         guard case .OpenParen = currentToken else { throw error(ParseError.ExpectedParen, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat `(`
         
+        if case .CloseParen = currentToken {
+            getNextToken() // eat `)`
+            return TupleExpr.void()
+        }
+        
         var exps: [Expr] = []
+        
+        let head = try parseOperatorExpr()
+        exps.append(head)
+        
+        if case .Comma = currentToken {
+            revertInTupleState()
+            inTuple = true
+            getNextToken()
+        }
         
         while case let a = currentToken where a.isValidParamToken {
             exps.append(try parseOperatorExpr())
+            
+            if inTuple {
+                if case .Comma = currentToken {
+                    getNextToken()
+                }
+                else { break }
+            }
         }
         guard case .CloseParen = currentToken else { throw error(ParseError.ExpectedParen, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat `)`
@@ -273,13 +294,13 @@ extension Parser {
         var exps: [Expr] = []
         
         considerNewLines = true
-        inParameterList = true
+        inTuple = true
         
         while case let a = currentToken where a.isValidParamToken {
             exps.append(try parseOperatorExpr())
         }
         
-        revertParameterListState()
+        revertInTupleState()
         resetConsiderNewLines()
         
         return exps.isEmpty ? TupleExpr.void() : TupleExpr(elements: exps)
@@ -306,7 +327,7 @@ extension Parser {
             getNextToken(3) // eat 'func ()'
             return FunctionCallExpr(name: token, args: TupleExpr.void())
             
-        case let u? where u.isValidParamToken && !inParameterList:
+        case let u? where u.isValidParamToken && !inTuple:
             getNextToken() // eat 'identifier'
             
             return FunctionCallExpr(name: token, args: try parseParamExpr())
@@ -358,7 +379,7 @@ extension Parser {
             // property or method
             
             switch inspectNextToken() {
-            case let u? where u.isValidParamToken && !inParameterList: // method call
+            case let u? where u.isValidParamToken && !inTuple: // method call
                 getNextToken() // eat foo
                 
                 if case .OpenParen = currentToken {   // simple itentifier () call
@@ -431,13 +452,9 @@ extension Parser {
             return try parseBooleanExpr(b)
             
         case .OpenParen:
-            // if in paren Expr we allow function parameters to be treated as functions not vars
-            inParameterList = false
-            defer { revertParameterListState() }
-
-            return try parseParenExpr(tuple: false)
+            return try parseParenExpr(wrapInTuple: false)
             
-        case .OpenBrace, .Do /*, .OpenParen */: // FIXME: closures want to be abel to do `let a = (u) do print u`
+        case .OpenBrace, .Do /*, .OpenParen */: // FIXME: closures want to be able to do `let a = (u) do print u`
             let block = try parseBlockExpr()
             let closure = ClosureExpr(exprs: block.exprs, params: block.variables.map { $0.name })
             return closure
@@ -982,7 +999,7 @@ extension Parser {
         case .Var:                  return try parseVariableAssignmentMutable(true)
         case .Func:                 return try parseFuncDeclaration()
         case .Return:               return try parseReturnExpr()
-        case .OpenParen:            return try parseParenExpr(tuple: true)
+        case .OpenParen:            return try parseParenExpr(wrapInTuple: true)
         case .OpenBrace:            return try parseBraceExpr()
         case .Identifier(let str):  return try parseIdentifierExpr(str)
         case .InfixOperator:        return try parseOperatorExpr()

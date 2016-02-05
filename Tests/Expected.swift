@@ -14,12 +14,8 @@ func expectedTestCaseOutput(file file: String) -> String? {
     
     let comments = toks
         .flatMap { tok -> String? in if case let .Comment(c) = tok.0 { return c } else { return nil } }
-        .flatMap { comment -> String? in
-            if comment.hasPrefix(" test: ") { return comment
-                .stringByReplacingOccurrencesOfString(" test: ", withString: "")
-                .stringByReplacingOccurrencesOfString(" ", withString: "\n")
-            } else { return nil }
-    }
+        .filter { comment in comment.hasPrefix(" test: ") }
+        .flatMap { comment in comment.stringByReplacingOccurrencesOfString(" test: ", withString: "").stringByReplacingOccurrencesOfString(" ", withString: "\n") }
     
     return comments.joinWithSeparator("\n") + "\n"
 }

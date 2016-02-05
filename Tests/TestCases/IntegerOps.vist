@@ -7,5 +7,5 @@ print 13 % 3 // test: 1
 print 100 * 100 * 100 // test: 1000000
 print 100 < 100 // test: false
 print 100 >= 100 // test: true
-
+print (10 - 2 * 3) == 4 // test: true
 
