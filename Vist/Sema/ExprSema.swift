@@ -112,8 +112,8 @@ extension VariableDecl : DeclTypeProvider {
             throw error(SemaError.InvalidRedeclaration(name, value))
         }
         
-        // get any explicit type
-        let explicitType = BuiltinType(aType ?? "") as? Ty ?? scope[type: aType ?? ""]
+        // if provided, get the explicit type
+        let explicitType = try aType?.type()
         
         // scope for declaration -- not a return type and sets the `semaContext` to the explicitType
         let declScope = SemaScope(parent: scope, returnType: nil, semaContext: explicitType)

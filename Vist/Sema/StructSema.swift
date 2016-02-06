@@ -64,7 +64,7 @@ extension InitialiserDecl : DeclTypeProvider {
             let parentProperties = parent?.properties
             else { throw error(SemaError.InitialiserNotAssociatedWithType) }
         
-        let params = try ty.params(scope.allTypes)
+        let params = try ty.params(scope)
         
         let t = FnType(params: params, returns: parentType)
         self.mangledName = parentName.mangle(t)
@@ -85,10 +85,8 @@ extension InitialiserDecl : DeclTypeProvider {
             initScope[variable: p.name] = (type: t, mutable: true)
         }
         
-        for (p, type) in zip(impl.params.elements, try ty.params(scope.allTypes)) {
-            
-            guard case let param as ValueType = p else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
-            initScope[variable: param.name] = (type: type, mutable: false)
+        for (p, type) in zip(impl.params, try ty.params(scope)) {
+            initScope[variable: p] = (type: type, mutable: false)
         }
         
         for ex in impl.body.exprs {

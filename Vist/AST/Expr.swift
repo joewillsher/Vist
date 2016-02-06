@@ -16,9 +16,9 @@ protocol TypedExpr : Expr, Typed {}
 
 final class BlockExpr : TypedExpr, ScopeNode {
     var exprs: [ASTNode]
-    var variables: [ValueType]
+    var variables: [String]
     
-    init(exprs: [ASTNode], variables: [ValueType] = []) {
+    init(exprs: [ASTNode], variables: [String] = []) {
         self.exprs = exprs
         self.variables = variables
     }
@@ -238,10 +238,10 @@ final class FunctionCallExpr : Expr {
 
 
 final class FunctionImplementationExpr : Expr {
-    let params: TupleExpr
+    let params: [String]
     let body: BlockExpr
     
-    init(params: TupleExpr, body: BlockExpr) {
+    init(params: [String], body: BlockExpr) {
         self.params = params
         self.body = body
     }
@@ -276,17 +276,6 @@ final class ReturnStmt : Stmt {
 
 
 
-final class FunctionType : TypedExpr {
-    let args: TupleExpr
-    let returns: Expr
-    
-    init(args: TupleExpr, returns: Expr) {
-        self.args = args
-        self.returns = returns
-    }
-    
-    var type: FnType? = nil
-}
 
 
 
@@ -409,17 +398,17 @@ struct NullExpr : Expr {
 }
 
 
-// FIXME: find another way to do this
-/// used to lowe type name information
-final class ValueType : Expr {
-    var name: String
-    
-    init(name: String) {
-        self.name = name
-    }
-    
-    var _type: Ty? = nil
-}
+//// FIXME: find another way to do this
+///// used to lowe type name information
+//final class ValueType : Expr {
+//    var name: String
+//    
+//    init(name: String) {
+//        self.name = name
+//    }
+//    
+//    var _type: Ty? = nil
+//}
 
 
 final class TupleExpr : TypedExpr {

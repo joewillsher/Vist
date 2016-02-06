@@ -24,9 +24,9 @@ extension StructExpr {
         }
         
         let block = BlockExpr(exprs: initialisations)
-        let body = FunctionImplementationExpr(params: TupleExpr.void(), body: block)
+        let body = FunctionImplementationExpr(params: [], body: block)
         
-        let ty = FunctionType(args: TupleExpr.void(), returns: ValueType(name: name))
+        let ty = FunctionType(args: .Void, returns: .Type(name))
         
         return InitialiserDecl(ty: ty, impl: body, parent: self)
     }
@@ -35,7 +35,7 @@ extension StructExpr {
     func memberwiseInitialiser() throws -> InitialiserDecl {
         // filter out non initilaised values, return nil if not all values have an initial value
         let names = properties.map { $0.name }
-        guard let types = properties.stableOptionalMap({ $0.value._type?.description })?.map(ValueType.init) else { throw error(SemaError.NoMemberwiseInit, userVisible: false) }
+        guard let types = properties.stableOptionalMap({ $0.value._type?.description }) else { throw error(SemaError.NoMemberwiseInit, userVisible: false) }
         
         var initialisations: [ASTNode] = []
         for (i, name) in names.enumerate() {
@@ -45,13 +45,10 @@ extension StructExpr {
             initialisations.append(m)
         }
         
-        let params = TupleExpr(elements: types.mapAs(Expr))
-        let args = 0.stride(to: params.elements.count, by: 1).map(implicitArgName).map(ValueType.init).mapAs(Expr)
-        
         let block = BlockExpr(exprs: initialisations)
-        let body = FunctionImplementationExpr(params: TupleExpr(elements: args), body: block)
+        let body = FunctionImplementationExpr(params: names, body: block)
         
-        let ty = FunctionType(args: params, returns: ValueType(name: name))
+        let ty = FunctionType(args: DefinedType(types), returns: .Type(name))
         
         return InitialiserDecl(ty: ty, impl: body, parent: self)
     }

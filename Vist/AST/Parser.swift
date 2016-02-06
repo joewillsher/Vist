@@ -196,27 +196,28 @@ extension Parser {
 
 extension Parser {
     
-    ///parses Expr like Int String, of type _identifier _identifier
-    private func parseTypeExpr() throws -> TupleExpr {
+    ///parses Expr like `Int String`
+    ///
+    private func parseTypeExpr() throws -> DefinedType {
         
         // if () type
         if case .OpenParen = currentToken, case .CloseParen = getNextToken() {
             getNextToken() // eat ')'
-            return TupleExpr(elements: [])
+            return DefinedType.Void
         }
         
-        var elements = [Expr]()
+        var elements = [String]()
         loop: while true {
             switch currentToken {
             case let .Identifier(id):
                 
                 // handle native llvm type in stdlib
                 if case .Period? = inspectNextToken(), case .Identifier(let n)? = inspectNextToken(2) where id == "LLVM" && isStdLib {
-                    elements.append(ValueType(name: "LLVM.\(n)"))    // param
+                    elements.append("LLVM.\(n)")    // param
                     getNextToken(3)// eat LLVM.Id
                 }
                 else {
-                    elements.append(ValueType(name: id))    // param
+                    elements.append(id)    // param
                     getNextToken()
                 }
 
@@ -225,11 +226,11 @@ extension Parser {
                 
                 // handle native llvm type in stdlib
                 if case .Period? = inspectNextToken(), case .Identifier(let n)? = inspectNextToken(2) where id == "LLVM" && isStdLib {
-                    elements.append(ValueType(name: "LLVM.\(n)"))    // param
+                    elements.append("LLVM.\(n)")    // param
                     getNextToken(2)// eat LLVM.Id
                 }
                 else {
-                    elements.append(ValueType(name: id))    // param
+                    elements.append(id)    // param
                     getNextToken()
                 }
                 guard case .SqbrClose = getNextToken() else { throw error(ParseError.ExpectedCloseBracket, loc: SourceRange.at(currentPos)) }
@@ -240,7 +241,7 @@ extension Parser {
             }
         }
         
-        return TupleExpr(elements: elements)
+        return DefinedType(elements)
     }
     
     
@@ -463,7 +464,7 @@ extension Parser {
             
         case .OpenBrace, .Do /*, .OpenParen */: // FIXME: closures want to be able to do `let a = (u) do print u`
             let block = try parseBlockExpr()
-            let closure = ClosureExpr(exprs: block.exprs, params: block.variables.map { $0.name })
+            let closure = ClosureExpr(exprs: block.exprs, params: block.variables)
             return closure
 
         case .SqbrOpen:
@@ -609,19 +610,12 @@ extension Parser {
         
         guard case let .Identifier(id) = getNextToken() else { throw error(ParseError.NoIdentifier, loc: rangeOfCurrentToken()) }
         
-        var explicitType: String?
-        if case .Colon = getNextToken(), case let .Identifier(t) = getNextToken() {
-            
-            // handle stdlib case of native types
-            if case .Period? = inspectNextToken(), case .Identifier(let n)? = inspectNextToken(2) where t == "LLVM" && isStdLib {
-                explicitType = "LLVM.\(n)"
-                getNextToken(3) // eat LLVM.Id
-            }
-            else {
-                explicitType = t
-                getNextToken()
-            }
-            
+        let explicitType: DefinedType?
+        if case .Colon = getNextToken() {
+            explicitType = try parseTypeExpr()
+        }
+        else {
+            explicitType = nil
         }
         
         // TODO: Closure declaration parsing
@@ -636,25 +630,25 @@ extension Parser {
         }
         getNextToken() // eat '='
         
-        var value = try parseOperatorExpr()
+        let value = try parseOperatorExpr()
         
-        let type = explicitType ?? (value as? ExplicitlyTyped)?.explicitType
+//        let type = explicitType ?? (value as? ExplicitlyTyped)?.explicitType
         
         // if explicit assignment defines size, add info about this size to object
-        if let ex = explicitType, case var sized as SizedExpr = value  {
-            let s = ex.componentsSeparatedByCharactersInSet(NSCharacterSet.decimalDigitCharacterSet().invertedSet).joinWithSeparator("")
-            
-            if let n = UInt32(s) {
-                sized.size = n
-                value = sized
-            }
-            else if explicitType == "Float" {
-                sized.size = 32
-                value = sized
-            }
-        }
+//        if let ex = explicitType, case var sized as SizedExpr = value  {
+//            let s = ex.componentsSeparatedByCharactersInSet(NSCharacterSet.decimalDigitCharacterSet().invertedSet).joinWithSeparator("")
+//            
+//            if let n = UInt32(s) {
+//                sized.size = n
+//                value = sized
+//            }
+//            else if explicitType == "Float" {
+//                sized.size = 32
+//                value = sized
+//            }
+//        }
         
-        return VariableDecl(name: id, type: type, isMutable: mutable, value: value)
+        return VariableDecl(name: id, type: explicitType, isMutable: mutable, value: value)
     }
 }
 
@@ -663,15 +657,6 @@ extension Parser {
 //  MARK:                                              Function
 //-------------------------------------------------------------------------------------------------------------------------
 
-private extension TupleExpr {
-    var unwrapped: Expr {
-        switch elements.count {
-        case 0: return ValueType(name: "Void")
-        case 1: return elements[0]
-        case _: return self
-        }
-    }
-}
 
 extension Parser {
     
@@ -683,11 +668,11 @@ extension Parser {
         
         // case like fn: Int =
         guard case .Returns = currentToken else {
-            return FunctionType(args: p, returns: ValueType(name: "Void"))
+            return FunctionType(args: p, returns: DefinedType.Void)
         }
         getNextToken() // eat '->'
         
-        let r = try parseTypeExpr().unwrapped
+        let r = try parseTypeExpr()
         
         // case like fn: Int -> Int =
         guard case .Returns = currentToken else {
@@ -700,11 +685,11 @@ extension Parser {
         while case .Returns = currentToken {
             getNextToken()
 
-            let params = TupleExpr(elements: [ty.returns])
+            let params = ty.returns
             let returns = try parseTypeExpr()
             let out = FunctionType(args: params, returns: returns)
             
-            ty = FunctionType(args: ty.args, returns: out)
+            ty = FunctionType(args: ty.args, returns: .Function(out))
         }
         
         return ty
@@ -762,10 +747,10 @@ extension Parser {
         return FuncDecl(name: id, type: type, impl: try parseClosureDeclaration(type: type), attrs: a)
     }
     
-    private func parseClosureNamesExpr() throws -> [ValueType] {
+    private func parseClosureNamesExpr() throws -> [String] {
         
         guard case .OpenParen = currentToken else { return [] }
-        getNextToken() // eat '|'
+        getNextToken() // eat '('
         
         var nms: [String] = []
         while case let .Identifier(name) = currentToken {
@@ -776,28 +761,25 @@ extension Parser {
         guard let next = inspectNextToken() where next.isControlToken() else { throw error(ParseError.NotBlock, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat 'do' or '{'
         
-        return nms.map { ValueType.init(name: $0) }
+        return nms
     }
     
     private func parseClosureDeclaration(anon anon: Bool = false, type: FunctionType) throws -> FunctionImplementationExpr {
-        let names: [Expr]
+        let names: [String]
         
         if case .OpenParen = currentToken {
             names = try parseClosureNamesExpr()
-                .map { $0 as Expr }
         }
         else {
-            names = (0..<type.args.elements.count)
-                .map (implicitArgName)
-                .map { ValueType.init(name: $0) }
+            names = (0..<type.args.count).map(implicitArgName)
         }
         
         guard currentToken.isControlToken() else { throw error(ParseError.NotBlock, loc: SourceRange.at(currentPos)) }
         
-        return FunctionImplementationExpr(params: TupleExpr(elements: names), body: try parseBlockExpr())
+        return FunctionImplementationExpr(params: names, body: try parseBlockExpr())
     }
     
-    private func parseBraceExpr(names: [ValueType] = []) throws -> BlockExpr {
+    private func parseBraceExpr(names: [String] = []) throws -> BlockExpr {
         getNextToken() // eat '{'
         
         var exprs = [ASTNode]()
@@ -817,7 +799,7 @@ extension Parser {
         return ReturnStmt(expr: try parseOperatorExpr())
     }
     
-    private func parseBracelessDoExpr(names: [ValueType] = []) throws -> BlockExpr {
+    private func parseBracelessDoExpr(names: [String] = []) throws -> BlockExpr {
         getNextToken() // eat 'do'
         
         guard let ex = try parseExpr(currentToken) else { throw error(ParseError.NoToken(currentToken), loc: SourceRange.at(currentPos)) }
@@ -825,7 +807,7 @@ extension Parser {
         return BlockExpr(exprs: [ex], variables: names)
     }
     
-    private func parseBlockExpr(names: [ValueType] = []) throws -> BlockExpr {
+    private func parseBlockExpr(names: [String] = []) throws -> BlockExpr {
         
         switch currentToken {
         case .OpenParen:    return try parseBlockExpr(try parseClosureNamesExpr())
@@ -924,6 +906,7 @@ extension Parser {
         for i in s.initialisers {
             i.parent = s
         }
+        
         for m in s.methods {
             m.parent = s
         }

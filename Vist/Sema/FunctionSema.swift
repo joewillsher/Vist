@@ -8,65 +8,11 @@
 
 
 
-
-/// Curried function, returns a function which takes a ValueType object and returns the correct type
-private func getType<
-    TypeCollection : CollectionType
-    where TypeCollection.Generator.Element == StructType>
-    (tys: TypeCollection) -> ValueType throws -> Ty {
-    
-    return { (ty: ValueType) -> Ty in
-        
-        if let builtin = BuiltinType(ty.name)                       { return builtin as Ty }
-        else if let i = tys.indexOf({ ty.name == $0.name })         { return tys[i] as Ty }
-        else if let std = StdLib.getStdLibType(ty.name)    { return std }
-        else                                                        { throw error(SemaError.TypeNotFound) }
-    }
-}
-
-extension FunctionType {
-    
-    func params<
-        TypeCollection : CollectionType
-        where TypeCollection.Generator.Element == StructType>
-        (tys: TypeCollection)
-        throws -> [Ty] {
-            return try args.mapAs(ValueType).map(getType(tys))
-    }
-    
-    func returnType<
-        TypeCollection : CollectionType
-        where TypeCollection.Generator.Element == StructType
-        > (tys: TypeCollection)
-        throws -> Ty {
-            
-            switch returns {
-            case let tup as TupleExpr:
-                if tup.elements.count == 0 { return BuiltinType.Void }
-                
-                let res = try tup.mapAs(ValueType).map(getType(tys))
-                guard res.count == tup.elements.count else { throw error(SemaError.TypeNotFound) }
-                
-                return TupleType(members: res)
-                
-            case let f as FunctionType:
-                return FnType(params: try f.params(tys), returns: try f.returnType(tys))
-                
-            case let x as ValueType:
-                return try getType(tys)(x)
-                
-            default: // TODO: handle error?
-                return BuiltinType.Null
-            }
-    }
-}
-
-
 extension FuncDecl : DeclTypeProvider {
     
     func llvmType(scope: SemaScope) throws {
         
-        let params = try fnType.params(scope.allTypes), res = try fnType.returnType(scope.allTypes)
+        let params = try fnType.params(scope), res = try fnType.returnType(scope)
         let ty = FnType(params: params, returns: res)
         
         if let p = parent?.name {
@@ -83,14 +29,10 @@ extension FuncDecl : DeclTypeProvider {
         
         let fnScope = SemaScope(parent: scope, returnType: ty.returns)
         
-        for (i, v) in impl.params.elements.enumerate() {
+        for (index, name) in impl.params.enumerate() {
             
-            let n = (v as? ValueType)?.name ?? i.implicitArgName()
-            let t = params[i]
-            
-            try v.llvmType(fnScope)
-            
-            fnScope[variable: n] = (type: t, mutable: false)
+            let type = params[index]
+            fnScope[variable: name] = (type: type, mutable: false)
         }
         
         // if is a method

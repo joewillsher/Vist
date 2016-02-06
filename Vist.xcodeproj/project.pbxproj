@@ -20,6 +20,8 @@
 		D46BC1BB1C662B9E00B9147E /* StaticAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46BC1B91C662B9E00B9147E /* StaticAnalysis.swift */; };
 		D46BC1BD1C66587300B9147E /* ScopeNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46BC1BC1C66587300B9147E /* ScopeNode.swift */; };
 		D46BC1BE1C66587300B9147E /* ScopeNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46BC1BC1C66587300B9147E /* ScopeNode.swift */; };
+		D46BC1C01C6685C500B9147E /* DefinedType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46BC1BF1C6685C500B9147E /* DefinedType.swift */; };
+		D46BC1C11C6685C500B9147E /* DefinedType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46BC1BF1C6685C500B9147E /* DefinedType.swift */; };
 		D470D7AE1C56A98100791B40 /* Optimiser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D470D7AC1C56A98100791B40 /* Optimiser.cpp */; };
 		D47802AC1C5FAEA500D2FA9C /* ParseError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47802AB1C5FAEA500D2FA9C /* ParseError.swift */; };
 		D47802AD1C5FAEA800D2FA9C /* ParseError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47802AB1C5FAEA500D2FA9C /* ParseError.swift */; };
@@ -160,6 +162,7 @@
 		D4644BE61C4072D600364B99 /* runtime.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = runtime.cpp; path = Runtime/runtime.cpp; sourceTree = "<group>"; };
 		D46BC1B91C662B9E00B9147E /* StaticAnalysis.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StaticAnalysis.swift; path = Pipeline/StaticAnalysis.swift; sourceTree = "<group>"; };
 		D46BC1BC1C66587300B9147E /* ScopeNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ScopeNode.swift; path = AST/ScopeNode.swift; sourceTree = "<group>"; };
+		D46BC1BF1C6685C500B9147E /* DefinedType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DefinedType.swift; path = AST/DefinedType.swift; sourceTree = "<group>"; };
 		D470D7AC1C56A98100791B40 /* Optimiser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Optimiser.cpp; path = Optimiser/Optimiser.cpp; sourceTree = "<group>"; };
 		D470D7AD1C56A98100791B40 /* Optimiser.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Optimiser.hpp; path = Optimiser/Optimiser.hpp; sourceTree = "<group>"; };
 		D47802AB1C5FAEA500D2FA9C /* ParseError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParseError.swift; path = AST/ParseError.swift; sourceTree = "<group>"; };
@@ -418,6 +421,7 @@
 				D4A2CBFE1C4FF52400BB9A12 /* Stmt.swift */,
 				D4A2CBFC1C4FF52400BB9A12 /* Decl.swift */,
 				D46BC1BC1C66587300B9147E /* ScopeNode.swift */,
+				D46BC1BF1C6685C500B9147E /* DefinedType.swift */,
 			);
 			name = Expression;
 			sourceTree = "<group>";
@@ -583,6 +587,7 @@
 				D4E35B521C5D0CA000683486 /* Assemble.cpp in Sources */,
 				D4E35B541C5D0CA000683486 /* TargetMachine.cpp in Sources */,
 				D4E35B551C5D0CA000683486 /* Lexer.swift in Sources */,
+				D46BC1C11C6685C500B9147E /* DefinedType.swift in Sources */,
 				D4E35B561C5D0CA000683486 /* Token.swift in Sources */,
 				D4E35B571C5D0CA000683486 /* Parser.swift in Sources */,
 				D4E35B581C5D0CA000683486 /* ASTNode.swift in Sources */,
@@ -642,6 +647,7 @@
 				D497A78D1C3B012700DFE39E /* StackFrame.swift in Sources */,
 				D4FC9D181C5FEE4E0031F1BD /* IRError.swift in Sources */,
 				D4A2CC111C4FF58C00BB9A12 /* BuiltinDef.swift in Sources */,
+				D46BC1C01C6685C500B9147E /* DefinedType.swift in Sources */,
 				D4A2CBFF1C4FF52400BB9A12 /* Decl.swift in Sources */,
 				D497A76C1C3B003A00DFE39E /* main.swift in Sources */,
 				D4E3472B1C62550D00CC2F8E /* StructSema.swift in Sources */,

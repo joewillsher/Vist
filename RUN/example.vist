@@ -1,18 +1,15 @@
 
 
-type Bar {
-    let a: Int
-}
 
 type Foo {
     
-    let bar: Bar
+    let bar: Int Int
     
 }
 
 
-let x = (Foo (Bar 1))
+let x = (Foo ())
 
-print x.bar.a
+print x.bar.1
 
 

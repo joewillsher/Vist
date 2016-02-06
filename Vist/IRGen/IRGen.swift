@@ -432,7 +432,7 @@ extension FuncDecl : IRGenerator {
         let startIndex: Int // where do the user's params start being used, 0 for free funcs and 1 for methods
         let parentType: StructType? // the type of self is its a method
         
-        let args = fnType.args, argCount = args.elements.count
+        let args = fnType.args.arr(), argCount = args.count
         
         if let parent = self.parent {
             guard let _parentType = parent.type else { throw error(IRError.NoParentType, userVisible: false) }
@@ -443,7 +443,7 @@ extension FuncDecl : IRGenerator {
             parentType = _parentType
         }
         else {
-            let args = fnType.args, argCount = args.elements.count
+            let args = fnType.args, argCount = args.count
             guard let t = fnType.type else { throw error(IRError.TypeNotFound, userVisible: false) }
             
             type = t
@@ -491,13 +491,13 @@ extension FuncDecl : IRGenerator {
         // set function param names and update table
         for i in 0..<argCount {
             let param = LLVMGetParam(function, UInt32(i + startIndex))
-            let name = (impl?.params.elements[i] as? ValueType)?.name ?? i.implicitArgName()
+            let name = impl?.params[i] ?? i.implicitArgName()
             LLVMSetValueName(param, name)
             
             let ty = LLVMTypeOf(param)
             if LLVMGetTypeKind(ty) == LLVMStructTypeKind {
                 
-                let tyName = (args.elements[i] as! ValueType).name
+                let tyName = args[i]
                 let t = try stackFrame.type(tyName)
                 
                 let memTys = t.members.map { ($0.0, $0.1.ir(), $0.2) }
@@ -960,7 +960,7 @@ extension InitialiserDecl : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        let args = ty.args, argCount = args.elements.count
+        let args = ty.args.arr(), argCount = args.count
         guard let
             functionType = ty.type?.ir(),
             name = parent?.name,
@@ -992,14 +992,14 @@ extension InitialiserDecl : IRGenerator {
         // TODO: Split this out into a function for funcs & closures to use as well
         for i in 0..<argCount {
             let param = LLVMGetParam(function, UInt32(i))
-            let name = (impl.params.elements[i] as? ValueType)?.name ?? i.implicitArgName()
+            let name = impl.params[i]
             LLVMSetValueName(param, name)
             
             let ty = LLVMTypeOf(param)
             if LLVMGetTypeKind(ty) == LLVMStructTypeKind {
                 
                 // TODO: Fix how this info is brought down
-                let tyName = (args.elements[i] as! ValueType).name
+                let tyName = args[i]
                 let t = try stackFrame.type(tyName)
                 
                 let memTys = t.members.map { ($0.0, $0.1.ir(), $0.2) }
@@ -1061,10 +1061,12 @@ extension PropertyLookupExpr : IRGenerator {
             guard case let variable as StructVariable = try stackFrame.variable(n.name) else { throw error(IRError.NoVariable(n.name)) }
             return try variable.loadPropertyNamed(name)
             
-        case let n as PropertyLookupExpr:
-            let p = try n.codeGen(stackFrame)
-            return try p.load(name, type: n._type, builder: builder, irName: String.fromCString(LLVMGetValueName(p))! + ".\(name)")
+        case let propertyLookup as PropertyLookupExpr:
+            let p = try propertyLookup.codeGen(stackFrame)
+            return try p.load(name, type: propertyLookup._type, builder: builder, irName: String.fromCString(LLVMGetValueName(p))! + ".\(name)")
             
+//        case let tupleLookup as TupleMemberLookupExpr:
+//            break
             
         default:
             throw error(IRError.CannotLookupPropertyFromNonVariable)

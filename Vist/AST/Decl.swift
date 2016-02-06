@@ -13,11 +13,11 @@ protocol Decl : ASTNode, DeclTypeProvider {}
 
 final class VariableDecl : Decl, StructMemberExpr {
     let name: String
-    let aType: String?
+    let aType: DefinedType?
     let isMutable: Bool
     var value: Expr
     
-    init(name: String, type: String?, isMutable: Bool, value: Expr) {
+    init(name: String, type: DefinedType?, isMutable: Bool, value: Expr) {
         self.name = name
         self.aType = type
         self.isMutable = isMutable
