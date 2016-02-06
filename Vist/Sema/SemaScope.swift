@@ -6,9 +6,11 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
+typealias Variable = (type: Ty, mutable: Bool)
+
 final class SemaScope {
     
-    private var variables: [String: Ty]
+    private var variables: [String: Variable]
     private var functions: [String: FnType]
     private var types: [String: StructType]
     let isStdLib: Bool
@@ -22,7 +24,7 @@ final class SemaScope {
     /// Used for blocks’ types
     var semaContext: Ty?
     
-    subscript (variable variable: String) -> Ty? {
+    subscript (variable variable: String) -> Variable? {
         get {
             if let v = variables[variable] { return v }
             return parent?[variable: variable]

@@ -80,14 +80,15 @@ extension InitialiserDecl : DeclTypeProvider {
         
         // ad scope properties to initScope
         for p in parentProperties {
-            initScope[variable: p.name] = p.value._type
+            
+            guard let t = p.value._type else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
+            initScope[variable: p.name] = (type: t, mutable: true)
         }
         
         for (p, type) in zip(impl.params.elements, try ty.params(scope.allTypes)) {
             
-            if case let param as ValueType = p {
-                initScope[variable: param.name] = type
-            }
+            guard case let param as ValueType = p else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
+            initScope[variable: param.name] = (type: type, mutable: false)
         }
         
         for ex in impl.body.exprs {

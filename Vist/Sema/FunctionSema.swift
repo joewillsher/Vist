@@ -90,17 +90,17 @@ extension FuncDecl : DeclTypeProvider {
             
             try v.llvmType(fnScope)
             
-            fnScope[variable: n] = t
+            fnScope[variable: n] = (type: t, mutable: false)
         }
         
         // if is a method
         if let t = parent?.type {
             // add self
-            fnScope[variable: "self"] = t
+            fnScope[variable: "self"] = (type: t, mutable: false)
             
             // add self's memebrs implicitly
             for (name, type, _) in t.members {
-                fnScope[variable: name] = type
+                fnScope[variable: name] = (type: type, mutable: false)
             }
         }
         

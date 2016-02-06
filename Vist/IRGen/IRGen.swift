@@ -275,7 +275,7 @@ extension MutationExpr : IRGenerator {
             else {
                 let new = try value.nodeCodeGen(stackFrame)
                 
-                guard case let v as MutableVariable = variable where v.mutable else { throw error(IRError.NotMutable(object.name)) }
+                guard case let v as MutableVariable = variable where v.mutable else { throw error(IRError.NotMutable(object.name), userVisible: false) }
                 try v.store(new)
             }
         case let sub as ArraySubscriptExpr:
@@ -305,7 +305,7 @@ extension MutationExpr : IRGenerator {
             try variable.store(val, inPropertyNamed: prop.name)
             
         default:
-            break
+            throw error(IRError.Unreachable, userVisible: false)
         }
         
         return nil
@@ -1056,12 +1056,19 @@ extension PropertyLookupExpr : IRGenerator {
         
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        guard case let n as VariableExpr = object else { throw error(IRError.CannotLookupPropertyFromNonVariable, userVisible: false) }
-        guard case let variable as StructVariable = try stackFrame.variable(n.name) else { throw error(IRError.NoVariable(n.name)) }
-        
-        let val = try variable.loadPropertyNamed(name)
-        
-        return val
+        switch object {
+        case let n as VariableExpr:
+            guard case let variable as StructVariable = try stackFrame.variable(n.name) else { throw error(IRError.NoVariable(n.name)) }
+            return try variable.loadPropertyNamed(name)
+            
+        case let n as PropertyLookupExpr:
+            let p = try n.codeGen(stackFrame)
+            return try p.load(name, type: n._type, builder: builder, irName: String.fromCString(LLVMGetValueName(p))! + ".\(name)")
+            
+            
+        default:
+            throw error(IRError.CannotLookupPropertyFromNonVariable)
+        }
     }
 }
 

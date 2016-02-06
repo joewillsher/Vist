@@ -19,6 +19,7 @@ enum IRError : VistError {
     case NotTyped, NotStructType
     case InvalidModule(LLVMModuleRef, String?), InvalidFunction(String)
     
+    case Unreachable
     
     var description: String {
         switch self {
@@ -49,6 +50,8 @@ enum IRError : VistError {
             
         case let .InvalidModule(_, desc): return "Invalid module generated:\n\t~\(desc?.stringByReplacingOccurrencesOfString("\n", withString: "\n\t~") ?? "")"
         case let .InvalidFunction(f): return "Invalid function IR for '\(f)'"
+            
+        case .Unreachable: return "Code flow should not reach here"
         }
     }
 }

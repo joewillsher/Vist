@@ -158,10 +158,11 @@ extension Parser {
         getNextToken()
         let i = IntegerLiteral(val: token)
         
-        if case .Period? = inspectNextToken() where isStdLib {
-            getNextToken()
-            return try parseMemberLookupExpr(i)
-        }
+        // TODO: make literals lookupable
+//        if case .Period? = inspectNextToken() where isStdLib {
+//            getNextToken()
+//            return try parseMemberLookupExpr(i)
+//        }
         
         return i
     }
@@ -177,10 +178,10 @@ extension Parser {
         getNextToken()
         let b = BooleanLiteral(val: token)
         
-        if case .Period? = inspectNextToken() where isStdLib {
-            getNextToken()
-            return try parseMemberLookupExpr(b)
-        }
+//        if case .Period? = inspectNextToken() where isStdLib {
+//            getNextToken()
+//            return try parseMemberLookupExpr(b)
+//        }
         
         return b
     }
@@ -372,7 +373,7 @@ extension Parser {
         }
     }
     
-    private func parseMemberLookupExpr<Exp : Expr>(exp: Exp) throws -> Expr {
+    private func parseMemberLookupExpr<Exp : AssignableExpr>(exp: Exp) throws -> Expr {
         
         switch currentToken {
         case .Identifier(let name):
@@ -397,8 +398,14 @@ extension Parser {
                 let exp = try parseOperatorExpr()
                 return MutationExpr(object: property, value: exp)
                 
+            case .Period?: // nested lookup, like a.b.c
+                getNextToken(2) // eat `foo.`
+
+                let firstLookup = PropertyLookupExpr(name: name, object: exp)
+                return try parseMemberLookupExpr(firstLookup)
+                
             default: // otherwise its a property
-                defer { getNextToken() }
+                getNextToken()
                 return PropertyLookupExpr(name: name, object: exp)
             }
             

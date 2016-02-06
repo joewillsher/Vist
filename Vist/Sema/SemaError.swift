@@ -12,7 +12,7 @@ enum SemaError : VistError {
     case NoVariable(String)
     case HeterogenousArray([Ty]), EmptyArray
     case CannotSubscriptNonArrayVariable, NonIntegerSubscript
-    case NonBooleanCondition, NotRangeType, DifferentTypeForMutation(String, Ty, Ty)
+    case NonBooleanCondition, NotRangeType, DifferentTypeForMutation(String, Ty, Ty), ImmutableVariable(String)
     case CannotAssignToNullExpression(String)
     
     case NoFunction(String, [Ty])
@@ -53,6 +53,8 @@ enum SemaError : VistError {
             return "Expression is not of type 'Range'"
         case let .DifferentTypeForMutation(name, from, to):
             return "Cannot change type of '\(name)' from '\(from)' to '\(to)'"
+        case let .ImmutableVariable(name):
+            return "Variable '\(name)' is immutable"
         case let .CannotAssignToNullExpression(name):
             return "Variable '\(name)' cannot be assigned to null typed expression"
             

@@ -1,14 +1,18 @@
 
 
-
-func fib :: Int -> Int = (a) {
-    let v = v
-    let u = a + false
-    
-    return 1
+type Bar {
+    let a: Int
 }
 
-print
+type Foo {
+    
+    let bar: Bar
+    
+}
 
-print 1 1
+
+let x = (Foo (Bar 1))
+
+print x.bar.a
+
 

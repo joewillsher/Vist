@@ -101,8 +101,11 @@ func == (lhs: ErrorType, rhs: ErrorType) -> Bool {
     case (_, let r as PositionedError):
         return r.error == lhs
         
+    case (let l as ErrorCollection, let r as ErrorCollection):
+        return l.errors.elementsEqual(r.errors, isEquivalent: ==)
+                
     default:
-        return lhs._code == rhs._code
+        return lhs._code == rhs._code && lhs._domain == rhs._domain
     }
 }
 

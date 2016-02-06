@@ -381,9 +381,9 @@ final class MethodCallExpr <ObjectType : Expr> : Expr {
 
 final class PropertyLookupExpr : AssignableExpr {
     let name: String
-    let object: Expr
+    let object: AssignableExpr
     
-    init(name: String, object: Expr) {
+    init(name: String, object: AssignableExpr) {
         self.name = name
         self.object = object
     }

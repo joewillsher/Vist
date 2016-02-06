@@ -69,8 +69,8 @@ extension VariableExpr : ExprTypeProvider {
         }
         
         // assign type to self and return
-        self._type = v
-        return v
+        self._type = v.type
+        return v.type
     }
 }
 
@@ -84,6 +84,20 @@ extension MutationExpr : ExprTypeProvider {
         let new = try value.llvmType(scope)
         
         guard old == new else { throw error(SemaError.DifferentTypeForMutation(object.desc, old, new)) }
+        
+        switch object {
+        case let variable as VariableExpr:
+            
+            guard let v = scope[variable: variable.name] else { throw error(SemaError.NoVariable(variable.name)) }
+            guard v.mutable else { throw error(SemaError.ImmutableVariable(variable.name)) }
+            
+//        case let variable as PropertyLookupExpr:
+//            
+//            guard let obj = scope[variable: variable.]
+            
+        default:
+            break
+        }
         
         return BuiltinType.Null
     }
@@ -110,7 +124,7 @@ extension VariableDecl : DeclTypeProvider {
             scope[function: name] = fn          // store in function table if closure
         }
         else {
-            scope[variable: name] = objectType  // store in arr
+            scope[variable: name] = (objectType, isMutable)  // store in arr
         }
         
         // if its a null expression
@@ -197,7 +211,7 @@ extension ClosureExpr : ExprTypeProvider {
         
         for (i, t) in ty.params.enumerate() {
             let name = parameters.isEmpty ? i.implicitArgName() : parameters[i]
-            innerScope[variable: name] = t
+            innerScope[variable: name] = (type: t, mutable: false)
         }
         
         // TODO: Implementation relying on parameters
@@ -249,7 +263,7 @@ extension ArraySubscriptExpr : ExprTypeProvider {
     func llvmType(scope: SemaScope) throws -> Ty {
         
         // make sure its an array
-        guard case let v as VariableExpr = arr, case BuiltinType.Array(let type, _)? = scope[variable: v.name] else { throw error(SemaError.CannotSubscriptNonArrayVariable) }
+        guard case let v as VariableExpr = arr, case BuiltinType.Array(let type, _)? = scope[variable: v.name]?.type else { throw error(SemaError.CannotSubscriptNonArrayVariable) }
         
         // gen type for subscripting value
         guard try index.llvmType(scope) == StdLib.IntType else { throw error(SemaError.NonIntegerSubscript) }

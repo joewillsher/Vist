@@ -76,7 +76,7 @@ extension ForInLoopStmt : StmtTypeProvider {
         let loopScope = SemaScope(parent: scope, returnType: scope.returnType)
         
         // add bound name to scopes
-        loopScope[variable: binded.name] = StdLib.IntType
+        loopScope[variable: binded.name] = (type: StdLib.IntType, mutable: false)
         
         // gen types for iterator
         guard try iterator.llvmType(scope) == StdLib.RangeType else { throw error(SemaError.NotRangeType) }
