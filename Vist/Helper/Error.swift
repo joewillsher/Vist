@@ -59,8 +59,15 @@ struct PositionedError : VistError {
 struct ErrorCollection : VistError {
     let errors: [VistError]
     
+    // flattens any child ErrorCollections
     var description: String {
-        return "\(errors.count) errors found:\n" + errors.map{" -\($0)"}.joinWithSeparator("\n")
+        return "\(errors.count) errors found:\n"
+            + errors.map { err in
+            if case let coll as ErrorCollection = err {
+                return coll.errors.map { " -\($0)" }.joinWithSeparator("\n")
+            }
+            else { return " -\(err)" }
+            }.joinWithSeparator("\n")
     }
 }
 

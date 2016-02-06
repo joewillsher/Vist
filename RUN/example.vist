@@ -10,3 +10,5 @@ func fib :: Int -> Int = (a) {
 
 print
 
+print 1 1
+
