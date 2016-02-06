@@ -13,22 +13,15 @@ func sema(ast: AST, globalScope: SemaScope) throws {
 
 /// Adds type information to ast nodes and checks type signatures of functions, returns, & operators
 func scopeSemallvmType(ast: AST, scope: SemaScope) throws {
+    
     //-------------------------------
     // TODO: Parse all function declarations first, then go in to define them and everything else
     // TODO: Also make sure linked files can read into *eachother*
     //-------------------------------
-
-    var errors: [VistError] = []
-    
-    for exp in ast.exprs {
-        do {
-            try exp.llvmType(scope)
-        }
-        catch let error where error is VistError {
-            errors.append(error as! VistError)
-        }
+   
+    try ast.walkChildren { node in
+        try node.llvmType(scope)
     }
     
-    try errors.throwIfErrors()
 }
 

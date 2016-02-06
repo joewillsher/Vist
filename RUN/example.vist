@@ -2,10 +2,11 @@
 
 
 func fib :: Int -> Int = (a) {
-    if a < 0 do fatalError()
+    let v = v
+    let u = a + false
     
-    else if a <= 1 do return 1
-    else do return (fib a-1) + (fib a-2)
+    return 1
 }
 
-for i in 0 ... 20 do print (fib i)
+print
+

@@ -14,7 +14,7 @@
 protocol Expr : ASTNode, _Typed, ExprTypeProvider {}
 protocol TypedExpr : Expr, Typed {}
 
-final class BlockExpr : TypedExpr {
+final class BlockExpr : TypedExpr, ScopeNode {
     var exprs: [ASTNode]
     var variables: [ValueType]
     
@@ -24,10 +24,13 @@ final class BlockExpr : TypedExpr {
     }
     
     var type: FnType? = nil
+    
+    var childNodes: [ASTNode] {
+        return exprs
+    }
 }
 
-final class ClosureExpr : TypedExpr {
-    
+final class ClosureExpr : TypedExpr, ScopeNode {
     var exprs: [ASTNode]
     var parameters: [String]
     
@@ -37,6 +40,10 @@ final class ClosureExpr : TypedExpr {
     }
     
     var type: FnType? = nil
+    
+    var childNodes: [ASTNode] {
+        return exprs
+    }
 }
 
 
@@ -332,7 +339,7 @@ protocol StructMemberExpr {
 }
 
 
-final class StructExpr : TypedExpr {
+final class StructExpr : TypedExpr, ScopeNode {
     let name: String
     let properties: [VariableDecl]
     let methods: [FuncDecl]
@@ -348,6 +355,10 @@ final class StructExpr : TypedExpr {
     }
     
     var type: StructType? = nil
+    
+    var childNodes: [ASTNode] {
+        return properties.mapAs(ASTNode) + methods.mapAs(ASTNode) + initialisers.mapAs(ASTNode)
+    }
 }
 
 

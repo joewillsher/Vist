@@ -1170,25 +1170,17 @@ extension AST {
         
         let stackFrame = StackFrame(block: programEntryBlock, function: mainFunction, parentStackFrame: s)
         
-        let e: [ASTNode]
+        let expressions: [ASTNode]
         
         if isLibrary {
-             e = exprs.filter { $0 is FuncDecl || $0 is StructExpr }
+             expressions = exprs.filter { $0 is FuncDecl || $0 is StructExpr }
         }
         else {
-            e = exprs
+            expressions = exprs
         }
         
-        var errors: [VistError] = []
-        
-        for exp in e {
-            
-            do {
-                try exp.nodeCodeGen(stackFrame)
-            }
-            catch let error where error is VistError {
-                errors.append(error as! VistError)
-            }
+        try expressions.walkChildren { node in
+            try node.nodeCodeGen(stackFrame)
         }
         
         // finalise module
@@ -1200,15 +1192,7 @@ extension AST {
         }
         
         // validate whole module
-        do {
-            try validateModule(module)
-        }
-        catch let error where error is VistError {
-            errors.append(error as! VistError)
-        }
-        
-        // throw errors
-        try errors.throwIfErrors()
+        try validateModule(module)
         
         LLVMDisposeBuilder(builder)
     }

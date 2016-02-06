@@ -105,7 +105,7 @@ extension FuncDecl : DeclTypeProvider {
         }
         
         // type gen for inner scope
-        for exp in impl.body.exprs {
+        try impl.body.exprs.walkChildren { exp in
             try exp.llvmType(fnScope)
         }
         

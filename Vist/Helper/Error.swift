@@ -75,6 +75,9 @@ extension CollectionType where
 }
 
 
+
+// TODO: Remove these below if they're not used
+
 /// Equality operator for error types
 ///
 /// Extends the default one, and allows matching of boxed errors against non boxed ones

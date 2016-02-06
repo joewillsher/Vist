@@ -65,12 +65,7 @@ func ==
         }
         return false
 }
-extension CollectionType where Generator.Element : Expr {
-    /// flatMaps `$0 as? T` over the collection
-    func mapAs<T>(_: T.Type) -> [T] {
-        return flatMap { $0 as? T }
-    }
-}
+
 
 
 

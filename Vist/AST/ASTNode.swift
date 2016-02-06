@@ -14,7 +14,7 @@ protocol ASTNode : Printable {}
 ///
 /// Provides common interfaces for expressions, declarations, and statements
 ///
-final class AST : ASTNode {
+final class AST : ASTNode, ScopeNode {
     var exprs: [ASTNode]
     
     init(exprs: [ASTNode]) {
@@ -22,6 +22,10 @@ final class AST : ASTNode {
     }
     
     var type: Ty? = nil
+    
+    var childNodes: [ASTNode] {
+        return exprs
+    }
 }
 
 /// Type erased `Typed` protocol
@@ -62,3 +66,4 @@ extension Typed {
         }
     }
 }
+
