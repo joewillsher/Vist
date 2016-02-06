@@ -18,7 +18,7 @@ let runtimeDir = "\(SOURCE_ROOT)/Vist/Runtime"
 
 /// Test cases for code snippets
 ///
-final class Tests : XCTestCase {
+final class OutputTests : XCTestCase {
     
     /// pipe used as the stdout of the test cases
     var pipe: NSPipe? = nil
@@ -30,6 +30,7 @@ final class Tests : XCTestCase {
 }
 
 /// Tests regarding runtime performance
+///
 final class RuntimePerformanceTests : XCTestCase {
     
 }
@@ -40,12 +41,18 @@ final class CoreTests : XCTestCase {
     
 }
 
+/// Tests the error catching system
+///
+final class ErrorTests : XCTestCase {
+    
+}
+
 
 // MARK: Test Cases
 
-extension Tests {
+extension OutputTests {
     
-    /// ControlFlow.vist
+    /// Control.vist
     ///
     /// tests `if` statements, variables
     ///
@@ -56,7 +63,7 @@ extension Tests {
             XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file), "Incorrect output")
         }
         catch {
-            XCTFail("Compilation failed  with error:\n\(error)\n\n")
+            XCTFail("Compilation failed with error:\n\(error)\n\n")
         }
     }
     
@@ -71,7 +78,7 @@ extension Tests {
             XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file), "Incorrect output")
         }
         catch {
-            XCTFail("Compilation failed  with error:\n\(error)\n\n")
+            XCTFail("Compilation failed with error:\n\(error)\n\n")
         }
     }
     
@@ -86,7 +93,7 @@ extension Tests {
             XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file), "Incorrect output")
         }
         catch {
-            XCTFail("Compilation failed  with error:\n\(error)\n\n")
+            XCTFail("Compilation failed with error:\n\(error)\n\n")
         }
     }   
     
@@ -101,7 +108,7 @@ extension Tests {
             XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file), "Incorrect output")
         }
         catch {
-            XCTFail("Compilation failed  with error:\n\(error)\n\n")
+            XCTFail("Compilation failed with error:\n\(error)\n\n")
         }
     }
     
@@ -116,7 +123,7 @@ extension Tests {
             XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file), "Incorrect output")
         }
         catch {
-            XCTFail("Compilation failed  with error:\n\(error)\n\n")
+            XCTFail("Compilation failed with error:\n\(error)\n\n")
         }
     }
     
@@ -125,6 +132,10 @@ extension Tests {
 
 extension RuntimePerformanceTests {
     
+    /// LoopPerf.vist
+    ///
+    /// Builds file and analyses performance of resulting binary
+    ///
     func testLoop() {
         
         let fileName = "LoopPerf"
@@ -132,17 +143,48 @@ extension RuntimePerformanceTests {
             try compileWithOptions(["-O", "-build-only", "\(fileName).vist"], inDirectory: testDir)
         }
         catch {
-            XCTFail("Compilation failed  with error:\n\(error)\n\n")
+            XCTFail("Compilation failed with error:\n\(error)\n\n")
         }
         
-        measureBlock {
+        measureMetrics(RuntimePerformanceTests.defaultPerformanceMetrics(), automaticallyStartMeasuring: false) {
+            
             let runTask = NSTask()
             runTask.currentDirectoryPath = testDir
             runTask.launchPath = "\(testDir)/\(fileName)"
             runTask.standardOutput = NSFileHandle.fileHandleWithNullDevice()
-
+            
+            self.startMeasuring()
             runTask.launch()
             runTask.waitUntilExit()
+            self.stopMeasuring()
+        }
+    }
+    
+    /// FunctionPerf.vist
+    ///
+    /// Test non memoised fibbonaci
+    ///
+    func testFunction() {
+        
+        let fileName = "FunctionPerf"
+        do {
+            try compileWithOptions(["-O", "-build-only", "\(fileName).vist"], inDirectory: testDir)
+        }
+        catch {
+            XCTFail("Compilation failed with error:\n\(error)\n\n")
+        }
+        
+        measureMetrics(RuntimePerformanceTests.defaultPerformanceMetrics(), automaticallyStartMeasuring: false) {
+            
+            let runTask = NSTask()
+            runTask.currentDirectoryPath = testDir
+            runTask.launchPath = "\(testDir)/\(fileName)"
+            runTask.standardOutput = NSFileHandle.fileHandleWithNullDevice()
+            
+            self.startMeasuring()
+            runTask.launch()
+            runTask.waitUntilExit()
+            self.stopMeasuring()
         }
     }
     
@@ -158,7 +200,8 @@ extension CoreTests {
     func testStdLibCompile() {
         do {
             try compileWithOptions(["-build-stdlib"], inDirectory: stdlibDir)
-            XCTAssertTrue(NSFileManager.defaultManager().fileExistsAtPath("\(runtimeDir)/runtime.bc"))
+            XCTAssertTrue(NSFileManager.defaultManager().fileExistsAtPath("\(stdlibDir)/stdlib.bc")) // file used by optimiser
+            XCTAssertTrue(NSFileManager.defaultManager().fileExistsAtPath("\(stdlibDir)/stdlib.o")) // file used by linker
         }
         catch {
             XCTFail("Stdlib build failed with error:\n\(error)\n\n")
@@ -167,13 +210,10 @@ extension CoreTests {
     
     /// Builds the runtime
     ///
-    /// Tests the compile function (not vist compiler)
-    ///
     func testRuntimeBuild() {
         do {
             try compileWithOptions(["-build-runtime"], inDirectory: runtimeDir)
-            XCTAssertTrue(NSFileManager.defaultManager().fileExistsAtPath("\(stdlibDir)/stdlib.bc")) // file used by optimiser
-            XCTAssertTrue(NSFileManager.defaultManager().fileExistsAtPath("\(stdlibDir)/stdlib.o")) // file used by linker
+            XCTAssertTrue(NSFileManager.defaultManager().fileExistsAtPath("\(runtimeDir)/runtime.bc"))
         }
         catch {
             XCTFail("Runtime build failed with error:\n\(error)\n\n")

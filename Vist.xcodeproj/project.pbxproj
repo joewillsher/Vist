@@ -16,6 +16,8 @@
 		D41BF5531C5CD996004A1962 /* CommandLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41BF5521C5CD996004A1962 /* CommandLine.swift */; };
 		D41BF5551C5CDC8C004A1962 /* TestCases in Resources */ = {isa = PBXBuildFile; fileRef = D41BF5541C5CDC8C004A1962 /* TestCases */; };
 		D431F4C31C55743C005D439F /* StdLibInline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D431F4C11C55743C005D439F /* StdLibInline.cpp */; };
+		D46BC1BA1C662B9E00B9147E /* StaticAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46BC1B91C662B9E00B9147E /* StaticAnalysis.swift */; };
+		D46BC1BB1C662B9E00B9147E /* StaticAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46BC1B91C662B9E00B9147E /* StaticAnalysis.swift */; };
 		D470D7AE1C56A98100791B40 /* Optimiser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D470D7AC1C56A98100791B40 /* Optimiser.cpp */; };
 		D47802AC1C5FAEA500D2FA9C /* ParseError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47802AB1C5FAEA500D2FA9C /* ParseError.swift */; };
 		D47802AD1C5FAEA800D2FA9C /* ParseError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47802AB1C5FAEA500D2FA9C /* ParseError.swift */; };
@@ -154,6 +156,7 @@
 		D4644BE31C40619800364B99 /* stdlib.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib.ll; path = stdlib/stdlib.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D4644BE51C40619800364B99 /* stdlib.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = stdlib.vist; path = stdlib/stdlib.vist; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D4644BE61C4072D600364B99 /* runtime.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = runtime.cpp; path = Runtime/runtime.cpp; sourceTree = "<group>"; };
+		D46BC1B91C662B9E00B9147E /* StaticAnalysis.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StaticAnalysis.swift; path = Pipeline/StaticAnalysis.swift; sourceTree = "<group>"; };
 		D470D7AC1C56A98100791B40 /* Optimiser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Optimiser.cpp; path = Optimiser/Optimiser.cpp; sourceTree = "<group>"; };
 		D470D7AD1C56A98100791B40 /* Optimiser.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Optimiser.hpp; path = Optimiser/Optimiser.hpp; sourceTree = "<group>"; };
 		D47802AB1C5FAEA500D2FA9C /* ParseError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParseError.swift; path = AST/ParseError.swift; sourceTree = "<group>"; };
@@ -434,6 +437,7 @@
 				D497A76A1C3B003A00DFE39E /* main.swift */,
 				D41BF5521C5CD996004A1962 /* CommandLine.swift */,
 				D497A7691C3B003A00DFE39E /* Compile.swift */,
+				D46BC1B91C662B9E00B9147E /* StaticAnalysis.swift */,
 				D4DE281B1C596B250096E798 /* Assemble.hpp */,
 				D4DE281A1C596B250096E798 /* Assemble.cpp */,
 				D4DE281E1C596BFE0096E798 /* TargetMachine.hpp */,
@@ -587,6 +591,7 @@
 				D4E35B5E1C5D0CA000683486 /* FnType.swift in Sources */,
 				D4E347281C62545400CC2F8E /* FunctionSema.swift in Sources */,
 				D4E35B5F1C5D0CA000683486 /* StructType.swift in Sources */,
+				D46BC1BB1C662B9E00B9147E /* StaticAnalysis.swift in Sources */,
 				D4E35B601C5D0CA000683486 /* TupleType.swift in Sources */,
 				D4E35B611C5D0CA000683486 /* FunctionContainer.swift in Sources */,
 				D4E3472C1C62550D00CC2F8E /* StructSema.swift in Sources */,
@@ -640,6 +645,7 @@
 				D47802AC1C5FAEA500D2FA9C /* ParseError.swift in Sources */,
 				D497A7931C3B015700DFE39E /* Link.swift in Sources */,
 				D41775641C5FA7EF006FD013 /* Error.swift in Sources */,
+				D46BC1BA1C662B9E00B9147E /* StaticAnalysis.swift in Sources */,
 				D4DE281C1C596B250096E798 /* Assemble.cpp in Sources */,
 				D4E347271C62545400CC2F8E /* FunctionSema.swift in Sources */,
 				D4FAE45E1C3DDE3100C9EE05 /* FunctionAttribute.swift in Sources */,

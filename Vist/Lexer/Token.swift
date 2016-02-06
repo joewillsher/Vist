@@ -19,9 +19,9 @@ extension SourceRange : CustomStringConvertible {
     
     var description: String {
         if start == end {
-            return "(line:\(start.0), char:\(start.1))"
+            return "(l:\(start.0), c:\(start.1))"
         } else {
-            return "from:(line:\(start.0), char:\(start.1)) to:(line:\(end.0), char:\(end.1))"
+            return "from:(l:\(start.0), c:\(start.1)) to:(l:\(end.0), c:\(end.1))"
         }
     }
 }

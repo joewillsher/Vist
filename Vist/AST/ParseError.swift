@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-enum ParseError: ErrorType {
+enum ParseError: VistError {
     case ExpectedParen,  ExpectedCloseBracket, NoToken(Token), ExpectedComma
     case ExpectedOpenBrace, NotBlock
     case InvalidCall(String) // cant call (*2) or (.print())
@@ -19,11 +19,9 @@ enum ParseError: ErrorType {
     case ObjectNotAllowedInTopLevelOfTypeImpl(Token), NoTypeName
     case NoPrecedenceForOperator, AttrDoesNotHaveParams, CannotChangeOpPrecedence(String, Int)
     case StdLibExprInvalid
-}
-extension ParseError : CustomStringConvertible {
+    
     
     var description: String {
-        
         switch self {
         case let .NoToken(tok): return "Expected token '\(tok)'"
         case .ExpectedParen: return "Expected paren"
@@ -46,6 +44,5 @@ extension ParseError : CustomStringConvertible {
         case .ExpectedAssignment: return "Expected assignment expression"
         case .StdLibExprInvalid: return "Stdlib expression involving 'LLVM.' could not be parsed"
         }
-        
     }
 }

@@ -6,7 +6,7 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-enum SemaError : ErrorType {
+enum SemaError : VistError {
     case InvalidType(BuiltinType), InvalidFloatType(UInt32)
     case InvalidRedeclaration(String, Expr)
     case NoVariable(String)
@@ -26,10 +26,8 @@ enum SemaError : ErrorType {
     case StructPropertyNotTyped(type: String, property: String), StructMethodNotTyped(type: String, methodName: String), InitialiserNotAssociatedWithType
     case TypeNotFound, ParamsNotTyped, IntegerNotTyped, BoolNotTyped
     case NoMemberwiseInit
-}
-
-extension SemaError : CustomStringConvertible {
-
+    
+    
     var description: String {
         switch self {
         case let .InvalidType(t):

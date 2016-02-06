@@ -78,6 +78,19 @@ private func codeGenIn(stackFrame: StackFrame) -> Expr throws -> LLVMValueRef {
     }
 }
 
+private func validateModule(ref: LLVMModuleRef) throws {
+    var err = UnsafeMutablePointer<Int8>.alloc(1)
+    guard !LLVMVerifyModule(module, LLVMReturnStatusAction, &err) else {
+        throw error(IRError.InvalidModule(module, String.fromCString(err)), userVisible: false)
+    }
+}
+
+
+private func validateFunction(ref: LLVMValueRef, name: String) throws {
+    guard !LLVMVerifyFunction(ref, LLVMReturnStatusAction) else {
+        throw error(IRError.InvalidFunction(name), userVisible: false)
+    }
+}
 
 
 
@@ -525,6 +538,8 @@ extension FuncDecl : IRGenerator {
             throw error
         }
         
+        try validateFunction(function, name: name)
+        
         return function
     }
 }
@@ -758,10 +773,10 @@ extension ForInLoopStmt : IRGenerator {
         
         let rangeIterator = try iterator.nodeCodeGen(stackFrame)
         
-        let startValue =     try rangeIterator
+        let startValue = try rangeIterator
             .load("start", type: iterator._type,         builder: builder, irName: "start")
             .load("value", type: stackFrame.type("Int"), builder: builder, irName: "start.value")
-        let endValue =  try rangeIterator
+        let endValue = try rangeIterator
             .load("end",   type: iterator._type,         builder: builder, irName: "end")
             .load("value", type: stackFrame.type("Int"), builder: builder, irName: "end.value")
         
@@ -1068,6 +1083,17 @@ extension MethodCallExpr : IRGenerator {
         let doNotUseName = _type == BuiltinType.Void || _type == BuiltinType.Null || _type == nil
         let n = doNotUseName ? "" : "\(name).res"
         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         return LLVMBuildCall(builder, f, params, UInt32(c), n)
     }
 }
@@ -1144,27 +1170,45 @@ extension AST {
         
         let stackFrame = StackFrame(block: programEntryBlock, function: mainFunction, parentStackFrame: s)
         
+        let e: [ASTNode]
+        
         if isLibrary {
-            let e = exprs.filter {
-                $0 is FuncDecl || $0 is StructExpr
-            }
-            
-            for exp in e {
-                try exp.nodeCodeGen(stackFrame)
-            }
+             e = exprs.filter { $0 is FuncDecl || $0 is StructExpr }
         }
         else {
-            for exp in exprs {
+            e = exprs
+        }
+        
+        var errors: [VistError] = []
+        
+        for exp in e {
+            
+            do {
                 try exp.nodeCodeGen(stackFrame)
+            }
+            catch let error where error is VistError {
+                errors.append(error as! VistError)
             }
         }
         
+        // finalise module
         if isLibrary {
             LLVMDeleteFunction(mainFunction)
         }
         else {
             LLVMBuildRetVoid(builder)
         }
+        
+        // validate whole module
+        do {
+            try validateModule(module)
+        }
+        catch let error where error is VistError {
+            errors.append(error as! VistError)
+        }
+        
+        // throw errors
+        try errors.throwIfErrors()
         
         LLVMDisposeBuilder(builder)
     }

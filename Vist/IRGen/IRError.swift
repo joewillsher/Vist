@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-enum IRError : ErrorType {
+enum IRError : VistError {
     case WrongFunctionApplication(String)
     case NoVariable(String), NoFunction(String), NoType(String), TypeNotFound
     case NotMutable(String), NotMutableProp(name: String, inType: String)
@@ -17,10 +17,9 @@ enum IRError : ErrorType {
     case CannotLookupPropertyFromNonVariable, NotGenerator(ASTNode.Type), NoParentType
     
     case NotTyped, NotStructType
-}
-
-extension IRError : CustomStringConvertible {
-
+    case InvalidModule(LLVMModuleRef, String?), InvalidFunction(String)
+    
+    
     var description: String {
         switch self {
         case let .WrongFunctionApplication(fn): return "Incorrect application of function '\(fn)'"
@@ -47,6 +46,9 @@ extension IRError : CustomStringConvertible {
         case .NoParentType: return "Parent type is not a struct or does not exist"
         case .NotTyped: return "Expression is not typed"
         case .NotStructType: return "Expression was not a struct type"
+            
+        case let .InvalidModule(_, desc): return "Invalid module generated:\n\t~\(desc?.stringByReplacingOccurrencesOfString("\n", withString: "\n\t~") ?? "")"
+        case let .InvalidFunction(f): return "Invalid function IR for '\(f)'"
         }
     }
 }

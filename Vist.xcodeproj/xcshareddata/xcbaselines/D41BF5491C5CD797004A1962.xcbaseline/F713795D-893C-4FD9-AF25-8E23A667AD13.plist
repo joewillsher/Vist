@@ -6,14 +6,24 @@
 	<dict>
 		<key>RuntimePerformanceTests</key>
 		<dict>
+			<key>testFunction()</key>
+			<dict>
+				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
+				<dict>
+					<key>baselineAverage</key>
+					<real>0.66603</real>
+					<key>baselineIntegrationDisplayName</key>
+					<string>6 Feb 2016, 11:47:54 am</string>
+				</dict>
+			</dict>
 			<key>testLoop()</key>
 			<dict>
 				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
 				<dict>
 					<key>baselineAverage</key>
-					<real>1.6337</real>
+					<real>0.81959</real>
 					<key>baselineIntegrationDisplayName</key>
-					<string>5 Feb 2016, 9:13:25 pm</string>
+					<string>6 Feb 2016, 11:38:11 am</string>
 				</dict>
 			</dict>
 		</dict>

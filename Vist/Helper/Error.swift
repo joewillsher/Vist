@@ -6,6 +6,11 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
+
+/// A vist error -- implements ErrorType and CustomStringConvertible
+///
+typealias VistError = protocol<ErrorType, CustomStringConvertible>
+
 /// Error function -- always rethrows the error passed to it
 ///
 /// In debug builds it prints the file & line in the compiler that threw the error.
@@ -14,10 +19,15 @@
 ///
 /// If a source location is defined, the result is wrapped in a `PositionedError` struct
 ///
-func error(err: ErrorType, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = __FILE__, line: UInt = __LINE__) -> ErrorType {
+func error(err: VistError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = __FILE__, line: UInt = __LINE__) -> VistError {
     
     #if DEBUG
-        print("Vist error in line \(line) of \(file)")
+        if userVisible {
+            print("Vist error in line \(line) of \(file)")
+        }
+        else {
+            print("Internal logic error in line \(line) of \(file)")
+        }
     #else
         if !userVisible {
             fatalError("Compiler assertion failed \(err)", file: file, line: line)
@@ -33,20 +43,37 @@ func error(err: ErrorType, loc: SourceRange? = nil, userVisible: Bool = true, fi
 
 /// An error object, which describes the error and contains the source location information
 ///
-struct PositionedError : ErrorType, CustomStringConvertible {
-    let error: ErrorType
+struct PositionedError : VistError {
+    let error: VistError
     let range: SourceRange?
     
     var description: String {
-        if let printable = error as? CustomStringConvertible {
-            return "\(range?.description ?? ""): \(printable.description)"
-        }
-        else {
-            return "\(range?.description ?? ""): \(self._domain)"
-        }
+        return "\(range?.description ?? ""):\t\(error)"
     }
     
 }
+
+
+/// A collection of errors, conforming to ErrorType so it can be thrown
+///
+struct ErrorCollection : VistError {
+    let errors: [VistError]
+    
+    var description: String {
+        return "\(errors.count) errors found:\n" + errors.map{" -\($0)"}.joinWithSeparator("\n")
+    }
+}
+
+extension CollectionType where
+    Generator.Element == VistError,
+    Index == Int
+{
+    func throwIfErrors() throws {
+        if count == 1 { throw self[0] }
+        if !isEmpty { throw ErrorCollection(errors: Array(self)) }
+    }
+}
+
 
 /// Equality operator for error types
 ///
