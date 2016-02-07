@@ -611,7 +611,9 @@ extension Parser {
         guard case let .Identifier(id) = getNextToken() else { throw error(ParseError.NoIdentifier, loc: rangeOfCurrentToken()) }
         
         let explicitType: DefinedType?
+        
         if case .Colon = getNextToken() {
+            getNextToken()
             explicitType = try parseTypeExpr()
         }
         else {

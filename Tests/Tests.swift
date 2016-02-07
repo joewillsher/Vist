@@ -16,7 +16,7 @@ let runtimeDir = "\(SOURCE_ROOT)/Vist/Runtime"
 // tests can define comments which define the expected output of the program
 // `// test: 1 2` will add "1\n2\n" to the expected result of the program
 
-/// Test cases for code snippets
+/// Test the compilation and output of code samples
 ///
 final class OutputTests : XCTestCase {
     
@@ -29,7 +29,7 @@ final class OutputTests : XCTestCase {
     }
 }
 
-/// Tests regarding runtime performance
+/// Tests runtime performance
 ///
 final class RuntimePerformanceTests : XCTestCase {
     
@@ -41,7 +41,7 @@ final class CoreTests : XCTestCase {
     
 }
 
-/// Tests the error catching system
+/// Tests the error handling & type checking system
 ///
 final class ErrorTests : XCTestCase {
     
@@ -95,7 +95,7 @@ extension OutputTests {
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
         }
-    }   
+    }
     
     /// IntegerOps.vist
     ///
@@ -233,25 +233,25 @@ extension ErrorTests {
             XCTFail("Errors not caught")
         }
         catch {
-//            6 errors found:
-//            -Could not find variable 'b' in this scope
-//            -Could not find variable 'a' in this scope
-//            -Could not find function 'print' which accepts parameters of type (Int Int)
-//            -Could not find variable 'v' in this scope
-//            -Could not find function '+' which accepts parameters of type (Int Bool)
-//            -Invalid return from function. Double is not convertible to Int
-//            -Could not find variable 'print' in this scope
-//            -Could not find function 'print' which accepts parameters of type (Int Int)
-            
             let e = ErrorCollection(errors: [
                 SemaError.NoVariable("b"),
                 SemaError.NoVariable("a"),
-                SemaError.NoFunction("print", [StdLib.IntType, StdLib.IntType])
+                SemaError.NoFunction("print", [StdLib.IntType, StdLib.IntType]),
+                ErrorCollection(errors: [
+                    SemaError.NoVariable("v"),
+                    SemaError.NoFunction("+", [StdLib.IntType, StdLib.BoolType]),
+                    SemaError.WrongFunctionReturnType(applied: StdLib.DoubleType, expected: StdLib.IntType)
+                    ]),
+                SemaError.NoVariable("print"),
+                SemaError.ImmutableVariable("x"),
+                SemaError.InvalidRedeclaration("x"),
+                SemaError.ImmutableProperty(p: "a", obj: "c", ty: "Foo")
                 ])
             
-            XCTAssert(e.description == (error as? ErrorCollection)?.description)
+            XCTAssertNotNil(error as? ErrorCollection)
+            XCTAssert(e.description == (error as! ErrorCollection).description)
         }
-
+        
         
     }
     

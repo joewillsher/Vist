@@ -91,9 +91,17 @@ extension MutationExpr : ExprTypeProvider {
             guard let v = scope[variable: variable.name] else { throw error(SemaError.NoVariable(variable.name)) }
             guard v.mutable else { throw error(SemaError.ImmutableVariable(variable.name)) }
             
-//        case let variable as PropertyLookupExpr:
-//            
-//            guard let obj = scope[variable: variable.]
+            
+        case let propertyLookup as PropertyLookupExpr:
+            
+            let objectName = propertyLookup.object.desc
+            let object = scope[variable: objectName]
+            
+            guard case let type as StructType = object?.type else { throw error(SemaError.NoVariable(objectName)) }
+            guard let mutable = object?.mutable where mutable else { throw error(SemaError.ImmutableVariable(objectName)) }
+                
+            guard try type.propertyMutable(propertyLookup.name) else { throw error(SemaError.ImmutableProperty(p: propertyLookup.name, obj: objectName, ty: type.name)) }
+            
             
         default:
             break
@@ -109,7 +117,7 @@ extension VariableDecl : DeclTypeProvider {
     func llvmType(scope: SemaScope) throws {
         // handle redeclaration
         if let _ = scope[variable: name] {
-            throw error(SemaError.InvalidRedeclaration(name, value))
+            throw error(SemaError.InvalidRedeclaration(name))
         }
         
         // if provided, get the explicit type

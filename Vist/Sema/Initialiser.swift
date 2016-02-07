@@ -45,8 +45,9 @@ extension StructExpr {
             initialisations.append(m)
         }
         
+        let params = (0..<names.count).map(implicitArgName)
         let block = BlockExpr(exprs: initialisations)
-        let body = FunctionImplementationExpr(params: names, body: block)
+        let body = FunctionImplementationExpr(params: params, body: block)
         
         let ty = FunctionType(args: DefinedType(types), returns: .Type(name))
         

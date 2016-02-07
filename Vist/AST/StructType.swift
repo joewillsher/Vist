@@ -33,11 +33,19 @@ final class StructType : Ty {
             false)
     }
     
-    func propertyType(name: String) throws -> Ty? {
+    private func indexOfTypeNamed(name: String) throws -> Int {
         guard let i = members.indexOf({ $0.name == name }) else { throw error(SemaError.NoPropertyNamed(type: self.name, property: name)) }
-        return members[i].type
+        return i
     }
     
+    func propertyType(name: String) throws -> Ty {
+        return members[try indexOfTypeNamed(name)].type
+    }
+
+    func propertyMutable(name: String) throws -> Bool {
+        return members[try indexOfTypeNamed(name)].mutable
+    }
+
     static func named(n: String) -> StructType {
         return StructType(members: [], methods: [], name: n)
     }

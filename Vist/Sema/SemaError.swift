@@ -8,11 +8,11 @@
 
 enum SemaError : VistError {
     case InvalidType(BuiltinType), InvalidFloatType(UInt32)
-    case InvalidRedeclaration(String, Expr)
+    case InvalidRedeclaration(String)
     case NoVariable(String)
     case HeterogenousArray([Ty]), EmptyArray
     case CannotSubscriptNonArrayVariable, NonIntegerSubscript
-    case NonBooleanCondition, NotRangeType, DifferentTypeForMutation(String, Ty, Ty), ImmutableVariable(String)
+    case NonBooleanCondition, NotRangeType, DifferentTypeForMutation(String, Ty, Ty), ImmutableVariable(String), ImmutableProperty(p: String, obj: String, ty: String)
     case CannotAssignToNullExpression(String)
     
     case NoFunction(String, [Ty])
@@ -34,7 +34,7 @@ enum SemaError : VistError {
             return "Invalid type '\(t)'"
         case let .InvalidFloatType(s):
             return "Invalid float of size \(s)"
-        case let .InvalidRedeclaration(t, _):
+        case let .InvalidRedeclaration(t):
             return "Variable '\(t)' is already declared"
         case let .NoVariable(v):
             return "Could not find variable '\(v)' in this scope"
@@ -55,16 +55,18 @@ enum SemaError : VistError {
             return "Cannot change type of '\(name)' from '\(from)' to '\(to)'"
         case let .ImmutableVariable(name):
             return "Variable '\(name)' is immutable"
+        case let .ImmutableProperty(p, obj, ty):
+            return "Variable '\(obj)' (of type '\(ty)') does not have mutable property '\(p)'"
         case let .CannotAssignToNullExpression(name):
             return "Variable '\(name)' cannot be assigned to null typed expression"
             
             
         case let .WrongFunctionReturnType(applied, expected):
-            return "Invalid return from function. \(applied) is not convertible to \(expected)"
+            return "Invalid return from function. '\(applied)' is not convertible to '\(expected)'"
         case let .NoFunction(f, ts):
-            return "Could not find function '\(f)' which accepts parameters of type \(ts.asTupleDescription())"
+            return "Could not find function '\(f)' which accepts parameters of type '\(ts.asTupleDescription())'"
         case let .WrongFunctionApplications(name, applied, expected):
-            return "Incorrect application of function '\(name)'. \(applied.asTupleDescription()) is not convertible to \(expected.asTupleDescription())"
+            return "Incorrect application of function '\(name)'. '\(applied.asTupleDescription())' is not convertible to '\(expected.asTupleDescription())'"
         case let .NoTypeNamed(name):
             return "No type '\(name)' found"
         case let .NoPropertyNamed(type, property):

@@ -14,8 +14,6 @@ private func t(n:Int) -> String {
 
 public protocol Printable : CustomStringConvertible {
     func _description(n: Int) -> String
-    func printList() -> [(String?, Printable)]?
-    func printVal() -> String?
     func printDirectly() -> String?
 }
 
@@ -31,7 +29,6 @@ extension Printable {
     public func _description(n: Int) -> String {
         
         if let v = printDirectly() { return v }
-        if let v = printVal() { return "(\(self.dynamicType) \(v))" }
         
         let mirror = Mirror(reflecting: self)
         
@@ -50,13 +47,7 @@ extension Printable {
             
             return "\($0)\(n0)\(t1)\(a)\($1.1._description(n+1))" } + "\(n0)\(te))"
     }
-    
-    /// implement to call _description on children
-    public func printList() -> [(String?, Printable)]? { return nil }
-    
-    /// should represent this object
-    public func printVal() -> String? { return nil }
-    
+        
     /// Print the object, not a _description of it
     public func printDirectly() -> String? { return nil }
 }
@@ -104,14 +95,6 @@ extension Optional : Printable {
         switch self {
         case .None: return "nil"
         case .Some(let a) where a is Printable: return (a as! Printable).printDirectly()
-        case _: return nil
-        }
-    }
-    
-    public func printVal() -> String? {
-        switch self {
-        case .None: return "nil"
-        case .Some(let a) where a is Printable: return (a as! Printable).printVal()
         case _: return nil
         }
     }

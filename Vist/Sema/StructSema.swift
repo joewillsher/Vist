@@ -14,13 +14,23 @@ extension StructExpr : ExprTypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
         
+        var errors: [VistError] = []
+        
         let structScope = SemaScope(parent: scope, returnType: nil) // cannot return from Struct scope
         
         // maps over properties and gens types
-        let members = try properties.map { (a: VariableDecl) -> StructMember in
-            try a.llvmType(structScope)
-            guard let t = a.value._type else { throw error(SemaError.StructPropertyNotTyped(type: name, property: a.name)) }
-            return (a.name, t, a.isMutable)
+        let members = try properties.flatMap { (a: VariableDecl) -> StructMember? in
+            
+            do {
+                try a.llvmType(structScope)
+                guard let t = a.value._type else { throw error(SemaError.StructPropertyNotTyped(type: name, property: a.name)) }
+                return (a.name, t, a.isMutable)
+            }
+            catch let error as VistError {
+                errors.append(error)
+                return nil
+            }
+            
         }
         
         let ty = StructType(members: members, methods: [], name: name)
@@ -28,12 +38,20 @@ extension StructExpr : ExprTypeProvider {
         scope[type: name] = ty
         self.type = ty
         
-        let memberFunctions = try methods.flatMap { (f: FuncDecl) -> StructMethod in
-            try f.llvmType(structScope)
-            guard let t = f.fnType.type else { throw error(SemaError.StructMethodNotTyped(type: name, methodName: f.name)) }
-            return (f.name.mangle(t, parentTypeName: name), t)
+        let memberFunctions = try methods.flatMap { (f: FuncDecl) -> StructMethod? in
+            
+            do {
+                try f.llvmType(structScope)
+                guard let t = f.fnType.type else { throw error(SemaError.StructMethodNotTyped(type: name, methodName: f.name)) }
+                return (f.name.mangle(t, parentTypeName: name), t)
+            }
+            catch let error as VistError {
+                errors.append(error)
+                return nil
+            }
+            
         }
-        
+    
         ty.methods = memberFunctions
         
         if let implicit = implicitIntialiser() {
@@ -43,8 +61,8 @@ extension StructExpr : ExprTypeProvider {
         let memberwise = try memberwiseInitialiser()
         initialisers.append(memberwise)
         
-        for i in initialisers {
-            try i.llvmType(scope)
+        try initialisers.walkChildren { node in
+            try node.llvmType(scope)
         }
         
         return ty
@@ -89,7 +107,7 @@ extension InitialiserDecl : DeclTypeProvider {
             initScope[variable: p] = (type: type, mutable: false)
         }
         
-        for ex in impl.body.exprs {
+        try impl.body.walkChildren { ex in
             try ex.llvmType(initScope)
         }
         
@@ -100,8 +118,9 @@ extension PropertyLookupExpr : ExprTypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
         
-        guard case let objType as StructType = try object.llvmType(scope) else  { throw error(SemaError.NoTypeForStruct, userVisible: false) }
-        guard let propertyType = try objType.propertyType(name) else            { throw error(SemaError.NoPropertyNamed(type: objType.name, property: name)) }
+        guard case let objType as StructType = try object.llvmType(scope) else { throw error(SemaError.NoTypeForStruct, userVisible: false) }
+        
+        let propertyType = try objType.propertyType(name)
         self._type = propertyType
         return propertyType
     }

@@ -49,7 +49,7 @@ extension ElseIfBlockStmt : StmtTypeProvider {
         let c = try condition?.llvmType(scope)
         
         // gen types for cond block
-        for exp in block.exprs {
+        try block.exprs.walkChildren { exp in
             try exp.llvmType(scope)
         }
 
@@ -82,7 +82,7 @@ extension ForInLoopStmt : StmtTypeProvider {
         guard try iterator.llvmType(scope) == StdLib.RangeType else { throw error(SemaError.NotRangeType) }
         
         // parse inside of loop in loop scope
-        for exp in block.exprs {
+        try block.exprs.walkChildren { exp in
             try exp.llvmType(loopScope)
         }
     }
@@ -101,7 +101,7 @@ extension WhileLoopStmt : StmtTypeProvider {
         guard try condition.llvmType(scope) == StdLib.BoolType else { throw error(SemaError.NonBooleanCondition) }
         
         // parse inside of loop in loop scope
-        for exp in block.exprs {
+        try block.exprs.walkChildren { exp in
             try exp.llvmType(loopScope)
         }
     }

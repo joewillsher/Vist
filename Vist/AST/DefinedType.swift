@@ -47,11 +47,11 @@ enum DefinedType {
     }
     
     
-    private func tyArr() throws -> [Ty] {
+    private func tyArr(scope: SemaScope? = nil) throws -> [Ty] {
         switch self {
         case .Void:             return []
-        case .Type, .Function:  return [try type()]
-        case let .Tuple(ts):    return try ts.flatMap { try $0.type() }
+        case .Type, .Function:  return [try type(scope)]
+        case let .Tuple(ts):    return try ts.flatMap { try $0.type(scope) }
         }
     }
     
@@ -84,11 +84,11 @@ enum DefinedType {
             throw error(SemaError.NoTypeNamed(name))
             
         case let .Tuple(elements):
-            let types = try elements.map({try $0.type()})
+            let types = try elements.map({try $0.type(scope)})
             return TupleType(members: types)
             
         case let .Function(f):
-            return FnType(params: try f.args.tyArr(), returns: try f.returns.type())
+            return FnType(params: try f.args.tyArr(scope), returns: try f.returns.type(scope))
         }
     }
 }
@@ -99,13 +99,12 @@ extension FunctionType {
     
     func params(scope: SemaScope)
         throws -> [Ty] {
-            return try args.tyArr()
+            return try args.tyArr(scope)
     }
     
     func returnType(scope: SemaScope)
         throws -> Ty {
-            
-            return try returns.type()
+            return try returns.type(scope)
     }
 }
 

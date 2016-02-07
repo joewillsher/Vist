@@ -25,13 +25,19 @@ extension ScopeNode {
             do {
                 try fn(exp)
             }
-            catch let error where error is VistError {
-                errors.append(error as! VistError)
+            catch let error as VistError {
+                errors.append(error)
             }
         }
         
         try errors.throwIfErrors()
         
+    }
+}
+
+extension CollectionType where Generator.Element : ASTNode {
+    func walkChildren<Ret>(fn: (ASTNode) throws -> Ret) throws {
+        try mapAs(ASTNode).walkChildren(fn)
     }
 }
 
@@ -45,8 +51,8 @@ extension CollectionType where Generator.Element == ASTNode {
             do {
                 try fn(exp)
             }
-            catch let error where error is VistError {
-                errors.append(error as! VistError)
+            catch let error as VistError {
+                errors.append(error)
             }
         }
         

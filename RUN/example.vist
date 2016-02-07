@@ -1,15 +1,42 @@
 
 
-
-type Foo {
+// type foo, { i64 i64 } type
+// implicit memberwise initialser is added
+type StackOf2 {
+    var a: Int
+    var b: Int
     
-    let bar: Int Int
+    func sum :: () -> Int = do return a + b
+    func pop :: () -> Int = do return b
     
+    func removeB :: -> Int = {
+        let v = b
+        b = 0
+        return v
+    }
+    
+    // mutating methods
+    // by passing self as a pointer
 }
 
+func push :: Int StackOf2 -> StackOf2 = (val stack) do
+    return StackOf2 stack.b val
 
-let x = (Foo ())
+func empty :: -> StackOf2 = do
+    return StackOf2 0 0
 
-print x.bar.1
 
+var stack = StackOf2 2 10
+
+print (stack.sum ())
+// test: 12
+
+stack = push 3 stack
+print (stack.pop ())
+// test: 3
+
+stack = empty ()
+
+print stack.a == stack.b
+// test: true
 
