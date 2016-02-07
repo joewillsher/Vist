@@ -10,7 +10,6 @@
 protocol Decl : ASTNode, DeclTypeProvider {}
 
 
-
 final class VariableDecl : Decl, StructMemberExpr {
     let name: String
     let aType: DefinedType?
@@ -41,7 +40,6 @@ class FuncDecl : Decl, StructMemberExpr {
     
     var mangledName: String
     
-    // FIXME: FuncDecl protocol and 2 implementations
     /// `self` if the function is a member function
     weak var parent: StructExpr? = nil
 }

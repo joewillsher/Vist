@@ -41,9 +41,9 @@ struct FunctionContainer {
     ///
     /// - parameter types: Applied arg types
     ///
-    /// - returns: An optional tuple of `(mangled-name, type)`
+    /// - returns: An optional tuple of `(mangledName, type)`
     ///
-    subscript(fn fn: String, types types: [Ty]) -> (String, FnType)? {
+    subscript(fn fn: String, types types: [Ty]) -> (mangledName: String, type: FnType)? {
         get {
             let mangled = fn.mangle(types)
             guard let ty = functions[mangled] else { return nil }

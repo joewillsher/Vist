@@ -26,7 +26,7 @@ extension StructExpr {
         let block = BlockExpr(exprs: initialisations)
         let body = FunctionImplementationExpr(params: [], body: block)
         
-        let ty = FunctionType(args: .Void, returns: .Type(name))
+        let ty = FunctionType(paramType: .Void, returnType: .Type(name))
         
         return InitialiserDecl(ty: ty, impl: body, parent: self)
     }
@@ -40,16 +40,16 @@ extension StructExpr {
         var initialisations: [ASTNode] = []
         for (i, name) in names.enumerate() {
             let object = VariableExpr(name: name)
-            let value = VariableExpr(name: i.implicitArgName())
+            let value = VariableExpr(name: i.implicitParamName())
             let m = MutationExpr(object: object, value: value)
             initialisations.append(m)
         }
         
-        let params = (0..<names.count).map(implicitArgName)
+        let params = (0..<names.count).map(implicitParamName)
         let block = BlockExpr(exprs: initialisations)
         let body = FunctionImplementationExpr(params: params, body: block)
         
-        let ty = FunctionType(args: DefinedType(types), returns: .Type(name))
+        let ty = FunctionType(paramType: DefinedType(types), returnType: .Type(name))
         
         return InitialiserDecl(ty: ty, impl: body, parent: self)
     }

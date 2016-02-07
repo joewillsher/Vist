@@ -8,9 +8,7 @@
 
 
 struct FnType : Ty {
-    let params: [Ty]
-    let returns: Ty
-    
+    let params: [Ty], returns: Ty
     var metadata: [String]
     
     func ir() -> LLVMTypeRef {

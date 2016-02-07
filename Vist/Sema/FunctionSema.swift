@@ -36,12 +36,12 @@ extension FuncDecl : DeclTypeProvider {
         }
         
         // if is a method
-        if let t = parent?.type {
+        if let parentType = parent?.type {
             // add self
-            fnScope[variable: "self"] = (type: t, mutable: false)
+            fnScope[variable: "self"] = (type: parentType, mutable: false)
             
             // add self's memebrs implicitly
-            for (name, type, _) in t.members {
+            for (name, type, _) in parentType.members {
                 fnScope[variable: name] = (type: type, mutable: false)
             }
         }
@@ -54,35 +54,39 @@ extension FuncDecl : DeclTypeProvider {
     }
 }
 
+extension BinaryExpr : ExprTypeProvider {
+    
+    func llvmType(scope: SemaScope) throws -> Ty {
+        
+        let args = [lhs, rhs]
+        
+        guard let argTypes = try args.stableOptionalMap({ try $0.llvmType(scope) }) else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
+        
+        let (mangledName, fnType) = try scope.function(op, argTypes: argTypes)
+        self.mangledName = mangledName
+        
+        // gen types for objects in call
+        for arg in args {
+            try arg.llvmType(scope)
+        }
+        
+        // assign type to self and return
+        self.fnType = fnType
+        self._type = fnType.returns
+        return fnType.returns
+    }
+}
+
 
 extension FunctionCallExpr : ExprTypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
         
         // get from table
-        guard let params = try args.elements.stableOptionalMap({ try $0.llvmType(scope) }) else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
-        let builtinFn = BuiltinDef.getBuiltinFunction(self.name, args: params)
-        let fnType: FnType
+        guard let argTypes = try args.elements.stableOptionalMap({ try $0.llvmType(scope) }) else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
         
-        // if its in the stdlib return it
-        if let (mangledName, type) = StdLib.getStdLibFunction(self.name, args: params) where !scope.isStdLib {
-            self.mangledName = mangledName
-            fnType = type
-        }
-        else {
-            let _fnType = builtinFn?.1 ?? scope[function: self.name, paramTypes: params]
-            let name = builtinFn?.0 ?? self.name
-            
-            //!scope.isStdLib
-            
-            guard let ty = _fnType  else {
-                if let f = scope[function: name] { throw error(SemaError.WrongFunctionApplications(name: name, applied: params, expected: f.params)) }
-                else                             { throw error(SemaError.NoFunction(name, params)) }
-            }
-            
-            self.mangledName = name.mangle(ty)
-            fnType = ty
-        }
+        let (mangledName, fnType) = try scope.function(name, argTypes: argTypes)
+        self.mangledName = mangledName
         
         // gen types for objects in call
         for arg in args.elements {

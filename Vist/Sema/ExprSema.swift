@@ -152,42 +152,6 @@ extension VariableDecl : DeclTypeProvider {
 //  MARK:                                                 Exprs
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension BinaryExpr : ExprTypeProvider {
-    
-    func llvmType(scope: SemaScope) throws -> Ty {
-        
-        let args = [lhs, rhs]
-        
-        guard let params = try args.stableOptionalMap({ try $0.llvmType(scope) }) else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
-        let fnType: FnType
-        
-        if let (mangledName, stdLibType) = StdLib.getStdLibFunction(op, args: params) where !scope.isStdLib {
-            self.mangledName = mangledName
-            fnType = stdLibType
-            
-        }
-        else {
-            guard let ty = scope[function: op, paramTypes: params]  else {
-                if let f = scope[function: op] { throw error(SemaError.WrongFunctionApplications(name: op, applied: params, expected: f.params)) }
-                else                           { throw error(SemaError.NoFunction(op, params)) }
-            }
-            
-            self.mangledName = op.mangle(ty)
-            fnType = ty
-        }
-        
-        // gen types for objects in call
-        for arg in args {
-            try arg.llvmType(scope)
-        }
-        
-        // assign type to self and return
-        self.fnType = fnType
-        self._type = fnType.returns
-        return fnType.returns
-    }
-}
-
 
 extension Void : ExprTypeProvider {
     
@@ -218,7 +182,7 @@ extension ClosureExpr : ExprTypeProvider {
         innerScope.returnType = ty.returns
         
         for (i, t) in ty.params.enumerate() {
-            let name = parameters.isEmpty ? i.implicitArgName() : parameters[i]
+            let name = parameters.isEmpty ? i.implicitParamName() : parameters[i]
             innerScope[variable: name] = (type: t, mutable: false)
         }
         

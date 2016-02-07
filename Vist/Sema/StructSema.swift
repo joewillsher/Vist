@@ -134,16 +134,14 @@ extension MethodCallExpr : ExprTypeProvider {
         let ty = try object.llvmType(scope)
         guard case let parentType as StructType = ty else { throw error(SemaError.NotStructType(ty), userVisible: false) }
         
-        let params = try self.params.elements.map { try $0.llvmType(scope) }
+        let args = try self.args.elements.map { try $0.llvmType(scope) }
         
-        guard let fnType = parentType[function: name, paramTypes: params] else { throw error(SemaError.NoFunction(name, params)) }
+        guard let fnType = parentType.getMethod(name, argTypes: args) else { throw error(SemaError.NoFunction(name, args)) }
         
         self.mangledName = name.mangle(fnType, parentTypeName: parentType.name)
         
-        guard params == fnType.params else { throw error(SemaError.WrongFunctionApplications(name: "\(parentType.name).\(name)", applied: params, expected: fnType.params)) }
-        
         // gen types for objects in call
-        for arg in self.params.elements {
+        for arg in self.args.elements {
             try arg.llvmType(scope)
         }
         
@@ -163,8 +161,7 @@ extension TupleExpr : ExprTypeProvider {
         
         guard elements.count != 1 else { return BuiltinType.Void }
         
-        let tys = try elements
-            .map { try $0.llvmType(scope) }
+        let tys = try elements.map { try $0.llvmType(scope) }
         
         let t = TupleType(members: tys)
         type = t
@@ -176,7 +173,8 @@ extension TupleMemberLookupExpr : ExprTypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
         
-        guard case let objType as TupleType = try object.llvmType(scope) else { throw error(SemaError.NoTypeForTuple, userVisible: false) }
+        guard case let objType as TupleType = try object.llvmType(scope) else {
+            throw error(SemaError.NoTypeForTuple, userVisible: false) }
         
         let propertyType = try objType.propertyType(index)
         self._type = propertyType

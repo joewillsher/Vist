@@ -42,7 +42,7 @@ extension ASTNode {
 
 extension CollectionType where Index == Int {
     
-    /// An impl of flatmap which flatmaps but throws if the size changes
+    /// An impl of flatmap which flatmaps but returns nil if the size changes
     @warn_unused_result
     public func stableOptionalMap<T>(@noescape transform: (Self.Generator.Element) throws -> T?) rethrows -> [T]? {
         let new = try flatMap(transform)

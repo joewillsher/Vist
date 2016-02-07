@@ -33,12 +33,36 @@ final class SemaScope {
             variables[variable] = newValue
         }
     }
-    subscript (function function: String, paramTypes types: [Ty]) -> FnType? {
-        get {
-            if let v = functions[raw: function, paramTypes: types] { return v }
-            return parent?[function: function, paramTypes: types]
+
+    /// Gets a function from name and argument types
+    ///
+    /// Looks for function in the stdlib (if not compiling it) then
+    /// in the builtin functions, then it looks through this scope,
+    /// then searches parent scopes, throwing if not found
+    ///
+    func function(name: String, argTypes: [Ty]) throws -> (String, FnType) {
+
+        if let stdLibFunction = StdLib.getStdLibFunction(name, args: argTypes) where !isStdLib {
+            return stdLibFunction
+        }
+        else if let builtinFunction = Builtin.getBuiltinFunction(name, argTypes: argTypes) where isStdLib {
+            return builtinFunction
+        }
+        else if let localFunctionType = functions[raw: name, paramTypes: argTypes] {
+            return (name.mangle(argTypes), localFunctionType)
+        }
+        else if let inParent = try parent?.function(name, argTypes: argTypes) {
+            return inParent
+        }
+        // error handling
+        else if let f = self[function: name] {
+            throw error(SemaError.WrongFunctionApplications(name: name, applied: argTypes, expected: f.params))
+        }
+        else {
+            throw error(SemaError.NoFunction(name, argTypes))
         }
     }
+    
     subscript (function function: String) -> FnType? {
         get {
             if let v = functions[raw: function] { return v }

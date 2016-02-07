@@ -34,7 +34,6 @@ extension ConditionalStmt : StmtTypeProvider {
         for statement in statements {
             // inner scopes
             let ifScope = SemaScope(parent: scope, returnType: scope.returnType)
-            
             try statement.llvmType(ifScope)
         }
     }
@@ -56,7 +55,7 @@ extension ElseIfBlockStmt : StmtTypeProvider {
         // if no condition we're done
         if condition == nil { return }
         
-        // otherwise make sure its an Int
+        // otherwise make sure its a Bool
         guard let condition = c where condition == StdLib.BoolType else { throw error(SemaError.NonBooleanCondition) }
     }
     

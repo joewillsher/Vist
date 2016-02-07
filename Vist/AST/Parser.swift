@@ -36,7 +36,7 @@ private extension Token {
 /// Parser object, initialised with tokenised code and exposes methods to generare AST
 final class Parser {
     
-    init(tokens: [(Token, SourceLoc)], isStdLib: Bool = false) {
+    private init(tokens: [(Token, SourceLoc)], isStdLib: Bool = false) {
         self.tokensWithPos = tokens.filter {
             if case .Comment = $0.0 { return false } else { return true }
         }
@@ -405,10 +405,10 @@ extension Parser {
                 
                 if case .OpenParen = currentToken {   // simple itentifier () call
                     getNextToken(2) // eat `)`
-                    return MethodCallExpr(name: name, params: TupleExpr.void(), object: exp)
+                    return MethodCallExpr(name: name, args: TupleExpr.void(), object: exp)
                 }
                 
-                return MethodCallExpr(name: name, params: try parseParamExpr(), object: exp)
+                return MethodCallExpr(name: name, args: try parseParamExpr(), object: exp)
                 
             case .Assign?:
                 getNextToken(2) // eat `.foo` `=`
@@ -454,7 +454,7 @@ extension Parser {
     /// Function parses one expression, and can handle operators & parens, function 
     /// calls, literals & variables, blocks, arrays, and tuples
     ///
-    /// Function called on `return a + 1` and `if a < 3` etc
+    /// Called on `return a + 1`, `let a = foo(x) + 1` and `if a < 3 do` etc
     ///
     /// - parameter exp: A known lhs operand to give more info to the parser
     ///
@@ -653,9 +653,7 @@ extension Parser {
             getNextToken()
             explicitType = try parseTypeExpr()
         }
-        else {
-            explicitType = nil
-        }
+        else { explicitType = nil }
         
         // TODO: Closure declaration parsing
         
@@ -691,7 +689,7 @@ extension Parser {
         
         // case like fn: Int =
         guard case .Returns = currentToken else {
-            return FunctionType(args: p, returns: DefinedType.Void)
+            return FunctionType(paramType: p, returnType: DefinedType.Void)
         }
         getNextToken() // eat '->'
         
@@ -699,20 +697,20 @@ extension Parser {
         
         // case like fn: Int -> Int =
         guard case .Returns = currentToken else {
-            return FunctionType(args: p, returns: r)
+            return FunctionType(paramType: p, returnType: r)
         }
-
-        var ty = FunctionType(args: p, returns: r)
+        
+        var ty = FunctionType(paramType: p, returnType: r)
         
         // curried case like fn: Int -> Int -> Int
         while case .Returns = currentToken {
             getNextToken()
 
-            let params = ty.returns
+            let params = ty.returnType
             let returns = try parseTypeExpr()
-            let out = FunctionType(args: params, returns: returns)
+            let out = FunctionType(paramType: params, returnType: returns)
             
-            ty = FunctionType(args: ty.args, returns: .Function(out))
+            ty = FunctionType(paramType: ty.paramType, returnType: .Function(out))
         }
         
         return ty
@@ -801,7 +799,7 @@ extension Parser {
             names = try parseClosureNamesExpr()
         }
         else {
-            names = (0..<type.args.count).map(implicitArgName)
+            names = (0..<type.paramType.typeNames().count).map(implicitParamName)
         }
         
         guard currentToken.isControlToken() else { throw error(ParseError.NotBlock, loc: SourceRange.at(currentPos)) }
@@ -874,7 +872,6 @@ extension Parser {
         
         var elements = [Expr]()
         while true {
-            
             switch currentToken {
             case .Comma:
                 getNextToken()  // eat ','
@@ -901,7 +898,7 @@ extension Parser {
     
     /// Parse the declaration of a type
     ///
-    /// - returns: The AST for a struct and its memebers & initialisers
+    /// - returns: The AST for a struct’s members, methods, & initialisers
     ///
     private func parseTypeDeclarationExpr(byRef byRef: Bool) throws -> StructExpr {
         
@@ -1068,7 +1065,7 @@ extension Parser {
     
     /// Returns abstract syntax tree from an instance of a parser
     ///
-    func parse() throws -> AST {
+    private func parse() throws -> AST {
         
         index = 0
         exprs = []
@@ -1080,6 +1077,11 @@ extension Parser {
         }
         
         return AST(exprs: exprs)
+    }
+    
+    static func parseWith(toks: [(Token, SourceLoc)], isStdLib: Bool = false) throws -> AST {
+        let p = Parser(tokens: toks, isStdLib: isStdLib)
+        return try p.parse()
     }
     
 }

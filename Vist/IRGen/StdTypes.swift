@@ -9,7 +9,7 @@
 
 extension COpaquePointer {
     
-    func load(property: String, type: Ty?, builder: LLVMBuilderRef, irName: String? = nil) throws -> LLVMValueRef {
+    func load(property: String, fromType type: Ty?, builder: LLVMBuilderRef, irName: String = "") throws -> LLVMValueRef {
         if case let stdType as StructType = type {
             return try stdType.loadPropertyNamed(property, from: self, builder: builder, irName: irName)
         }
@@ -27,13 +27,18 @@ extension StructType {
     }
     
     /// Builds load of named property from struct
-    func loadPropertyNamed(name: String, from value: LLVMValueRef, builder: LLVMBuilderRef, irName: String? = nil) throws -> LLVMValueRef {
+    private func loadPropertyNamed(name: String, from value: LLVMValueRef, builder: LLVMBuilderRef, irName: String = "") throws -> LLVMValueRef {
         guard let i = indexOfProperty(name) else { throw error(SemaError.NoPropertyNamed(type: name, property: self.name)) }
-        return LLVMBuildExtractValue(builder, value, UInt32(i), irName ?? name)
+        return LLVMBuildExtractValue(builder, value, UInt32(i), irName)
     }
     
-    /// Initialises a builtin type from list of valuerefs
-    func initialiseWithBuiltin(val: LLVMValueRef..., module: LLVMModuleRef, builder: LLVMBuilderRef, irName: String? = nil) -> LLVMValueRef {
+    /// Initialises a stdtype from a list of its members' ir
+    ///
+    /// Provides compiler the interface of std types' initialiser
+    ///
+    /// Returns the result of a function call to the initialise
+    ///
+    func initialiseStdTypeFromBuiltinMembers(val: LLVMValueRef..., module: LLVMModuleRef, builder: LLVMBuilderRef, irName: String = "") -> LLVMValueRef {
         let tys = members.map { $0.1 }
         let initName = name.mangle(FnType(params: tys, returns: BuiltinType.Void/*we con’t care what this is, its not used in mangling*/))
         
@@ -42,7 +47,7 @@ extension StructType {
         let args = val.ptr()
         defer { args.dealloc(members.count) }
         
-        let call = LLVMBuildCall(builder, initialiser, args, 1, irName ?? "")
+        let call = LLVMBuildCall(builder, initialiser, args, 1, irName)
         type.addMetadata(call)
         return call
     }

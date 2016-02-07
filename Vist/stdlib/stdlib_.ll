@@ -219,8 +219,8 @@ declare void @llvm.trap() #4
 ; Function Attrs: alwaysinline
 define void @_assert_S.b({ i1 } %"$0") #2 {
 entry:
-  %value = extractvalue { i1 } %"$0", 0
-  br i1 %value, label %then.0, label %cont.0
+  %0 = extractvalue { i1 } %"$0", 0
+  br i1 %0, label %then.0, label %cont.0
 
 cont.stmt:                                        ; preds = %else.1, %then.0
   ret void
@@ -239,9 +239,9 @@ else.1:                                           ; preds = %cont.0
 ; Function Attrs: alwaysinline
 define void @_condFail_b(i1 %"$0") #2 {
 entry:
-  %Bool_res = call { i1 } @_Bool_b(i1 %"$0"), !stdlib.call.optim !2
-  %value = extractvalue { i1 } %Bool_res, 0
-  br i1 %value, label %then.0, label %cont.stmt
+  %Bool_res = call { i1 } @_Bool_b(i1 %"$0")
+  %0 = extractvalue { i1 } %Bool_res, 0
+  br i1 %0, label %then.0, label %cont.stmt
 
 cont.stmt:                                        ; preds = %entry, %then.0
   ret void
@@ -264,7 +264,7 @@ entry:
   call void @_condFail_b(i1 %"1")
   %"0_ptr" = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 0
   %"0" = load i64* %"0_ptr"
-  %Int_res = call { i64 } @_Int_i64(i64 %"0"), !stdlib.call.optim !2
+  %Int_res = call { i64 } @_Int_i64(i64 %"0")
   ret { i64 } %Int_res
 }
 
@@ -284,7 +284,7 @@ entry:
   call void @_condFail_b(i1 %"1")
   %"0_ptr" = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 0
   %"0" = load i64* %"0_ptr"
-  %Int_res = call { i64 } @_Int_i64(i64 %"0"), !stdlib.call.optim !2
+  %Int_res = call { i64 } @_Int_i64(i64 %"0")
   ret { i64 } %Int_res
 }
 
@@ -304,7 +304,7 @@ entry:
   call void @_condFail_b(i1 %"1")
   %"0_ptr" = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 0
   %"0" = load i64* %"0_ptr"
-  %Int_res = call { i64 } @_Int_i64(i64 %"0"), !stdlib.call.optim !2
+  %Int_res = call { i64 } @_Int_i64(i64 %"0")
   ret { i64 } %Int_res
 }
 
@@ -317,7 +317,7 @@ entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %div_res = udiv i64 %value, %value1
-  %Int_res = call { i64 } @_Int_i64(i64 %div_res), !stdlib.call.optim !2
+  %Int_res = call { i64 } @_Int_i64(i64 %div_res)
   ret { i64 } %Int_res
 }
 
@@ -327,7 +327,7 @@ entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %rem_res = urem i64 %value, %value1
-  %Int_res = call { i64 } @_Int_i64(i64 %rem_res), !stdlib.call.optim !2
+  %Int_res = call { i64 } @_Int_i64(i64 %rem_res)
   ret { i64 } %Int_res
 }
 
@@ -337,7 +337,7 @@ entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %cmp_lt_res = icmp slt i64 %value, %value1
-  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_lt_res), !stdlib.call.optim !2
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_lt_res)
   ret { i1 } %Bool_res
 }
 
@@ -347,7 +347,7 @@ entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %cmp_lte_res = icmp sle i64 %value, %value1
-  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_lte_res), !stdlib.call.optim !2
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_lte_res)
   ret { i1 } %Bool_res
 }
 
@@ -357,7 +357,7 @@ entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %cmp_gt_res = icmp sgt i64 %value, %value1
-  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_gt_res), !stdlib.call.optim !2
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_gt_res)
   ret { i1 } %Bool_res
 }
 
@@ -367,7 +367,7 @@ entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %cmp_gte_res = icmp sge i64 %value, %value1
-  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_gte_res), !stdlib.call.optim !2
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_gte_res)
   ret { i1 } %Bool_res
 }
 
@@ -377,7 +377,7 @@ entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %cmp_eq_res = icmp eq i64 %value, %value1
-  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_eq_res), !stdlib.call.optim !2
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_eq_res)
   ret { i1 } %Bool_res
 }
 
@@ -387,7 +387,7 @@ entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %cmp_neq_res = icmp ne i64 %value, %value1
-  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_neq_res), !stdlib.call.optim !2
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_neq_res)
   ret { i1 } %Bool_res
 }
 
@@ -397,7 +397,7 @@ entry:
   %value = extractvalue { i1 } %a, 0
   %value1 = extractvalue { i1 } %b, 0
   %cmp_and_res = and i1 %value, %value1
-  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_and_res), !stdlib.call.optim !2
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_and_res)
   ret { i1 } %Bool_res
 }
 
@@ -407,7 +407,7 @@ entry:
   %value = extractvalue { i1 } %a, 0
   %value1 = extractvalue { i1 } %b, 0
   %cmp_or_res = or i1 %value, %value1
-  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_or_res), !stdlib.call.optim !2
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_or_res)
   ret { i1 } %Bool_res
 }
 
@@ -467,7 +467,7 @@ entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %cmp_lt_res = fcmp olt double %value, %value1
-  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_lt_res), !stdlib.call.optim !2
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_lt_res)
   ret { i1 } %Bool_res
 }
 
@@ -477,7 +477,7 @@ entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %cmp_lte_res = fcmp ole double %value, %value1
-  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_lte_res), !stdlib.call.optim !2
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_lte_res)
   ret { i1 } %Bool_res
 }
 
@@ -487,7 +487,7 @@ entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %cmp_gt_res = fcmp ogt double %value, %value1
-  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_gt_res), !stdlib.call.optim !2
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_gt_res)
   ret { i1 } %Bool_res
 }
 
@@ -497,7 +497,7 @@ entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %cmp_gte_res = fcmp oge double %value, %value1
-  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_gte_res), !stdlib.call.optim !2
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_gte_res)
   ret { i1 } %Bool_res
 }
 
@@ -507,7 +507,7 @@ entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %cmp_eq_res = fcmp oeq double %value, %value1
-  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_eq_res), !stdlib.call.optim !2
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_eq_res)
   ret { i1 } %Bool_res
 }
 
@@ -517,14 +517,14 @@ entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %cmp_neq_res = fcmp one double %value, %value1
-  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_neq_res), !stdlib.call.optim !2
+  %Bool_res = call { i1 } @_Bool_b(i1 %cmp_neq_res)
   ret { i1 } %Bool_res
 }
 
 ; Function Attrs: alwaysinline
 define { { i64 }, { i64 } } @_..._S.i64_S.i64({ i64 } %a, { i64 } %b) #2 {
 entry:
-  %Range_res = call { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 } %a, { i64 } %b), !stdlib.call.optim !2
+  %Range_res = call { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 } %a, { i64 } %b)
   ret { { i64 }, { i64 } } %Range_res
 }
 
@@ -533,7 +533,7 @@ define { { i64 }, { i64 } } @"_..<_S.i64_S.i64"({ i64 } %a, { i64 } %b) #2 {
 entry:
   %0 = call { i64 } @_Int_i64(i64 1), !stdlib.call.optim !2
   %-.res = call { i64 } @_-_S.i64_S.i64({ i64 } %b, { i64 } %0)
-  %Range_res = call { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 } %a, { i64 } %-.res), !stdlib.call.optim !2
+  %Range_res = call { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 } %a, { i64 } %-.res)
   ret { { i64 }, { i64 } } %Range_res
 }
 

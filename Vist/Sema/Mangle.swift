@@ -32,9 +32,10 @@ extension String {
     }
 }
 
-func implicitArgName<I : IntegerType>(n: I) -> String { return "$\(n)"}
+func implicitParamName<I : IntegerType>(n: I) -> String { return "$\(n)"}
+
 extension IntegerType {
-    func implicitArgName() -> String { return "$\(self)"}
+    func implicitParamName() -> String { return "$\(self)"}
 }
 
 extension BuiltinType : CustomStringConvertible, CustomDebugStringConvertible {

@@ -110,7 +110,7 @@ extension IntegerLiteral : IRGenerator {
         let value = LLVMConstInt(rawType.ir(), UInt64(val), false)
         
         guard let type = self.type else { throw error(SemaError.IntegerNotTyped, userVisible: false) }
-        return type.initialiseWithBuiltin(value, module: module, builder: builder)
+        return type.initialiseStdTypeFromBuiltinMembers(value, module: module, builder: builder)
     }
 }
 
@@ -130,7 +130,7 @@ extension BooleanLiteral : IRGenerator {
         let value = LLVMConstInt(rawType.ir(), UInt64(val.hashValue), false)
         
         guard let type = self.type else { throw error(SemaError.BoolNotTyped, userVisible: false) }
-        return type.initialiseWithBuiltin(value, module: module, builder: builder)
+        return type.initialiseStdTypeFromBuiltinMembers(value, module: module, builder: builder)
     }
 }
 
@@ -196,7 +196,7 @@ extension VariableDecl : IRGenerator {
             let num = LLVMCountParams(fn)
             for i in 0..<num {
                 let param = LLVMGetParam(fn, i)
-                let name = i.implicitArgName()
+                let name = i.implicitParamName()
                 LLVMSetValueName(param, name)
             }
             
@@ -378,19 +378,16 @@ extension FunctionCallExpr : IRGenerator {
             return function()
         }
         
+        // get function decl IR
         let fn: LLVMValueRef
         
-        // if its in the stdlib return it
-        if let (type, f) = StdLib.getFunctionIR(name, args: argTypes, module: module) {
+        if let (_, f) = StdLib.getFunctionIR(name, args: argTypes, module: module) {
             fn = f
-            self.fnType = type
         }
         else {
-            // make function
             fn = LLVMGetNamedFunction(module, mangledName)
         }
         
-//        let ty = try stackFrame.functionType(mangledName)
         guard let fnType = self.fnType else { throw error(IRError.NotTyped, userVisible: false) }
         
         // arguments
@@ -413,7 +410,7 @@ extension FunctionCallExpr : IRGenerator {
 
 private extension FunctionType {
     
-    private func params() throws -> [LLVMTypeRef] {
+    private func paramTypeIR() throws -> [LLVMTypeRef] {
         guard let res = type else { throw error(IRError.TypeNotFound, userVisible: false) }
         return try res.nonVoid.map(ir)
     }
@@ -429,7 +426,7 @@ extension FuncDecl : IRGenerator {
         let startIndex: Int // where do the user's params start being used, 0 for free funcs and 1 for methods
         let parentType: StructType? // the type of self is its a method
         
-        let args = fnType.args.arr(), argCount = args.count
+        let paramTypeNames = fnType.paramType.typeNames(), paramCount = paramTypeNames.count
         
         if let parent = self.parent {
             guard let _parentType = parent.type else { throw error(IRError.NoParentType, userVisible: false) }
@@ -440,7 +437,6 @@ extension FuncDecl : IRGenerator {
             parentType = _parentType
         }
         else {
-            let args = fnType.args, argCount = args.count
             guard let t = fnType.type else { throw error(IRError.TypeNotFound, userVisible: false) }
             
             type = t
@@ -450,13 +446,13 @@ extension FuncDecl : IRGenerator {
         
         // If existing function definition
         let _fn = LLVMGetNamedFunction(module, mangledName)
-        if _fn != nil && LLVMCountParams(_fn) == UInt32(argCount + startIndex) && LLVMCountBasicBlocks(_fn) != 0 && LLVMGetEntryBasicBlock(_fn) != nil {
+        if _fn != nil && LLVMCountParams(_fn) == UInt32(paramCount + startIndex) && LLVMCountBasicBlocks(_fn) != 0 && LLVMGetEntryBasicBlock(_fn) != nil {
             return _fn
         }
         
         // Set params
-        let argBuffer = try fnType.params().ptr()
-        defer { argBuffer.dealloc(argCount) }
+        let paramBuffer = try fnType.paramTypeIR().ptr()
+        defer { paramBuffer.dealloc(paramCount) }
         
         // make function
         let functionType = type.ir()
@@ -486,15 +482,15 @@ extension FuncDecl : IRGenerator {
         let functionStackFrame = StackFrame(block: entryBlock, function: function, parentStackFrame: stackFrame)
             
         // set function param names and update table
-        for i in 0..<argCount {
+        for i in 0..<paramCount {
             let param = LLVMGetParam(function, UInt32(i + startIndex))
-            let name = impl?.params[i] ?? i.implicitArgName()
+            let name = impl?.params[i] ?? i.implicitParamName()
             LLVMSetValueName(param, name)
             
             let ty = LLVMTypeOf(param)
             if LLVMGetTypeKind(ty) == LLVMStructTypeKind {
                 
-                let tyName = args[i]
+                let tyName = paramTypeNames[i]
                 let t = try stackFrame.type(tyName)
                 
                 let memTys = t.members.map { ($0.0, $0.1.ir(), $0.2) }
@@ -510,7 +506,7 @@ extension FuncDecl : IRGenerator {
         
         // if is a method
         if let parentType = parentType {
-            // get self from arg list
+            // get self from param list
             let param = LLVMGetParam(function, 0)
             LLVMSetValueName(param, "self")
             // self's members
@@ -583,8 +579,8 @@ extension ClosureExpr : IRGenerator {
         
         guard let type = self.type else { throw error(IRError.NotTyped, userVisible: false) }
         
-        let argBuffer = try type.params.map(ir).ptr()
-        defer { argBuffer.dealloc(type.params.count) }
+        let paramBuffer = try type.params.map(ir).ptr()
+        defer { paramBuffer.dealloc(type.params.count) }
         
         let name = "closure"//.mangle()
         
@@ -602,7 +598,7 @@ extension ClosureExpr : IRGenerator {
         // set function param names and update table
         for i in 0..<type.params.count {
             let param = LLVMGetParam(function, UInt32(i))
-            let name = parameters.isEmpty ? i.implicitArgName() : parameters[i]
+            let name = parameters.isEmpty ? i.implicitParamName() : parameters[i]
             LLVMSetValueName(param, name)
             
             // FIXME: It looks like i'm lazy -- fix this when doing closures again 
@@ -688,7 +684,7 @@ extension ConditionalStmt : IRGenerator {
             LLVMPositionBuilderAtEnd(builder, ifIn)
             
             if let cond = cond { //if statement, make conditonal jump
-                let v = try cond.load("value", type: statement.condition?._type, builder: builder)
+                let v = try cond.load("value", fromType: statement.condition?._type, builder: builder)
                 LLVMBuildCondBr(builder, v, block, ifOut)
             }
             else { // else statement, uncondtional jump
@@ -771,17 +767,16 @@ extension ForInLoopStmt : IRGenerator {
         let rangeIterator = try iterator.nodeCodeGen(stackFrame)
         
         let startValue = try rangeIterator
-            .load("start", type: iterator._type,         builder: builder, irName: "start")
-            .load("value", type: stackFrame.type("Int"), builder: builder, irName: "start.value")
+            .load("start", fromType: iterator._type, builder: builder, irName: "start")
+            .load("value", fromType: StdLib.IntType, builder: builder, irName: "start.value")
         let endValue = try rangeIterator
-            .load("end",   type: iterator._type,         builder: builder, irName: "end")
-            .load("value", type: stackFrame.type("Int"), builder: builder, irName: "end.value")
+            .load("end",   fromType: iterator._type, builder: builder, irName: "end")
+            .load("value", fromType: StdLib.IntType, builder: builder, irName: "end.value")
         
         // move into loop block
         LLVMBuildBr(builder, loopHeader)
         LLVMPositionBuilderAtEnd(builder, loopHeader)
         
-        let stdIntType = try stackFrame.type("Int")
         let intType = BuiltinType.Int(size: 64)
         
         // define variable phi node
@@ -798,7 +793,7 @@ extension ForInLoopStmt : IRGenerator {
         let next = LLVMBuildAdd(builder, one, loopCount, "next.\(name)")
         
         // gen the IR for the inner block
-        let loopCountInt = stdIntType.initialiseWithBuiltin(loopCount, module: module, builder: builder, irName: name)
+        let loopCountInt = StdLib.IntType.initialiseStdTypeFromBuiltinMembers(loopCount, module: module, builder: builder, irName: name)
         let loopVariable = StackVariable(val: loopCountInt, builder: builder)
         let loopStackFrame = StackFrame(block: loopBody, vars: [name: loopVariable], function: stackFrame.function, parentStackFrame: stackFrame)
         
@@ -839,7 +834,7 @@ extension WhileLoopStmt : IRGenerator {
         
         // whether to enter the while, first while check
         let initialCond = try condition.nodeCodeGen(stackFrame)
-        let initialCondV = try initialCond.load("value", type: condition._type, builder: builder)
+        let initialCondV = try initialCond.load("value", fromType: condition._type, builder: builder)
 
         // move into loop block
         LLVMBuildCondBr(builder, initialCondV, loop, afterLoop)
@@ -851,7 +846,7 @@ extension WhileLoopStmt : IRGenerator {
         
         // conditional break
         let conditionalRepeat = try condition.nodeCodeGen(stackFrame)
-        let conditionalRepeatV = try conditionalRepeat.load("value", type: condition._type, builder: builder)
+        let conditionalRepeatV = try conditionalRepeat.load("value", fromType: condition._type, builder: builder)
         LLVMBuildCondBr(builder, conditionalRepeatV, loop, afterLoop)
         
         // move back to loop / end loop
@@ -949,7 +944,7 @@ extension InitialiserDecl : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        let args = ty.args.arr(), argCount = args.count
+        let paramTypeNames = ty.paramType.typeNames(), argCount = paramTypeNames.count
         guard let
             functionType = ty.type?.ir(),
             name = parent?.name,
@@ -988,7 +983,7 @@ extension InitialiserDecl : IRGenerator {
             if LLVMGetTypeKind(ty) == LLVMStructTypeKind {
                 
                 // TODO: Fix how this info is brought down
-                let tyName = args[i]
+                let tyName = paramTypeNames[i]
                 let t = try stackFrame.type(tyName)
                 
                 let memTys = t.members.map { ($0.0, $0.1.ir(), $0.2) }
@@ -1052,7 +1047,7 @@ extension PropertyLookupExpr : IRGenerator {
             
         case let propertyLookup as PropertyLookupExpr:
             let p = try propertyLookup.codeGen(stackFrame)
-            return try p.load(name, type: propertyLookup._type, builder: builder, irName: String.fromCString(LLVMGetValueName(p))! + ".\(name)")
+            return try p.load(name, fromType: propertyLookup._type, builder: builder, irName: String.fromCString(LLVMGetValueName(p))! + ".\(name)")
             
 //        case let tupleLookup as TupleMemberLookupExpr:
 //            break
@@ -1070,13 +1065,13 @@ extension MethodCallExpr : IRGenerator {
         
         // get method from module
         let f = LLVMGetNamedFunction(module, mangledName)
-        let c = self.params.elements.count + 1
+        let c = self.args.elements.count + 1
         
         // need to add self to beginning of params
-        let params = try ([object as Expr] + self.params.elements)
+        let args = try ([object as Expr] + self.args.elements)
             .map(codeGenIn(stackFrame))
             .ptr()
-        defer { params.dealloc(c) }
+        defer { args.dealloc(c) }
         
         let doNotUseName = _type == BuiltinType.Void || _type == BuiltinType.Null || _type == nil
         let n = doNotUseName ? "" : "\(name).res"
@@ -1092,7 +1087,7 @@ extension MethodCallExpr : IRGenerator {
         
         
         
-        return LLVMBuildCall(builder, f, params, UInt32(c), n)
+        return LLVMBuildCall(builder, f, args, UInt32(c), n)
     }
 }
 

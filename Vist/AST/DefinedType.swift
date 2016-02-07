@@ -8,12 +8,12 @@
 
 
 final class FunctionType {
-    let args: DefinedType
-    let returns: DefinedType
+    let paramType: DefinedType
+    let returnType: DefinedType
     
-    init(args: DefinedType, returns: DefinedType) {
-        self.args = args
-        self.returns = returns
+    init(paramType: DefinedType, returnType: DefinedType) {
+        self.paramType = paramType
+        self.returnType = returnType
     }
     
     var type: FnType? = nil
@@ -38,15 +38,6 @@ enum DefinedType {
         }
     }
     
-    var count: Int {
-        switch self {
-        case .Void: return 0
-        case .Type, Function: return 1
-        case let .Tuple(tys): return tys.count
-        }
-    }
-    
-    
     private func tyArr(scope: SemaScope? = nil) throws -> [Ty] {
         switch self {
         case .Void:             return []
@@ -55,11 +46,11 @@ enum DefinedType {
         }
     }
     
-    func arr() -> [String] {
+    func typeNames() -> [String] {
         switch self {
         case .Void, .Function:  return []
         case let .Type(t):      return [t]
-        case let .Tuple(ts):    return ts.flatMap { $0.arr() }
+        case let .Tuple(ts):    return ts.flatMap { $0.typeNames() }
         }
     }
 
@@ -84,11 +75,10 @@ enum DefinedType {
             throw error(SemaError.NoTypeNamed(name))
             
         case let .Tuple(elements):
-            let types = try elements.map({try $0.type(scope)})
-            return TupleType(members: types)
+            return TupleType(members: try elements.map({try $0.type(scope)}))
             
-        case let .Function(f):
-            return FnType(params: try f.args.tyArr(scope), returns: try f.returns.type(scope))
+        case let .Function(functionType):
+            return FnType(params: try functionType.paramType.tyArr(scope), returns: try functionType.returnType.type(scope))
         }
     }
 }
@@ -99,12 +89,12 @@ extension FunctionType {
     
     func params(scope: SemaScope)
         throws -> [Ty] {
-            return try args.tyArr(scope)
+            return try paramType.tyArr(scope)
     }
     
     func returnType(scope: SemaScope)
         throws -> Ty {
-            return try returns.type(scope)
+            return try returnType.type(scope)
     }
 }
 

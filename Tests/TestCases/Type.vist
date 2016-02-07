@@ -1,16 +1,16 @@
 
 // type foo, { i64 i64 } type
-// implicit memberwise initialser is added
+// implicit memberwise initialser is bottomdded
 type StackOf2 {
-    var a: Int
-    var b: Int
+    var bottom: Int
+    var top: Int
     
-    func sum :: () -> Int = do return a + b
-    func pop :: () -> Int = do return b
+    func sum :: () -> Int = do return bottom + top
+    func pop :: () -> Int = do return top
 }
 
 func push :: Int StackOf2 -> StackOf2 = (val stack) do
-    return StackOf2 stack.b val
+    return StackOf2 stack.top val
 
 func empty :: -> StackOf2 = do
     return StackOf2 0 0
@@ -27,6 +27,6 @@ print (stack.pop ())
 
 stack = empty ()
 
-print stack.a == stack.b
+print stack.bottom == stack.top
 // test: true
 

@@ -355,11 +355,11 @@ final class StructExpr : TypedExpr, ScopeNode {
 final class MethodCallExpr <ObjectType : Expr> : Expr {
     let name: String
     let object: ObjectType
-    let params: TupleExpr
+    let args: TupleExpr
     
-    init(name: String, params: TupleExpr, object: ObjectType) {
+    init(name: String, args: TupleExpr, object: ObjectType) {
         self.name = name
-        self.params = params
+        self.args = args
         self.object = object
     }
     

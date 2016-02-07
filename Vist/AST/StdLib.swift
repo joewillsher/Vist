@@ -97,15 +97,15 @@ final class StdLib {
 
     /// Get a named function from the standard library
     ///
-    /// - parameter id: Unmangled name
+    /// - parameter name: Unmangled name
     ///
     /// - parameter args: Applied arg types
     ///
-    /// - returns: An optional tuple of `(mangled-name, type)`
+    /// - returns: An optional tuple of `(mangledName, type)`
     ///
-    static func getStdLibFunction(id: String, args: [Ty]) -> (String, FnType)? {
-        guard let fn = functionContainer[fn: id, types: args] else { return nil }
-        return (fn.0, fn.1)
+    static func getStdLibFunction(name: String, args: [Ty]) -> (mangledName: String, type: FnType)? {
+        guard let fn = functionContainer[fn: name, types: args] else { return nil }
+        return fn
     }
     
     
@@ -115,9 +115,9 @@ final class StdLib {
     ///
     /// - parameter args: Applied arg types
     ///
-    /// - returns: An optional tuple of `(type, function-ir-ref)`
+    /// - returns: An optional tuple of `(type, functionIRRef)`
     ///
-    static func getFunctionIR(name: String, args: [Ty], module: LLVMModuleRef) -> (FnType, LLVMValueRef)? {
+    static func getFunctionIR(name: String, args: [Ty], module: LLVMModuleRef) -> (type: FnType, functionIR: LLVMValueRef)? {
        
         if let (mangledName, type) = StdLib.getStdLibFunctionWithInitInfo(name, args: args) {
             let functionType = type.ir()

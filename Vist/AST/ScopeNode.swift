@@ -57,7 +57,6 @@ extension CollectionType where Generator.Element == ASTNode {
         }
         
         try errors.throwIfErrors()
-        
     }
 }
 

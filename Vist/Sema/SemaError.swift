@@ -72,11 +72,11 @@ enum SemaError : VistError {
         case let .NoPropertyNamed(type, property):
             return "Type '\(type)' does not have member '\(property)'"
         case let .CannotStoreInParameterStruct(pName):
-            return "'\(pName)' is a member of an immutable type, passed as a parameter to a function"
+            return "'\(pName)' is a member of an immutable type passed as a parameter to a function"
         case let .NotStructType(t):
             return "'\(t)' is not a struct type"
             
-            // not user visiblt
+            // not user visible
         case .NoStdBoolType: return "Stdlib did not provide a Bool type"
         case .NoStdIntType: return "Stdlib did not provide an Int type"
         case .NotTypeProvider: return "ASTNode does not conform to `TypeProvider` and does not provide an implementation of `llvmType(_:)"

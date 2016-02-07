@@ -53,10 +53,8 @@ final class StructType : Ty {
 
 extension StructType {
     
-    subscript (function function: String, paramTypes types: [Ty]) -> FnType? {
-        get {
-            return methods[raw: "\(name).\(function)", paramTypes: types]
-        }
+    func getMethod(methodName : String, argTypes types: [Ty]) -> FnType? {
+        return methods[raw: "\(name).\(methodName)", paramTypes: types]
     }
 }
 

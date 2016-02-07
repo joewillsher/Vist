@@ -132,8 +132,8 @@ declare void @llvm.trap() #5
 ; Function Attrs: alwaysinline nounwind
 define void @_assert_S.b({ i1 } %"$0") #3 {
 entry:
-  %value = extractvalue { i1 } %"$0", 0
-  br i1 %value, label %then.0, label %else.1
+  %0 = extractvalue { i1 } %"$0", 0
+  br i1 %0, label %then.0, label %else.1
 
 then.0:                                           ; preds = %entry
   ret void

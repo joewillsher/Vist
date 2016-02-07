@@ -62,8 +62,8 @@ func compileDocuments(fileNames: [String],
             if verbose { print("\n\n------------------------------AST-------------------------------\n") }
             
             // parse tokens & generate AST
-            let parser = Parser(tokens: tokens, isStdLib: true) // TODO: Update this when have better type support
-            let ast = try parser.parse()
+            let ast = try Parser.parseWith(tokens, isStdLib: true)
+            
             if dumpAST { print(ast); return }
             if verbose { print(ast) }
             
