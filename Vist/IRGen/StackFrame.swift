@@ -45,10 +45,10 @@ final class StackFrame {
     /// If not in this scope, parent scopes are recursively searched
     func variable(name: String) throws -> RuntimeVariable {
         
-        if let v = runtimeVariables[name] where v.isValid() { return v }
+        if let v = runtimeVariables[name] { return v }
         
         let inParent = try parentStackFrame?.variable(name)
-        if let p = inParent where p.isValid() { return p }
+        if let p = inParent { return p }
         
         throw error(IRError.NoVariable(name))
     }

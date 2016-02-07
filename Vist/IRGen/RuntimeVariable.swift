@@ -7,15 +7,30 @@
 //
 
 
-protocol RuntimeVariable {
+protocol RuntimeVariable : class {
     var type: LLVMTypeRef { get }
+    var value: LLVMValueRef { get }
+    var irName: String { get }
     
-    func load(name: String) throws -> LLVMValueRef
-    func isValid() -> Bool
+    var builder: LLVMBuilderRef { get }
 }
 
 protocol MutableVariable : RuntimeVariable {
-    func store(val: LLVMValueRef) throws
+    var ptr: LLVMValueRef { get }
+    var value: LLVMValueRef { get set }
+}
+
+extension MutableVariable {
+    
+    var value: LLVMValueRef {
+        get {
+            return LLVMBuildLoad(builder, ptr, irName)
+        }
+        set {
+            LLVMBuildStore(builder, newValue, ptr)
+        }
+    }
+    
 }
 
 /// A variable type passed by reference
@@ -25,35 +40,23 @@ protocol MutableVariable : RuntimeVariable {
 /// mem2reg optimisation pass moves these down to SSA register vars
 final class ReferenceVariable : MutableVariable {
     var type: LLVMTypeRef
-    private var ptr: LLVMValueRef
+    var ptr: LLVMValueRef
     
-    private var builder: LLVMBuilderRef
+    let builder: LLVMBuilderRef
+    let irName: String
     
-    init(type: LLVMTypeRef, ptr: LLVMValueRef, builder: LLVMBuilderRef) {
+    init(type: LLVMTypeRef, ptr: LLVMValueRef, irName: String, builder: LLVMBuilderRef) {
         self.type = type
         self.ptr = ptr
         self.builder = builder
-    }
-    
-    func load(name: String = "") -> LLVMValueRef {
-        return LLVMBuildLoad(builder, ptr, name)
-    }
-    
-    func isValid() -> Bool {
-        return ptr != nil
+        self.irName = irName
     }
     
     /// returns pointer to allocated memory
-    class func alloc(builder: LLVMBuilderRef, type: LLVMTypeRef, name: String = "") -> ReferenceVariable {
-        let ptr = LLVMBuildAlloca(builder, type, name)
-        return ReferenceVariable(type: type, ptr: ptr, builder: builder)
+    class func alloc(type: LLVMTypeRef, irName: String, builder: LLVMBuilderRef) -> ReferenceVariable {
+        let ptr = LLVMBuildAlloca(builder, type, irName)
+        return ReferenceVariable(type: type, ptr: ptr, irName: irName, builder: builder)
     }
-    
-    func store(val: LLVMValueRef) {
-        LLVMBuildStore(builder, val, ptr)
-    }
-    
-    
 }
 
 
@@ -62,17 +65,19 @@ final class ReferenceVariable : MutableVariable {
 /// Instances use SSA
 final class StackVariable : RuntimeVariable {
     var type: LLVMTypeRef
-    private var val: LLVMValueRef
+    var val: LLVMValueRef
     
-    private var builder: LLVMBuilderRef
+    var builder: LLVMBuilderRef
+    let irName: String
     
-    init(val: LLVMValueRef, builder: LLVMBuilderRef) {
+    init(val: LLVMValueRef, irName: String, builder: LLVMBuilderRef) {
         self.type = LLVMTypeOf(val)
         self.val = val
         self.builder = builder
+        self.irName = irName
     }
     
-    func load(name: String = "") -> LLVMValueRef {
+    var value: LLVMValueRef {
         return val
     }
     

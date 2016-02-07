@@ -425,8 +425,8 @@
 			children = (
 				D497A7881C3B012700DFE39E /* StackFrame.swift */,
 				D497A7871C3B012700DFE39E /* RuntimeVariable.swift */,
-				D497A7851C3B012700DFE39E /* ArrayVariable.swift */,
 				D497A7891C3B012700DFE39E /* StructVariable.swift */,
+				D497A7851C3B012700DFE39E /* ArrayVariable.swift */,
 			);
 			name = Variables;
 			sourceTree = "<group>";

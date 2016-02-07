@@ -4,97 +4,74 @@ target triple = "x86_64-apple-macosx10.11.0"
 
 define void @main() {
 entry:
-  %0 = call { i64 } @_Int_i64(i64 1), !stdlib.call.optim !0
-  %factorial_res = call { i64 } @_factorial_S.i64({ i64 } %0)
-  call void @_print_S.i64({ i64 } %factorial_res), !stdlib.call.optim !0
+  %0 = call { i64 } @_Int_i64(i64 2), !stdlib.call.optim !0
   %1 = call { i64 } @_Int_i64(i64 10), !stdlib.call.optim !0
-  %factorial_res1 = call { i64 } @_factorial_S.i64({ i64 } %1)
-  call void @_print_S.i64({ i64 } %factorial_res1), !stdlib.call.optim !0
-  %2 = call { i64 } @_Int_i64(i64 1), !stdlib.call.optim !0
-  %3 = call { i64 } @_Int_i64(i64 3), !stdlib.call.optim !0
-  %"+.res" = call { i64 } @"_+_S.i64_S.i64"({ i64 } %2, { i64 } %3), !stdlib.call.optim !0
-  %factorial_res2 = call { i64 } @_factorial_S.i64({ i64 } %"+.res")
-  call void @_print_S.i64({ i64 } %factorial_res2), !stdlib.call.optim !0
-  %4 = call { i64 } @_Int_i64(i64 2), !stdlib.call.optim !0
-  %dupe_res = call { { i64 }, { i64 } } @_dupe_S.i64({ i64 } %4)
-  %5 = alloca { { i64 }, { i64 } }
-  store { { i64 }, { i64 } } %dupe_res, { { i64 }, { i64 } }* %5
-  %"0_ptr" = getelementptr inbounds { { i64 }, { i64 } }* %5, i32 0, i32 0
-  %"0" = load { i64 }* %"0_ptr"
-  %"1_ptr" = getelementptr inbounds { { i64 }, { i64 } }* %5, i32 0, i32 1
-  %"1" = load { i64 }* %"1_ptr"
-  %"+.res3" = call { i64 } @"_+_S.i64_S.i64"({ i64 } %"0", { i64 } %"1"), !stdlib.call.optim !0
-  %factorial_res4 = call { i64 } @_factorial_S.i64({ i64 } %"+.res3")
-  %Int = alloca { i64 }
-  store { i64 } %factorial_res4, { i64 }* %Int
-  %w = load { i64 }* %Int
-  call void @_print_S.i64({ i64 } %w), !stdlib.call.optim !0
-  %6 = call { i64 } @_Int_i64(i64 3), !stdlib.call.optim !0
-  %factorial_res5 = call { i64 } @_factorial_S.i64({ i64 } %6)
-  %factorial_res6 = call { i64 } @_factorial_S.i64({ i64 } %factorial_res5)
-  call void @_print_S.i64({ i64 } %factorial_res6), !stdlib.call.optim !0
-  call void @_void_()
-  %two_res = call { i64 } @_two_()
-  call void @_print_S.i64({ i64 } %two_res), !stdlib.call.optim !0
+  %StackOf2_res = call { { i64 }, { i64 } } @_StackOf2_S.i64_S.i64({ i64 } %0, { i64 } %1)
+  %stack = alloca { { i64 }, { i64 } }
+  store { { i64 }, { i64 } } %StackOf2_res, { { i64 }, { i64 } }* %stack
+  %stack1 = load { { i64 }, { i64 } }* %stack
+  %2 = alloca { { i64 }, { i64 } }
+  store { { i64 }, { i64 } } %stack1, { { i64 }, { i64 } }* %2
+  %removeB.res = call { i64 } @_StackOf2.removeB_({ { i64 }, { i64 } }* %2)
+  %stack.b.ptr = getelementptr inbounds { { i64 }, { i64 } }* %stack, i32 0, i32 1
+  %stack.b = load { i64 }* %stack.b.ptr
+  call void @_print_S.i64({ i64 } %stack.b), !stdlib.call.optim !0
   ret void
 }
 
-define internal { { i64 }, { i64 } } @_dupe_S.i64({ i64 } %a) {
+; Function Attrs: alwaysinline
+define { { i64 }, { i64 } } @_StackOf2_S.i64_S.i64({ i64 } %"$0", { i64 } %"$1") #0 {
 entry:
-  %0 = alloca { { i64 }, { i64 } }
-  %"0_ptr" = getelementptr inbounds { { i64 }, { i64 } }* %0, i32 0, i32 0
-  store { i64 } %a, { i64 }* %"0_ptr"
-  %"1_ptr" = getelementptr inbounds { { i64 }, { i64 } }* %0, i32 0, i32 1
-  store { i64 } %a, { i64 }* %"1_ptr"
-  %1 = load { { i64 }, { i64 } }* %0
-  ret { { i64 }, { i64 } } %1
+  %StackOf2 = alloca { { i64 }, { i64 } }
+  %StackOf2.a.ptr = getelementptr inbounds { { i64 }, { i64 } }* %StackOf2, i32 0, i32 0
+  store { i64 } %"$0", { i64 }* %StackOf2.a.ptr
+  %StackOf2.b.ptr = getelementptr inbounds { { i64 }, { i64 } }* %StackOf2, i32 0, i32 1
+  store { i64 } %"$1", { i64 }* %StackOf2.b.ptr
+  %StackOf21 = load { { i64 }, { i64 } }* %StackOf2
+  ret { { i64 }, { i64 } } %StackOf21
 }
 
-define internal { i64 } @_factorial_S.i64({ i64 } %a) {
+define internal { i64 } @_StackOf2.sum_({ { i64 }, { i64 } }* %self) {
 entry:
-  %0 = call { i64 } @_Int_i64(i64 1), !stdlib.call.optim !0
-  %"<=.res" = call { i1 } @"_<=_S.i64_S.i64"({ i64 } %a, { i64 } %0), !stdlib.call.optim !0
-  %1 = extractvalue { i1 } %"<=.res", 0
-  br i1 %1, label %then.0, label %cont.0
+  %self.a.ptr = getelementptr inbounds { { i64 }, { i64 } }* %self, i32 0, i32 0
+  %self.a = load { i64 }* %self.a.ptr
+  %self.b.ptr = getelementptr inbounds { { i64 }, { i64 } }* %self, i32 0, i32 1
+  %self.b = load { i64 }* %self.b.ptr
+  %"+.res" = call { i64 } @"_+_S.i64_S.i64"({ i64 } %self.a, { i64 } %self.b), !stdlib.call.optim !0
+  ret { i64 } %"+.res"
+}
 
-cont.0:                                           ; preds = %entry
-  br label %else.1
+declare { i64 } @"_+_S.i64_S.i64"({ i64 }, { i64 })
 
-then.0:                                           ; preds = %entry
-  %2 = call { i64 } @_Int_i64(i64 1), !stdlib.call.optim !0
-  ret { i64 } %2
+define internal { i64 } @_StackOf2.pop_({ { i64 }, { i64 } }* %self) {
+entry:
+  %self.b.ptr = getelementptr inbounds { { i64 }, { i64 } }* %self, i32 0, i32 1
+  %self.b = load { i64 }* %self.b.ptr
+  ret { i64 } %self.b
+}
 
-else.1:                                           ; preds = %cont.0
-  %3 = call { i64 } @_Int_i64(i64 1), !stdlib.call.optim !0
-  %-.res = call { i64 } @_-_S.i64_S.i64({ i64 } %a, { i64 } %3), !stdlib.call.optim !0
-  %factorial_res = call { i64 } @_factorial_S.i64({ i64 } %-.res)
-  %"*.res" = call { i64 } @"_*_S.i64_S.i64"({ i64 } %a, { i64 } %factorial_res), !stdlib.call.optim !0
-  ret { i64 } %"*.res"
+define internal { i64 } @_StackOf2.removeB_({ { i64 }, { i64 } }* %self) {
+entry:
+  %self.b.ptr = getelementptr inbounds { { i64 }, { i64 } }* %self, i32 0, i32 1
+  %self.b = load { i64 }* %self.b.ptr
+  %v = alloca { i64 }
+  store { i64 } %self.b, { i64 }* %v
+  %0 = call { i64 } @_Int_i64(i64 0), !stdlib.call.optim !0
+  %self.b.ptr1 = getelementptr inbounds { { i64 }, { i64 } }* %self, i32 0, i32 1
+  store { i64 } %0, { i64 }* %self.b.ptr1
+  %v2 = load { i64 }* %v
+  call void @_print_S.i64({ i64 } %v2), !stdlib.call.optim !0
+  %self.b.ptr3 = getelementptr inbounds { { i64 }, { i64 } }* %self, i32 0, i32 1
+  %self.b4 = load { i64 }* %self.b.ptr3
+  call void @_print_S.i64({ i64 } %self.b4), !stdlib.call.optim !0
+  %v5 = load { i64 }* %v
+  ret { i64 } %v5
 }
 
 declare { i64 } @_Int_i64(i64)
 
-declare { i1 } @"_<=_S.i64_S.i64"({ i64 }, { i64 })
-
-declare { i64 } @_-_S.i64_S.i64({ i64 }, { i64 })
-
-declare { i64 } @"_*_S.i64_S.i64"({ i64 }, { i64 })
-
 declare void @_print_S.i64({ i64 })
 
-declare { i64 } @"_+_S.i64_S.i64"({ i64 }, { i64 })
-
-define internal void @_void_() {
-entry:
-  %0 = call { i64 } @_Int_i64(i64 41), !stdlib.call.optim !0
-  call void @_print_S.i64({ i64 } %0), !stdlib.call.optim !0
-  ret void
-}
-
-define internal { i64 } @_two_() {
-entry:
-  %0 = call { i64 } @_Int_i64(i64 2), !stdlib.call.optim !0
-  ret { i64 } %0
-}
+attributes #0 = { alwaysinline }
 
 !0 = !{!"stdlib.call.optim"}

@@ -147,6 +147,7 @@ extension MethodCallExpr : ExprTypeProvider {
         
         // assign type to self and return
         self._type = fnType.returns
+        self.structType = parentType
         return fnType.returns
     }
 }

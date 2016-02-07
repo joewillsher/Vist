@@ -55,8 +55,8 @@ define void @"_$print_b"(i1 zeroext %b) #0 {
 ; Function Attrs: alwaysinline nounwind readnone
 define { i64 } @_Int_i64(i64 %v) #2 {
 entry:
-  %.fca.0.insert = insertvalue { i64 } undef, i64 %v, 0
-  ret { i64 } %.fca.0.insert
+  %Int1.fca.0.insert = insertvalue { i64 } undef, i64 %v, 0
+  ret { i64 } %Int1.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -68,8 +68,8 @@ entry:
 ; Function Attrs: alwaysinline nounwind readnone
 define { i1 } @_Bool_b(i1 %v) #2 {
 entry:
-  %.fca.0.insert = insertvalue { i1 } undef, i1 %v, 0
-  ret { i1 } %.fca.0.insert
+  %Bool1.fca.0.insert = insertvalue { i1 } undef, i1 %v, 0
+  ret { i1 } %Bool1.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -81,8 +81,8 @@ entry:
 ; Function Attrs: alwaysinline nounwind readnone
 define { double } @_Double_f64(double %v) #2 {
 entry:
-  %.fca.0.insert = insertvalue { double } undef, double %v, 0
-  ret { double } %.fca.0.insert
+  %Double1.fca.0.insert = insertvalue { double } undef, double %v, 0
+  ret { double } %Double1.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -90,9 +90,9 @@ define { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 } %"$0", { i64 } %"$1") #2
 entry:
   %"$0.fca.0.extract" = extractvalue { i64 } %"$0", 0
   %"$1.fca.0.extract" = extractvalue { i64 } %"$1", 0
-  %.fca.0.0.insert = insertvalue { { i64 }, { i64 } } undef, i64 %"$0.fca.0.extract", 0, 0
-  %.fca.1.0.insert = insertvalue { { i64 }, { i64 } } %.fca.0.0.insert, i64 %"$1.fca.0.extract", 1, 0
-  ret { { i64 }, { i64 } } %.fca.1.0.insert
+  %Range1.fca.0.0.insert = insertvalue { { i64 }, { i64 } } undef, i64 %"$0.fca.0.extract", 0, 0
+  %Range1.fca.1.0.insert = insertvalue { { i64 }, { i64 } } %Range1.fca.0.0.insert, i64 %"$1.fca.0.extract", 1, 0
+  ret { { i64 }, { i64 } } %Range1.fca.1.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind
@@ -171,8 +171,8 @@ then.0.i:                                         ; preds = %entry
 
 _condFail_b.exit:                                 ; preds = %entry
   %add_res.fca.0.extract = extractvalue { i64, i1 } %add_res, 0
-  %.fca.0.insert = insertvalue { i64 } undef, i64 %add_res.fca.0.extract, 0
-  ret { i64 } %.fca.0.insert
+  %Int1.i.fca.0.insert = insertvalue { i64 } undef, i64 %add_res.fca.0.extract, 0
+  ret { i64 } %Int1.i.fca.0.insert
 }
 
 ; Function Attrs: nounwind readnone
@@ -193,8 +193,8 @@ then.0.i:                                         ; preds = %entry
 
 _condFail_b.exit:                                 ; preds = %entry
   %sub_res.fca.0.extract = extractvalue { i64, i1 } %sub_res, 0
-  %.fca.0.insert = insertvalue { i64 } undef, i64 %sub_res.fca.0.extract, 0
-  ret { i64 } %.fca.0.insert
+  %Int1.i.fca.0.insert = insertvalue { i64 } undef, i64 %sub_res.fca.0.extract, 0
+  ret { i64 } %Int1.i.fca.0.insert
 }
 
 ; Function Attrs: nounwind readnone
@@ -215,8 +215,8 @@ then.0.i:                                         ; preds = %entry
 
 _condFail_b.exit:                                 ; preds = %entry
   %mul_res.fca.0.extract = extractvalue { i64, i1 } %mul_res, 0
-  %.fca.0.insert = insertvalue { i64 } undef, i64 %mul_res.fca.0.extract, 0
-  ret { i64 } %.fca.0.insert
+  %Int1.i.fca.0.insert = insertvalue { i64 } undef, i64 %mul_res.fca.0.extract, 0
+  ret { i64 } %Int1.i.fca.0.insert
 }
 
 ; Function Attrs: nounwind readnone
@@ -228,8 +228,8 @@ entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %div_res = udiv i64 %value, %value1
-  %.fca.0.insert = insertvalue { i64 } undef, i64 %div_res, 0
-  ret { i64 } %.fca.0.insert
+  %Int1.i.fca.0.insert = insertvalue { i64 } undef, i64 %div_res, 0
+  ret { i64 } %Int1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -238,8 +238,8 @@ entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %rem_res = urem i64 %value, %value1
-  %.fca.0.insert = insertvalue { i64 } undef, i64 %rem_res, 0
-  ret { i64 } %.fca.0.insert
+  %Int1.i.fca.0.insert = insertvalue { i64 } undef, i64 %rem_res, 0
+  ret { i64 } %Int1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -248,8 +248,8 @@ entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %cmp_lt_res = icmp slt i64 %value, %value1
-  %.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_lt_res, 0
-  ret { i1 } %.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_lt_res, 0
+  ret { i1 } %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -258,8 +258,8 @@ entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %cmp_lte_res = icmp sle i64 %value, %value1
-  %.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_lte_res, 0
-  ret { i1 } %.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_lte_res, 0
+  ret { i1 } %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -268,8 +268,8 @@ entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %cmp_gt_res = icmp sgt i64 %value, %value1
-  %.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_gt_res, 0
-  ret { i1 } %.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_gt_res, 0
+  ret { i1 } %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -278,8 +278,8 @@ entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %cmp_gte_res = icmp sge i64 %value, %value1
-  %.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_gte_res, 0
-  ret { i1 } %.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_gte_res, 0
+  ret { i1 } %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -288,8 +288,8 @@ entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %cmp_eq_res = icmp eq i64 %value, %value1
-  %.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_eq_res, 0
-  ret { i1 } %.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_eq_res, 0
+  ret { i1 } %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -298,8 +298,8 @@ entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %cmp_neq_res = icmp ne i64 %value, %value1
-  %.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_neq_res, 0
-  ret { i1 } %.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_neq_res, 0
+  ret { i1 } %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -308,8 +308,8 @@ entry:
   %value = extractvalue { i1 } %a, 0
   %value1 = extractvalue { i1 } %b, 0
   %cmp_and_res = and i1 %value, %value1
-  %.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_and_res, 0
-  ret { i1 } %.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_and_res, 0
+  ret { i1 } %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -318,8 +318,8 @@ entry:
   %value = extractvalue { i1 } %a, 0
   %value1 = extractvalue { i1 } %b, 0
   %cmp_or_res = or i1 %value, %value1
-  %.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_or_res, 0
-  ret { i1 } %.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_or_res, 0
+  ret { i1 } %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -328,8 +328,8 @@ entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %add_res = fadd double %value, %value1
-  %.fca.0.insert = insertvalue { double } undef, double %add_res, 0
-  ret { double } %.fca.0.insert
+  %Double1.i.fca.0.insert = insertvalue { double } undef, double %add_res, 0
+  ret { double } %Double1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -338,8 +338,8 @@ entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %sub_res = fsub double %value, %value1
-  %.fca.0.insert = insertvalue { double } undef, double %sub_res, 0
-  ret { double } %.fca.0.insert
+  %Double1.i.fca.0.insert = insertvalue { double } undef, double %sub_res, 0
+  ret { double } %Double1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -348,8 +348,8 @@ entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %mul_res = fmul double %value, %value1
-  %.fca.0.insert = insertvalue { double } undef, double %mul_res, 0
-  ret { double } %.fca.0.insert
+  %Double1.i.fca.0.insert = insertvalue { double } undef, double %mul_res, 0
+  ret { double } %Double1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -358,8 +358,8 @@ entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %div_res = fdiv double %value, %value1
-  %.fca.0.insert = insertvalue { double } undef, double %div_res, 0
-  ret { double } %.fca.0.insert
+  %Double1.i.fca.0.insert = insertvalue { double } undef, double %div_res, 0
+  ret { double } %Double1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -368,8 +368,8 @@ entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %rem_res = frem double %value, %value1
-  %.fca.0.insert = insertvalue { double } undef, double %rem_res, 0
-  ret { double } %.fca.0.insert
+  %Double1.i.fca.0.insert = insertvalue { double } undef, double %rem_res, 0
+  ret { double } %Double1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -378,8 +378,8 @@ entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %cmp_lt_res = fcmp olt double %value, %value1
-  %.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_lt_res, 0
-  ret { i1 } %.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_lt_res, 0
+  ret { i1 } %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -388,8 +388,8 @@ entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %cmp_lte_res = fcmp ole double %value, %value1
-  %.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_lte_res, 0
-  ret { i1 } %.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_lte_res, 0
+  ret { i1 } %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -398,8 +398,8 @@ entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %cmp_gt_res = fcmp ogt double %value, %value1
-  %.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_gt_res, 0
-  ret { i1 } %.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_gt_res, 0
+  ret { i1 } %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -408,8 +408,8 @@ entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %cmp_gte_res = fcmp oge double %value, %value1
-  %.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_gte_res, 0
-  ret { i1 } %.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_gte_res, 0
+  ret { i1 } %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -418,8 +418,8 @@ entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %cmp_eq_res = fcmp oeq double %value, %value1
-  %.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_eq_res, 0
-  ret { i1 } %.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_eq_res, 0
+  ret { i1 } %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -428,8 +428,8 @@ entry:
   %value = extractvalue { double } %a, 0
   %value1 = extractvalue { double } %b, 0
   %cmp_neq_res = fcmp one double %value, %value1
-  %.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_neq_res, 0
-  ret { i1 } %.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue { i1 } undef, i1 %cmp_neq_res, 0
+  ret { i1 } %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -437,9 +437,9 @@ define { { i64 }, { i64 } } @_..._S.i64_S.i64({ i64 } %a, { i64 } %b) #2 {
 entry:
   %a.fca.0.extract = extractvalue { i64 } %a, 0
   %b.fca.0.extract = extractvalue { i64 } %b, 0
-  %.fca.0.0.insert = insertvalue { { i64 }, { i64 } } undef, i64 %a.fca.0.extract, 0, 0
-  %.fca.1.0.insert = insertvalue { { i64 }, { i64 } } %.fca.0.0.insert, i64 %b.fca.0.extract, 1, 0
-  ret { { i64 }, { i64 } } %.fca.1.0.insert
+  %Range1.i.fca.0.0.insert = insertvalue { { i64 }, { i64 } } undef, i64 %a.fca.0.extract, 0, 0
+  %Range1.i.fca.1.0.insert = insertvalue { { i64 }, { i64 } } %Range1.i.fca.0.0.insert, i64 %b.fca.0.extract, 1, 0
+  ret { { i64 }, { i64 } } %Range1.i.fca.1.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind
@@ -457,9 +457,9 @@ then.0.i.i:                                       ; preds = %entry
 _-_S.i64_S.i64.exit:                              ; preds = %entry
   %sub_res.i.fca.0.extract = extractvalue { i64, i1 } %sub_res.i, 0
   %a.fca.0.extract = extractvalue { i64 } %a, 0
-  %.fca.0.0.insert = insertvalue { { i64 }, { i64 } } undef, i64 %a.fca.0.extract, 0, 0
-  %.fca.1.0.insert = insertvalue { { i64 }, { i64 } } %.fca.0.0.insert, i64 %sub_res.i.fca.0.extract, 1, 0
-  ret { { i64 }, { i64 } } %.fca.1.0.insert
+  %Range1.i.fca.0.0.insert = insertvalue { { i64 }, { i64 } } undef, i64 %a.fca.0.extract, 0, 0
+  %Range1.i.fca.1.0.insert = insertvalue { { i64 }, { i64 } } %Range1.i.fca.0.0.insert, i64 %sub_res.i.fca.0.extract, 1, 0
+  ret { { i64 }, { i64 } } %Range1.i.fca.1.0.insert
 }
 
 ; Function Attrs: nounwind
@@ -467,29 +467,29 @@ declare i32 @puts(i8* nocapture readonly) #7
 
 ; Function Attrs: alwaysinline nounwind readnone
 define { i64 } @_Int_i641(i64) #2 {
-  %.fca.0.insert.i = insertvalue { i64 } undef, i64 %0, 0
-  ret { i64 } %.fca.0.insert.i
+  %Int1.fca.0.insert.i = insertvalue { i64 } undef, i64 %0, 0
+  ret { i64 } %Int1.fca.0.insert.i
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
 define { i1 } @_Bool_b2(i1) #2 {
-  %.fca.0.insert.i = insertvalue { i1 } undef, i1 %0, 0
-  ret { i1 } %.fca.0.insert.i
+  %Bool1.fca.0.insert.i = insertvalue { i1 } undef, i1 %0, 0
+  ret { i1 } %Bool1.fca.0.insert.i
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
 define { double } @_Double_f643(double) #2 {
-  %.fca.0.insert.i = insertvalue { double } undef, double %0, 0
-  ret { double } %.fca.0.insert.i
+  %Double1.fca.0.insert.i = insertvalue { double } undef, double %0, 0
+  ret { double } %Double1.fca.0.insert.i
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
 define { { i64 }, { i64 } } @_Range_S.i64_S.i644({ i64 }, { i64 }) #2 {
   %"$0.fca.0.extract.i" = extractvalue { i64 } %0, 0
   %"$1.fca.0.extract.i" = extractvalue { i64 } %1, 0
-  %.fca.0.0.insert.i = insertvalue { { i64 }, { i64 } } undef, i64 %"$0.fca.0.extract.i", 0, 0
-  %.fca.1.0.insert.i = insertvalue { { i64 }, { i64 } } %.fca.0.0.insert.i, i64 %"$1.fca.0.extract.i", 1, 0
-  ret { { i64 }, { i64 } } %.fca.1.0.insert.i
+  %Range1.fca.0.0.insert.i = insertvalue { { i64 }, { i64 } } undef, i64 %"$0.fca.0.extract.i", 0, 0
+  %Range1.fca.1.0.insert.i = insertvalue { { i64 }, { i64 } } %Range1.fca.0.0.insert.i, i64 %"$1.fca.0.extract.i", 1, 0
+  ret { { i64 }, { i64 } } %Range1.fca.1.0.insert.i
 }
 
 attributes #0 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

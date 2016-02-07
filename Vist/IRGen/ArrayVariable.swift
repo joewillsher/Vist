@@ -19,18 +19,21 @@ class ArrayVariable : RuntimeVariable {
     private var count: Int
     var mutable: Bool
     
-    private var builder: LLVMBuilderRef
+    var builder: LLVMBuilderRef
+    var irName: String
     
     var type: LLVMTypeRef {
         return LLVMArrayType(elementType, UInt32(count))
     }
     
-    func load(name: String = "") -> LLVMValueRef {
+    func load(irName name: String = "") -> LLVMValueRef {
         return base
     }
     
-    func isValid() -> Bool {
-        return ptr != nil
+    var value: LLVMValueRef {
+        get {
+            return base
+        }
     }
     
     func assignFrom(arr: ArrayVariable, builder: LLVMBuilderRef) {
@@ -43,7 +46,7 @@ class ArrayVariable : RuntimeVariable {
         arrayType = arr.arrayType
     }
     
-    init(ptr: LLVMValueRef, elType: LLVMTypeRef, arrType: LLVMTypeRef, builder: LLVMBuilderRef, vars: [LLVMValueRef]) {
+    init(ptr: LLVMValueRef, elType: LLVMTypeRef, arrType: LLVMTypeRef, irName: String = "", builder: LLVMBuilderRef, vars: [LLVMValueRef]) {
         
         let pt = LLVMPointerType(elType, 0)
         // case array as ptr to get base pointer
@@ -67,6 +70,7 @@ class ArrayVariable : RuntimeVariable {
         self.mutable = false
         self.ptr = nil
         self.builder = builder
+        self.irName = irName
     }
     
     func allocHead(builder: LLVMBuilderRef, name: String, mutable: Bool) {
@@ -76,7 +80,6 @@ class ArrayVariable : RuntimeVariable {
     }
     
     private func ptrToElementAtIndex(index: LLVMValueRef) -> LLVMValueRef {
-        
         return LLVMBuildGEP(builder, base, [index].ptr(), 1, "ptr")
     }
     

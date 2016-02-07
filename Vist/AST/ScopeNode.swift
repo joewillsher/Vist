@@ -24,6 +24,17 @@ extension ScopeNode {
 
 extension CollectionType where Generator.Element : ASTNode {
     
+    /// Maps the input function over the children, which are types conforming to ASTNode
+    ///
+    /// Catches errors and continues walking the tree, throwing them all at
+    /// in an ErrorCollection at the end
+    ///
+    /// ```
+    /// try initialisers.walkChildren { i in
+    ///     try i.codeGen(stackFrame)
+    /// }
+    /// ```
+    ///
     func walkChildren<Ret>(fn: (Generator.Element) throws -> Ret) throws {
         
         var errors: [VistError] = []
@@ -43,6 +54,17 @@ extension CollectionType where Generator.Element : ASTNode {
 
 extension CollectionType where Generator.Element == ASTNode {
     
+    /// Maps the input function over the ASTNode children
+    ///
+    /// Catches errors and continues walking the tree, throwing them all at 
+    /// in an ErrorCollection at the end
+    ///
+    /// ```
+    /// try block.exprs.walkChildren { exp in
+    ///     try exp.nodeCodeGen(stackFrame)
+    /// }
+    /// ```
+    ///
     func walkChildren<Ret>(fn: (ASTNode) throws -> Ret) throws {
         
         var errors: [VistError] = []

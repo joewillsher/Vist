@@ -72,10 +72,10 @@ define void @"_$print_b"(i1 zeroext %b) #0 {
 define { i64 } @_Int_i64(i64 %v) #2 {
 entry:
   %Int = alloca { i64 }
-  %value_ptr = getelementptr inbounds { i64 }* %Int, i32 0, i32 0
-  store i64 %v, i64* %value_ptr
-  %0 = load { i64 }* %Int
-  ret { i64 } %0
+  %Int.value.ptr = getelementptr inbounds { i64 }* %Int, i32 0, i32 0
+  store i64 %v, i64* %Int.value.ptr
+  %Int1 = load { i64 }* %Int
+  ret { i64 } %Int1
 }
 
 ; Function Attrs: alwaysinline
@@ -83,34 +83,34 @@ define { i64 } @_Int_() #2 {
 entry:
   %Int = alloca { i64 }
   %0 = call { i64 } @_Int_i64(i64 0), !stdlib.call.optim !2
-  %Int1 = alloca { i64 }
-  store { i64 } %0, { i64 }* %Int1
-  %value_ptr = getelementptr inbounds { i64 }* %Int1, i32 0, i32 0
-  %value = load i64* %value_ptr
-  %value_ptr2 = getelementptr inbounds { i64 }* %Int, i32 0, i32 0
-  store i64 %value, i64* %value_ptr2
-  %1 = load { i64 }* %Int
-  ret { i64 } %1
+  %1 = alloca { i64 }
+  store { i64 } %0, { i64 }* %1
+  %.value.ptr = getelementptr inbounds { i64 }* %1, i32 0, i32 0
+  %.value = load i64* %.value.ptr
+  %Int.value.ptr = getelementptr inbounds { i64 }* %Int, i32 0, i32 0
+  store i64 %.value, i64* %Int.value.ptr
+  %Int1 = load { i64 }* %Int
+  ret { i64 } %Int1
 }
 
 ; Function Attrs: alwaysinline
 define { i64 } @_Int_i641(i64 %"$0") #2 {
 entry:
   %Int = alloca { i64 }
-  %value_ptr = getelementptr inbounds { i64 }* %Int, i32 0, i32 0
-  store i64 %"$0", i64* %value_ptr
-  %0 = load { i64 }* %Int
-  ret { i64 } %0
+  %Int.value.ptr = getelementptr inbounds { i64 }* %Int, i32 0, i32 0
+  store i64 %"$0", i64* %Int.value.ptr
+  %Int1 = load { i64 }* %Int
+  ret { i64 } %Int1
 }
 
 ; Function Attrs: alwaysinline
 define { i1 } @_Bool_b(i1 %v) #2 {
 entry:
   %Bool = alloca { i1 }
-  %value_ptr = getelementptr inbounds { i1 }* %Bool, i32 0, i32 0
-  store i1 %v, i1* %value_ptr
-  %0 = load { i1 }* %Bool
-  ret { i1 } %0
+  %Bool.value.ptr = getelementptr inbounds { i1 }* %Bool, i32 0, i32 0
+  store i1 %v, i1* %Bool.value.ptr
+  %Bool1 = load { i1 }* %Bool
+  ret { i1 } %Bool1
 }
 
 ; Function Attrs: alwaysinline
@@ -118,68 +118,68 @@ define { i1 } @_Bool_() #2 {
 entry:
   %Bool = alloca { i1 }
   %0 = call { i1 } @_Bool_b(i1 false), !stdlib.call.optim !2
-  %Bool1 = alloca { i1 }
-  store { i1 } %0, { i1 }* %Bool1
-  %value_ptr = getelementptr inbounds { i1 }* %Bool1, i32 0, i32 0
-  %value = load i1* %value_ptr
-  %value_ptr2 = getelementptr inbounds { i1 }* %Bool, i32 0, i32 0
-  store i1 %value, i1* %value_ptr2
-  %1 = load { i1 }* %Bool
-  ret { i1 } %1
+  %1 = alloca { i1 }
+  store { i1 } %0, { i1 }* %1
+  %.value.ptr = getelementptr inbounds { i1 }* %1, i32 0, i32 0
+  %.value = load i1* %.value.ptr
+  %Bool.value.ptr = getelementptr inbounds { i1 }* %Bool, i32 0, i32 0
+  store i1 %.value, i1* %Bool.value.ptr
+  %Bool1 = load { i1 }* %Bool
+  ret { i1 } %Bool1
 }
 
 ; Function Attrs: alwaysinline
 define { i1 } @_Bool_b2(i1 %"$0") #2 {
 entry:
   %Bool = alloca { i1 }
-  %value_ptr = getelementptr inbounds { i1 }* %Bool, i32 0, i32 0
-  store i1 %"$0", i1* %value_ptr
-  %0 = load { i1 }* %Bool
-  ret { i1 } %0
+  %Bool.value.ptr = getelementptr inbounds { i1 }* %Bool, i32 0, i32 0
+  store i1 %"$0", i1* %Bool.value.ptr
+  %Bool1 = load { i1 }* %Bool
+  ret { i1 } %Bool1
 }
 
 ; Function Attrs: alwaysinline
 define { double } @_Double_f64(double %v) #2 {
 entry:
   %Double = alloca { double }
-  %value_ptr = getelementptr inbounds { double }* %Double, i32 0, i32 0
-  store double %v, double* %value_ptr
-  %0 = load { double }* %Double
-  ret { double } %0
+  %Double.value.ptr = getelementptr inbounds { double }* %Double, i32 0, i32 0
+  store double %v, double* %Double.value.ptr
+  %Double1 = load { double }* %Double
+  ret { double } %Double1
 }
 
 ; Function Attrs: alwaysinline
 define { double } @_Double_f643(double %"$0") #2 {
 entry:
   %Double = alloca { double }
-  %value_ptr = getelementptr inbounds { double }* %Double, i32 0, i32 0
-  store double %"$0", double* %value_ptr
-  %0 = load { double }* %Double
-  ret { double } %0
+  %Double.value.ptr = getelementptr inbounds { double }* %Double, i32 0, i32 0
+  store double %"$0", double* %Double.value.ptr
+  %Double1 = load { double }* %Double
+  ret { double } %Double1
 }
 
 ; Function Attrs: alwaysinline
 define { { i64 }, { i64 } } @_Range_S.i64_S.i64({ i64 } %"$0", { i64 } %"$1") #2 {
 entry:
   %Range = alloca { { i64 }, { i64 } }
-  %start_ptr = getelementptr inbounds { { i64 }, { i64 } }* %Range, i32 0, i32 0
-  store { i64 } %"$0", { i64 }* %start_ptr
-  %end_ptr = getelementptr inbounds { { i64 }, { i64 } }* %Range, i32 0, i32 1
-  store { i64 } %"$1", { i64 }* %end_ptr
-  %0 = load { { i64 }, { i64 } }* %Range
-  ret { { i64 }, { i64 } } %0
+  %Range.start.ptr = getelementptr inbounds { { i64 }, { i64 } }* %Range, i32 0, i32 0
+  store { i64 } %"$0", { i64 }* %Range.start.ptr
+  %Range.end.ptr = getelementptr inbounds { { i64 }, { i64 } }* %Range, i32 0, i32 1
+  store { i64 } %"$1", { i64 }* %Range.end.ptr
+  %Range1 = load { { i64 }, { i64 } }* %Range
+  ret { { i64 }, { i64 } } %Range1
 }
 
 ; Function Attrs: alwaysinline
 define { { i64 }, { i64 } } @_Range_S.i64_S.i644({ i64 } %"$0", { i64 } %"$1") #2 {
 entry:
   %Range = alloca { { i64 }, { i64 } }
-  %start_ptr = getelementptr inbounds { { i64 }, { i64 } }* %Range, i32 0, i32 0
-  store { i64 } %"$0", { i64 }* %start_ptr
-  %end_ptr = getelementptr inbounds { { i64 }, { i64 } }* %Range, i32 0, i32 1
-  store { i64 } %"$1", { i64 }* %end_ptr
-  %0 = load { { i64 }, { i64 } }* %Range
-  ret { { i64 }, { i64 } } %0
+  %Range.start.ptr = getelementptr inbounds { { i64 }, { i64 } }* %Range, i32 0, i32 0
+  store { i64 } %"$0", { i64 }* %Range.start.ptr
+  %Range.end.ptr = getelementptr inbounds { { i64 }, { i64 } }* %Range, i32 0, i32 1
+  store { i64 } %"$1", { i64 }* %Range.end.ptr
+  %Range1 = load { { i64 }, { i64 } }* %Range
+  ret { { i64 }, { i64 } } %Range1
 }
 
 ; Function Attrs: alwaysinline
@@ -259,12 +259,12 @@ entry:
   %add_res = call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %value, i64 %value1)
   %0 = alloca { i64, i1 }
   store { i64, i1 } %add_res, { i64, i1 }* %0
-  %"1_ptr" = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 1
-  %"1" = load i1* %"1_ptr"
-  call void @_condFail_b(i1 %"1")
-  %"0_ptr" = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 0
-  %"0" = load i64* %"0_ptr"
-  %Int_res = call { i64 } @_Int_i64(i64 %"0")
+  %.1.ptr = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 1
+  %.1 = load i1* %.1.ptr
+  call void @_condFail_b(i1 %.1)
+  %.0.ptr = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 0
+  %.0 = load i64* %.0.ptr
+  %Int_res = call { i64 } @_Int_i64(i64 %.0)
   ret { i64 } %Int_res
 }
 
@@ -279,12 +279,12 @@ entry:
   %sub_res = call { i64, i1 } @llvm.ssub.with.overflow.i64(i64 %value, i64 %value1)
   %0 = alloca { i64, i1 }
   store { i64, i1 } %sub_res, { i64, i1 }* %0
-  %"1_ptr" = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 1
-  %"1" = load i1* %"1_ptr"
-  call void @_condFail_b(i1 %"1")
-  %"0_ptr" = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 0
-  %"0" = load i64* %"0_ptr"
-  %Int_res = call { i64 } @_Int_i64(i64 %"0")
+  %.1.ptr = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 1
+  %.1 = load i1* %.1.ptr
+  call void @_condFail_b(i1 %.1)
+  %.0.ptr = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 0
+  %.0 = load i64* %.0.ptr
+  %Int_res = call { i64 } @_Int_i64(i64 %.0)
   ret { i64 } %Int_res
 }
 
@@ -299,12 +299,12 @@ entry:
   %mul_res = call { i64, i1 } @llvm.smul.with.overflow.i64(i64 %value, i64 %value1)
   %0 = alloca { i64, i1 }
   store { i64, i1 } %mul_res, { i64, i1 }* %0
-  %"1_ptr" = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 1
-  %"1" = load i1* %"1_ptr"
-  call void @_condFail_b(i1 %"1")
-  %"0_ptr" = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 0
-  %"0" = load i64* %"0_ptr"
-  %Int_res = call { i64 } @_Int_i64(i64 %"0")
+  %.1.ptr = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 1
+  %.1 = load i1* %.1.ptr
+  call void @_condFail_b(i1 %.1)
+  %.0.ptr = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 0
+  %.0 = load i64* %.0.ptr
+  %Int_res = call { i64 } @_Int_i64(i64 %.0)
   ret { i64 } %Int_res
 }
 

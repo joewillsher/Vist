@@ -91,7 +91,6 @@ extension MutationExpr : ExprTypeProvider {
             guard let v = scope[variable: variable.name] else { throw error(SemaError.NoVariable(variable.name)) }
             guard v.mutable else { throw error(SemaError.ImmutableVariable(variable.name)) }
             
-            
         case let propertyLookup as PropertyLookupExpr:
             
             let objectName = propertyLookup.object.desc

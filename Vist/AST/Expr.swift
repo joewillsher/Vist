@@ -365,6 +365,7 @@ final class MethodCallExpr <ObjectType : Expr> : Expr {
     
     var mangledName: String = ""
     
+    var structType: StructType? = nil
     var _type: Ty? = nil
 }
 

@@ -12,8 +12,8 @@ extension FuncDecl : DeclTypeProvider {
     
     func llvmType(scope: SemaScope) throws {
         
-        let params = try fnType.params(scope), res = try fnType.returnType(scope)
-        let ty = FnType(params: params, returns: res)
+        let paramTypes = try fnType.params(scope), returnType = try fnType.returnType(scope)
+        let ty = FnType(params: paramTypes, returns: returnType)
         
         if let p = parent?.name {
             mangledName = name.mangle(ty, parentTypeName: p)
@@ -30,19 +30,19 @@ extension FuncDecl : DeclTypeProvider {
         let fnScope = SemaScope(parent: scope, returnType: ty.returns)
         
         for (index, name) in impl.params.enumerate() {
-            
-            let type = params[index]
-            fnScope[variable: name] = (type: type, mutable: false)
+            fnScope[variable: name] = (type: paramTypes[index], mutable: false)
         }
         
         // if is a method
         if let parentType = parent?.type {
             // add self
-            fnScope[variable: "self"] = (type: parentType, mutable: false)
+            fnScope[variable: "self"] = (type: parentType, mutable: true)
+            
+            // TODO: mutable if @mutating
             
             // add self's memebrs implicitly
-            for (name, type, _) in parentType.members {
-                fnScope[variable: name] = (type: type, mutable: false)
+            for (memberName, memberType, _) in parentType.members {
+                fnScope[variable: memberName] = (type: memberType, mutable: true)
             }
         }
         
