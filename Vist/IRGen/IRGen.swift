@@ -891,9 +891,7 @@ extension ArrayExpr : IRGenerator {
         
         // obj
         let vars = try arr.map { try $0.nodeCodeGen(stackFrame) }
-        let variable = ArrayVariable(ptr: a, elType: elementType, arrType: arrayType, builder: builder, vars: vars)
-        
-        return variable
+        return ArrayVariable(ptr: a, elType: elementType, arrType: arrayType, builder: builder, vars: vars)
     }
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
