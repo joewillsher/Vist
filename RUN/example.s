@@ -12,7 +12,7 @@ _main:                                  ## @main
 	xorl	%eax, %eax
 	movl	%eax, %edi
 	callq	__$print_i64
-	movl	$10, %eax
+	movl	$2, %eax
 	movl	%eax, %edi
 	popq	%rbp
 	jmp	__$print_i64            ## TAILCALL

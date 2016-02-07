@@ -7,20 +7,20 @@ type StackOf2 {
     var a: Int
     var b: Int
     
-    func sum :: () -> Int = do return a + b
-    func pop :: () -> Int = do return b
+    func sum :: () -> Int = do
+        return a + b
     
-    func removeB :: -> Int = {
+    func pop :: () -> Int = {
         let v = b
         b = 0
-        print v
-        print self.b
         return v
     }
 }
 var stack = StackOf2 2 10
 
-stack.removeB ()
+print (stack.pop ())
 
 print stack.b
+
+print (stack.sum ())
 

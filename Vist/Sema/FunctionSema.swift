@@ -35,14 +35,14 @@ extension FuncDecl : DeclTypeProvider {
         
         // if is a method
         if let parentType = parent?.type {
-            // add self
-            fnScope[variable: "self"] = (type: parentType, mutable: true)
             
-            // TODO: mutable if @mutating
+            let mutableSelf = true // TODO: mutable if @mutating
+            // add self
+            fnScope[variable: "self"] = (type: parentType, mutable: mutableSelf)
             
             // add self's memebrs implicitly
-            for (memberName, memberType, _) in parentType.members {
-                fnScope[variable: memberName] = (type: memberType, mutable: true)
+            for (memberName, memberType, mutable) in parentType.members {
+                fnScope[variable: memberName] = (type: memberType, mutable: mutable && mutableSelf)
             }
         }
         

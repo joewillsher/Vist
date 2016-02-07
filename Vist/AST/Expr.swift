@@ -352,7 +352,7 @@ final class StructExpr : TypedExpr, ScopeNode {
 
 
 
-final class MethodCallExpr <ObjectType : Expr> : Expr {
+final class MethodCallExpr <ObjectType : AssignableExpr> : Expr {
     let name: String
     let object: ObjectType
     let args: TupleExpr

@@ -1040,10 +1040,9 @@ extension MethodCallExpr : IRGenerator {
         
         // need to add self to beginning of params
         let ob = try object.nodeCodeGen(stackFrame)
-        
-        let selfRef = MutableStructVariable.alloc(structType, builder: builder)
-        selfRef.value = ob
-
+                
+        guard case let variable as VariableExpr = object else { throw error(IRError.CannotLookupPropertyFromNonVariable, userVisible: false) }
+        guard case let selfRef as MutableStructVariable = try stackFrame.variable(variable.name) else { throw error(IRError.NoVariable(variable.name)) }
         
         let args = try self.args.elements
             .map(codeGenIn(stackFrame))
