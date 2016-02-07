@@ -326,10 +326,7 @@
 			children = (
 				D497A7861C3B012700DFE39E /* IRGen.swift */,
 				D4FC9D171C5FEE4E0031F1BD /* IRError.swift */,
-				D497A7881C3B012700DFE39E /* StackFrame.swift */,
-				D497A7871C3B012700DFE39E /* RuntimeVariable.swift */,
-				D497A7851C3B012700DFE39E /* ArrayVariable.swift */,
-				D497A7891C3B012700DFE39E /* StructVariable.swift */,
+				D4B0DCE41C66CB1B000B4E97 /* Variables */,
 				D4FAE45B1C3DCEEE00C9EE05 /* BuiltinFunction.swift */,
 				D40FC4CF1C4AAB2800122397 /* Intrinsic.hpp */,
 				D40FC4CD1C4AAB0E00122397 /* Intrinsic.cpp */,
@@ -424,6 +421,17 @@
 				D46BC1BF1C6685C500B9147E /* DefinedType.swift */,
 			);
 			name = Expression;
+			sourceTree = "<group>";
+		};
+		D4B0DCE41C66CB1B000B4E97 /* Variables */ = {
+			isa = PBXGroup;
+			children = (
+				D497A7881C3B012700DFE39E /* StackFrame.swift */,
+				D497A7871C3B012700DFE39E /* RuntimeVariable.swift */,
+				D497A7851C3B012700DFE39E /* ArrayVariable.swift */,
+				D497A7891C3B012700DFE39E /* StructVariable.swift */,
+			);
+			name = Variables;
 			sourceTree = "<group>";
 		};
 		D4B1FA041C300AA8001E7BCC /* Sema */ = {

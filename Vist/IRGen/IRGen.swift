@@ -234,16 +234,16 @@ extension VariableDecl : IRGenerator {
                 let properties = t.members.map {
                     ($0.0, $0.1.ir(), $0.2)
                 }
-                variable = MutableStructVariable.alloc(builder, type: type, name: t.name, mutable: isMutable, properties: properties)
+                variable = MutableStructVariable.alloc(builder, type: type, name: t.name, properties: properties)
             }
             else if case let t as TupleType = value._type {
                 let properties = t.members.enumerate().map {
                     (String($0.0), $0.1.ir(), false)
                 }
-                variable = MutableStructVariable.alloc(builder, type: type, name: "tuple", mutable: isMutable, properties: properties)
+                variable = MutableStructVariable.alloc(builder, type: type, properties: properties)
             }
             else {
-                variable = ReferenceVariable.alloc(builder, type: type, name: name ?? "", mutable: isMutable)
+                variable = ReferenceVariable.alloc(builder, type: type, name: name ?? "")
             }
             // Load in memory
             try variable.store(v)
@@ -275,7 +275,7 @@ extension MutationExpr : IRGenerator {
             else {
                 let new = try value.nodeCodeGen(stackFrame)
                 
-                guard case let v as MutableVariable = variable where v.mutable else { throw error(IRError.NotMutable(object.name), userVisible: false) }
+                guard case let v as MutableVariable = variable else { throw error(IRError.NotMutable(object.name), userVisible: false) }
                 try v.store(new)
             }
         case let sub as ArraySubscriptExpr:
@@ -296,10 +296,7 @@ extension MutationExpr : IRGenerator {
                 if try stackFrame.variable(n.name) is ParameterStructVariable { throw error(IRError.CannotMutateParam) }
                 throw error(IRError.NoProperty(type: prop._type.description, property: n.name))
             }
-            
-            guard variable.mutable else { throw error(IRError.NotMutable(prop.name)) }
-            guard try variable.propertyIsMutable(prop.name) else { throw error(IRError.NotMutableProp(name: prop.name, inType: variable.name)) }
-            
+                        
             let val = try value.nodeCodeGen(stackFrame)
             
             try variable.store(val, inPropertyNamed: prop.name)
@@ -524,7 +521,7 @@ extension FuncDecl : IRGenerator {
             
             // add self's properties implicitly
             for el in parent?.properties ?? [] {
-                let p = StructPropertyVariable(name: el.name, str: s, mutable: el.isMutable)
+                let p = StructPropertyVariable(name: el.name, str: s)
                 functionStackFrame.addVariable(p, named: el.name)
             }
         }
@@ -565,7 +562,7 @@ extension BlockExpr {
     private func bbGen(innerStackFrame stackFrame: StackFrame, ret: LLVMValueRef) throws {
         
         // code gen for function
-        for exp in exprs {
+        try exprs.walkChildren { exp in
             try exp.nodeCodeGen(stackFrame)
         }
         
@@ -871,11 +868,7 @@ private extension BlockExpr {
     
     /// Generates children’s code directly into the current scope & block
     private func bbGenInline(stackFrame stackFrame: StackFrame) throws {
-        
-        // code gen for function
-        for exp in exprs {
-            try exp.nodeCodeGen(stackFrame)
-        }
+        try exprs.walkChildren { exp in try exp.nodeCodeGen(stackFrame) }
     }
 }
 
@@ -913,9 +906,7 @@ extension ArrayExpr : IRGenerator {
 extension ArraySubscriptExpr : IRGenerator {
     
     private func backingArrayVariable(stackFrame: StackFrame) throws -> ArrayVariable {
-        
         guard case let v as VariableExpr = arr, case let arr as ArrayVariable = try stackFrame.variable(v.name) else { throw error(IRError.SubscriptingNonVariableTypeNotAllowed) }
-        
         return arr
     }
     
@@ -942,11 +933,11 @@ extension StructExpr : IRGenerator {
         
         stackFrame.addType(type, named: name)
 
-        for i in initialisers {
+        try initialisers.walkChildren { i in
             try i.codeGen(stackFrame)
         }
         
-        for m in methods {
+        try methods.walkChildren { m in
             try m.codeGen(stackFrame)
         }
 
@@ -1029,17 +1020,17 @@ extension InitialiserDecl : IRGenerator {
         }
         
         // allocate struct
-        let s = MutableStructVariable.alloc(builder, type: parentType.ir(), name: parentType.name, mutable: true, properties: properties)
+        let s = MutableStructVariable.alloc(builder, type: parentType.ir(), name: parentType.name, properties: properties)
         stackFrame.addVariable(s, named: name)
         
         // add struct properties into scope
         for el in parentProperties {
-            let p = StructPropertyVariable(name: el.name, str: s, mutable: true) // initialiser can always assign
+            let p = StructPropertyVariable(name: el.name, str: s) // initialiser can always assign
             initStackFrame.addVariable(p, named: el.name)
         }
         
         // add args into scope
-        for exp in impl.body.exprs {
+        try impl.body.exprs.walkChildren { exp in
             try exp.nodeCodeGen(initStackFrame)
         }
         
@@ -1093,7 +1084,7 @@ extension MethodCallExpr : IRGenerator {
         let n = doNotUseName ? "" : "\(name).res"
         
         
-        
+        // TODO: Self as pointer
         
         
         
@@ -1126,7 +1117,7 @@ extension TupleExpr : IRGenerator {
         let memeberIR = try elements.map { try $0.nodeCodeGen(stackFrame) }
         
         let membersWithLLVMTypes = type.members.enumerate().map { (String($0), $1.ir(), false) }
-        let s = MutableStructVariable.alloc(builder, type: typeIR, name: "tuple", mutable: false, properties: membersWithLLVMTypes)
+        let s = MutableStructVariable.alloc(builder, type: typeIR, properties: membersWithLLVMTypes)
         
         for (i, el) in memeberIR.enumerate() {
             try s.store(el, inPropertyNamed: String(i))

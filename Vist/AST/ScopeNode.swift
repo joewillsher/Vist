@@ -18,10 +18,17 @@ protocol ScopeNode {
 extension ScopeNode {
     
     func walkChildren<Ret>(fn: (ASTNode) throws -> Ret) throws {
+        try childNodes.walkChildren(fn)
+    }
+}
+
+extension CollectionType where Generator.Element : ASTNode {
+    
+    func walkChildren<Ret>(fn: (Generator.Element) throws -> Ret) throws {
         
         var errors: [VistError] = []
         
-        for exp in childNodes {
+        for exp in self {
             do {
                 try fn(exp)
             }
@@ -31,13 +38,6 @@ extension ScopeNode {
         }
         
         try errors.throwIfErrors()
-        
-    }
-}
-
-extension CollectionType where Generator.Element : ASTNode {
-    func walkChildren<Ret>(fn: (ASTNode) throws -> Ret) throws {
-        try mapAs(ASTNode).walkChildren(fn)
     }
 }
 

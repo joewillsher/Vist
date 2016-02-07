@@ -16,7 +16,6 @@ protocol RuntimeVariable {
 
 protocol MutableVariable : RuntimeVariable {
     func store(val: LLVMValueRef) throws
-    var mutable: Bool { get }
 }
 
 /// A variable type passed by reference
@@ -27,13 +26,11 @@ protocol MutableVariable : RuntimeVariable {
 final class ReferenceVariable : MutableVariable {
     var type: LLVMTypeRef
     private var ptr: LLVMValueRef
-    let mutable: Bool
     
     private var builder: LLVMBuilderRef
     
-    init(type: LLVMTypeRef, ptr: LLVMValueRef, mutable: Bool, builder: LLVMBuilderRef) {
+    init(type: LLVMTypeRef, ptr: LLVMValueRef, builder: LLVMBuilderRef) {
         self.type = type
-        self.mutable = mutable
         self.ptr = ptr
         self.builder = builder
     }
@@ -47,9 +44,9 @@ final class ReferenceVariable : MutableVariable {
     }
     
     /// returns pointer to allocated memory
-    class func alloc(builder: LLVMBuilderRef, type: LLVMTypeRef, name: String = "", mutable: Bool) -> ReferenceVariable {
+    class func alloc(builder: LLVMBuilderRef, type: LLVMTypeRef, name: String = "") -> ReferenceVariable {
         let ptr = LLVMBuildAlloca(builder, type, name)
-        return ReferenceVariable(type: type, ptr: ptr, mutable: mutable, builder: builder)
+        return ReferenceVariable(type: type, ptr: ptr, builder: builder)
     }
     
     func store(val: LLVMValueRef) {
