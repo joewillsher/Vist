@@ -16,6 +16,7 @@ enum FunctionAttributeExpr : String, AttributeExpr {
     case Inline = "inline"
     case NoReturn = "noreturn"
     case NoInline = "noinline"
+    case Mutating = "mutating"
     case Private = "private", Public = "public"
     
     func addAttrTo(function: LLVMValueRef) {
@@ -25,6 +26,7 @@ enum FunctionAttributeExpr : String, AttributeExpr {
         case .NoInline: LLVMAddFunctionAttr(function, LLVMNoInlineAttribute)
         case .Private: LLVMSetLinkage(function, LLVMPrivateLinkage)
         case .Public: LLVMSetLinkage(function, LLVMExternalLinkage)
+        default: break
         }
     }
 }

@@ -10,6 +10,7 @@ type StackOf2 {
     func sum :: () -> Int = do
         return a + b
     
+    @mutating
     func pop :: () -> Int = {
         let v = b
         b = 0

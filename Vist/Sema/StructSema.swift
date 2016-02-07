@@ -65,6 +65,8 @@ extension StructExpr : ExprTypeProvider {
             try node.llvmType(scope)
         }
         
+        try errors.throwIfErrors()
+        
         return ty
     }
     

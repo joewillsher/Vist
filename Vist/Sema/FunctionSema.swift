@@ -36,7 +36,7 @@ extension FuncDecl : DeclTypeProvider {
         // if is a method
         if let parentType = parent?.type {
             
-            let mutableSelf = true // TODO: mutable if @mutating
+            let mutableSelf = attrs.contains(.Mutating)
             // add self
             fnScope[variable: "self"] = (type: parentType, mutable: mutableSelf)
             
