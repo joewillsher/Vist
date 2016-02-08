@@ -29,13 +29,15 @@ class FuncDecl : Decl, StructMemberExpr {
     let fnType: FunctionType
     let impl: FunctionImplementationExpr?
     let attrs: [FunctionAttributeExpr]
+    let genericParameters: [ConstrainedType]
     
-    init(name: String, type: FunctionType, impl: FunctionImplementationExpr?, attrs: [FunctionAttributeExpr]) {
+    init(name: String, type: FunctionType, impl: FunctionImplementationExpr?, attrs: [FunctionAttributeExpr], genericParameters: [ConstrainedType]) {
         self.name = name
         self.fnType = type
         self.impl = impl
         self.mangledName = name
         self.attrs = attrs
+        self.genericParameters = genericParameters
     }
     
     var mangledName: String

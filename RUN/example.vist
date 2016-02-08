@@ -1,6 +1,24 @@
 
 
-type TwoType T (U | Eq) {
-    let i: Int
+// unconstrained generic params dont need parens
+type TwoType T U {
+    let t: Int
 }
+
+// constrained params list concepts after |
+type Array (Element | Foo Bar) {
+
+    var count: Int
+    var capacity: Int
+    var ptr: LLVM.Pointer
+}
+
+// unconstrained
+func foo T :: T T -> Bool = (a b) do
+    return true
+
+// constrained by Eq
+func equal (T | Eq) :: T T -> Bool = (a b) do
+    return a == b
+
 

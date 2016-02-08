@@ -744,29 +744,32 @@ extension Parser {
             throw error(ParseError.NoIdentifier, loc: rangeOfCurrentToken())
         }
         
-        let id: String
+        let functionName: String
         if case .Period? = inspectNextToken(), case .Identifier(let n)? = inspectNextToken(2) where s == "LLVM" && isStdLib {
-            id = "LLVM.\(n)"
+            functionName = "LLVM.\(n)"
             getNextToken(2) // eat
         }
         else {
-            id = s
+            functionName = s
         }
+        getNextToken()
         
-        let start = inspectNextPos()
-        guard case .Colon = getNextToken(), case .Colon = getNextToken() else {
-            throw error(ParseError.ExpectedDoubleColon, loc: SourceRange(start: start!, end: currentPos))
+        let genericParameters = try parseGenericParameterList(objName: functionName)
+        
+        let typeSignatureStartPos = currentPos
+        guard case .Colon = currentToken, case .Colon = getNextToken() else {
+            throw error(ParseError.ExpectedDoubleColon, loc: SourceRange(start: typeSignatureStartPos, end: currentPos))
         }
         
         getNextToken() // eat '='
         let type = try parseFunctionType()
         
         guard case .Assign = currentToken else {
-            return FuncDecl(name: id, type: type, impl: nil, attrs: a)
+            return FuncDecl(name: functionName, type: type, impl: nil, attrs: a, genericParameters: genericParameters)
         }
         getNextToken() // eat '='
         
-        return FuncDecl(name: id, type: type, impl: try parseClosureDeclaration(type: type), attrs: a)
+        return FuncDecl(name: functionName, type: type, impl: try parseClosureDeclaration(type: type), attrs: a, genericParameters: genericParameters)
     }
     
     /// Get the parameter names applied

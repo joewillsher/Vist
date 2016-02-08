@@ -18,7 +18,7 @@ func interfaceASTGen(ast: AST) throws -> AST {
         }
         else if case let f as FuncDecl = exp {
             
-            let fun = FuncDecl(name: f.name, type: f.fnType, impl: nil, attrs: f.attrs)
+            let fun = FuncDecl(name: f.name, type: f.fnType, impl: nil, attrs: f.attrs, genericParameters: f.genericParameters)
             interface.exprs.append(fun)
             
         }
