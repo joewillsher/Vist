@@ -101,6 +101,13 @@ extension MutationExpr : ExprTypeProvider {
                 
             guard try type.propertyMutable(propertyLookup.name) else { throw error(SemaError.ImmutableProperty(p: propertyLookup.name, obj: objectName, ty: type.name)) }
             
+        case let memberLookup as TupleMemberLookupExpr:
+            
+            let objectName = memberLookup.object.desc
+            let object = scope[variable: objectName]
+            
+            guard case _ as TupleType = object?.type else { throw error(SemaError.NoVariable(objectName)) }
+            guard let mutable = object?.mutable where mutable else { throw error(SemaError.ImmutableVariable(objectName)) }
             
         default:
             break

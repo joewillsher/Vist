@@ -83,12 +83,12 @@ define { i64 } @_Int_() #2 {
 entry:
   %Int = alloca { i64 }
   %0 = call { i64 } @_Int_i64(i64 0), !stdlib.call.optim !2
-  %1 = alloca { i64 }
-  store { i64 } %0, { i64 }* %1
-  %.value.ptr = getelementptr inbounds { i64 }* %1, i32 0, i32 0
-  %.value = load i64* %.value.ptr
+  %v = alloca { i64 }
+  store { i64 } %0, { i64 }* %v
+  %v.value.ptr = getelementptr inbounds { i64 }* %v, i32 0, i32 0
+  %v.value = load i64* %v.value.ptr
   %Int.value.ptr = getelementptr inbounds { i64 }* %Int, i32 0, i32 0
-  store i64 %.value, i64* %Int.value.ptr
+  store i64 %v.value, i64* %Int.value.ptr
   %Int1 = load { i64 }* %Int
   ret { i64 } %Int1
 }
@@ -118,12 +118,12 @@ define { i1 } @_Bool_() #2 {
 entry:
   %Bool = alloca { i1 }
   %0 = call { i1 } @_Bool_b(i1 false), !stdlib.call.optim !2
-  %1 = alloca { i1 }
-  store { i1 } %0, { i1 }* %1
-  %.value.ptr = getelementptr inbounds { i1 }* %1, i32 0, i32 0
-  %.value = load i1* %.value.ptr
+  %b = alloca { i1 }
+  store { i1 } %0, { i1 }* %b
+  %b.value.ptr = getelementptr inbounds { i1 }* %b, i32 0, i32 0
+  %b.value = load i1* %b.value.ptr
   %Bool.value.ptr = getelementptr inbounds { i1 }* %Bool, i32 0, i32 0
-  store i1 %.value, i1* %Bool.value.ptr
+  store i1 %b.value, i1* %Bool.value.ptr
   %Bool1 = load { i1 }* %Bool
   ret { i1 } %Bool1
 }
@@ -257,14 +257,14 @@ entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %add_res = call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %value, i64 %value1)
-  %0 = alloca { i64, i1 }
-  store { i64, i1 } %add_res, { i64, i1 }* %0
-  %.1.ptr = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 1
-  %.1 = load i1* %.1.ptr
-  call void @_condFail_b(i1 %.1)
-  %.0.ptr = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 0
-  %.0 = load i64* %.0.ptr
-  %Int_res = call { i64 } @_Int_i64(i64 %.0)
+  %v = alloca { i64, i1 }
+  store { i64, i1 } %add_res, { i64, i1 }* %v
+  %v.1.ptr = getelementptr inbounds { i64, i1 }* %v, i32 0, i32 1
+  %v.1 = load i1* %v.1.ptr
+  call void @_condFail_b(i1 %v.1)
+  %v.0.ptr = getelementptr inbounds { i64, i1 }* %v, i32 0, i32 0
+  %v.0 = load i64* %v.0.ptr
+  %Int_res = call { i64 } @_Int_i64(i64 %v.0)
   ret { i64 } %Int_res
 }
 
@@ -277,14 +277,14 @@ entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %sub_res = call { i64, i1 } @llvm.ssub.with.overflow.i64(i64 %value, i64 %value1)
-  %0 = alloca { i64, i1 }
-  store { i64, i1 } %sub_res, { i64, i1 }* %0
-  %.1.ptr = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 1
-  %.1 = load i1* %.1.ptr
-  call void @_condFail_b(i1 %.1)
-  %.0.ptr = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 0
-  %.0 = load i64* %.0.ptr
-  %Int_res = call { i64 } @_Int_i64(i64 %.0)
+  %v = alloca { i64, i1 }
+  store { i64, i1 } %sub_res, { i64, i1 }* %v
+  %v.1.ptr = getelementptr inbounds { i64, i1 }* %v, i32 0, i32 1
+  %v.1 = load i1* %v.1.ptr
+  call void @_condFail_b(i1 %v.1)
+  %v.0.ptr = getelementptr inbounds { i64, i1 }* %v, i32 0, i32 0
+  %v.0 = load i64* %v.0.ptr
+  %Int_res = call { i64 } @_Int_i64(i64 %v.0)
   ret { i64 } %Int_res
 }
 
@@ -297,14 +297,14 @@ entry:
   %value = extractvalue { i64 } %a, 0
   %value1 = extractvalue { i64 } %b, 0
   %mul_res = call { i64, i1 } @llvm.smul.with.overflow.i64(i64 %value, i64 %value1)
-  %0 = alloca { i64, i1 }
-  store { i64, i1 } %mul_res, { i64, i1 }* %0
-  %.1.ptr = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 1
-  %.1 = load i1* %.1.ptr
-  call void @_condFail_b(i1 %.1)
-  %.0.ptr = getelementptr inbounds { i64, i1 }* %0, i32 0, i32 0
-  %.0 = load i64* %.0.ptr
-  %Int_res = call { i64 } @_Int_i64(i64 %.0)
+  %v = alloca { i64, i1 }
+  store { i64, i1 } %mul_res, { i64, i1 }* %v
+  %v.1.ptr = getelementptr inbounds { i64, i1 }* %v, i32 0, i32 1
+  %v.1 = load i1* %v.1.ptr
+  call void @_condFail_b(i1 %v.1)
+  %v.0.ptr = getelementptr inbounds { i64, i1 }* %v, i32 0, i32 0
+  %v.0 = load i64* %v.0.ptr
+  %Int_res = call { i64 } @_Int_i64(i64 %v.0)
   ret { i64 } %Int_res
 }
 

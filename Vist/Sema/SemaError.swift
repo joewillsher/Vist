@@ -14,6 +14,7 @@ enum SemaError : VistError {
     case CannotSubscriptNonArrayVariable, NonIntegerSubscript
     case NonBooleanCondition, NotRangeType, DifferentTypeForMutation(String, Ty, Ty), ImmutableVariable(String), ImmutableProperty(p: String, obj: String, ty: String)
     case CannotAssignToNullExpression(String)
+    case NoTupleElement(index: Int, size: Int)
     
     case NoFunction(String, [Ty])
     case WrongFunctionReturnType(applied: Ty, expected: Ty)
@@ -59,7 +60,8 @@ enum SemaError : VistError {
             return "Variable '\(obj)' (of type '\(ty)') does not have mutable property '\(p)'"
         case let .CannotAssignToNullExpression(name):
             return "Variable '\(name)' cannot be assigned to null typed expression"
-            
+        case let .NoTupleElement(i, s):
+            return "Tuple of size \(s). Cannot access its element at index \(i)"
             
         case let .WrongFunctionReturnType(applied, expected):
             return "Invalid return from function. '\(applied)' is not convertible to '\(expected)'"

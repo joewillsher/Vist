@@ -28,6 +28,7 @@ final class TupleType : Ty {
     }
     
     func propertyType(index: Int) throws -> Ty {
+        guard index < members.count else { throw error(SemaError.NoTupleElement(index: index, size: members.count)) }
         return members[index]
     }
 

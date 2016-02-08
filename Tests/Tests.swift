@@ -255,7 +255,28 @@ extension ErrorTests {
         
     }
     
-    
+    func testTypeError() {
+        let file = "TypeError.vist"
+        
+        do {
+            try compileWithOptions(["-O", file], inDirectory: testDir)
+            XCTFail("Errors not caught")
+        }
+        catch {
+            let e = ErrorCollection(errors: [
+                SemaError.ImmutableVariable("imm"),
+                SemaError.ImmutableVariable("imm"),
+                SemaError.ImmutableProperty(p: "a", obj: "mut", ty: "Foo"),
+                SemaError.NoPropertyNamed(type: "Foo", property: "x"),
+                SemaError.ImmutableVariable("tup"),
+                SemaError.NoTupleElement(index: 3, size: 2)
+                ])
+            
+            XCTAssertNotNil(error as? ErrorCollection)
+            XCTAssert(e.description == (error as! ErrorCollection).description)
+        }
+    }
+
 }
 
 

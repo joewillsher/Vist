@@ -29,8 +29,8 @@ print (stack.bottom) // test: 10
 print (stack.top) // test: 3
 print (stack.sum ()) // test: 13
 
-print (stack.pop ()) // print 3
-print (stack.pop ()) // print 10
+print (stack.pop ()) // test: 3
+print (stack.pop ()) // test: 10
 
 stack = StackOf2 2 4
 

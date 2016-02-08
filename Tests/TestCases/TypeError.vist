@@ -1,4 +1,21 @@
 
+type Foo {
+    let a: Int
+    var b: Int
+}
 
 
+let imm = Foo 1 1
+var mut = Foo 2 2
+
+imm.a = 0
+imm.b = 0
+mut.a = 0
+mut.b = 0
+
+print mut.x
+
+let tup = (0, 1)
+tup.1 = 2
+tup.3 = 2
 

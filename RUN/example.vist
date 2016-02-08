@@ -1,37 +1,21 @@
 
-type StackOf2 {
-    var bottom: Int
-    var top: Int
-    
-    func sum :: () -> Int = do return bottom + top
-    
-    @mutating
-    func pop :: () -> Int = {
-        let v = top
-        top = bottom
-        return v
-    }
-    
-    @mutating
-    func push :: Int = (val) {
-        bottom = top
-        top = val
-    }
+type Foo {
+    let a: Int
+    var b: Int
 }
 
-var stack = StackOf2 2 10
 
-print (stack.sum ()) // test: 12
+let imm = Foo 1 1
+var mut = Foo 2 2
 
-stack.push 3
-print (stack.bottom) // test: 10
-print (stack.top) // test: 3
-print (stack.sum ()) // test: 13
+imm.a = 0
+imm.b = 0
+mut.a = 0
+mut.b = 0
 
-print (stack.pop ()) // print 3
-print (stack.pop ()) // print 10
+print mut.x
 
-stack = StackOf2 2 4
-
-print stack.bottom == stack.top // test: false
+let tup = (0, 1)
+tup.1 = 2
+tup.3 = 2
 

@@ -251,9 +251,9 @@ final class FunctionImplementationExpr : Expr {
 
 final class TupleMemberLookupExpr : AssignableExpr {
     let index: Int
-    let object: Expr
+    let object: AssignableExpr
     
-    init(index: Int, object: Expr) {
+    init(index: Int, object: AssignableExpr) {
         self.index = index
         self.object = object
     }
