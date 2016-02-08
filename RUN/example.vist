@@ -1,27 +1,37 @@
 
-
-
-// type foo, { i64 i64 } type
-// implicit memberwise initialser is added
 type StackOf2 {
-    var a: Int
-    var b: Int
+    var bottom: Int
+    var top: Int
     
-    func sum :: () -> Int = do
-        return a + b
+    func sum :: () -> Int = do return bottom + top
     
     @mutating
     func pop :: () -> Int = {
-        let v = b
-        b = 0
+        let v = top
+        top = bottom
         return v
     }
+    
+    @mutating
+    func push :: Int = (val) {
+        bottom = top
+        top = val
+    }
 }
+
 var stack = StackOf2 2 10
 
-print (stack.pop ())
+print (stack.sum ()) // test: 12
 
-print stack.b
+stack.push 3
+print (stack.bottom) // test: 10
+print (stack.top) // test: 3
+print (stack.sum ()) // test: 13
 
-print (stack.sum ())
+print (stack.pop ()) // print 3
+print (stack.pop ()) // print 10
+
+stack = StackOf2 2 4
+
+print stack.bottom == stack.top // test: false
 

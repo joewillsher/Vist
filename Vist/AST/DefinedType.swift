@@ -87,14 +87,12 @@ enum DefinedType {
 
 extension FunctionType {
     
-    func params(scope: SemaScope)
-        throws -> [Ty] {
-            return try paramType.tyArr(scope)
+    func params(scope: SemaScope) throws -> [Ty] {
+        return try paramType.tyArr(scope)
     }
     
-    func returnType(scope: SemaScope)
-        throws -> Ty {
-            return try returnType.type(scope)
+    func returnType(scope: SemaScope) throws -> Ty {
+        return try returnType.type(scope)
     }
 }
 

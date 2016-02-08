@@ -5,9 +5,13 @@ target triple = "x86_64-apple-macosx10.11.0"
 ; Function Attrs: nounwind
 define void @main() #0 {
 entry:
+  tail call void @"_$print_i64"(i64 12)
   tail call void @"_$print_i64"(i64 10)
-  tail call void @"_$print_i64"(i64 0)
-  tail call void @"_$print_i64"(i64 2)
+  tail call void @"_$print_i64"(i64 3)
+  tail call void @"_$print_i64"(i64 13)
+  tail call void @"_$print_i64"(i64 3)
+  tail call void @"_$print_i64"(i64 10)
+  tail call void @"_$print_b"(i1 false)
   ret void
 }
 
@@ -23,6 +27,9 @@ entry:
 
 ; Function Attrs: noinline nounwind ssp uwtable
 declare void @"_$print_i64"(i64) #2
+
+; Function Attrs: noinline nounwind ssp uwtable
+declare void @"_$print_b"(i1 zeroext) #2
 
 attributes #0 = { nounwind }
 attributes #1 = { alwaysinline nounwind readnone }

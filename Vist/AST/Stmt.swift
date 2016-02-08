@@ -75,3 +75,10 @@ final class WhileLoopStmt : LoopStmt {
 }
 
 
+final class ReturnStmt : Stmt {
+    let expr: Expr
+    
+    init(expr: Expr) {
+        self.expr = expr
+    }
+}

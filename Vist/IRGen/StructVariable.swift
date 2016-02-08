@@ -12,7 +12,7 @@ typealias StructVariableProperty = (name: String, irType: LLVMTypeRef)
 protocol ContainerVariable : class, RuntimeVariable {
     var ptr: LLVMValueRef { get }
     
-    var properties: [StructVariableProperty] { get set }
+    var properties: [StructVariableProperty] { get }
 }
 
 extension ContainerVariable {
@@ -190,8 +190,11 @@ final class ParameterStructVariable : StructVariable {
 
 
 
-// rename to StructPropertyVariable
-/// Variable kind referenced by initialisers
+/// Variables that can hold a mutable reference to self
+///
+/// Initialisers can do this easily because *"self"* is declared in the function
+///
+/// Self capturing functions use this by setting `parent` to the self pointer param 
 final class SelfReferencingMutableVariable : MutableVariable {
     var ptr: LLVMValueRef = nil
     var type: LLVMTypeRef = nil // dont care -- initialiser has this info

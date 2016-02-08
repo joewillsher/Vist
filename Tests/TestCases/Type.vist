@@ -1,32 +1,38 @@
 
-// type foo, { i64 i64 } type
-// implicit memberwise initialser is bottomdded
 type StackOf2 {
     var bottom: Int
     var top: Int
     
-    func sum :: () -> Int = do return bottom + top
-    func pop :: () -> Int = do return top
+    func sum :: () -> Int = do
+        return bottom + top
+    
+    @mutating
+    func pop :: () -> Int = {
+        let v = top
+        top = bottom
+        return v
+    }
+    
+    @mutating
+    func push :: Int = (val) {
+        bottom = top
+        top = val
+    }
 }
-
-func push :: Int StackOf2 -> StackOf2 = (val stack) do
-    return StackOf2 stack.top val
-
-func empty :: -> StackOf2 = do
-    return StackOf2 0 0
-
 
 var stack = StackOf2 2 10
 
-print (stack.sum ())
-// test: 12
+print (stack.sum ()) // test: 12
 
-stack = push 3 stack
-print (stack.pop ())
-// test: 3
+stack.push 3
+print (stack.bottom) // test: 10
+print (stack.top) // test: 3
+print (stack.sum ()) // test: 13
 
-stack = empty ()
+print (stack.pop ()) // print 3
+print (stack.pop ()) // print 10
 
-print stack.bottom == stack.top
-// test: true
+stack = StackOf2 2 4
+
+print stack.bottom == stack.top // test: false
 

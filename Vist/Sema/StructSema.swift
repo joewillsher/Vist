@@ -14,6 +14,9 @@ extension StructExpr : ExprTypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
         
+        // we manually handle errors here because
+        //  - we want a shared error cache across the whole type, incl vars,inits&methods
+        //  - when we map we need to capture the result values
         var errors: [VistError] = []
         
         let structScope = SemaScope(parent: scope, returnType: nil) // cannot return from Struct scope
@@ -30,7 +33,6 @@ extension StructExpr : ExprTypeProvider {
                 errors.append(error)
                 return nil
             }
-            
         }
         
         let ty = StructType(members: members, methods: [], name: name)
@@ -61,8 +63,12 @@ extension StructExpr : ExprTypeProvider {
         let memberwise = try memberwiseInitialiser()
         initialisers.append(memberwise)
         
-        try initialisers.walkChildren { node in
-            try node.llvmType(scope)
+        do {
+            try initialisers.walkChildren { node in
+                try node.llvmType(scope)
+            }
+        } catch let error as VistError {
+            errors.append(error)
         }
         
         try errors.throwIfErrors()
