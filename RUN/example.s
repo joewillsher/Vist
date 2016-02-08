@@ -6,38 +6,16 @@ _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	subq	$16, %rsp
-	movl	$12, %eax
-	movl	%eax, %edi
-	callq	__$print_i64
-	movl	$10, %eax
-	movl	%eax, %edi
-	movq	%rdi, -8(%rbp)          ## 8-byte Spill
-	callq	__$print_i64
-	movl	$3, %eax
-	movl	%eax, %edi
-	movq	%rdi, -16(%rbp)         ## 8-byte Spill
-	callq	__$print_i64
-	movl	$13, %eax
-	movl	%eax, %edi
-	callq	__$print_i64
-	movq	-16(%rbp), %rdi         ## 8-byte Reload
-	callq	__$print_i64
-	movq	-8(%rbp), %rdi          ## 8-byte Reload
-	callq	__$print_i64
-	xorl	%edi, %edi
-	addq	$16, %rsp
 	popq	%rbp
-	jmp	__$print_b              ## TAILCALL
+	retq
 
-	.globl	__StackOf2_S.i64_S.i64
+	.globl	__TwoType_S.i64
 	.align	4, 0x90
-__StackOf2_S.i64_S.i64:                 ## @_StackOf2_S.i64_S.i64
+__TwoType_S.i64:                        ## @_TwoType_S.i64
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
 	movq	%rdi, %rax
-	movq	%rsi, %rdx
 	popq	%rbp
 	retq
 

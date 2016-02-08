@@ -321,6 +321,8 @@ protocol StructMemberExpr {
 }
 
 
+typealias ConstrainedType = (type: String, constraints: [String])
+
 final class StructExpr : TypedExpr, ScopeNode {
     let name: String
     let properties: [VariableDecl]
@@ -328,12 +330,15 @@ final class StructExpr : TypedExpr, ScopeNode {
     var initialisers: [InitialiserDecl]
     let attrs: [AttributeExpr]
     
-    init(name: String, properties: [VariableDecl], methods: [FuncDecl], initialisers: [InitialiserDecl], attrs: [AttributeExpr]) {
+    let genericParameters: [ConstrainedType]
+    
+    init(name: String, properties: [VariableDecl], methods: [FuncDecl], initialisers: [InitialiserDecl], attrs: [AttributeExpr], genericParameters: [ConstrainedType]) {
         self.name = name
         self.properties = properties
         self.methods = methods
         self.initialisers = initialisers
         self.attrs = attrs
+        self.genericParameters = genericParameters
     }
     
     var type: StructType? = nil

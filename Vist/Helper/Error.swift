@@ -19,15 +19,12 @@ typealias VistError = protocol<ErrorType, CustomStringConvertible>
 ///
 /// If a source location is defined, the result is wrapped in a `PositionedError` struct
 ///
-func error(err: VistError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = __FILE__, line: UInt = __LINE__) -> VistError {
+func error(err: VistError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = __FILE__, line: UInt = __LINE__, function: String = __FUNCTION__) -> VistError {
+    
+    var error = err
     
     #if DEBUG
-        if userVisible {
-            print("Vist error in line \(line) of \(file)")
-        }
-        else {
-            print("Internal logic error in line \(line) of \(file)")
-        }
+        error = DebugError(error: error, userVisible: userVisible, file: file, line: line, function: function)
     #else
         if !userVisible {
             fatalError("Compiler assertion failed \(err)", file: file, line: line)
@@ -35,22 +32,37 @@ func error(err: VistError, loc: SourceRange? = nil, userVisible: Bool = true, fi
     #endif
     
     if let loc = loc { // if a source is provided, put the error in a PositionedError
-        return PositionedError(error: err, range: loc)
+        return PositionedError(error: error, range: loc)
     } else {
-        return err
+        return error
     }
+}
+
+/// Any error wrapper type, allows equality operator to be defined
+/// on these functions by looking at their stored error
+protocol ErrorWrapper : VistError {
+    var error: VistError { get }
 }
 
 /// An error object, which describes the error and contains the source location information
 ///
-struct PositionedError : VistError {
+struct PositionedError : ErrorWrapper {
     let error: VistError
     let range: SourceRange?
     
     var description: String {
         return "\(range?.description ?? ""):\t\(error)"
     }
+}
+
+struct DebugError : ErrorWrapper {
+    let error: VistError
+    let userVisible: Bool
+    let file: StaticString, line: UInt, function: String
     
+    var description: String {
+        return "\(userVisible ? "Vist error" : "Internal logic error"): \((error)).\n\t~Error in '\(function)' on line \(line) of \(file)~"
+    }
 }
 
 
@@ -92,18 +104,18 @@ extension CollectionType where
 @warn_unused_result
 func == (lhs: ErrorType, rhs: ErrorType) -> Bool {
     switch (lhs, rhs) {
-    case (let l as PositionedError, let r as PositionedError):
+    case (let l as ErrorWrapper, let r as ErrorWrapper):
         return l.error == r.error
         
-    case (let l as PositionedError, _):
+    case (let l as ErrorWrapper, _):
         return l.error == rhs
         
-    case (_, let r as PositionedError):
+    case (_, let r as ErrorWrapper):
         return r.error == lhs
         
     case (let l as ErrorCollection, let r as ErrorCollection):
         return l.errors.elementsEqual(r.errors, isEquivalent: ==)
-                
+        
     default:
         return lhs._code == rhs._code && lhs._domain == rhs._domain
     }

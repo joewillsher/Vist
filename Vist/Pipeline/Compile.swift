@@ -46,10 +46,7 @@ func compileDocuments(fileNames: [String],
             
             let path = "\(currentDirectory)/\(fileName)"
             let doc = try String(contentsOfFile: path, encoding: NSUTF8StringEncoding)
-            if verbose { print("----------------------------SOURCE-----------------------------\n\n\(doc)\n\n\n-----------------------------TOKS------------------------------\n") }
-            
-            // http://llvm.org/docs/tutorial/LangImpl1.html#language
-            
+            if verbose { print("----------------------------SOURCE-----------------------------\n\(doc)\n\n\n-----------------------------TOKS------------------------------\n") }
             
             // Lex code
             let tokens = try doc.getTokens()
@@ -141,13 +138,6 @@ func compileDocuments(fileNames: [String],
         
         if verbose { print("\n\n----------------------------OPTIM----------------------------\n") }
         
-//        let fileTask = NSTask()
-//        fileTask.currentDirectoryPath = currentDirectory
-//        fileTask.launchPath = "/usr/bin/touch"
-//        fileTask.arguments = ["\(file).ll"]
-//        
-//        fileTask.launch()
-//        fileTask.waitUntilExit()
         
         if optim || isStdLib {
             performLLVMOptimisations(module, 3, isStdLib)
@@ -167,9 +157,6 @@ func compileDocuments(fileNames: [String],
         }
         
         if verbose { print(try String(contentsOfFile: "\(currentDirectory)/\(file).ll", encoding: NSUTF8StringEncoding) ?? "") }
-        
-        
-        
         if irOnly { return }
         
         
@@ -196,7 +183,6 @@ func compileDocuments(fileNames: [String],
         
         
         if isStdLib {
-            
             // generate .o file to link against program
             let objFileTask = NSTask()
             objFileTask.currentDirectoryPath = currentDirectory
@@ -253,7 +239,7 @@ func compileDocuments(fileNames: [String],
                 let f = NSNumberFormatter()
                 f.maximumFractionDigits = 2
                 f.minimumFractionDigits = 2
-                print("\n--------\nTime elapsed: \(f.stringFromNumber(t)!)s")
+                print("\n------------------\nTime elapsed: \(f.stringFromNumber(t)!)s")
             }
             
         }

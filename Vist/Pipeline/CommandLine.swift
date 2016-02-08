@@ -52,39 +52,40 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
         
         if buildStdLib {
             try compileDocuments(["stdlib.vist"],
-                inDirectory: "",
-                out: out,
-                verbose: verbose,
-                dumpAST: ast,
-                irOnly: ir,
-                asmOnly: asm,
-                buildOnly: true,
-                profile: false,
-                optim: true,
-                preserve: true,
-                generateLibrary: true,
-                isStdLib: true
-            )
+                                 inDirectory: "",
+                                 out: out,
+                                 verbose: verbose,
+                                 dumpAST: ast,
+                                 irOnly: ir,
+                                 asmOnly: asm,
+                                 buildOnly: true,
+                                 profile: false,
+                                 optim: true,
+                                 preserve: true,
+                                 generateLibrary: true,
+                                 isStdLib: true)
         }
         if !files.isEmpty {
             try compileDocuments(files,
-                inDirectory: dir,
-                out: out,
-                verbose: verbose,
-                dumpAST: ast,
-                irOnly: ir,
-                asmOnly: asm,
-                buildOnly: b,
-                profile: profile,
-                optim: o,
-                preserve: preserveIntermediate,
-                generateLibrary: lib,
-                isStdLib: false
-            )
+                                 inDirectory: dir,
+                                 out: out,
+                                 verbose: verbose,
+                                 dumpAST: ast,
+                                 irOnly: ir,
+                                 asmOnly: asm,
+                                 buildOnly: b,
+                                 profile: profile,
+                                 optim: o,
+                                 preserve: preserveIntermediate,
+                                 generateLibrary: lib,
+                                 isStdLib: false)
         }
         
         #if DEBUG
-            print("Compile took \(CFAbsoluteTimeGetCurrent() - s)s")
+            let f = NSNumberFormatter()
+            f.maximumFractionDigits = 2
+            f.minimumFractionDigits = 2
+            print("Compile took: \(f.stringFromNumber(CFAbsoluteTimeGetCurrent() - s)!)s")
         #endif
     }
     

@@ -896,6 +896,63 @@ extension Parser {
 
 extension Parser {
     
+    private func parseGenericParameterList(objName objName: String = "") throws -> [ConstrainedType] {
+        
+        var genericParameters: [ConstrainedType] = []
+        
+//        type TwoType T U {
+//        type Array (Element | Foo Bar) {
+        
+        let genericParamListStartPos = currentPos
+        
+        while true {
+            switch currentToken {
+            case let .Identifier(genericParamName):
+                genericParameters.append((type: genericParamName, constraints: []))
+                getNextToken()
+                
+            case .OpenParen:
+                let currentParamStartPos = currentPos
+                
+                guard case let .Identifier(genericParamName) = getNextToken() else { // get name of generic param
+                    throw error(ParseError.NoGenericParamName(on: objName), loc: SourceRange(start: genericParamListStartPos, end: currentPos))
+                }
+                guard case .Bar = getNextToken() else { // if we are using parens in generic param we must constrain it
+                    throw error(ParseError.ExpectedBar, loc: SourceRange(start: inspectNextPos(-2) ?? currentPos, end: currentPos))
+                }
+                
+                var constraints: [String] = []
+                
+                loopOverConstraints: while true {
+                    switch getNextToken() {
+                    case let .Identifier(constraint):
+                        constraints.append(constraint)
+                        
+                    case .CloseParen where !constraints.isEmpty:
+                        getNextToken() // eat ')'
+                        break loopOverConstraints
+                        
+                    case .CloseParen where constraints.isEmpty:
+                        throw error(ParseError.NoGenericConstraints(parent: objName, genericParam: genericParamName), loc: SourceRange(start: currentParamStartPos, end: currentPos))
+                        
+                    default:
+                        throw error(ParseError.ExpectedGenericConstraint, loc: SourceRange.at(currentPos))
+                    }
+                }
+                
+                genericParameters.append((type: genericParamName, constraints: constraints))
+                
+            default:
+                return genericParameters
+                
+            }
+        }
+        
+    }
+    
+    
+    
+    
     /// Parse the declaration of a type
     ///
     /// - returns: The AST for a struct’s members, methods, & initialisers
@@ -907,8 +964,11 @@ extension Parser {
         
         getNextToken() // eat 'type'
         
-        guard case .Identifier(let name) = currentToken else { throw error(ParseError.NoTypeName, loc: SourceRange.at(currentPos)) }
+        guard case .Identifier(let typeName) = currentToken else { throw error(ParseError.NoTypeName, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat name
+        
+        let genericParameters = try parseGenericParameterList(objName: typeName)
+        
         guard case .OpenBrace = currentToken else { throw error(ParseError.ExpectedOpenBrace, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat '{'
         
@@ -942,7 +1002,7 @@ extension Parser {
             
         }
         
-        let s = StructExpr(name: name, properties: properties, methods: methods, initialisers: initialisers, attrs: a)
+        let s = StructExpr(name: typeName, properties: properties, methods: methods, initialisers: initialisers, attrs: a, genericParameters: genericParameters)
         
         // associate functions with the struct
         for i in s.initialisers {

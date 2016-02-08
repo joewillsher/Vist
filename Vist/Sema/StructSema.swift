@@ -182,8 +182,7 @@ extension TupleMemberLookupExpr : ExprTypeProvider {
     
     func llvmType(scope: SemaScope) throws -> Ty {
         
-        guard case let objType as TupleType = try object.llvmType(scope) else {
-            throw error(SemaError.NoTypeForTuple, userVisible: false) }
+        guard case let objType as TupleType = try object.llvmType(scope) else { throw error(SemaError.NoTypeForTuple, userVisible: false) }
         
         let propertyType = try objType.propertyType(index)
         self._type = propertyType

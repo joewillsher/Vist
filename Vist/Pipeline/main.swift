@@ -12,8 +12,7 @@ do {
     try compileWithOptions(flags, inDirectory: NSTask().currentDirectoryPath)
 }
 catch {
-    print("")
-    print(error, terminator: "\n\n")
+    print("", error, terminator: "\n\n")
 }
 
 
