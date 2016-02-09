@@ -10,10 +10,11 @@
 typealias StructMember = (name: String, type: Ty, mutable: Bool)
 typealias StructMethod = (name: String, type: FnType)
 
-final class StructType : Ty {
+struct StructType : Ty {
     let name: String
     let members: [StructMember]
     var methods: [StructMethod]
+    
     
     init(members: [StructMember], methods: [StructMethod], name: String) {
         self.name = name

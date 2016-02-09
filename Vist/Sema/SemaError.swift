@@ -28,6 +28,7 @@ enum SemaError : VistError {
     case TypeNotFound, ParamsNotTyped, IntegerNotTyped, BoolNotTyped
     case NoMemberwiseInit
     
+    case GenericSubstitutionInvalid
     
     var description: String {
         switch self {
@@ -91,6 +92,8 @@ enum SemaError : VistError {
         case .IntegerNotTyped: return "Integer literal not typed"
         case .BoolNotTyped: return "Bool literal not typed"
         case .NoMemberwiseInit: return "Could not construct memberwise initialiser"
+            
+        case .GenericSubstitutionInvalid: return "Generic substitution invalid"
         }
     }
 }

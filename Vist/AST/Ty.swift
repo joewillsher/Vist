@@ -10,19 +10,6 @@ protocol Ty : Printable, CustomDebugStringConvertible {
     func ir() -> LLVMTypeRef
 }
 
-//protocol Constraint {
-//}
-
-final class Concept
-//    : Constraint
-{
-    let name: String
-    let requiredFunctions: [FnType] = [], requiredProperties: [StructMember] = []
-    
-    init(name: String) {
-        self.name = name
-    }
-}
 
 
 extension BuiltinType : Equatable {}

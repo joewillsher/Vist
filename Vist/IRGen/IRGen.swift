@@ -1040,12 +1040,11 @@ extension MethodCallExpr : IRGenerator {
         
         // need to add self to beginning of params
         let ob = try object.nodeCodeGen(stackFrame)
-                
-        guard case let variable as VariableExpr = object else { throw error(IRError.CannotLookupPropertyFromNonVariable, userVisible: false) }
-        guard case let selfRef as MutableStructVariable = try stackFrame.variable(variable.name) else { throw error(IRError.NoVariable(variable.name)) }
         
-        let args = try self.args.elements
-            .map(codeGenIn(stackFrame))
+        guard case let variable as VariableExpr = object else { throw error(IRError.CannotLookupPropertyFromNonVariable, userVisible: false) } // FIXME: this should be possible
+        guard case let selfRef as MutableStructVariable = try stackFrame.variable(variable.name) else { throw error(IRError.NoVariable(variable.name), userVisible: false) }
+        
+        let args = try self.args.elements.map(codeGenIn(stackFrame))
         
         let argBuffer = ([selfRef.ptr] + args).ptr()
         defer { argBuffer.dealloc(c) }

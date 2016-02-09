@@ -54,6 +54,10 @@
 		D4A2CC0F1C4FF56500BB9A12 /* Ty.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC091C4FF56500BB9A12 /* Ty.swift */; };
 		D4A2CC111C4FF58C00BB9A12 /* Builtin.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC101C4FF58C00BB9A12 /* Builtin.swift */; };
 		D4A2CC131C503D1800BB9A12 /* StdLib.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A2CC121C503D1800BB9A12 /* StdLib.swift */; };
+		D4C697E01C6A5C9200645AD1 /* ConceptType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C697DF1C6A5C9200645AD1 /* ConceptType.swift */; };
+		D4C697E11C6A5C9200645AD1 /* ConceptType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C697DF1C6A5C9200645AD1 /* ConceptType.swift */; };
+		D4D76EA11C69EA200037D93D /* GenericType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D76EA01C69EA200037D93D /* GenericType.swift */; };
+		D4D76EA21C69EA200037D93D /* GenericType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D76EA01C69EA200037D93D /* GenericType.swift */; };
 		D4DE28141C5906830096E798 /* FunctionContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4DE28131C5906830096E798 /* FunctionContainer.swift */; };
 		D4DE28191C5969830096E798 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4DE28181C5969830096E798 /* libz.tbd */; };
 		D4DE281C1C596B250096E798 /* Assemble.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D4DE281A1C596B250096E798 /* Assemble.cpp */; };
@@ -206,6 +210,8 @@
 		D4BBE4191C4157E7001B8934 /* runtime.bc */ = {isa = PBXFileReference; lastKnownFileType = file; name = runtime.bc; path = Runtime/runtime.bc; sourceTree = "<group>"; };
 		D4BBE41A1C4157E7001B8934 /* runtime.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = runtime.ll; path = Runtime/runtime.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
 		D4BBE41E1C41584C001B8934 /* stdlib.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = stdlib.o; path = stdlib/stdlib.o; sourceTree = "<group>"; };
+		D4C697DF1C6A5C9200645AD1 /* ConceptType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ConceptType.swift; path = AST/ConceptType.swift; sourceTree = "<group>"; };
+		D4D76EA01C69EA200037D93D /* GenericType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GenericType.swift; path = AST/GenericType.swift; sourceTree = "<group>"; };
 		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
 		D4DE28131C5906830096E798 /* FunctionContainer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FunctionContainer.swift; path = AST/FunctionContainer.swift; sourceTree = "<group>"; };
 		D4DE28181C5969830096E798 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
@@ -399,6 +405,8 @@
 				D4A2CC051C4FF56500BB9A12 /* BuiltinType.swift */,
 				D4A2CC061C4FF56500BB9A12 /* FnType.swift */,
 				D4A2CC071C4FF56500BB9A12 /* StructType.swift */,
+				D4D76EA01C69EA200037D93D /* GenericType.swift */,
+				D4C697DF1C6A5C9200645AD1 /* ConceptType.swift */,
 				D4A2CC081C4FF56500BB9A12 /* TupleType.swift */,
 				D4DE28131C5906830096E798 /* FunctionContainer.swift */,
 				D4A2CC101C4FF58C00BB9A12 /* Builtin.swift */,
@@ -618,12 +626,14 @@
 				D4E35B681C5D0CA000683486 /* Initialiser.swift in Sources */,
 				D4E35B691C5D0CA000683486 /* TypeProvider.swift in Sources */,
 				D4FC9D191C5FEE4E0031F1BD /* IRError.swift in Sources */,
+				D4C697E11C6A5C9200645AD1 /* ConceptType.swift in Sources */,
 				D4E35B6A1C5D0CA000683486 /* ASTInterface.swift in Sources */,
 				D4E35B6B1C5D0CA000683486 /* LinkAST.swift in Sources */,
 				D4E35B6C1C5D0CA000683486 /* IRGen.swift in Sources */,
 				D4E35B6D1C5D0CA000683486 /* StackFrame.swift in Sources */,
 				D4E35B6E1C5D0CA000683486 /* RuntimeVariable.swift in Sources */,
 				D4E35B6F1C5D0CA000683486 /* ArrayVariable.swift in Sources */,
+				D4D76EA21C69EA200037D93D /* GenericType.swift in Sources */,
 				D4E347251C6253D700CC2F8E /* ExprSema.swift in Sources */,
 				D4E35B821C5E3ECE00683486 /* Expected.swift in Sources */,
 				D4E35B701C5D0CA000683486 /* StructVariable.swift in Sources */,
@@ -672,10 +682,12 @@
 				D497A7941C3B015700DFE39E /* Print.swift in Sources */,
 				D4A2CC0B1C4FF56500BB9A12 /* BuiltinType.swift in Sources */,
 				D4A2CC001C4FF52400BB9A12 /* Expr.swift in Sources */,
+				D4C697E01C6A5C9200645AD1 /* ConceptType.swift in Sources */,
 				D497A7831C3B00FE00DFE39E /* ASTInterface.swift in Sources */,
 				D497A78B1C3B012700DFE39E /* IRGen.swift in Sources */,
 				D4DE28141C5906830096E798 /* FunctionContainer.swift in Sources */,
 				D4DE281F1C596BFE0096E798 /* TargetMachine.cpp in Sources */,
+				D4D76EA11C69EA200037D93D /* GenericType.swift in Sources */,
 				D497A78C1C3B012700DFE39E /* RuntimeVariable.swift in Sources */,
 				D40FC4CA1C48323E00122397 /* StdTypes.swift in Sources */,
 				D497A7701C3B005600DFE39E /* Token.swift in Sources */,

@@ -13,9 +13,12 @@ final class SemaScope {
     private var variables: [String: Variable]
     private var functions: [String: FnType]
     private var types: [String: StructType]
+    var concepts: [String: Concept]? = nil
     let isStdLib: Bool
     var returnType: Ty?
     let parent: SemaScope?
+    
+    var genericParameters: [ConstrainedType]? = nil
     
     
     // TODO: make this the AST context
@@ -74,8 +77,22 @@ final class SemaScope {
     }
     subscript (type type: String) -> StructType? {
         get {
-            if let t = StdLib.getStdLibType(type) { return t }
-            if let v = types[type] { return v }
+            if let t = StdLib.getStdLibType(type) {
+                return t
+            }
+            else if let v = types[type] {
+                return v
+            }
+            else if let g = genericParameters, let i = genericParameters?.indexOf({$0.type == type}) {
+                
+                let type = g[i]
+                guard let concepts = type.constraints.stableOptionalMap({ self.concepts?[$0] }) else { return nil }
+                
+                let requiredProperties = concepts.flatMap { $0.requiredProperties }
+                let requiredFunctions = concepts.flatMap { $0.requiredFunctions }
+                
+                return StructType(members: requiredProperties, methods: requiredFunctions, name: type.0)
+            }
             return parent?[type: type]
         }
         set {

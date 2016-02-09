@@ -38,7 +38,7 @@ enum DefinedType {
         }
     }
     
-    private func tyArr(scope: SemaScope? = nil) throws -> [Ty] {
+    private func tyArr(scope: SemaScope) throws -> [Ty] {
         switch self {
         case .Void:             return []
         case .Type, .Function:  return [try type(scope)]
@@ -53,10 +53,10 @@ enum DefinedType {
         case let .Tuple(ts):    return ts.flatMap { $0.typeNames() }
         }
     }
-
     
     
-    func type(scope: SemaScope? = nil) throws -> Ty {
+    
+    func type(scope: SemaScope) throws -> Ty {
         switch self {
         case .Void:
             return BuiltinType.Void
@@ -66,13 +66,25 @@ enum DefinedType {
             if let builtin = BuiltinType(name) {
                 return builtin as Ty
             }
-            else if let std = StdLib.getStdLibType(name) {
-                return std
-            }
-            else if let i = scope?[type: name] {
+//            else if let std = StdLib.getStdLibType(name) {
+//                return std
+//            }
+            else if let i = scope[type: name] {
                 return i
             }
-            throw error(SemaError.NoTypeNamed(name))
+//            else if let semaScope = scope, let genericParameters = semaScope.genericParameters, let i = genericParameters.indexOf({$0.type == name}) {
+//                
+//                let type = genericParameters[i]
+//                guard let concepts = type.constraints.stableOptionalMap({ semaScope.concepts?[$0] }) else { throw error(SemaError.GenericSubstitutionInvalid) } // FIXME: not correct error
+//                
+//                let requiredProperties = concepts.flatMap { $0.requiredProperties }
+//                let requiredFunctions = concepts.flatMap { $0.requiredFunctions }
+//                
+//                return StructType(members: requiredProperties, methods: requiredFunctions, name: type.0)
+//            }
+            else {
+                throw error(SemaError.NoTypeNamed(name))
+            }
             
         case let .Tuple(elements):
             return TupleType(members: try elements.map({try $0.type(scope)}))

@@ -21,6 +21,9 @@ extension StructExpr : ExprTypeProvider {
         
         let structScope = SemaScope(parent: scope, returnType: nil) // cannot return from Struct scope
         
+        // add generic params to scope
+        structScope.genericParameters = genericParameters
+        
         // maps over properties and gens types
         let members = try properties.flatMap { (a: VariableDecl) -> StructMember? in
             
@@ -35,7 +38,8 @@ extension StructExpr : ExprTypeProvider {
             }
         }
         
-        let ty = StructType(members: members, methods: [], name: name)
+        
+        var ty = StructType(members: members, methods: [], name: name)
         
         scope[type: name] = ty
         self.type = ty
@@ -53,7 +57,7 @@ extension StructExpr : ExprTypeProvider {
             }
             
         }
-    
+        
         ty.methods = memberFunctions
         
         if let implicit = implicitIntialiser() {
@@ -65,7 +69,7 @@ extension StructExpr : ExprTypeProvider {
         
         do {
             try initialisers.walkChildren { node in
-                try node.llvmType(scope)
+                try node.llvmType(structScope)
             }
         } catch let error as VistError {
             errors.append(error)

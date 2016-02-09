@@ -127,7 +127,7 @@ extension VariableDecl : DeclTypeProvider {
         }
         
         // if provided, get the explicit type
-        let explicitType = try aType?.type()
+        let explicitType = try aType?.type(scope)
         
         // scope for declaration -- not a return type and sets the `semaContext` to the explicitType
         let declScope = SemaScope(parent: scope, returnType: nil, semaContext: explicitType)
