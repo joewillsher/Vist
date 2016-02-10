@@ -13,6 +13,7 @@ enum BuiltinType : Ty {
     case Int(size: UInt32), Float(size: UInt32), Bool
     indirect case Array(el: Ty, size: UInt32?)
     indirect case Pointer(to: Ty)
+    case OpaquePointer
     
     func ir() -> LLVMTypeRef {
         switch self {
@@ -22,6 +23,7 @@ enum BuiltinType : Ty {
         case Bool:                      return LLVMInt1Type()
         case .Array(let el, let size):  return LLVMArrayType(el.ir(), size ?? 0)
         case .Pointer(let to):          return LLVMPointerType(to.ir(), 0)
+        case .OpaquePointer:            return BuiltinType.Pointer(to: BuiltinType.Int(size: 8)).ir()
         case .Float(let s):
             switch s {
             case 16:                    return LLVMHalfType()
@@ -51,4 +53,5 @@ enum BuiltinType : Ty {
         default: return nil
         }
     }
+    
 }

@@ -9,9 +9,9 @@ _main:                                  ## @main
 	popq	%rbp
 	retq
 
-	.globl	__TwoType_S.i64
+	.globl	__Bar_S.i64
 	.align	4, 0x90
-__TwoType_S.i64:                        ## @_TwoType_S.i64
+__Bar_S.i64:                            ## @_Bar_S.i64
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp

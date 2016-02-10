@@ -72,16 +72,16 @@ enum DefinedType {
             else if let i = scope[type: name] {
                 return i
             }
-//            else if let semaScope = scope, let genericParameters = semaScope.genericParameters, let i = genericParameters.indexOf({$0.type == name}) {
-//                
-//                let type = genericParameters[i]
-//                guard let concepts = type.constraints.stableOptionalMap({ semaScope.concepts?[$0] }) else { throw error(SemaError.GenericSubstitutionInvalid) } // FIXME: not correct error
-//                
-//                let requiredProperties = concepts.flatMap { $0.requiredProperties }
-//                let requiredFunctions = concepts.flatMap { $0.requiredFunctions }
-//                
-//                return StructType(members: requiredProperties, methods: requiredFunctions, name: type.0)
-//            }
+            else if let g = scope.genericParameters, let i = g.indexOf({$0.type == name}) {
+                
+                let type = g[i]
+                guard let concepts = type.constraints.optionalMap({ scope[concept: $0] }) else { throw error(SemaError.GenericSubstitutionInvalid) }
+                
+                return GenericType(name: type.0, concepts: concepts)
+            }
+            else if let existential = scope[concept: name] {
+                return existential
+            }
             else {
                 throw error(SemaError.NoTypeNamed(name))
             }

@@ -8,8 +8,22 @@
 
 protocol Ty : Printable, CustomDebugStringConvertible {
     func ir() -> LLVMTypeRef
+    func globalType(module: LLVMModuleRef) -> LLVMTypeRef
+    
+    var mangledTypeName: String { get }
 }
 
+extension Ty {
+    
+    var mangledTypeName: String {
+        return "\(description).ty"
+    }
+    
+    func globalType(module: LLVMModuleRef) -> LLVMTypeRef {
+        return ir()
+    }
+    
+}
 
 
 extension BuiltinType : Equatable {}
@@ -26,6 +40,13 @@ func == (lhs: StructType, rhs: StructType) -> Bool {
 func ir(val: Ty) throws -> LLVMValueRef {
     return val.ir()
 }
+
+func globalType(module: LLVMModuleRef) -> (Ty) throws -> LLVMValueRef {
+    return { val in
+        return val.globalType(module)
+    }
+}
+
 
 
 @warn_unused_result

@@ -12,7 +12,7 @@
 
 extension StructExpr : ExprTypeProvider {
     
-    func llvmType(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Ty {
         
         // we manually handle errors here because
         //  - we want a shared error cache across the whole type, incl vars,inits&methods
@@ -28,7 +28,7 @@ extension StructExpr : ExprTypeProvider {
         let members = try properties.flatMap { (a: VariableDecl) -> StructMember? in
             
             do {
-                try a.llvmType(structScope)
+                try a.typeForNode(structScope)
                 guard let t = a.value._type else { throw error(SemaError.StructPropertyNotTyped(type: name, property: a.name)) }
                 return (a.name, t, a.isMutable)
             }
@@ -47,7 +47,7 @@ extension StructExpr : ExprTypeProvider {
         let memberFunctions = try methods.flatMap { (f: FuncDecl) -> StructMethod? in
             
             do {
-                try f.llvmType(structScope)
+                try f.typeForNode(structScope)
                 guard let t = f.fnType.type else { throw error(SemaError.StructMethodNotTyped(type: name, methodName: f.name)) }
                 return (f.name.mangle(t, parentTypeName: name), t)
             }
@@ -67,12 +67,12 @@ extension StructExpr : ExprTypeProvider {
         let memberwise = try memberwiseInitialiser()
         initialisers.append(memberwise)
         
-        do {
-            try initialisers.walkChildren { node in
-                try node.llvmType(structScope)
-            }
-        } catch let error as VistError {
-            errors.append(error)
+        try initialisers.walkChildren { node in
+            try node.typeForNode(structScope)
+        }
+        
+        for i in initialisers {
+            scope[function: name] = i.ty.type
         }
         
         try errors.throwIfErrors()
@@ -82,11 +82,57 @@ extension StructExpr : ExprTypeProvider {
     
 }
 
+extension ConceptExpr : ExprTypeProvider {
+    
+    func typeForNode(scope: SemaScope) throws -> Ty {
+        
+        let conceptScope = SemaScope(parent: scope)
+        
+        var errors: [VistError] = []
+        
+        do {
+            try requiredMethods.walkChildren { method in
+                try method.typeForNode(conceptScope)
+            }
+        }
+        catch let error as VistError {
+            errors.append(error)
+        }
+        do {
+            try requiredProperties.walkChildren { method in
+                try method.typeForNode(conceptScope)
+            }
+        }
+        catch let error as VistError {
+            errors.append(error)
+        }
+        
+        
+        
+        let methodTypes = try requiredMethods.walkChildren { method throws -> StructMethod in
+            if let t = method.fnType.type { return (method.name, t) }
+            throw error(SemaError.StructMethodNotTyped(type: name, methodName: method.name))
+        }
+        let propertyTypes = try requiredProperties.walkChildren { prop throws -> StructMember in
+            if let t = prop.value._type { return (prop.name, t, true) }
+            throw error(SemaError.StructPropertyNotTyped(type: name, property: prop.name))
+        }
+        
+        let ty = ConceptType(name: name, requiredFunctions: methodTypes, requiredProperties: propertyTypes)
+        
+        scope[concept: name] = ty
+        
+        self.type = ty
+        return ty
+    }
+    
+}
+
 
 
 extension InitialiserDecl : DeclTypeProvider {
     
-    func llvmType(scope: SemaScope) throws {
+    func typeForNode(scope: SemaScope) throws {
         
         guard
             let parentType = parent?.type,
@@ -120,7 +166,7 @@ extension InitialiserDecl : DeclTypeProvider {
         }
         
         try impl.body.walkChildren { ex in
-            try ex.llvmType(initScope)
+            try ex.typeForNode(initScope)
         }
         
     }
@@ -128,9 +174,9 @@ extension InitialiserDecl : DeclTypeProvider {
 
 extension PropertyLookupExpr : ExprTypeProvider {
     
-    func llvmType(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Ty {
         
-        guard case let objType as StructType = try object.llvmType(scope) else { throw error(SemaError.NoTypeForStruct, userVisible: false) }
+        guard case let objType as StorageType = try object.typeForNode(scope) else { throw error(SemaError.NoTypeForStruct, userVisible: false) }
         
         let propertyType = try objType.propertyType(name)
         self._type = propertyType
@@ -141,12 +187,12 @@ extension PropertyLookupExpr : ExprTypeProvider {
 
 extension MethodCallExpr : ExprTypeProvider {
     
-    func llvmType(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Ty {
         
-        let ty = try object.llvmType(scope)
+        let ty = try object.typeForNode(scope)
         guard case let parentType as StructType = ty else { throw error(SemaError.NotStructType(ty), userVisible: false) }
         
-        let args = try self.args.elements.map { try $0.llvmType(scope) }
+        let args = try self.args.elements.map { try $0.typeForNode(scope) }
         
         guard let fnType = parentType.getMethod(name, argTypes: args) else { throw error(SemaError.NoFunction(name, args)) }
         
@@ -154,7 +200,7 @@ extension MethodCallExpr : ExprTypeProvider {
         
         // gen types for objects in call
         for arg in self.args.elements {
-            try arg.llvmType(scope)
+            try arg.typeForNode(scope)
         }
         
         // assign type to self and return
@@ -170,11 +216,11 @@ extension MethodCallExpr : ExprTypeProvider {
 
 extension TupleExpr : ExprTypeProvider {
     
-    func llvmType(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Ty {
         
         guard elements.count != 1 else { return BuiltinType.Void }
         
-        let tys = try elements.map { try $0.llvmType(scope) }
+        let tys = try elements.map { try $0.typeForNode(scope) }
         
         let t = TupleType(members: tys)
         type = t
@@ -184,9 +230,9 @@ extension TupleExpr : ExprTypeProvider {
 
 extension TupleMemberLookupExpr : ExprTypeProvider {
     
-    func llvmType(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Ty {
         
-        guard case let objType as TupleType = try object.llvmType(scope) else { throw error(SemaError.NoTypeForTuple, userVisible: false) }
+        guard case let objType as TupleType = try object.typeForNode(scope) else { throw error(SemaError.NoTypeForTuple, userVisible: false) }
         
         let propertyType = try objType.propertyType(index)
         self._type = propertyType

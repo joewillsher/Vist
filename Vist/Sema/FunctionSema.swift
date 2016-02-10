@@ -10,9 +10,12 @@
 
 extension FuncDecl : DeclTypeProvider {
     
-    func llvmType(scope: SemaScope) throws {
+    func typeForNode(scope: SemaScope) throws {
         
-        let paramTypes = try fnType.params(scope), returnType = try fnType.returnType(scope)
+        let declScope = SemaScope(parent: scope)
+        declScope.genericParameters = genericParameters
+        
+        let paramTypes = try fnType.params(declScope), returnType = try fnType.returnType(declScope)
         let ty = FnType(params: paramTypes, returns: returnType)
         
         if let p = parent?.name {
@@ -21,13 +24,14 @@ extension FuncDecl : DeclTypeProvider {
             mangledName = name.mangle(ty)
         }
         
+        let fnScope = SemaScope(parent: declScope, returnType: ty.returns)
+        
         scope[function: name] = ty  // update function table
         fnType.type = ty            // store type in fntype
         
         guard let impl = self.impl else { return }
         // if body construct scope and parse inside it
         
-        let fnScope = SemaScope(parent: scope, returnType: ty.returns)
         
         for (index, name) in impl.params.enumerate() {
             fnScope[variable: name] = (type: paramTypes[index], mutable: false)
@@ -48,7 +52,7 @@ extension FuncDecl : DeclTypeProvider {
         
         // type gen for inner scope
         try impl.body.exprs.walkChildren { exp in
-            try exp.llvmType(fnScope)
+            try exp.typeForNode(fnScope)
         }
         
     }
@@ -56,18 +60,18 @@ extension FuncDecl : DeclTypeProvider {
 
 extension BinaryExpr : ExprTypeProvider {
     
-    func llvmType(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Ty {
         
         let args = [lhs, rhs]
         
-        guard let argTypes = try args.stableOptionalMap({ try $0.llvmType(scope) }) else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
+        guard let argTypes = try args.optionalMap({ try $0.typeForNode(scope) }) else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
         
         let (mangledName, fnType) = try scope.function(op, argTypes: argTypes)
         self.mangledName = mangledName
         
         // gen types for objects in call
         for arg in args {
-            try arg.llvmType(scope)
+            try arg.typeForNode(scope)
         }
         
         // assign type to self and return
@@ -80,17 +84,17 @@ extension BinaryExpr : ExprTypeProvider {
 
 extension FunctionCallExpr : ExprTypeProvider {
     
-    func llvmType(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Ty {
         
         // get from table
-        guard let argTypes = try args.elements.stableOptionalMap({ try $0.llvmType(scope) }) else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
+        guard let argTypes = try args.elements.optionalMap({ try $0.typeForNode(scope) }) else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
         
         let (mangledName, fnType) = try scope.function(name, argTypes: argTypes)
         self.mangledName = mangledName
         
         // gen types for objects in call
         for arg in args.elements {
-            try arg.llvmType(scope)
+            try arg.typeForNode(scope)
         }
         
         // assign type to self and return

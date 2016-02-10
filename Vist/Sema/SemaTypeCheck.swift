@@ -8,11 +8,11 @@
 
 func sema(ast: AST, globalScope: SemaScope) throws {
     
-    try scopeSemallvmType(ast, scope: globalScope)
+    try scopeSematypeForNode(ast, scope: globalScope)
 }
 
 /// Adds type information to ast nodes and checks type signatures of functions, returns, & operators
-func scopeSemallvmType(ast: AST, scope: SemaScope) throws {
+func scopeSematypeForNode(ast: AST, scope: SemaScope) throws {
     
     //-------------------------------
     // TODO: Parse all function declarations first, then go in to define them and everything else
@@ -20,7 +20,7 @@ func scopeSemallvmType(ast: AST, scope: SemaScope) throws {
     //-------------------------------
    
     try ast.walkChildren { node in
-        try node.llvmType(scope)
+        try node.typeForNode(scope)
     }
     
 }

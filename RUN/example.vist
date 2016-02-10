@@ -1,13 +1,41 @@
 
-
 concept Eq {
+    var a: Int
+}
+
+func foo :: Eq Int -> Int = (a b) do
+    return a.a + b
+
+
+type Bar {
+    var a: Int
+}
+
+let bar = Bar 1
+/*
+let foo = foo 2 bar
+
+print foo
+*/
+
+
+/*
+
+type Foo {
+    var a: Int
 }
 
 
 
-type TwoType T {
+
+
+type Bar (T | Eq) {
     let t: T
 }
+
+
+let b = (Foo 1)
+*/
 
 //func foo T :: T T -> Bool = (a b) do
 //    return true

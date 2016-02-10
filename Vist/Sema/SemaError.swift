@@ -82,7 +82,7 @@ enum SemaError : VistError {
             // not user visible
         case .NoStdBoolType: return "Stdlib did not provide a Bool type"
         case .NoStdIntType: return "Stdlib did not provide an Int type"
-        case .NotTypeProvider: return "ASTNode does not conform to `TypeProvider` and does not provide an implementation of `llvmType(_:)"
+        case .NotTypeProvider: return "ASTNode does not conform to `TypeProvider` and does not provide an implementation of `typeForNode(_:)"
         case .NoTypeForStruct, .NoTypeForTuple: return "Lookup's parent does not have a type"
         case let .StructPropertyNotTyped(type, property): return "Property '\(property)' in '\(type)' was not typed"
         case let .StructMethodNotTyped(type, method): return "Method '\(method)' in '\(type)' was not typed"

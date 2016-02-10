@@ -10,7 +10,40 @@
 typealias StructMember = (name: String, type: Ty, mutable: Bool)
 typealias StructMethod = (name: String, type: FnType)
 
-struct StructType : Ty {
+
+protocol StorageType : Ty {
+    var name: String { get }
+    var members: [StructMember] { get }
+    var methods: [StructMethod] { get }
+}
+
+extension StorageType {
+    
+    private func indexOfMemberNamed(name: String) throws -> Int {
+        guard let i = members.indexOf({ $0.name == name }) else { throw error(SemaError.NoPropertyNamed(type: self.name, property: name)) }
+        return i
+    }
+    
+    func globalType(module: LLVMModuleRef) -> LLVMTypeRef {
+
+        
+        let type = ir()
+        let gloTy = createNamedType(type, mangledTypeName, module)
+        
+        return gloTy
+    }
+    
+    func propertyType(name: String) throws -> Ty {
+        return members[try indexOfMemberNamed(name)].type
+    }
+    
+    func propertyMutable(name: String) throws -> Bool {
+        return members[try indexOfMemberNamed(name)].mutable
+    }
+}
+
+
+struct StructType : StorageType {
     let name: String
     let members: [StructMember]
     var methods: [StructMethod]
@@ -34,21 +67,12 @@ struct StructType : Ty {
             false)
     }
     
-    private func indexOfTypeNamed(name: String) throws -> Int {
-        guard let i = members.indexOf({ $0.name == name }) else { throw error(SemaError.NoPropertyNamed(type: self.name, property: name)) }
-        return i
-    }
-    
-    func propertyType(name: String) throws -> Ty {
-        return members[try indexOfTypeNamed(name)].type
-    }
-
-    func propertyMutable(name: String) throws -> Bool {
-        return members[try indexOfTypeNamed(name)].mutable
-    }
-
     static func named(n: String) -> StructType {
         return StructType(members: [], methods: [], name: n)
+    }
+    
+    static func withTypes(tys: [Ty]) -> StructType {
+        return StructType(members: tys.map { (name: "", type: $0, mutable: true) }, methods: [], name: "")
     }
 }
 

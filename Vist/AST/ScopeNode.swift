@@ -35,13 +35,14 @@ extension CollectionType where Generator.Element : ASTNode {
     /// }
     /// ```
     ///
-    func walkChildren<Ret>(fn: (Generator.Element) throws -> Ret) throws {
+    func walkChildren<Ret>(@noescape fn: (Generator.Element) throws -> Ret) throws -> [Ret] {
         
         var errors: [VistError] = []
+        var res: [Ret] = []
         
         for exp in self {
             do {
-                try fn(exp)
+                res.append(try fn(exp))
             }
             catch let error as VistError {
                 errors.append(error)
@@ -49,6 +50,7 @@ extension CollectionType where Generator.Element : ASTNode {
         }
         
         try errors.throwIfErrors()
+        return res
     }
 }
 
@@ -65,13 +67,14 @@ extension CollectionType where Generator.Element == ASTNode {
     /// }
     /// ```
     ///
-    func walkChildren<Ret>(fn: (ASTNode) throws -> Ret) throws {
+    func walkChildren<Ret>(@noescape fn: (ASTNode) throws -> Ret) throws -> [Ret] {
         
         var errors: [VistError] = []
+        var res: [Ret] = []
         
         for exp in self {
             do {
-                try fn(exp)
+                res.append(try fn(exp))
             }
             catch let error as VistError {
                 errors.append(error)
@@ -79,6 +82,7 @@ extension CollectionType where Generator.Element == ASTNode {
         }
         
         try errors.throwIfErrors()
+        return res
     }
 }
 

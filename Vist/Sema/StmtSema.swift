@@ -10,11 +10,11 @@
 
 extension ReturnStmt : StmtTypeProvider {
     
-    func llvmType(scope: SemaScope) throws {
+    func typeForNode(scope: SemaScope) throws {
         
         // set the AST context to `scope.returnType`
         let retScope = SemaScope(parent: scope, semaContext: scope.returnType)
-        let returnType = try expr.llvmType(retScope)
+        let returnType = try expr.typeForNode(retScope)
         
         guard let ret = scope.returnType where ret == returnType else {
             throw error(SemaError.WrongFunctionReturnType(applied: returnType, expected: scope.returnType ?? BuiltinType.Null))
@@ -28,13 +28,13 @@ extension ReturnStmt : StmtTypeProvider {
 
 extension ConditionalStmt : StmtTypeProvider {
     
-    func llvmType(scope: SemaScope) throws {
+    func typeForNode(scope: SemaScope) throws {
         
         // call on child `ElseIfBlockExpressions`
         for statement in statements {
             // inner scopes
             let ifScope = SemaScope(parent: scope, returnType: scope.returnType)
-            try statement.llvmType(ifScope)
+            try statement.typeForNode(ifScope)
         }
     }
 }
@@ -42,14 +42,14 @@ extension ConditionalStmt : StmtTypeProvider {
 
 extension ElseIfBlockStmt : StmtTypeProvider {
     
-    func llvmType(scope: SemaScope) throws {
+    func typeForNode(scope: SemaScope) throws {
         
         // get condition type
-        let c = try condition?.llvmType(scope)
+        let c = try condition?.typeForNode(scope)
         
         // gen types for cond block
         try block.exprs.walkChildren { exp in
-            try exp.llvmType(scope)
+            try exp.typeForNode(scope)
         }
 
         // if no condition we're done
@@ -69,7 +69,7 @@ extension ElseIfBlockStmt : StmtTypeProvider {
 
 extension ForInLoopStmt : StmtTypeProvider {
     
-    func llvmType(scope: SemaScope) throws {
+    func typeForNode(scope: SemaScope) throws {
         
         // scopes for inner loop
         let loopScope = SemaScope(parent: scope, returnType: scope.returnType)
@@ -78,11 +78,11 @@ extension ForInLoopStmt : StmtTypeProvider {
         loopScope[variable: binded.name] = (type: StdLib.IntType, mutable: false)
         
         // gen types for iterator
-        guard try iterator.llvmType(scope) == StdLib.RangeType else { throw error(SemaError.NotRangeType) }
+        guard try iterator.typeForNode(scope) == StdLib.RangeType else { throw error(SemaError.NotRangeType) }
         
         // parse inside of loop in loop scope
         try block.exprs.walkChildren { exp in
-            try exp.llvmType(loopScope)
+            try exp.typeForNode(loopScope)
         }
     }
     
@@ -91,17 +91,17 @@ extension ForInLoopStmt : StmtTypeProvider {
 
 extension WhileLoopStmt : StmtTypeProvider {
     
-    func llvmType(scope: SemaScope) throws {
+    func typeForNode(scope: SemaScope) throws {
         
         // scopes for inner loop
         let loopScope = SemaScope(parent: scope, returnType: scope.returnType)
         
         // gen types for iterator
-        guard try condition.llvmType(scope) == StdLib.BoolType else { throw error(SemaError.NonBooleanCondition) }
+        guard try condition.typeForNode(scope) == StdLib.BoolType else { throw error(SemaError.NonBooleanCondition) }
         
         // parse inside of loop in loop scope
         try block.exprs.walkChildren { exp in
-            try exp.llvmType(loopScope)
+            try exp.typeForNode(loopScope)
         }
     }
 }

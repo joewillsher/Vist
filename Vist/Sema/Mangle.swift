@@ -48,6 +48,7 @@ extension BuiltinType : CustomStringConvertible, CustomDebugStringConvertible {
         case .Bool:                     return "LLVM.Bool"
         case .Array(let el, let size):  return "[\(size) x \(el)]" // not implemented
         case .Pointer(let to):          return "\(to)*"            // will never be implemented
+        case .OpaquePointer:            return "ptr"
         case .Float(let s):
             switch s {
             case 16:                    return "LLVM.Half"
@@ -68,6 +69,7 @@ extension BuiltinType : CustomStringConvertible, CustomDebugStringConvertible {
         case .Array(let el, _):         return "A\(el.debugDescription)"
         case .Pointer(let to):          return "P\(to.debugDescription)"
         case .Float(let s):             return "f\(s)"
+        case .OpaquePointer:            return "op"
         }
     }
 }

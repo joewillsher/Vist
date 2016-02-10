@@ -48,6 +48,7 @@ bool GetLLVMIntrinsicIDFromString(const char* str,
     if (ptr == NULL)
         return false;
     id = (Intrinsic::ID)((((const char**) ptr) - intrinsicNames) + 1);
+    
     return true;
 }
 

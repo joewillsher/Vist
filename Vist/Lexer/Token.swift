@@ -39,7 +39,7 @@ enum Token {
     case Let, Var, Func, Return, Void
     case EOF
     case If, Else, For, In, While, Do
-    case Type, Reference, Init, Operator
+    case Type, Reference, Init, Operator, Concept
     case Assign, SqbrOpen, SqbrClose, Comma, Period, Colon, Semicolon, OpenParen, CloseParen, Returns, Bar, OpenBrace, CloseBrace
     case InfixOperator(String), PrefixOperator(String), PostfixOperator(String)
     case Identifier(String), FloatingPoint(Double), Integer(Int), Boolean(Bool)

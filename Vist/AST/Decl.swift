@@ -24,7 +24,7 @@ final class VariableDecl : Decl, StructMemberExpr {
     }
 }
 
-class FuncDecl : Decl, StructMemberExpr {
+final class FuncDecl : Decl, StructMemberExpr {
     let name: String
     let fnType: FunctionType
     let impl: FunctionImplementationExpr?

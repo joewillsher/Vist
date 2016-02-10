@@ -7,14 +7,40 @@
 //
 
 
-struct Concept {
+
+
+struct GenericType : StorageType {
+    
     let name: String
-    let requiredFunctions: [StructMethod] = [], requiredProperties: [StructMember] = []
+    /// Concepts this generic type implements
+    let concepts: [ConceptType] 
+    
+    
+    var members: [StructMember] {
+        return concepts.flatMap { $0.requiredProperties }
+    }
+    
+    var methods: [StructMethod] {
+        return concepts.flatMap { $0.requiredFunctions }
+    }
+    
+    
+    
+    
+    func ir() -> LLVMTypeRef {
+        return nil
+    }
+    
+    var debugDescription: String {
+        return name
+    }
 }
+
+
 
 extension StructType {
     
-    func models(concept: Concept) -> Bool {
+    func models(concept: ConceptType) -> Bool {
         for f in concept.requiredFunctions where !methods.contains({ $0.name == f.name && $0.type == f.type }) { return false }
         for p in concept.requiredProperties where !members.contains({ $0.name == p.name && $0.type == p.type }) { return false }
         return true
@@ -25,30 +51,6 @@ func specialisationModelsConcepts(type: StructType, generic: GenericType) -> Boo
     for c in generic.concepts where !type.models(c) { return false }
     return true
 }
-
-
-struct GenericType : Ty {
-    
-    let placeholderName: String
-    /// Concepts this generic type implements
-    let concepts: [Concept] = []
-    
-    
-    
-    
-    
-    
-    func ir() -> LLVMTypeRef {
-        return nil
-    }
-    
-    var debugDescription: String {
-        return placeholderName
-    }
-}
-
-
-
 
 struct GenericSignature {
     

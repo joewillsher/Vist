@@ -13,19 +13,22 @@ final class StackFrame {
     private var runtimeVariables: [String: RuntimeVariable]
     private var functionTypes: [String: LLVMTypeRef]
     private var types: [String: StructType]
+    private var concepts: [String: ConceptType]
     var block: LLVMBasicBlockRef, function: LLVMValueRef
     var parentStackFrame: StackFrame?
     private var _isStdLib: Bool?
     
-    init(vars: [String: RuntimeVariable] = [:], functionTypes: [String: LLVMTypeRef] = [:], types: [String: StructType] = [:], block: LLVMBasicBlockRef = nil, function: LLVMValueRef = nil, parentStackFrame: StackFrame? = nil, _isStdLib: Bool? = nil) {
+    init(vars: [String: RuntimeVariable] = [:], functionTypes: [String: LLVMTypeRef] = [:], types: [String: StructType] = [:], concepts: [String: ConceptType] = [:], block: LLVMBasicBlockRef = nil, function: LLVMValueRef = nil, parentStackFrame: StackFrame? = nil, _isStdLib: Bool? = nil) {
         self.runtimeVariables = [:]
         self.functionTypes = [:]
         self.types = [:]
+        self.concepts = [:]
         self.block = block
         self.parentStackFrame = parentStackFrame
         self.function = function
         self._isStdLib = _isStdLib ?? parentStackFrame?._isStdLib
         
+        concepts.forEach { addConcept($1, named: $0) }
         functionTypes.forEach { addFunctionType($1, named: $0) }
         vars.forEach { addVariable($1, named: $0) }
         types.forEach { addType($1, named: $0) }
@@ -39,6 +42,9 @@ final class StackFrame {
     }
     func addType(val: StructType, named name: String) {
         types[name] = val
+    }
+    func addConcept(val: ConceptType, named name: String) {
+        concepts[name] = val
     }
     
     /// Return a variable
@@ -62,11 +68,21 @@ final class StackFrame {
         throw error(IRError.NoFunction(name))
     }
     
-    func type(name: String) throws -> StructType {
+    func type(name: String) throws -> StorageType {
         if let t = StdLib.getStdLibType(name) { return t }
         if let v = types[name] { return v }
         
+        if let c = try? concept(name) { return c }
+
         let inParent = try parentStackFrame?.type(name)
+        if let p = inParent { return p }
+        
+        throw error(IRError.NoType(name))
+    }
+    func concept(name: String) throws -> ConceptType {
+        if let v = concepts[name] { return v }
+        
+        let inParent = try parentStackFrame?.concept(name)
         if let p = inParent { return p }
         
         throw error(IRError.NoType(name))

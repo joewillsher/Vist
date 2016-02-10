@@ -9,11 +9,11 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define { { i64 } } @_TwoType_S.i64({ i64 } %"$0") #1 {
+define { { i64 } } @_Bar_S.i64({ i64 } %"$0") #1 {
 entry:
   %"$0.fca.0.extract" = extractvalue { i64 } %"$0", 0
-  %TwoType1.fca.0.0.insert = insertvalue { { i64 } } undef, i64 %"$0.fca.0.extract", 0, 0
-  ret { { i64 } } %TwoType1.fca.0.0.insert
+  %Bar1.fca.0.0.insert = insertvalue { { i64 } } undef, i64 %"$0.fca.0.extract", 0, 0
+  ret { { i64 } } %Bar1.fca.0.0.insert
 }
 
 attributes #0 = { nounwind readnone }

@@ -27,6 +27,22 @@ struct FnType : Ty {
             false)
     }
     
+    func globalType(module: LLVMModuleRef) -> LLVMTypeRef {
+        
+        let r: LLVMTypeRef
+        if case _ as FnType = returns {
+            r = BuiltinType.Pointer(to: returns).globalType(module)
+        }
+        else {
+            r = returns.globalType(module)
+        }
+        
+        return LLVMFunctionType(r,
+                                nonVoid.map{$0.globalType(module)}.ptr(),
+                                UInt32(nonVoid.count),
+                                false)
+    }
+    
     init(params: [Ty], returns: Ty = BuiltinType.Void, metadata: [String] = []) {
         self.params = params
         self.returns = returns

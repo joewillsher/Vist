@@ -1,4 +1,4 @@
- //
+//
 //  IRGen.swift
 //  Vist
 //
@@ -173,7 +173,7 @@ extension VariableDecl : IRGenerator {
             // handle assigning a closure
             
             // Function being made
-            let fn = LLVMAddFunction(module, name, ty.ir())
+            let fn = LLVMAddFunction(module, name, ty.globalType(module))
             
             // make and move into entry block
             let entryBlock = LLVMAppendBasicBlock(fn, "entry")
@@ -225,13 +225,13 @@ extension VariableDecl : IRGenerator {
             
             switch value._type {
             case let structType as StructType:
-                variable = MutableStructVariable.alloc(structType, irName: name, builder: builder)
+                variable = MutableStructVariable.alloc(structType, irName: name, irGen: (builder, module))
                 
             case let tupleType as TupleType:
-                variable = MutableTupleVariable.alloc(tupleType, irName: name, builder: builder)
+                variable = MutableTupleVariable.alloc(tupleType, irName: name, irGen: (builder, module))
                 
             default:
-                variable = ReferenceVariable.alloc(type, irName: name, builder: builder)
+                variable = ReferenceVariable.alloc(type, irName: name, irGen: (builder, module))
             }
             
             // Load in memory
@@ -258,7 +258,7 @@ extension MutationExpr : IRGenerator {
             if case let arrayVariable as ArrayVariable = variable, case let arrayExpression as ArrayExpr = value {
                 
                 let newArray = try arrayExpression.arrInstance(stackFrame)
-                arrayVariable.assignFrom(newArray, builder: builder)
+                arrayVariable.assignFrom(newArray)
             }
             else {
                 let new = try value.nodeCodeGen(stackFrame)
@@ -309,7 +309,7 @@ extension BinaryExpr : IRGenerator {
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
         let lIR = try lhs.nodeCodeGen(stackFrame), rIR = try rhs.nodeCodeGen(stackFrame)
-        guard let argTypes = [lhs, rhs].stableOptionalMap({ $0._type }), fnType = self.fnType else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
+        guard let argTypes = [lhs, rhs].optionalMap({ $0._type }), fnType = self.fnType else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
         
         let fn: LLVMValueRef
         
@@ -354,7 +354,7 @@ extension FunctionCallExpr : IRGenerator {
         
         let argCount = self.args.elements.count
         let args = try self.args.elements.map(codeGenIn(stackFrame))
-        guard let argTypes = self.args.elements.stableOptionalMap({ $0._type }) else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
+        guard let argTypes = self.args.elements.optionalMap({ $0._type }) else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
 
         // Lookup
         if let function = builtinBinaryInstruction(name, builder: builder, module: module) {
@@ -400,7 +400,7 @@ private extension FunctionType {
     
     private func paramTypeIR() throws -> [LLVMTypeRef] {
         guard let res = type else { throw error(IRError.TypeNotFound, userVisible: false) }
-        return try res.nonVoid.map(ir)
+        return try res.nonVoid.map(globalType(module))
     }
 }
 
@@ -443,7 +443,7 @@ extension FuncDecl : IRGenerator {
         defer { paramBuffer.dealloc(paramCount) }
         
         // make function
-        let functionType = type.ir()
+        let functionType = type.globalType(module)
         let function = LLVMAddFunction(module, mangledName, functionType)
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
         
@@ -472,21 +472,23 @@ extension FuncDecl : IRGenerator {
         // set function param names and update table
         for i in 0..<paramCount {
             let param = LLVMGetParam(function, UInt32(i + startIndex))
-            let name = impl?.params[i] ?? i.implicitParamName()
-            LLVMSetValueName(param, name)
+            let paramName = impl?.params[i] ?? i.implicitParamName()
+            LLVMSetValueName(param, paramName)
             
-            let ty = LLVMTypeOf(param)
-            if LLVMGetTypeKind(ty) == LLVMStructTypeKind {
+            let tyName = paramTypeNames[i]
+            
+            switch try stackFrame.type(tyName) {
+            case let t as StructType:
+                let s = ParameterStructVariable(val: param, type: t, irName: paramName, irGen: (builder, module))
+                functionStackFrame.addVariable(s, named: paramName)
                 
-                let tyName = paramTypeNames[i]
-                let t = try stackFrame.type(tyName)
+            case let c as ConceptType:
+                let e = ExistentialVariable.alloc(param, conceptType: c, irName: paramName, irGen: (builder, module))
+                functionStackFrame.addVariable(e, named: paramName)
                 
-                let s = ParameterStructVariable(val: param, type: t, irName: name, builder: builder)
-                functionStackFrame.addVariable(s, named: name)
-            }
-            else {
-                let s = StackVariable(val: param, irName: name, builder: builder)
-                functionStackFrame.addVariable(s, named: name)
+            default:
+                let s = StackVariable(val: param, irName: paramName, irGen: (builder, module))
+                functionStackFrame.addVariable(s, named: paramName)
             }
         }
         
@@ -497,7 +499,7 @@ extension FuncDecl : IRGenerator {
             LLVMSetValueName(param, "self")
             // self's members
             
-            let r = MutableStructVariable(type: parentType, ptr: param, irName: "self", builder: builder)
+            let r = MutableStructVariable(type: parentType, ptr: param, irName: "self", irGen: (builder, module))
             functionStackFrame.addVariable(r, named: "self")
             
             // add self's properties implicitly
@@ -509,7 +511,7 @@ extension FuncDecl : IRGenerator {
         
         // generate bb for body
         do {
-            try impl?.body.bbGen(innerStackFrame: functionStackFrame, ret: type.returns.ir())
+            try impl?.body.bbGen(innerStackFrame: functionStackFrame, ret: type.returns.globalType(module))
         }
         catch {
             LLVMDeleteFunction(function)
@@ -527,7 +529,7 @@ extension ReturnStmt : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        if expr._type?.ir() == LLVMVoidType() {
+        if expr._type?.globalType(module) == LLVMVoidType() {
             return LLVMBuildRetVoid(builder)
         }
         
@@ -569,7 +571,7 @@ extension ClosureExpr : IRGenerator {
         
         let name = "closure"//.mangle()
         
-        let functionType = type.ir()
+        let functionType = type.globalType(module)
         let function = LLVMAddFunction(module, name, functionType)
         
         // setup function block
@@ -596,19 +598,19 @@ extension ClosureExpr : IRGenerator {
 //                let tyName = type.params[i].name
 //                let t = try stackFrame.type(tyName)
 //                
-//                let memTys = try t.members.map { ($0.0, try $0.1.ir(), $0.2) }
+//                let memTys = try t.members.map { ($0.0, try $0.1.globalType(module), $0.2) }
 //                
 //                let s = MutableStructVariable(type: ty, ptr: ptr, mutable: false, builder: builder, properties: memTys)
 //                functionStackFrame.addVariable(name, val: s)
 //            }
 //            else {
-                let s = StackVariable(val: param, irName: name, builder: builder)
+                let s = StackVariable(val: param, irName: name, irGen: (builder, module))
                 functionStackFrame.addVariable(s, named: name)
 //            }
         }
         
         do {
-            try BlockExpr(exprs: exprs).bbGen(innerStackFrame: functionStackFrame, ret: type.returns.ir())
+            try BlockExpr(exprs: exprs).bbGen(innerStackFrame: functionStackFrame, ret: type.returns.globalType(module))
         } catch {
             LLVMDeleteFunction(function)
             throw error
@@ -766,7 +768,7 @@ extension ForInLoopStmt : IRGenerator {
         
         // define variable phi node
         let iteratorName = binded.name
-        let loopCount = LLVMBuildPhi(builder, intType.ir(), "loop.count.\(iteratorName)")
+        let loopCount = LLVMBuildPhi(builder, intType.globalType(module), "loop.count.\(iteratorName)")
         
         // add incoming value to phi node
         let num1 = [startValue].ptr(), incoming1 = [stackFrame.block].ptr()
@@ -779,7 +781,7 @@ extension ForInLoopStmt : IRGenerator {
         
         // gen the IR for the inner block
         let loopCountInt = StdLib.IntType.initialiseStdTypeFromBuiltinMembers(loopCount, module: module, builder: builder, irName: iteratorName)
-        let loopVariable = StackVariable(val: loopCountInt, irName: iteratorName, builder: builder)
+        let loopVariable = StackVariable(val: loopCountInt, irName: iteratorName, irGen: (builder, module))
         let loopStackFrame = StackFrame(block: loopBody, vars: [iteratorName: loopVariable], function: stackFrame.function, parentStackFrame: stackFrame)
         
         // Generate loop body
@@ -863,7 +865,7 @@ extension ArrayExpr : IRGenerator {
     private func arrInstance(stackFrame: StackFrame) throws -> ArrayVariable {
         
         // assume homogeneous
-        guard let elementType = elType?.ir() else { throw error(IRError.TypeNotFound, userVisible: false) }
+        guard let elementType = elType?.globalType(module) else { throw error(IRError.TypeNotFound, userVisible: false) }
         let arrayType = LLVMArrayType(elementType, UInt32(arr.count))
         
         // allocate memory for arr
@@ -871,7 +873,7 @@ extension ArrayExpr : IRGenerator {
         
         // obj
         let vars = try arr.map(codeGenIn(stackFrame))
-        return ArrayVariable(ptr: a, elType: elementType, arrType: arrayType, builder: builder, vars: vars)
+        return ArrayVariable(ptr: a, elType: elementType, arrType: arrayType, irGen: (builder, module), vars: vars)
     }
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
@@ -924,14 +926,26 @@ extension StructExpr : IRGenerator {
     
 }
 
+extension ConceptExpr : IRGenerator {
+    
+    private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
+        
+        guard let conceptType = type else { throw error(IRError.NotTyped, userVisible: false) }
+        
+        stackFrame.addConcept(conceptType, named: name)
+        
+        
+        return nil
+    }
+}
 
 extension InitialiserDecl : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        let paramTypeNames = ty.paramType.typeNames(), argCount = paramTypeNames.count
+        let paramTypeNames = ty.paramType.typeNames(), paramCount = paramTypeNames.count
         guard let
-            functionType = ty.type?.ir(),
+            functionType = ty.type?.globalType(module),
             name = parent?.name,
             parentProperties = parent?.properties,
             parentType = parent?.type
@@ -959,31 +973,30 @@ extension InitialiserDecl : IRGenerator {
         
         // set function param names and update table
         // TODO: Split this out into a function for funcs & closures to use as well
-        for i in 0..<argCount {
+        for i in 0..<paramCount {
             let param = LLVMGetParam(function, UInt32(i))
-            let name = impl.params[i]
-            LLVMSetValueName(param, name)
+            let paramName = impl.params[i] ?? i.implicitParamName()
+            LLVMSetValueName(param, paramName)
             
-            let ty = LLVMTypeOf(param)
-            if LLVMGetTypeKind(ty) == LLVMStructTypeKind {
+            let tyName = paramTypeNames[i]
+            
+            switch try stackFrame.type(tyName) {
+            case let t as StructType:
+                let s = ParameterStructVariable(val: param, type: t, irName: paramName, irGen: (builder, module))
+                initStackFrame.addVariable(s, named: paramName)
                 
-                // TODO: Fix how this info is brought down
-                let tyName = paramTypeNames[i]
-                let t = try stackFrame.type(tyName)
+            case let c as ConceptType:
+                let e = ExistentialVariable.alloc(param, conceptType: c, irName: paramName, irGen: (builder, module))
+                initStackFrame.addVariable(e, named: paramName)
                 
-                // (type: ty, val: param, builder: builder, name: tyName, properties: memTys)
-                let s = ParameterStructVariable(val: param, type: t, irName: name, builder: builder)
-                initStackFrame.addVariable(s, named: name)
-                
-            }
-            else {
-                let s = StackVariable(val: param, irName: name, builder: builder)
-                initStackFrame.addVariable(s, named: name)
+            default:
+                let s = StackVariable(val: param, irName: paramName, irGen: (builder, module))
+                initStackFrame.addVariable(s, named: paramName)
             }
         }
         
         // allocate struct
-        let s = MutableStructVariable.alloc(parentType, irName: parentType.name, builder: builder)
+        let s = MutableStructVariable.alloc(parentType, irName: parentType.name, irGen: (builder, module))
         stackFrame.addVariable(s, named: name)
         
         // add struct properties into scope
@@ -1073,7 +1086,7 @@ extension TupleExpr : IRGenerator {
         
         let memeberIR = try elements.map(codeGenIn(stackFrame))
         
-        let s = MutableTupleVariable.alloc(type, builder: builder)
+        let s = MutableTupleVariable.alloc(type, irGen: (builder, module))
         
         for (i, el) in memeberIR.enumerate() {
             try s.store(el, inPropertyAtIndex: i)

@@ -7,12 +7,14 @@
 //
 
 
+typealias IRGen = (builder: LLVMBuilderRef, module: LLVMModuleRef)
+
 protocol RuntimeVariable : class {
     var type: LLVMTypeRef { get }
     var value: LLVMValueRef { get }
     var irName: String { get }
     
-    var builder: LLVMBuilderRef { get }
+    var irGen: IRGen { get }
 }
 
 protocol MutableVariable : RuntimeVariable {
@@ -24,10 +26,10 @@ extension MutableVariable {
     
     var value: LLVMValueRef {
         get {
-            return LLVMBuildLoad(builder, ptr, irName)
+            return LLVMBuildLoad(irGen.builder, ptr, irName)
         }
         set {
-            LLVMBuildStore(builder, newValue, ptr)
+            LLVMBuildStore(irGen.builder, newValue, ptr)
         }
     }
     
@@ -42,20 +44,20 @@ final class ReferenceVariable : MutableVariable {
     var type: LLVMTypeRef
     var ptr: LLVMValueRef
     
-    let builder: LLVMBuilderRef
+    let irGen: IRGen
     let irName: String
     
-    init(type: LLVMTypeRef, ptr: LLVMValueRef, irName: String, builder: LLVMBuilderRef) {
+    init(type: LLVMTypeRef, ptr: LLVMValueRef, irName: String, irGen: IRGen) {
         self.type = type
         self.ptr = ptr
-        self.builder = builder
+        self.irGen = irGen
         self.irName = irName
     }
     
     /// returns pointer to allocated memory
-    class func alloc(type: LLVMTypeRef, irName: String, builder: LLVMBuilderRef) -> ReferenceVariable {
-        let ptr = LLVMBuildAlloca(builder, type, irName)
-        return ReferenceVariable(type: type, ptr: ptr, irName: irName, builder: builder)
+    class func alloc(type: LLVMTypeRef, irName: String, irGen: IRGen) -> ReferenceVariable {
+        let ptr = LLVMBuildAlloca(irGen.builder, type, irName)
+        return ReferenceVariable(type: type, ptr: ptr, irName: irName, irGen: irGen)
     }
 }
 
@@ -67,13 +69,13 @@ final class StackVariable : RuntimeVariable {
     var type: LLVMTypeRef
     var val: LLVMValueRef
     
-    var builder: LLVMBuilderRef
+    var irGen: IRGen
     let irName: String
     
-    init(val: LLVMValueRef, irName: String, builder: LLVMBuilderRef) {
+    init(val: LLVMValueRef, irName: String, irGen: IRGen) {
         self.type = LLVMTypeOf(val)
         self.val = val
-        self.builder = builder
+        self.irGen = irGen
         self.irName = irName
     }
     

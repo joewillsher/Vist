@@ -13,7 +13,7 @@ final class SemaScope {
     private var variables: [String: Variable]
     private var functions: [String: FnType]
     private var types: [String: StructType]
-    var concepts: [String: Concept]? = nil
+    var concepts: [String: ConceptType]
     let isStdLib: Bool
     var returnType: Ty?
     let parent: SemaScope?
@@ -83,20 +83,29 @@ final class SemaScope {
             else if let v = types[type] {
                 return v
             }
-            else if let g = genericParameters, let i = genericParameters?.indexOf({$0.type == type}) {
-                
-                let type = g[i]
-                guard let concepts = type.constraints.stableOptionalMap({ self.concepts?[$0] }) else { return nil }
-                
-                let requiredProperties = concepts.flatMap { $0.requiredProperties }
-                let requiredFunctions = concepts.flatMap { $0.requiredFunctions }
-                
-                return StructType(members: requiredProperties, methods: requiredFunctions, name: type.0)
-            }
+//            else if let g = genericParameters, let i = genericParameters?.indexOf({$0.type == type}) {
+//                
+//                let type = g[i]
+//                guard let concepts = type.constraints.optionalMap({ self[concept: $0] }) else { return nil }
+//                
+//                let requiredProperties = concepts.flatMap { $0.requiredProperties }
+//                let requiredFunctions = concepts.flatMap { $0.requiredFunctions }
+//                
+//                return StructType(members: requiredProperties, methods: requiredFunctions, name: type.0)
+//            }
             return parent?[type: type]
         }
         set {
             types[type] = newValue
+        }
+    }
+    subscript (concept concept: String) -> ConceptType? {
+        get {
+            if let c = concepts[concept] { return c }
+            return parent?[concept: concept]
+        }
+        set {
+            concepts[concept] = newValue
         }
     }
     
@@ -106,6 +115,7 @@ final class SemaScope {
         self.variables = [:]
         self.functions = [:]
         self.types = [:]
+        self.concepts = [:]
         self.isStdLib = parent.isStdLib
     }
     
@@ -117,6 +127,7 @@ final class SemaScope {
         self.variables = [:]
         self.functions = [:]
         self.types = [:]
+        self.concepts = [:]
         self.isStdLib = isStdLib
     }
     

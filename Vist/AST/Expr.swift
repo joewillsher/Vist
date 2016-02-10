@@ -321,6 +321,7 @@ protocol StructMemberExpr {
 }
 
 
+
 typealias ConstrainedType = (type: String, constraints: [String])
 
 final class StructExpr : TypedExpr, ScopeNode {
@@ -346,6 +347,25 @@ final class StructExpr : TypedExpr, ScopeNode {
     var childNodes: [ASTNode] {
         return properties.mapAs(ASTNode) + methods.mapAs(ASTNode) + initialisers.mapAs(ASTNode)
     }
+}
+
+final class ConceptExpr : TypedExpr, ScopeNode {
+    let name: String
+    let requiredProperties: [VariableDecl]
+    let requiredMethods: [FuncDecl]
+    
+    init(name: String, requiredProperties: [VariableDecl], requiredMethods: [FuncDecl]) {
+        self.name = name
+        self.requiredProperties = requiredProperties
+        self.requiredMethods = requiredMethods
+    }
+    
+    var type: ConceptType? = nil
+    
+    var childNodes: [ASTNode] {
+        return requiredProperties.mapAs(ASTNode) + requiredMethods.mapAs(ASTNode)
+    }
+    
 }
 
 

@@ -19,7 +19,7 @@ class ArrayVariable : RuntimeVariable {
     private var count: Int
     var mutable: Bool
     
-    var builder: LLVMBuilderRef
+    var irGen: IRGen
     var irName: String
     
     var type: LLVMTypeRef {
@@ -36,30 +36,30 @@ class ArrayVariable : RuntimeVariable {
         }
     }
     
-    func assignFrom(arr: ArrayVariable, builder: LLVMBuilderRef) {
+    func assignFrom(arr: ArrayVariable) {
         
         precondition(elementType == arr.elementType)
         
-        LLVMBuildStore(builder, arr.base, ptr)
+        LLVMBuildStore(irGen.builder, arr.base, ptr)
         count = arr.count
         base = arr.base
         arrayType = arr.arrayType
     }
     
-    init(ptr: LLVMValueRef, elType: LLVMTypeRef, arrType: LLVMTypeRef, irName: String = "", builder: LLVMBuilderRef, vars: [LLVMValueRef]) {
+    init(ptr: LLVMValueRef, elType: LLVMTypeRef, arrType: LLVMTypeRef, irName: String = "", irGen: IRGen, vars: [LLVMValueRef]) {
         
         let pt = LLVMPointerType(elType, 0)
         // case array as ptr to get base pointer
-        let base = LLVMBuildBitCast(builder, ptr, pt, "base")
+        let base = LLVMBuildBitCast(irGen.builder, ptr, pt, "base")
         
         for n in 0..<vars.count {
             // llvm num type as the index
             let index = [LLVMConstInt(LLVMInt64Type(), UInt64(n), false)].ptr()
             // Get pointer to element n
-            let el = LLVMBuildGEP(builder, base, index, 1, "el\(n)")
+            let el = LLVMBuildGEP(irGen.builder, base, index, 1, "el\(n)")
             
             // load val into memory
-            LLVMBuildStore(builder, vars[n], el)
+            LLVMBuildStore(irGen.builder, vars[n], el)
         }
         
         self.elementType = elType
@@ -69,7 +69,7 @@ class ArrayVariable : RuntimeVariable {
         self.arrayType = arrType
         self.mutable = false
         self.ptr = nil
-        self.builder = builder
+        self.irGen = irGen
         self.irName = irName
     }
     
@@ -80,15 +80,15 @@ class ArrayVariable : RuntimeVariable {
     }
     
     private func ptrToElementAtIndex(index: LLVMValueRef) -> LLVMValueRef {
-        return LLVMBuildGEP(builder, base, [index].ptr(), 1, "ptr")
+        return LLVMBuildGEP(irGen.builder, base, [index].ptr(), 1, "ptr")
     }
     
     func loadElementAtIndex(index: LLVMValueRef) -> LLVMValueRef {
-        return LLVMBuildLoad(builder, ptrToElementAtIndex(index), "element")
+        return LLVMBuildLoad(irGen.builder, ptrToElementAtIndex(index), "element")
     }
     
     func store(val: LLVMValueRef, inElementAtIndex index: LLVMValueRef) {
-        LLVMBuildStore(builder, val, ptrToElementAtIndex(index))
+        LLVMBuildStore(irGen.builder, val, ptrToElementAtIndex(index))
     }
     
 }

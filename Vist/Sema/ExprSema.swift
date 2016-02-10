@@ -13,7 +13,7 @@
 
 extension IntegerLiteral : ExprTypeProvider {
     
-    func llvmType(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Ty {
         let ty = StdLib.IntType
         self.type = ty
         return ty
@@ -22,7 +22,7 @@ extension IntegerLiteral : ExprTypeProvider {
 
 extension FloatingPointLiteral : ExprTypeProvider {
     
-    func llvmType(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Ty {
         let ty = StdLib.DoubleType
         self.type = ty
         return ty
@@ -31,7 +31,7 @@ extension FloatingPointLiteral : ExprTypeProvider {
 
 extension BooleanLiteral : ExprTypeProvider {
     
-    func llvmType(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Ty {
         let ty = StdLib.BoolType
         self.type = ty
         return ty
@@ -40,7 +40,7 @@ extension BooleanLiteral : ExprTypeProvider {
 
 extension StringLiteral : ExprTypeProvider {
     
-    func llvmType(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Ty {
         let t = BuiltinType.Array(el: BuiltinType.Int(size: 8), size: UInt32(count))
         self.type = t
         return t
@@ -49,7 +49,7 @@ extension StringLiteral : ExprTypeProvider {
 
 extension NullExpr : ExprTypeProvider {
     
-    mutating func llvmType(scope: SemaScope) throws -> Ty {
+    mutating func typeForNode(scope: SemaScope) throws -> Ty {
         _type = nil
         return BuiltinType.Null
     }
@@ -61,7 +61,7 @@ extension NullExpr : ExprTypeProvider {
 
 extension VariableExpr : ExprTypeProvider {
     
-    func llvmType(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Ty {
         
         // lookup variable type in scope
         guard let v = scope[variable: name] else {
@@ -77,11 +77,11 @@ extension VariableExpr : ExprTypeProvider {
 
 extension MutationExpr : ExprTypeProvider {
     
-    func llvmType(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Ty {
         
         // gen types for variable and value
-        let old = try object.llvmType(scope)
-        let new = try value.llvmType(scope)
+        let old = try object.typeForNode(scope)
+        let new = try value.typeForNode(scope)
         
         guard old == new else { throw error(SemaError.DifferentTypeForMutation(object.desc, old, new)) }
         
@@ -120,7 +120,7 @@ extension MutationExpr : ExprTypeProvider {
 
 extension VariableDecl : DeclTypeProvider {
     
-    func llvmType(scope: SemaScope) throws {
+    func typeForNode(scope: SemaScope) throws {
         // handle redeclaration
         if let _ = scope[variable: name] {
             throw error(SemaError.InvalidRedeclaration(name))
@@ -132,7 +132,7 @@ extension VariableDecl : DeclTypeProvider {
         // scope for declaration -- not a return type and sets the `semaContext` to the explicitType
         let declScope = SemaScope(parent: scope, returnType: nil, semaContext: explicitType)
         
-        let objectType = try value.llvmType(declScope)
+        let objectType = try value.typeForNode(declScope)
         
         if case let fn as FnType = objectType {
             scope[function: name] = fn          // store in function table if closure
@@ -161,7 +161,7 @@ extension VariableDecl : DeclTypeProvider {
 
 extension Void : ExprTypeProvider {
     
-    func llvmType(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Ty {
         self.type = BuiltinType.Void
         return BuiltinType.Void
     }
@@ -177,7 +177,7 @@ extension Void : ExprTypeProvider {
 
 extension ClosureExpr : ExprTypeProvider {
     
-    func llvmType(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Ty {
         
         // no type inferrence from param list, just from AST context
         let ty = (scope.semaContext as? FnType) ?? FnType(params: [BuiltinType.Void], returns: BuiltinType.Void)
@@ -198,7 +198,7 @@ extension ClosureExpr : ExprTypeProvider {
         // Make syntax for the users to define this
         
         for exp in exprs {
-            try exp.llvmType(innerScope)
+            try exp.typeForNode(innerScope)
         }
         
         return ty
@@ -213,12 +213,12 @@ extension ClosureExpr : ExprTypeProvider {
 
 extension ArrayExpr : ExprTypeProvider {
     
-    func llvmType(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Ty {
         
         // element types
         var types: [Ty] = []
         for el in arr {
-            types.append(try el.llvmType(scope))
+            types.append(try el.typeForNode(scope))
         }
         
         // make sure array is homogeneous
@@ -238,13 +238,13 @@ extension ArrayExpr : ExprTypeProvider {
 
 extension ArraySubscriptExpr : ExprTypeProvider {
     
-    func llvmType(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Ty {
         
         // make sure its an array
         guard case let v as VariableExpr = arr, case BuiltinType.Array(let type, _)? = scope[variable: v.name]?.type else { throw error(SemaError.CannotSubscriptNonArrayVariable) }
         
         // gen type for subscripting value
-        guard try index.llvmType(scope) == StdLib.IntType else { throw error(SemaError.NonIntegerSubscript) }
+        guard try index.typeForNode(scope) == StdLib.IntType else { throw error(SemaError.NonIntegerSubscript) }
         
         // assign type to self and return
         self._type = type

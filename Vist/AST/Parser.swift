@@ -967,7 +967,7 @@ extension Parser {
         
         getNextToken() // eat 'type'
         
-        guard case .Identifier(let typeName) = currentToken else { throw error(ParseError.NoTypeName, loc: SourceRange.at(currentPos)) }
+        guard case let .Identifier(typeName) = currentToken else { throw error(ParseError.NoTypeName, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat name
         
         let genericParameters = try parseGenericParameterList(objName: typeName)
@@ -1032,6 +1032,48 @@ extension Parser {
         
         return InitialiserDecl(ty: type, impl: try parseClosureDeclaration(type: type), parent: nil)
     }
+    
+    
+    private func parseConceptExpr() throws -> ConceptExpr {
+        
+        getNextToken() // eat 'concept'
+        
+        guard case let .Identifier(conceptName) = currentToken else { throw error(ParseError.NoTypeName, loc: SourceRange.at(currentPos)) }
+        getNextToken() // eat name
+        
+        guard case .OpenBrace = currentToken else { throw error(ParseError.ExpectedOpenBrace, loc: SourceRange.at(currentPos)) }
+        getNextToken() // eat '{'
+        
+        var properties: [VariableDecl] = [], methods: [FuncDecl] = []
+        
+        while true {
+            if case .CloseBrace = currentToken { break }
+            
+            switch currentToken {
+            case .Var:
+                properties.append(try parseVariableDecl(mutble: true, requiresInitialValue: false))
+                
+            case .Let:
+                properties.append(try parseVariableDecl(mutble: false, requiresInitialValue: false))
+                
+            case .Func:
+                methods.append(try parseFuncDeclaration())
+                
+            case .At:
+                try parseAttrExpr()
+                
+            case .Comment(let c):
+                try parseCommentExpr(c)
+                
+            default:
+                throw error(ParseError.ObjectNotAllowedInTopLevelOfTypeImpl(currentToken), loc: SourceRange.at(currentPos))
+            }
+            
+        }
+        
+        return ConceptExpr(name: conceptName, requiredProperties: properties, requiredMethods: methods)
+    }
+    
     
 }
 
@@ -1111,6 +1153,7 @@ extension Parser {
         case .While:                return try parseWhileLoopStmt()
         case .SqbrOpen:             return try parseArrayExpr()
         case .Type:                 return try parseTypeDeclarationExpr(byRef: false)
+        case .Concept:              return try parseConceptExpr()
         case .Reference:            getNextToken(); return try parseTypeDeclarationExpr(byRef: true)
         case .Integer(let i):       return  try parseIntExpr(i)
         case .FloatingPoint(let x): return parseFloatingPointExpr(x)

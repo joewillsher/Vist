@@ -7,33 +7,33 @@
 //
 
 protocol ExprTypeProvider {
-    func llvmType(scope: SemaScope) throws -> Ty
+    func typeForNode(scope: SemaScope) throws -> Ty
 }
 
 protocol StmtTypeProvider {
-    func llvmType(scope: SemaScope) throws
+    func typeForNode(scope: SemaScope) throws
 }
 protocol DeclTypeProvider {
-    func llvmType(scope: SemaScope) throws
+    func typeForNode(scope: SemaScope) throws
 }
 
 // TODO: make private
 extension ExprTypeProvider {
-    func llvmType(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Ty {
         return BuiltinType.Null
     }
 }
 
 extension ASTNode {
-    func llvmType(scope: SemaScope) throws {
+    func typeForNode(scope: SemaScope) throws {
         if case let expr as ExprTypeProvider = self {
-            try expr.llvmType(scope)
+            try expr.typeForNode(scope)
         }
         else if case let stmt as StmtTypeProvider = self {
-            try stmt.llvmType(scope)
+            try stmt.typeForNode(scope)
         }
         else if case let stmt as DeclTypeProvider = self {
-            try stmt.llvmType(scope)
+            try stmt.typeForNode(scope)
         }
     }
 }
@@ -44,7 +44,7 @@ extension CollectionType where Index == Int {
     
     /// An impl of flatmap which flatmaps but returns nil if the size changes
     @warn_unused_result
-    public func stableOptionalMap<T>(@noescape transform: (Self.Generator.Element) throws -> T?) rethrows -> [T]? {
+    public func optionalMap<T>(@noescape transform: (Self.Generator.Element) throws -> T?) rethrows -> [T]? {
         let new = try flatMap(transform)
         if new.count == count { return new } else { return nil }
     }
