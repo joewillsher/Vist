@@ -35,6 +35,11 @@ struct ConceptType : StorageType {
     var methods: [StructMethod] {
         return requiredFunctions
     }
+    
+    
+    var description: String {
+        return name
+    }
 
 }
 

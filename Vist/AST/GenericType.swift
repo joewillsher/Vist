@@ -38,7 +38,7 @@ struct GenericType : StorageType {
 
 
 
-extension StructType {
+extension StorageType {
     
     func models(concept: ConceptType) -> Bool {
         for f in concept.requiredFunctions where !methods.contains({ $0.name == f.name && $0.type == f.type }) { return false }

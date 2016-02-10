@@ -1,26 +1,33 @@
 
-concept Eq {
-    var a: Int
-}
-
-func foo :: Eq Int -> Int = (a b) do
-    return a.a + b
-
-
 type Bar {
     var a: Int
 }
 
 let bar = Bar 1
-/*
-let foo = foo 2 bar
+//let foo = foo bar 2
 
-print foo
-*/
+//print foo
 
 
 /*
 
+concept Eq {
+    var a: Int
+}
+
+@public
+func foo :: Eq Int -> Int = (a b) do
+    return a.a + b
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 type Foo {
     var a: Int
 }

@@ -25,12 +25,26 @@ extension StorageType {
     }
     
     func globalType(module: LLVMModuleRef) -> LLVMTypeRef {
-
         
-        let type = ir()
-        let gloTy = createNamedType(type, mangledTypeName, module)
+        let found = getNamedType(mangledTypeName, module)
+        if found != nil { return found }
         
-        return gloTy
+        let type = memberTypes(module)
+        let namedType = createNamedType(type, mangledTypeName)
+        
+        return namedType
+    }
+    
+    func memberTypes(module: LLVMModuleRef) -> LLVMTypeRef {
+        let arr = members
+            .map { $0.type.globalType(module) }
+            .ptr()
+        defer { arr.dealloc(members.count) }
+        
+        return LLVMStructType(
+            arr,
+            UInt32(members.count),
+            false)
     }
     
     func propertyType(name: String) throws -> Ty {

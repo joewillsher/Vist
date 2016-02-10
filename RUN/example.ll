@@ -1,20 +1,32 @@
-; ModuleID = 'example.ll'
+; ModuleID = 'vist_module'
 target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-macosx10.11.0"
 
-; Function Attrs: nounwind readnone
-define void @main() #0 {
+%Bar.ty = type { %Int.ty }
+%Int.ty = type { i64 }
+
+define void @main() {
 entry:
+  %Bar.i = alloca %Bar.ty
+  %0 = call %Int.ty @_Int_i64(i64 1), !stdlib.call.optim !0
+  %Bar.a.ptr.i = getelementptr inbounds %Bar.ty* %Bar.i, i32 0, i32 0
+  store %Int.ty %0, %Int.ty* %Bar.a.ptr.i
+  %Bar1.i = load %Bar.ty* %Bar.i
   ret void
 }
 
-; Function Attrs: alwaysinline nounwind readnone
-define { { i64 } } @_Bar_S.i64({ i64 } %"$0") #1 {
+; Function Attrs: alwaysinline
+define %Bar.ty @_Bar_S.i64(%Int.ty %"$0") #0 {
 entry:
-  %"$0.fca.0.extract" = extractvalue { i64 } %"$0", 0
-  %Bar1.fca.0.0.insert = insertvalue { { i64 } } undef, i64 %"$0.fca.0.extract", 0, 0
-  ret { { i64 } } %Bar1.fca.0.0.insert
+  %Bar = alloca %Bar.ty
+  %Bar.a.ptr = getelementptr inbounds %Bar.ty* %Bar, i32 0, i32 0
+  store %Int.ty %"$0", %Int.ty* %Bar.a.ptr
+  %Bar1 = load %Bar.ty* %Bar
+  ret %Bar.ty %Bar1
 }
 
-attributes #0 = { nounwind readnone }
-attributes #1 = { alwaysinline nounwind readnone }
+declare %Int.ty @_Int_i64(i64)
+
+attributes #0 = { alwaysinline }
+
+!0 = !{!"stdlib.call.optim"}

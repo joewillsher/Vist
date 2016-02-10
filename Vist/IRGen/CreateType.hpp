@@ -13,9 +13,14 @@
 #include "LLVM.h"
 
 #ifdef __cplusplus
-extern "C"
+extern "C" {
 #endif
-LLVMTypeRef createNamedType(LLVMTypeRef type, const char *name, LLVMModuleRef module);
 
+    LLVMTypeRef createNamedType(LLVMTypeRef type, const char *name);
+    LLVMTypeRef getNamedType(const char *name, LLVMModuleRef module);
+    
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* CreateType_hpp */

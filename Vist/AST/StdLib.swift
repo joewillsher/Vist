@@ -120,7 +120,7 @@ final class StdLib {
     static func getFunctionIR(name: String, args: [Ty], module: LLVMModuleRef) -> (type: FnType, functionIR: LLVMValueRef)? {
        
         if let (mangledName, type) = StdLib.getStdLibFunctionWithInitInfo(name, args: args) {
-            let functionType = type.ir()
+            let functionType = type.globalType(module)
             
             let found = LLVMGetNamedFunction(module, mangledName)
             if found != nil { return (type, found) }

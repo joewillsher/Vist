@@ -194,10 +194,10 @@ final class ParameterStructVariable : StructVariable {
 /// Self capturing functions use this by setting `parent` to the self pointer param 
 final class SelfReferencingMutableVariable : MutableVariable {
     var ptr: LLVMValueRef {
-        return nil // TODO: return value from parent
+        return try! parent.ptrToPropertyNamed(name)
     }
     var type: LLVMTypeRef {
-        return nil // dont care -- initialiser has this info
+        return nil
     }
     
     /// unowned ref to struct this belongs to
@@ -213,7 +213,7 @@ final class SelfReferencingMutableVariable : MutableVariable {
         self.irGen = parent.irGen
     }
     
-    var value: LLVMValueRef  {
+    var value: LLVMValueRef {
         get {
             return try! parent.loadPropertyNamed(self.name)
         }

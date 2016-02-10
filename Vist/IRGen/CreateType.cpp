@@ -23,14 +23,17 @@
 using namespace llvm;
 
 
-LLVMTypeRef createNamedType(LLVMTypeRef type, const char *name, LLVMModuleRef module) {
-    
-    Type *ty = unwrap(type);
+LLVMTypeRef getNamedType(const char *name, LLVMModuleRef module) {
     Module *mod = unwrap(module);
     
     auto found = mod->getTypeByName(name);
-    if (found)
-        return wrap(found);
+    return wrap(found);
+}
+
+
+LLVMTypeRef createNamedType(LLVMTypeRef type, const char *name) {
+    
+    Type *ty = unwrap(type);
     
     std::vector<Type *> els;
     for (unsigned i = 0; i < ty->getStructNumElements(); ++i) {

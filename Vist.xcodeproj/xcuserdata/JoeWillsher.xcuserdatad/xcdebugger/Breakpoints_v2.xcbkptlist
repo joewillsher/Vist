@@ -172,11 +172,11 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/IRGen/IRGen.swift"
-            timestampString = "476802681.39237"
+            timestampString = "476820170.48821"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "487"
@@ -185,14 +185,14 @@
             landmarkType = "5">
             <Locations>
                <Location
-                  shouldBeEnabled = "Yes"
+                  shouldBeEnabled = "No"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
                   symbolName = "vist.FuncDecl.(codeGen in _0BE742841FF4AB9BD7D6D9AA7F21A426) (vist.StackFrame) throws -&gt; Swift.COpaquePointer"
                   moduleName = "vist"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/JoeWillsher/Developer/Vist/Vist/IRGen/IRGen.swift"
-                  timestampString = "476810560.654868"
+                  timestampString = "476810763.360569"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "487"
@@ -200,14 +200,14 @@
                   offsetFromSymbolStart = "15845">
                </Location>
                <Location
-                  shouldBeEnabled = "Yes"
+                  shouldBeEnabled = "No"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
                   symbolName = "vist.FuncDecl.(codeGen in _0BE742841FF4AB9BD7D6D9AA7F21A426) (vist.StackFrame) throws -&gt; Swift.COpaquePointer"
                   moduleName = "vist"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/JoeWillsher/Developer/Vist/Vist/IRGen/IRGen.swift"
-                  timestampString = "476810560.655024"
+                  timestampString = "476810763.360756"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "487"
@@ -239,30 +239,30 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Vist/AST/StructType.swift"
-            timestampString = "476810482.199653"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "32"
-            endingLineNumber = "32"
-            landmarkName = "globalType(_:)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
             filePath = "Vist/IRGen/IRGen.swift"
-            timestampString = "476810698.988259"
+            timestampString = "476820170.48821"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "333"
             endingLineNumber = "333"
             landmarkName = "codeGen(_:)"
             landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Vist/Sema/SemaScope.swift"
+            timestampString = "476819550.012732"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "185"
+            endingLineNumber = "185"
+            landmarkName = "CollectionType"
+            landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

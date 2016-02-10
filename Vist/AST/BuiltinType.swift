@@ -35,6 +35,10 @@ enum BuiltinType : Ty {
         }
     }
     
+    func globalType(module: LLVMModuleRef) -> LLVMTypeRef {
+        return ir()
+    }
+    
     init?(_ str: String) {
         switch str {
         case "LLVM.Int", "LLVM.Int64":  self = .Int(size: 64)

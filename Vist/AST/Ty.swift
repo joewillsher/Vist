@@ -18,11 +18,6 @@ extension Ty {
     var mangledTypeName: String {
         return "\(description).ty"
     }
-    
-    func globalType(module: LLVMModuleRef) -> LLVMTypeRef {
-        return ir()
-    }
-    
 }
 
 
@@ -71,7 +66,14 @@ func == (lhs: [Ty], rhs: [Ty]) -> Bool {
     if lhs.count != rhs.count { return false }
     
     for (l,r) in zip(lhs,rhs) {
-        if l == r { return true }
+        switch (l, r) {
+        case (let l as StorageType, let r as ConceptType):
+            return l.models(r)
+        case (let l as ConceptType, let r as StorageType):
+            return r.models(l)
+        default:
+            return l == r
+        }
     }
     return false
 }
