@@ -81,10 +81,11 @@ extension StructType: CustomStringConvertible, CustomDebugStringConvertible {
     }
     
     var debugDescription: String {
-        let arr = members
-            .map { $0.1.debugDescription }
-            .joinWithSeparator(".")
-        return "S.\(arr)"
+//        let arr = members
+//            .map { $0.1.debugDescription }
+//            .joinWithSeparator(".")
+//        return "S.\(arr)"
+        return name
     }
 }
 

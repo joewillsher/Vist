@@ -52,7 +52,7 @@ final class SemaScope {
             return builtinFunction
         }
         else if let localFunctionType = functions[raw: name, paramTypes: argTypes] {
-            return (name.mangle(argTypes), localFunctionType)
+            return (name.mangle(localFunctionType.params), localFunctionType)
         }
         else if let inParent = try parent?.function(name, argTypes: argTypes) {
             return inParent

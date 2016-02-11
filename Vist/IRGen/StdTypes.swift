@@ -42,13 +42,14 @@ extension StructType {
         let tys = members.map { $0.1 }
         let initName = name.mangle(FnType(params: tys, returns: BuiltinType.Void/*we con’t care what this is, its not used in mangling*/))
         
-        guard let (type, initialiser) = StdLib.getFunctionIR(name, args: tys, module: module) where initialiser != nil else { return nil }
+        guard let (type, initialiser) = StdLib.getFunctionIR(initName, module: module) where initialiser != nil else { return nil }
         
         let args = val.ptr()
         defer { args.dealloc(members.count) }
         
         let call = LLVMBuildCall(builder, initialiser, args, 1, irName)
-        type.addMetadata(call)
+        type.addMetadataTo(call)
+        
         return call
     }
     

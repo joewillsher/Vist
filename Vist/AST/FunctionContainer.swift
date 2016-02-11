@@ -50,6 +50,14 @@ struct FunctionContainer {
             return (mangled, ty)
         }
     }
+    /// unmangled
+    subscript(mangledName mangledName: String) -> (mangledName: String, type: FnType)? {
+        get {
+            guard let ty = functions[mangledName] else { return nil }
+            return (mangledName, ty)
+        }
+    }
+
     
     /// Returns type from type name
     subscript(type type: String) -> StructType? {

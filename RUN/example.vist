@@ -1,15 +1,4 @@
 
-type Bar {
-    var a: Int
-}
-
-let bar = Bar 1
-//let foo = foo bar 2
-
-//print foo
-
-
-/*
 
 concept Eq {
     var a: Int
@@ -18,6 +7,19 @@ concept Eq {
 @public
 func foo :: Eq Int -> Int = (a b) do
     return a.a + b
+
+
+type Bar {
+    var a: Int
+}
+
+let bar = Bar 1
+let foo = foo bar 2
+
+print foo
+
+
+/*
 
 
  

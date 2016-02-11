@@ -60,7 +60,7 @@ struct FnType : Ty {
         return params.filter { if case BuiltinType.Void = $0 { return false } else { return true } }
     }
     
-    func addMetadata(call: LLVMValueRef) {
+    func addMetadataTo(call: LLVMValueRef) {
         
         for metadata in self.metadata {
             

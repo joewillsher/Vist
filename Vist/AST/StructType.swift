@@ -15,11 +15,12 @@ protocol StorageType : Ty {
     var name: String { get }
     var members: [StructMember] { get }
     var methods: [StructMethod] { get }
+    func memberTypes(module: LLVMModuleRef) -> LLVMTypeRef
 }
 
 extension StorageType {
     
-    private func indexOfMemberNamed(name: String) throws -> Int {
+    func indexOfMemberNamed(name: String) throws -> Int {
         guard let i = members.indexOf({ $0.name == name }) else { throw error(SemaError.NoPropertyNamed(type: self.name, property: name)) }
         return i
     }
@@ -33,18 +34,6 @@ extension StorageType {
         let namedType = createNamedType(type, mangledTypeName)
         
         return namedType
-    }
-    
-    func memberTypes(module: LLVMModuleRef) -> LLVMTypeRef {
-        let arr = members
-            .map { $0.type.globalType(module) }
-            .ptr()
-        defer { arr.dealloc(members.count) }
-        
-        return LLVMStructType(
-            arr,
-            UInt32(members.count),
-            false)
     }
     
     func propertyType(name: String) throws -> Ty {
@@ -81,6 +70,18 @@ struct StructType : StorageType {
             false)
     }
     
+    func memberTypes(module: LLVMModuleRef) -> LLVMTypeRef {
+        let arr = members
+            .map { $0.type.globalType(module) }
+            .ptr()
+        defer { arr.dealloc(members.count) }
+        
+        return LLVMStructType(
+            arr,
+            UInt32(members.count),
+            false)
+    }
+    
     static func named(n: String) -> StructType {
         return StructType(members: [], methods: [], name: n)
     }
@@ -88,6 +89,7 @@ struct StructType : StorageType {
     static func withTypes(tys: [Ty]) -> StructType {
         return StructType(members: tys.map { (name: "", type: $0, mutable: true) }, methods: [], name: "")
     }
+    
 }
 
 extension StructType {

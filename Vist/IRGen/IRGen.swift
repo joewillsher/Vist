@@ -230,6 +230,11 @@ extension VariableDecl : IRGenerator {
             case let tupleType as TupleType:
                 variable = MutableTupleVariable.alloc(tupleType, irName: name, irGen: (builder, module))
                 
+            case let existentialType as ConceptType:
+                let existentialVariable = ExistentialVariable.alloc(existentialType, fromExistential: v, irName: name, irGen: (builder, module))
+                stackFrame.addVariable(existentialVariable, named: name)
+                return v
+                
             default:
                 variable = ReferenceVariable.alloc(type, irName: name, irGen: (builder, module))
             }
@@ -313,7 +318,7 @@ extension BinaryExpr : IRGenerator {
         
         let fn: LLVMValueRef
         
-        if let (type, fnIR) = StdLib.getFunctionIR(op, args: argTypes, module: module) {
+        if let (type, fnIR) = StdLib.getFunctionIR(mangledName, module: module) {
             fn = fnIR
         }
         else {
@@ -331,7 +336,8 @@ extension BinaryExpr : IRGenerator {
         
         // add call to IR
         let call = LLVMBuildCall(builder, fn, argBuffer, UInt32(2), n)
-        fnType.addMetadata(call)
+        fnType.addMetadataTo(call)
+        
         return call
     }
 }
@@ -352,9 +358,7 @@ extension FunctionCallExpr : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         
-        let argCount = self.args.elements.count
         let args = try self.args.elements.map(codeGenIn(stackFrame))
-        guard let argTypes = self.args.elements.optionalMap({ $0._type }) else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
 
         // Lookup
         if let function = builtinBinaryInstruction(name, builder: builder, module: module) {
@@ -366,20 +370,42 @@ extension FunctionCallExpr : IRGenerator {
             return function()
         }
         
+        
+        
         // get function decl IR
         let fn: LLVMValueRef
         
-        if let (_, f) = StdLib.getFunctionIR(name, args: argTypes, module: module) {
+        if let (_, f) = StdLib.getFunctionIR(mangledName, module: module) {
             fn = f
         }
         else {
             fn = LLVMGetNamedFunction(module, mangledName)
         }
         
-        guard let fnType = self.fnType else { throw error(IRError.NotTyped, userVisible: false) }
+        
+        
+        
+        let argCount = self.args.elements.count
+        guard let paramTypes = self.fnType?.params, let argTypes = self.args.elements.optionalMap({ $0._type }) else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
+        
+        var argBuff: [LLVMValueRef] = []
+        
+        
+        for i in 0..<argCount {
+            let ref = args[i], argType = argTypes[i], paramType = paramTypes[i]
+            
+            guard case let paramConceptType as ConceptType = paramType, case let structType as StructType = argType else {
+                argBuff.append(ref)
+                continue
+            }
+            
+            let existentialVariable = try ExistentialVariable.alloc(structType, conceptType: paramConceptType, initWithValue: ref, irGen: (builder, module))
+            argBuff.append(existentialVariable.value)
+        }
+        
         
         // arguments
-        let argBuffer = args.ptr()
+        let argBuffer = argBuff.ptr()
         defer { argBuffer.dealloc(argCount) }
         
         guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else { throw error(IRError.WrongFunctionApplication(name), userVisible: false) }
@@ -389,7 +415,12 @@ extension FunctionCallExpr : IRGenerator {
         
         // add call to IR
         let call = LLVMBuildCall(builder, fn, argBuffer, UInt32(argCount), n)
-        fnType.addMetadata(call)
+        
+        //
+        
+        guard let fnType = self.fnType else { throw error(IRError.NotTyped, userVisible: false) }
+        fnType.addMetadataTo(call)
+        
         return call
     }
     
@@ -483,7 +514,7 @@ extension FuncDecl : IRGenerator {
                 functionStackFrame.addVariable(s, named: paramName)
                 
             case let c as ConceptType:
-                let e = ExistentialVariable.alloc(param, conceptType: c, irName: paramName, irGen: (builder, module))
+                let e = ExistentialVariable.alloc(c, fromExistential: param, irName: paramName, irGen: (builder, module))
                 functionStackFrame.addVariable(e, named: paramName)
                 
             default:
@@ -986,7 +1017,7 @@ extension InitialiserDecl : IRGenerator {
                 initStackFrame.addVariable(s, named: paramName)
                 
             case let c as ConceptType:
-                let e = ExistentialVariable.alloc(param, conceptType: c, irName: paramName, irGen: (builder, module))
+                let e = ExistentialVariable.alloc(c, fromExistential: param, irName: paramName, irGen: (builder, module))
                 initStackFrame.addVariable(e, named: paramName)
                 
             default:

@@ -24,7 +24,18 @@ struct GenericType : StorageType {
         return concepts.flatMap { $0.requiredFunctions }
     }
     
-    
+    // TODO: Reimplement this
+    func memberTypes(module: LLVMModuleRef) -> LLVMTypeRef {
+        let arr = members
+            .map { $0.type.globalType(module) }
+            .ptr()
+        defer { arr.dealloc(members.count) }
+        
+        return LLVMStructType(
+            arr,
+            UInt32(members.count),
+            false)
+    }
     
     
     func ir() -> LLVMTypeRef {

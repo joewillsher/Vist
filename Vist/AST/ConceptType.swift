@@ -19,7 +19,15 @@ struct ConceptType : StorageType {
             BuiltinType.OpaquePointer
             ]).ir()
     }
-        
+    
+    func memberTypes(module: LLVMModuleRef) -> LLVMTypeRef {
+        return StructType.withTypes([
+            BuiltinType.Array(el: BuiltinType.Int(size: 32), size: UInt32(requiredProperties.count)),
+            BuiltinType.OpaquePointer
+            ]).memberTypes(module)
+    }
+    
+    
     var debugDescription: String {
         return name
     }
@@ -41,5 +49,23 @@ struct ConceptType : StorageType {
         return name
     }
 
+    
+    /// Returns the metadata array map, which transforms the protocol's properties
+    /// to an element in the `type`
+    ///
+    func existentialMetadataMapFor(structType: StructType, builder: LLVMBuilderRef) throws -> LLVMValueRef {
+        
+        let indicies = try requiredProperties
+            .map { propName, _, _ in try structType.indexOfMemberNamed(propName) }
+            .map { LLVMConstInt(LLVMInt32Type(), UInt64($0), false) }
+        
+        let buffer = indicies.ptr(), size = UInt32(indicies.count)
+        defer { buffer.dealloc(indicies.count) }
+
+        let arrType = LLVMArrayType(LLVMInt32Type(), size)
+        let ptr = LLVMBuildArrayAlloca(builder, arrType, buffer.memory, "")
+        return LLVMBuildLoad(builder, ptr, "")
+    }
+    
 }
 
