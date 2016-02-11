@@ -7,13 +7,37 @@
 //
 
 
-/// Polymorphic runtime variable of an object passed as an existential.
-///
-///
-/// type Foo, of IR type, `{ i1 , i64 }` which implementwill be passed as `{ {i32} *, { i1 , i64 } }`
-///
-/// type at runtime i
-///
+/** Polymorphic runtime variable of an object passed as an existential
+ 
+ Stores information about how to access the concept's storage using a metadata array (of `i32`).
+ The `n`th index in this array holds the position of that variable in the storage's struct.
+ 
+ ***
+ 
+ So the type
+ ```
+ type Foo {
+    var x: Bool
+    var y: Int
+ }
+ ```
+ Has a LLVM type of `{ i1, i64 }`. The concept
+ ```
+ concept Bar {
+    var y: Int
+ }
+ ```
+ Can be used existentailly—for example the funtion `func addBars :: Bar Bar -> Int = ...`.
+ 
+ When used existentially, `Bar` has a type `{ [1 x i32], i8* }`. The first element is the metadata array
+ and the second the opaque pointer to the conforman. It is type erased because its type is not statically known.
+ 
+ One can lookup `y` from the existential `Bar` object. We statically look up what index in `Bar` `y` is. At
+ runtime we lookup this element in the metadata array, and its value tells us which element to look at in our
+ type pointer.
+ 
+ The metadata array is occupied with this mapping when the existential is allocated from a known struct type.
+ */
 final class ExistentialVariable : StructVariable, MutableVariable {
     
     /// The rutime type of self
@@ -41,6 +65,8 @@ final class ExistentialVariable : StructVariable, MutableVariable {
         self.type = conceptType.globalType(irGen.module)
     }
     
+    /// Allocator from another existential object
+    ///
     class func alloc(conceptType: ConceptType, fromExistential value: LLVMValueRef, irName: String = "", irGen: IRGen) -> ExistentialVariable {
         
         let exType = conceptType.globalType(irGen.module)
@@ -50,6 +76,10 @@ final class ExistentialVariable : StructVariable, MutableVariable {
         return ExistentialVariable(ptr: ptr, conceptType: conceptType, irName: irName, irGen: irGen)
     }
     
+    /// Allocator from a non existential, Struct object
+    ///
+    /// This generates the runtime metadata and stores an opaque pointer to the struct instance
+    ///
     class func alloc(structType: StructType, conceptType: ConceptType, initWithValue value: LLVMValueRef, irName: String = "", irGen: IRGen) throws -> ExistentialVariable {
         
         let exType = conceptType.globalType(irGen.module)
