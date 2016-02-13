@@ -102,8 +102,6 @@ final class ExistentialVariable : StructVariable, MutableVariable {
     
     
     
-    
-    
     private var _metadataPtr: LLVMValueRef = nil
     private var _opaqueInstancePointer: LLVMValueRef = nil
     
@@ -144,23 +142,12 @@ final class ExistentialVariable : StructVariable, MutableVariable {
         let elementPtrType = LLVMPointerType(properties[i].irType, 0)
         
         let basePtr = LLVMBuildBitCast(irGen.builder, metadataPtr, i32PtrType, "metadata_base_ptr") // i32*
-        let pointerToArrayElement = LLVMBuildGEP(irGen.builder, basePtr, idx, 1, "metadata_arr_el_ptr") // i32*
-        let ptrOffset = LLVMBuildLoad(irGen.builder, pointerToArrayElement, "self_index") // i32
-
-//        let indexInSelf = LLVMConstInt(LLVMInt32Type(), 8, false)
-        
-        printi32(ptrOffset, irGen: irGen)
-        
-        // currently passing in the index of the elemetn in impl struct
-        // we want the offset in bits
-        // i8* doesnt hold type info about struct type, so cant use the
-        // stuct GEP instruction. 
-        // info about the offset will let us move that many bits forewards
-        // to hit the beginning of the element
+        let pointerToArrayElement = LLVMBuildGEP(irGen.builder, basePtr, idx, 1, "") // i32*
+        let ptrOffset = LLVMBuildLoad(irGen.builder, pointerToArrayElement, "") // i32
         
         let offset = [ptrOffset].ptr()
         defer { offset.dealloc(1) }
-        let instanceMemberPtr = LLVMBuildGEP(irGen.builder, opaqueInstancePointer, offset, 1, "member_pointer") // i8*
+        let instanceMemberPtr = LLVMBuildGEP(irGen.builder, opaqueInstancePointer, offset, 1, "") // i8*
         return LLVMBuildBitCast(irGen.builder, instanceMemberPtr, elementPtrType, "\(name).ptr") // Foo*
     }
     

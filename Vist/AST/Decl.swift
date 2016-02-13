@@ -24,6 +24,14 @@ final class VariableDecl : Decl, StructMemberExpr {
     }
 }
 
+final class VariableDeclGroup : Decl, StructMemberExpr {
+    var variableDecls: [VariableDecl]
+    
+    init(variableDecls: [VariableDecl]) {
+        self.variableDecls = variableDecls
+    }
+}
+
 final class FuncDecl : Decl, StructMemberExpr {
     let name: String
     let fnType: FunctionType

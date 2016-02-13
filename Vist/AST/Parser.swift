@@ -643,33 +643,56 @@ extension Parser {
     
     /// Parses a variable's declaration
     ///
-    private func parseVariableDecl(mutble mutable: Bool, requiresInitialValue: Bool = true) throws -> VariableDecl {
+    private func parseVariableDecl(mutable mutable: Bool, requiresInitialValue: Bool = true) throws -> [VariableDecl] {
         
-        guard case let .Identifier(id) = getNextToken() else { throw error(ParseError.NoIdentifier, loc: rangeOfCurrentToken()) }
+        var decls: [VariableDecl] = []
+        getNextToken()
         
-        let explicitType: DefinedType?
-        
-        if case .Colon = getNextToken() {
-            getNextToken()
-            explicitType = try parseTypeExpr()
-        }
-        else { explicitType = nil }
-        
-        // TODO: Closure declaration parsing
-        
-        guard case .Assign = currentToken else {
-            if requiresInitialValue || explicitType == nil {
-                throw error(ParseError.ExpectedAssignment, loc: SourceRange.at(currentPos))
+        while true {
+            guard case let .Identifier(id) = currentToken else { throw error(ParseError.NoIdentifier, loc: rangeOfCurrentToken()) }
+            
+            let explicitType: DefinedType?
+            
+            if case .Colon = getNextToken() {
+                getNextToken()
+                explicitType = try parseTypeExpr()
+            }
+            else { explicitType = nil }
+            // TODO: Closure declaration parsing
+            
+            let nullDecl = VariableDecl(name: id, type: explicitType, isMutable: mutable, value: NullExpr())
+            guard case .Assign = currentToken else {
+                if requiresInitialValue || explicitType == nil {
+                    throw error(ParseError.ExpectedAssignment, loc: SourceRange.at(currentPos))
+                }
+                else if case .Comma = currentToken {
+                    decls.append(nullDecl)
+                    getNextToken()
+                    continue
+                }
+                else {
+                    decls.append(nullDecl)
+                    return decls
+                }
+            }
+            
+            getNextToken() // eat '='
+            
+            let value = try parseOperatorExpr()
+            let decl = VariableDecl(name: id, type: explicitType, isMutable: mutable, value: value)
+            
+            if case .Comma = currentToken {
+                decls.append(decl)
+                getNextToken()
             }
             else {
-                return VariableDecl(name: id, type: explicitType, isMutable: mutable, value: NullExpr())
+                decls.append(decl)
+                return decls
             }
         }
-        getNextToken() // eat '='
-        
-        let value = try parseOperatorExpr()
-        return VariableDecl(name: id, type: explicitType, isMutable: mutable, value: value)
     }
+    
+    
 }
 
 
@@ -819,8 +842,7 @@ extension Parser {
         
         while true {
             if case .CloseBrace = currentToken { break }
-            guard let exp = try parseExpr(currentToken) else { throw error(ParseError.NoToken(currentToken), loc: SourceRange.at(currentPos)) }
-            exprs.append(exp)
+            exprs += try parseExpr(currentToken)
         }
         getNextToken() // eat '}'
         return BlockExpr(exprs: exprs, variables: names)
@@ -831,9 +853,7 @@ extension Parser {
     private func parseBracelessDoExpr(names: [String] = []) throws -> BlockExpr {
         getNextToken() // eat 'do'
         
-        guard let ex = try parseExpr(currentToken) else { throw error(ParseError.NoToken(currentToken), loc: SourceRange.at(currentPos)) }
-        
-        return BlockExpr(exprs: [ex], variables: names)
+        return BlockExpr(exprs: try parseExpr(currentToken), variables: names)
     }
     
     /// Parses expression following a `return`
@@ -982,10 +1002,10 @@ extension Parser {
 
             switch currentToken {
             case .Var:
-                properties.append(try parseVariableDecl(mutble: true, requiresInitialValue: false))
+                properties += try parseVariableDecl(mutable: true, requiresInitialValue: false)
                 
             case .Let:
-                properties.append(try parseVariableDecl(mutble: false, requiresInitialValue: false))
+                properties += try parseVariableDecl(mutable: false, requiresInitialValue: false)
                 
             case .Func:
                 methods.append(try parseFuncDeclaration())
@@ -1051,10 +1071,10 @@ extension Parser {
             
             switch currentToken {
             case .Var:
-                properties.append(try parseVariableDecl(mutble: true, requiresInitialValue: false))
+                properties += try parseVariableDecl(mutable: true, requiresInitialValue: false)
                 
             case .Let:
-                properties.append(try parseVariableDecl(mutble: false, requiresInitialValue: false))
+                properties += try parseVariableDecl(mutable: false, requiresInitialValue: false)
                 
             case .Func:
                 methods.append(try parseFuncDeclaration())
@@ -1135,33 +1155,33 @@ extension Parser {
     /// Master parse function — depending on input calls the relevant child functions
     /// and constructs a branch of the AST
     ///
-    private func parseExpr(token: Token) throws -> ASTNode? {
+    private func parseExpr(token: Token) throws -> [ASTNode] {
         
         switch token {
-        case .Let:                  return try parseVariableDecl(mutble: false)
-        case .Var:                  return try parseVariableDecl(mutble: true)
-        case .Func:                 return try parseFuncDeclaration()
-        case .Return:               return try parseReturnExpr()
-        case .OpenParen:            return try parseParenExpr()
-        case .OpenBrace:            return try parseBraceExpr()
-        case .Identifier(let str):  return try parseIdentifierExpr(str)
-        case .InfixOperator:        return try parseOperatorExpr()
-        case .Comment(let str):     return try parseCommentExpr(str)
-        case .If:                   return try parseIfStmt()
-        case .For:                  return try parseForInLoopStmt()
-        case .Do:                   return try parseBracelessDoExpr()
-        case .While:                return try parseWhileLoopStmt()
-        case .SqbrOpen:             return try parseArrayExpr()
-        case .Type:                 return try parseTypeDeclarationExpr(byRef: false)
-        case .Concept:              return try parseConceptExpr()
-        case .Reference:            getNextToken(); return try parseTypeDeclarationExpr(byRef: true)
-        case .Integer(let i):       return  try parseIntExpr(i)
-        case .FloatingPoint(let x): return parseFloatingPointExpr(x)
-        case .StringLiteral(let str):return parseStringExpr(str)
-        case .At:                   try parseAttrExpr(); return nil
-        case .Void:                 index += 1; return Void()
-        case .EOF, .CloseBrace:     index += 1; return nil
-        case .WhiteSpace:           getNextToken(); return nil
+        case .Let:                  return try parseVariableDecl(mutable: false).mapAs(ASTNode) // swift bug
+        case .Var:                  return try parseVariableDecl(mutable: true).mapAs(ASTNode)
+        case .Func:                 return [try parseFuncDeclaration()]
+        case .Return:               return [try parseReturnExpr()]
+        case .OpenParen:            return [try parseParenExpr()]
+        case .OpenBrace:            return [try parseBraceExpr()]
+        case .Identifier(let str):  return [try parseIdentifierExpr(str)]
+        case .InfixOperator:        return [try parseOperatorExpr()]
+        case .Comment(let str):     return [try parseCommentExpr(str)]
+        case .If:                   return [try parseIfStmt()]
+        case .For:                  return [try parseForInLoopStmt()]
+        case .Do:                   return [try parseBracelessDoExpr()]
+        case .While:                return [try parseWhileLoopStmt()]
+        case .SqbrOpen:             return [try parseArrayExpr()]
+        case .Type:                 return [try parseTypeDeclarationExpr(byRef: false)]
+        case .Concept:              return [try parseConceptExpr()]
+        case .Reference:            getNextToken(); return [try parseTypeDeclarationExpr(byRef: true)]
+        case .Integer(let i):       return  [try parseIntExpr(i)]
+        case .FloatingPoint(let x): return [parseFloatingPointExpr(x)]
+        case .StringLiteral(let str):return [parseStringExpr(str)]
+        case .At:                   try parseAttrExpr(); return []
+        case .Void:                 index += 1; return [Void()]
+        case .EOF, .CloseBrace:     index += 1; return []
+        case .WhiteSpace:           getNextToken(); return []
         default:                    throw error(ParseError.NoToken(token), loc: SourceRange.at(currentPos))
         }
     }
@@ -1177,9 +1197,7 @@ extension Parser {
         exprs = []
         
         while let tok = tok() {
-            if let exp = try parseExpr(tok) {
-                exprs.append(exp)
-            }
+            exprs += try parseExpr(tok)
         }
         
         return AST(exprs: exprs)

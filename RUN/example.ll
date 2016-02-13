@@ -6,7 +6,6 @@ target triple = "x86_64-apple-macosx10.11.0"
 %Bool.ty = type { i1 }
 %Int.ty = type { i64 }
 %Eq.ex.ty = type { [1 x i32], i8* }
-%Int32.ty = type { i32 }
 
 define void @main() {
 entry:
@@ -23,13 +22,11 @@ entry:
   %.metadata = getelementptr inbounds %Eq.ex.ty* %3, i32 0, i32 0
   %.opaque = getelementptr inbounds %Eq.ex.ty* %3, i32 0, i32 1
   %4 = alloca %Bar.ty
-  %metadata_alloc = alloca [1 x i32]
-  %5 = call %Int32.ty @_Int32_i32(i32 8)
-  call void @_print_Int32(%Int32.ty %5)
-  %el.ptr.0 = getelementptr inbounds [1 x i32]* %metadata_alloc, i32 0, i32 0
+  %metadata = alloca [1 x i32]
+  %el.ptr.0 = getelementptr inbounds [1 x i32]* %metadata, i32 0, i32 0
   store i32 8, i32* %el.ptr.0
-  %metadata_val = load [1 x i32]* %metadata_alloc
-  store [1 x i32] %metadata_val, [1 x i32]* %.metadata
+  %5 = load [1 x i32]* %metadata
+  store [1 x i32] %5, [1 x i32]* %.metadata
   store %Bar.ty %Bar1.i, %Bar.ty* %4
   %6 = bitcast i8** %.opaque to %Bar.ty**
   store %Bar.ty* %4, %Bar.ty** %6
@@ -44,21 +41,15 @@ entry:
   %a1 = alloca %Eq.ex.ty
   store %Eq.ex.ty %a, %Eq.ex.ty* %a1
   %metadata_base_ptr = getelementptr inbounds %Eq.ex.ty* %a1, i32 0, i32 0, i32 0
-  %self_index = load i32* %metadata_base_ptr
-  %0 = call %Int32.ty @_Int32_i32(i32 %self_index)
-  call void @_print_Int32(%Int32.ty %0)
+  %0 = load i32* %metadata_base_ptr
   %a.element_pointer = getelementptr inbounds %Eq.ex.ty* %a1, i32 0, i32 1
   %a.opaque_instance_pointer = load i8** %a.element_pointer
-  %member_pointer = getelementptr i8* %a.opaque_instance_pointer, i32 %self_index
-  %a.ptr = bitcast i8* %member_pointer to %Int.ty*
+  %1 = getelementptr i8* %a.opaque_instance_pointer, i32 %0
+  %a.ptr = bitcast i8* %1 to %Int.ty*
   %a2 = load %Int.ty* %a.ptr
   %"+.res" = call %Int.ty @"_+_Int_Int"(%Int.ty %a2, %Int.ty %b), !stdlib.call.optim !0
   ret %Int.ty %"+.res"
 }
-
-declare %Int32.ty @_Int32_i32(i32)
-
-declare void @_print_Int32(%Int32.ty)
 
 declare %Int.ty @"_+_Int_Int"(%Int.ty, %Int.ty)
 

@@ -10,8 +10,7 @@ func foo :: Eq Int -> Int = (a b) do
 
 
 type Bar {
-    var b: Bool
-    var a: Int
+    var b: Bool, a: Int
 }
 
 let bar = Bar true 4
@@ -20,10 +19,11 @@ let foo = foo bar 2
 print foo
 
 
+
+ 
+ 
 /*
- 
- 
- 
+
  
  
 type Foo {
