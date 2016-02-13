@@ -944,13 +944,17 @@ extension StructExpr : IRGenerator {
         
         stackFrame.addType(type, named: name)
 
-        try initialisers.walkChildren { i in
+        let errorCollector = ErrorCollector()
+        
+        try initialisers.walkChildren(inCollector: errorCollector) { i in
             try i.codeGen(stackFrame)
         }
         
-        try methods.walkChildren { m in
+        try methods.walkChildren(inCollector: errorCollector) { m in
             try m.codeGen(stackFrame)
         }
+        
+        try errorCollector.throwIfErrors()
 
         return nil
     }

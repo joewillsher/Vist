@@ -17,8 +17,8 @@ protocol ScopeNode {
 
 extension ScopeNode {
     
-    func walkChildren<Ret>(fn: (ASTNode) throws -> Ret) throws {
-        try childNodes.walkChildren(fn)
+    func walkChildren<Ret>(inCollector collector: ErrorCollector? = nil, @noescape fn: (ASTNode) throws -> Ret) throws {
+        try childNodes.walkChildren(collector, fn)
     }
 }
 
@@ -35,9 +35,9 @@ extension CollectionType where Generator.Element : ASTNode {
     /// }
     /// ```
     ///
-    func walkChildren<Ret>(@noescape fn: (Generator.Element) throws -> Ret) throws -> [Ret] {
-        
-        var errors: [VistError] = []
+    func walkChildren<Ret>(collector: ErrorCollector? = nil, @noescape _ fn: (Generator.Element) throws -> Ret) throws -> [Ret] {
+
+        let errorCollector = collector ?? ErrorCollector()
         var res: [Ret] = []
         
         for exp in self {
@@ -45,11 +45,13 @@ extension CollectionType where Generator.Element : ASTNode {
                 res.append(try fn(exp))
             }
             catch let error as VistError {
-                errors.append(error)
+                errorCollector.errors.append(error)
             }
         }
         
-        try errors.throwIfErrors()
+        if collector == nil {
+            try errorCollector.errors.throwIfErrors()
+        }
         return res
     }
 }
@@ -67,9 +69,9 @@ extension CollectionType where Generator.Element == ASTNode {
     /// }
     /// ```
     ///
-    func walkChildren<Ret>(@noescape fn: (ASTNode) throws -> Ret) throws -> [Ret] {
+    func walkChildren<Ret>(collector: ErrorCollector? = nil, @noescape _ fn: (ASTNode) throws -> Ret) throws -> [Ret] {
         
-        var errors: [VistError] = []
+        let errorCollector = collector ?? ErrorCollector()
         var res: [Ret] = []
         
         for exp in self {
@@ -77,11 +79,14 @@ extension CollectionType where Generator.Element == ASTNode {
                 res.append(try fn(exp))
             }
             catch let error as VistError {
-                errors.append(error)
+                errorCollector.errors.append(error)
             }
         }
         
-        try errors.throwIfErrors()
+        if collector == nil {
+            try errorCollector.errors.throwIfErrors()
+        }
+        
         return res
     }
 }
@@ -93,3 +98,38 @@ extension CollectionType where Generator.Element : ASTNode {
         return flatMap { $0 as? T }
     }
 }
+
+final class ErrorCollector {
+    
+    private var errors: [VistError] = []
+    private var thrown = false
+    
+    func run(@noescape block: () throws -> ()) throws {
+        
+        do {
+            try block()
+        }
+        catch let error as VistError {
+            errors.append(error)
+        }
+    }
+    
+    func throwIfErrors() throws {
+        do {
+            try errors.throwIfErrors()
+        }
+        catch let error as VistError {
+            thrown = true
+            throw error
+        }
+    }
+    
+    
+    deinit {
+        if !thrown {
+            fatalError("Error thrown and not handled")
+        }
+    }
+}
+
+

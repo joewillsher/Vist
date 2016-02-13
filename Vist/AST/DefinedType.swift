@@ -61,29 +61,30 @@ enum DefinedType {
         case .Void:
             return BuiltinType.Void
             
-        case let .Type(name):
+        case let .Type(typeName):
             
-            if let builtin = BuiltinType(name) {
+            if let builtin = BuiltinType(typeName) {
                 return builtin as Ty
             }
 //            else if let std = StdLib.getStdLibType(name) {
 //                return std
 //            }
-            else if let i = scope[type: name] {
+            else if let i = scope[type: typeName] {
                 return i
             }
-            else if let g = scope.genericParameters, let i = g.indexOf({$0.type == name}) {
+            else if let g = scope.genericParameters, let i = g.indexOf({$0.type == typeName}) {
                 
                 let type = g[i]
                 guard let concepts = type.constraints.optionalMap({ scope[concept: $0] }) else { throw error(SemaError.GenericSubstitutionInvalid) }
                 
                 return GenericType(name: type.0, concepts: concepts)
             }
-            else if let existential = scope[concept: name] {
+            else if let existential = scope[concept: typeName] {
                 return existential
             }
             else {
-                throw error(SemaError.NoTypeNamed(name))
+                print(typeName)
+                throw error(SemaError.NoTypeNamed(typeName))
             }
             
         case let .Tuple(elements):

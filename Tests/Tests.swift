@@ -127,6 +127,23 @@ extension OutputTests {
         }
     }
     
+    
+    /// Existential.vist
+    ///
+    /// Test concept existentials
+    ///
+    func testExistential() {
+        let file = "Existential.vist"
+        do {
+            try compileWithOptions(["-O", file], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file), "Incorrect output")
+        }
+        catch {
+            XCTFail("Compilation failed with error:\n\(error)\n\n")
+        }
+    }
+    
+
 }
 
 

@@ -14,11 +14,7 @@ extension StructExpr : ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         
-        // we manually handle errors here because
-        //  - we want a shared error cache across the whole type, incl vars,inits&methods
-        //  - when we map we need to capture the result values
-        var errors: [VistError] = []
-        
+        let errorCollector = ErrorCollector()
         let structScope = SemaScope(parent: scope, returnType: nil) // cannot return from Struct scope
         
         // add generic params to scope
@@ -27,15 +23,11 @@ extension StructExpr : ExprTypeProvider {
         // maps over properties and gens types
         let members = try properties.flatMap { (a: VariableDecl) -> StructMember? in
             
-            do {
+            try errorCollector.run {
                 try a.typeForNode(structScope)
-                guard let t = a.value._type else { throw error(SemaError.StructPropertyNotTyped(type: name, property: a.name)) }
-                return (a.name, t, a.isMutable)
             }
-            catch let error as VistError {
-                errors.append(error)
-                return nil
-            }
+            guard let t = a.value._type else { throw error(SemaError.StructPropertyNotTyped(type: name, property: a.name), userVisible: false) }
+            return (a.name, t, a.isMutable)
         }
         
         
@@ -46,16 +38,11 @@ extension StructExpr : ExprTypeProvider {
         
         let memberFunctions = try methods.flatMap { (f: FuncDecl) -> StructMethod? in
             
-            do {
+            try errorCollector.run {
                 try f.typeForNode(structScope)
-                guard let t = f.fnType.type else { throw error(SemaError.StructMethodNotTyped(type: name, methodName: f.name)) }
-                return (f.name.mangle(t, parentTypeName: name), t)
             }
-            catch let error as VistError {
-                errors.append(error)
-                return nil
-            }
-            
+            guard let t = f.fnType.type else { throw error(SemaError.StructMethodNotTyped(type: name, methodName: f.name), userVisible: false) }
+            return (f.name.mangle(t, parentTypeName: name), t)
         }
         
         ty.methods = memberFunctions
@@ -67,7 +54,7 @@ extension StructExpr : ExprTypeProvider {
         let memberwise = try memberwiseInitialiser()
         initialisers.append(memberwise)
         
-        try initialisers.walkChildren { node in
+        try initialisers.walkChildren(errorCollector) { node in
             try node.typeForNode(structScope)
         }
         
@@ -75,7 +62,7 @@ extension StructExpr : ExprTypeProvider {
             scope[function: name] = i.ty.type
         }
         
-        try errors.throwIfErrors()
+        try errorCollector.throwIfErrors()
         
         return ty
     }
@@ -87,33 +74,22 @@ extension ConceptExpr : ExprTypeProvider {
     func typeForNode(scope: SemaScope) throws -> Ty {
         
         let conceptScope = SemaScope(parent: scope)
+        let errorCollector = ErrorCollector()
         
-        var errors: [VistError] = []
-        
-        do {
-            try requiredMethods.walkChildren { method in
+            try requiredMethods.walkChildren(errorCollector) { method in
+                try method.typeForNode(conceptScope)
+            }
+        try errorCollector.run {
+            try requiredProperties.walkChildren(errorCollector) { method in
                 try method.typeForNode(conceptScope)
             }
         }
-        catch let error as VistError {
-            errors.append(error)
-        }
-        do {
-            try requiredProperties.walkChildren { method in
-                try method.typeForNode(conceptScope)
-            }
-        }
-        catch let error as VistError {
-            errors.append(error)
-        }
         
-        
-        
-        let methodTypes = try requiredMethods.walkChildren { method throws -> StructMethod in
+        let methodTypes = try requiredMethods.walkChildren(errorCollector) { method throws -> StructMethod in
             if let t = method.fnType.type { return (method.name, t) }
             throw error(SemaError.StructMethodNotTyped(type: name, methodName: method.name))
         }
-        let propertyTypes = try requiredProperties.walkChildren { prop throws -> StructMember in
+        let propertyTypes = try requiredProperties.walkChildren(errorCollector) { prop throws -> StructMember in
             if let t = prop.value._type { return (prop.name, t, true) }
             throw error(SemaError.StructPropertyNotTyped(type: name, property: prop.name))
         }
@@ -121,6 +97,8 @@ extension ConceptExpr : ExprTypeProvider {
         let ty = ConceptType(name: name, requiredFunctions: methodTypes, requiredProperties: propertyTypes)
         
         scope[concept: name] = ty
+        
+        try errorCollector.throwIfErrors()
         
         self.type = ty
         return ty

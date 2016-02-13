@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Sema/ExprSema.swift"
-            timestampString = "476583981.23176"
+            timestampString = "477067062.066739"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "244"
-            endingLineNumber = "244"
+            startingLineNumber = "245"
+            endingLineNumber = "245"
             landmarkName = "typeForNode(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -88,28 +88,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/AST/DefinedType.swift"
-            timestampString = "476753740.943152"
+            timestampString = "477066469.305016"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "86"
-            endingLineNumber = "86"
+            startingLineNumber = "87"
+            endingLineNumber = "87"
             landmarkName = "type(_:)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Vist/Sema/ExprSema.swift"
-            timestampString = "476740056.206012"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "126"
-            endingLineNumber = "126"
-            landmarkName = "typeForNode(_:)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -120,11 +104,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/Sema/StructSema.swift"
-            timestampString = "476742392.786505"
+            timestampString = "477068049.192025"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "183"
-            endingLineNumber = "183"
+            startingLineNumber = "174"
+            endingLineNumber = "174"
             landmarkName = "typeForNode(_:)"
             landmarkType = "5">
          </BreakpointContent>

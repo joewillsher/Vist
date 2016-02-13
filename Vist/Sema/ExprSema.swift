@@ -135,10 +135,11 @@ extension VariableDecl : DeclTypeProvider {
         let objectType = try value.typeForNode(declScope)
         
         if case let fn as FnType = objectType {
-            scope[function: name] = fn          // store in function table if closure
+            scope[function: name] = fn // store in function table if closure
         }
         else {
-            scope[variable: name] = (objectType, isMutable)  // store in arr
+            let type = explicitType ?? objectType
+            scope[variable: name] = (type, isMutable) // store in arr
         }
         
         // if its a null expression

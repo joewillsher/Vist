@@ -1,0 +1,19 @@
+
+concept Eq {
+var a: Int, b: Int
+}
+
+func foo :: Eq Int -> Int = (a b) do
+    return a.b + b + a.a
+
+
+type Bar {
+var x: Bool, b: Int, a: Int
+}
+
+let bar = Bar true 11 4
+let foo = foo bar 2
+
+print foo // test: 17
+
+
