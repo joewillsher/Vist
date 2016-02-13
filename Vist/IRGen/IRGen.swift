@@ -946,11 +946,11 @@ extension StructExpr : IRGenerator {
 
         let errorCollector = ErrorCollector()
         
-        try initialisers.walkChildren(inCollector: errorCollector) { i in
+        try initialisers.walkChildren(errorCollector) { i in
             try i.codeGen(stackFrame)
         }
         
-        try methods.walkChildren(inCollector: errorCollector) { m in
+        try methods.walkChildren(errorCollector) { m in
             try m.codeGen(stackFrame)
         }
         

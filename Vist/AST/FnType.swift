@@ -77,6 +77,10 @@ struct FnType : Ty {
         }
     }
     
+    var name: String {
+        return ""
+    }
+    
 }
 
 

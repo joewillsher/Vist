@@ -57,7 +57,9 @@ enum BuiltinType : Ty {
         default: return nil
         }
     }
- 
+    var name: String {
+        return description
+    }
     
     static func intGen(size size: Swift.Int) -> UInt64 -> LLVMValueRef {
         return { val in

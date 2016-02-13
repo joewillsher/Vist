@@ -7,10 +7,9 @@
 //
 
 protocol Ty : Printable, CustomDebugStringConvertible {
+    var name: String { get }
     func ir() -> LLVMTypeRef
     func globalType(module: LLVMModuleRef) -> LLVMTypeRef
-    
-    var mangledTypeName: String { get }
 }
 
 extension Ty {

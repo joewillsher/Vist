@@ -50,7 +50,7 @@ extension CollectionType where Generator.Element : ASTNode {
         }
         
         if collector == nil {
-            try errorCollector.errors.throwIfErrors()
+            try errorCollector.throwIfErrors()
         }
         return res
     }
@@ -84,7 +84,7 @@ extension CollectionType where Generator.Element == ASTNode {
         }
         
         if collector == nil {
-            try errorCollector.errors.throwIfErrors()
+            try errorCollector.throwIfErrors()
         }
         
         return res
@@ -99,35 +99,50 @@ extension CollectionType where Generator.Element : ASTNode {
     }
 }
 
+/// Abstracts the collection of errors, so multiple throwing functions can throw and add to this
+///
+/// Requires any errors to be thrown with the `throwIfErrors()` function
+///
 final class ErrorCollector {
     
     private var errors: [VistError] = []
-    private var thrown = false
+    private var caught = false
+    private var file: StaticString, line: UInt, function: String
     
+    // on init, captures scope
+    // so if not thrown fatal error has helpful info
+    init(file: StaticString = __FILE__, line: UInt = __LINE__, function: String = __FUNCTION__) {
+        self.file = file
+        self.line = line
+        self.function = function
+    }
+    
+    /// Runs a code block and catches any errors
     func run(@noescape block: () throws -> ()) throws {
         
         do {
             try block()
         }
         catch let error as VistError {
+            caught = false
             errors.append(error)
         }
     }
     
+    /// Throws all errors collected
     func throwIfErrors() throws {
+        caught = true
         do {
             try errors.throwIfErrors()
         }
         catch let error as VistError {
-            thrown = true
             throw error
         }
     }
     
-    
     deinit {
-        if !thrown {
-            fatalError("Error thrown and not handled")
+        if !caught && !errors.isEmpty {
+            fatalError("Error thrown and not handled\nCollection initialised on line \(line), in function '\(function)', in file \(file)'")
         }
     }
 }

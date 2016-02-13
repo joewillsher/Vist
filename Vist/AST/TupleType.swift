@@ -36,7 +36,9 @@ final class TupleType : Ty {
         return members[index]
     }
     
-    
+    var name: String {
+        return ""
+    }
 
 }
 
