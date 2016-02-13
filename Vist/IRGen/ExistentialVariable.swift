@@ -105,11 +105,11 @@ final class ExistentialVariable : StructVariable, MutableVariable {
     /// Returns a pointer to the element at offset `offset` from the opaque
     /// element pointer
     ///
-    func getElementPtrAtOffset(offset: LLVMValueRef, ofType elementType: LLVMTypeRef, irName: String = "") -> LLVMValueRef {
+    private func getElementPtrAtOffset(offset: LLVMValueRef, ofType elementType: LLVMTypeRef, irName: String = "") -> LLVMValueRef {
         let offset = [offset].ptr()
         defer { offset.dealloc(1) }
         let instanceMemberPtr = LLVMBuildGEP(irGen.builder, opaqueInstancePointer, offset, 1, "") // i8*
-        return LLVMBuildBitCast(irGen.builder, instanceMemberPtr, elementType, "\(irName).ptr") // Foo*
+        return LLVMBuildBitCast(irGen.builder, instanceMemberPtr, elementType, "\(irName).ptr") // ElTy*
     }
     
     private var _metadataPtr: LLVMValueRef = nil
@@ -144,20 +144,21 @@ final class ExistentialVariable : StructVariable, MutableVariable {
         }
     }
     
-    func ptrToPropertyNamed(name: String) throws -> LLVMValueRef { // returns Foo
+    func ptrToPropertyNamed(name: String) throws -> LLVMValueRef { // returns ElTy
         
         // index of property in the concept's table
         // use this to look up the index in self by getting the ixd from the runtime's array
         guard let i = indexOfProperty(name) else { throw error(IRError.NoProperty(type: conceptType.name, property: name)) }
-        let idxValue = LLVMConstInt(LLVMInt32Type(), UInt64(i), false) // i32
-        let idx = [idxValue].ptr()
-        defer { idx.dealloc(1) }
+        let indexValue = BuiltinType.intGen(size: 32)(i)// i32
         
-        let pointerToArrayElement = LLVMBuildGEP(irGen.builder, metadataBasePtr, idx, 1, "") // i32*
+        let index = [indexValue].ptr()
+        defer { index.dealloc(1) }
+        
+        let pointerToArrayElement = LLVMBuildGEP(irGen.builder, metadataBasePtr, index, 1, "") // i32*
         let offset = LLVMBuildLoad(irGen.builder, pointerToArrayElement, "") // i32
-        
-        let elementPtrType = LLVMPointerType(properties[i].irType, 0)
-        return getElementPtrAtOffset(offset, ofType: elementPtrType, irName: name)
+                
+        let elementPtrType = LLVMPointerType(properties[i].irType, 0) // ElTy.Type
+        return getElementPtrAtOffset(offset, ofType: elementPtrType, irName: name) // ElTy*
     }
     
     func loadPropertyNamed(name: String) throws -> LLVMValueRef {

@@ -5,7 +5,7 @@ concept Eq {
 }
 
 func foo :: Eq Int -> Int = (a b) do
-    return a.a + b + a.b
+    return a.b + b + a.a
 
 
 type Bar {

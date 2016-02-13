@@ -55,35 +55,40 @@ struct ConceptType : StorageType {
     ///
     func existentialMetadataMapFor(structType: StructType, irGen: IRGen) throws -> LLVMValueRef {
         
-//        let conformingType = structType.globalType(irGen.module)
-//        LLVMOffsetOfElement(LLVMCreateTargetData(<#T##StringRep: UnsafePointer<Int8>##UnsafePointer<Int8>#>), <#T##StructTy: LLVMTypeRef##LLVMTypeRef#>, <#T##Element: UInt32##UInt32#>)
+        let dataLayout = LLVMCreateTargetData(LLVMGetDataLayout(irGen.module))
+        let conformingType = structType.globalType(irGen.module)
         
         let indicies = try requiredProperties
             .map { propName, _, _ in try structType.indexOfMemberNamed(propName) }
-            .map { LLVMConstInt(LLVMInt32Type(), UInt64($0 * 8), false) }
-        let i32PtrType = LLVMPointerType(LLVMInt32Type(), 0)
-        
-        // FIXME: calculate *actual* ptr offset, instead of element
-        // index * 8
+            .map { index in LLVMOffsetOfElement(dataLayout, conformingType, UInt32(index)) }
+            .map (BuiltinType.intGen(size: 32))
         
         let arrType = LLVMArrayType(LLVMInt32Type(), UInt32(indicies.count))
         let ptr = LLVMBuildAlloca(irGen.builder, arrType, "metadata")
+        let i32PtrType = LLVMPointerType(LLVMInt32Type(), 0)
         let basePtr = LLVMBuildBitCast(irGen.builder, ptr, i32PtrType, "") // i32*
 
-        for (i, mappedIndex) in indicies.enumerate() {
+        for (i, offset) in indicies.enumerate() {
             // Get pointer to element n
-            let indicies = [LLVMConstInt(LLVMInt32Type(), UInt64(i), false)].ptr()
+            let indicies = [BuiltinType.intGen(size: 32)(i)].ptr()
             defer { indicies.dealloc(1) }
             
-            let el = LLVMBuildGEP(irGen.builder, ptr, indicies, 1, "el.\(i)")
-            let bcElPtr = LLVMBuildBitCast(irGen.builder, el, LLVMPointerType(LLVMInt32Type(), 0), "el.ptr.\(i)")
+            let el = LLVMBuildGEP(irGen.builder, basePtr, indicies, 1, "el.\(i)")
+            let bcElPtr = LLVMBuildBitCast(irGen.builder, el, i32PtrType, "el.ptr.\(i)")
             // load val into memory
-            LLVMBuildStore(irGen.builder, mappedIndex, bcElPtr)
+            LLVMBuildStore(irGen.builder, offset, bcElPtr)
         }
-        
+                
         return LLVMBuildLoad(irGen.builder, ptr, "")
     }
-    
 }
 
+
+
+func printi32(v: LLVMValueRef, irGen: IRGen) {
+    let c = StdLib.getFunctionIR("_Int32_i32", module: irGen.module)!.functionIR
+    let iiii = LLVMBuildCall(irGen.builder, c, [v].ptr(), 1, "")
+    let cc = StdLib.getFunctionIR("_print_Int32", module: irGen.module)!.functionIR
+    LLVMBuildCall(irGen.builder, cc, [iiii].ptr(), 1, "")
+}
 

@@ -57,5 +57,16 @@ enum BuiltinType : Ty {
         default: return nil
         }
     }
+ 
     
+    static func intGen(size size: Swift.Int) -> UInt64 -> LLVMValueRef {
+        return { val in
+            return LLVMConstInt(BuiltinType.Int(size: UInt32(size)).ir(), val, false)
+        }
+    }
+    static func intGen(size size: Swift.Int) -> Swift.Int -> LLVMValueRef {
+        return { val in
+            return intGen(size: size)(UInt64(val))
+        }
+    }
 }

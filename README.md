@@ -83,11 +83,13 @@ func sum :: TwoInts Int -> Int = (x y) do
     return x.a + y + x.b
 ```
 
-Generics could be used instead, allowing us to statically dispatch the property lookups and enforcing both arguments are the same type
+Generics could be used instead, allowing us to statically dispatch the property lookups and enforcing both arguments are the same type. We can also use concepts as constraints
 ```swift
 func sum (T | TwoInts) :: T T -> Int = (u v) do
 	return u.a + v.b
 ```
+
+This `sum` function is generic over any type that models `TwoInts`, called `T`.
 
 
 ##Architecture overview

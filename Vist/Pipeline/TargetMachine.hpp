@@ -10,9 +10,24 @@
 #define TargetMachine_hpp
 
 #include <stdio.h>
+#include "LLVM.h"
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+
+//    LLVMTargetMachineRef *createLLVMTargetMachine();
+    
+#ifdef _cplusplus
+}
+
+#include "llvm/IR/Value.h"
 #include "llvm/Target/TargetMachine.h"
 
 using namespace llvm;
 TargetMachine *createTargetMachine();
+
+
+#endif
 
 #endif /* TargetMachine_hpp */

@@ -23,6 +23,7 @@
 #include "llvm/Support/Host.h"
 #include "llvm/MC/SubtargetFeature.h"
 #include "llvm/Support/TargetSelect.h"
+#include "llvm/IR/Value.h"
 
 #include "clang/Basic/AddressSpaces.h"
 #include "clang/Basic/LLVM.h"
@@ -40,6 +41,7 @@ using namespace llvm;
 
 // http://jonathan2251.github.io/lbd/backendstructure.html
 // look at those instructions
+
 
 TargetMachine *createTargetMachine() {
     
@@ -83,6 +85,9 @@ TargetMachine *createTargetMachine() {
     return TargetMachine;
 }
 
+//LLVMTargetMachineRef *createLLVMTargetMachine() {
+//    return wrap(createTargetMachine());
+//}
 
 
 
