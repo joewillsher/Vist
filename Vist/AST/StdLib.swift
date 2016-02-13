@@ -9,6 +9,7 @@
 final class StdLib {
     
     static let IntType =    StructType(members: [("value", BuiltinType.Int(size: 64), true)],       methods: [], name: "Int")
+    static let Int32Type =    StructType(members: [("value", BuiltinType.Int(size: 32), true)],       methods: [], name: "Int32")
     static let BoolType =   StructType(members: [("value", BuiltinType.Bool, true)],                methods: [], name: "Bool")
     static let DoubleType = StructType(members: [("value", BuiltinType.Float(size: 64), true)],     methods: [], name: "Double")
     static let RangeType =  StructType(members: [("start", IntType, true), ("end", IntType, true)], methods: [], name: "Range")
@@ -57,6 +58,7 @@ final class StdLib {
         
         // fns
         ("print",      FnType(params: [IntType],    returns: VoidType)),
+        ("print",      FnType(params: [Int32Type], returns: VoidType)),
         ("print",      FnType(params: [BoolType],   returns: VoidType)),
         ("print",      FnType(params: [DoubleType], returns: VoidType)),
         ("assert",     FnType(params: [BoolType],   returns: VoidType)),
@@ -67,6 +69,8 @@ final class StdLib {
         // ones which take Builtin types are used to wrap literals
         ("Int",     FnType(params: [BuiltinType.Int(size: 64)],   returns: IntType)),
         ("Int",     FnType(params: [IntType],                     returns: IntType)),
+        ("Int32",   FnType(params: [BuiltinType.Int(size: 32)],   returns: Int32Type)),
+        ("Int32",   FnType(params: [Int32Type],                   returns: Int32Type)),
         ("Bool",    FnType(params: [BuiltinType.Bool],            returns: BoolType)),
         ("Bool",    FnType(params: [BoolType],                    returns: IntType)),
         ("Float",   FnType(params: [BuiltinType.Float(size: 64)], returns: DoubleType)),

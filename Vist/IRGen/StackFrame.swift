@@ -68,7 +68,8 @@ final class StackFrame {
         throw error(IRError.NoFunction(name))
     }
     
-    func type(name: String) throws -> StorageType {
+    func type(name: String) throws -> Ty {
+        if let b = BuiltinType(name) { return b }
         if let t = StdLib.getStdLibType(name) { return t }
         if let v = types[name] { return v }
         

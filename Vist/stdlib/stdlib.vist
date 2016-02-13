@@ -13,6 +13,11 @@ type Int {
         value = v.value
     }
 }
+type Int32 {
+    var value: LLVM.Int32
+    
+    init LLVM.Int32 = (v) do value = v
+}
 
 type Bool {
     var value: LLVM.Bool
@@ -55,6 +60,7 @@ type Range {
 // ----------------------------------------------------
 
 @inline func print :: Int = (a) do _print a.value
+@inline func print :: Int32 = (a) do _print a.value
 @inline func print :: Bool = (a) do _print a.value
 @inline func print :: Double = (a) do _print a.value
 

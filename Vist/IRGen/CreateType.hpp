@@ -16,11 +16,20 @@
 extern "C" {
 #endif
 
-    LLVMTypeRef createNamedType(LLVMTypeRef type, const char *name);
     LLVMTypeRef getNamedType(const char *name, LLVMModuleRef module);
+    LLVMTypeRef createNamedType(LLVMTypeRef type, const char *name);
     
 #ifdef __cplusplus
 }
+
+#include "llvm/IR/Value.h"
+#include "llvm/IR/Module.h"
+
+using namespace llvm;
+
+Type *getNamedType(StringRef name, Module *module);
+Type *createNamedType(Type *type, StringRef name);
+
 #endif
 
 #endif /* CreateType_hpp */

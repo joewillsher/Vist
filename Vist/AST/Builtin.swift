@@ -9,6 +9,7 @@
 struct Builtin {
 
     static let IntType = BuiltinType.Int(size: 64)
+    static let Int32Type = BuiltinType.Int(size: 32)
     static let DoubleType = BuiltinType.Float(size: 64)
     static let BoolType = BuiltinType.Bool
     static let VoidType = BuiltinType.Void
@@ -53,6 +54,7 @@ struct Builtin {
         ("_print", FnType(params: [IntType], returns: VoidType)),
         ("_print", FnType(params: [DoubleType], returns: VoidType)),
         ("_print", FnType(params: [BoolType], returns: VoidType)),
+        ("_print", FnType(params: [Int32Type], returns: VoidType)),
         
         // intrinsic fns
         ("LLVM.trap", FnType(params: [], returns: VoidType))

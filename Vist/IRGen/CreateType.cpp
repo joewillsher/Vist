@@ -23,27 +23,27 @@
 using namespace llvm;
 
 
-LLVMTypeRef getNamedType(const char *name, LLVMModuleRef module) {
-    Module *mod = unwrap(module);
-    
-    auto found = mod->getTypeByName(name);
-    return wrap(found);
+Type *getNamedType(StringRef name, Module *module) {
+    return module->getTypeByName(name);
 }
 
-
-LLVMTypeRef createNamedType(LLVMTypeRef type, const char *name) {
-    
-    Type *ty = unwrap(type);
+Type *createNamedType(Type *type, StringRef name) {
     
     std::vector<Type *> els;
-    for (unsigned i = 0; i < ty->getStructNumElements(); ++i) {
-        els.push_back(ty->getStructElementType(i));
+    for (unsigned i = 0; i < type->getStructNumElements(); ++i) {
+        els.push_back(type->getStructElementType(i));
     }
     auto elements = ArrayRef<Type *>(els);
     
-    Type *t = StructType::create(getGlobalContext(), elements, StringRef(name));
-    
-    return wrap(t);
+    return StructType::create(getGlobalContext(), elements, name);
+}
+
+LLVMTypeRef getNamedType(const char *name, LLVMModuleRef module) {
+    return wrap(getNamedType(StringRef(name), unwrap(module)));
+}
+
+LLVMTypeRef createNamedType(LLVMTypeRef type, const char *name) {
+    return wrap(createNamedType(unwrap(type), name));
 }
 
 

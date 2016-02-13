@@ -11,6 +11,7 @@
 #include "LLVM.h"
 #include "Intrinsic.hpp"
 #include "Optimiser.hpp"
+#include "CreateType.hpp"
 #include "Utils.h"
 
 #include "llvm/Bitcode/ReaderWriter.h"
@@ -115,6 +116,17 @@ bool StdLibInline::runOnFunction(Function &function) {
     
     // id of the function call metadata we will optimise
     int initiID = LLVMMetadataID("stdlib.call.optim");
+
+//    for (StructType *ty : stdLibModule->getIdentifiedStructTypes()) {
+//        
+//        if (Type *found = getNamedType(ty->getStructName(), module)) {
+//
+//        }
+//        
+//        ty->dump();
+//        
+//    }
+
     
     // loops over blocks in function
     for (BasicBlock &basicBlock : function) {
@@ -188,6 +200,7 @@ bool StdLibInline::runOnFunction(Function &function) {
             for (Argument &fnArg : calledFunction->args()) {
                 Value *calledArg = call->getOperand(i);
                 
+                fnArg.mutateType(calledArg->getType()); // HERE
                 fnArg.replaceAllUsesWith(calledArg);
                 i++;
             }
@@ -218,6 +231,13 @@ bool StdLibInline::runOnFunction(Function &function) {
                 
                 for (Instruction &inst : fnBlock) {
                     
+                    // replace global types in stdlib with this module
+                    if (StructType *ty = dyn_cast<StructType>(inst.getType())) // HERE
+                        if (ty->hasName())
+                            inst.mutateType(getNamedType(ty->getStructName(), module));
+                    
+                    auto vals = inst.ArgumentVal;
+                    
                     // if the instruction is a return, assign to
                     // the `returnValueStorage` and jump out of temp block
                     Instruction *newInst = inst.clone();
@@ -225,12 +245,14 @@ bool StdLibInline::runOnFunction(Function &function) {
                     
                     if (auto *ret = dyn_cast<ReturnInst>(newInst)) {
                         
-                        if (!isVoidFunction)
+                        if (!isVoidFunction) {
+                            ret->getReturnValue()->mutateType(returnType);
                             builder.CreateStore(ret->getReturnValue(), returnValueStorage);
-                        
+                        }
                         builder.CreateBr(rest);
                         ret->dropAllReferences();
                     }
+                    
                     // if its a function, we need to make sure its declared in our module
                     else if (auto *call = dyn_cast<CallInst>(newInst)) {
                         
@@ -266,7 +288,6 @@ bool StdLibInline::runOnFunction(Function &function) {
                     }
                     // otherwise add the inst to the inlined block
                     else {
-                        
                         builder.Insert(newInst, inst.getName());
                         inst.replaceAllUsesWith(newInst);
                     }

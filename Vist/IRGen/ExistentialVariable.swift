@@ -7,7 +7,7 @@
 //
 
 
-/** Polymorphic runtime variable of an object passed as an existential
+/** ### Polymorphic runtime variable of an object passed as an existential
  
  Stores information about how to access the concept's storage using a metadata array (of `i32`).
  The `n`th index in this array holds the position of that variable in the storage's struct.
@@ -27,7 +27,7 @@
     var y: Int
  }
  ```
- Can be used existentailly—for example the funtion `func addBars :: Bar Bar -> Int = ...`.
+ Can be used existentailly—for example the funtion `func addBars :: Bar Bar -> Int = ...`
  
  When used existentially, `Bar` has a type `{ [1 x i32], i8* }`. The first element is the metadata array
  and the second the opaque pointer to the conforman. It is type erased because its type is not statically known.
@@ -90,8 +90,9 @@ final class ExistentialVariable : StructVariable, MutableVariable {
         let structPtr = LLVMBuildStructGEP(irGen.builder, ptr, 1, "\(irName).opaque")
         let valueMem = LLVMBuildAlloca(irGen.builder, structType.globalType(irGen.module), "")
         
-        let arr = try conceptType.existentialMetadataMapFor(structType, builder: irGen.builder)
+        let arr = try conceptType.existentialMetadataMapFor(structType, irGen: irGen)
         LLVMBuildStore(irGen.builder, arr, arrayPtr)
+        
         LLVMBuildStore(irGen.builder, value, valueMem)
         let opaqueValueMem = LLVMBuildBitCast(irGen.builder, valueMem, opaquePtrType, "")
         LLVMBuildStore(irGen.builder, opaqueValueMem, structPtr)
@@ -109,15 +110,25 @@ final class ExistentialVariable : StructVariable, MutableVariable {
     
     /// Pointer to the metadata array
     private var metadataPtr: LLVMValueRef {
-        if _metadataPtr != nil { return _metadataPtr }
-        return LLVMBuildStructGEP(irGen.builder, ptr, 0, "\(irName).metadata_ptr") // i8**
+        get {
+            if _metadataPtr != nil { return _metadataPtr }
+            return LLVMBuildStructGEP(irGen.builder, ptr, 0, "\(irName).metadata_ptr") // [n x i32]*
+        }
+        set {
+            _metadataPtr = newValue
+        }
     }
     
     /// Pointer to the instance of the wrapped type,
     private var opaqueInstancePointer: LLVMValueRef {
-        if _opaqueInstancePointer != nil { return _opaqueInstancePointer }
-        let structElementPointer = LLVMBuildStructGEP(irGen.builder, ptr, 1, "\(irName).element_pointer") // [n x i32]**
-        return LLVMBuildLoad(irGen.builder, structElementPointer, "\(irName).opaque_instance_pointer") // [n x i32]*
+        get {
+            if _opaqueInstancePointer != nil { return _opaqueInstancePointer }
+            let structElementPointer = LLVMBuildStructGEP(irGen.builder, ptr, 1, "\(irName).element_pointer") // [n x i32]**
+            return LLVMBuildLoad(irGen.builder, structElementPointer, "\(irName).opaque_instance_pointer") // i8**
+        }
+        set {
+            _opaqueInstancePointer = newValue
+        }
     }
     
     func ptrToPropertyNamed(name: String) throws -> LLVMValueRef { // returns Foo
@@ -126,15 +137,30 @@ final class ExistentialVariable : StructVariable, MutableVariable {
         // use this to look up the index in self by getting the ixd from the runtime's array
         guard let i = indexOfProperty(name) else { throw error(IRError.NoProperty(type: conceptType.name, property: name)) }
         let idxValue = LLVMConstInt(LLVMInt32Type(), UInt64(i), false) // i32
+        let idx = [idxValue].ptr()
+        defer { idx.dealloc(1) }
         
         let i32PtrType = BuiltinType.Pointer(to: BuiltinType.Int(size: 32)).globalType(irGen.module)
         let elementPtrType = LLVMPointerType(properties[i].irType, 0)
         
         let basePtr = LLVMBuildBitCast(irGen.builder, metadataPtr, i32PtrType, "metadata_base_ptr") // i32*
-        let pointerToArrayElement = LLVMBuildGEP(irGen.builder, basePtr, [idxValue].ptr(), 1, "metadata_arr_el_ptr") // i32*
-        let indexInSelf = LLVMBuildLoad(irGen.builder, pointerToArrayElement, "self_index") // i32
+        let pointerToArrayElement = LLVMBuildGEP(irGen.builder, basePtr, idx, 1, "metadata_arr_el_ptr") // i32*
+        let ptrOffset = LLVMBuildLoad(irGen.builder, pointerToArrayElement, "self_index") // i32
+
+//        let indexInSelf = LLVMConstInt(LLVMInt32Type(), 8, false)
         
-        let instanceMemberPtr = LLVMBuildGEP(irGen.builder, opaqueInstancePointer, [indexInSelf].ptr(), 1, "member_pointer") // i8*
+        printi32(ptrOffset, irGen: irGen)
+        
+        // currently passing in the index of the elemetn in impl struct
+        // we want the offset in bits
+        // i8* doesnt hold type info about struct type, so cant use the
+        // stuct GEP instruction. 
+        // info about the offset will let us move that many bits forewards
+        // to hit the beginning of the element
+        
+        let offset = [ptrOffset].ptr()
+        defer { offset.dealloc(1) }
+        let instanceMemberPtr = LLVMBuildGEP(irGen.builder, opaqueInstancePointer, offset, 1, "member_pointer") // i8*
         return LLVMBuildBitCast(irGen.builder, instanceMemberPtr, elementPtrType, "\(name).ptr") // Foo*
     }
     

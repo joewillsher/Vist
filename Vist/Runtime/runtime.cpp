@@ -42,6 +42,13 @@ extern "C" NOINLINE
 void
 _$print_i32(int i)
 {
+    printf("%li\n", i);
+};
+
+extern "C" NOINLINE
+void
+_$print_i32(int i)
+{
     printf("%i\n", i);
 };
 
