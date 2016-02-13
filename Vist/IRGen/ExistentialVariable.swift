@@ -102,27 +102,42 @@ final class ExistentialVariable : StructVariable, MutableVariable {
     
     
     
+    /// Returns a pointer to the element at offset `offset` from the opaque
+    /// element pointer
+    ///
+    func getElementPtrAtOffset(offset: LLVMValueRef, ofType elementType: LLVMTypeRef, irName: String = "") -> LLVMValueRef {
+        let offset = [offset].ptr()
+        defer { offset.dealloc(1) }
+        let instanceMemberPtr = LLVMBuildGEP(irGen.builder, opaqueInstancePointer, offset, 1, "") // i8*
+        return LLVMBuildBitCast(irGen.builder, instanceMemberPtr, elementType, "\(irName).ptr") // Foo*
+    }
+    
     private var _metadataPtr: LLVMValueRef = nil
     private var _opaqueInstancePointer: LLVMValueRef = nil
     
     
-    /// Pointer to the metadata array
-    private var metadataPtr: LLVMValueRef {
+    /// Pointer to the metadata array: `i32*`
+    ///
+    private var metadataBasePtr: LLVMValueRef {
         get {
             if _metadataPtr != nil { return _metadataPtr }
-            return LLVMBuildStructGEP(irGen.builder, ptr, 0, "\(irName).metadata_ptr") // [n x i32]*
+            let i32PtrType = BuiltinType.Pointer(to: BuiltinType.Int(size: 32)).globalType(irGen.module)
+            
+            let arr = LLVMBuildStructGEP(irGen.builder, ptr, 0, "\(irName).metadata_ptr") // [n x i32]*
+            return LLVMBuildBitCast(irGen.builder, arr, i32PtrType, "metadata_base_ptr") // i32*
         }
         set {
             _metadataPtr = newValue
         }
     }
     
-    /// Pointer to the instance of the wrapped type,
+    /// Pointer to the instance of the wrapped type: `i8*`
+    ///
     private var opaqueInstancePointer: LLVMValueRef {
         get {
             if _opaqueInstancePointer != nil { return _opaqueInstancePointer }
-            let structElementPointer = LLVMBuildStructGEP(irGen.builder, ptr, 1, "\(irName).element_pointer") // [n x i32]**
-            return LLVMBuildLoad(irGen.builder, structElementPointer, "\(irName).opaque_instance_pointer") // i8**
+            let structElementPointer = LLVMBuildStructGEP(irGen.builder, ptr, 1, "\(irName).element_pointer") // i8**
+            return LLVMBuildLoad(irGen.builder, structElementPointer, "\(irName).opaque_instance_pointer") // i8*
         }
         set {
             _opaqueInstancePointer = newValue
@@ -138,17 +153,11 @@ final class ExistentialVariable : StructVariable, MutableVariable {
         let idx = [idxValue].ptr()
         defer { idx.dealloc(1) }
         
-        let i32PtrType = BuiltinType.Pointer(to: BuiltinType.Int(size: 32)).globalType(irGen.module)
+        let pointerToArrayElement = LLVMBuildGEP(irGen.builder, metadataBasePtr, idx, 1, "") // i32*
+        let offset = LLVMBuildLoad(irGen.builder, pointerToArrayElement, "") // i32
+        
         let elementPtrType = LLVMPointerType(properties[i].irType, 0)
-        
-        let basePtr = LLVMBuildBitCast(irGen.builder, metadataPtr, i32PtrType, "metadata_base_ptr") // i32*
-        let pointerToArrayElement = LLVMBuildGEP(irGen.builder, basePtr, idx, 1, "") // i32*
-        let ptrOffset = LLVMBuildLoad(irGen.builder, pointerToArrayElement, "") // i32
-        
-        let offset = [ptrOffset].ptr()
-        defer { offset.dealloc(1) }
-        let instanceMemberPtr = LLVMBuildGEP(irGen.builder, opaqueInstancePointer, offset, 1, "") // i8*
-        return LLVMBuildBitCast(irGen.builder, instanceMemberPtr, elementPtrType, "\(name).ptr") // Foo*
+        return getElementPtrAtOffset(offset, ofType: elementPtrType, irName: name)
     }
     
     func loadPropertyNamed(name: String) throws -> LLVMValueRef {

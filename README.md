@@ -70,10 +70,29 @@ let sum = fooInstance.sumAndTimesBy 2
 print sum // > 10
 ```
 
+Vist’s type system is based around *concepts* and *generics*. Concepts describe what a type can do—its properties and methods.
+```swift
+concept TwoInts {
+    var a: Int, b: Int
+}
+```
+
+A function can now take any `TwoInts` object as a parameter—here the concept is being used *existentially* [(i.e. it isn’t used as a constraint, but a type)](../Posts/Concepts_and_runtime.md).
+```swift
+func sum :: TwoInts Int -> Int = (x y) do
+    return x.a + y + x.b
+```
+
+Generics could be used instead, allowing us to statically dispatch the property lookups and enforcing both arguments are the same type
+```swift
+func sum (T | TwoInts) :: T T -> Int = (u v) do
+	return u.a + v.b
+```
+
 
 ##Architecture overview
 Vist is a strongly typed language which compiles to [LLVM’s](https://en.wikipedia.org/wiki/LLVM#LLVM_Intermediate_Representation) [IR](http://llvm.org/docs/LangRef.html)—a high level (so mostly architecture agnostic), typed, [SSA](https://en.wikipedia.org/wiki/Static_single_assignment_form) assembly language. Vist’s compiler structure was inspired by the implementation of other languages such as [Rust](https://github.com/rust-lang/rust) and particularly [Swift](https://github.com/apple/swift).
- 
+
 The compile process involves transforming the source code from one representation to another—the text is [lexed](https://en.wikipedia.org/wiki/Lexical_analysis) into a series of tokens, which is [parsed](https://en.wikipedia.org/wiki/Parsing#Computer_languages) to form the [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree). The [semantic analysis](https://en.wikibooks.org/wiki/Compiler_Construction/Semantic_Analysis) pass then walks the tree, adding type information, and then to generate the IR code.
 
 The [lexing](Vist/Lexer/Lexer.swift) separates Vist’s keywords and characters into a stream of tokens. [Parsing](Vist/AST/Parser.swift) extracts the program’s meaning, and constructs the [AST](Vist/AST/Expr.swift). The [sema](Vist/Sema/TypeProvider.swift) pass type checks the source and does other static checks, like making sure variables are declared before they’re used. The [IRGen](Vist/IRGen/IRGen.swift) phase then creates the LLVM IR code, which is optimised and compiled.
