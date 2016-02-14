@@ -37,6 +37,7 @@ extension CollectionType where Generator.Element : ASTNode {
     ///
     func walkChildren<Ret>(collector: ErrorCollector? = nil, @noescape _ fn: (Generator.Element) throws -> Ret) throws -> [Ret] {
 
+        collector?.caught = false
         let errorCollector = collector ?? ErrorCollector()
         var res: [Ret] = []
         
@@ -71,6 +72,7 @@ extension CollectionType where Generator.Element == ASTNode {
     ///
     func walkChildren<Ret>(collector: ErrorCollector? = nil, @noescape _ fn: (ASTNode) throws -> Ret) throws -> [Ret] {
         
+        collector?.caught = false
         let errorCollector = collector ?? ErrorCollector()
         var res: [Ret] = []
         
@@ -119,12 +121,12 @@ final class ErrorCollector {
     
     /// Runs a code block and catches any errors
     func run(@noescape block: () throws -> ()) throws {
-        
+        caught = false
+
         do {
             try block()
         }
         catch let error as VistError {
-            caught = false
             errors.append(error)
         }
     }
@@ -141,7 +143,7 @@ final class ErrorCollector {
     }
     
     deinit {
-        if !caught && !errors.isEmpty {
+        if !caught {
             fatalError("Error thrown and not handled\nCollection initialised on line \(line), in function '\(function)', in file \(file)'")
         }
     }

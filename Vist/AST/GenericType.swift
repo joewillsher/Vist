@@ -15,6 +15,16 @@ struct GenericType : StorageType {
     /// Concepts this generic type implements
     let concepts: [ConceptType] 
     
+    static func fromConstraint(scope: SemaScope) -> ConstrainedType throws -> GenericType {
+        return { ty in
+            if let c = ty.constraints.optionalMap({ scope[concept: $0] }) {
+                return GenericType(name: ty.type, concepts: c)
+            }
+            else {
+                throw error(SemaError.ParamsNotTyped)
+            }
+        }
+    }
     
     var members: [StructMember] {
         return concepts.flatMap { $0.requiredProperties }

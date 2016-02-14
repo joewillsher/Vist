@@ -66,14 +66,13 @@ enum DefinedType {
             if let builtin = BuiltinType(typeName) {
                 return builtin as Ty
             }
-//            else if let std = StdLib.getStdLibType(name) {
-//                return std
-//            }
+            else if let std = StdLib.getStdLibType(typeName) {
+                return std
+            }
             else if let i = scope[type: typeName] {
                 return i
             }
             else if let g = scope.genericParameters, let i = g.indexOf({$0.type == typeName}) {
-                
                 let type = g[i]
                 guard let concepts = type.constraints.optionalMap({ scope[concept: $0] }) else { throw error(SemaError.GenericSubstitutionInvalid) }
                 
@@ -83,7 +82,6 @@ enum DefinedType {
                 return existential
             }
             else {
-                print(typeName)
                 throw error(SemaError.NoTypeNamed(typeName))
             }
             

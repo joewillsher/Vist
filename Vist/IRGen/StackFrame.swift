@@ -12,7 +12,7 @@ final class StackFrame {
     
     private var runtimeVariables: [String: RuntimeVariable]
     private var functionTypes: [String: LLVMTypeRef]
-    private var types: [String: StructType]
+    private var types: [String: StorageType]
     private var concepts: [String: ConceptType]
     var block: LLVMBasicBlockRef, function: LLVMValueRef
     var parentStackFrame: StackFrame?
@@ -40,7 +40,7 @@ final class StackFrame {
     func addFunctionType(val: LLVMValueRef, named name: String) {
         functionTypes[name] = val
     }
-    func addType(val: StructType, named name: String) {
+    func addType(val: StorageType, named name: String) {
         types[name] = val
     }
     func addConcept(val: ConceptType, named name: String) {

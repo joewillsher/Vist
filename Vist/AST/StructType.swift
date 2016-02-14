@@ -50,7 +50,7 @@ struct StructType : StorageType {
     let name: String
     let members: [StructMember]
     var methods: [StructMethod]
-    
+    var genericTypes: [GenericType] = []
     
     init(members: [StructMember], methods: [StructMethod], name: String) {
         self.name = name

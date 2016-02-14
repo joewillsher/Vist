@@ -16,6 +16,8 @@
 		D41BF5531C5CD996004A1962 /* CommandLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41BF5521C5CD996004A1962 /* CommandLine.swift */; };
 		D41BF5551C5CDC8C004A1962 /* TestCases in Resources */ = {isa = PBXBuildFile; fileRef = D41BF5541C5CDC8C004A1962 /* TestCases */; };
 		D431F4C31C55743C005D439F /* StdLibInline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D431F4C11C55743C005D439F /* StdLibInline.cpp */; };
+		D4328DC71C7080AE00AEF56B /* LLVMPtrWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4328DC61C7080AE00AEF56B /* LLVMPtrWrapper.swift */; };
+		D4328DC81C7080AE00AEF56B /* LLVMPtrWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4328DC61C7080AE00AEF56B /* LLVMPtrWrapper.swift */; };
 		D46BC1BD1C66587300B9147E /* ScopeNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46BC1BC1C66587300B9147E /* ScopeNode.swift */; };
 		D46BC1BE1C66587300B9147E /* ScopeNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46BC1BC1C66587300B9147E /* ScopeNode.swift */; };
 		D46BC1C01C6685C500B9147E /* DefinedType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46BC1BF1C6685C500B9147E /* DefinedType.swift */; };
@@ -162,6 +164,7 @@
 		D41BF5541C5CDC8C004A1962 /* TestCases */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TestCases; sourceTree = "<group>"; };
 		D431F4C11C55743C005D439F /* StdLibInline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StdLibInline.cpp; path = Optimiser/StdLibInline.cpp; sourceTree = "<group>"; };
 		D431F4C21C55743C005D439F /* StdLibInline.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = StdLibInline.hpp; path = Optimiser/StdLibInline.hpp; sourceTree = "<group>"; };
+		D4328DC61C7080AE00AEF56B /* LLVMPtrWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LLVMPtrWrapper.swift; path = IRGen/LLVMPtrWrapper.swift; sourceTree = "<group>"; };
 		D43DF1EC1C5540AF0049EC2F /* stdlib_.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib_.ll; path = stdlib/stdlib_.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D4644BE31C40619800364B99 /* stdlib.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib.ll; path = stdlib/stdlib.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D4644BE51C40619800364B99 /* stdlib.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = stdlib.vist; path = stdlib/stdlib.vist; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
@@ -334,8 +337,9 @@
 		D46DA5F51C297ADA006AF1BE /* IRGen */ = {
 			isa = PBXGroup;
 			children = (
-				D497A7861C3B012700DFE39E /* IRGen.swift */,
 				D4FC9D171C5FEE4E0031F1BD /* IRError.swift */,
+				D497A7861C3B012700DFE39E /* IRGen.swift */,
+				D4328DC61C7080AE00AEF56B /* LLVMPtrWrapper.swift */,
 				D4B0DCE41C66CB1B000B4E97 /* Variables */,
 				D4FAE45B1C3DCEEE00C9EE05 /* BuiltinFunction.swift */,
 				D40FC4CF1C4AAB2800122397 /* Intrinsic.hpp */,
@@ -655,6 +659,7 @@
 				D4E35B741C5D0CA000683486 /* StdTypes.swift in Sources */,
 				D4E35B751C5D0CA000683486 /* FunctionAttribute.swift in Sources */,
 				D4E35B7B1C5D0E5A00683486 /* Print.swift in Sources */,
+				D4328DC81C7080AE00AEF56B /* LLVMPtrWrapper.swift in Sources */,
 				D4E35B771C5D0CA000683486 /* Optimiser.cpp in Sources */,
 				D4E35B791C5D0CA000683486 /* StdLibInline.cpp in Sources */,
 				D4E35B7A1C5D0CA000683486 /* Link.swift in Sources */,
@@ -684,6 +689,7 @@
 				D41775641C5FA7EF006FD013 /* Error.swift in Sources */,
 				D4DE281C1C596B250096E798 /* Assemble.cpp in Sources */,
 				D4E347271C62545400CC2F8E /* FunctionSema.swift in Sources */,
+				D4328DC71C7080AE00AEF56B /* LLVMPtrWrapper.swift in Sources */,
 				D4FAE45E1C3DDE3100C9EE05 /* FunctionAttribute.swift in Sources */,
 				D497A78A1C3B012700DFE39E /* ArrayVariable.swift in Sources */,
 				D497A7841C3B00FE00DFE39E /* LinkAST.swift in Sources */,

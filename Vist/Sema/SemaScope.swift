@@ -12,7 +12,7 @@ final class SemaScope {
     
     private var variables: [String: Variable]
     private var functions: [String: FnType]
-    private var types: [String: StructType]
+    private var types: [String: StorageType]
     var concepts: [String: ConceptType]
     let isStdLib: Bool
     var returnType: Ty?
@@ -75,7 +75,7 @@ final class SemaScope {
             functions[function.mangle(newValue!)] = newValue
         }
     }
-    subscript (type type: String) -> StructType? {
+    subscript (type type: String) -> StorageType? {
         get {
             if let t = StdLib.getStdLibType(type) {
                 return t
@@ -83,16 +83,12 @@ final class SemaScope {
             else if let v = types[type] {
                 return v
             }
-//            else if let g = genericParameters, let i = genericParameters?.indexOf({$0.type == type}) {
-//                
-//                let type = g[i]
-//                guard let concepts = type.constraints.optionalMap({ self[concept: $0] }) else { return nil }
-//                
-//                let requiredProperties = concepts.flatMap { $0.requiredProperties }
-//                let requiredFunctions = concepts.flatMap { $0.requiredFunctions }
-//                
-//                return StructType(members: requiredProperties, methods: requiredFunctions, name: type.0)
-//            }
+            else if let g = genericParameters, let i = genericParameters?.indexOf({$0.type == type}) {
+                
+                guard let concepts = g[i].constraints.optionalMap({ self[concept: $0] }) else { return nil }
+                
+                return GenericType(name: type, concepts: concepts)
+            }
             return parent?[type: type]
         }
         set {
@@ -142,30 +138,6 @@ final class SemaScope {
     }
     
     /// Types including parents’ types
-    var allTypes: LazyMapCollection<Dictionary<String, StructType>, StructType> {
-        return types + parent?.types
-    }
-}
-
-/// Append 2 dictionaries and return their lazy value collection
-private func +
-    <Key, Value>
-    (
-    lhs: Dictionary<Key, Value>,
-    rhs: Dictionary<Key, Value>?
-    ) -> LazyMapCollection<Dictionary<Key, Value>, Value>
-{
-    var u: [Key: Value] = [:]
-    
-    for (k, v) in lhs {
-        u[k] = v
-    }
-    if let rhs = rhs {
-        for (k, v) in rhs {
-            u[k] = v
-        }
-    }
-    return u.values
 }
 
 

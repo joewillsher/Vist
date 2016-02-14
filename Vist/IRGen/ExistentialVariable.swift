@@ -100,6 +100,21 @@ final class ExistentialVariable : StructVariable, MutableVariable {
         return ExistentialVariable(ptr: ptr, conceptType: conceptType, irName: irName, irGen: irGen)
     }
     
+    func assignFrom(structType: StructType) throws {
+        
+        let opaquePtrType = BuiltinType.OpaquePointer.globalType(irGen.module)
+
+        let arrayPtr = LLVMBuildStructGEP(irGen.builder, ptr, 0, "\(irName).metadata")
+        let arr = try conceptType.existentialMetadataMapFor(structType, irGen: irGen)
+        LLVMBuildStore(irGen.builder, arr, arrayPtr)
+
+        let valueMem = LLVMBuildAlloca(irGen.builder, structType.globalType(irGen.module), "")
+        LLVMBuildStore(irGen.builder, value, valueMem)
+        let opaqueValueMem = LLVMBuildBitCast(irGen.builder, valueMem, opaquePtrType, "")
+        LLVMBuildStore(irGen.builder, opaqueValueMem, opaqueInstancePointer)
+    }
+    
+    
     
     
     /// Returns a pointer to the element at offset `offset` from the opaque

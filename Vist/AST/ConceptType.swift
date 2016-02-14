@@ -64,7 +64,7 @@ struct ConceptType : StorageType {
             .map (BuiltinType.intGen(size: 32))
         
         let arrType = LLVMArrayType(LLVMInt32Type(), UInt32(indicies.count))
-        let ptr = LLVMBuildAlloca(irGen.builder, arrType, "metadata")
+        let ptr = LLVMBuildAlloca(irGen.builder, arrType, "metadata") // [n x i32]*
         let i32PtrType = LLVMPointerType(LLVMInt32Type(), 0)
         let basePtr = LLVMBuildBitCast(irGen.builder, ptr, i32PtrType, "") // i32*
 

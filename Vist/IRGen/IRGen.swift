@@ -941,9 +941,16 @@ extension StructExpr : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame) throws -> LLVMValueRef {
         guard let type = self.type else { throw error(IRError.NotTyped, userVisible: false) }
-        
-        stackFrame.addType(type, named: name)
 
+        // occupy stack frame
+        stackFrame.addType(type, named: name)
+        
+        for genericType in type.genericTypes {
+            stackFrame.addType(genericType, named: genericType.name)
+        }
+        
+        // IRGen on elements
+        
         let errorCollector = ErrorCollector()
         
         try initialisers.walkChildren(errorCollector) { i in

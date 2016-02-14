@@ -28,8 +28,11 @@ extension StructExpr : ExprTypeProvider {
             return (a.name, t, a.isMutable)
         }
         
-        
         var ty = StructType(members: members, methods: [], name: name)
+        
+        try errorCollector.run {
+            ty.genericTypes = try genericParameters.map(GenericType.fromConstraint(structScope))
+        }
         
         scope[type: name] = ty
         self.type = ty
