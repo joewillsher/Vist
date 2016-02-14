@@ -38,16 +38,16 @@ extension StructType {
     ///
     /// Returns the result of a function call to the initialise
     ///
-    func initialiseStdTypeFromBuiltinMembers(val: LLVMValueRef..., module: LLVMModuleRef, builder: LLVMBuilderRef, irName: String = "") -> LLVMValueRef {
+    func initialiseStdTypeFromBuiltinMembers(val: LLVMValueRef..., irGen: IRGen, irName: String = "") -> LLVMValueRef {
         let tys = members.map { $0.1 }
         let initName = name.mangle(FnType(params: tys, returns: BuiltinType.Void/*we con’t care what this is, its not used in mangling*/))
         
-        guard let (type, initialiser) = StdLib.getFunctionIR(initName, module: module) where initialiser != nil else { return nil }
+        guard let (type, initialiser) = StdLib.getFunctionIR(initName, module: irGen.module) where initialiser != nil else { return nil }
         
         let args = val.ptr()
         defer { args.dealloc(members.count) }
         
-        let call = LLVMBuildCall(builder, initialiser, args, 1, irName)
+        let call = LLVMBuildCall(irGen.builder, initialiser, args, 1, irName)
         type.addMetadataTo(call)
         
         return call
