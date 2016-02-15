@@ -7,18 +7,17 @@
 //
 
 
-
-
 struct GenericType : StorageType {
     
     let name: String
     /// Concepts this generic type implements
     let concepts: [ConceptType] 
+    let parentName: String
     
-    static func fromConstraint(scope: SemaScope) -> ConstrainedType throws -> GenericType {
+    static func fromConstraint(inScope scope: SemaScope) -> (constraint: ConstrainedType) throws -> GenericType {
         return { ty in
             if let c = ty.constraints.optionalMap({ scope[concept: $0] }) {
-                return GenericType(name: ty.type, concepts: c)
+                return GenericType(name: ty.name, concepts: c, parentName: ty.parentName)
             }
             else {
                 throw error(SemaError.ParamsNotTyped)
@@ -36,15 +35,10 @@ struct GenericType : StorageType {
     
     // TODO: Reimplement this
     func memberTypes(module: LLVMModuleRef) -> LLVMTypeRef {
-        let arr = members
-            .map { $0.type.globalType(module) }
-            .ptr()
-        defer { arr.dealloc(members.count) }
-        
-        return LLVMStructType(
-            arr,
-            UInt32(members.count),
-            false)
+        return StructType.withTypes([
+            BuiltinType.Array(el: BuiltinType.Int(size: 32), size: UInt32(concepts.flatMap({$0.requiredProperties}).count)),
+            BuiltinType.OpaquePointer
+            ]).memberTypes(module)
     }
     
     
@@ -53,7 +47,11 @@ struct GenericType : StorageType {
     }
     
     var debugDescription: String {
-        return name
+        return "\(parentName).\(name).gen"
+    }
+    
+    var description: String {
+        return "\(parentName).\(name).gen"
     }
 }
 
@@ -66,39 +64,6 @@ extension StorageType {
         for p in concept.requiredProperties where !members.contains({ $0.name == p.name && $0.type == p.type }) { return false }
         return true
     }
-}
-
-func specialisationModelsConcepts(type: StructType, generic: GenericType) -> Bool {
-    for c in generic.concepts where !type.models(c) { return false }
-    return true
-}
-
-struct GenericSignature {
-    
-    let genericTypes: [GenericType]
-    
-    private func validGenericSpecialisation(types: [StructType]) -> Bool {
-        return !zip(types, genericTypes).map(specialisationModelsConcepts).contains(false)
-    }
-    
-    func specialiseTypeSignatureFrom(types: [StructType]) throws -> Ty {
-        
-        guard validGenericSpecialisation(types) else { throw error(SemaError.GenericSubstitutionInvalid) }
-        
-        
-        
-        
-        return types.first!
-    }
-
-    
-    func specialiseFunctionSignatureFrom(types: [StructType]) throws -> Ty {
-        
-        guard validGenericSpecialisation(types) else { throw error(SemaError.GenericSubstitutionInvalid) }
-        
-        return types.first!
-    }
-
 }
 
 

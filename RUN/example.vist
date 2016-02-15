@@ -4,17 +4,41 @@ concept Eq {
     var t: Int
 }
 
+type Foo {
+    var t: Int
+}
+
+type Bar {
+    var foo: Eq
+}
+
+let f = Foo 1
+let b = Bar f
+let u = b.foo.t
+print u
+
+
+/*
+concept Eq {
+    var t: Int
+}
+
 
 
 type Bar (T | Eq) {
     let t: T
 }
+ */
+
+// todo: IRGen.swift, l1060, fix the lookup of props on prop lookups
+// todo: cacheing ptrs in immutable structs
+// todo: existential properties & storing
 
 
 
+//concept Any { }
 
 
- 
 /*
 
  

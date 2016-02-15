@@ -99,7 +99,7 @@ extension MutationExpr : ExprTypeProvider {
             guard case let type as StructType = object?.type else { throw error(SemaError.NoVariable(objectName)) }
             guard let mutable = object?.mutable where mutable else { throw error(SemaError.ImmutableVariable(objectName)) }
                 
-            guard try type.propertyMutable(propertyLookup.name) else { throw error(SemaError.ImmutableProperty(p: propertyLookup.name, obj: objectName, ty: type.name)) }
+            guard try type.propertyMutable(propertyLookup.propertyName) else { throw error(SemaError.ImmutableProperty(p: propertyLookup.propertyName, obj: objectName, ty: type.name)) }
             
         case let memberLookup as TupleMemberLookupExpr:
             

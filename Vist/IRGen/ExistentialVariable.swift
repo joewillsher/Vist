@@ -43,22 +43,20 @@ final class ExistentialVariable : StructVariable, MutableVariable {
     /// The rutime type of self
     var conceptType: ConceptType
     var type: LLVMTypeRef
-    
     /// pointer to start, everything stored in other places
     var ptr: LLVMValueRef
-    
     var irName: String
-    
     var irGen: IRGen
     var properties: [StructVariableProperty]
+    /// If mutable, ptrs to elements can be cached
+    let mutable: Bool
     
-    
-    
-    init(ptr: LLVMValueRef, conceptType: ConceptType, irName: String, irGen: IRGen) {
+    init(ptr: LLVMValueRef, conceptType: ConceptType, mutable: Bool, irName: String, irGen: IRGen) {
         self.conceptType = conceptType
         self.ptr = ptr
         self.irName = irName
         self.irGen = irGen
+        self.mutable = mutable
         
         let ps = conceptType.requiredProperties.map { (name: $0.name, irType: $0.type.globalType(irGen.module)) } as [StructVariableProperty]
         self.properties = ps
@@ -67,20 +65,20 @@ final class ExistentialVariable : StructVariable, MutableVariable {
     
     /// Allocator from another existential object
     ///
-    class func alloc(conceptType: ConceptType, fromExistential value: LLVMValueRef, irName: String = "", irGen: IRGen) -> ExistentialVariable {
+    class func alloc(conceptType: ConceptType, fromExistential value: LLVMValueRef, mutable: Bool, irName: String = "", irGen: IRGen) -> ExistentialVariable {
         
         let exType = conceptType.globalType(irGen.module)
         let ptr = LLVMBuildAlloca(irGen.builder, exType, irName)
         LLVMBuildStore(irGen.builder, value, ptr)
         
-        return ExistentialVariable(ptr: ptr, conceptType: conceptType, irName: irName, irGen: irGen)
+        return ExistentialVariable(ptr: ptr, conceptType: conceptType, mutable: mutable, irName: irName, irGen: irGen)
     }
     
     /// Allocator from a non existential, Struct object
     ///
     /// This generates the runtime metadata and stores an opaque pointer to the struct instance
     ///
-    class func alloc(structType: StructType, conceptType: ConceptType, initWithValue value: LLVMValueRef, irName: String = "", irGen: IRGen) throws -> ExistentialVariable {
+    class func alloc(structType: StructType, conceptType: ConceptType, initWithValue value: LLVMValueRef, mutable: Bool, irName: String = "", irGen: IRGen) throws -> ExistentialVariable {
         
         let exType = conceptType.globalType(irGen.module)
         let ptr = LLVMBuildAlloca(irGen.builder, exType, irName)
@@ -97,7 +95,7 @@ final class ExistentialVariable : StructVariable, MutableVariable {
         let opaqueValueMem = LLVMBuildBitCast(irGen.builder, valueMem, opaquePtrType, "")
         LLVMBuildStore(irGen.builder, opaqueValueMem, structPtr)
         
-        return ExistentialVariable(ptr: ptr, conceptType: conceptType, irName: irName, irGen: irGen)
+        return ExistentialVariable(ptr: ptr, conceptType: conceptType, mutable: mutable, irName: irName, irGen: irGen)
     }
     
     func assignFrom(structType: StructType) throws {

@@ -413,7 +413,7 @@ extension Parser {
             case .Assign?:
                 getNextToken(2) // eat `.foo` `=`
                 
-                let property = PropertyLookupExpr(name: name, object: exp)
+                let property = PropertyLookupExpr(propertyName: name, object: exp)
                 
                 let exp = try parseOperatorExpr()
                 return MutationExpr(object: property, value: exp)
@@ -421,12 +421,12 @@ extension Parser {
             case .Period?: // nested lookup, like a.b.c
                 getNextToken(2) // eat `foo.`
 
-                let firstLookup = PropertyLookupExpr(name: name, object: exp)
+                let firstLookup = PropertyLookupExpr(propertyName: name, object: exp)
                 return try parseMemberLookupExpr(firstLookup)
                 
             default: // otherwise its a property
                 getNextToken()
-                return PropertyLookupExpr(name: name, object: exp)
+                return PropertyLookupExpr(propertyName: name, object: exp)
             }
             
             
@@ -919,7 +919,7 @@ extension Parser {
 
 extension Parser {
     
-    private func parseGenericParameterList(objName objName: String = "") throws -> [ConstrainedType] {
+    private func parseGenericParameterList(objName objName: String ) throws -> [ConstrainedType] {
         
         var genericParameters: [ConstrainedType] = []
         
@@ -931,7 +931,7 @@ extension Parser {
         while true {
             switch currentToken {
             case let .Identifier(genericParamName):
-                genericParameters.append((type: genericParamName, constraints: []))
+                genericParameters.append((name: genericParamName, constraints: [], parentName: objName))
                 getNextToken()
                 
             case .OpenParen:
@@ -963,11 +963,10 @@ extension Parser {
                     }
                 }
                 
-                genericParameters.append((type: genericParamName, constraints: constraints))
+                genericParameters.append((name: genericParamName, constraints: constraints, parentName: objName))
                 
             default:
                 return genericParameters
-                
             }
         }
         

@@ -322,7 +322,7 @@ protocol StructMemberExpr {
 
 
 
-typealias ConstrainedType = (type: String, constraints: [String])
+typealias ConstrainedType = (name: String, constraints: [String], parentName: String)
 
 final class StructExpr : TypedExpr, ScopeNode {
     let name: String
@@ -388,18 +388,18 @@ final class MethodCallExpr <ObjectType : AssignableExpr> : Expr {
 }
 
 final class PropertyLookupExpr : AssignableExpr {
-    let name: String
+    let propertyName: String
     let object: AssignableExpr
     
-    init(name: String, object: AssignableExpr) {
-        self.name = name
+    init(propertyName: String, object: AssignableExpr) {
+        self.propertyName = propertyName
         self.object = object
     }
     
     var _type: Ty? = nil
     
     var desc: String {
-        return "object.\(name)"
+        return "\(object.desc).\(propertyName)"
     }
 }
 

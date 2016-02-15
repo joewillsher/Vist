@@ -31,7 +31,7 @@ extension StructExpr : ExprTypeProvider {
         var ty = StructType(members: members, methods: [], name: name)
         
         try errorCollector.run {
-            ty.genericTypes = try genericParameters.map(GenericType.fromConstraint(structScope))
+            ty.genericTypes = try genericParameters.map(GenericType.fromConstraint(inScope: scope))
         }
         
         scope[type: name] = ty
@@ -155,7 +155,7 @@ extension PropertyLookupExpr : ExprTypeProvider {
         
         guard case let objType as StorageType = try object.typeForNode(scope) else { throw error(SemaError.NoTypeForStruct, userVisible: false) }
         
-        let propertyType = try objType.propertyType(name)
+        let propertyType = try objType.propertyType(propertyName)
         self._type = propertyType
         return propertyType
     }

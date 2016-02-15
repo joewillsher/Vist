@@ -35,7 +35,7 @@ func ir(val: Ty) throws -> LLVMValueRef {
     return val.ir()
 }
 
-func globalType(module: LLVMModuleRef) -> (Ty) throws -> LLVMValueRef {
+func globalType(module: LLVMModuleRef) -> Ty throws -> LLVMValueRef {
     return { val in
         return val.globalType(module)
     }

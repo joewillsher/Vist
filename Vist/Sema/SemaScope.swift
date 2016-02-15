@@ -83,11 +83,8 @@ final class SemaScope {
             else if let v = types[type] {
                 return v
             }
-            else if let g = genericParameters, let i = genericParameters?.indexOf({$0.type == type}) {
-                
-                guard let concepts = g[i].constraints.optionalMap({ self[concept: $0] }) else { return nil }
-                
-                return GenericType(name: type, concepts: concepts)
+            else if let g = genericParameters, let i = genericParameters?.indexOf({$0.name == type}) {
+                return try? GenericType.fromConstraint(inScope: self)(constraint: g[i])
             }
             return parent?[type: type]
         }

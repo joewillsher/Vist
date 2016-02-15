@@ -7,7 +7,7 @@
 //
 
 
-typealias IRGen = (builder: LLVMBuilderRef, module: LLVMModuleRef)
+typealias IRGen = (builder: LLVMBuilderRef, module: LLVMModuleRef, isStdLib: Bool)
 
 protocol RuntimeVariable : class {
     var type: LLVMTypeRef { get }

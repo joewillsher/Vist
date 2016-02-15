@@ -17,6 +17,15 @@ extension COpaquePointer {
             throw error(IRError.NotStructType, userVisible: false)
         }
     }
+    func load(index: Int, fromType type: Ty?, builder: LLVMBuilderRef, irName: String = "") throws -> LLVMValueRef {
+        if case let stdType as TupleType = type {
+            return try stdType.loadPropertyAtIndex(index, from: self, builder: builder, irName: irName)
+        }
+        else {
+            throw error(IRError.NotStructType, userVisible: false)
+        }
+    }
+
 }
 
 
@@ -56,4 +65,13 @@ extension StructType {
 }
 
 
+extension TupleType {
+    
+    /// Builds load of named property from struct
+    private func loadPropertyAtIndex(index: Int, from value: LLVMValueRef, builder: LLVMBuilderRef, irName: String = "") throws -> LLVMValueRef {
+        guard index < self.members.count else { throw error(IRError.NoTupleMemberAt(index)) }
+        return LLVMBuildExtractValue(builder, value, UInt32(index), irName)
+    }
+
+}
 

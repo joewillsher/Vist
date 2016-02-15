@@ -72,11 +72,8 @@ enum DefinedType {
             else if let i = scope[type: typeName] {
                 return i
             }
-            else if let g = scope.genericParameters, let i = g.indexOf({$0.type == typeName}) {
-                let type = g[i]
-                guard let concepts = type.constraints.optionalMap({ scope[concept: $0] }) else { throw error(SemaError.GenericSubstitutionInvalid) }
-                
-                return GenericType(name: type.0, concepts: concepts)
+            else if let g = scope.genericParameters, let i = g.indexOf({$0.name == typeName}) {
+                return try GenericType.fromConstraint(inScope: scope)(constraint: g[i])
             }
             else if let existential = scope[concept: typeName] {
                 return existential

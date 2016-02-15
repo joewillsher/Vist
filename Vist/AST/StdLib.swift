@@ -65,7 +65,7 @@ final class StdLib {
         ("fatalError", FnType(params: [],           returns: VoidType)),
         
         
-        // initialisers
+//         initialisers
         // ones which take Builtin types are used to wrap literals
         ("Int",     FnType(params: [BuiltinType.Int(size: 64)],   returns: IntType)),
         ("Int",     FnType(params: [IntType],                     returns: IntType)),

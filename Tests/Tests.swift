@@ -9,16 +9,25 @@
 import XCTest
 import Foundation
 
-let testDir = "\(SOURCE_ROOT)/Tests/TestCases"
-let stdlibDir = "\(SOURCE_ROOT)/Vist/StdLib"
-let runtimeDir = "\(SOURCE_ROOT)/Vist/Runtime"
 
 // tests can define comments which define the expected output of the program
 // `// test: 1 2` will add "1\n2\n" to the expected result of the program
 
+protocol VistTest : class {
+    var testDir: String { get }
+    var stdlibDir: String { get }
+    var runtimeDir : String { get }
+}
+
+extension VistTest {
+    var testDir: String { return "\(SOURCE_ROOT)/Vist/StdLib" }
+    var stdlibDir: String { return "\(SOURCE_ROOT)/Tests/TestCases" }
+    var runtimeDir: String { return "\(SOURCE_ROOT)/Vist/Runtime" }
+}
+
 /// Test the compilation and output of code samples
 ///
-final class OutputTests : XCTestCase {
+final class OutputTests : XCTestCase, VistTest {
     
     /// pipe used as the stdout of the test cases
     var pipe: NSPipe? = nil
@@ -31,19 +40,19 @@ final class OutputTests : XCTestCase {
 
 /// Tests runtime performance
 ///
-final class RuntimePerformanceTests : XCTestCase {
+final class RuntimePerformanceTests : XCTestCase, VistTest {
     
 }
 
 /// Testing building the stdlib & runtime
 ///
-final class CoreTests : XCTestCase {
+final class CoreTests : XCTestCase, VistTest {
     
 }
 
 /// Tests the error handling & type checking system
 ///
-final class ErrorTests : XCTestCase {
+final class ErrorTests : XCTestCase, VistTest {
     
 }
 
@@ -60,7 +69,7 @@ extension OutputTests {
         let file = "Control.vist"
         do {
             try compileWithOptions(["-O", file], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file), "Incorrect output")
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
@@ -75,7 +84,7 @@ extension OutputTests {
         let file = "Loops.vist"
         do {
             try compileWithOptions(["-O", file], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file), "Incorrect output")
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
@@ -90,7 +99,7 @@ extension OutputTests {
         let file = "Type.vist"
         do {
             try compileWithOptions(["-O", file], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file), "Incorrect output")
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
@@ -105,7 +114,7 @@ extension OutputTests {
         let file = "IntegerOps.vist"
         do {
             try compileWithOptions(["-O", file], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file), "Incorrect output")
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
@@ -120,7 +129,7 @@ extension OutputTests {
         let file = "Function.vist"
         do {
             try compileWithOptions(["-O", file], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file), "Incorrect output")
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
@@ -136,7 +145,7 @@ extension OutputTests {
         let file = "Existential.vist"
         do {
             try compileWithOptions(["-O", file], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(file: file), "Incorrect output")
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
@@ -166,8 +175,8 @@ extension RuntimePerformanceTests {
         measureMetrics(RuntimePerformanceTests.defaultPerformanceMetrics(), automaticallyStartMeasuring: false) {
             
             let runTask = NSTask()
-            runTask.currentDirectoryPath = testDir
-            runTask.launchPath = "\(testDir)/\(fileName)"
+            runTask.currentDirectoryPath = self.testDir
+            runTask.launchPath = "\(self.testDir)/\(fileName)"
             runTask.standardOutput = NSFileHandle.fileHandleWithNullDevice()
             
             self.startMeasuring()
@@ -194,8 +203,8 @@ extension RuntimePerformanceTests {
         measureMetrics(RuntimePerformanceTests.defaultPerformanceMetrics(), automaticallyStartMeasuring: false) {
             
             let runTask = NSTask()
-            runTask.currentDirectoryPath = testDir
-            runTask.launchPath = "\(testDir)/\(fileName)"
+            runTask.currentDirectoryPath = self.testDir
+            runTask.launchPath = "\(self.testDir)/\(fileName)"
             runTask.standardOutput = NSFileHandle.fileHandleWithNullDevice()
             
             self.startMeasuring()

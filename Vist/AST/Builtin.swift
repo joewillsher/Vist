@@ -72,7 +72,7 @@ struct Builtin {
     ///
     static func getBuiltinFunction(name: String, argTypes args: [Ty]) -> (mangledName: String, type: FnType)? {
         guard let fn = functionContainer[fn: name, types: args] else { return nil }
-        return fn
+        return fn // regular comment
     }
 }
 

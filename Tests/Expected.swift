@@ -8,8 +8,8 @@
 
 import Foundation
 
-func expectedTestCaseOutput(file file: String) -> String? {
-    guard let contents = try? String(contentsOfFile: "\(testDir)/\(file)") else { return nil }
+func expectedTestCaseOutput(path path: String) -> String? {
+    guard let contents = try? String(contentsOfFile: path) else { return nil }
     guard let toks = try? contents.getTokens() else { return nil }
     
     let comments = toks

@@ -16,9 +16,8 @@ final class StackFrame {
     private var concepts: [String: ConceptType]
     var block: LLVMBasicBlockRef, function: LLVMValueRef
     var parentStackFrame: StackFrame?
-    private var _isStdLib: Bool?
     
-    init(vars: [String: RuntimeVariable] = [:], functionTypes: [String: LLVMTypeRef] = [:], types: [String: StructType] = [:], concepts: [String: ConceptType] = [:], block: LLVMBasicBlockRef = nil, function: LLVMValueRef = nil, parentStackFrame: StackFrame? = nil, _isStdLib: Bool? = nil) {
+    init(vars: [String: RuntimeVariable] = [:], functionTypes: [String: LLVMTypeRef] = [:], types: [String: StructType] = [:], concepts: [String: ConceptType] = [:], block: LLVMBasicBlockRef = nil, function: LLVMValueRef = nil, parentStackFrame: StackFrame? = nil) {
         self.runtimeVariables = [:]
         self.functionTypes = [:]
         self.types = [:]
@@ -26,7 +25,6 @@ final class StackFrame {
         self.block = block
         self.parentStackFrame = parentStackFrame
         self.function = function
-        self._isStdLib = _isStdLib ?? parentStackFrame?._isStdLib
         
         concepts.forEach { addConcept($1, named: $0) }
         functionTypes.forEach { addFunctionType($1, named: $0) }
@@ -80,6 +78,7 @@ final class StackFrame {
         
         throw error(IRError.NoType(name))
     }
+    
     func concept(name: String) throws -> ConceptType {
         if let v = concepts[name] { return v }
         
@@ -88,12 +87,6 @@ final class StackFrame {
         
         throw error(IRError.NoType(name))
     }
-    
-    /// Whether this module is the standard library
-    var isStdLib: Bool {
-        return parentStackFrame?.isStdLib ?? _isStdLib!
-    }
-    
 }
 
 

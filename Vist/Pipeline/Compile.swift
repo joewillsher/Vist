@@ -124,9 +124,7 @@ func compileDocuments(fileNames: [String],
         
         // Generate LLVM IR code for program
         
-        let s = StackFrame(_isStdLib: isStdLib)
-        
-        try ast.IRGen(module: module, isLibrary: generateLibrary, stackFrame: s)
+        try ast.irGen(module: module, isLibrary: generateLibrary, isStdLib: isStdLib)
         
         // print and write to file
         try String.fromCString(LLVMPrintModuleToString(module))?.writeToFile("\(currentDirectory)/\(file)_.ll", atomically: true, encoding: NSUTF8StringEncoding)
