@@ -42,7 +42,7 @@ enum DefinedType {
         switch self {
         case .Void:             return []
         case .Type, .Function:  return [try type(scope)]
-        case let .Tuple(ts):    return try ts.flatMap { try $0.type(scope) }
+        case .Tuple(let ts):    return try ts.flatMap { try $0.type(scope) }
         }
     }
     

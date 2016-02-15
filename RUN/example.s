@@ -38,6 +38,10 @@ Ltmp2:
 	movslq	-88(%rbp), %rdi
 	movq	(%rax,%rdi), %rdi
 	callq	__print_Int
+	movl	$1, %ecx
+	movl	%ecx, %edi
+	callq	__Int_i64
+	movq	%rax, -96(%rbp)         ## 8-byte Spill
 	addq	$96, %rsp
 	popq	%rbp
 	retq

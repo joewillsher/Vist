@@ -18,11 +18,15 @@ let u = b.foo.t
 print u
 
 
+let w = (b , 1)
+let xx = w. 0 .foo
+//print xx
+
+
 /*
 concept Eq {
     var t: Int
 }
-
 
 
 type Bar (T | Eq) {

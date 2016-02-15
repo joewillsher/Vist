@@ -1051,50 +1051,47 @@ extension PropertyLookupExpr : IRGenerator {
     
     private func codeGenStruct(stackFrame: StackFrame, irGen: IRGen) throws -> (variable: ContainerVariable, propertyRef: LLVMValueRef) {
         
-        /// b.foo.t
-        // Bar { Foo { Int } }
+        if case let n as VariableExpr = object {
+            guard case let variable as StructVariable = try stackFrame.variable(n.name) else { throw error(IRError.NoVariable(n.name)) }
+            return (variable, try variable.loadPropertyNamed(propertyName))
+        }
         
-        let variable: StructVariable
+        let lookupVal: LLVMValueRef
         
         switch object {
-        case let n as VariableExpr:
-            guard case let v as StructVariable = try stackFrame.variable(n.name) else { throw error(IRError.NoVariable(n.name)) }
-            variable = v
-            
         case let propertyLookup as PropertyLookupExpr:
             
             let (lookupVariable, _) = try propertyLookup.codeGenStruct(stackFrame, irGen: irGen)
             guard case let structVariable as StructVariable = lookupVariable else { throw error(IRError.NoVariable(propertyName)) }
             
-            let lookupVal = try structVariable.loadPropertyNamed(propertyLookup.propertyName)
-            
-            let variable: protocol<StructVariable, MutableVariable>
-            
-            switch propertyLookup._type {
-            case let t as StructType:
-                variable = MutableStructVariable.alloc(t, irGen: irGen)
-                
-            case let c as ConceptType:
-                variable = ExistentialVariable.alloc(c, fromExistential: lookupVal, mutable: false, irName: propertyLookup.propertyName, irGen: irGen)
-                
-            default:
-                throw error(IRError.NoVariable(propertyLookup._type?.name ?? "<not typed>"), userVisible: false)
-            }
-            
-            variable.value = lookupVal
-            return (variable, try variable.loadPropertyNamed(self.propertyName))
+            lookupVal = try structVariable.loadPropertyNamed(propertyLookup.propertyName)
             
         case let tupleLookup as TupleMemberLookupExpr:
             
             let (lookupVariable, _) = try tupleLookup.codeGenStruct(stackFrame, irGen: irGen)
-            guard case let structVariable as StructVariable = lookupVariable else { throw error(IRError.NoVariable(tupleLookup.desc)) }
-            variable = structVariable
+            guard case let tupleVariable as TupleVariable = lookupVariable else { throw error(IRError.NoVariable(tupleLookup.desc)) }
+            
+            lookupVal = try tupleVariable.loadPropertyAtIndex(tupleLookup.index)
             
         default:
             throw error(IRError.CannotLookupPropertyFromNonVariable)
         }
         
-        return (variable, try variable.loadPropertyNamed(propertyName))
+        let variable: protocol<StructVariable, MutableVariable>
+        
+        switch object._type {
+        case let t as StructType:
+            variable = MutableStructVariable.alloc(t, irGen: irGen)
+            
+        case let c as ConceptType:
+            variable = ExistentialVariable.alloc(c, fromExistential: lookupVal, mutable: false, irGen: irGen)
+            
+        default:
+            throw error(IRError.CannotLookupPropertyFromNonVariable)
+        }
+        
+        variable.value = lookupVal
+        return (variable, try variable.loadPropertyNamed(self.propertyName))
     }
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
@@ -1143,11 +1140,10 @@ extension TupleExpr : IRGenerator {
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         
         if elements.count == 0 { return nil }
-        
         guard let type = self.type else { throw error(IRError.NotTyped, userVisible: false) }
         
         let memeberIR = try elements.map(codeGenIn(stackFrame, irGen: irGen))
-        
+
         let s = MutableTupleVariable.alloc(type, irGen: irGen)
         
         for (i, el) in memeberIR.enumerate() {

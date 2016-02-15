@@ -35,22 +35,42 @@ entry:
   %b.foo = load %Eq.ty* %b.foo.ptr
   %b.foo.ptr2 = getelementptr inbounds %Bar.ty* %b, i32 0, i32 0
   %b.foo3 = load %Eq.ty* %b.foo.ptr2
-  %foo = alloca %Eq.ty
-  store %Eq.ty %b.foo3, %Eq.ty* %foo
-  store %Eq.ty %b.foo3, %Eq.ty* %foo
-  %foo.metadata_ptr = getelementptr inbounds %Eq.ty* %foo, i32 0, i32 0
-  %metadata_base_ptr = bitcast [1 x i32]* %foo.metadata_ptr to i32*
-  %7 = getelementptr i32* %metadata_base_ptr, i32 0
-  %8 = load i32* %7
-  %foo.element_pointer = getelementptr inbounds %Eq.ty* %foo, i32 0, i32 1
-  %foo.opaque_instance_pointer = load i8** %foo.element_pointer
-  %9 = getelementptr i8* %foo.opaque_instance_pointer, i32 %8
-  %t.ptr = bitcast i8* %9 to %Int.ty*
+  %7 = alloca %Eq.ty
+  store %Eq.ty %b.foo3, %Eq.ty* %7
+  store %Eq.ty %b.foo3, %Eq.ty* %7
+  %.metadata_ptr = getelementptr inbounds %Eq.ty* %7, i32 0, i32 0
+  %metadata_base_ptr = bitcast [1 x i32]* %.metadata_ptr to i32*
+  %8 = getelementptr i32* %metadata_base_ptr, i32 0
+  %9 = load i32* %8
+  %.element_pointer = getelementptr inbounds %Eq.ty* %7, i32 0, i32 1
+  %.opaque_instance_pointer = load i8** %.element_pointer
+  %10 = getelementptr i8* %.opaque_instance_pointer, i32 %9
+  %t.ptr = bitcast i8* %10 to %Int.ty*
   %t = load %Int.ty* %t.ptr
   %u = alloca %Int.ty
   store %Int.ty %t, %Int.ty* %u
   %u4 = load %Int.ty* %u
   call void @_print_Int(%Int.ty %u4), !stdlib.call.optim !0
+  %b5 = load %Bar.ty* %b
+  %11 = call %Int.ty @_Int_i64(i64 1), !stdlib.call.optim !0
+  %12 = alloca { %Bar.ty, %Int.ty }
+  %.0.ptr = getelementptr inbounds { %Bar.ty, %Int.ty }* %12, i32 0, i32 0
+  store %Bar.ty %b5, %Bar.ty* %.0.ptr
+  %.1.ptr = getelementptr inbounds { %Bar.ty, %Int.ty }* %12, i32 0, i32 1
+  store %Int.ty %11, %Int.ty* %.1.ptr
+  %13 = load { %Bar.ty, %Int.ty }* %12
+  %w = alloca { %Bar.ty, %Int.ty }
+  store { %Bar.ty, %Int.ty } %13, { %Bar.ty, %Int.ty }* %w
+  %w.0.ptr = getelementptr inbounds { %Bar.ty, %Int.ty }* %w, i32 0, i32 0
+  %w.0 = load %Bar.ty* %w.0.ptr
+  %w.0.ptr6 = getelementptr inbounds { %Bar.ty, %Int.ty }* %w, i32 0, i32 0
+  %w.07 = load %Bar.ty* %w.0.ptr6
+  %14 = alloca %Bar.ty
+  store %Bar.ty %w.07, %Bar.ty* %14
+  %.foo.ptr = getelementptr inbounds %Bar.ty* %14, i32 0, i32 0
+  %.foo = load %Eq.ty* %.foo.ptr
+  %xx = alloca %Eq.ty
+  store %Eq.ty %.foo, %Eq.ty* %xx
   ret void
 }
 

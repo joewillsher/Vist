@@ -35,16 +35,17 @@ entry:
   store %Bar.ty %Bar3.i, %Bar.ty* %b
   %b.foo.ptr2 = getelementptr inbounds %Bar.ty* %b, i32 0, i32 0
   %b.foo3 = load %Eq.ty* %b.foo.ptr2
-  %foo = alloca %Eq.ty
-  store %Eq.ty %b.foo3, %Eq.ty* %foo
-  %metadata_base_ptr = getelementptr inbounds %Eq.ty* %foo, i32 0, i32 0, i32 0
-  %7 = load i32* %metadata_base_ptr
-  %foo.element_pointer = getelementptr inbounds %Eq.ty* %foo, i32 0, i32 1
-  %foo.opaque_instance_pointer = load i8** %foo.element_pointer
-  %8 = getelementptr i8* %foo.opaque_instance_pointer, i32 %7
-  %t.ptr = bitcast i8* %8 to %Int.ty*
+  %7 = alloca %Eq.ty
+  store %Eq.ty %b.foo3, %Eq.ty* %7
+  %metadata_base_ptr = getelementptr inbounds %Eq.ty* %7, i32 0, i32 0, i32 0
+  %8 = load i32* %metadata_base_ptr
+  %.element_pointer = getelementptr inbounds %Eq.ty* %7, i32 0, i32 1
+  %.opaque_instance_pointer = load i8** %.element_pointer
+  %9 = getelementptr i8* %.opaque_instance_pointer, i32 %8
+  %t.ptr = bitcast i8* %9 to %Int.ty*
   %t = load %Int.ty* %t.ptr
   call void @_print_Int(%Int.ty %t), !stdlib.call.optim !0
+  %10 = call %Int.ty @_Int_i64(i64 1), !stdlib.call.optim !0
   ret void
 }
 
