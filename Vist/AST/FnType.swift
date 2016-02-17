@@ -11,22 +11,6 @@ struct FnType : Ty {
     let params: [Ty], returns: Ty
     var metadata: [String]
     
-    func ir() -> LLVMTypeRef {
-        
-        let r: LLVMTypeRef
-        if case _ as FnType = returns {
-            r = BuiltinType.Pointer(to: returns).ir()
-        }
-        else {
-            r = returns.ir()
-        }
-        
-        return LLVMFunctionType(r,
-            nonVoid.map{$0.ir()}.ptr(),
-            UInt32(nonVoid.count),
-            false)
-    }
-    
     func globalType(module: LLVMModuleRef) -> LLVMTypeRef {
         
         let r: LLVMTypeRef

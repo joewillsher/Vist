@@ -26,6 +26,9 @@ extension StorageType {
     }
     
     func globalType(module: LLVMModuleRef) -> LLVMTypeRef {
+        
+        if module == nil { return memberTypes(module) }
+        
         let found = getNamedType(irName, module)
         if found != nil { return found }
         

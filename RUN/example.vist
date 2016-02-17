@@ -1,11 +1,5 @@
 
-
-let a = 3
-print a
-
-
-
-concept Eq {
+concept TestC {
     var t: Int
 }
 
@@ -14,21 +8,12 @@ type Foo {
 }
 
 type Bar {
-    var foo: Eq
+    var foo: TestC
 }
 
-let f = Foo 1
-let b = Bar f
+let b = Bar (Foo 1)
 let u = b.foo.t
-print u
-
-
-let w = ( (Bar (Foo 4)) , 1)
-let xx = w.0 .foo.t
-print xx
-
-
-
+print u // test: 1
 
 
 

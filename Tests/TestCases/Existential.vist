@@ -1,6 +1,6 @@
 
 concept Eq {
-var a: Int, b: Int
+    var a: Int, b: Int
 }
 
 func foo :: Eq Int -> Int = (a b) do
@@ -8,12 +8,31 @@ func foo :: Eq Int -> Int = (a b) do
 
 
 type Bar {
-var x: Bool, b: Int, a: Int
+    var x: Bool, b: Int, a: Int
 }
 
 let bar = Bar true 11 4
 let foo = foo bar 2
 
 print foo // test: 17
+
+
+
+
+concept TestC {
+    var t: Int
+}
+
+type Foo {
+    var t: Int
+}
+
+type Baz {
+    var foo: TestC
+}
+
+let b = Baz (Foo 1)
+let u = b.foo.t
+print u // test: 1
 
 

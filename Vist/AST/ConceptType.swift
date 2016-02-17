@@ -11,15 +11,6 @@ struct ConceptType : StorageType {
     let name: String
     let requiredFunctions: [StructMethod], requiredProperties: [StructMember]
     
-    /// a pointer to array of self's properties' implementation indecies in the conformant
-    /// followed by an opaque pointer to the conformant
-    func ir() -> LLVMTypeRef {
-        return StructType.withTypes([
-            BuiltinType.Array(el: BuiltinType.Int(size: 32), size: UInt32(requiredProperties.count)),
-            BuiltinType.OpaquePointer
-            ]).ir()
-    }
-    
     func memberTypes(module: LLVMModuleRef) -> LLVMTypeRef {
         return StructType.withTypes([
             BuiltinType.Array(el: BuiltinType.Int(size: 32), size: UInt32(requiredProperties.count)),

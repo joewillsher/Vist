@@ -4,15 +4,13 @@ target triple = "x86_64-apple-macosx10.11.0"
 
 %Foo.st = type { %Int.st }
 %Int.st = type { i64 }
-%Bar.st = type { %Eq.ex }
-%Eq.ex = type { [1 x i32], i8* }
+%Bar.st = type { %TestC.ex }
+%TestC.ex = type { [1 x i32], i8* }
 
 ; Function Attrs: nounwind
 define void @main() #0 {
 entry:
-  tail call void @"_$print_i64"(i64 3)
   tail call void @"_$print_i64"(i64 1)
-  tail call void @"_$print_i64"(i64 4)
   ret void
 }
 
@@ -25,10 +23,10 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Bar.st @_Bar_Eq(%Eq.ex %"$0") #1 {
+define %Bar.st @_Bar_TestC(%TestC.ex %"$0") #1 {
 entry:
-  %"$0.fca.0.0.extract" = extractvalue %Eq.ex %"$0", 0, 0
-  %"$0.fca.1.extract" = extractvalue %Eq.ex %"$0", 1
+  %"$0.fca.0.0.extract" = extractvalue %TestC.ex %"$0", 0, 0
+  %"$0.fca.1.extract" = extractvalue %TestC.ex %"$0", 1
   %Bar3.fca.0.0.0.insert = insertvalue %Bar.st undef, i32 %"$0.fca.0.0.extract", 0, 0, 0
   %Bar3.fca.0.1.insert = insertvalue %Bar.st %Bar3.fca.0.0.0.insert, i8* %"$0.fca.1.extract", 0, 1
   ret %Bar.st %Bar3.fca.0.1.insert

@@ -36,6 +36,11 @@ final class SemaScope {
             variables[variable] = newValue
         }
     }
+    
+    /// Whether *this* scope contains a named variable
+    func containsVariable(named: String) -> Bool {
+        return variables.contains { $0.0 == named }
+    }
 
     /// Gets a function from name and argument types
     ///

@@ -14,6 +14,10 @@ extension StructExpr : ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         
+        if let _ = scope[type: name] {
+            throw error(SemaError.InvalidRedeclaration(name))
+        }
+        
         let errorCollector = ErrorCollector()
         let structScope = SemaScope(parent: scope, returnType: nil) // cannot return from Struct scope
         
@@ -23,10 +27,13 @@ extension StructExpr : ExprTypeProvider {
         // maps over properties and gens types
         let members = try properties.flatMap { (a: VariableDecl) -> StructMember? in
             
-            try a.typeForNode(structScope)
+            try errorCollector.run {
+                try a.typeForNode(structScope)
+            }
             guard let t = a.value._type else { throw error(SemaError.StructPropertyNotTyped(type: name, property: a.name), userVisible: false) }
             return (a.name, t, a.isMutable)
         }
+        
         
         var ty = StructType(members: members, methods: [], name: name)
         
@@ -34,18 +41,19 @@ extension StructExpr : ExprTypeProvider {
             ty.genericTypes = try genericParameters.map(GenericType.fromConstraint(inScope: scope))
         }
         
-        scope[type: name] = ty
-        self.type = ty
-        
         let memberFunctions = try methods.flatMap { (f: FuncDecl) -> StructMethod? in
-            
-            try f.typeForNode(structScope)
+            try errorCollector.run {
+                try f.typeForNode(structScope)
+            }
             guard let t = f.fnType.type else { throw error(SemaError.StructMethodNotTyped(type: name, methodName: f.name), userVisible: false) }
             return (f.name.mangle(t, parentTypeName: name), t)
         }
         
         ty.methods = memberFunctions
         
+        scope[type: name] = ty
+        self.type = ty
+
         if let implicit = implicitIntialiser() {
             initialisers.append(implicit)
         }
@@ -76,8 +84,10 @@ extension ConceptExpr : ExprTypeProvider {
         let conceptScope = SemaScope(parent: scope)
         let errorCollector = ErrorCollector()
         
-        try requiredMethods.walkChildren(errorCollector) { method in
-            try method.typeForNode(conceptScope)
+        try errorCollector.run {
+            try requiredMethods.walkChildren(errorCollector) { method in
+                try method.typeForNode(conceptScope)
+            }
         }
         try errorCollector.run {
             try requiredProperties.walkChildren(errorCollector) { method in

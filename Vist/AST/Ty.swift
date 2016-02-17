@@ -7,7 +7,6 @@
 //
 
 protocol Ty : Printable {
-    func ir() -> LLVMTypeRef // TODO: deprecate this
     func globalType(module: LLVMModuleRef) -> LLVMTypeRef
     
     /// Name used in mangling function signatures
@@ -32,10 +31,6 @@ func == (lhs: StructType, rhs: StructType) -> Bool {
 
 
 
-func ir(val: Ty) throws -> LLVMValueRef {
-    return val.ir()
-}
-
 func globalType(module: LLVMModuleRef) -> Ty throws -> LLVMValueRef {
     return { val in
         return val.globalType(module)
@@ -46,19 +41,19 @@ func globalType(module: LLVMModuleRef) -> Ty throws -> LLVMValueRef {
 
 @warn_unused_result
 func == <T : Ty> (lhs: T, rhs: T) -> Bool {
-    return lhs.ir() == rhs.ir()
+    return lhs.globalType(nil) == rhs.globalType(nil)
 }
 @warn_unused_result
 func == <T : Ty> (lhs: Ty?, rhs: T) -> Bool {
-    return lhs?.ir() == rhs.ir()
+    return lhs?.globalType(nil) == rhs.globalType(nil)
 }
 @warn_unused_result
 func == (lhs: Ty, rhs: Ty) -> Bool {
-    return lhs.ir() == rhs.ir()
+    return lhs.globalType(nil) == rhs.globalType(nil)
 }
 @warn_unused_result
 func != (lhs: Ty, rhs: Ty) -> Bool {
-    return lhs.ir() != rhs.ir()
+    return lhs.globalType(nil) != rhs.globalType(nil)
 }
 @warn_unused_result
 func == (lhs: [Ty], rhs: [Ty]) -> Bool {

@@ -15,18 +15,6 @@ final class TupleType : Ty {
         self.members = members
     }
     
-    func ir() -> LLVMTypeRef {
-        let arr = members
-            .map { $0.ir() }
-            .ptr()
-        defer { arr.dealloc(members.count) }
-        
-        return LLVMStructType(
-            arr,
-            UInt32(members.count),
-            false)
-    }
-    
     func globalType(module: LLVMModuleRef) -> LLVMTypeRef {
         let arr = members
             .map { $0.globalType(module) }

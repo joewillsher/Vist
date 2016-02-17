@@ -134,8 +134,8 @@ extension VariableDecl : DeclTypeProvider {
     
     func typeForNode(scope: SemaScope) throws {
         // handle redeclaration
-        if let _ = scope[variable: name] {
-            throw error(SemaError.InvalidRedeclaration(name))
+        if scope.containsVariable(name) {
+            throw error(SemaError.InvalidTypeRedeclaration(name))
         }
         
         // if provided, get the explicit type
@@ -235,7 +235,7 @@ extension ArrayExpr : ExprTypeProvider {
         }
         
         // make sure array is homogeneous
-        guard Set(types.map { $0.ir() }).count == 1 else { throw error(SemaError.HeterogenousArray(types)) }
+        guard Set(types.map { $0.globalType(nil) }).count == 1 else { throw error(SemaError.HeterogenousArray(types)) }
         
         // get element type and assign to self
         guard let elementType = types.first else { throw error(SemaError.EmptyArray) }

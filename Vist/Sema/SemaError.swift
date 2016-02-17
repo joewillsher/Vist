@@ -8,7 +8,7 @@
 
 enum SemaError : VistError {
     case InvalidType(BuiltinType), InvalidFloatType(UInt32)
-    case InvalidRedeclaration(String)
+    case InvalidRedeclaration(String), InvalidTypeRedeclaration(String)
     case NoVariable(String)
     case HeterogenousArray([Ty]), EmptyArray
     case CannotSubscriptNonArrayVariable, NonIntegerSubscript
@@ -38,6 +38,8 @@ enum SemaError : VistError {
             return "Invalid float of size \(s)"
         case let .InvalidRedeclaration(t):
             return "Variable '\(t)' is already declared"
+        case let .InvalidTypeRedeclaration(t):
+            return "Type \(t) is already defined"
         case let .NoVariable(v):
             return "Could not find variable '\(v)' in this scope"
         case let .HeterogenousArray(arr):

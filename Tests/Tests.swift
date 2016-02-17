@@ -20,8 +20,8 @@ protocol VistTest : class {
 }
 
 extension VistTest {
-    var testDir: String { return "\(SOURCE_ROOT)/Vist/StdLib" }
-    var stdlibDir: String { return "\(SOURCE_ROOT)/Tests/TestCases" }
+    var testDir: String { return "\(SOURCE_ROOT)/Tests/TestCases" }
+    var stdlibDir: String { return "\(SOURCE_ROOT)/Vist/StdLib" }
     var runtimeDir: String { return "\(SOURCE_ROOT)/Vist/Runtime" }
 }
 

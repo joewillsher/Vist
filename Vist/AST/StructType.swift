@@ -19,18 +19,6 @@ struct StructType : StorageType {
         self.methods = methods
     }
     
-    func ir() -> LLVMTypeRef {
-        let arr = members
-            .map { $0.type.ir() }
-            .ptr()
-        defer { arr.dealloc(members.count) }
-        
-        return LLVMStructType(
-            arr,
-            UInt32(members.count),
-            false)
-    }
-    
     func memberTypes(module: LLVMModuleRef) -> LLVMTypeRef {
         let arr = members
             .map { $0.type.globalType(module) }

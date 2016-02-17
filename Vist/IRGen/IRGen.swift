@@ -97,7 +97,7 @@ extension IntegerLiteral : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         let rawType = BuiltinType.Int(size: size)
-        let value = LLVMConstInt(rawType.ir(), UInt64(val), false)
+        let value = LLVMConstInt(rawType.globalType(nil), UInt64(val), false)
         
         guard let type = self.type else { throw error(SemaError.IntegerNotTyped, userVisible: false) }
         return type.initialiseStdTypeFromBuiltinMembers(value, irGen: irGen)
@@ -108,7 +108,7 @@ extension IntegerLiteral : IRGenerator {
 extension FloatingPointLiteral : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) -> LLVMValueRef {
-        return LLVMConstReal(type!.ir(), val)
+        return LLVMConstReal(type!.globalType(nil), val)
     }
 }
 
@@ -117,7 +117,7 @@ extension BooleanLiteral : IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         let rawType = BuiltinType.Bool
-        let value = LLVMConstInt(rawType.ir(), UInt64(val.hashValue), false)
+        let value = LLVMConstInt(rawType.globalType(nil), UInt64(val.hashValue), false)
         
         guard let type = self.type else { throw error(SemaError.BoolNotTyped, userVisible: false) }
         return type.initialiseStdTypeFromBuiltinMembers(value, irGen: irGen)
@@ -582,7 +582,7 @@ extension ClosureExpr : IRGenerator {
         
         guard let type = self.type else { throw error(IRError.NotTyped, userVisible: false) }
         
-        let paramBuffer = try type.params.map(ir).ptr()
+        let paramBuffer = try type.params.map(globalType(irGen.module)).ptr()
         defer { paramBuffer.dealloc(type.params.count) }
         
         let name = "closure"//.mangle()

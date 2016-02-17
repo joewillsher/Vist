@@ -15,15 +15,15 @@ enum BuiltinType : Ty {
     indirect case Pointer(to: Ty)
     case OpaquePointer
     
-    func ir() -> LLVMTypeRef {
+    func globalType(module: LLVMModuleRef) -> LLVMTypeRef {
         switch self {
         case .Null:                     return nil
         case .Void:                     return LLVMVoidType()
         case .Int(let s):               return LLVMIntType(s)
         case Bool:                      return LLVMInt1Type()
-        case .Array(let el, let size):  return LLVMArrayType(el.ir(), size ?? 0)
-        case .Pointer(let to):          return LLVMPointerType(to.ir(), 0)
-        case .OpaquePointer:            return BuiltinType.Pointer(to: BuiltinType.Int(size: 8)).ir()
+        case .Array(let el, let size):  return LLVMArrayType(el.globalType(module), size ?? 0)
+        case .Pointer(let to):          return LLVMPointerType(to.globalType(module), 0)
+        case .OpaquePointer:            return BuiltinType.Pointer(to: BuiltinType.Int(size: 8)).globalType(module)
         case .Float(let s):
             switch s {
             case 16:                    return LLVMHalfType()
@@ -35,13 +35,10 @@ enum BuiltinType : Ty {
         }
     }
     
-    func globalType(module: LLVMModuleRef) -> LLVMTypeRef {
-        return ir()
-    }
-    
     init?(_ str: String) {
         switch str {
         case "LLVM.Int", "LLVM.Int64":  self = .Int(size: 64)
+        case "LLVM.Null":               self = .Null
         case "LLVM.Int32":              self = .Int(size: 32)
         case "LLVM.Int16":              self = .Int(size: 16)
         case "LLVM.Int8":               self = .Int(size: 8)
@@ -93,7 +90,7 @@ enum BuiltinType : Ty {
     
     static func intGen(size size: Swift.Int) -> UInt64 -> LLVMValueRef {
         return { val in
-            return LLVMConstInt(BuiltinType.Int(size: UInt32(size)).ir(), val, false)
+            return LLVMConstInt(BuiltinType.Int(size: UInt32(size)).globalType(nil), val, false)
         }
     }
     static func intGen(size size: Swift.Int) -> Swift.Int -> LLVMValueRef {

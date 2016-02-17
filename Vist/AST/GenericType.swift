@@ -42,10 +42,6 @@ struct GenericType : StorageType {
     }
     
     
-    func ir() -> LLVMTypeRef {
-        return nil
-    }
-    
     var irName: String {
         return "\(parentName).\(name).gen"
     }

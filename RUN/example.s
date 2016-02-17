@@ -6,13 +6,7 @@ _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	movl	$3, %eax
-	movl	%eax, %edi
-	callq	__$print_i64
 	movl	$1, %eax
-	movl	%eax, %edi
-	callq	__$print_i64
-	movl	$4, %eax
 	movl	%eax, %edi
 	popq	%rbp
 	jmp	__$print_i64            ## TAILCALL
@@ -27,9 +21,9 @@ __Foo_Int:                              ## @_Foo_Int
 	popq	%rbp
 	retq
 
-	.globl	__Bar_Eq
+	.globl	__Bar_TestC
 	.align	4, 0x90
-__Bar_Eq:                               ## @_Bar_Eq
+__Bar_TestC:                            ## @_Bar_TestC
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
