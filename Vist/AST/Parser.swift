@@ -100,7 +100,7 @@ final class Parser {
     
     
     private func rangeOfCurrentToken() -> SourceRange? {
-        if let n = inspectNextPos() { return SourceRange(start: currentPos, end: n) } else { return nil }
+        return inspectNextPos().map { SourceRange(start: currentPos, end: $0) }
     }
     
     
@@ -393,7 +393,7 @@ extension Parser {
     ///
     /// Parses property and tuple member lookup, and method calls
     ///
-    private func parseMemberLookupExpr<Exp : AssignableExpr>(exp: Exp) throws -> Expr {
+    private func parseMemberLookupExpr<Exp : ChainableExpr>(exp: Exp) throws -> Expr {
         
         switch currentToken {
         case .Identifier(let name):

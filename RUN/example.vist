@@ -1,5 +1,10 @@
 
 
+let a = 3
+print a
+
+
+
 concept Eq {
     var t: Int
 }
@@ -18,9 +23,16 @@ let u = b.foo.t
 print u
 
 
-let w = (b , 1)
-let xx = w. 0 .foo
-//print xx
+let w = ( (Bar (Foo 4)) , 1)
+let xx = w.0 .foo.t
+print xx
+
+
+
+
+
+
+
 
 
 /*

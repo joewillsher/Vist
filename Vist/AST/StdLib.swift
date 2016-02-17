@@ -108,8 +108,7 @@ final class StdLib {
     /// - returns: An optional tuple of `(mangledName, type)`
     ///
     static func getStdLibFunction(name: String, args: [Ty]) -> (mangledName: String, type: FnType)? {
-        guard let fn = functionContainer[fn: name, types: args] else { return nil }
-        return fn
+        return functionContainer[fn: name, types: args]
     }
     
 //    

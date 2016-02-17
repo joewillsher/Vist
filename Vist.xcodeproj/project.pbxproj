@@ -20,6 +20,10 @@
 		D4328DC81C7080AE00AEF56B /* LLVMPtrWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4328DC61C7080AE00AEF56B /* LLVMPtrWrapper.swift */; };
 		D45D4CF51C7151D900918E04 /* GenericVariable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45D4CF41C7151D900918E04 /* GenericVariable.swift */; };
 		D45D4CF61C7151D900918E04 /* GenericVariable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45D4CF41C7151D900918E04 /* GenericVariable.swift */; };
+		D45D4CF81C73962F00918E04 /* StorageType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45D4CF71C73962F00918E04 /* StorageType.swift */; };
+		D45D4CF91C73962F00918E04 /* StorageType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45D4CF71C73962F00918E04 /* StorageType.swift */; };
+		D45D4CFC1C74EEA000918E04 /* IRFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45D4CFB1C74EEA000918E04 /* IRFunctions.swift */; };
+		D45D4CFD1C74EEA000918E04 /* IRFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45D4CFB1C74EEA000918E04 /* IRFunctions.swift */; };
 		D46BC1BD1C66587300B9147E /* ScopeNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46BC1BC1C66587300B9147E /* ScopeNode.swift */; };
 		D46BC1BE1C66587300B9147E /* ScopeNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46BC1BC1C66587300B9147E /* ScopeNode.swift */; };
 		D46BC1C01C6685C500B9147E /* DefinedType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46BC1BF1C6685C500B9147E /* DefinedType.swift */; };
@@ -169,6 +173,9 @@
 		D4328DC61C7080AE00AEF56B /* LLVMPtrWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LLVMPtrWrapper.swift; path = IRGen/LLVMPtrWrapper.swift; sourceTree = "<group>"; };
 		D43DF1EC1C5540AF0049EC2F /* stdlib_.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib_.ll; path = stdlib/stdlib_.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D45D4CF41C7151D900918E04 /* GenericVariable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GenericVariable.swift; path = IRGen/GenericVariable.swift; sourceTree = "<group>"; };
+		D45D4CF71C73962F00918E04 /* StorageType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StorageType.swift; path = AST/StorageType.swift; sourceTree = "<group>"; };
+		D45D4CFB1C74EEA000918E04 /* IRFunctions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IRFunctions.swift; path = IRGen/IRFunctions.swift; sourceTree = "<group>"; };
+		D45D4CFE1C74F5E400918E04 /* stdlib.bc */ = {isa = PBXFileReference; lastKnownFileType = file; name = stdlib.bc; path = stdlib/stdlib.bc; sourceTree = "<group>"; };
 		D4644BE31C40619800364B99 /* stdlib.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib.ll; path = stdlib/stdlib.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D4644BE51C40619800364B99 /* stdlib.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = stdlib.vist; path = stdlib/stdlib.vist; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D4644BE61C4072D600364B99 /* runtime.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = runtime.cpp; path = Runtime/runtime.cpp; sourceTree = "<group>"; };
@@ -324,8 +331,19 @@
 				D43DF1EC1C5540AF0049EC2F /* stdlib_.ll */,
 				D4644BE31C40619800364B99 /* stdlib.ll */,
 				D4BBE41E1C41584C001B8934 /* stdlib.o */,
+				D45D4CFE1C74F5E400918E04 /* stdlib.bc */,
 			);
 			name = StdLib;
+			sourceTree = "<group>";
+		};
+		D45D4CFA1C73988E00918E04 /* Functions */ = {
+			isa = PBXGroup;
+			children = (
+				D4DE28131C5906830096E798 /* FunctionContainer.swift */,
+				D4A2CC101C4FF58C00BB9A12 /* Builtin.swift */,
+				D4A2CC121C503D1800BB9A12 /* StdLib.swift */,
+			);
+			name = Functions;
 			sourceTree = "<group>";
 		};
 		D46DA5F41C297AC5006AF1BE /* Lexer */ = {
@@ -343,6 +361,7 @@
 				D497A7861C3B012700DFE39E /* IRGen.swift */,
 				D4FC9D171C5FEE4E0031F1BD /* IRError.swift */,
 				D4328DC61C7080AE00AEF56B /* LLVMPtrWrapper.swift */,
+				D45D4CFB1C74EEA000918E04 /* IRFunctions.swift */,
 				D4B0DCE41C66CB1B000B4E97 /* Variables */,
 				D4FAE45B1C3DCEEE00C9EE05 /* BuiltinFunction.swift */,
 				D40FC4CF1C4AAB2800122397 /* Intrinsic.hpp */,
@@ -420,13 +439,12 @@
 				D4A2CC091C4FF56500BB9A12 /* Ty.swift */,
 				D4A2CC051C4FF56500BB9A12 /* BuiltinType.swift */,
 				D4A2CC061C4FF56500BB9A12 /* FnType.swift */,
+				D45D4CF71C73962F00918E04 /* StorageType.swift */,
 				D4A2CC071C4FF56500BB9A12 /* StructType.swift */,
 				D4D76EA01C69EA200037D93D /* GenericType.swift */,
 				D4C697DF1C6A5C9200645AD1 /* ConceptType.swift */,
 				D4A2CC081C4FF56500BB9A12 /* TupleType.swift */,
-				D4DE28131C5906830096E798 /* FunctionContainer.swift */,
-				D4A2CC101C4FF58C00BB9A12 /* Builtin.swift */,
-				D4A2CC121C503D1800BB9A12 /* StdLib.swift */,
+				D45D4CFA1C73988E00918E04 /* Functions */,
 			);
 			name = Type;
 			sourceTree = "<group>";
@@ -636,6 +654,7 @@
 				D4E35B621C5D0CA000683486 /* Builtin.swift in Sources */,
 				D4E35B631C5D0CA000683486 /* StdLib.swift in Sources */,
 				D47802AD1C5FAEA800D2FA9C /* ParseError.swift in Sources */,
+				D45D4CFD1C74EEA000918E04 /* IRFunctions.swift in Sources */,
 				D4E35B641C5D0CA000683486 /* SemaError.swift in Sources */,
 				D45D4CF61C7151D900918E04 /* GenericVariable.swift in Sources */,
 				D4E35B651C5D0CA000683486 /* SemaTypeCheck.swift in Sources */,
@@ -648,6 +667,7 @@
 				D4C697E11C6A5C9200645AD1 /* ConceptType.swift in Sources */,
 				D4E35B6A1C5D0CA000683486 /* ASTInterface.swift in Sources */,
 				D4E35B6B1C5D0CA000683486 /* LinkAST.swift in Sources */,
+				D45D4CF91C73962F00918E04 /* StorageType.swift in Sources */,
 				D4E35B6C1C5D0CA000683486 /* IRGen.swift in Sources */,
 				D4E35B6D1C5D0CA000683486 /* StackFrame.swift in Sources */,
 				D4C697E41C6AB80E00645AD1 /* ExistentialVariable.swift in Sources */,
@@ -716,6 +736,8 @@
 				D497A78C1C3B012700DFE39E /* RuntimeVariable.swift in Sources */,
 				D40FC4CA1C48323E00122397 /* StdTypes.swift in Sources */,
 				D497A7701C3B005600DFE39E /* Token.swift in Sources */,
+				D45D4CFC1C74EEA000918E04 /* IRFunctions.swift in Sources */,
+				D45D4CF81C73962F00918E04 /* StorageType.swift in Sources */,
 				D45D4CF51C7151D900918E04 /* GenericVariable.swift in Sources */,
 				D497A7801C3B00C600DFE39E /* TypeProvider.swift in Sources */,
 				D40FC4CE1C4AAB0E00122397 /* Intrinsic.cpp in Sources */,

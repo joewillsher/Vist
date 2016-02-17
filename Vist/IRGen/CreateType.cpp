@@ -34,7 +34,6 @@ Type *createNamedType(Type *type, StringRef name) {
         els.push_back(type->getStructElementType(i));
     }
     auto elements = ArrayRef<Type *>(els);
-    
     return StructType::create(getGlobalContext(), elements, name);
 }
 

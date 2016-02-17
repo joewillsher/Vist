@@ -46,12 +46,12 @@ struct GenericType : StorageType {
         return nil
     }
     
-    var debugDescription: String {
+    var irName: String {
         return "\(parentName).\(name).gen"
     }
     
-    var description: String {
-        return "\(parentName).\(name).gen"
+    var mangledName: String {
+        return name
     }
 }
 

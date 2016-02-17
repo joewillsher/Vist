@@ -54,15 +54,7 @@ final class ClosureExpr : TypedExpr, ScopeNode {
 //  MARK:                                               Literals
 //-------------------------------------------------------------------------------------------------------------------------
 
-protocol SizedExpr : Expr {
-    var size: UInt32 { get set }
-}
-
-protocol ExplicitlyTyped {
-    var explicitType: String { get }
-}
-
-final class FloatingPointLiteral : SizedExpr, Typed, ExplicitlyTyped {
+final class FloatingPointLiteral : Typed, ChainableExpr {
     let val: Double
     var size: UInt32 = 64
     var explicitType: String {
@@ -73,10 +65,12 @@ final class FloatingPointLiteral : SizedExpr, Typed, ExplicitlyTyped {
         self.val = val
     }
     
+    
+    
     var type: StructType? = nil
 }
 
-final class IntegerLiteral : SizedExpr, Typed, ExplicitlyTyped {
+final class IntegerLiteral : Typed, ChainableExpr {
     let val: Int
     var size: UInt32
     var explicitType: String {
@@ -135,7 +129,7 @@ final class StringLiteral : TypedExpr {
 /// A variable lookup Expr
 ///
 /// Generic over the variable type, use AnyExpr if this is not known
-final class VariableExpr : AssignableExpr {
+final class VariableExpr : ChainableExpr {
     let name: String
     
     init(name: String) {
@@ -149,15 +143,15 @@ final class VariableExpr : AssignableExpr {
     }
 }
 
-protocol AssignableExpr : Expr {
-    var desc: String { get }
+protocol ChainableExpr : Expr {
 }
 
+
 final class MutationExpr : Expr {
-    let object: AssignableExpr
+    let object: ChainableExpr
     let value: Expr
     
-    init(object: AssignableExpr, value: Expr) {
+    init(object: ChainableExpr, value: Expr) {
         self.object = object
         self.value = value
     }
@@ -249,11 +243,11 @@ final class FunctionImplementationExpr : Expr {
     var _type: Ty? = nil
 }
 
-final class TupleMemberLookupExpr : AssignableExpr {
+final class TupleMemberLookupExpr : ChainableExpr {
     let index: Int
-    let object: AssignableExpr
+    let object: ChainableExpr
     
-    init(index: Int, object: AssignableExpr) {
+    init(index: Int, object: ChainableExpr) {
         self.index = index
         self.object = object
     }
@@ -277,7 +271,7 @@ final class TupleMemberLookupExpr : AssignableExpr {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-final class ArrayExpr : AssignableExpr, Typed {
+final class ArrayExpr : ChainableExpr, Typed {
     
     let arr: [Expr]
     
@@ -293,7 +287,7 @@ final class ArrayExpr : AssignableExpr, Typed {
     }
 }
 
-final class ArraySubscriptExpr : AssignableExpr {
+final class ArraySubscriptExpr : ChainableExpr {
     let arr: Expr
     let index: Expr
     
@@ -370,7 +364,9 @@ final class ConceptExpr : TypedExpr, ScopeNode {
 
 
 
-final class MethodCallExpr <ObjectType : AssignableExpr> : Expr {
+final class MethodCallExpr<
+    ObjectType : ChainableExpr
+> : Expr {
     let name: String
     let object: ObjectType
     let args: TupleExpr
@@ -387,20 +383,16 @@ final class MethodCallExpr <ObjectType : AssignableExpr> : Expr {
     var _type: Ty? = nil
 }
 
-final class PropertyLookupExpr : AssignableExpr {
+final class PropertyLookupExpr : ChainableExpr {
     let propertyName: String
-    let object: AssignableExpr
+    let object: ChainableExpr
     
-    init(propertyName: String, object: AssignableExpr) {
+    init(propertyName: String, object: ChainableExpr) {
         self.propertyName = propertyName
         self.object = object
     }
     
     var _type: Ty? = nil
-    
-    var desc: String {
-        return "\(object.desc).\(propertyName)"
-    }
 }
 
 

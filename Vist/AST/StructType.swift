@@ -7,45 +7,6 @@
 //
 
 
-typealias StructMember = (name: String, type: Ty, mutable: Bool)
-typealias StructMethod = (name: String, type: FnType)
-
-
-protocol StorageType : Ty {
-    var name: String { get }
-    var members: [StructMember] { get }
-    var methods: [StructMethod] { get }
-    func memberTypes(module: LLVMModuleRef) -> LLVMTypeRef
-}
-
-extension StorageType {
-    
-    func indexOfMemberNamed(name: String) throws -> Int {
-        guard let i = members.indexOf({ $0.name == name }) else { throw error(SemaError.NoPropertyNamed(type: self.name, property: name)) }
-        return i
-    }
-    
-    func globalType(module: LLVMModuleRef) -> LLVMTypeRef {
-        
-        let found = getNamedType(mangledTypeName, module)
-        if found != nil { return found }
-        
-        let type = memberTypes(module)
-        let namedType = createNamedType(type, mangledTypeName)
-        
-        return namedType
-    }
-    
-    func propertyType(name: String) throws -> Ty {
-        return members[try indexOfMemberNamed(name)].type
-    }
-    
-    func propertyMutable(name: String) throws -> Bool {
-        return members[try indexOfMemberNamed(name)].mutable
-    }
-}
-
-
 struct StructType : StorageType {
     let name: String
     let members: [StructMember]
@@ -89,14 +50,19 @@ struct StructType : StorageType {
     static func withTypes(tys: [Ty]) -> StructType {
         return StructType(members: tys.map { (name: "", type: $0, mutable: true) }, methods: [], name: "")
     }
-    
-}
-
-extension StructType {
-    
+        
     func getMethod(methodName : String, argTypes types: [Ty]) -> FnType? {
         return methods[raw: "\(name).\(methodName)", paramTypes: types]
     }
+    
+    var irName: String {
+        return "\(name).st"
+    }
+    
+    var mangledName: String {
+        return name
+    }
+    
 }
 
 

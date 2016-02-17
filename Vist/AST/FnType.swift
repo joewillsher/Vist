@@ -77,10 +77,11 @@ struct FnType : Ty {
         }
     }
     
-    var name: String {
-        return ""
+    var mangledName: String {
+        return params
+            .map { $0.mangledName }
+            .joinWithSeparator("_")
     }
-    
 }
 
 

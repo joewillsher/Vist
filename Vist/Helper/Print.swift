@@ -12,21 +12,17 @@ private func t(n:Int) -> String {
     return Array(count: n, repeatedValue: "  ").reduce("", combine: +)
 }
 
-public protocol Printable : CustomStringConvertible {
-    func _description(n: Int) -> String
-    func printDirectly() -> String?
-}
-
-
-extension Printable {
-    public var description: String {
-        return _description(0)
-    }
+protocol Printable {
+    var astString: String { get }
 }
 
 extension Printable {
     
-    public func _description(n: Int) -> String {
+    var astString: String {
+        return _description(0)
+    }
+    
+    func _description(n: Int) -> String {
         
         if let v = printDirectly() { return v }
         
@@ -40,58 +36,55 @@ extension Printable {
         
         return "(\(self.dynamicType)" + children
             .reduce("") {
-            
-            let a: String
-            if let s = $1.0 { a = "\(s):" }
-            else            { a = "" }
-            
+            let a = $1.0.map { "\($0):" } ?? ""
             return "\($0)\(n0)\(t1)\(a)\($1.1._description(n+1))" } + "\(n0)\(te))"
     }
+    
         
     /// Print the object, not a _description of it
-    public func printDirectly() -> String? { return nil }
+    func printDirectly() -> String? { return nil }
 }
 
 extension String : Printable {
-    public func printDirectly() -> String? {
+    func printDirectly() -> String? {
         return "\"\(self)\""
     }
 }
 extension Int : Printable {
-    public func printDirectly() -> String? {
+    func printDirectly() -> String? {
         return "\(self)"
     }
 }
 extension UInt32 : Printable {
-    public func printDirectly() -> String? {
+    func printDirectly() -> String? {
         return "\(self)"
     }
 }
 extension Float : Printable {
-    public func printDirectly() -> String? {
+    func printDirectly() -> String? {
         return "\(self)"
     }
 }
 extension Double : Printable {
-    public func printDirectly() -> String? {
+    func printDirectly() -> String? {
         return "\(self)"
     }
 }
 extension Bool : Printable {
-    public func printDirectly() -> String? {
+    func printDirectly() -> String? {
         return "\(self)"
     }
 }
 
 extension Array : Printable {
     
-    public func printVal() -> String? {
+    func printVal() -> String? {
         return isEmpty ? "[]" : nil
     }
 }
 
 extension Optional : Printable {
-    public func printDirectly() -> String? {
+    func printDirectly() -> String? {
         switch self {
         case .None: return "nil"
         case .Some(let a) where a is Printable: return (a as! Printable).printDirectly()

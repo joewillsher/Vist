@@ -15,6 +15,7 @@ enum IRError : VistError {
     case NoProperty(type: String, property: String), NoTupleMemberAt(Int)
     
     case CannotLookupPropertyFromNonVariable, NotGenerator(ASTNode.Type), NoParentType
+    case CannotLookupPropertyFromThis(prop: String), CannotLookupElementFromNonTuple
     
     case NotTyped, NotStructType
     case InvalidModule(LLVMModuleRef, String?), InvalidFunction(String)
@@ -42,6 +43,9 @@ enum IRError : VistError {
         case let .NoProperty(type, prop): return "Type '\(type)' does not contain member '\(prop)'"
         case let .NoTupleMemberAt(i): return "Tuple does not have member at index \(i)"
 
+        case .CannotLookupPropertyFromThis(let p): return "Cannot lookup property \(p)"
+        case .CannotLookupElementFromNonTuple: return "Can only look up member by index from tuple"
+            
         case .CannotLookupPropertyFromNonVariable: return "Only property lookup from a variable object is permitted"
         case let .NotGenerator(t): return "'\(t)' is not an IR generator"
         case .NoParentType: return "Parent type is not a struct or does not exist"

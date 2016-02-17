@@ -50,9 +50,10 @@ extension StructExpr : ExprTypeProvider {
             initialisers.append(implicit)
         }
         
-        let memberwise = try memberwiseInitialiser()
-        initialisers.append(memberwise)
-        
+        try errorCollector.run {
+            let memberwise = try memberwiseInitialiser()
+            initialisers.append(memberwise)
+        }
         try initialisers.walkChildren(errorCollector) { node in
             try node.typeForNode(structScope)
         }

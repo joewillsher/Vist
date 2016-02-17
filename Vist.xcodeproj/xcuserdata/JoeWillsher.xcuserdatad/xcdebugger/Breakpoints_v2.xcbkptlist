@@ -6,16 +6,32 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "1"
+            continueAfterRunningActions = "No"
+            filePath = "Vist/Sema/Initialiser.swift"
+            timestampString = "477344726.79323"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "39"
+            endingLineNumber = "39"
+            landmarkName = "memberwiseInitialiser()"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Vist/AST/Parser.swift"
-            timestampString = "477267589.893367"
+            filePath = "Vist/AST/DefinedType.swift"
+            timestampString = "477345355.348455"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "449"
-            endingLineNumber = "449"
-            landmarkName = "parseMemberLookupExpr(_:)"
+            startingLineNumber = "82"
+            endingLineNumber = "82"
+            landmarkName = "type(_:)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

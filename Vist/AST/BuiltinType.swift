@@ -57,8 +57,38 @@ enum BuiltinType : Ty {
         default: return nil
         }
     }
-    var name: String {
-        return description
+    
+    var explicitName: String {
+        switch self {
+        case .Null:                     return "LLVM.Null"
+        case .Void:                     return "LLVM.Void"
+        case .Int(let s):               return "LLVM.Int\(s)"
+        case .Bool:                     return "LLVM.Bool"
+        case .Array(let el, let size):  return "[\(size) x \(el.mangledName)]" // not implemented
+        case .Pointer(let to):          return "\(to.mangledName)*"            // will never be implemented
+        case .OpaquePointer:            return "ptr"
+        case .Float(let s):
+            switch s {
+            case 16:                    return "LLVM.Half"
+            case 32:                    return "LLVM.Float"
+            case 64:                    return "LLVM.Double"
+            case 128:                   return "LLVM.FP128"
+            default:                    fatalError("Bad float type")
+            }
+        }
+    }
+    
+    var mangledName: String {
+        switch self {
+        case .Null:                     return "N"
+        case .Void:                     return "V"
+        case .Int(let s):               return "i\(s)"
+        case Bool:                      return "b"
+        case .Array(let el, _):         return "A\(el.mangledName)"
+        case .Pointer(let to):          return "P\(to.mangledName)"
+        case .Float(let s):             return "f\(s)"
+        case .OpaquePointer:            return "op"
+        }
     }
     
     static func intGen(size size: Swift.Int) -> UInt64 -> LLVMValueRef {

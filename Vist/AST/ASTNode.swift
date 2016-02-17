@@ -36,6 +36,12 @@ protocol _Typed {
     var _type: Ty? { get set }
 }
 
+extension _Typed {
+    var typeName: String {
+        return _type?.mangledName ?? "<invalid>"
+    }
+}
+
 /// Typed protocol which defines a generic type
 ///
 protocol Typed : _Typed {

@@ -44,8 +44,10 @@ final class TupleType : Ty {
         return members[index]
     }
     
-    var name: String {
-        return ""
+    var mangledName: String {
+        return members
+            .map { $0.mangledName }
+            .joinWithSeparator(".") + ".tuple"
     }
 
 }

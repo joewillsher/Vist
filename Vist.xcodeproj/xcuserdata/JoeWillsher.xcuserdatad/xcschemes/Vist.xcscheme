@@ -76,7 +76,7 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "-O"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-verbose"

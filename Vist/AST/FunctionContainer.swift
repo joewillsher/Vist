@@ -53,8 +53,7 @@ struct FunctionContainer {
     /// unmangled
     subscript(mangledName mangledName: String) -> (mangledName: String, type: FnType)? {
         get {
-            guard let ty = functions[mangledName] else { return nil }
-            return (mangledName, ty)
+            return functions[mangledName].map { (mangledName, $0) }
         }
     }
 
@@ -62,7 +61,9 @@ struct FunctionContainer {
     /// Returns type from type name
     subscript(type type: String) -> StructType? {
         get {
-            if let i = types.indexOf({ $0.name == type }) { return types[i] } else { return nil }
+            return types
+                .indexOf { $0.name == type }
+                .map { types[$0] }
         }
     }
 }

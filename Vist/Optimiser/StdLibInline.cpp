@@ -116,17 +116,6 @@ bool StdLibInline::runOnFunction(Function &function) {
     
     // id of the function call metadata we will optimise
     int initiID = LLVMMetadataID("stdlib.call.optim");
-
-//    for (StructType *ty : stdLibModule->getIdentifiedStructTypes()) {
-//        
-//        if (Type *found = getNamedType(ty->getStructName(), module)) {
-//
-//        }
-//        
-//        ty->dump();
-//        
-//    }
-
     
     // loops over blocks in function
     for (BasicBlock &basicBlock : function) {
@@ -231,12 +220,29 @@ bool StdLibInline::runOnFunction(Function &function) {
                 
                 for (Instruction &inst : fnBlock) {
                     
+                    // insert value instructions dont get types replaced, so we do it manually
+                    if (auto *insertVal = dyn_cast<InsertValueInst>(&inst)) {
+                        
+                        if (auto undef = dyn_cast<UndefValue>(insertVal->getAggregateOperand())) {
+                            
+                            StructType *ty = dyn_cast<StructType>(undef->getType());
+                            if (!ty->hasName())
+                                break;
+                            
+                            StringRef name = ty->getName();
+                            auto idx = name.rfind("."); // remove the .0 suffix
+                            auto thisName = name.drop_back(name.size() - idx);
+                            Type *undefType = getNamedType(thisName, module);
+                            UndefValue *undefValue = UndefValue::get(undefType); // the undef val
+                            
+                            inst.setOperand(0, undefValue);
+                        }
+                    }
+                    
                     // replace global types in stdlib with this module
-                    if (StructType *ty = dyn_cast<StructType>(inst.getType())) // HERE
+                    if (StructType *ty = dyn_cast<StructType>(inst.getType()))
                         if (ty->hasName())
                             inst.mutateType(getNamedType(ty->getStructName(), module));
-                    
-                    auto vals = inst.ArgumentVal;
                     
                     // if the instruction is a return, assign to
                     // the `returnValueStorage` and jump out of temp block
@@ -260,8 +266,8 @@ bool StdLibInline::runOnFunction(Function &function) {
                         if (call->getCalledFunction()->isIntrinsic()) {
                             
                             Type *optionalFirstArgument = call->getNumOperands() == 1
-                                ? nullptr // if no arguments, we are not overloading
-                                : call->getOperand(0)->getType();
+                            ? nullptr // if no arguments, we are not overloading
+                            : call->getOperand(0)->getType();
                             
                             Function *intrinsic = getIntrinsic(call->getCalledFunction()->getName(),
                                                                module,
@@ -288,6 +294,9 @@ bool StdLibInline::runOnFunction(Function &function) {
                     }
                     // otherwise add the inst to the inlined block
                     else {
+                        
+                        // loop through operands
+                        
                         builder.Insert(newInst, inst.getName());
                         inst.replaceAllUsesWith(newInst);
                     }
@@ -334,9 +343,6 @@ void addStdLibInlinePass(const PassManagerBuilder &Builder, PassManagerBase &PM)
 }
 
 bool StdLibInline::doFinalization(Module &module) {
-    
-    
-    
     return true;
 }
 

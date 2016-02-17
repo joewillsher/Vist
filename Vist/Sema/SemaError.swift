@@ -120,7 +120,7 @@ private extension CollectionType where Generator.Element == Ty {
     }
     
     func asTupleDescription() -> String {
-        return "(" + map {$0.description}.joinWithSeparator(" ") + ")"
+        return "(" + map {$0.mangledName}.joinWithSeparator(" ") + ")"
     }
     
 }

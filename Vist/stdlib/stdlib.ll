@@ -2,11 +2,11 @@
 target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-macosx10.11.0"
 
-%Int.ty = type { i64 }
-%Int32.ty = type { i32 }
-%Bool.ty = type { i1 }
-%Double.ty = type { double }
-%Range.ty = type { %Int.ty, %Int.ty }
+%Int.st = type { i64 }
+%Int32.st = type { i32 }
+%Bool.st = type { i1 }
+%Double.st = type { double }
+%Range.st = type { %Int.st, %Int.st }
 
 @.str = private unnamed_addr constant [6 x i8] c"%lli\0A\00", align 1
 @.str1 = private unnamed_addr constant [4 x i8] c"%i\0A\00", align 1
@@ -59,83 +59,83 @@ define void @"_$print_b"(i1 zeroext %b) #0 {
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Int.ty @_Int_i64(i64 %v) #2 {
+define %Int.st @_Int_i64(i64 %v) #2 {
 entry:
-  %Int1.fca.0.insert = insertvalue %Int.ty undef, i64 %v, 0
-  ret %Int.ty %Int1.fca.0.insert
+  %Int1.fca.0.insert = insertvalue %Int.st undef, i64 %v, 0
+  ret %Int.st %Int1.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Int.ty @_Int_() #2 {
+define %Int.st @_Int_() #2 {
 entry:
-  ret %Int.ty zeroinitializer
+  ret %Int.st zeroinitializer
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Int32.ty @_Int32_i32(i32 %v) #2 {
+define %Int32.st @_Int32_i32(i32 %v) #2 {
 entry:
-  %Int321.fca.0.insert = insertvalue %Int32.ty undef, i32 %v, 0
-  ret %Int32.ty %Int321.fca.0.insert
+  %Int321.fca.0.insert = insertvalue %Int32.st undef, i32 %v, 0
+  ret %Int32.st %Int321.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Bool.ty @_Bool_b(i1 %v) #2 {
+define %Bool.st @_Bool_b(i1 %v) #2 {
 entry:
-  %Bool1.fca.0.insert = insertvalue %Bool.ty undef, i1 %v, 0
-  ret %Bool.ty %Bool1.fca.0.insert
+  %Bool1.fca.0.insert = insertvalue %Bool.st undef, i1 %v, 0
+  ret %Bool.st %Bool1.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Bool.ty @_Bool_() #2 {
+define %Bool.st @_Bool_() #2 {
 entry:
-  ret %Bool.ty zeroinitializer
+  ret %Bool.st zeroinitializer
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Double.ty @_Double_f64(double %v) #2 {
+define %Double.st @_Double_f64(double %v) #2 {
 entry:
-  %Double1.fca.0.insert = insertvalue %Double.ty undef, double %v, 0
-  ret %Double.ty %Double1.fca.0.insert
+  %Double1.fca.0.insert = insertvalue %Double.st undef, double %v, 0
+  ret %Double.st %Double1.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Range.ty @_Range_Int_Int(%Int.ty %"$0", %Int.ty %"$1") #2 {
+define %Range.st @_Range_Int_Int(%Int.st %"$0", %Int.st %"$1") #2 {
 entry:
-  %"$0.fca.0.extract" = extractvalue %Int.ty %"$0", 0
-  %"$1.fca.0.extract" = extractvalue %Int.ty %"$1", 0
-  %Range1.fca.0.0.insert = insertvalue %Range.ty undef, i64 %"$0.fca.0.extract", 0, 0
-  %Range1.fca.1.0.insert = insertvalue %Range.ty %Range1.fca.0.0.insert, i64 %"$1.fca.0.extract", 1, 0
-  ret %Range.ty %Range1.fca.1.0.insert
+  %"$0.fca.0.extract" = extractvalue %Int.st %"$0", 0
+  %"$1.fca.0.extract" = extractvalue %Int.st %"$1", 0
+  %Range1.fca.0.0.insert = insertvalue %Range.st undef, i64 %"$0.fca.0.extract", 0, 0
+  %Range1.fca.1.0.insert = insertvalue %Range.st %Range1.fca.0.0.insert, i64 %"$1.fca.0.extract", 1, 0
+  ret %Range.st %Range1.fca.1.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind
-define void @_print_Int(%Int.ty %a) #3 {
+define void @_print_Int(%Int.st %a) #3 {
 entry:
-  %value = extractvalue %Int.ty %a, 0
+  %value = extractvalue %Int.st %a, 0
   tail call void @"_$print_i64"(i64 %value)
   ret void
 }
 
 ; Function Attrs: alwaysinline nounwind
-define void @_print_Int32(%Int32.ty %a) #3 {
+define void @_print_Int32(%Int32.st %a) #3 {
 entry:
-  %value = extractvalue %Int32.ty %a, 0
+  %value = extractvalue %Int32.st %a, 0
   tail call void @"_$print_i32"(i32 %value)
   ret void
 }
 
 ; Function Attrs: alwaysinline nounwind
-define void @_print_Bool(%Bool.ty %a) #3 {
+define void @_print_Bool(%Bool.st %a) #3 {
 entry:
-  %value = extractvalue %Bool.ty %a, 0
+  %value = extractvalue %Bool.st %a, 0
   tail call void @"_$print_b"(i1 %value)
   ret void
 }
 
 ; Function Attrs: alwaysinline nounwind
-define void @_print_Double(%Double.ty %a) #3 {
+define void @_print_Double(%Double.st %a) #3 {
 entry:
-  %value = extractvalue %Double.ty %a, 0
+  %value = extractvalue %Double.st %a, 0
   tail call void @"_$print_f64"(double %value)
   ret void
 }
@@ -151,9 +151,9 @@ entry:
 declare void @llvm.trap() #5
 
 ; Function Attrs: alwaysinline nounwind
-define void @_assert_Bool(%Bool.ty %"$0") #3 {
+define void @_assert_Bool(%Bool.st %"$0") #3 {
 entry:
-  %0 = extractvalue %Bool.ty %"$0", 0
+  %0 = extractvalue %Bool.st %"$0", 0
   br i1 %0, label %then.0, label %else.1
 
 then.0:                                           ; preds = %entry
@@ -178,10 +178,10 @@ then.0:                                           ; preds = %entry
 }
 
 ; Function Attrs: alwaysinline nounwind
-define %Int.ty @"_+_Int_Int"(%Int.ty %a, %Int.ty %b) #3 {
+define %Int.st @"_+_Int_Int"(%Int.st %a, %Int.st %b) #3 {
 entry:
-  %value = extractvalue %Int.ty %a, 0
-  %value1 = extractvalue %Int.ty %b, 0
+  %value = extractvalue %Int.st %a, 0
+  %value1 = extractvalue %Int.st %b, 0
   %add_res = tail call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %value, i64 %value1)
   %add_res.fca.1.extract = extractvalue { i64, i1 } %add_res, 1
   br i1 %add_res.fca.1.extract, label %then.0.i, label %_condFail_b.exit
@@ -192,18 +192,18 @@ then.0.i:                                         ; preds = %entry
 
 _condFail_b.exit:                                 ; preds = %entry
   %add_res.fca.0.extract = extractvalue { i64, i1 } %add_res, 0
-  %Int1.i.fca.0.insert = insertvalue %Int.ty undef, i64 %add_res.fca.0.extract, 0
-  ret %Int.ty %Int1.i.fca.0.insert
+  %Int1.i.fca.0.insert = insertvalue %Int.st undef, i64 %add_res.fca.0.extract, 0
+  ret %Int.st %Int1.i.fca.0.insert
 }
 
 ; Function Attrs: nounwind readnone
 declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #6
 
 ; Function Attrs: alwaysinline nounwind
-define %Int.ty @_-_Int_Int(%Int.ty %a, %Int.ty %b) #3 {
+define %Int.st @_-_Int_Int(%Int.st %a, %Int.st %b) #3 {
 entry:
-  %value = extractvalue %Int.ty %a, 0
-  %value1 = extractvalue %Int.ty %b, 0
+  %value = extractvalue %Int.st %a, 0
+  %value1 = extractvalue %Int.st %b, 0
   %sub_res = tail call { i64, i1 } @llvm.ssub.with.overflow.i64(i64 %value, i64 %value1)
   %sub_res.fca.1.extract = extractvalue { i64, i1 } %sub_res, 1
   br i1 %sub_res.fca.1.extract, label %then.0.i, label %_condFail_b.exit
@@ -214,18 +214,18 @@ then.0.i:                                         ; preds = %entry
 
 _condFail_b.exit:                                 ; preds = %entry
   %sub_res.fca.0.extract = extractvalue { i64, i1 } %sub_res, 0
-  %Int1.i.fca.0.insert = insertvalue %Int.ty undef, i64 %sub_res.fca.0.extract, 0
-  ret %Int.ty %Int1.i.fca.0.insert
+  %Int1.i.fca.0.insert = insertvalue %Int.st undef, i64 %sub_res.fca.0.extract, 0
+  ret %Int.st %Int1.i.fca.0.insert
 }
 
 ; Function Attrs: nounwind readnone
 declare { i64, i1 } @llvm.ssub.with.overflow.i64(i64, i64) #6
 
 ; Function Attrs: alwaysinline nounwind
-define %Int.ty @"_*_Int_Int"(%Int.ty %a, %Int.ty %b) #3 {
+define %Int.st @"_*_Int_Int"(%Int.st %a, %Int.st %b) #3 {
 entry:
-  %value = extractvalue %Int.ty %a, 0
-  %value1 = extractvalue %Int.ty %b, 0
+  %value = extractvalue %Int.st %a, 0
+  %value1 = extractvalue %Int.st %b, 0
   %mul_res = tail call { i64, i1 } @llvm.smul.with.overflow.i64(i64 %value, i64 %value1)
   %mul_res.fca.1.extract = extractvalue { i64, i1 } %mul_res, 1
   br i1 %mul_res.fca.1.extract, label %then.0.i, label %_condFail_b.exit
@@ -236,237 +236,237 @@ then.0.i:                                         ; preds = %entry
 
 _condFail_b.exit:                                 ; preds = %entry
   %mul_res.fca.0.extract = extractvalue { i64, i1 } %mul_res, 0
-  %Int1.i.fca.0.insert = insertvalue %Int.ty undef, i64 %mul_res.fca.0.extract, 0
-  ret %Int.ty %Int1.i.fca.0.insert
+  %Int1.i.fca.0.insert = insertvalue %Int.st undef, i64 %mul_res.fca.0.extract, 0
+  ret %Int.st %Int1.i.fca.0.insert
 }
 
 ; Function Attrs: nounwind readnone
 declare { i64, i1 } @llvm.smul.with.overflow.i64(i64, i64) #6
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Int.ty @"_/_Int_Int"(%Int.ty %a, %Int.ty %b) #2 {
+define %Int.st @"_/_Int_Int"(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.ty %a, 0
-  %value1 = extractvalue %Int.ty %b, 0
+  %value = extractvalue %Int.st %a, 0
+  %value1 = extractvalue %Int.st %b, 0
   %div_res = udiv i64 %value, %value1
-  %Int1.i.fca.0.insert = insertvalue %Int.ty undef, i64 %div_res, 0
-  ret %Int.ty %Int1.i.fca.0.insert
+  %Int1.i.fca.0.insert = insertvalue %Int.st undef, i64 %div_res, 0
+  ret %Int.st %Int1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Int.ty @"_%_Int_Int"(%Int.ty %a, %Int.ty %b) #2 {
+define %Int.st @"_%_Int_Int"(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.ty %a, 0
-  %value1 = extractvalue %Int.ty %b, 0
+  %value = extractvalue %Int.st %a, 0
+  %value1 = extractvalue %Int.st %b, 0
   %rem_res = urem i64 %value, %value1
-  %Int1.i.fca.0.insert = insertvalue %Int.ty undef, i64 %rem_res, 0
-  ret %Int.ty %Int1.i.fca.0.insert
+  %Int1.i.fca.0.insert = insertvalue %Int.st undef, i64 %rem_res, 0
+  ret %Int.st %Int1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Bool.ty @"_<_Int_Int"(%Int.ty %a, %Int.ty %b) #2 {
+define %Bool.st @"_<_Int_Int"(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.ty %a, 0
-  %value1 = extractvalue %Int.ty %b, 0
+  %value = extractvalue %Int.st %a, 0
+  %value1 = extractvalue %Int.st %b, 0
   %cmp_lt_res = icmp slt i64 %value, %value1
-  %Bool1.i.fca.0.insert = insertvalue %Bool.ty undef, i1 %cmp_lt_res, 0
-  ret %Bool.ty %Bool1.i.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue %Bool.st undef, i1 %cmp_lt_res, 0
+  ret %Bool.st %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Bool.ty @"_<=_Int_Int"(%Int.ty %a, %Int.ty %b) #2 {
+define %Bool.st @"_<=_Int_Int"(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.ty %a, 0
-  %value1 = extractvalue %Int.ty %b, 0
+  %value = extractvalue %Int.st %a, 0
+  %value1 = extractvalue %Int.st %b, 0
   %cmp_lte_res = icmp sle i64 %value, %value1
-  %Bool1.i.fca.0.insert = insertvalue %Bool.ty undef, i1 %cmp_lte_res, 0
-  ret %Bool.ty %Bool1.i.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue %Bool.st undef, i1 %cmp_lte_res, 0
+  ret %Bool.st %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Bool.ty @"_>_Int_Int"(%Int.ty %a, %Int.ty %b) #2 {
+define %Bool.st @"_>_Int_Int"(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.ty %a, 0
-  %value1 = extractvalue %Int.ty %b, 0
+  %value = extractvalue %Int.st %a, 0
+  %value1 = extractvalue %Int.st %b, 0
   %cmp_gt_res = icmp sgt i64 %value, %value1
-  %Bool1.i.fca.0.insert = insertvalue %Bool.ty undef, i1 %cmp_gt_res, 0
-  ret %Bool.ty %Bool1.i.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue %Bool.st undef, i1 %cmp_gt_res, 0
+  ret %Bool.st %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Bool.ty @"_>=_Int_Int"(%Int.ty %a, %Int.ty %b) #2 {
+define %Bool.st @"_>=_Int_Int"(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.ty %a, 0
-  %value1 = extractvalue %Int.ty %b, 0
+  %value = extractvalue %Int.st %a, 0
+  %value1 = extractvalue %Int.st %b, 0
   %cmp_gte_res = icmp sge i64 %value, %value1
-  %Bool1.i.fca.0.insert = insertvalue %Bool.ty undef, i1 %cmp_gte_res, 0
-  ret %Bool.ty %Bool1.i.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue %Bool.st undef, i1 %cmp_gte_res, 0
+  ret %Bool.st %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Bool.ty @"_==_Int_Int"(%Int.ty %a, %Int.ty %b) #2 {
+define %Bool.st @"_==_Int_Int"(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.ty %a, 0
-  %value1 = extractvalue %Int.ty %b, 0
+  %value = extractvalue %Int.st %a, 0
+  %value1 = extractvalue %Int.st %b, 0
   %cmp_eq_res = icmp eq i64 %value, %value1
-  %Bool1.i.fca.0.insert = insertvalue %Bool.ty undef, i1 %cmp_eq_res, 0
-  ret %Bool.ty %Bool1.i.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue %Bool.st undef, i1 %cmp_eq_res, 0
+  ret %Bool.st %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Bool.ty @"_!=_Int_Int"(%Int.ty %a, %Int.ty %b) #2 {
+define %Bool.st @"_!=_Int_Int"(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.ty %a, 0
-  %value1 = extractvalue %Int.ty %b, 0
+  %value = extractvalue %Int.st %a, 0
+  %value1 = extractvalue %Int.st %b, 0
   %cmp_neq_res = icmp ne i64 %value, %value1
-  %Bool1.i.fca.0.insert = insertvalue %Bool.ty undef, i1 %cmp_neq_res, 0
-  ret %Bool.ty %Bool1.i.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue %Bool.st undef, i1 %cmp_neq_res, 0
+  ret %Bool.st %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Bool.ty @"_&&_Bool_Bool"(%Bool.ty %a, %Bool.ty %b) #2 {
+define %Bool.st @"_&&_Bool_Bool"(%Bool.st %a, %Bool.st %b) #2 {
 entry:
-  %value = extractvalue %Bool.ty %a, 0
-  %value1 = extractvalue %Bool.ty %b, 0
+  %value = extractvalue %Bool.st %a, 0
+  %value1 = extractvalue %Bool.st %b, 0
   %cmp_and_res = and i1 %value, %value1
-  %Bool1.i.fca.0.insert = insertvalue %Bool.ty undef, i1 %cmp_and_res, 0
-  ret %Bool.ty %Bool1.i.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue %Bool.st undef, i1 %cmp_and_res, 0
+  ret %Bool.st %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Bool.ty @"_||_Bool_Bool"(%Bool.ty %a, %Bool.ty %b) #2 {
+define %Bool.st @"_||_Bool_Bool"(%Bool.st %a, %Bool.st %b) #2 {
 entry:
-  %value = extractvalue %Bool.ty %a, 0
-  %value1 = extractvalue %Bool.ty %b, 0
+  %value = extractvalue %Bool.st %a, 0
+  %value1 = extractvalue %Bool.st %b, 0
   %cmp_or_res = or i1 %value, %value1
-  %Bool1.i.fca.0.insert = insertvalue %Bool.ty undef, i1 %cmp_or_res, 0
-  ret %Bool.ty %Bool1.i.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue %Bool.st undef, i1 %cmp_or_res, 0
+  ret %Bool.st %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Double.ty @"_+_Double_Double"(%Double.ty %a, %Double.ty %b) #2 {
+define %Double.st @"_+_Double_Double"(%Double.st %a, %Double.st %b) #2 {
 entry:
-  %value = extractvalue %Double.ty %a, 0
-  %value1 = extractvalue %Double.ty %b, 0
+  %value = extractvalue %Double.st %a, 0
+  %value1 = extractvalue %Double.st %b, 0
   %add_res = fadd double %value, %value1
-  %Double1.i.fca.0.insert = insertvalue %Double.ty undef, double %add_res, 0
-  ret %Double.ty %Double1.i.fca.0.insert
+  %Double1.i.fca.0.insert = insertvalue %Double.st undef, double %add_res, 0
+  ret %Double.st %Double1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Double.ty @_-_Double_Double(%Double.ty %a, %Double.ty %b) #2 {
+define %Double.st @_-_Double_Double(%Double.st %a, %Double.st %b) #2 {
 entry:
-  %value = extractvalue %Double.ty %a, 0
-  %value1 = extractvalue %Double.ty %b, 0
+  %value = extractvalue %Double.st %a, 0
+  %value1 = extractvalue %Double.st %b, 0
   %sub_res = fsub double %value, %value1
-  %Double1.i.fca.0.insert = insertvalue %Double.ty undef, double %sub_res, 0
-  ret %Double.ty %Double1.i.fca.0.insert
+  %Double1.i.fca.0.insert = insertvalue %Double.st undef, double %sub_res, 0
+  ret %Double.st %Double1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Double.ty @"_*_Double_Double"(%Double.ty %a, %Double.ty %b) #2 {
+define %Double.st @"_*_Double_Double"(%Double.st %a, %Double.st %b) #2 {
 entry:
-  %value = extractvalue %Double.ty %a, 0
-  %value1 = extractvalue %Double.ty %b, 0
+  %value = extractvalue %Double.st %a, 0
+  %value1 = extractvalue %Double.st %b, 0
   %mul_res = fmul double %value, %value1
-  %Double1.i.fca.0.insert = insertvalue %Double.ty undef, double %mul_res, 0
-  ret %Double.ty %Double1.i.fca.0.insert
+  %Double1.i.fca.0.insert = insertvalue %Double.st undef, double %mul_res, 0
+  ret %Double.st %Double1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Double.ty @"_/_Double_Double"(%Double.ty %a, %Double.ty %b) #2 {
+define %Double.st @"_/_Double_Double"(%Double.st %a, %Double.st %b) #2 {
 entry:
-  %value = extractvalue %Double.ty %a, 0
-  %value1 = extractvalue %Double.ty %b, 0
+  %value = extractvalue %Double.st %a, 0
+  %value1 = extractvalue %Double.st %b, 0
   %div_res = fdiv double %value, %value1
-  %Double1.i.fca.0.insert = insertvalue %Double.ty undef, double %div_res, 0
-  ret %Double.ty %Double1.i.fca.0.insert
+  %Double1.i.fca.0.insert = insertvalue %Double.st undef, double %div_res, 0
+  ret %Double.st %Double1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Double.ty @"_%_Double_Double"(%Double.ty %a, %Double.ty %b) #2 {
+define %Double.st @"_%_Double_Double"(%Double.st %a, %Double.st %b) #2 {
 entry:
-  %value = extractvalue %Double.ty %a, 0
-  %value1 = extractvalue %Double.ty %b, 0
+  %value = extractvalue %Double.st %a, 0
+  %value1 = extractvalue %Double.st %b, 0
   %rem_res = frem double %value, %value1
-  %Double1.i.fca.0.insert = insertvalue %Double.ty undef, double %rem_res, 0
-  ret %Double.ty %Double1.i.fca.0.insert
+  %Double1.i.fca.0.insert = insertvalue %Double.st undef, double %rem_res, 0
+  ret %Double.st %Double1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Bool.ty @"_<_Double_Double"(%Double.ty %a, %Double.ty %b) #2 {
+define %Bool.st @"_<_Double_Double"(%Double.st %a, %Double.st %b) #2 {
 entry:
-  %value = extractvalue %Double.ty %a, 0
-  %value1 = extractvalue %Double.ty %b, 0
+  %value = extractvalue %Double.st %a, 0
+  %value1 = extractvalue %Double.st %b, 0
   %cmp_lt_res = fcmp olt double %value, %value1
-  %Bool1.i.fca.0.insert = insertvalue %Bool.ty undef, i1 %cmp_lt_res, 0
-  ret %Bool.ty %Bool1.i.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue %Bool.st undef, i1 %cmp_lt_res, 0
+  ret %Bool.st %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Bool.ty @"_<=_Double_Double"(%Double.ty %a, %Double.ty %b) #2 {
+define %Bool.st @"_<=_Double_Double"(%Double.st %a, %Double.st %b) #2 {
 entry:
-  %value = extractvalue %Double.ty %a, 0
-  %value1 = extractvalue %Double.ty %b, 0
+  %value = extractvalue %Double.st %a, 0
+  %value1 = extractvalue %Double.st %b, 0
   %cmp_lte_res = fcmp ole double %value, %value1
-  %Bool1.i.fca.0.insert = insertvalue %Bool.ty undef, i1 %cmp_lte_res, 0
-  ret %Bool.ty %Bool1.i.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue %Bool.st undef, i1 %cmp_lte_res, 0
+  ret %Bool.st %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Bool.ty @"_>_Double_Double"(%Double.ty %a, %Double.ty %b) #2 {
+define %Bool.st @"_>_Double_Double"(%Double.st %a, %Double.st %b) #2 {
 entry:
-  %value = extractvalue %Double.ty %a, 0
-  %value1 = extractvalue %Double.ty %b, 0
+  %value = extractvalue %Double.st %a, 0
+  %value1 = extractvalue %Double.st %b, 0
   %cmp_gt_res = fcmp ogt double %value, %value1
-  %Bool1.i.fca.0.insert = insertvalue %Bool.ty undef, i1 %cmp_gt_res, 0
-  ret %Bool.ty %Bool1.i.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue %Bool.st undef, i1 %cmp_gt_res, 0
+  ret %Bool.st %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Bool.ty @"_>=_Double_Double"(%Double.ty %a, %Double.ty %b) #2 {
+define %Bool.st @"_>=_Double_Double"(%Double.st %a, %Double.st %b) #2 {
 entry:
-  %value = extractvalue %Double.ty %a, 0
-  %value1 = extractvalue %Double.ty %b, 0
+  %value = extractvalue %Double.st %a, 0
+  %value1 = extractvalue %Double.st %b, 0
   %cmp_gte_res = fcmp oge double %value, %value1
-  %Bool1.i.fca.0.insert = insertvalue %Bool.ty undef, i1 %cmp_gte_res, 0
-  ret %Bool.ty %Bool1.i.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue %Bool.st undef, i1 %cmp_gte_res, 0
+  ret %Bool.st %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Bool.ty @"_==_Double_Double"(%Double.ty %a, %Double.ty %b) #2 {
+define %Bool.st @"_==_Double_Double"(%Double.st %a, %Double.st %b) #2 {
 entry:
-  %value = extractvalue %Double.ty %a, 0
-  %value1 = extractvalue %Double.ty %b, 0
+  %value = extractvalue %Double.st %a, 0
+  %value1 = extractvalue %Double.st %b, 0
   %cmp_eq_res = fcmp oeq double %value, %value1
-  %Bool1.i.fca.0.insert = insertvalue %Bool.ty undef, i1 %cmp_eq_res, 0
-  ret %Bool.ty %Bool1.i.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue %Bool.st undef, i1 %cmp_eq_res, 0
+  ret %Bool.st %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Bool.ty @"_!=_Double_Double"(%Double.ty %a, %Double.ty %b) #2 {
+define %Bool.st @"_!=_Double_Double"(%Double.st %a, %Double.st %b) #2 {
 entry:
-  %value = extractvalue %Double.ty %a, 0
-  %value1 = extractvalue %Double.ty %b, 0
+  %value = extractvalue %Double.st %a, 0
+  %value1 = extractvalue %Double.st %b, 0
   %cmp_neq_res = fcmp one double %value, %value1
-  %Bool1.i.fca.0.insert = insertvalue %Bool.ty undef, i1 %cmp_neq_res, 0
-  ret %Bool.ty %Bool1.i.fca.0.insert
+  %Bool1.i.fca.0.insert = insertvalue %Bool.st undef, i1 %cmp_neq_res, 0
+  ret %Bool.st %Bool1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Range.ty @_..._Int_Int(%Int.ty %a, %Int.ty %b) #2 {
+define %Range.st @_..._Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %a.fca.0.extract = extractvalue %Int.ty %a, 0
-  %b.fca.0.extract = extractvalue %Int.ty %b, 0
-  %Range1.i.fca.0.0.insert = insertvalue %Range.ty undef, i64 %a.fca.0.extract, 0, 0
-  %Range1.i.fca.1.0.insert = insertvalue %Range.ty %Range1.i.fca.0.0.insert, i64 %b.fca.0.extract, 1, 0
-  ret %Range.ty %Range1.i.fca.1.0.insert
+  %a.fca.0.extract = extractvalue %Int.st %a, 0
+  %b.fca.0.extract = extractvalue %Int.st %b, 0
+  %Range1.i.fca.0.0.insert = insertvalue %Range.st undef, i64 %a.fca.0.extract, 0, 0
+  %Range1.i.fca.1.0.insert = insertvalue %Range.st %Range1.i.fca.0.0.insert, i64 %b.fca.0.extract, 1, 0
+  ret %Range.st %Range1.i.fca.1.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind
-define %Range.ty @"_..<_Int_Int"(%Int.ty %a, %Int.ty %b) #3 {
+define %Range.st @"_..<_Int_Int"(%Int.st %a, %Int.st %b) #3 {
 entry:
-  %value.i = extractvalue %Int.ty %b, 0
+  %value.i = extractvalue %Int.st %b, 0
   %sub_res.i = tail call { i64, i1 } @llvm.ssub.with.overflow.i64(i64 %value.i, i64 1) #7
   %sub_res.i.fca.1.extract = extractvalue { i64, i1 } %sub_res.i, 1
   br i1 %sub_res.i.fca.1.extract, label %then.0.i.i, label %_-_Int_Int.exit
@@ -477,46 +477,46 @@ then.0.i.i:                                       ; preds = %entry
 
 _-_Int_Int.exit:                                  ; preds = %entry
   %sub_res.i.fca.0.extract = extractvalue { i64, i1 } %sub_res.i, 0
-  %a.fca.0.extract = extractvalue %Int.ty %a, 0
-  %Range1.i.fca.0.0.insert = insertvalue %Range.ty undef, i64 %a.fca.0.extract, 0, 0
-  %Range1.i.fca.1.0.insert = insertvalue %Range.ty %Range1.i.fca.0.0.insert, i64 %sub_res.i.fca.0.extract, 1, 0
-  ret %Range.ty %Range1.i.fca.1.0.insert
+  %a.fca.0.extract = extractvalue %Int.st %a, 0
+  %Range1.i.fca.0.0.insert = insertvalue %Range.st undef, i64 %a.fca.0.extract, 0, 0
+  %Range1.i.fca.1.0.insert = insertvalue %Range.st %Range1.i.fca.0.0.insert, i64 %sub_res.i.fca.0.extract, 1, 0
+  ret %Range.st %Range1.i.fca.1.0.insert
 }
 
 ; Function Attrs: nounwind
 declare i32 @puts(i8* nocapture readonly) #7
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Int.ty @_Int_i641(i64) #2 {
-  %Int1.fca.0.insert.i = insertvalue %Int.ty undef, i64 %0, 0
-  ret %Int.ty %Int1.fca.0.insert.i
+define %Int.st @_Int_i641(i64) #2 {
+  %Int1.fca.0.insert.i = insertvalue %Int.st undef, i64 %0, 0
+  ret %Int.st %Int1.fca.0.insert.i
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Int32.ty @_Int32_i322(i32) #2 {
-  %Int321.fca.0.insert.i = insertvalue %Int32.ty undef, i32 %0, 0
-  ret %Int32.ty %Int321.fca.0.insert.i
+define %Int32.st @_Int32_i322(i32) #2 {
+  %Int321.fca.0.insert.i = insertvalue %Int32.st undef, i32 %0, 0
+  ret %Int32.st %Int321.fca.0.insert.i
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Bool.ty @_Bool_b3(i1) #2 {
-  %Bool1.fca.0.insert.i = insertvalue %Bool.ty undef, i1 %0, 0
-  ret %Bool.ty %Bool1.fca.0.insert.i
+define %Bool.st @_Bool_b3(i1) #2 {
+  %Bool1.fca.0.insert.i = insertvalue %Bool.st undef, i1 %0, 0
+  ret %Bool.st %Bool1.fca.0.insert.i
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Double.ty @_Double_f644(double) #2 {
-  %Double1.fca.0.insert.i = insertvalue %Double.ty undef, double %0, 0
-  ret %Double.ty %Double1.fca.0.insert.i
+define %Double.st @_Double_f644(double) #2 {
+  %Double1.fca.0.insert.i = insertvalue %Double.st undef, double %0, 0
+  ret %Double.st %Double1.fca.0.insert.i
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Range.ty @_Range_Int_Int5(%Int.ty, %Int.ty) #2 {
-  %"$0.fca.0.extract.i" = extractvalue %Int.ty %0, 0
-  %"$1.fca.0.extract.i" = extractvalue %Int.ty %1, 0
-  %Range1.fca.0.0.insert.i = insertvalue %Range.ty undef, i64 %"$0.fca.0.extract.i", 0, 0
-  %Range1.fca.1.0.insert.i = insertvalue %Range.ty %Range1.fca.0.0.insert.i, i64 %"$1.fca.0.extract.i", 1, 0
-  ret %Range.ty %Range1.fca.1.0.insert.i
+define %Range.st @_Range_Int_Int5(%Int.st, %Int.st) #2 {
+  %"$0.fca.0.extract.i" = extractvalue %Int.st %0, 0
+  %"$1.fca.0.extract.i" = extractvalue %Int.st %1, 0
+  %Range1.fca.0.0.insert.i = insertvalue %Range.st undef, i64 %"$0.fca.0.extract.i", 0, 0
+  %Range1.fca.1.0.insert.i = insertvalue %Range.st %Range1.fca.0.0.insert.i, i64 %"$1.fca.0.extract.i", 1, 0
+  ret %Range.st %Range1.fca.1.0.insert.i
 }
 
 attributes #0 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }

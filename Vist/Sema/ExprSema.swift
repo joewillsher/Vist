@@ -83,7 +83,7 @@ extension MutationExpr : ExprTypeProvider {
         let old = try object.typeForNode(scope)
         let new = try value.typeForNode(scope)
         
-        guard old == new else { throw error(SemaError.DifferentTypeForMutation(object.desc, old, new)) }
+        guard old == new else { throw error(SemaError.DifferentTypeForMutation(object.typeName, old, new)) }
         
         switch object {
         case let variable as VariableExpr:
@@ -91,23 +91,25 @@ extension MutationExpr : ExprTypeProvider {
             guard let v = scope[variable: variable.name] else { throw error(SemaError.NoVariable(variable.name)) }
             guard v.mutable else { throw error(SemaError.ImmutableVariable(variable.name)) }
             
-        case let propertyLookup as PropertyLookupExpr:
-            
-            let objectName = propertyLookup.object.desc
-            let object = scope[variable: objectName]
-            
-            guard case let type as StructType = object?.type else { throw error(SemaError.NoVariable(objectName)) }
-            guard let mutable = object?.mutable where mutable else { throw error(SemaError.ImmutableVariable(objectName)) }
-                
-            guard try type.propertyMutable(propertyLookup.propertyName) else { throw error(SemaError.ImmutableProperty(p: propertyLookup.propertyName, obj: objectName, ty: type.name)) }
-            
-        case let memberLookup as TupleMemberLookupExpr:
-            
-            let objectName = memberLookup.object.desc
-            let object = scope[variable: objectName]
-            
-            guard case _ as TupleType = object?.type else { throw error(SemaError.NoVariable(objectName)) }
-            guard let mutable = object?.mutable where mutable else { throw error(SemaError.ImmutableVariable(objectName)) }
+//        case let propertyLookup as PropertyLookupExpr:
+//            
+//            let objectName = propertyLookup.object.desc
+//            let object = scope[variable: objectName]
+//            
+//            guard case let type as StructType = object?.type else { throw error(SemaError.NoVariable(objectName)) }
+//            guard let mutable = object?.mutable where mutable else { throw error(SemaError.ImmutableVariable(objectName)) }
+//                
+//            guard try type.propertyMutable(propertyLookup.propertyName) else { throw error(SemaError.ImmutableProperty(p: propertyLookup.propertyName, obj: objectName, ty: type.name)) }
+//            
+//        case let memberLookup as TupleMemberLookupExpr:
+//            
+//            let objectName = memberLookup.object.desc
+//            let object = scope[variable: objectName]
+//            
+//            guard case _ as TupleType = object?.type else { throw error(SemaError.NoVariable(objectName)) }
+//            guard let mutable = object?.mutable where mutable else { throw error(SemaError.ImmutableVariable(objectName)) }
+//            
+            // TODO: checks on mutation expressions
             
         default:
             break
@@ -116,6 +118,16 @@ extension MutationExpr : ExprTypeProvider {
         return BuiltinType.Null
     }
 }
+
+//extension ChainableExpr {
+//    
+//    func recursiveType() -> (type: Ty, mutable: Bool) {
+//        // called by above, only returns true if mutable variavle
+//        // recursively calls itself and
+//    }
+//    
+//}
+
 
 
 extension VariableDecl : DeclTypeProvider {

@@ -26,14 +26,13 @@ struct ConceptType : StorageType {
             BuiltinType.OpaquePointer
             ]).memberTypes(module)
     }
-    
-    
-    var debugDescription: String {
-        return name
+        
+    var irName: String {
+        return "\(name).ex"
     }
     
-    var mangledTypeName: String {
-        return "\(name).ex.ty"
+    var mangledName: String {
+        return name
     }
     
     var members: [StructMember] {
@@ -42,11 +41,6 @@ struct ConceptType : StorageType {
     
     var methods: [StructMethod] {
         return requiredFunctions
-    }
-    
-    
-    var description: String {
-        return name
     }
 
     
@@ -83,12 +77,4 @@ struct ConceptType : StorageType {
     }
 }
 
-
-
-func printi32(v: LLVMValueRef, irGen: IRGen) {
-    let c = StdLib.getFunctionIR("_Int32_i32", module: irGen.module)!.functionIR
-    let iiii = LLVMBuildCall(irGen.builder, c, [v].ptr(), 1, "")
-    let cc = StdLib.getFunctionIR("_print_Int32", module: irGen.module)!.functionIR
-    LLVMBuildCall(irGen.builder, cc, [iiii].ptr(), 1, "")
-}
 

@@ -6,19 +6,20 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-protocol Ty : Printable, CustomDebugStringConvertible {
-    var name: String { get }
-    func ir() -> LLVMTypeRef
+protocol Ty : Printable {
+    func ir() -> LLVMTypeRef // TODO: deprecate this
     func globalType(module: LLVMModuleRef) -> LLVMTypeRef
+    
+    /// Name used in mangling function signatures
+    var mangledName: String { get }
+    var explicitName: String { get }
 }
 
 extension Ty {
-    
-    var mangledTypeName: String {
-        return "\(description).ty"
+    var explicitName: String {
+        return mangledName
     }
 }
-
 
 extension BuiltinType : Equatable {}
 extension FnType: Equatable {}

@@ -1,78 +1,42 @@
-; ModuleID = 'vist_module'
+; ModuleID = 'example.ll'
 target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-macosx10.11.0"
 
-%Bar.ty = type { %Eq.ty }
-%Eq.ty = type { [1 x i32], i8* }
-%Foo.ty = type { %Int.ty }
-%Int.ty = type { i64 }
+%Foo.st = type { %Int.st }
+%Int.st = type { i64 }
+%Bar.st = type { %Eq.ex }
+%Eq.ex = type { [1 x i32], i8* }
 
-define void @main() {
+; Function Attrs: nounwind
+define void @main() #0 {
 entry:
-  %Bar.i = alloca %Bar.ty
-  %Foo.i = alloca %Foo.ty
-  %0 = call %Int.ty @_Int_i64(i64 1), !stdlib.call.optim !0
-  %Foo.t.ptr.i = getelementptr inbounds %Foo.ty* %Foo.i, i32 0, i32 0
-  store %Int.ty %0, %Int.ty* %Foo.t.ptr.i
-  %Foo1.i = load %Foo.ty* %Foo.i
-  %1 = alloca %Eq.ty
-  %.metadata = getelementptr inbounds %Eq.ty* %1, i32 0, i32 0
-  %.opaque = getelementptr inbounds %Eq.ty* %1, i32 0, i32 1
-  %2 = alloca %Foo.ty
-  %metadata = alloca [1 x i32]
-  %3 = getelementptr inbounds [1 x i32]* %metadata, i32 0, i32 0
-  store i32 0, i32* %3
-  %4 = load [1 x i32]* %metadata
-  store [1 x i32] %4, [1 x i32]* %.metadata
-  store %Foo.ty %Foo1.i, %Foo.ty* %2
-  %5 = bitcast i8** %.opaque to %Foo.ty**
-  store %Foo.ty* %2, %Foo.ty** %5
-  %6 = load %Eq.ty* %1
-  %Bar.foo.ptr.i = getelementptr inbounds %Bar.ty* %Bar.i, i32 0, i32 0
-  store %Eq.ty %6, %Eq.ty* %Bar.foo.ptr.i
-  %Bar3.i = load %Bar.ty* %Bar.i
-  %b = alloca %Bar.ty
-  store %Bar.ty %Bar3.i, %Bar.ty* %b
-  %b.foo.ptr2 = getelementptr inbounds %Bar.ty* %b, i32 0, i32 0
-  %b.foo3 = load %Eq.ty* %b.foo.ptr2
-  %7 = alloca %Eq.ty
-  store %Eq.ty %b.foo3, %Eq.ty* %7
-  %metadata_base_ptr = getelementptr inbounds %Eq.ty* %7, i32 0, i32 0, i32 0
-  %8 = load i32* %metadata_base_ptr
-  %.element_pointer = getelementptr inbounds %Eq.ty* %7, i32 0, i32 1
-  %.opaque_instance_pointer = load i8** %.element_pointer
-  %9 = getelementptr i8* %.opaque_instance_pointer, i32 %8
-  %t.ptr = bitcast i8* %9 to %Int.ty*
-  %t = load %Int.ty* %t.ptr
-  call void @_print_Int(%Int.ty %t), !stdlib.call.optim !0
-  %10 = call %Int.ty @_Int_i64(i64 1), !stdlib.call.optim !0
+  tail call void @"_$print_i64"(i64 3)
+  tail call void @"_$print_i64"(i64 1)
+  tail call void @"_$print_i64"(i64 4)
   ret void
 }
 
-; Function Attrs: alwaysinline
-define %Foo.ty @_Foo_Int(%Int.ty %"$0") #0 {
+; Function Attrs: alwaysinline nounwind readnone
+define %Foo.st @_Foo_Int(%Int.st %"$0") #1 {
 entry:
-  %Foo = alloca %Foo.ty
-  %Foo.t.ptr = getelementptr inbounds %Foo.ty* %Foo, i32 0, i32 0
-  store %Int.ty %"$0", %Int.ty* %Foo.t.ptr
-  %Foo1 = load %Foo.ty* %Foo
-  ret %Foo.ty %Foo1
+  %"$0.fca.0.extract" = extractvalue %Int.st %"$0", 0
+  %Foo1.fca.0.0.insert = insertvalue %Foo.st undef, i64 %"$0.fca.0.extract", 0, 0
+  ret %Foo.st %Foo1.fca.0.0.insert
 }
 
-; Function Attrs: alwaysinline
-define %Bar.ty @_Bar_Eq(%Eq.ty %"$0") #0 {
+; Function Attrs: alwaysinline nounwind readnone
+define %Bar.st @_Bar_Eq(%Eq.ex %"$0") #1 {
 entry:
-  %Bar = alloca %Bar.ty
-  %Bar.foo.ptr = getelementptr inbounds %Bar.ty* %Bar, i32 0, i32 0
-  store %Eq.ty %"$0", %Eq.ty* %Bar.foo.ptr
-  %Bar3 = load %Bar.ty* %Bar
-  ret %Bar.ty %Bar3
+  %"$0.fca.0.0.extract" = extractvalue %Eq.ex %"$0", 0, 0
+  %"$0.fca.1.extract" = extractvalue %Eq.ex %"$0", 1
+  %Bar3.fca.0.0.0.insert = insertvalue %Bar.st undef, i32 %"$0.fca.0.0.extract", 0, 0, 0
+  %Bar3.fca.0.1.insert = insertvalue %Bar.st %Bar3.fca.0.0.0.insert, i8* %"$0.fca.1.extract", 0, 1
+  ret %Bar.st %Bar3.fca.0.1.insert
 }
 
-declare %Int.ty @_Int_i64(i64)
+; Function Attrs: noinline nounwind ssp uwtable
+declare void @"_$print_i64"(i64) #2
 
-declare void @_print_Int(%Int.ty)
-
-attributes #0 = { alwaysinline }
-
-!0 = !{!"stdlib.call.optim"}
+attributes #0 = { nounwind }
+attributes #1 = { alwaysinline nounwind readnone }
+attributes #2 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
