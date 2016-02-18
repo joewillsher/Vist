@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-protocol ASTNode : Printable {}
+protocol ASTNode: Printable {}
 
 // use behaviour delegates (when released in swift 3) to make `let (delated) type: Ty { get }`
 ///
@@ -14,7 +14,7 @@ protocol ASTNode : Printable {}
 ///
 /// Provides common interfaces for expressions, declarations, and statements
 ///
-final class AST : ASTNode, ScopeNode {
+final class AST: ASTNode, ScopeNode {
     var exprs: [ASTNode]
     
     init(exprs: [ASTNode]) {
@@ -44,7 +44,7 @@ extension _Typed {
 
 /// Typed protocol which defines a generic type
 ///
-protocol Typed : _Typed {
+protocol Typed: _Typed {
     typealias Type: Ty
     var type: Type? { get set }
 }

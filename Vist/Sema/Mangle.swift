@@ -13,26 +13,72 @@ extension String {
     
     func mangle(type: FnType, parentTypeName: String? = nil) -> String {
         let n = parentTypeName == nil ? "" : "\(parentTypeName!)."
-        return "_\(n)\(sansUnderscores())_\(type.mangledName)"
+        return "\(n)\(mappedChars())_\(type.mangledName)"
     }
     func mangle(type: [Ty], parentTypeName: String? = nil) -> String {
         return mangle(FnType(params: type, returns: BuiltinType.Void/*Doesnt matter*/), parentTypeName: parentTypeName)
     }
     
+    private static var mangleMap: [(Character, Character)] = [
+        ("_", "U"),
+        ("-", "M"),
+        ("+", "P"),
+        ("|", "O"),
+        ("&", "N"),
+        ("$", "V"),
+        ("*", "A"),
+        ("<", "L"),
+        (">", "G"),
+        ("=", "E"),
+        ("/", "D")
+    ]
     
-    func sansUnderscores() -> String {
-        return stringByReplacingOccurrencesOfString("_", withString: "$")
+    private func mappedChars() -> String {
+        var resStr: [Character] = []
+        
+        for c in characters {
+            if let replacement = String.mangleMap.indexOf({$0.0 == c}) {
+                resStr.append("-")
+                resStr.append(String.mangleMap[replacement].1)
+            }
+            else {
+                resStr.append(c)
+            }
+        }
+        return String(resStr)
     }
     
-    // TODO: Add globalinit to mangled names for initalisers
     func demangleName() -> String {
-        let kk = characters.dropFirst()
-        return String(kk.prefixUpTo(kk.indexOf("_")!))
-            .stringByReplacingOccurrencesOfString("$", withString: "_")
+        let name = String(characters.prefixUpTo(characters.indexOf("_")!))
+        var resStr: [Character] = []
+        var pred: Character? = nil
+        
+        for c in name.characters {
+            
+            if c == "-" {
+                pred = c
+                continue
+            }
+                        
+            if let original = String.mangleMap.indexOf({$0.1 == c}) where pred == "-" {
+                resStr.append(String.mangleMap[original].0)
+            } else {
+                resStr.append(c)
+            }
+            
+            pred = c
+        }
+        
+        return String(resStr)
     }
+    
+    func demangleRuntimeName() -> String {
+        return String(characters.prefixUpTo(characters.indexOf("_") ?? characters.startIndex)).stringByReplacingOccurrencesOfString("$", withString: "_")
+    }
+    
 }
 
-func implicitParamName<I : IntegerType>(n: I) -> String { return "$\(n)"}
+func implicitParamName<I: IntegerType>(n: I) -> String { return "$\(n)"}
 
 extension IntegerType {
     func implicitParamName() -> String { return "$\(self)"}

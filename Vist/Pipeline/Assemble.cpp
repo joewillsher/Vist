@@ -28,7 +28,7 @@
 //        llvm::TargetMachine::CodeGenFileType FileType;
 //        FileType = (Opts.OutputKind == IRGenOutputKind::NativeAssembly
 //                    ? llvm::TargetMachine::CGFT_AssemblyFile
-//                    : llvm::TargetMachine::CGFT_ObjectFile);
+//                   : llvm::TargetMachine::CGFT_ObjectFile);
 //        
 //        EmitPasses.add(createTargetTransformInfoWrapperPass(
 //                                                            TargetMachine->getTargetIRAnalysis()));

@@ -7,7 +7,7 @@
 //
 
 
-struct FnType : Ty {
+struct FnType: Ty {
     let params: [Ty], returns: Ty
     var metadata: [String]
     

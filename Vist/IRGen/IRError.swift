@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-enum IRError : VistError {
+enum IRError: VistError {
     case WrongFunctionApplication(String)
     case NoVariable(String), NoFunction(String), NoType(String), TypeNotFound
     case NotMutable(String), NotMutableProp(name: String, inType: String)

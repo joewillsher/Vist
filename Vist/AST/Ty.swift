@@ -6,7 +6,7 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-protocol Ty : Printable {
+protocol Ty: Printable {
     func globalType(module: LLVMModuleRef) -> LLVMTypeRef
     
     /// Name used in mangling function signatures
@@ -20,7 +20,7 @@ extension Ty {
     }
 }
 
-extension BuiltinType : Equatable {}
+extension BuiltinType: Equatable {}
 extension FnType: Equatable {}
 
 
@@ -40,11 +40,11 @@ func globalType(module: LLVMModuleRef) -> Ty throws -> LLVMValueRef {
 
 
 @warn_unused_result
-func == <T : Ty> (lhs: T, rhs: T) -> Bool {
+func == <T: Ty> (lhs: T, rhs: T) -> Bool {
     return lhs.globalType(nil) == rhs.globalType(nil)
 }
 @warn_unused_result
-func == <T : Ty> (lhs: Ty?, rhs: T) -> Bool {
+func == <T: Ty> (lhs: Ty?, rhs: T) -> Bool {
     return lhs?.globalType(nil) == rhs.globalType(nil)
 }
 @warn_unused_result

@@ -33,42 +33,35 @@
 
 extern "C" NOINLINE
 void
-_$print_i64(int64_t i)
+$print_i64(int64_t i)
 {
     printf("%lli\n", i);
 };
 
 extern "C" NOINLINE
 void
-_$print_i32(int i)
-{
-    printf("%li\n", i);
-};
-
-extern "C" NOINLINE
-void
-_$print_i32(int i)
+$print_i32(int i)
 {
     printf("%i\n", i);
 };
 
 extern "C" NOINLINE
 void
-_$print_f64(double d)
+$print_f64(double d)
 {
     printf("%f\n", d);
 };
 
 extern "C" NOINLINE
 void
-_$print_f32(float d)
+$print_f32(float d)
 {
     printf("%f\n", d);
 };
 
 extern "C" NOINLINE
 void
-_$print_b(bool b)
+$print_b(bool b)
 {
     if (b) { printf("true\n"); } else { printf("false\n"); };
 };

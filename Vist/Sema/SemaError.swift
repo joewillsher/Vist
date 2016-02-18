@@ -6,7 +6,7 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-enum SemaError : VistError {
+enum SemaError: VistError {
     case InvalidType(BuiltinType), InvalidFloatType(UInt32)
     case InvalidRedeclaration(String), InvalidTypeRedeclaration(String)
     case NoVariable(String)

@@ -9,7 +9,7 @@
 
 
 
-class ArrayVariable : RuntimeVariable {
+class ArrayVariable: RuntimeVariable {
     private var elementType: LLVMTypeRef    // ty Type
     private var arrayType: LLVMTypeRef // [sz x ty] Type
     

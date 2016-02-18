@@ -8,7 +8,7 @@
 
 
 
-extension FuncDecl : DeclTypeProvider {
+extension FuncDecl: DeclTypeProvider {
     
     func typeForNode(scope: SemaScope) throws {
         
@@ -26,7 +26,7 @@ extension FuncDecl : DeclTypeProvider {
         
         let fnScope = SemaScope(parent: declScope, returnType: ty.returns)
         
-        scope[function: name] = ty  // update function table
+        scope.addFunction(name, type: ty)  // update function table
         fnType.type = ty            // store type in fntype
         
         guard let impl = self.impl else { return }
@@ -58,7 +58,7 @@ extension FuncDecl : DeclTypeProvider {
     }
 }
 
-extension BinaryExpr : ExprTypeProvider {
+extension BinaryExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         
@@ -82,7 +82,7 @@ extension BinaryExpr : ExprTypeProvider {
 }
 
 
-extension FunctionCallExpr : ExprTypeProvider {
+extension FunctionCallExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         

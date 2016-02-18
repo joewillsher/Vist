@@ -35,4 +35,40 @@ let b = Baz (Foo 1)
 let u = b.foo.t
 print u // test: 1
 
+type StackOf2 {
+var bottom: Int
+var top: Int
+
+func sum :: () -> Int = do
+return bottom + top
+
+@mutating
+func pop :: () -> Int = {
+let v = top
+top = bottom
+return v
+}
+
+@mutating
+func push :: Int = (val) {
+bottom = top
+top = val
+}
+}
+
+var stack = StackOf2 2 10
+
+print (stack.sum ()) // test: 12
+
+stack.push 3
+print (stack.bottom) // test: 10
+print (stack.top) // test: 3
+print (stack.sum ()) // test: 13
+
+print (stack.pop ()) // test: 3
+print (stack.pop ()) // test: 10
+
+stack = StackOf2 2 4
+
+print stack.bottom == stack.top // test: false
 

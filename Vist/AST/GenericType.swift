@@ -7,7 +7,7 @@
 //
 
 
-struct GenericType : StorageType {
+struct GenericType: StorageType {
     
     let name: String
     /// Concepts this generic type implements

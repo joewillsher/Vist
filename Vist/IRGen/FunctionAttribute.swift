@@ -8,11 +8,11 @@
 
 protocol AttributeExpr { }
 
-enum ASTAttributeExpr : AttributeExpr {
+enum ASTAttributeExpr: AttributeExpr {
     case Operator(prec: Int)
 }
 
-enum FunctionAttributeExpr : String, AttributeExpr {
+enum FunctionAttributeExpr: String, AttributeExpr {
     case Inline = "inline"
     case NoReturn = "noreturn"
     case NoInline = "noinline"

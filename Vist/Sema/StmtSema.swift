@@ -8,7 +8,7 @@
 
 
 
-extension ReturnStmt : StmtTypeProvider {
+extension ReturnStmt: StmtTypeProvider {
     
     func typeForNode(scope: SemaScope) throws {
         
@@ -26,7 +26,7 @@ extension ReturnStmt : StmtTypeProvider {
 //  MARK:                                                 Control flow
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension ConditionalStmt : StmtTypeProvider {
+extension ConditionalStmt: StmtTypeProvider {
     
     func typeForNode(scope: SemaScope) throws {
         
@@ -40,7 +40,7 @@ extension ConditionalStmt : StmtTypeProvider {
 }
 
 
-extension ElseIfBlockStmt : StmtTypeProvider {
+extension ElseIfBlockStmt: StmtTypeProvider {
     
     func typeForNode(scope: SemaScope) throws {
         
@@ -67,7 +67,7 @@ extension ElseIfBlockStmt : StmtTypeProvider {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-extension ForInLoopStmt : StmtTypeProvider {
+extension ForInLoopStmt: StmtTypeProvider {
     
     func typeForNode(scope: SemaScope) throws {
         
@@ -89,7 +89,7 @@ extension ForInLoopStmt : StmtTypeProvider {
 }
 
 
-extension WhileLoopStmt : StmtTypeProvider {
+extension WhileLoopStmt: StmtTypeProvider {
     
     func typeForNode(scope: SemaScope) throws {
         

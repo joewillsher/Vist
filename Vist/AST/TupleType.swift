@@ -8,7 +8,7 @@
 
 // TODO: struct type and tuple type both 1 protocol
 
-final class TupleType : Ty {
+final class TupleType: Ty {
     var members: [Ty]
     
     init(members: [Ty]) {

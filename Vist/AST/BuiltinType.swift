@@ -8,7 +8,7 @@
 
 
 
-enum BuiltinType : Ty {
+enum BuiltinType: Ty {
     case Null, Void
     case Int(size: UInt32), Float(size: UInt32), Bool
     indirect case Array(el: Ty, size: UInt32?)
@@ -54,6 +54,18 @@ enum BuiltinType : Ty {
         default: return nil
         }
     }
+    init?(_ type: LLVMTypeRef) {
+        switch type {
+        case LLVMVoidType(): self = .Void
+        case LLVMInt32Type(): self = .Int(size: 32)
+        case LLVMInt64Type(): self = .Int(size: 64)
+        case LLVMInt1Type(): self = .Bool
+        case LLVMDoubleType(): self = .Float(size: 64)
+        case LLVMFloatType(): self = .Float(size: 32)
+        default: return nil
+        }
+    }
+
     
     var explicitName: String {
         switch self {

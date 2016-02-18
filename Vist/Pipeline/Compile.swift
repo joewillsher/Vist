@@ -35,7 +35,7 @@ func compileDocuments(fileNames: [String],
     isStdLib: Bool = false)
     throws {
         
-        let currentDirectory = isStdLib ? stdLibDirectory : inDirectory
+        let currentDirectory = isStdLib ? stdLibDirectory: inDirectory
         
         var head: AST? = nil
         var all: [AST] = []
@@ -97,7 +97,7 @@ func compileDocuments(fileNames: [String],
         // Create vist program module and link against the helper bytecode
         
         if isStdLib {
-            linkModule(&module, withFile: "\(runtimeDirectory)/runtime.bc")
+            linkWithRuntime(&module, withFile: "\(runtimeDirectory)/runtime.bc")
         }
         
         configModule(module)

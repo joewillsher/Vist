@@ -53,7 +53,7 @@ TargetMachine *createTargetMachine() {
     
     
     CodeGenOpt::Level OptLevel = CodeGenOpt::Aggressive;
-    //    : CodeGenOpt::None;
+    //   : CodeGenOpt::None;
     
     // Set up TargetOptions and create the target features string.
     TargetOptions TargetOpts = InitTargetOptionsFromCodeGenFlags();
@@ -64,7 +64,7 @@ TargetMachine *createTargetMachine() {
     
     StringMap<bool> HostFeatures;
     if (sys::getHostCPUFeatures(HostFeatures))
-        for (auto &F : HostFeatures)
+        for (auto &F: HostFeatures)
             Features.AddFeature(F.first());
     targetFeatures = Features.getString();
     

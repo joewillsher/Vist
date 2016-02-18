@@ -10,7 +10,7 @@ typealias StructMember = (name: String, type: Ty, mutable: Bool)
 typealias StructMethod = (name: String, type: FnType)
 
 
-protocol StorageType : Ty {
+protocol StorageType: Ty {
     var members: [StructMember] { get }
     var methods: [StructMethod] { get }
     func memberTypes(module: LLVMModuleRef) -> LLVMTypeRef

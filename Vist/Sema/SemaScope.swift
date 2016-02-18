@@ -62,27 +62,25 @@ final class SemaScope {
         else if let inParent = try parent?.function(name, argTypes: argTypes) {
             return inParent
         }
-        // error handling
-        else if let f = self[function: name] {
-            throw error(SemaError.WrongFunctionApplications(name: name, applied: argTypes, expected: f.params))
+        else if let f = functions[raw: name] {
+            return (name.mangle(argTypes), f)
         }
+        else if let p = try parent?.function(name, argTypes: argTypes) {
+            return p
+        }
+            // error handling
         else {
             throw error(SemaError.NoFunction(name, argTypes))
         }
     }
     
-    subscript (function function: String) -> FnType? {
-        get {
-            if let v = functions[raw: function] { return v }
-            return parent?[function: function]
-        }
-        set {
-            functions[function.mangle(newValue!)] = newValue
-        }
+    func addFunction(name: String, type: FnType) {
+        functions[name.mangle(type)] = type
     }
+    
     subscript (type type: String) -> StorageType? {
         get {
-            if let t = StdLib.getStdLibType(type) {
+            if let t = StdLib.getStdLibType(type) where !isStdLib {
                 return t
             }
             else if let v = types[type] {
@@ -91,7 +89,12 @@ final class SemaScope {
             else if let g = genericParameters, let i = genericParameters?.indexOf({$0.name == type}) {
                 return try? GenericType.fromConstraint(inScope: self)(constraint: g[i])
             }
-            return parent?[type: type]
+            else if let existential = self[concept: type] {
+                return existential
+            }
+            else {
+                return parent?[type: type]
+            }
         }
         set {
             types[type] = newValue

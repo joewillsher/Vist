@@ -25,13 +25,13 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Vist/AST/DefinedType.swift"
-            timestampString = "477345355.348455"
+            filePath = "Vist/Sema/SemaScope.swift"
+            timestampString = "477486735.279683"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "82"
-            endingLineNumber = "82"
-            landmarkName = "type(_:)"
+            startingLineNumber = "73"
+            endingLineNumber = "73"
+            landmarkName = "function(_:argTypes:)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

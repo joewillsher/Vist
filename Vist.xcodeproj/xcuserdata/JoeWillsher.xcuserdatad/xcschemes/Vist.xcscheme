@@ -92,7 +92,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-build-runtime"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-build-stdlib"

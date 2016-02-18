@@ -11,7 +11,7 @@
 //  MARK:                                                 Literals
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension IntegerLiteral : ExprTypeProvider {
+extension IntegerLiteral: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         let ty = StdLib.IntType
@@ -20,7 +20,7 @@ extension IntegerLiteral : ExprTypeProvider {
     }
 }
 
-extension FloatingPointLiteral : ExprTypeProvider {
+extension FloatingPointLiteral: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         let ty = StdLib.DoubleType
@@ -29,7 +29,7 @@ extension FloatingPointLiteral : ExprTypeProvider {
     }
 }
 
-extension BooleanLiteral : ExprTypeProvider {
+extension BooleanLiteral: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         let ty = StdLib.BoolType
@@ -38,7 +38,7 @@ extension BooleanLiteral : ExprTypeProvider {
     }
 }
 
-extension StringLiteral : ExprTypeProvider {
+extension StringLiteral: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         let t = BuiltinType.Array(el: BuiltinType.Int(size: 8), size: UInt32(count))
@@ -47,7 +47,7 @@ extension StringLiteral : ExprTypeProvider {
     }
 }
 
-extension NullExpr : ExprTypeProvider {
+extension NullExpr: ExprTypeProvider {
     
     mutating func typeForNode(scope: SemaScope) throws -> Ty {
         _type = nil
@@ -59,7 +59,7 @@ extension NullExpr : ExprTypeProvider {
 //  MARK:                                                 Variables
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension VariableExpr : ExprTypeProvider {
+extension VariableExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         
@@ -75,7 +75,7 @@ extension VariableExpr : ExprTypeProvider {
 }
 
 
-extension MutationExpr : ExprTypeProvider {
+extension MutationExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         
@@ -130,7 +130,7 @@ extension MutationExpr : ExprTypeProvider {
 
 
 
-extension VariableDecl : DeclTypeProvider {
+extension VariableDecl: DeclTypeProvider {
     
     func typeForNode(scope: SemaScope) throws {
         // handle redeclaration
@@ -147,7 +147,7 @@ extension VariableDecl : DeclTypeProvider {
         let objectType = try value.typeForNode(declScope)
         
         if case let fn as FnType = objectType {
-            scope[function: name] = fn // store in function table if closure
+            scope.addFunction(name, type: fn) // store in function table if closure
         }
         else {
             let type = explicitType ?? objectType
@@ -172,7 +172,7 @@ extension VariableDecl : DeclTypeProvider {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-extension Void : ExprTypeProvider {
+extension Void: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         self.type = BuiltinType.Void
@@ -188,7 +188,7 @@ extension Void : ExprTypeProvider {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-extension ClosureExpr : ExprTypeProvider {
+extension ClosureExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         
@@ -201,7 +201,7 @@ extension ClosureExpr : ExprTypeProvider {
         innerScope.returnType = ty.returns
         
         for (i, t) in ty.params.enumerate() {
-            let name = parameters.isEmpty ? i.implicitParamName() : parameters[i]
+            let name = parameters.isEmpty ? i.implicitParamName(): parameters[i]
             innerScope[variable: name] = (type: t, mutable: false)
         }
         
@@ -224,7 +224,7 @@ extension ClosureExpr : ExprTypeProvider {
 //  MARK:                                                 Arrays
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension ArrayExpr : ExprTypeProvider {
+extension ArrayExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         
@@ -249,7 +249,7 @@ extension ArrayExpr : ExprTypeProvider {
     
 }
 
-extension ArraySubscriptExpr : ExprTypeProvider {
+extension ArraySubscriptExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         

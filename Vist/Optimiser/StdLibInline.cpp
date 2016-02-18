@@ -35,7 +35,7 @@ using namespace llvm;
 
 // TODO: make a subclass of `Inliner`
 // http://llvm.org/docs/doxygen/html/Inliner_8cpp_source.html#l00358
-class StdLibInline : public FunctionPass {
+class StdLibInline: public FunctionPass {
     
     Module *stdLibModule;
     
@@ -45,7 +45,7 @@ class StdLibInline : public FunctionPass {
 public:
     static char ID;
     
-    StdLibInline() : FunctionPass(ID) {
+    StdLibInline(): FunctionPass(ID) {
         // FIXME: make a safer way of getting the directory path
         std::string path = std::string(SOURCE_ROOT) + std::string("/Vist/stdlib/stdlib.bc");
         auto b = MemoryBuffer::getFile(path.c_str());
@@ -118,10 +118,10 @@ bool StdLibInline::runOnFunction(Function &function) {
     int initiID = LLVMMetadataID("stdlib.call.optim");
     
     // loops over blocks in function
-    for (BasicBlock &basicBlock : function) {
+    for (BasicBlock &basicBlock: function) {
         
         // For each instruction in the block
-        for (Instruction &instruction : basicBlock) {
+        for (Instruction &instruction: basicBlock) {
             
             builder.SetInsertPoint(&instruction);
             
@@ -186,7 +186,7 @@ bool StdLibInline::runOnFunction(Function &function) {
             
             // replace uses of %0, %1 in the function definition with the parameters passed into it
             unsigned i = 0;
-            for (Argument &fnArg : calledFunction->args()) {
+            for (Argument &fnArg: calledFunction->args()) {
                 Value *calledArg = call->getOperand(i);
                 
                 fnArg.mutateType(calledArg->getType()); // HERE
@@ -201,7 +201,7 @@ bool StdLibInline::runOnFunction(Function &function) {
             
             unsigned fnBBcount = 0;
             // for block & instruction in the stdlib function’s definition
-            for (BasicBlock &fnBlock : *calledFunction) {
+            for (BasicBlock &fnBlock: *calledFunction) {
                 BasicBlock *currentBlock;
                 
                 if (fnBBcount == 0) // if its the first
@@ -218,7 +218,7 @@ bool StdLibInline::runOnFunction(Function &function) {
                 fnBlock.replaceSuccessorsPhiUsesWith(currentBlock);
                 fnBlock.replaceAllUsesWith(currentBlock);
                 
-                for (Instruction &inst : fnBlock) {
+                for (Instruction &inst: fnBlock) {
                     
                     // insert value instructions dont get types replaced, so we do it manually
                     if (auto *insertVal = dyn_cast<InsertValueInst>(&inst)) {
@@ -267,7 +267,7 @@ bool StdLibInline::runOnFunction(Function &function) {
                             
                             Type *optionalFirstArgument = call->getNumOperands() == 1
                             ? nullptr // if no arguments, we are not overloading
-                            : call->getOperand(0)->getType();
+                           : call->getOperand(0)->getType();
                             
                             Function *intrinsic = getIntrinsic(call->getCalledFunction()->getName(),
                                                                module,

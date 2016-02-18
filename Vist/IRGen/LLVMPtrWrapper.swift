@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-protocol LLVMValue : class {
+protocol LLVMValue: class {
     var value: LLVMValueRef { get set }
     init(value: LLVMValueRef)
 }

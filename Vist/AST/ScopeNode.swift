@@ -22,7 +22,7 @@ extension ScopeNode {
     }
 }
 
-extension CollectionType where Generator.Element : ASTNode {
+extension CollectionType where Generator.Element: ASTNode {
     
     /// Maps the input function over the children, which are types conforming to ASTNode
     ///
@@ -93,7 +93,7 @@ extension CollectionType where Generator.Element == ASTNode {
     }
 }
 
-extension CollectionType where Generator.Element : ASTNode {
+extension CollectionType where Generator.Element: ASTNode {
     
     /// flatMaps `$0 as? T` over the collection
     func mapAs<T>(_: T.Type) -> [T] {

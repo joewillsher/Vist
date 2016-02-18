@@ -7,10 +7,10 @@
 //
 
 /// - Declaration / Decl
-protocol Decl : ASTNode, DeclTypeProvider {}
+protocol Decl: ASTNode, DeclTypeProvider {}
 
 
-final class VariableDecl : Decl, StructMemberExpr {
+final class VariableDecl: Decl, StructMemberExpr {
     let name: String
     let aType: DefinedType?
     let isMutable: Bool
@@ -24,7 +24,7 @@ final class VariableDecl : Decl, StructMemberExpr {
     }
 }
 
-final class VariableDeclGroup : Decl, StructMemberExpr {
+final class VariableDeclGroup: Decl, StructMemberExpr {
     var variableDecls: [VariableDecl]
     
     init(variableDecls: [VariableDecl]) {
@@ -32,7 +32,7 @@ final class VariableDeclGroup : Decl, StructMemberExpr {
     }
 }
 
-final class FuncDecl : Decl, StructMemberExpr {
+final class FuncDecl: Decl, StructMemberExpr {
     let name: String
     let fnType: FunctionType
     let impl: FunctionImplementationExpr?
@@ -56,7 +56,7 @@ final class FuncDecl : Decl, StructMemberExpr {
 
 
 
-final class InitialiserDecl : Decl, StructMemberExpr {
+final class InitialiserDecl: Decl, StructMemberExpr {
     let ty: FunctionType
     let impl: FunctionImplementationExpr?
     weak var parent: StructExpr?

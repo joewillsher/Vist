@@ -9,7 +9,7 @@
 
 typealias StructVariableProperty = (name: String, irType: LLVMTypeRef)
 
-protocol ContainerVariable : RuntimeVariable {
+protocol ContainerVariable: RuntimeVariable {
     var ptr: LLVMValueRef { get }
     
     var properties: [StructVariableProperty] { get }
@@ -23,7 +23,7 @@ extension ContainerVariable {
         }
     }
 }
-extension ContainerVariable where Self : MutableVariable {
+extension ContainerVariable where Self: MutableVariable {
     
     var value: LLVMValueRef {
         get {
@@ -37,11 +37,11 @@ extension ContainerVariable where Self : MutableVariable {
 
 
 /// A struct object
-protocol StructVariable : ContainerVariable {
+protocol StructVariable: ContainerVariable {
     func loadPropertyNamed(name: String) throws -> LLVMValueRef
 }
 
-protocol TupleVariable : ContainerVariable {
+protocol TupleVariable: ContainerVariable {
     func loadPropertyAtIndex(index: Int) throws -> LLVMValueRef
 }
 
@@ -82,14 +82,14 @@ extension TupleVariable {
 
 
 
-extension StructVariable where Self : MutableVariable {
+extension StructVariable where Self: MutableVariable {
     
     func store(val: LLVMValueRef, inPropertyNamed name: String) throws {
         LLVMBuildStore(irGen.builder, val, try ptrToPropertyNamed(name))
     }
 }
 
-extension TupleVariable where Self : MutableVariable {
+extension TupleVariable where Self: MutableVariable {
     
     func store(val: LLVMValueRef, inPropertyAtIndex index: Int) throws {
         guard index < properties.count else { throw error(IRError.NoTupleMemberAt(index)) }
@@ -101,7 +101,7 @@ extension TupleVariable where Self : MutableVariable {
 
 
 
-final class MutableStructVariable : StructVariable, MutableVariable {
+final class MutableStructVariable: StructVariable, MutableVariable {
     var type: LLVMTypeRef
     var ptr: LLVMValueRef
     let irName: String
@@ -127,7 +127,7 @@ final class MutableStructVariable : StructVariable, MutableVariable {
     
 }
 
-final class MutableTupleVariable : TupleVariable, MutableVariable {
+final class MutableTupleVariable: TupleVariable, MutableVariable {
     var type: LLVMTypeRef
     var ptr: LLVMValueRef
     let irName: String
@@ -156,7 +156,7 @@ final class MutableTupleVariable : TupleVariable, MutableVariable {
 
 
 /// function param struct, load by value not ptr
-final class ParameterStructVariable : StructVariable {
+final class ParameterStructVariable: StructVariable {
     var type: LLVMTypeRef
     var ptr: LLVMValueRef = nil
     let irName: String
@@ -192,7 +192,7 @@ final class ParameterStructVariable : StructVariable {
 /// Initialisers can do this easily because *"self"* is declared in the function
 ///
 /// Self capturing functions use this by setting `parent` to the self pointer param 
-final class SelfReferencingMutableVariable : MutableVariable {
+final class SelfReferencingMutableVariable: MutableVariable {
     var ptr: LLVMValueRef {
         return try! parent.ptrToPropertyNamed(name)
     }

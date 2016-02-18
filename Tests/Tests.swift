@@ -13,10 +13,10 @@ import Foundation
 // tests can define comments which define the expected output of the program
 // `// test: 1 2` will add "1\n2\n" to the expected result of the program
 
-protocol VistTest : class {
+protocol VistTest: class {
     var testDir: String { get }
     var stdlibDir: String { get }
-    var runtimeDir : String { get }
+    var runtimeDir: String { get }
 }
 
 extension VistTest {
@@ -27,7 +27,7 @@ extension VistTest {
 
 /// Test the compilation and output of code samples
 ///
-final class OutputTests : XCTestCase, VistTest {
+final class OutputTests: XCTestCase, VistTest {
     
     /// pipe used as the stdout of the test cases
     var pipe: NSPipe? = nil
@@ -40,19 +40,19 @@ final class OutputTests : XCTestCase, VistTest {
 
 /// Tests runtime performance
 ///
-final class RuntimePerformanceTests : XCTestCase, VistTest {
+final class RuntimePerformanceTests: XCTestCase, VistTest {
     
 }
 
 /// Testing building the stdlib & runtime
 ///
-final class CoreTests : XCTestCase, VistTest {
+final class CoreTests: XCTestCase, VistTest {
     
 }
 
 /// Tests the error handling & type checking system
 ///
-final class ErrorTests : XCTestCase, VistTest {
+final class ErrorTests: XCTestCase, VistTest {
     
 }
 

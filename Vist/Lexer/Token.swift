@@ -15,7 +15,7 @@ struct SourceRange {
     static func at(pos: Pos) -> SourceRange { return SourceRange(start: pos, end: pos) }
 }
 
-extension SourceRange : CustomStringConvertible {
+extension SourceRange: CustomStringConvertible {
     
     var description: String {
         if start == end {

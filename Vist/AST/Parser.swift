@@ -315,7 +315,7 @@ extension Parser {
         revertInTupleState()
         resetConsiderNewLines()
         
-        return exps.isEmpty ? TupleExpr.void() : TupleExpr(elements: exps)
+        return exps.isEmpty ? TupleExpr.void(): TupleExpr(elements: exps)
     }
     
 }
@@ -393,7 +393,7 @@ extension Parser {
     ///
     /// Parses property and tuple member lookup, and method calls
     ///
-    private func parseMemberLookupExpr<Exp : ChainableExpr>(exp: Exp) throws -> Expr {
+    private func parseMemberLookupExpr(exp: ChainableExpr) throws -> Expr {
         
         switch currentToken {
         case .Identifier(let name):

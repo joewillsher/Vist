@@ -38,7 +38,7 @@
  
  The metadata array is occupied with this mapping when the existential is allocated from a known struct type.
  */
-final class ExistentialVariable : StructVariable, MutableVariable {
+final class ExistentialVariable: StructVariable, MutableVariable {
     
     /// The rutime type of self
     var conceptType: ConceptType

@@ -7,7 +7,7 @@
 //
 
 
-struct StructType : StorageType {
+struct StructType: StorageType {
     let name: String
     let members: [StructMember]
     var methods: [StructMethod]
@@ -39,7 +39,7 @@ struct StructType : StorageType {
         return StructType(members: tys.map { (name: "", type: $0, mutable: true) }, methods: [], name: "")
     }
         
-    func getMethod(methodName : String, argTypes types: [Ty]) -> FnType? {
+    func getMethod(methodName: String, argTypes types: [Ty]) -> FnType? {
         return methods[raw: "\(name).\(methodName)", paramTypes: types]
     }
     

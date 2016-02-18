@@ -109,30 +109,7 @@ final class StdLib {
     ///
     static func getStdLibFunction(name: String, args: [Ty]) -> (mangledName: String, type: FnType)? {
         return functionContainer[fn: name, types: args]
-    }
-    
-//    
-//    /// Get the IR for a named function from the standard library
-//    ///
-//    /// - parameter id: Unmangled name
-//    ///
-//    /// - parameter args: Applied arg types
-//    ///
-//    /// - returns: An optional tuple of `(type, functionIRRef)`
-//    ///
-//    static func getFunctionIR(name: String, args: [Ty], module: LLVMModuleRef) -> (type: FnType, functionIR: LLVMValueRef)? {
-//       
-//        if let (mangledName, type) = StdLib.getStdLibFunctionWithInitInfo(name, args: args) {
-//            let functionType = type.globalType(module)
-//            
-//            let found = LLVMGetNamedFunction(module, mangledName)
-//            if found != nil { return (type, found) }
-//            
-//            return (type, LLVMAddFunction(module, mangledName, functionType))
-//        }
-//        return nil
-//    }
-    
+    }    
     
     /// Get the IR for a named function from the standard library
     ///
@@ -141,20 +118,15 @@ final class StdLib {
     /// - returns: An optional tuple of `(type, functionIRRef)`
     ///
     static func getFunctionIR(mangledName: String, module: LLVMModuleRef) -> (type: FnType, functionIR: LLVMValueRef)? {
+        guard let (mangledName, type) = functionContainer[mangledName: mangledName] else { return nil }
+        let functionType = type.globalType(module)
         
-        if let (mangledName, type) = functionContainer[mangledName: mangledName] {
-            let functionType = type.globalType(module)
-            
-            let found = LLVMGetNamedFunction(module, mangledName)
-            if found != nil { return (type, found) }
-            
-            return (type, LLVMAddFunction(module, mangledName, functionType))
-        }
-        return nil
+        let found = LLVMGetNamedFunction(module, mangledName)
+        if found != nil { return (type, found) }
+        
+        return (type, LLVMAddFunction(module, mangledName, functionType))
     }
 
-    
-    
 }
 
 

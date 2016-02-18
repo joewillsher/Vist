@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-struct ConceptType : StorageType {
+struct ConceptType: StorageType {
     
     let name: String
     let requiredFunctions: [StructMethod], requiredProperties: [StructMember]
@@ -52,7 +52,7 @@ struct ConceptType : StorageType {
         let ptr = LLVMBuildAlloca(irGen.builder, arrType, "metadata") // [n x i32]*
         let i32PtrType = LLVMPointerType(LLVMInt32Type(), 0)
         let basePtr = LLVMBuildBitCast(irGen.builder, ptr, i32PtrType, "") // i32*
-
+        
         for (i, offset) in indicies.enumerate() {
             // Get pointer to element n
             let indicies = [BuiltinType.intGen(size: 32)(i)].ptr()

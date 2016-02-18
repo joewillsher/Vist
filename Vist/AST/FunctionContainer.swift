@@ -56,7 +56,7 @@ struct FunctionContainer {
             return functions[mangledName].map { (mangledName, $0) }
         }
     }
-
+    
     
     /// Returns type from type name
     subscript(type type: String) -> StructType? {
@@ -66,5 +66,6 @@ struct FunctionContainer {
                 .map { types[$0] }
         }
     }
+    
 }
 

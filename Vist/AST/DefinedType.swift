@@ -66,24 +66,15 @@ enum DefinedType {
             if let builtin = BuiltinType(typeName) {
                 return builtin as Ty
             }
-            else if let std = StdLib.getStdLibType(typeName) {
-                return std
-            }
             else if let i = scope[type: typeName] {
                 return i
-            }
-            else if let g = scope.genericParameters, let i = g.indexOf({$0.name == typeName}) {
-                return try GenericType.fromConstraint(inScope: scope)(constraint: g[i])
-            }
-            else if let existential = scope[concept: typeName] {
-                return existential
             }
             else {
                 throw error(SemaError.NoTypeNamed(typeName))
             }
             
         case let .Tuple(elements):
-            return TupleType(members: try elements.map({try $0.type(scope)}))
+            return elements.isEmpty ? BuiltinType.Void : TupleType(members: try elements.map({try $0.type(scope)}))
             
         case let .Function(functionType):
             return FnType(params: try functionType.paramType.tyArr(scope), returns: try functionType.returnType.type(scope))

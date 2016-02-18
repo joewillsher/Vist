@@ -40,13 +40,13 @@ func error(err: VistError, loc: SourceRange? = nil, userVisible: Bool = true, fi
 
 /// Any error wrapper type, allows equality operator to be defined
 /// on these functions by looking at their stored error
-protocol ErrorWrapper : VistError {
+protocol ErrorWrapper: VistError {
     var error: VistError { get }
 }
 
 /// An error object, which describes the error and contains the source location information
 ///
-struct PositionedError : ErrorWrapper {
+struct PositionedError: ErrorWrapper {
     let error: VistError
     let range: SourceRange?
     
@@ -55,7 +55,7 @@ struct PositionedError : ErrorWrapper {
     }
 }
 
-struct DebugError : ErrorWrapper {
+struct DebugError: ErrorWrapper {
     let error: VistError
     let userVisible: Bool
     let file: StaticString, line: UInt, function: String
@@ -68,7 +68,7 @@ struct DebugError : ErrorWrapper {
 
 /// A collection of errors, conforming to ErrorType so it can be thrown
 ///
-struct ErrorCollection : VistError {
+struct ErrorCollection: VistError {
     let errors: [VistError]
     
     // flattens any child ErrorCollections

@@ -53,10 +53,10 @@ extension CollectionType where
     
 }
 
-extension LLVMBool : Swift.BooleanType, BooleanLiteralConvertible {
+extension LLVMBool: Swift.BooleanType, BooleanLiteralConvertible {
     
     public init(booleanLiteral value: Bool) {
-        self.init(value ? 1 : 0)
+        self.init(value ? 1: 0)
     }
     
     public var boolValue: Bool {
@@ -93,7 +93,7 @@ private func validateFunction(ref: LLVMValueRef, name: String) throws {
 //  MARK:                                                 Literals
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension IntegerLiteral : IRGenerator {
+extension IntegerLiteral: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         let rawType = BuiltinType.Int(size: size)
@@ -105,7 +105,7 @@ extension IntegerLiteral : IRGenerator {
 }
 
 
-extension FloatingPointLiteral : IRGenerator {
+extension FloatingPointLiteral: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) -> LLVMValueRef {
         return LLVMConstReal(type!.globalType(nil), val)
@@ -113,7 +113,7 @@ extension FloatingPointLiteral : IRGenerator {
 }
 
 
-extension BooleanLiteral : IRGenerator {
+extension BooleanLiteral: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         let rawType = BuiltinType.Bool
@@ -125,7 +125,7 @@ extension BooleanLiteral : IRGenerator {
 }
 
 
-extension StringLiteral : IRGenerator {
+extension StringLiteral: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) -> LLVMValueRef {
         
@@ -143,7 +143,7 @@ extension StringLiteral : IRGenerator {
 //  MARK:                                                 Variables
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension VariableExpr : IRGenerator {
+extension VariableExpr: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         let variable = try stackFrame.variable(name)
@@ -152,7 +152,7 @@ extension VariableExpr : IRGenerator {
 }
 
 
-extension VariableDecl : IRGenerator {
+extension VariableDecl: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         
@@ -246,7 +246,7 @@ extension VariableDecl : IRGenerator {
 }
 
 
-extension MutationExpr : IRGenerator {
+extension MutationExpr: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         
@@ -303,7 +303,7 @@ extension MutationExpr : IRGenerator {
 //  MARK:                                                 Exprs
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension BinaryExpr : IRGenerator {
+extension BinaryExpr: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         
@@ -326,7 +326,7 @@ extension BinaryExpr : IRGenerator {
         guard fn != nil && LLVMCountParams(fn) == UInt32(2) else { throw error(IRError.WrongFunctionApplication(op), userVisible: false) }
         
         let doNotUseName = _type == BuiltinType.Void || _type == BuiltinType.Null || _type == nil
-        let n = doNotUseName ? "" : "\(op).res"
+        let n = doNotUseName ? "": "\(op).res"
         
         // add call to IR
         let call = LLVMBuildCall(irGen.builder, fn, argBuffer, UInt32(2), n)
@@ -337,7 +337,7 @@ extension BinaryExpr : IRGenerator {
 }
 
 
-extension Void : IRGenerator {
+extension Void: IRGenerator {
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         return nil
     }
@@ -348,7 +348,7 @@ extension Void : IRGenerator {
 //  MARK:                                                 Functions
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension FunctionCallExpr : IRGenerator {
+extension FunctionCallExpr: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         
@@ -398,7 +398,7 @@ extension FunctionCallExpr : IRGenerator {
         guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else { throw error(IRError.WrongFunctionApplication(name), userVisible: false) }
         
         let doNotUseName = _type == BuiltinType.Void || _type == BuiltinType.Null || _type == nil
-        let n = doNotUseName ? "" : "\(name)_res"
+        let n = doNotUseName ? "": "\(name)_res"
         
         // add call to IR
         let call = LLVMBuildCall(irGen.builder, fn, argBuffer, UInt32(argCount), n)
@@ -421,7 +421,7 @@ private extension FunctionType {
 }
 
 
-extension FuncDecl : IRGenerator {
+extension FuncDecl: IRGenerator {
     // function definition
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
@@ -541,7 +541,7 @@ extension FuncDecl : IRGenerator {
 }
 
 
-extension ReturnStmt : IRGenerator {
+extension ReturnStmt: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         
@@ -576,7 +576,7 @@ extension BlockExpr {
 }
 
 
-extension ClosureExpr : IRGenerator {
+extension ClosureExpr: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         
@@ -648,7 +648,7 @@ extension ElseIfBlockStmt {
     }
 }
 
-extension ConditionalStmt : IRGenerator {
+extension ConditionalStmt: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         
@@ -736,7 +736,7 @@ private extension ElseIfBlockStmt {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-extension ForInLoopStmt : IRGenerator {
+extension ForInLoopStmt: IRGenerator {
     
     //    ; ENTRY
     //    br label %loop.header
@@ -827,7 +827,7 @@ extension ForInLoopStmt : IRGenerator {
 
 
 // TODO: Break statements and passing break-to bb in scope
-extension WhileLoopStmt : IRGenerator {
+extension WhileLoopStmt: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         
@@ -876,7 +876,7 @@ private extension BlockExpr {
 //  MARK:                                                 Arrays
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension ArrayExpr : IRGenerator {
+extension ArrayExpr: IRGenerator {
     
     private func arrInstance(stackFrame: StackFrame, irGen: IRGen) throws -> ArrayVariable {
         
@@ -899,7 +899,7 @@ extension ArrayExpr : IRGenerator {
 }
 
 
-extension ArraySubscriptExpr : IRGenerator {
+extension ArraySubscriptExpr: IRGenerator {
     
     private func backingArrayVariable(stackFrame: StackFrame, irGen: IRGen) throws -> ArrayVariable {
         guard case let v as VariableExpr = arr, case let arr as ArrayVariable = try stackFrame.variable(v.name) else { throw error(IRError.SubscriptingNonVariableTypeNotAllowed) }
@@ -922,7 +922,7 @@ extension ArraySubscriptExpr : IRGenerator {
 //  MARK:                                                 Structs
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension StructExpr : IRGenerator {
+extension StructExpr: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         guard let type = self.type else { throw error(IRError.NotTyped, userVisible: false) }
@@ -955,7 +955,7 @@ extension StructExpr : IRGenerator {
     
 }
 
-extension ConceptExpr : IRGenerator {
+extension ConceptExpr: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         
@@ -966,7 +966,7 @@ extension ConceptExpr : IRGenerator {
     }
 }
 
-extension InitialiserDecl : IRGenerator {
+extension InitialiserDecl: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         
@@ -1047,7 +1047,7 @@ extension InitialiserDecl : IRGenerator {
 
 // TODO: Property lookup and tuple member lookup **EXPR**s conform into 1 type
 
-extension PropertyLookupExpr : IRGenerator {
+extension PropertyLookupExpr: IRGenerator {
 
     /// Returns the runtime variable for this lookup
     ///
@@ -1091,7 +1091,7 @@ extension PropertyLookupExpr : IRGenerator {
 }
 
 
-extension MethodCallExpr : IRGenerator {
+extension MethodCallExpr: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         
@@ -1126,7 +1126,7 @@ extension MethodCallExpr : IRGenerator {
 //  MARK:                                                 Tuples
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension TupleExpr : IRGenerator {
+extension TupleExpr: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         
@@ -1145,7 +1145,7 @@ extension TupleExpr : IRGenerator {
     }
 }
 
-extension TupleMemberLookupExpr : IRGenerator {
+extension TupleMemberLookupExpr: IRGenerator {
     
     /// Returns the runtime variable for this lookup
     ///

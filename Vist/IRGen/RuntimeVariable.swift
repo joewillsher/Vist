@@ -9,7 +9,7 @@
 
 typealias IRGen = (builder: LLVMBuilderRef, module: LLVMModuleRef, isStdLib: Bool)
 
-protocol RuntimeVariable : class {
+protocol RuntimeVariable: class {
     var type: LLVMTypeRef { get }
     var value: LLVMValueRef { get }
     var irName: String { get }
@@ -17,7 +17,7 @@ protocol RuntimeVariable : class {
     var irGen: IRGen { get }
 }
 
-protocol MutableVariable : RuntimeVariable {
+protocol MutableVariable: RuntimeVariable {
     var ptr: LLVMValueRef { get }
     var value: LLVMValueRef { get set }
 }
@@ -40,7 +40,7 @@ extension MutableVariable {
 /// Instances are called in IR using `load` and `store`
 ///
 /// mem2reg optimisation pass moves these down to SSA register vars
-final class ReferenceVariable : MutableVariable {
+final class ReferenceVariable: MutableVariable {
     var type: LLVMTypeRef
     var ptr: LLVMValueRef
     
@@ -65,7 +65,7 @@ final class ReferenceVariable : MutableVariable {
 /// A variable type passed by value
 ///
 /// Instances use SSA
-final class StackVariable : RuntimeVariable {
+final class StackVariable: RuntimeVariable {
     var type: LLVMTypeRef
     var val: LLVMValueRef
     

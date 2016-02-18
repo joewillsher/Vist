@@ -10,12 +10,12 @@
 //  MARK:                                                 Structs
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension StructExpr : ExprTypeProvider {
+extension StructExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         
         if let _ = scope[type: name] {
-            throw error(SemaError.InvalidRedeclaration(name))
+            throw error(SemaError.InvalidTypeRedeclaration(name))
         }
         
         let errorCollector = ErrorCollector()
@@ -66,8 +66,10 @@ extension StructExpr : ExprTypeProvider {
             try node.typeForNode(structScope)
         }
         
-        for i in initialisers {
-            scope[function: name] = i.ty.type
+        for  i in initialisers {
+            if let initialiserType = i.ty.type {
+                scope.addFunction(name, type: initialiserType)
+            }
         }
         
         try errorCollector.throwIfErrors()
@@ -77,7 +79,7 @@ extension StructExpr : ExprTypeProvider {
     
 }
 
-extension ConceptExpr : ExprTypeProvider {
+extension ConceptExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         
@@ -118,7 +120,7 @@ extension ConceptExpr : ExprTypeProvider {
 
 
 
-extension InitialiserDecl : DeclTypeProvider {
+extension InitialiserDecl: DeclTypeProvider {
     
     func typeForNode(scope: SemaScope) throws {
         
@@ -130,11 +132,11 @@ extension InitialiserDecl : DeclTypeProvider {
         
         let params = try ty.params(scope)
         
-        let t = FnType(params: params, returns: parentType)
-        self.mangledName = parentName.mangle(t)
+        let initialiserFunctionType = FnType(params: params, returns: parentType)
+        self.mangledName = parentName.mangle(initialiserFunctionType)
         
-        scope[function: parentName] = t
-        ty.type = t
+        scope.addFunction(parentName, type: initialiserFunctionType)
+        ty.type = initialiserFunctionType
         
         guard let impl = self.impl else {
             return
@@ -145,8 +147,8 @@ extension InitialiserDecl : DeclTypeProvider {
         // ad scope properties to initScope
         for p in parentProperties {
             
-            guard let t = p.value._type else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
-            initScope[variable: p.name] = (type: t, mutable: true)
+            guard let propType = p.value._type else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
+            initScope[variable: p.name] = (type: propType, mutable: true)
         }
         
         for (p, type) in zip(impl.params, try ty.params(scope)) {
@@ -160,7 +162,7 @@ extension InitialiserDecl : DeclTypeProvider {
     }
 }
 
-extension PropertyLookupExpr : ExprTypeProvider {
+extension PropertyLookupExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         
@@ -173,7 +175,7 @@ extension PropertyLookupExpr : ExprTypeProvider {
     
 }
 
-extension MethodCallExpr : ExprTypeProvider {
+extension MethodCallExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         
@@ -202,7 +204,7 @@ extension MethodCallExpr : ExprTypeProvider {
 //  MARK:                                                 Tuples
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension TupleExpr : ExprTypeProvider {
+extension TupleExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         
@@ -216,7 +218,7 @@ extension TupleExpr : ExprTypeProvider {
     }
 }
 
-extension TupleMemberLookupExpr : ExprTypeProvider {
+extension TupleMemberLookupExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         
