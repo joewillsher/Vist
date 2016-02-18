@@ -3,79 +3,115 @@ target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-macosx10.11.0"
 
 %Int.st = type { i64 }
-%Foo.st = type { %Int.st }
-%TestC.ex = type { [1 x i32], i8* }
-%Bar.st = type { %TestC.ex }
+%I.st = type { %Int.st }
+%A.st = type { %I.st }
+%X.ex = type { [1 x i32], i8* }
+%B.st = type { %X.ex }
 
 define void @main() {
 entry:
   %0 = call %Int.st @Int_i64(i64 1), !stdlib.call.optim !0
-  %Foo_res = call %Foo.st @Foo_Int(%Int.st %0)
-  %f = alloca %Foo.st
-  store %Foo.st %Foo_res, %Foo.st* %f
-  %1 = call %Int.st @Int_i64(i64 3), !stdlib.call.optim !0
-  %f.t.ptr = getelementptr inbounds %Foo.st* %f, i32 0, i32 0
-  store %Int.st %1, %Int.st* %f.t.ptr
-  %f1 = load %Foo.st* %f
-  %2 = alloca %TestC.ex
-  %.metadata = getelementptr inbounds %TestC.ex* %2, i32 0, i32 0
-  %.opaque = getelementptr inbounds %TestC.ex* %2, i32 0, i32 1
-  %3 = alloca %Foo.st
+  %I_res = call %I.st @I_Int(%Int.st %0)
+  %A_res = call %A.st @A_I(%I.st %I_res)
+  %1 = alloca %A.st
+  %2 = alloca %X.ex
+  %.metadata = getelementptr inbounds %X.ex* %2, i32 0, i32 0
+  %.opaque = getelementptr inbounds %X.ex* %2, i32 0, i32 1
   %metadata = alloca [1 x i32]
-  %4 = bitcast [1 x i32]* %metadata to i32*
-  %el.0 = getelementptr i32* %4, i32 0
+  %3 = bitcast [1 x i32]* %metadata to i32*
+  %el.0 = getelementptr i32* %3, i32 0
   store i32 0, i32* %el.0
-  %5 = load [1 x i32]* %metadata
-  store [1 x i32] %5, [1 x i32]* %.metadata
-  store %Foo.st %f1, %Foo.st* %3
-  %6 = bitcast %Foo.st* %3 to i8*
-  store i8* %6, i8** %.opaque
-  %7 = load %TestC.ex* %2
-  %Bar_res = call %Bar.st @Bar_TestC(%TestC.ex %7)
-  %b = alloca %Bar.st
-  store %Bar.st %Bar_res, %Bar.st* %b
-  %b.foo.ptr = getelementptr inbounds %Bar.st* %b, i32 0, i32 0
-  %b.foo = load %TestC.ex* %b.foo.ptr
-  %8 = alloca %TestC.ex
-  store %TestC.ex %b.foo, %TestC.ex* %8
-  store %TestC.ex %b.foo, %TestC.ex* %8
-  %.metadata_ptr = getelementptr inbounds %TestC.ex* %8, i32 0, i32 0
+  %4 = load [1 x i32]* %metadata
+  store [1 x i32] %4, [1 x i32]* %.metadata
+  store %A.st %A_res, %A.st* %1
+  %5 = bitcast %A.st* %1 to i8*
+  store i8* %5, i8** %.opaque
+  %6 = load %X.ex* %2
+  %B_res = call %B.st @B_X(%X.ex %6)
+  %u = alloca %B.st
+  store %B.st %B_res, %B.st* %u
+  %u.a.ptr = getelementptr inbounds %B.st* %u, i32 0, i32 0
+  %u.a.ptr1 = getelementptr inbounds %B.st* %u, i32 0, i32 0
+  %u.a = load %X.ex* %u.a.ptr1
+  %.metadata_ptr = getelementptr inbounds %X.ex* %u.a.ptr, i32 0, i32 0
   %metadata_base_ptr = bitcast [1 x i32]* %.metadata_ptr to i32*
-  %9 = getelementptr i32* %metadata_base_ptr, i32 0
-  %10 = load i32* %9
-  %.element_pointer = getelementptr inbounds %TestC.ex* %8, i32 0, i32 1
+  %7 = getelementptr i32* %metadata_base_ptr, i32 0
+  %8 = load i32* %7
+  %.element_pointer = getelementptr inbounds %X.ex* %u.a.ptr, i32 0, i32 1
   %.opaque_instance_pointer = load i8** %.element_pointer
-  %11 = getelementptr i8* %.opaque_instance_pointer, i32 %10
-  %t.ptr = bitcast i8* %11 to %Int.st*
-  %t = load %Int.st* %t.ptr
-  %u = alloca %Int.st
-  store %Int.st %t, %Int.st* %u
-  %u2 = load %Int.st* %u
-  call void @print_Int(%Int.st %u2), !stdlib.call.optim !0
+  %9 = getelementptr i8* %.opaque_instance_pointer, i32 %8
+  %i.ptr = bitcast i8* %9 to %I.st*
+  %.metadata_ptr2 = getelementptr inbounds %X.ex* %u.a.ptr, i32 0, i32 0
+  %metadata_base_ptr3 = bitcast [1 x i32]* %.metadata_ptr2 to i32*
+  %10 = getelementptr i32* %metadata_base_ptr3, i32 0
+  %11 = load i32* %10
+  %.element_pointer4 = getelementptr inbounds %X.ex* %u.a.ptr, i32 0, i32 1
+  %.opaque_instance_pointer5 = load i8** %.element_pointer4
+  %12 = getelementptr i8* %.opaque_instance_pointer5, i32 %11
+  %i.ptr6 = bitcast i8* %12 to %I.st*
+  %i = load %I.st* %i.ptr6
+  store %I.st %i, %I.st* %i.ptr
+  %13 = call %Int.st @Int_i64(i64 2), !stdlib.call.optim !0
+  %.v.ptr = getelementptr inbounds %I.st* %i.ptr, i32 0, i32 0
+  store %Int.st %13, %Int.st* %.v.ptr
+  %u.a.ptr7 = getelementptr inbounds %B.st* %u, i32 0, i32 0
+  %u.a.ptr8 = getelementptr inbounds %B.st* %u, i32 0, i32 0
+  %u.a9 = load %X.ex* %u.a.ptr8
+  %.metadata_ptr10 = getelementptr inbounds %X.ex* %u.a.ptr7, i32 0, i32 0
+  %metadata_base_ptr11 = bitcast [1 x i32]* %.metadata_ptr10 to i32*
+  %14 = getelementptr i32* %metadata_base_ptr11, i32 0
+  %15 = load i32* %14
+  %.element_pointer12 = getelementptr inbounds %X.ex* %u.a.ptr7, i32 0, i32 1
+  %.opaque_instance_pointer13 = load i8** %.element_pointer12
+  %16 = getelementptr i8* %.opaque_instance_pointer13, i32 %15
+  %i.ptr14 = bitcast i8* %16 to %I.st*
+  %.metadata_ptr15 = getelementptr inbounds %X.ex* %u.a.ptr7, i32 0, i32 0
+  %metadata_base_ptr16 = bitcast [1 x i32]* %.metadata_ptr15 to i32*
+  %17 = getelementptr i32* %metadata_base_ptr16, i32 0
+  %18 = load i32* %17
+  %.element_pointer17 = getelementptr inbounds %X.ex* %u.a.ptr7, i32 0, i32 1
+  %.opaque_instance_pointer18 = load i8** %.element_pointer17
+  %19 = getelementptr i8* %.opaque_instance_pointer18, i32 %18
+  %i.ptr19 = bitcast i8* %19 to %I.st*
+  %i20 = load %I.st* %i.ptr19
+  store %I.st %i20, %I.st* %i.ptr14
+  %.v.ptr21 = getelementptr inbounds %I.st* %i.ptr14, i32 0, i32 0
+  %.v = load %Int.st* %.v.ptr21
+  call void @print_Int(%Int.st %.v), !stdlib.call.optim !0
   ret void
 }
 
 ; Function Attrs: alwaysinline
-define %Foo.st @Foo_Int(%Int.st %"$0") #0 {
+define %I.st @I_Int(%Int.st %"$0") #0 {
 entry:
-  %Foo = alloca %Foo.st
-  %Foo.t.ptr = getelementptr inbounds %Foo.st* %Foo, i32 0, i32 0
-  store %Int.st %"$0", %Int.st* %Foo.t.ptr
-  %Foo1 = load %Foo.st* %Foo
-  ret %Foo.st %Foo1
+  %I = alloca %I.st
+  %I.v.ptr = getelementptr inbounds %I.st* %I, i32 0, i32 0
+  store %Int.st %"$0", %Int.st* %I.v.ptr
+  %I1 = load %I.st* %I
+  ret %I.st %I1
 }
 
 ; Function Attrs: alwaysinline
-define %Bar.st @Bar_TestC(%TestC.ex %"$0") #0 {
+define %A.st @A_I(%I.st %"$0") #0 {
 entry:
-  %param0 = alloca %TestC.ex
-  store %TestC.ex %"$0", %TestC.ex* %param0
-  %Bar = alloca %Bar.st
-  %param01 = load %TestC.ex* %param0
-  %Bar.foo.ptr = getelementptr inbounds %Bar.st* %Bar, i32 0, i32 0
-  store %TestC.ex %param01, %TestC.ex* %Bar.foo.ptr
-  %Bar2 = load %Bar.st* %Bar
-  ret %Bar.st %Bar2
+  %A = alloca %A.st
+  %A.i.ptr = getelementptr inbounds %A.st* %A, i32 0, i32 0
+  store %I.st %"$0", %I.st* %A.i.ptr
+  %A1 = load %A.st* %A
+  ret %A.st %A1
+}
+
+; Function Attrs: alwaysinline
+define %B.st @B_X(%X.ex %"$0") #0 {
+entry:
+  %param0 = alloca %X.ex
+  store %X.ex %"$0", %X.ex* %param0
+  %B = alloca %B.st
+  %param01 = load %X.ex* %param0
+  %B.a.ptr = getelementptr inbounds %B.st* %B, i32 0, i32 0
+  store %X.ex %param01, %X.ex* %B.a.ptr
+  %B2 = load %B.st* %B
+  ret %B.st %B2
 }
 
 declare %Int.st @Int_i64(i64)

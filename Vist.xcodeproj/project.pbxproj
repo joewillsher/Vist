@@ -48,7 +48,7 @@
 		D497A78B1C3B012700DFE39E /* IRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7861C3B012700DFE39E /* IRGen.swift */; };
 		D497A78C1C3B012700DFE39E /* RuntimeVariable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7871C3B012700DFE39E /* RuntimeVariable.swift */; };
 		D497A78D1C3B012700DFE39E /* StackFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7881C3B012700DFE39E /* StackFrame.swift */; };
-		D497A78E1C3B012700DFE39E /* StructVariable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7891C3B012700DFE39E /* StructVariable.swift */; };
+		D497A78E1C3B012700DFE39E /* ContainerVariable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7891C3B012700DFE39E /* ContainerVariable.swift */; };
 		D497A7921C3B015700DFE39E /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A78F1C3B015700DFE39E /* Config.swift */; };
 		D497A7931C3B015700DFE39E /* LinkRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7901C3B015700DFE39E /* LinkRuntime.swift */; };
 		D497A7941C3B015700DFE39E /* Print.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7911C3B015700DFE39E /* Print.swift */; };
@@ -116,7 +116,7 @@
 		D4E35B6D1C5D0CA000683486 /* StackFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7881C3B012700DFE39E /* StackFrame.swift */; };
 		D4E35B6E1C5D0CA000683486 /* RuntimeVariable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7871C3B012700DFE39E /* RuntimeVariable.swift */; };
 		D4E35B6F1C5D0CA000683486 /* ArrayVariable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7851C3B012700DFE39E /* ArrayVariable.swift */; };
-		D4E35B701C5D0CA000683486 /* StructVariable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7891C3B012700DFE39E /* StructVariable.swift */; };
+		D4E35B701C5D0CA000683486 /* ContainerVariable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D497A7891C3B012700DFE39E /* ContainerVariable.swift */; };
 		D4E35B711C5D0CA000683486 /* BuiltinFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4FAE45B1C3DCEEE00C9EE05 /* BuiltinFunction.swift */; };
 		D4E35B731C5D0CA000683486 /* Intrinsic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D40FC4CD1C4AAB0E00122397 /* Intrinsic.cpp */; };
 		D4E35B741C5D0CA000683486 /* StdTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D40FC4C91C48323E00122397 /* StdTypes.swift */; };
@@ -208,7 +208,7 @@
 		D497A7861C3B012700DFE39E /* IRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IRGen.swift; path = IRGen/IRGen.swift; sourceTree = "<group>"; };
 		D497A7871C3B012700DFE39E /* RuntimeVariable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RuntimeVariable.swift; path = IRGen/RuntimeVariable.swift; sourceTree = "<group>"; };
 		D497A7881C3B012700DFE39E /* StackFrame.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StackFrame.swift; path = IRGen/StackFrame.swift; sourceTree = "<group>"; };
-		D497A7891C3B012700DFE39E /* StructVariable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StructVariable.swift; path = IRGen/StructVariable.swift; sourceTree = "<group>"; };
+		D497A7891C3B012700DFE39E /* ContainerVariable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContainerVariable.swift; path = IRGen/ContainerVariable.swift; sourceTree = "<group>"; };
 		D497A78F1C3B015700DFE39E /* Config.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Config.swift; path = Helper/Config.swift; sourceTree = "<group>"; };
 		D497A7901C3B015700DFE39E /* LinkRuntime.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LinkRuntime.swift; path = Helper/LinkRuntime.swift; sourceTree = "<group>"; };
 		D497A7911C3B015700DFE39E /* Print.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Print.swift; path = Helper/Print.swift; sourceTree = "<group>"; };
@@ -471,7 +471,7 @@
 			children = (
 				D497A7881C3B012700DFE39E /* StackFrame.swift */,
 				D497A7871C3B012700DFE39E /* RuntimeVariable.swift */,
-				D497A7891C3B012700DFE39E /* StructVariable.swift */,
+				D497A7891C3B012700DFE39E /* ContainerVariable.swift */,
 				D4C697E21C6AB80E00645AD1 /* ExistentialVariable.swift */,
 				D45D4CF41C7151D900918E04 /* GenericVariable.swift */,
 				D497A7851C3B012700DFE39E /* ArrayVariable.swift */,
@@ -681,7 +681,7 @@
 				D4D76EA21C69EA200037D93D /* GenericType.swift in Sources */,
 				D4E347251C6253D700CC2F8E /* ExprSema.swift in Sources */,
 				D4E35B821C5E3ECE00683486 /* Expected.swift in Sources */,
-				D4E35B701C5D0CA000683486 /* StructVariable.swift in Sources */,
+				D4E35B701C5D0CA000683486 /* ContainerVariable.swift in Sources */,
 				D4E35B711C5D0CA000683486 /* BuiltinFunction.swift in Sources */,
 				D4C697EB1C6B7F4E00645AD1 /* CreateType.cpp in Sources */,
 				D4E35B731C5D0CA000683486 /* Intrinsic.cpp in Sources */,
@@ -726,7 +726,7 @@
 				D497A7841C3B00FE00DFE39E /* LinkAST.swift in Sources */,
 				D4A2CC0A1C4FF56500BB9A12 /* ASTNode.swift in Sources */,
 				D497A77D1C3B00C600DFE39E /* SemaScope.swift in Sources */,
-				D497A78E1C3B012700DFE39E /* StructVariable.swift in Sources */,
+				D497A78E1C3B012700DFE39E /* ContainerVariable.swift in Sources */,
 				D497A76B1C3B003A00DFE39E /* Compile.swift in Sources */,
 				D497A7941C3B015700DFE39E /* Print.swift in Sources */,
 				D4A2CC0B1C4FF56500BB9A12 /* BuiltinType.swift in Sources */,

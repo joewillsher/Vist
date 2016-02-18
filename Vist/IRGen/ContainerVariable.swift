@@ -11,7 +11,6 @@ typealias StructVariableProperty = (name: String, irType: LLVMTypeRef)
 
 protocol ContainerVariable: RuntimeVariable {
     var ptr: LLVMValueRef { get }
-    
     var properties: [StructVariableProperty] { get }
 }
 
@@ -39,10 +38,12 @@ extension ContainerVariable where Self: MutableVariable {
 /// A struct object
 protocol StructVariable: ContainerVariable {
     func loadPropertyNamed(name: String) throws -> LLVMValueRef
+    func ptrToPropertyNamed(name: String) throws -> LLVMValueRef
 }
 
 protocol TupleVariable: ContainerVariable {
-    func loadPropertyAtIndex(index: Int) throws -> LLVMValueRef
+    func loadElementAtIndex(index: Int) throws -> LLVMValueRef
+    func ptrToElementAtIndex(index: Int) -> LLVMValueRef
 }
 
 
@@ -70,11 +71,11 @@ extension StructVariable {
 
 extension TupleVariable {
     
-    private func ptrToElementAtIndex(index: Int) -> LLVMValueRef {
+    func ptrToElementAtIndex(index: Int) -> LLVMValueRef {
         return LLVMBuildStructGEP(irGen.builder, ptr, UInt32(index), "\(irName).\(index).ptr")
     }
     
-    func loadPropertyAtIndex(index: Int) throws -> LLVMValueRef {
+    func loadElementAtIndex(index: Int) throws -> LLVMValueRef {
         return LLVMBuildLoad(irGen.builder, ptrToElementAtIndex(index), "\(irName).\(index)")
     }
     
@@ -91,7 +92,7 @@ extension StructVariable where Self: MutableVariable {
 
 extension TupleVariable where Self: MutableVariable {
     
-    func store(val: LLVMValueRef, inPropertyAtIndex index: Int) throws {
+    func store(val: LLVMValueRef, inElementAtIndex index: Int) throws {
         guard index < properties.count else { throw error(IRError.NoTupleMemberAt(index)) }
         LLVMBuildStore(irGen.builder, val, ptrToElementAtIndex(index))
     }

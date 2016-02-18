@@ -93,11 +93,11 @@ extension MutationExpr : ExprTypeProvider {
             
         case let propertyLookup as PropertyLookupExpr:
             
-            guard case let type as StorageType = propertyLookup.object._type else { throw error(SemaError.notStructType(propertyLookup._type)) }
-            let (_, mutable) = try propertyLookup.recursiveType(scope)
-            guard mutable else { throw error(SemaError.immutableObject(type: type.explicitName)) }
+            guard let type = propertyLookup.object._type else { throw error(SemaError.notStructType(propertyLookup._type)) }
+            let (_, parentMutable, mutable) = try propertyLookup.recursiveType(scope)
             
-            guard try type.propertyMutable(propertyLookup.propertyName) else { throw error(SemaError.immutableProperty(p: propertyLookup.propertyName, ty: type.explicitName)) }
+            guard let p = parentMutable where p else { throw error(SemaError.immutableObject(type: type.explicitName)) }
+            guard mutable else { throw error(SemaError.immutableProperty(p: propertyLookup.propertyName, ty: type.explicitName)) }
             
         case let memberLookup as TupleMemberLookupExpr:
             break
@@ -119,30 +119,36 @@ extension MutationExpr : ExprTypeProvider {
 
 extension ChainableExpr {
     
-    func recursiveType(scope: SemaScope) throws -> (type: Ty, mutable: Bool) {
+    func recursiveType(scope: SemaScope) throws -> (type: Ty, parentMutable: Bool?, mutable: Bool) {
         
         switch self {
         case let variable as VariableExpr:
-            guard let v = scope[variable: variable.name] else { throw error(SemaError.noVariable(variable.name)) }
-            return v
+            guard let (type, mutable) = scope[variable: variable.name] else { throw error(SemaError.noVariable(variable.name)) }
+            return (type: type, parentMutable: nil, mutable: mutable)
             
         case let propertyLookup as PropertyLookupExpr:
-            guard case let (objectType as StorageType, mutable) = try propertyLookup.object.recursiveType(scope) else { throw error(SemaError.notStructType(propertyLookup._type!)) }
+            guard case let (objectType as StorageType, parentMutable, objectMutable) = try propertyLookup.object.recursiveType(scope) else {
+                throw error(SemaError.notStructType(propertyLookup._type!))
+            }
             return (
                 type: try objectType.propertyType(propertyLookup.propertyName),
-                mutable: try objectType.propertyMutable(propertyLookup.propertyName) && mutable
+                parentMutable: objectMutable && (parentMutable ?? true),
+                mutable: try objectType.propertyMutable(propertyLookup.propertyName)
             )
             
         case let tupleMemberLookup as TupleMemberLookupExpr:
-            guard case let (objectType as TupleType, mutable) = try tupleMemberLookup.object.recursiveType(scope) else { throw error(SemaError.notTupleType(tupleMemberLookup._type!)) }
+            guard case let (objectType as TupleType, _, tupleMutable) = try tupleMemberLookup.object.recursiveType(scope) else {
+                throw error(SemaError.notTupleType(tupleMemberLookup._type!))
+            }
             return (
                 type: try objectType.propertyType(tupleMemberLookup.index),
-                mutable: mutable
+                parentMutable: tupleMutable,
+                mutable: tupleMutable
             )
 
         case let intLiteral as IntegerLiteral:
             guard case let t as StorageType = intLiteral.type else { throw error(SemaError.noStdIntType, userVisible: false) }
-            return (type: t, mutable: false)
+            return (type: t, parentMutable: nil, mutable: false)
             
 //        case let tuple as TupleExpr:
 //            return (type: _type, )

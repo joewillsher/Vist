@@ -1,29 +1,15 @@
 
 
-concept TestC {
-    var t: Int
-}
+type I { var v: Int }
+concept X { var i: I }
+type A { var i: I }
+type B { var a: X }
 
-type Foo {
-    var t: Int
-}
+var u = B (A (I 1))
 
-type Bar {
-    var foo: TestC
-}
+u.a.i.v = 2
 
-var f = Foo 1
-
-f.t = 3
-
-
-
-let b = Bar f
-let u = b.foo.t
-print u // test: 1
-
-
-//for i in 0 ... 100 do print i
+print u.a.i.v
 
 
 

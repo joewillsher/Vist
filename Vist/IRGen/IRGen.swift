@@ -1066,7 +1066,7 @@ extension PropertyLookupExpr: IRGenerator {
         }
         
         /// The LLVM value of the object getting a property looked up -- the lookupee
-        let lookupVal = try object.lookupVal(stackFrame, irGen: irGen)
+        let (lookupPtr, lookupVal) = try object.lookupVal(stackFrame, irGen: irGen)
         
         let variable: protocol<StructVariable, MutableVariable>
         
@@ -1074,17 +1074,17 @@ extension PropertyLookupExpr: IRGenerator {
         // Allocate the variable to return
         switch object._type {
         case let t as StructType:
-            variable = MutableStructVariable.alloc(t, irGen: irGen)
-            
+            variable = MutableStructVariable(type: t, ptr: lookupPtr, irName: "", irGen: irGen)
+            variable.value = lookupVal
+
         case let c as ConceptType:
-            variable = ExistentialVariable.alloc(c, fromExistential: lookupVal, mutable: false, irGen: irGen)
+            variable = ExistentialVariable(ptr: lookupPtr, conceptType: c, mutable: true, irName: "", irGen: irGen)
             
         default:
             throw error(IRError.CannotLookupPropertyFromThis(prop: propertyName))
         }
         
         // store our object IR in this variable
-        variable.value = lookupVal
         return variable
     }
     
@@ -1093,6 +1093,51 @@ extension PropertyLookupExpr: IRGenerator {
         return try st.loadPropertyNamed(propertyName)
     }
 }
+
+
+
+
+private extension ChainableExpr {
+    
+    // TODO: move checks to sema phase!
+    // TODO: make protocol for lookups
+    // TODO: add more conformants of ChainableExpr to this switch
+    // TODO: rename ChainableExpr
+    // TODO: replace other uses of CannotLookupPropertyFromNonVariable with calls to `getVariable`
+    
+    func lookupVal(stackFrame: StackFrame, irGen: IRGen) throws -> (ptr: LLVMValueRef, val: LLVMValueRef) {
+        switch self {
+        case let propertyLookup as PropertyLookupExpr:
+            
+            let lookupVariable = try propertyLookup.getVariable(stackFrame, irGen: irGen)
+            guard case let structVariable as StructVariable = lookupVariable else { throw error(IRError.NotStructType) }
+            
+            return (
+                ptr: try structVariable.ptrToPropertyNamed(propertyLookup.propertyName),
+                val: try structVariable.loadPropertyNamed(propertyLookup.propertyName)
+            )
+            
+        case let tupleLookup as TupleMemberLookupExpr:
+            
+            let lookupVariable = try tupleLookup.getVariable(stackFrame, irGen: irGen)
+            guard case let tupleVariable as TupleVariable = lookupVariable else { throw error(IRError.NoVariable(tupleLookup.desc)) }
+            
+            return (
+                ptr: tupleVariable.ptrToElementAtIndex(tupleLookup.index),
+                val:try tupleVariable.loadElementAtIndex(tupleLookup.index)
+            )
+            
+        case let variable as VariableExpr:
+            return try stackFrame.variable(variable.name).value
+            
+        default:
+            throw error(IRError.CannotLookupPropertyFromNonVariable)
+        }
+    }
+    
+    
+}
+
 
 
 extension MethodCallExpr: IRGenerator {
@@ -1142,7 +1187,7 @@ extension TupleExpr: IRGenerator {
         let s = MutableTupleVariable.alloc(type, irGen: irGen)
         
         for (i, el) in memeberIR.enumerate() {
-            try s.store(el, inPropertyAtIndex: i)
+            try s.store(el, inElementAtIndex: i)
         }
         
         return s.value
@@ -1162,7 +1207,7 @@ extension TupleMemberLookupExpr: IRGenerator {
             return variable
         }
         
-        let lookupVal = try object.lookupVal(stackFrame, irGen: irGen)
+        let (lookupPtr, lookupVal) = try object.lookupVal(stackFrame, irGen: irGen)
         
         guard case let t as TupleType = object._type else { throw error(IRError.CannotLookupElementFromNonTuple) }
         
@@ -1177,46 +1222,9 @@ extension TupleMemberLookupExpr: IRGenerator {
         guard case let n as VariableExpr = object else { throw error(IRError.CannotLookupPropertyFromNonVariable, userVisible: false) }
         guard case let variable as TupleVariable = try stackFrame.variable(n.name) else { throw error(IRError.NoTupleMemberAt(index))}
         
-        return try variable.loadPropertyAtIndex(index)
+        return try variable.loadElementAtIndex(index)
     }
 }
-
-
-private extension ChainableExpr {
-    
-    // TODO: move checks to sema phase!
-    // TODO: make protocol for lookups
-    // TODO: add more conformants of ChainableExpr to this switch
-    // TODO: rename ChainableExpr
-    // TODO: replace other uses of CannotLookupPropertyFromNonVariable with calls to `getVariable`
-    
-    func lookupVal(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
-        switch self {
-        case let propertyLookup as PropertyLookupExpr:
-            
-            let lookupVariable = try propertyLookup.getVariable(stackFrame, irGen: irGen)
-            guard case let structVariable as StructVariable = lookupVariable else { throw error(IRError.NotStructType) }
-            
-            return try structVariable.loadPropertyNamed(propertyLookup.propertyName)
-            
-        case let tupleLookup as TupleMemberLookupExpr:
-            
-            let lookupVariable = try tupleLookup.getVariable(stackFrame, irGen: irGen)
-            guard case let tupleVariable as TupleVariable = lookupVariable else { throw error(IRError.NoVariable(tupleLookup.desc)) }
-            
-            return try tupleVariable.loadPropertyAtIndex(tupleLookup.index)
-            
-        case let variable as VariableExpr:
-            return try stackFrame.variable(variable.name).value
-            
-        default:
-            throw error(IRError.CannotLookupPropertyFromNonVariable)
-        }
-    }
-    
-    
-}
-
 
 
 

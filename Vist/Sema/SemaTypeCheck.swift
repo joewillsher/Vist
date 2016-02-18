@@ -7,7 +7,6 @@
 //
 
 func sema(ast: AST, globalScope: SemaScope) throws {
-    
     try scopeSematypeForNode(ast, scope: globalScope)
 }
 
@@ -18,7 +17,7 @@ func scopeSematypeForNode(ast: AST, scope: SemaScope) throws {
     // TODO: Parse all function declarations first, then go in to define them and everything else
     // TODO: Also make sure linked files can read into *eachother*
     //-------------------------------
-   
+    
     try ast.walkChildren { node in
         try node.typeForNode(scope)
     }

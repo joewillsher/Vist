@@ -6,14 +6,14 @@ _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	movl	$3, %eax
+	movl	$2, %eax
 	movl	%eax, %edi
 	popq	%rbp
 	jmp	"_-Uprint_i64"          ## TAILCALL
 
-	.globl	_Foo_Int
+	.globl	_I_Int
 	.align	4, 0x90
-_Foo_Int:                               ## @Foo_Int
+_I_Int:                                 ## @I_Int
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
@@ -21,9 +21,19 @@ _Foo_Int:                               ## @Foo_Int
 	popq	%rbp
 	retq
 
-	.globl	_Bar_TestC
+	.globl	_A_I
 	.align	4, 0x90
-_Bar_TestC:                             ## @Bar_TestC
+_A_I:                                   ## @A_I
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	movq	%rdi, %rax
+	popq	%rbp
+	retq
+
+	.globl	_B_X
+	.align	4, 0x90
+_B_X:                                   ## @B_X
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp

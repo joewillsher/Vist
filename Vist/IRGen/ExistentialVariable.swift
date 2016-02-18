@@ -79,6 +79,10 @@ final class ExistentialVariable: StructVariable, MutableVariable {
     /// This generates the runtime metadata and stores an opaque pointer to the struct instance
     ///
     class func alloc(structType: StructType, conceptType: ConceptType, initWithValue value: LLVMValueRef, mutable: Bool, irName: String = "", irGen: IRGen) throws -> ExistentialVariable {
+        let valueMem = LLVMBuildAlloca(irGen.builder, structType.globalType(irGen.module), "")
+        return try ExistentialVariable.alloc(structType, conceptType: conceptType, initFromPtr: valueMem, initWithValue: value, mutable: mutable, irGen: irGen)
+    }
+    class func alloc(structType: StructType, conceptType: ConceptType, initFromPtr: LLVMValueRef, initWithValue value: LLVMValueRef, mutable: Bool, irName: String = "", irGen: IRGen) throws -> ExistentialVariable {
         
         let exType = conceptType.globalType(irGen.module)
         let ptr = LLVMBuildAlloca(irGen.builder, exType, irName)
@@ -86,17 +90,17 @@ final class ExistentialVariable: StructVariable, MutableVariable {
         
         let arrayPtr = LLVMBuildStructGEP(irGen.builder, ptr, 0, "\(irName).metadata")
         let structPtr = LLVMBuildStructGEP(irGen.builder, ptr, 1, "\(irName).opaque")
-        let valueMem = LLVMBuildAlloca(irGen.builder, structType.globalType(irGen.module), "")
         
         let arr = try conceptType.existentialMetadataMapFor(structType, irGen: irGen)
         LLVMBuildStore(irGen.builder, arr, arrayPtr)
         
-        LLVMBuildStore(irGen.builder, value, valueMem)
-        let opaqueValueMem = LLVMBuildBitCast(irGen.builder, valueMem, opaquePtrType, "")
+        LLVMBuildStore(irGen.builder, value, initFromPtr)
+        let opaqueValueMem = LLVMBuildBitCast(irGen.builder, initFromPtr, opaquePtrType, "")
         LLVMBuildStore(irGen.builder, opaqueValueMem, structPtr)
         
         return ExistentialVariable(ptr: ptr, conceptType: conceptType, mutable: mutable, irName: irName, irGen: irGen)
     }
+
     
     func assignFrom(structType: StructType) throws {
         
