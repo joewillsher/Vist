@@ -1127,8 +1127,8 @@ private extension ChainableExpr {
                 val:try tupleVariable.loadElementAtIndex(tupleLookup.index)
             )
             
-        case let variable as VariableExpr:
-            return try stackFrame.variable(variable.name).value
+//        case let variable as VariableExpr:
+//            return try stackFrame.variable(variable.name).value
             
         default:
             throw error(IRError.CannotLookupPropertyFromNonVariable)

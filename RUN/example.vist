@@ -1,5 +1,27 @@
 
 
+
+concept Foo { var v: Int }
+type Bar { var v: Int }
+
+func fn :: Foo = (f) {
+    print f.v
+    print f.v
+    print f.v
+    print f.v
+}
+
+fn (Bar 12)
+
+
+//for i in 0 ... 1000 do
+//    print 1
+
+
+
+
+
+/*
 type I { var v: Int }
 concept X { var i: I }
 type A { var i: I }
@@ -11,7 +33,10 @@ u.a.i.v = 2
 
 print u.a.i.v
 
+let x = ( (1, u), 2)
 
+x. 0 . 1 . a.i.v = 11
+*/
 
 
 /*
@@ -25,7 +50,6 @@ type Bar (T | Eq) {
 }
  */
 
-// todo: IRGen.swift, l1060, fix the lookup of props on prop lookups
 // todo: cacheing ptrs in immutable structs
 // todo: existential properties & storing
 

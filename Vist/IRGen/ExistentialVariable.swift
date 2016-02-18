@@ -48,8 +48,12 @@ final class ExistentialVariable: StructVariable, MutableVariable {
     var irName: String
     var irGen: IRGen
     var properties: [StructVariableProperty]
+    
+    
     /// If mutable, ptrs to elements can be cached
     let mutable: Bool
+    var cachedElementPtrs: [String: LLVMValueRef] = [:]
+    
     
     init(ptr: LLVMValueRef, conceptType: ConceptType, mutable: Bool, irName: String, irGen: IRGen) {
         self.conceptType = conceptType
@@ -162,10 +166,13 @@ final class ExistentialVariable: StructVariable, MutableVariable {
     }
     
     func ptrToPropertyNamed(name: String) throws -> LLVMValueRef { // returns ElTy
+        // if immutable, look up this ptr from the cache
+        if let v = cachedElementPtrs[name] where !mutable { return v }
         
         // index of property in the concept's table
         // use this to look up the index in self by getting the ixd from the runtime's array
         guard let i = indexOfProperty(name) else { throw error(IRError.NoProperty(type: conceptType.name, property: name)) }
+        
         let indexValue = BuiltinType.intGen(size: 32)(i)// i32
         
         let index = [indexValue].ptr()
@@ -175,7 +182,10 @@ final class ExistentialVariable: StructVariable, MutableVariable {
         let offset = LLVMBuildLoad(irGen.builder, pointerToArrayElement, "") // i32
                 
         let elementPtrType = LLVMPointerType(properties[i].irType, 0) // ElTy.Type
-        return getElementPtrAtOffset(offset, ofType: elementPtrType, irName: name) // ElTy*
+        let ptr = getElementPtrAtOffset(offset, ofType: elementPtrType, irName: name) // ElTy*
+        
+        if !mutable { cachedElementPtrs[name] = ptr }
+        return ptr
     }
     
     func loadPropertyNamed(name: String) throws -> LLVMValueRef {
