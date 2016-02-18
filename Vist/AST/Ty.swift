@@ -7,14 +7,22 @@
 //
 
 protocol Ty: Printable {
+    /// The type used in IR -- A vanilla type, agnostic of module
+    /// if it is a builtin type. For structs, existentials etc
+    /// this returns the globally named typealias
     func globalType(module: LLVMModuleRef) -> LLVMTypeRef
     
     /// Name used in mangling function signatures
     var mangledName: String { get }
+    
+    /// The explicit name of this type. The same as the
+    /// mangled name, unless the mangled name uses a different
+    /// naming system, like the builtin types
     var explicitName: String { get }
 }
 
 extension Ty {
+    // implement default behaviour
     var explicitName: String {
         return mangledName
     }

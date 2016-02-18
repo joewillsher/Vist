@@ -20,7 +20,7 @@ struct GenericType: StorageType {
                 return GenericType(name: ty.name, concepts: c, parentName: ty.parentName)
             }
             else {
-                throw error(SemaError.ParamsNotTyped)
+                throw error(SemaError.paramsNotTyped)
             }
         }
     }

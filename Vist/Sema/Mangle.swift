@@ -55,15 +55,12 @@ extension String {
         
         for c in name.characters {
             
-            if c == "-" {
-                pred = c
-                continue
-            }
-                        
-            if let original = String.mangleMap.indexOf({$0.1 == c}) where pred == "-" {
-                resStr.append(String.mangleMap[original].0)
-            } else {
-                resStr.append(c)
+            if c != "-" {
+                if let original = String.mangleMap.indexOf({$0.1 == c}) where pred == "-" {
+                    resStr.append(String.mangleMap[original].0)
+                } else {
+                    resStr.append(c)
+                }
             }
             
             pred = c

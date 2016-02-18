@@ -35,7 +35,7 @@ extension StructExpr {
     func memberwiseInitialiser() throws -> InitialiserDecl {
         // filter out non initilaised values, return nil if not all values have an initial value
         let names = properties.map { $0.name }
-        guard let types = properties.optionalMap({ $0.value._type?.explicitName }) else { throw error(SemaError.NoMemberwiseInit, userVisible: false) }
+        guard let types = properties.optionalMap({ $0.value._type?.explicitName }) else { throw error(SemaError.noMemberwiseInit, userVisible: false) }
         
         var initialisations: [ASTNode] = []
         for (i, name) in names.enumerate() {

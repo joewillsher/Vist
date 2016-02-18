@@ -10,18 +10,28 @@ typealias StructMember = (name: String, type: Ty, mutable: Bool)
 typealias StructMethod = (name: String, type: FnType)
 
 
+/// A type which can have elements looked up by name,
+/// for example structs and existential protocols
+///
 protocol StorageType: Ty {
+    /// User visible type name
+    var name: String { get }
+    
     var members: [StructMember] { get }
     var methods: [StructMethod] { get }
+    
+    /// LLVM type representing self.
+    /// A struct of {member-types...}
     func memberTypes(module: LLVMModuleRef) -> LLVMTypeRef
     
+    /// Name this type is given at the global scope of IR
     var irName: String { get }
 }
 
 extension StorageType {
     
     func indexOfMemberNamed(name: String) throws -> Int {
-        guard let i = members.indexOf({ $0.name == name }) else { throw error(SemaError.NoPropertyNamed(type: self.irName, property: name)) }
+        guard let i = members.indexOf({ $0.name == name }) else { throw error(SemaError.noPropertyNamed(type: self.name, property: name)) }
         return i
     }
     

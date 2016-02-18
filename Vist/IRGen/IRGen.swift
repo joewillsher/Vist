@@ -99,7 +99,7 @@ extension IntegerLiteral: IRGenerator {
         let rawType = BuiltinType.Int(size: size)
         let value = LLVMConstInt(rawType.globalType(nil), UInt64(val), false)
         
-        guard let type = self.type else { throw error(SemaError.IntegerNotTyped, userVisible: false) }
+        guard let type = self.type else { throw error(SemaError.integerNotTyped, userVisible: false) }
         return type.initialiseStdTypeFromBuiltinMembers(value, irGen: irGen)
     }
 }
@@ -119,7 +119,7 @@ extension BooleanLiteral: IRGenerator {
         let rawType = BuiltinType.Bool
         let value = LLVMConstInt(rawType.globalType(nil), UInt64(val.hashValue), false)
         
-        guard let type = self.type else { throw error(SemaError.BoolNotTyped, userVisible: false) }
+        guard let type = self.type else { throw error(SemaError.boolNotTyped, userVisible: false) }
         return type.initialiseStdTypeFromBuiltinMembers(value, irGen: irGen)
     }
 }
@@ -156,11 +156,13 @@ extension VariableDecl: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         
+        let irName = name.stringByReplacingOccurrencesOfString("$", withString: "d")
+        
         if case let arr as ArrayExpr = value {
             //if asigning to array
             
             let a = try arr.arrInstance(stackFrame, irGen: irGen)
-            a.allocHead(irGen.builder, name: name, mutable: isMutable)
+            a.allocHead(irGen.builder, name: irName, mutable: isMutable)
             stackFrame.addVariable(a, named: name)
             
             return a.ptr
@@ -221,13 +223,13 @@ extension VariableDecl: IRGenerator {
             
             switch value._type {
             case let structType as StructType:
-                variable = MutableStructVariable.alloc(structType, irName: name, irGen: irGen)
+                variable = MutableStructVariable.alloc(structType, irName: irName, irGen: irGen)
                 
             case let tupleType as TupleType:
-                variable = MutableTupleVariable.alloc(tupleType, irName: name, irGen: irGen)
+                variable = MutableTupleVariable.alloc(tupleType, irName: irName, irGen: irGen)
                 
             case let existentialType as ConceptType:
-                let existentialVariable = ExistentialVariable.alloc(existentialType, fromExistential: v, mutable: isMutable, irName: name, irGen: irGen)
+                let existentialVariable = ExistentialVariable.alloc(existentialType, fromExistential: v, mutable: isMutable, irName: irName, irGen: irGen)
                 stackFrame.addVariable(existentialVariable, named: name)
                 return v
                 
@@ -308,7 +310,7 @@ extension BinaryExpr: IRGenerator {
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         
         let lIR = try lhs.nodeCodeGen(stackFrame, irGen: irGen), rIR = try rhs.nodeCodeGen(stackFrame, irGen: irGen)
-        guard let argTypes = [lhs, rhs].optionalMap({ $0._type }), fnType = self.fnType else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
+        guard let argTypes = [lhs, rhs].optionalMap({ $0._type }), fnType = self.fnType else { throw error(SemaError.paramsNotTyped, userVisible: false) }
         
         let fn: LLVMValueRef
         
@@ -375,7 +377,7 @@ extension FunctionCallExpr: IRGenerator {
         }
         
         let argCount = self.args.elements.count
-        guard let paramTypes = self.fnType?.params, let argTypes = self.args.elements.optionalMap({ $0._type }) else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
+        guard let paramTypes = self.fnType?.params, let argTypes = self.args.elements.optionalMap({ $0._type }) else { throw error(SemaError.paramsNotTyped, userVisible: false) }
         
         var argBuff: [LLVMValueRef] = []
         
@@ -489,21 +491,22 @@ extension FuncDecl: IRGenerator {
         for i in 0..<paramCount {
             let param = LLVMGetParam(function, UInt32(i + startIndex))
             let paramName = impl?.params[i] ?? i.implicitParamName()
+            let irName = paramName.stringByReplacingOccurrencesOfString("$", withString: "param")
             LLVMSetValueName(param, paramName)
             
             let tyName = paramTypeNames[i]
             
             switch try stackFrame.type(tyName) {
             case let t as StructType:
-                let s = ParameterStructVariable(val: param, type: t, irName: paramName, irGen: irGen)
+                let s = ParameterStructVariable(val: param, type: t, irName: irName, irGen: irGen)
                 functionStackFrame.addVariable(s, named: paramName)
                 
             case let c as ConceptType:
-                let e = ExistentialVariable.alloc(c, fromExistential: param, mutable: false, irName: paramName, irGen: irGen)
+                let e = ExistentialVariable.alloc(c, fromExistential: param, mutable: false, irName: irName, irGen: irGen)
                 functionStackFrame.addVariable(e, named: paramName)
                 
             default:
-                let s = StackVariable(val: param, irName: paramName, irGen: irGen)
+                let s = StackVariable(val: param, irName: irName, irGen: irGen)
                 functionStackFrame.addVariable(s, named: paramName)
             }
         }
@@ -1003,21 +1006,22 @@ extension InitialiserDecl: IRGenerator {
         for i in 0..<paramCount {
             let param = LLVMGetParam(function, UInt32(i))
             let paramName = impl.params[i] ?? i.implicitParamName()
+            let irName = paramName.stringByReplacingOccurrencesOfString("$", withString: "param")
             LLVMSetValueName(param, paramName)
             
             let tyName = paramTypeNames[i]
             
             switch try stackFrame.type(tyName) {
             case let t as StructType:
-                let s = ParameterStructVariable(val: param, type: t, irName: paramName, irGen: irGen)
+                let s = ParameterStructVariable(val: param, type: t, irName: irName, irGen: irGen)
                 initStackFrame.addVariable(s, named: paramName)
                 
             case let c as ConceptType:
-                let e = ExistentialVariable.alloc(c, fromExistential: param, mutable: false, irName: paramName, irGen: irGen)
+                let e = ExistentialVariable.alloc(c, fromExistential: param, mutable: false, irName: irName, irGen: irGen)
                 initStackFrame.addVariable(e, named: paramName)
                 
             default:
-                let s = StackVariable(val: param, irName: paramName, irGen: irGen)
+                let s = StackVariable(val: param, irName: irName, irGen: irGen)
                 initStackFrame.addVariable(s, named: paramName)
             }
         }

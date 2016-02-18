@@ -30,7 +30,7 @@ enum BuiltinType: Ty {
             case 32:                    return LLVMFloatType()
             case 64:                    return LLVMDoubleType()
             case 128:                   return LLVMFP128Type()
-            default:                    fatalError(SemaError.InvalidFloatType(s).description)
+            default:                    fatalError(SemaError.invalidFloatType(s).description)
             }
         }
     }

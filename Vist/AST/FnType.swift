@@ -21,10 +21,11 @@ struct FnType: Ty {
             r = returns.globalType(module)
         }
         
-        return LLVMFunctionType(r,
-                                nonVoid.map{$0.globalType(module)}.ptr(),
-                                UInt32(nonVoid.count),
-                                false)
+        let count = nonVoid.count
+        let els = nonVoid.map{$0.globalType(module)}.ptr()
+        defer { els.dealloc(count) }
+        
+        return LLVMFunctionType(r, els, UInt32(count), false)
     }
     
     init(params: [Ty], returns: Ty = BuiltinType.Void, metadata: [String] = []) {

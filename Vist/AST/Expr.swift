@@ -420,7 +420,7 @@ struct NullExpr: Expr {
 //}
 
 
-final class TupleExpr: TypedExpr {
+final class TupleExpr: ChainableExpr, Typed {
     let elements: [Expr]
     
     init(elements: [Expr]) {

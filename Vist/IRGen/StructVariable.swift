@@ -57,7 +57,7 @@ extension StructVariable {
     }
     
     func ptrToPropertyNamed(name: String) throws -> LLVMValueRef {
-        guard let i = indexOfProperty(name) else { throw error(SemaError.NoPropertyNamed(type: irName, property: name)) }
+        guard let i = indexOfProperty(name) else { throw error(SemaError.noPropertyNamed(type: irName, property: name)) }
         
         return LLVMBuildStructGEP(irGen.builder, ptr, UInt32(i), "\(irName).\(name).ptr")
     }
@@ -180,7 +180,7 @@ final class ParameterStructVariable: StructVariable {
     // override StructVariable's loadPropertyNamed(_:) function to
     // just extract the value from our value, and not use the pointer
     func loadPropertyNamed(name: String) throws -> LLVMValueRef {
-        guard let i = indexOfProperty(name) else { throw error(SemaError.NoPropertyNamed(type: irName, property: name)) }
+        guard let i = indexOfProperty(name) else { throw error(SemaError.noPropertyNamed(type: irName, property: name)) }
         return LLVMBuildExtractValue(irGen.builder, value, UInt32(i), name)
     }
 }

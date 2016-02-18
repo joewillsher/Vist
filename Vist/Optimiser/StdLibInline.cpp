@@ -275,7 +275,7 @@ bool StdLibInline::runOnFunction(Function &function) {
                                                                true);
                             call->setCalledFunction(intrinsic);
                         }
-                        // otherwise we copy in the body
+                        // otherwise, if user function, we copy in the body
                         else {
                             ValueToValueMapTy VMap;
                             Function *fnThisModule = CloneFunction(call->getCalledFunction(), VMap, false);
@@ -287,6 +287,7 @@ bool StdLibInline::runOnFunction(Function &function) {
                             Function *newProto = module->getFunction(fnThisModule->getName());
                             
                             call->setCalledFunction(newProto);
+                            call->getMetadata(initiID);
                         }
                         
                         builder.Insert(call, call->getName());
@@ -294,9 +295,6 @@ bool StdLibInline::runOnFunction(Function &function) {
                     }
                     // otherwise add the inst to the inlined block
                     else {
-                        
-                        // loop through operands
-                        
                         builder.Insert(newInst, inst.getName());
                         inst.replaceAllUsesWith(newInst);
                     }

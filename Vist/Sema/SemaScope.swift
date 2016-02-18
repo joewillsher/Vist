@@ -70,7 +70,7 @@ final class SemaScope {
         }
             // error handling
         else {
-            throw error(SemaError.NoFunction(name, argTypes))
+            throw error(SemaError.noFunction(name, argTypes))
         }
     }
     

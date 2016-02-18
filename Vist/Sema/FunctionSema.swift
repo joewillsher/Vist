@@ -69,7 +69,7 @@ extension BinaryExpr: ExprTypeProvider {
             try arg.typeForNode(scope)
         }
         
-        guard let argTypes = args.optionalMap({ $0._type }) else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
+        guard let argTypes = args.optionalMap({ $0._type }) else { throw error(SemaError.paramsNotTyped, userVisible: false) }
         
         let (mangledName, fnType) = try scope.function(op, argTypes: argTypes)
         self.mangledName = mangledName
@@ -92,7 +92,7 @@ extension FunctionCallExpr: ExprTypeProvider {
         }
         
         // get from table
-        guard let argTypes = args.elements.optionalMap({ $0._type }) else { throw error(SemaError.ParamsNotTyped, userVisible: false) }
+        guard let argTypes = args.elements.optionalMap({ $0._type }) else { throw error(SemaError.paramsNotTyped, userVisible: false) }
         
         let (mangledName, fnType) = try scope.function(name, argTypes: argTypes)
         self.mangledName = mangledName

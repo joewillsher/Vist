@@ -1,9 +1,8 @@
 
 type StackOf2 {
-    var bottom: Int
-    var top: Int
+    var bottom: Int, top: Int
     
-    func sum :: () -> Int = do
+    func sum :: -> Int = do
         return bottom + top
     
     @mutating

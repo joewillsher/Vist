@@ -8,6 +8,7 @@
 
 
 
+
 extension ReturnStmt: StmtTypeProvider {
     
     func typeForNode(scope: SemaScope) throws {
@@ -17,7 +18,7 @@ extension ReturnStmt: StmtTypeProvider {
         let returnType = try expr.typeForNode(retScope)
         
         guard let ret = scope.returnType where ret == returnType else {
-            throw error(SemaError.WrongFunctionReturnType(applied: returnType, expected: scope.returnType ?? BuiltinType.Null))
+            throw error(SemaError.wrongFunctionReturnType(applied: returnType, expected: scope.returnType ?? BuiltinType.Null))
         }
     }
 }
@@ -56,7 +57,7 @@ extension ElseIfBlockStmt: StmtTypeProvider {
         if condition == nil { return }
         
         // otherwise make sure its a Bool
-        guard let condition = c where condition == StdLib.BoolType else { throw error(SemaError.NonBooleanCondition) }
+        guard let condition = c where condition == StdLib.BoolType else { throw error(SemaError.nonBooleanCondition) }
     }
     
 }
@@ -78,7 +79,7 @@ extension ForInLoopStmt: StmtTypeProvider {
         loopScope[variable: binded.name] = (type: StdLib.IntType, mutable: false)
         
         // gen types for iterator
-        guard try iterator.typeForNode(scope) == StdLib.RangeType else { throw error(SemaError.NotRangeType) }
+        guard try iterator.typeForNode(scope) == StdLib.RangeType else { throw error(SemaError.notRangeType) }
         
         // parse inside of loop in loop scope
         try block.exprs.walkChildren { exp in
@@ -97,7 +98,7 @@ extension WhileLoopStmt: StmtTypeProvider {
         let loopScope = SemaScope(parent: scope, returnType: scope.returnType)
         
         // gen types for iterator
-        guard try condition.typeForNode(scope) == StdLib.BoolType else { throw error(SemaError.NonBooleanCondition) }
+        guard try condition.typeForNode(scope) == StdLib.BoolType else { throw error(SemaError.nonBooleanCondition) }
         
         // parse inside of loop in loop scope
         try block.exprs.walkChildren { exp in

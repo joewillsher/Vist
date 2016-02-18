@@ -6,7 +6,6 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-// TODO: struct type and tuple type both 1 protocol
 
 final class TupleType: Ty {
     var members: [Ty]
@@ -28,7 +27,7 @@ final class TupleType: Ty {
     }
     
     func propertyType(index: Int) throws -> Ty {
-        guard index < members.count else { throw error(SemaError.NoTupleElement(index: index, size: members.count)) }
+        guard index < members.count else { throw error(SemaError.noTupleElement(index: index, size: members.count)) }
         return members[index]
     }
     

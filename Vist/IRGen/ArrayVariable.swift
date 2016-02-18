@@ -60,6 +60,7 @@ class ArrayVariable: RuntimeVariable {
             
             // load val into memory
             LLVMBuildStore(irGen.builder, vars[n], el)
+            index.dealloc(1)
         }
         
         self.elementType = elType
@@ -80,7 +81,9 @@ class ArrayVariable: RuntimeVariable {
     }
     
     private func ptrToElementAtIndex(index: LLVMValueRef) -> LLVMValueRef {
-        return LLVMBuildGEP(irGen.builder, base, [index].ptr(), 1, "ptr")
+        let el = [index].ptr()
+        defer { el.dealloc(1) }
+        return LLVMBuildGEP(irGen.builder, base, el, 1, "ptr")
     }
     
     func loadElementAtIndex(index: LLVMValueRef) -> LLVMValueRef {

@@ -7,95 +7,102 @@
 //
 
 enum SemaError: VistError {
-    case InvalidType(BuiltinType), InvalidFloatType(UInt32)
-    case InvalidRedeclaration(String), InvalidTypeRedeclaration(String)
-    case NoVariable(String)
-    case HeterogenousArray([Ty]), EmptyArray
-    case CannotSubscriptNonArrayVariable, NonIntegerSubscript
-    case NonBooleanCondition, NotRangeType, DifferentTypeForMutation(String, Ty, Ty), ImmutableVariable(String), ImmutableProperty(p: String, obj: String, ty: String)
-    case CannotAssignToNullExpression(String)
-    case NoTupleElement(index: Int, size: Int)
+    case invalidType(BuiltinType), invalidFloatType(UInt32)
+    case invalidRedeclaration(String), invalidTypeRedeclaration(String)
+    case noVariable(String)
+    case heterogenousArray([Ty]), emptyArray
+    case cannotSubscriptNonArrayVariable, nonIntegerSubscript
+    case nonBooleanCondition, notRangeType, differentTypeForMutation(String, Ty, Ty)
+    case immutableVariable(String), immutableProperty(p: String, ty: String), immutableObject(type: String)
+    case cannotAssignToNullExpression(String)
+    case noTupleElement(index: Int, size: Int)
     
-    case NoFunction(String, [Ty])
-    case WrongFunctionReturnType(applied: Ty, expected: Ty)
-    case WrongFunctionApplications(name: String, applied: [Ty], expected: [Ty])
-    case NoTypeNamed(String)
-    case NoPropertyNamed(type: String, property: String), CannotStoreInParameterStruct(propertyName: String), NotStructType(Ty)
+    case noFunction(String, [Ty])
+    case wrongFunctionReturnType(applied: Ty, expected: Ty)
+    case wrongFunctionApplications(name: String, applied: [Ty], expected: [Ty])
+    case noTypeNamed(String)
+    case noPropertyNamed(type: String, property: String), cannotStoreInParameterStruct(propertyName: String), notStructType(Ty?), notTupleType(Ty)
     
     // not user visible
-    case NoStdBoolType, NoStdIntType, NotTypeProvider, NoTypeForStruct, NoTypeForTuple
-    case StructPropertyNotTyped(type: String, property: String), StructMethodNotTyped(type: String, methodName: String), InitialiserNotAssociatedWithType
-    case TypeNotFound, ParamsNotTyped, IntegerNotTyped, BoolNotTyped
-    case NoMemberwiseInit
+    case noStdBoolType, noStdIntType, notTypeProvider, noTypeForStruct, noTypeForTuple
+    case structPropertyNotTyped(type: String, property: String), structMethodNotTyped(type: String, methodName: String), initialiserNotAssociatedWithType
+    case typeNotFound, paramsNotTyped, integerNotTyped, boolNotTyped
+    case noMemberwiseInit
     
-    case GenericSubstitutionInvalid
+    case genericSubstitutionInvalid, notValidLookup
     
     var description: String {
         switch self {
-        case let .InvalidType(t):
+        case .invalidType(let t):
             return "Invalid type '\(t)'"
-        case let .InvalidFloatType(s):
+        case .invalidFloatType(let s):
             return "Invalid float of size \(s)"
-        case let .InvalidRedeclaration(t):
+        case .invalidRedeclaration(let t):
             return "Variable '\(t)' is already declared"
-        case let .InvalidTypeRedeclaration(t):
+        case .invalidTypeRedeclaration(let t):
             return "Type \(t) is already defined"
-        case let .NoVariable(v):
+        case .noVariable(let v):
             return "Could not find variable '\(v)' in this scope"
-        case let .HeterogenousArray(arr):
+        case .heterogenousArray(let arr):
             let (type, except) = arr.heterogeneous()
             return "Invalid heterogeneous array of '\(type)' contains '\(except)')"
-        case .EmptyArray:
+        case .emptyArray:
             return "Empty array -- could not infer type"
-        case .CannotSubscriptNonArrayVariable:
+        case .cannotSubscriptNonArrayVariable:
             return "You can only subscript an array variable"
-        case .NonIntegerSubscript:
+        case .nonIntegerSubscript:
             return "Subscript is not an integer"
-        case .NonBooleanCondition:
+        case .nonBooleanCondition:
             return "Condition is not a boolean expression"
-        case .NotRangeType:
+        case .notRangeType:
             return "Expression is not of type 'Range'"
-        case let .DifferentTypeForMutation(name, from, to):
+        case let .differentTypeForMutation(name, from, to):
             return "Cannot change type of '\(name)' from '\(from)' to '\(to)'"
-        case let .ImmutableVariable(name):
+        case .immutableVariable(let name):
             return "Variable '\(name)' is immutable"
-        case let .ImmutableProperty(p, obj, ty):
-            return "Variable '\(obj)' (of type '\(ty)') does not have mutable property '\(p)'"
-        case let .CannotAssignToNullExpression(name):
+        case let .immutableProperty(p, ty):
+            return "Variable of type '\(ty)' does not have mutable property '\(p)'"
+        case .immutableObject(let ty):
+            return "Object of type '\(ty)' is immutable"
+        case .cannotAssignToNullExpression(let name):
             return "Variable '\(name)' cannot be assigned to null typed expression"
-        case let .NoTupleElement(i, s):
+        case let .noTupleElement(i, s):
             return "Tuple of size \(s). Cannot access its element at index \(i)"
             
-        case let .WrongFunctionReturnType(applied, expected):
+        case let .wrongFunctionReturnType(applied, expected):
             return "Invalid return from function. '\(applied)' is not convertible to '\(expected)'"
-        case let .NoFunction(f, ts):
+        case let .noFunction(f, ts):
             return "Could not find function '\(f)' which accepts parameters of type '\(ts.asTupleDescription())'"
-        case let .WrongFunctionApplications(name, applied, expected):
+        case let .wrongFunctionApplications(name, applied, expected):
             return "Incorrect application of function '\(name)'. '\(applied.asTupleDescription())' is not convertible to '\(expected.asTupleDescription())'"
-        case let .NoTypeNamed(name):
+        case .noTypeNamed(let name):
             return "No type '\(name)' found"
-        case let .NoPropertyNamed(type, property):
+        case let .noPropertyNamed(type, property):
             return "Type '\(type)' does not have member '\(property)'"
-        case let .CannotStoreInParameterStruct(pName):
+        case .cannotStoreInParameterStruct(let pName):
             return "'\(pName)' is a member of an immutable type passed as a parameter to a function"
-        case let .NotStructType(t):
-            return "'\(t)' is not a struct type"
+        case .notStructType(let t):
+            return "'\(t?.explicitName ?? "")' is not a struct type"
+        case .notTupleType(let t):
+            return "'\(t)' is not a tuple type"
+            
             
             // not user visible
-        case .NoStdBoolType: return "Stdlib did not provide a Bool type"
-        case .NoStdIntType: return "Stdlib did not provide an Int type"
-        case .NotTypeProvider: return "ASTNode does not conform to `TypeProvider` and does not provide an implementation of `typeForNode(_:)"
-        case .NoTypeForStruct, .NoTypeForTuple: return "Lookup's parent does not have a type"
-        case let .StructPropertyNotTyped(type, property): return "Property '\(property)' in '\(type)' was not typed"
-        case let .StructMethodNotTyped(type, method): return "Method '\(method)' in '\(type)' was not typed"
-        case .InitialiserNotAssociatedWithType: return "Initialiser's parent type was unexpectedly nil"
-        case .TypeNotFound: return "Type not found"
-        case .ParamsNotTyped: return "Params not typed"
-        case .IntegerNotTyped: return "Integer literal not typed"
-        case .BoolNotTyped: return "Bool literal not typed"
-        case .NoMemberwiseInit: return "Could not construct memberwise initialiser"
+        case .noStdBoolType: return "Stdlib did not provide a Bool type"
+        case .noStdIntType: return "Stdlib did not provide an Int type"
+        case .notTypeProvider: return "ASTNode does not conform to `TypeProvider` and does not provide an implementation of `typeForNode(_:)"
+        case .noTypeForStruct, .noTypeForTuple: return "Lookup's parent does not have a type"
+        case let .structPropertyNotTyped(type, property): return "Property '\(property)' in '\(type)' was not typed"
+        case let .structMethodNotTyped(type, method): return "Method '\(method)' in '\(type)' was not typed"
+        case .initialiserNotAssociatedWithType: return "Initialiser's parent type was unexpectedly nil"
+        case .typeNotFound: return "Type not found"
+        case .paramsNotTyped: return "Params not typed"
+        case .integerNotTyped: return "Integer literal not typed"
+        case .boolNotTyped: return "Bool literal not typed"
+        case .noMemberwiseInit: return "Could not construct memberwise initialiser"
             
-        case .GenericSubstitutionInvalid: return "Generic substitution invalid"
+        case .genericSubstitutionInvalid: return "Generic substitution invalid"
+        case .notValidLookup: return "Lookup expression was not valid"
         }
     }
 }

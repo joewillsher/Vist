@@ -6,27 +6,27 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-
-protocol RuntimeMetadata {
-    
-}
-
-
-final class ExistentialConceptMetadata: RuntimeMetadata {
-    var arr = MetadataArray()
-    var ptr = OpaquePointer()
-}
-
-
-final class MetadataArray: RuntimeMetadata {
-    
-    
-    
-}
-
-final class OpaquePointer: RuntimeMetadata {
-    
-    
-    
-}
+//
+//protocol RuntimeMetadata {
+//    
+//}
+//
+//
+//final class ExistentialConceptMetadata: RuntimeMetadata {
+//    var arr = MetadataArray()
+//    var ptr = OpaquePointer()
+//}
+//
+//
+//final class MetadataArray: RuntimeMetadata {
+//    
+//    
+//    
+//}
+//
+//final class OpaquePointer: RuntimeMetadata {
+//    
+//    
+//    
+//}
 
