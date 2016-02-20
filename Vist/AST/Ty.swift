@@ -45,7 +45,7 @@ func globalType(module: LLVMModuleRef) -> Ty throws -> LLVMValueRef {
     }
 }
 
-
+// MARK: Cannonical equality functions, compares their module-agnostic type info
 
 @warn_unused_result
 func == <T: Ty> (lhs: T, rhs: T) -> Bool {
@@ -55,31 +55,31 @@ func == <T: Ty> (lhs: T, rhs: T) -> Bool {
 func == <T: Ty> (lhs: Ty?, rhs: T) -> Bool {
     return lhs?.globalType(nil) == rhs.globalType(nil)
 }
-@warn_unused_result
-func == (lhs: Ty, rhs: Ty) -> Bool {
-    return lhs.globalType(nil) == rhs.globalType(nil)
-}
+
 @warn_unused_result
 func != (lhs: Ty, rhs: Ty) -> Bool {
-    return lhs.globalType(nil) != rhs.globalType(nil)
+    return !(lhs == rhs)
 }
+
 @warn_unused_result
-func == (lhs: [Ty], rhs: [Ty]) -> Bool {
-    if lhs.isEmpty && rhs.isEmpty { return true }
-    if lhs.count != rhs.count { return false }
-    
-    for (l,r) in zip(lhs,rhs) {
-        switch (l, r) {
-        case (let l as StorageType, let r as ConceptType):
-            return l.models(r)
-        case (let l as ConceptType, let r as StorageType):
-            return r.models(l)
-        default:
-            return l == r
-        }
+func == (lhs: Ty, rhs: Ty) -> Bool {
+    switch (lhs, rhs) {
+    case (let l as StorageType, let r as ConceptType):
+        return l.models(r)
+    case (let l as ConceptType, let r as StorageType):
+        return r.models(l)
+    default:
+        return lhs.globalType(nil) == rhs.globalType(nil)
     }
-    return false
 }
+
+//@warn_unused_result
+//func == (lhs: [Ty], rhs: [Ty]) -> Bool {
+//    if lhs.isEmpty && rhs.isEmpty { return true }
+//    if lhs.count != rhs.count { return false }
+//    
+//    return lhs.elementsEqual(rhs, isEquivalent: ==)
+//}
 
 
 

@@ -49,7 +49,9 @@ final class SemaScope {
     /// then searches parent scopes, throwing if not found
     ///
     func function(name: String, argTypes: [Ty]) throws -> (String, FnType) {
-
+        
+        // if not stdlib, lookup from the stdlib defs
+        // if stdlib lookup from builtin fns
         if let stdLibFunction = StdLib.getStdLibFunction(name, args: argTypes) where !isStdLib {
             return stdLibFunction
         }
@@ -59,18 +61,15 @@ final class SemaScope {
         else if let localFunctionType = functions[raw: name, paramTypes: argTypes] {
             return (name.mangle(localFunctionType.params), localFunctionType)
         }
+        else if let f = functions[raw: name, paramTypes: argTypes] {
+            return (name.mangle(f.params), f)
+        }
         else if let inParent = try parent?.function(name, argTypes: argTypes) {
             return inParent
         }
-        else if let f = functions[raw: name] {
-            return (name.mangle(argTypes), f)
-        }
-        else if let p = try parent?.function(name, argTypes: argTypes) {
-            return p
-        }
-            // error handling
+        // error handling
         else {
-            throw error(SemaError.noFunction(name, argTypes))
+            throw semaError(.noFunction(name, argTypes))
         }
     }
     
@@ -78,7 +77,7 @@ final class SemaScope {
         functions[name.mangle(type)] = type
     }
     
-    subscript (type type: String) -> StorageType? {
+    subscript(type type: String) -> StorageType? {
         get {
             if let t = StdLib.getStdLibType(type) where !isStdLib {
                 return t
@@ -141,8 +140,6 @@ final class SemaScope {
     static func nonCapturingScope(parent: SemaScope, returnType: Ty? = BuiltinType.Void, semaContext: Ty? = nil) -> SemaScope {
         return SemaScope(returnType: returnType, isStdLib: parent.isStdLib, semaContext: semaContext)
     }
-    
-    /// Types including parents’ types
 }
 
 
@@ -152,27 +149,14 @@ extension CollectionType
     where
     Generator.Element == (String, FnType)
 {
-    /// Subscript for unmangled names
-    ///
-    /// Function name is required to be between underscores at the start _foo_...
+    /// Subscript functions by their unmangled names and applies types
     subscript(raw raw: String, paramTypes types: [Ty]) -> FnType? {
         get {
-            
-            for (k, v) in self {
-                if k.demangleName() == raw && v.params == types { return v }
+            for (k, v) in self where k.demangleName() == raw && v.params.elementsEqual(types, isEquivalent: ==) {
+                return v
             }
             return nil
         }
     }
-    
-    subscript(raw raw: String) -> FnType? {
-        get {
-            for (k, v) in self {
-                if k.demangleName() == raw { return v }
-            }
-            return nil
-        }
-    }
-    
 }
 

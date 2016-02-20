@@ -57,6 +57,23 @@ final class ErrorTests: XCTestCase, VistTest {
 }
 
 
+private func deleteFile(name: String, inDirectory direc: String) {
+    let t = NSTask()
+    t.currentDirectoryPath = direc
+    t.launchPath = "/bin/rm"
+    t.arguments = [name]
+    t.launch()
+    t.waitUntilExit()
+}
+
+
+
+
+
+
+
+
+
 // MARK: Test Cases
 
 extension OutputTests {
@@ -224,6 +241,8 @@ extension CoreTests {
     /// Runs a compilation of the standard library
     ///
     func testStdLibCompile() {
+        deleteFile("stdlib.bc", inDirectory: stdlibDir)
+        deleteFile("stdlib.o", inDirectory: stdlibDir)
         do {
             try compileWithOptions(["-build-stdlib"], inDirectory: stdlibDir)
             XCTAssertTrue(NSFileManager.defaultManager().fileExistsAtPath("\(stdlibDir)/stdlib.bc")) // file used by optimiser
@@ -237,6 +256,7 @@ extension CoreTests {
     /// Builds the runtime
     ///
     func testRuntimeBuild() {
+        deleteFile("runtime.bc", inDirectory: runtimeDir)
         do {
             try compileWithOptions(["-build-runtime"], inDirectory: runtimeDir)
             XCTAssertTrue(NSFileManager.defaultManager().fileExistsAtPath("\(runtimeDir)/runtime.bc"))

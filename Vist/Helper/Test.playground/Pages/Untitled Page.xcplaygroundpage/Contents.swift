@@ -36,23 +36,35 @@ extension String {
     }
     
     func demangleName() -> String {
-        let name = String(characters.prefixUpTo(characters.indexOf("_")!))
+        let end = characters.indexOf("_")! // index of end of name
+        
+        let d = characters.indexOf(".") // index of initial name dot
+        let start: CharacterView.Index
+        
+        if let d = d {
+            if String(characters[startIndex..<d]) == "LLVM" {
+                start = startIndex
+            }
+            else {
+                start = d.successor()
+            }
+        }
+        else {
+            start = startIndex
+        }
+        
+        let name = String(characters[start..<end])
+        
         var resStr: [Character] = []
         var pred: Character? = nil
         
         for c in name.characters {
-            
-            if c == "-" {
-                pred = c
-                continue
-            }
-            
-            print(c, pred, String.mangleMap.indexOf({$0.1 == c}))
-            
-            if let original = String.mangleMap.indexOf({$0.1 == c}) where pred == "-" {
-                resStr.append(String.mangleMap[original].0)
-            } else {
-                resStr.append(c)
+            if c != "-" {
+                if let original = String.mangleMap.indexOf({$0.1 == c}) where pred == "-" {
+                    resStr.append(String.mangleMap[original].0)
+                } else {
+                    resStr.append(c)
+                }
             }
             
             pred = c
@@ -91,7 +103,10 @@ let d = ["_$fatalError_": 5]
 
 let m = "_fatalError".mangle()
 let n = "+".mangle()
+let a = "Foo.doo_Int"
+let l = "LLVM.foo_Int"
 
 m.demangleName()
 n.demangleName()
-
+a.demangleName()
+l.demangleName()

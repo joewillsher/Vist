@@ -21,7 +21,7 @@ protocol StorageType: Ty {
     var methods: [StructMethod] { get }
     
     /// LLVM type representing self.
-    /// A struct of {member-types...}
+    /// A struct of `{member-types...}`
     func memberTypes(module: LLVMModuleRef) -> LLVMTypeRef
     
     /// Name this type is given at the global scope of IR
@@ -31,12 +31,13 @@ protocol StorageType: Ty {
 extension StorageType {
     
     func indexOfMemberNamed(name: String) throws -> Int {
-        guard let i = members.indexOf({ $0.name == name }) else { throw error(SemaError.noPropertyNamed(type: self.name, property: name)) }
+        guard let i = members.indexOf({ $0.name == name }) else { throw semaError(.noPropertyNamed(type: self.name, property: name)) }
         return i
     }
     
     func globalType(module: LLVMModuleRef) -> LLVMTypeRef {
         
+        // if no module is defined, we can only return the raw type
         if module == nil { return memberTypes(module) }
         
         let found = getNamedType(irName, module)
@@ -55,4 +56,16 @@ extension StorageType {
     func propertyMutable(name: String) throws -> Bool {
         return members[try indexOfMemberNamed(name)].mutable
     }
+    func getMethod(methodName: String, argTypes types: [Ty]) -> FnType? {
+        return methods[raw: methodName, paramTypes: types]
+    }
+    
+    /// Returns whether a type models a concept
+    func models(concept: ConceptType) -> Bool {
+        // TODO: explicit, opt into methods, this should be a check in sema
+        for f in concept.requiredFunctions where !methods.contains({ $0.name.demangleName() == f.name.demangleName() && $0.type == f.type }) { return false }
+        for p in concept.requiredProperties where !members.contains({ $0.name == p.name && $0.type == p.type }) { return false }
+        return true
+    }
 }
+

@@ -51,7 +51,7 @@ final class FuncDecl: Decl, StructMemberExpr {
     var mangledName: String
     
     /// `self` if the function is a member function
-    weak var parent: StructExpr? = nil
+    var parent: TypeExpr? = nil
 }
 
 

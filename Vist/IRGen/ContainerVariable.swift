@@ -58,7 +58,7 @@ extension StructVariable {
     }
     
     func ptrToPropertyNamed(name: String) throws -> LLVMValueRef {
-        guard let i = indexOfProperty(name) else { throw error(SemaError.noPropertyNamed(type: irName, property: name)) }
+        guard let i = indexOfProperty(name) else { throw semaError(.noPropertyNamed(type: irName, property: name)) }
         
         return LLVMBuildStructGEP(irGen.builder, ptr, UInt32(i), "\(irName).\(name).ptr")
     }
@@ -93,7 +93,7 @@ extension StructVariable where Self: MutableVariable {
 extension TupleVariable where Self: MutableVariable {
     
     func store(val: LLVMValueRef, inElementAtIndex index: Int) throws {
-        guard index < properties.count else { throw error(IRError.NoTupleMemberAt(index)) }
+        guard index < properties.count else { throw irGenError(.NoTupleMemberAt(index)) }
         LLVMBuildStore(irGen.builder, val, ptrToElementAtIndex(index))
     }
 }
@@ -179,7 +179,7 @@ final class ParameterStructVariable: StructVariable {
     // override StructVariable's loadPropertyNamed(_:) function to
     // just extract the value from our value, and not use the pointer
     func loadPropertyNamed(name: String) throws -> LLVMValueRef {
-        guard let i = indexOfProperty(name) else { throw error(SemaError.noPropertyNamed(type: irName, property: name)) }
+        guard let i = indexOfProperty(name) else { throw semaError(.noPropertyNamed(type: irName, property: name)) }
         return LLVMBuildExtractValue(irGen.builder, value, UInt32(i), name)
     }
 }

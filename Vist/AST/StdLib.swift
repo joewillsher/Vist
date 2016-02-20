@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-final class StdLib {
+struct StdLib {
     
     static let IntType =    StructType(members: [("value", BuiltinType.Int(size: 64), true)],       methods: [], name: "Int")
     static let Int32Type =    StructType(members: [("value", BuiltinType.Int(size: 32), true)],       methods: [], name: "Int32")

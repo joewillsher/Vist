@@ -313,12 +313,15 @@ final class ArraySubscriptExpr: ChainableExpr {
 
 protocol StructMemberExpr {
 }
+protocol TypeExpr: Expr {
+    var name: String { get }
+}
 
 
 
 typealias ConstrainedType = (name: String, constraints: [String], parentName: String)
 
-final class StructExpr: TypedExpr, ScopeNode {
+final class StructExpr: TypedExpr, ScopeNode, TypeExpr {
     let name: String
     let properties: [VariableDecl]
     let methods: [FuncDecl]
@@ -343,7 +346,7 @@ final class StructExpr: TypedExpr, ScopeNode {
     }
 }
 
-final class ConceptExpr: TypedExpr, ScopeNode {
+final class ConceptExpr: TypedExpr, ScopeNode, TypeExpr {
     let name: String
     let requiredProperties: [VariableDecl]
     let requiredMethods: [FuncDecl]
@@ -377,7 +380,7 @@ final class MethodCallExpr: ChainableExpr {
     
     var mangledName: String = ""
     
-    var structType: StructType? = nil
+    var structType: StorageType? = nil
     var _type: Ty? = nil
 }
 

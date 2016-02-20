@@ -48,13 +48,32 @@ extension String {
         return String(resStr)
     }
     
+    /// returns the raw name, getting rid of type info at end, 
+    /// (and type prefix for methods)
     func demangleName() -> String {
-        let name = String(characters.prefixUpTo(characters.indexOf("_")!))
+        let end = characters.indexOf("_")! // index of end of name
+        
+        let d = characters.indexOf(".") // index of initial name dot
+        let start: CharacterView.Index
+        
+        if let d = d {
+            if String(characters[startIndex..<d]) == "LLVM" {
+                start = startIndex
+            }
+            else {
+                start = d.successor()
+            }
+        }
+        else {
+            start = startIndex
+        }
+        
+        let name = String(characters[start..<end])
+        
         var resStr: [Character] = []
         var pred: Character? = nil
         
         for c in name.characters {
-            
             if c != "-" {
                 if let original = String.mangleMap.indexOf({$0.1 == c}) where pred == "-" {
                     resStr.append(String.mangleMap[original].0)

@@ -65,7 +65,7 @@ extension VariableExpr : ExprTypeProvider {
         
         // lookup variable type in scope
         guard let v = scope[variable: name] else {
-            throw error(SemaError.noVariable(name))
+            throw semaError(.noVariable(name))
         }
         
         // assign type to self and return
@@ -83,29 +83,29 @@ extension MutationExpr : ExprTypeProvider {
         let old = try object.typeForNode(scope)
         let new = try value.typeForNode(scope)
         
-        guard old == new else { throw error(SemaError.differentTypeForMutation(object.typeName, old, new)) }
+        guard old == new else { throw semaError(.differentTypeForMutation(object.typeName, old, new)) }
         
         switch object {
         case let variable as VariableExpr:
             
-            guard let v = scope[variable: variable.name] else { throw error(SemaError.noVariable(variable.name)) }
-            guard v.mutable else { throw error(SemaError.immutableVariable(variable.name)) }
+            guard let v = scope[variable: variable.name] else { throw semaError(.noVariable(variable.name)) }
+            guard v.mutable else { throw semaError(.immutableVariable(variable.name)) }
             
         case let propertyLookup as PropertyLookupExpr:
             
-            guard let type = propertyLookup.object._type else { throw error(SemaError.notStructType(propertyLookup._type)) }
+            guard let type = propertyLookup.object._type else { throw semaError(.notStructType(propertyLookup._type)) }
             let (_, parentMutable, mutable) = try propertyLookup.recursiveType(scope)
             
-            guard let p = parentMutable where p else { throw error(SemaError.immutableObject(type: type.explicitName)) }
-            guard mutable else { throw error(SemaError.immutableProperty(p: propertyLookup.propertyName, ty: type.explicitName)) }
+            guard let p = parentMutable where p else { throw semaError(.immutableObject(type: type.explicitName)) }
+            guard mutable else { throw semaError(.immutableProperty(p: propertyLookup.propertyName, ty: type.explicitName)) }
             
         case let memberLookup as TupleMemberLookupExpr:
             break
 //            let objectName = memberLookup.object.desc
 //            let object = scope[variable: objectName]
 //            
-//            guard case _ as TupleType = object?.type else { throw error(SemaError.noVariable(objectName)) }
-//            guard let mutable = object?.mutable where mutable else { throw error(SemaError.immutableVariable(objectName)) }
+//            guard case _ as TupleType = object?.type else { throw semaError(.noVariable(objectName)) }
+//            guard let mutable = object?.mutable where mutable else { throw semaError(.immutableVariable(objectName)) }
             
             // TODO: checks on mutation expressions
             
@@ -123,12 +123,12 @@ extension ChainableExpr {
         
         switch self {
         case let variable as VariableExpr:
-            guard let (type, mutable) = scope[variable: variable.name] else { throw error(SemaError.noVariable(variable.name)) }
+            guard let (type, mutable) = scope[variable: variable.name] else { throw semaError(.noVariable(variable.name)) }
             return (type: type, parentMutable: nil, mutable: mutable)
             
         case let propertyLookup as PropertyLookupExpr:
             guard case let (objectType as StorageType, parentMutable, objectMutable) = try propertyLookup.object.recursiveType(scope) else {
-                throw error(SemaError.notStructType(propertyLookup._type!))
+                throw semaError(.notStructType(propertyLookup._type!))
             }
             return (
                 type: try objectType.propertyType(propertyLookup.propertyName),
@@ -138,7 +138,7 @@ extension ChainableExpr {
             
         case let tupleMemberLookup as TupleMemberLookupExpr:
             guard case let (objectType as TupleType, _, tupleMutable) = try tupleMemberLookup.object.recursiveType(scope) else {
-                throw error(SemaError.notTupleType(tupleMemberLookup._type!))
+                throw semaError(.notTupleType(tupleMemberLookup._type!))
             }
             return (
                 type: try objectType.propertyType(tupleMemberLookup.index),
@@ -147,14 +147,14 @@ extension ChainableExpr {
             )
 
         case let intLiteral as IntegerLiteral:
-            guard case let t as StorageType = intLiteral.type else { throw error(SemaError.noStdIntType, userVisible: false) }
+            guard case let t as StorageType = intLiteral.type else { throw semaError(.noStdIntType, userVisible: false) }
             return (type: t, parentMutable: nil, mutable: false)
             
 //        case let tuple as TupleExpr:
 //            return (type: _type, )
 //            
         default:
-            throw error(SemaError.notValidLookup, userVisible: false)
+            throw semaError(.notValidLookup, userVisible: false)
         }
         
     }
@@ -168,7 +168,7 @@ extension VariableDecl : DeclTypeProvider {
     func typeForNode(scope: SemaScope) throws {
         // handle redeclaration
         if scope.containsVariable(name) {
-            throw error(SemaError.invalidTypeRedeclaration(name))
+            throw semaError(.invalidTypeRedeclaration(name))
         }
         
         // if provided, get the explicit type
@@ -192,7 +192,7 @@ extension VariableDecl : DeclTypeProvider {
             value._type = e
         } // otherwise, if the type is null, we are assigning to something we shouldn't be
         else if objectType == BuiltinType.Null {
-            throw error(SemaError.cannotAssignToNullExpression(name))
+            throw semaError(.cannotAssignToNullExpression(name))
         }
         
     }
@@ -268,10 +268,10 @@ extension ArrayExpr : ExprTypeProvider {
         }
         
         // make sure array is homogeneous
-        guard Set(types.map { $0.globalType(nil) }).count == 1 else { throw error(SemaError.heterogenousArray(types)) }
+        guard Set(types.map { $0.globalType(nil) }).count == 1 else { throw semaError(.heterogenousArray(types)) }
         
         // get element type and assign to self
-        guard let elementType = types.first else { throw error(SemaError.emptyArray) }
+        guard let elementType = types.first else { throw semaError(.emptyArray) }
         self.elType = elementType
         
         // assign array type to self and return
@@ -287,10 +287,10 @@ extension ArraySubscriptExpr : ExprTypeProvider {
     func typeForNode(scope: SemaScope) throws -> Ty {
         
         // make sure its an array
-        guard case let v as VariableExpr = arr, case BuiltinType.Array(let type, _)? = scope[variable: v.name]?.type else { throw error(SemaError.cannotSubscriptNonArrayVariable) }
+        guard case let v as VariableExpr = arr, case BuiltinType.Array(let type, _)? = scope[variable: v.name]?.type else { throw semaError(.cannotSubscriptNonArrayVariable) }
         
         // gen type for subscripting value
-        guard try index.typeForNode(scope) == StdLib.IntType else { throw error(SemaError.nonIntegerSubscript) }
+        guard try index.typeForNode(scope) == StdLib.IntType else { throw semaError(.nonIntegerSubscript) }
         
         // assign type to self and return
         self._type = type

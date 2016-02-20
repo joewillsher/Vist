@@ -38,6 +38,18 @@ func error(err: VistError, loc: SourceRange? = nil, userVisible: Bool = true, fi
     }
 }
 
+func semaError(err: SemaError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = __FILE__, line: UInt = __LINE__, function: String = __FUNCTION__) -> VistError {
+    return error(err, loc: loc, userVisible: userVisible, file: file, line: line, function: function)
+}
+func parseError(err: ParseError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = __FILE__, line: UInt = __LINE__, function: String = __FUNCTION__) -> VistError {
+    return error(err, loc: loc, userVisible: userVisible, file: file, line: line, function: function)
+}
+func irGenError(err: IRError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = __FILE__, line: UInt = __LINE__, function: String = __FUNCTION__) -> VistError {
+    return error(err, loc: loc, userVisible: userVisible, file: file, line: line, function: function)
+}
+
+
+
 /// Any error wrapper type, allows equality operator to be defined
 /// on these functions by looking at their stored error
 protocol ErrorWrapper: VistError {
@@ -121,19 +133,19 @@ func == (lhs: ErrorType, rhs: ErrorType) -> Bool {
     }
 }
 
-
-/// Allows matching of pattern against a boxed pattern
-///
-/// `catch let error where unwrap(ParseError.NoTypeName, ParseError.NoIdentifier)(error) {...`
-///
-/// - parameter errors: A series of errors to match against
-///
-/// - returns: A function which takes an error instance and matches against the applied errors
-func unwrap(errors: ErrorType...) -> ErrorType -> Bool {
-    return { value in
-        return errors.contains { $0 == value }
-    }
-}
+//
+///// Allows matching of pattern against a boxed pattern
+/////
+///// `catch let error where unwrap(ParseError.NoTypeName, ParseError.NoIdentifier)(error) {...`
+/////
+///// - parameter errors: A series of errors to match against
+/////
+///// - returns: A function which takes an error instance and matches against the applied errors
+//func unwrap(errors: ErrorType...) -> ErrorType -> Bool {
+//    return { value in
+//        return errors.contains { $0 == value }
+//    }
+//}
 
 
 

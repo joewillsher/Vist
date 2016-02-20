@@ -15,7 +15,7 @@ extension StructExpr: ExprTypeProvider {
     func typeForNode(scope: SemaScope) throws -> Ty {
         
         if let _ = scope[type: name] {
-            throw error(SemaError.invalidTypeRedeclaration(name))
+            throw semaError(.invalidTypeRedeclaration(name))
         }
         
         let errorCollector = ErrorCollector()
@@ -26,10 +26,9 @@ extension StructExpr: ExprTypeProvider {
         
         // maps over properties and gens types
         let members = try properties.flatMap { (a: VariableDecl) -> StructMember? in
-            
             return try errorCollector.run {
                 try a.typeForNode(structScope)
-                guard let t = a.value._type else { throw error(SemaError.structPropertyNotTyped(type: name, property: a.name), userVisible: false) }
+                guard let t = a.value._type else { throw semaError(.structPropertyNotTyped(type: name, property: a.name), userVisible: false) }
                 return (a.name, t, a.isMutable)
             }
         }
@@ -41,11 +40,11 @@ extension StructExpr: ExprTypeProvider {
         }
         
         let memberFunctions = try methods.flatMap { (f: FuncDecl) -> StructMethod? in
-            try errorCollector.run {
+            return try errorCollector.run {
                 try f.typeForNode(structScope)
+                guard let t = f.fnType.type else { throw semaError(.structMethodNotTyped(type: name, methodName: f.name), userVisible: false) }
+                return (f.name.mangle(t, parentTypeName: name), t)
             }
-            guard let t = f.fnType.type else { throw error(SemaError.structMethodNotTyped(type: name, methodName: f.name), userVisible: false) }
-            return (f.name.mangle(t, parentTypeName: name), t)
         }
         
         ty.methods = memberFunctions
@@ -97,12 +96,12 @@ extension ConceptExpr: ExprTypeProvider {
         }
         
         let methodTypes = try requiredMethods.walkChildren(errorCollector) { method throws -> StructMethod in
-            if let t = method.fnType.type { return (method.name, t) }
-            throw error(SemaError.structMethodNotTyped(type: name, methodName: method.name))
+            if let t = method.fnType.type { return (method.name.mangle(t, parentTypeName: name), t) }
+            throw semaError(.structMethodNotTyped(type: name, methodName: method.name))
         }
         let propertyTypes = try requiredProperties.walkChildren(errorCollector) { prop throws -> StructMember in
             if let t = prop.value._type { return (prop.name, t, true) }
-            throw error(SemaError.structPropertyNotTyped(type: name, property: prop.name))
+            throw semaError(.structPropertyNotTyped(type: name, property: prop.name))
         }
         
         let ty = ConceptType(name: name, requiredFunctions: methodTypes, requiredProperties: propertyTypes)
@@ -127,7 +126,7 @@ extension InitialiserDecl: DeclTypeProvider {
             let parentType = parent?.type,
             let parentName = parent?.name,
             let parentProperties = parent?.properties
-            else { throw error(SemaError.initialiserNotAssociatedWithType) }
+            else { throw semaError(.initialiserNotAssociatedWithType) }
         
         let params = try ty.params(scope)
         
@@ -138,15 +137,16 @@ extension InitialiserDecl: DeclTypeProvider {
         ty.type = initialiserFunctionType
         
         guard let impl = self.impl else {
-            return
+            return // if no body, we're done
         }
+        
+        // Do sema on params, body, and expose self and its properties into the scope
         
         let initScope = SemaScope(parent: scope)
         
         // ad scope properties to initScope
         for p in parentProperties {
-            
-            guard let propType = p.value._type else { throw error(SemaError.paramsNotTyped, userVisible: false) }
+            guard let propType = p.value._type else { throw semaError(.paramsNotTyped, userVisible: false) }
             initScope[variable: p.name] = (type: propType, mutable: true)
         }
         
@@ -165,7 +165,7 @@ extension PropertyLookupExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         
-        guard case let objType as StorageType = try object.typeForNode(scope) else { throw error(SemaError.noTypeForStruct, userVisible: false) }
+        guard case let objType as StorageType = try object.typeForNode(scope) else { throw semaError(.noTypeForStruct, userVisible: false) }
         
         let propertyType = try objType.propertyType(propertyName)
         self._type = propertyType
@@ -179,11 +179,11 @@ extension MethodCallExpr: ExprTypeProvider {
     func typeForNode(scope: SemaScope) throws -> Ty {
         
         let ty = try object.typeForNode(scope)
-        guard case let parentType as StructType = ty else { throw error(SemaError.notStructType(ty), userVisible: false) }
+        guard case let parentType as StorageType = ty else { throw semaError(.notStructType(ty), userVisible: false) }
         
         let args = try self.args.elements.map { try $0.typeForNode(scope) }
         
-        guard let fnType = parentType.getMethod(name, argTypes: args) else { throw error(SemaError.noFunction(name, args)) }
+        guard let fnType = parentType.getMethod(name, argTypes: args) else { throw semaError(.noFunction(name, args)) }
         
         self.mangledName = name.mangle(fnType, parentTypeName: parentType.name)
         
@@ -221,7 +221,7 @@ extension TupleMemberLookupExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         
-        guard case let objType as TupleType = try object.typeForNode(scope) else { throw error(SemaError.noTypeForTuple, userVisible: false) }
+        guard case let objType as TupleType = try object.typeForNode(scope) else { throw semaError(.noTypeForTuple, userVisible: false) }
         
         let propertyType = try objType.propertyType(index)
         self._type = propertyType

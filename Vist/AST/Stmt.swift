@@ -38,7 +38,7 @@ final class ConditionalStmt: Stmt {
             // either because there is more than 1 else or Exprs after an else
             guard let _ = path.condition else {
                 if index == statements.count-1 { break }
-                self.statements = []; throw error(ParseError.InvalidIfStatement)
+                self.statements = []; throw parseError(.InvalidIfStatement)
             }
         }
         

@@ -12,6 +12,7 @@ struct StructType: StorageType {
     let members: [StructMember]
     var methods: [StructMethod]
     var genericTypes: [GenericType] = []
+    var concepts: [ConceptType] = []
     
     init(members: [StructMember], methods: [StructMethod], name: String) {
         self.name = name
@@ -37,10 +38,6 @@ struct StructType: StorageType {
     
     static func withTypes(tys: [Ty]) -> StructType {
         return StructType(members: tys.map { (name: "", type: $0, mutable: true) }, methods: [], name: "")
-    }
-        
-    func getMethod(methodName: String, argTypes types: [Ty]) -> FnType? {
-        return methods[raw: "\(name).\(methodName)", paramTypes: types]
     }
     
     var irName: String {

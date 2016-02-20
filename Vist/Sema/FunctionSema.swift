@@ -18,11 +18,7 @@ extension FuncDecl: DeclTypeProvider {
         let paramTypes = try fnType.params(declScope), returnType = try fnType.returnType(declScope)
         let ty = FnType(params: paramTypes, returns: returnType)
         
-        if let p = parent?.name {
-            mangledName = name.mangle(ty, parentTypeName: p)
-        } else {
-            mangledName = name.mangle(ty)
-        }
+        mangledName = name.mangle(ty, parentTypeName: parent?.name)
         
         let fnScope = SemaScope(parent: declScope, returnType: ty.returns)
         
@@ -32,13 +28,12 @@ extension FuncDecl: DeclTypeProvider {
         guard let impl = self.impl else { return }
         // if body construct scope and parse inside it
         
-        
         for (index, name) in impl.params.enumerate() {
             fnScope[variable: name] = (type: paramTypes[index], mutable: false)
         }
         
         // if is a method
-        if let parentType = parent?.type {
+        if case let parentType as StorageType = parent?._type {
             
             let mutableSelf = attrs.contains(.Mutating)
             // add self
@@ -69,7 +64,7 @@ extension BinaryExpr: ExprTypeProvider {
             try arg.typeForNode(scope)
         }
         
-        guard let argTypes = args.optionalMap({ $0._type }) else { throw error(SemaError.paramsNotTyped, userVisible: false) }
+        guard let argTypes = args.optionalMap({ $0._type }) else { throw semaError(.paramsNotTyped, userVisible: false) }
         
         let (mangledName, fnType) = try scope.function(op, argTypes: argTypes)
         self.mangledName = mangledName
@@ -92,7 +87,7 @@ extension FunctionCallExpr: ExprTypeProvider {
         }
         
         // get from table
-        guard let argTypes = args.elements.optionalMap({ $0._type }) else { throw error(SemaError.paramsNotTyped, userVisible: false) }
+        guard let argTypes = args.elements.optionalMap({ $0._type }) else { throw semaError(.paramsNotTyped, userVisible: false) }
         
         let (mangledName, fnType) = try scope.function(name, argTypes: argTypes)
         self.mangledName = mangledName

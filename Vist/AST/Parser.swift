@@ -11,7 +11,7 @@ import Foundation
 
 private extension Array {
     mutating func removeLastSafely(str str: String, pos: Pos) throws -> Generator.Element {
-        if self.isEmpty { throw error(ParseError.InvalidCall(str), loc: SourceRange.at(pos)) } else { return removeLast() }
+        if self.isEmpty { throw parseError(.InvalidCall(str), loc: SourceRange.at(pos)) } else { return removeLast() }
     }
 }
 
@@ -226,7 +226,7 @@ extension Parser {
                 }
 
             case .sqbrOpen:
-                guard case .identifier(let id) = getNextToken() else { throw error(ParseError.NoIdentifier, loc: rangeOfCurrentToken()) }
+                guard case .identifier(let id) = getNextToken() else { throw parseError(.NoIdentifier, loc: rangeOfCurrentToken()) }
                 
                 // handle native llvm type in stdlib
                 if case .period? = inspectNextToken(), case .identifier(let n)? = inspectNextToken(2) where id == "LLVM" && isStdLib {
@@ -238,7 +238,7 @@ extension Parser {
                     getNextToken()
                 }
                 
-                guard case .sqbrClose = getNextToken() else { throw error(ParseError.ExpectedCloseBracket, loc: SourceRange.at(currentPos)) }
+                guard case .sqbrClose = getNextToken() else { throw parseError(.ExpectedCloseBracket, loc: SourceRange.at(currentPos)) }
                 getNextToken() // eat ]
                 
             default:
@@ -261,7 +261,7 @@ extension Parser {
         inTuple = false
         defer { revertInTupleState() }
 
-        guard case .openParen = currentToken else { throw error(ParseError.ExpectedParen, loc: SourceRange.at(currentPos)) }
+        guard case .openParen = currentToken else { throw parseError(.ExpectedParen, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat `(`
         
         if case .closeParen = currentToken {
@@ -290,7 +290,7 @@ extension Parser {
                 else { break }
             }
         }
-        guard case .closeParen = currentToken else { throw error(ParseError.ExpectedParen, loc: SourceRange.at(currentPos)) }
+        guard case .closeParen = currentToken else { throw parseError(.ExpectedParen, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat `)`
         
         switch exps.count {
@@ -329,7 +329,7 @@ extension Parser {
     
     /// Parses a text token as a VariableExpr
     private func parseIdentifierAsVariable() throws -> VariableExpr {
-        guard case .identifier(let i) = currentToken else { throw error(ParseError.NoIdentifier, loc: rangeOfCurrentToken()) }
+        guard case .identifier(let i) = currentToken else { throw parseError(.NoIdentifier, loc: rangeOfCurrentToken()) }
         return VariableExpr(name: i)
     }
     
@@ -375,7 +375,7 @@ extension Parser {
         case .period? where token == "LLVM" && isStdLib:
             getNextToken(2) // eat 'LLVM.'
             
-            guard case .identifier(let id) = currentToken else { throw error(ParseError.StdLibExprInvalid, userVisible: false) }
+            guard case .identifier(let id) = currentToken else { throw parseError(.StdLibExprInvalid, userVisible: false) }
             return try parseIdentifierExpr("LLVM.\(id)")
             
         case .period?: // property or fn
@@ -447,7 +447,7 @@ extension Parser {
             }
             
         default:
-            throw error(ParseError.NoIdentifier, loc: rangeOfCurrentToken())
+            throw parseError(.NoIdentifier, loc: rangeOfCurrentToken())
         }
         
     }
@@ -502,7 +502,7 @@ extension Parser {
             return parseStringExpr(str)
             
         default:
-            throw error(ParseError.NoIdentifier, loc: rangeOfCurrentToken())
+            throw parseError(.NoIdentifier, loc: rangeOfCurrentToken())
         }
     }
     
@@ -514,7 +514,7 @@ extension Parser {
         
         switch currentToken {
         case .infixOperator(let op):
-            guard let tokenPrecedence = precedences[op] else { throw error(ParseError.NoOperator(op), loc: rangeOfCurrentToken()) }
+            guard let tokenPrecedence = precedences[op] else { throw parseError(.NoOperator(op), loc: rangeOfCurrentToken()) }
             // If the token we have encountered does not bind as tightly as the current precedence, return the current Expr
             if tokenPrecedence < precedence {
                 return lhs
@@ -528,7 +528,7 @@ extension Parser {
             
             // Get next operator
             guard case .infixOperator(let nextOp) = currentToken else { return BinaryExpr(op: op, lhs: lhs, rhs: rhs) }
-            guard let nextTokenPrecedence = precedences[nextOp] else { throw error(ParseError.NoOperator(op), loc: rangeOfCurrentToken()) }
+            guard let nextTokenPrecedence = precedences[nextOp] else { throw parseError(.NoOperator(op), loc: rangeOfCurrentToken()) }
             
             let newRhs = try parseOperationRHS(tokenPrecedence, lhs: rhs)
             
@@ -577,7 +577,7 @@ extension Parser {
         
         let usesBraces = currentToken.isBrace()
         // get if block & append
-        guard currentToken.isControlToken() else { throw error(ParseError.NotBlock, loc: SourceRange.at(currentPos)) }
+        guard currentToken.isControlToken() else { throw parseError(.NotBlock, loc: SourceRange.at(currentPos)) }
         let block = try parseBlockExpr()
         blocks.append((condition, block))
         
@@ -590,7 +590,7 @@ extension Parser {
                 getNextToken(2)
                 condition = try parseOperatorExpr()
                 
-                guard currentToken.isControlToken() && (usesBraces == currentToken.isBrace()) else { throw error(ParseError.NotBlock, loc: SourceRange.at(currentPos)) }
+                guard currentToken.isControlToken() && (usesBraces == currentToken.isBrace()) else { throw parseError(.NotBlock, loc: SourceRange.at(currentPos)) }
             }
             else {
                 getNextToken()
@@ -611,7 +611,7 @@ extension Parser {
         
         getNextToken() // eat 'for'
         let itentifier = try parseIdentifierAsVariable() // bind loop label
-        guard case .`in` = getNextToken() else { throw error(ParseError.ExpectedIn, loc: SourceRange.at(currentPos)) }
+        guard case .`in` = getNextToken() else { throw parseError(.ExpectedIn, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat 'in'
         
         let loop = try parseOperatorExpr()
@@ -648,14 +648,14 @@ extension Parser {
         switch currentToken {
         case .`let`: mutable = false
         case .`var`: mutable = true
-        default: throw error(ParseError.notVariableDecl, userVisible: false)
+        default: throw parseError(.notVariableDecl, userVisible: false)
         }
         
         var decls: [VariableDecl] = []
         getNextToken()
         
         while true {
-            guard case .identifier(let id) = currentToken else { throw error(ParseError.NoIdentifier, loc: rangeOfCurrentToken()) }
+            guard case .identifier(let id) = currentToken else { throw parseError(.NoIdentifier, loc: rangeOfCurrentToken()) }
             
             let explicitType: DefinedType?
             
@@ -674,7 +674,7 @@ extension Parser {
             case .assign:
                 // concept member cannot provide value
                 if case .concept = declContext {
-                    throw error(ParseError.conceptCannotProvideVal, loc: SourceRange.at(currentPos))
+                    throw parseError(.conceptCannotProvideVal, loc: SourceRange.at(currentPos))
                 }
                 
                 getNextToken() // eat '='
@@ -684,7 +684,7 @@ extension Parser {
                 
             default: // if no value provided
                 guard let _ = explicitType else {
-                    throw error(ParseError.ExpectedAssignment, loc: SourceRange.at(currentPos))
+                    throw parseError(.ExpectedAssignment, loc: SourceRange.at(currentPos))
                 }
                 
 //                let placeholder = PlaceholderExpr(_type: nil, defined: ex)
@@ -744,7 +744,7 @@ extension Parser {
     
     /// Parse a function decl
     ///
-    private func parseFuncDeclaration() throws -> FuncDecl {
+    private func parseFuncDeclaration(declContext: DeclContext) throws -> FuncDecl {
         
         let a = attrs.flatMap { $0 as? FunctionAttributeExpr } ?? []
         let ops = attrs.flatMap { $0 as? ASTAttributeExpr }.flatMap { a -> Int? in if case .Operator(let p) = a { return p } else { return nil } }.last
@@ -760,14 +760,14 @@ extension Parser {
             
             let found = precedences[o]
             if let x = found where x != ops { // make sure uses op’s predetermined prec
-                throw error(ParseError.CannotChangeOpPrecedence(o, x), loc: SourceRange.at(currentPos))
+                throw parseError(.CannotChangeOpPrecedence(o, x), loc: SourceRange.at(currentPos))
             }
             else if found == nil {
                 precedences[o] = pp // update prec table if not found
             }
         }
         else {
-            throw error(ParseError.NoIdentifier, loc: rangeOfCurrentToken())
+            throw parseError(.NoIdentifier, loc: rangeOfCurrentToken())
         }
         
         let functionName: String
@@ -784,7 +784,7 @@ extension Parser {
         
         let typeSignatureStartPos = currentPos
         guard case .colon = currentToken, case .colon = getNextToken() else {
-            throw error(ParseError.ExpectedDoubleColon, loc: SourceRange(start: typeSignatureStartPos, end: currentPos))
+            throw parseError(.ExpectedDoubleColon, loc: SourceRange(start: typeSignatureStartPos, end: currentPos))
         }
         
         getNextToken() // eat '='
@@ -810,8 +810,8 @@ extension Parser {
             nms.append(name)
             getNextToken()
         }
-        guard case .closeParen = currentToken else { throw error(ParseError.ExpectedParen, loc: SourceRange.at(currentPos)) }
-        guard let next = inspectNextToken() where next.isControlToken() else { throw error(ParseError.NotBlock, loc: SourceRange.at(currentPos)) }
+        guard case .closeParen = currentToken else { throw parseError(.ExpectedParen, loc: SourceRange.at(currentPos)) }
+        guard let next = inspectNextToken() where next.isControlToken() else { throw parseError(.NotBlock, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat 'do' or '{'
         
         return nms
@@ -831,7 +831,7 @@ extension Parser {
             names = (0..<type.paramType.typeNames().count).map(implicitParamName)
         }
         
-        guard currentToken.isControlToken() else { throw error(ParseError.NotBlock, loc: SourceRange.at(currentPos)) }
+        guard currentToken.isControlToken() else { throw parseError(.NotBlock, loc: SourceRange.at(currentPos)) }
         
         return FunctionImplementationExpr(params: names, body: try parseBlockExpr())
     }
@@ -877,7 +877,7 @@ extension Parser {
         case .openParen:    return try parseBlockExpr(try parseClosureNamesExpr())
         case .openBrace:    return try parseBraceExpr(names)
         case .`do`, .`else`:return try parseBracelessDoExpr(names)
-        default:            throw error(ParseError.NotBlock, loc: SourceRange.at(currentPos))
+        default:            throw parseError(.NotBlock, loc: SourceRange.at(currentPos))
         }
         
     }
@@ -941,10 +941,10 @@ extension Parser {
                 let currentParamStartPos = currentPos
                 
                 guard case .identifier(let genericParamName) = getNextToken() else { // get name of generic param
-                    throw error(ParseError.NoGenericParamName(on: objName), loc: SourceRange(start: genericParamListStartPos, end: currentPos))
+                    throw parseError(.NoGenericParamName(on: objName), loc: SourceRange(start: genericParamListStartPos, end: currentPos))
                 }
                 guard case .bar = getNextToken() else { // if we are using parens in generic param we must constrain it
-                    throw error(ParseError.ExpectedBar, loc: SourceRange(start: inspectNextPos(-2) ?? currentPos, end: currentPos))
+                    throw parseError(.ExpectedBar, loc: SourceRange(start: inspectNextPos(-2) ?? currentPos, end: currentPos))
                 }
                 
                 var constraints: [String] = []
@@ -959,10 +959,10 @@ extension Parser {
                         break loopOverConstraints
                         
                     case .closeParen where constraints.isEmpty:
-                        throw error(ParseError.NoGenericConstraints(parent: objName, genericParam: genericParamName), loc: SourceRange(start: currentParamStartPos, end: currentPos))
+                        throw parseError(.NoGenericConstraints(parent: objName, genericParam: genericParamName), loc: SourceRange(start: currentParamStartPos, end: currentPos))
                         
                     default:
-                        throw error(ParseError.ExpectedGenericConstraint, loc: SourceRange.at(currentPos))
+                        throw parseError(.ExpectedGenericConstraint, loc: SourceRange.at(currentPos))
                     }
                 }
                 
@@ -989,25 +989,23 @@ extension Parser {
         
         getNextToken() // eat 'type'
         
-        guard case .identifier(let typeName) = currentToken else { throw error(ParseError.NoTypeName, loc: SourceRange.at(currentPos)) }
+        guard case .identifier(let typeName) = currentToken else { throw parseError(.NoTypeName, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat name
         
         let genericParameters = try parseGenericParameterList(objName: typeName)
         
-        guard case .openBrace = currentToken else { throw error(ParseError.ExpectedOpenBrace, loc: SourceRange.at(currentPos)) }
+        guard case .openBrace = currentToken else { throw parseError(.ExpectedOpenBrace, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat '{'
         
         var properties: [VariableDecl] = [], methods: [FuncDecl] = [], initialisers: [InitialiserDecl] = []
         
-        while true {
-            if case .closeBrace = currentToken { break }
-
+        conceptScopeLoop: while true {
             switch currentToken {
             case .`var`, .`let`:
                 properties += try parseVariableDecl(.type)
                 
             case .`func`:
-                methods.append(try parseFuncDeclaration())
+                methods.append(try parseFuncDeclaration(.type))
                 
             case .`init`:
                 initialisers.append(try parseInitDecl())
@@ -1018,8 +1016,11 @@ extension Parser {
             case .comment(let c):
                 try parseCommentExpr(c)
                 
+            case .closeBrace:
+                break conceptScopeLoop
+                
             default:
-                throw error(ParseError.ObjectNotAllowedInTopLevelOfTypeImpl(currentToken), loc: SourceRange.at(currentPos))
+                throw parseError(.ObjectNotAllowedInTopLevelOfTypeImpl(currentToken), loc: SourceRange.at(currentPos))
             }
             
         }
@@ -1057,23 +1058,21 @@ extension Parser {
         
         getNextToken() // eat 'concept'
         
-        guard case .identifier(let conceptName) = currentToken else { throw error(ParseError.NoTypeName, loc: SourceRange.at(currentPos)) }
+        guard case .identifier(let conceptName) = currentToken else { throw parseError(.NoTypeName, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat name
         
-        guard case .openBrace = currentToken else { throw error(ParseError.ExpectedOpenBrace, loc: SourceRange.at(currentPos)) }
+        guard case .openBrace = currentToken else { throw parseError(.ExpectedOpenBrace, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat '{'
         
         var properties: [VariableDecl] = [], methods: [FuncDecl] = []
         
-        while true {
-            if case .closeBrace = currentToken { break }
-            
+        typeScopeLoop: while true {
             switch currentToken {
             case .`var`, .`let`:
                 properties += try parseVariableDecl(.concept)
                 
             case .`func`:
-                methods.append(try parseFuncDeclaration())
+                methods.append(try parseFuncDeclaration(.concept))
                 
             case .at:
                 try parseAttrExpr()
@@ -1081,13 +1080,20 @@ extension Parser {
             case .comment(let c):
                 try parseCommentExpr(c)
                 
+            case .closeBrace:
+                break typeScopeLoop
+                
             default:
-                throw error(ParseError.ObjectNotAllowedInTopLevelOfTypeImpl(currentToken), loc: SourceRange.at(currentPos))
+                throw parseError(.ObjectNotAllowedInTopLevelOfTypeImpl(currentToken), loc: SourceRange.at(currentPos))
             }
-            
         }
+        let c = ConceptExpr(name: conceptName, requiredProperties: properties, requiredMethods: methods)
         
-        return ConceptExpr(name: conceptName, requiredProperties: properties, requiredMethods: methods)
+        for m in c.requiredMethods {
+            m.parent = c
+        }
+
+        return c
     }
     
     
@@ -1123,14 +1129,14 @@ extension Parser {
             
             switch id {
             case "operator":
-                guard case let i as IntegerLiteral = try parseOperatorExpr() else { throw error(ParseError.NoPrecedenceForOperator, loc: SourceRange.at(currentPos)) }
+                guard case let i as IntegerLiteral = try parseOperatorExpr() else { throw parseError(.NoPrecedenceForOperator, loc: SourceRange.at(currentPos)) }
                 attrs.append(ASTAttributeExpr.Operator(prec: i.val))
                 
             default:
-                throw error(ParseError.AttrDoesNotHaveParams, loc: SourceRange.at(currentPos))
+                throw parseError(.AttrDoesNotHaveParams, loc: SourceRange.at(currentPos))
             }
             
-            guard case .closeParen = currentToken else { throw error(ParseError.ExpectedParen, loc: SourceRange.at(currentPos)) }
+            guard case .closeParen = currentToken else { throw parseError(.ExpectedParen, loc: SourceRange.at(currentPos)) }
             getNextToken()
         }
         else if let a = FunctionAttributeExpr(rawValue: id) {
@@ -1160,7 +1166,7 @@ extension Parser {
         switch token {
         case .`let`:                return try parseVariableDecl(.global).mapAs(ASTNode) // swift bug
         case .`var`:                return try parseVariableDecl(.global).mapAs(ASTNode)
-        case .`func`:               return [try parseFuncDeclaration()]
+        case .`func`:               return [try parseFuncDeclaration(.global)]
         case .`return`:             return [try parseReturnExpr()]
         case .openParen:            return [try parseParenExpr()]
         case .openBrace:            return [try parseBraceExpr()]
@@ -1182,7 +1188,7 @@ extension Parser {
         case .void:                 index += 1; return [Void()]
         case .EOF, .closeBrace:     index += 1; return []
         case .newLine:              getNextToken(); return []
-        default:                    throw error(ParseError.NoToken(token), loc: SourceRange.at(currentPos))
+        default:                    throw parseError(.NoToken(token), loc: SourceRange.at(currentPos))
         }
     }
     

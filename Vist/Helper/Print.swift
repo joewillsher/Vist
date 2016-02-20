@@ -39,7 +39,6 @@ extension Printable {
             let a = $1.0.map { "\($0):" } ?? ""
             return "\($0)\(n0)\(t1)\(a)\($1.1._description(n+1))" } + "\(n0)\(te))"
     }
-    
         
     /// Print the object, not a _description of it
     func printDirectly() -> String? { return nil }
@@ -87,7 +86,7 @@ extension Optional: Printable {
     func printDirectly() -> String? {
         switch self {
         case .None: return "nil"
-        case .Some(let a) where a is Printable: return (a as! Printable).printDirectly()
+        case .Some(let a as Printable): return a.printDirectly()
         case _: return nil
         }
     }

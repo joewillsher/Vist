@@ -70,7 +70,7 @@ enum DefinedType {
                 return i
             }
             else {
-                throw error(SemaError.noTypeNamed(typeName))
+                throw semaError(.noTypeNamed(typeName))
             }
             
         case let .Tuple(elements):
