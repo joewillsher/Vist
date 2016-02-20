@@ -56,7 +56,7 @@ extension StructType {
         let args = val.ptr()
         defer { args.dealloc(members.count) }
         
-        let call = LLVMBuildCall(irGen.builder, initialiser, args, 1, irName)
+        let call = LLVMBuildCall(irGen.builder, initialiser, args, UInt32(val.count), irName)
         type.addMetadataTo(call)
         
         return call

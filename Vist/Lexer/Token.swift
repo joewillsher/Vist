@@ -36,46 +36,43 @@ struct SourceLoc {
 }
 
 enum Token {
-    case Let, Var, Func, Return, Void
+    case `let`, `var`, `func`, `return`, void
     case EOF
-    case If, Else, For, In, While, Do
-    case Type, Reference, Init, Operator, Concept
-    case Assign, SqbrOpen, SqbrClose, Comma, Period, Colon, Semicolon, OpenParen, CloseParen, Returns, Bar, OpenBrace, CloseBrace
-    case InfixOperator(String), PrefixOperator(String), PostfixOperator(String)
-    case Identifier(String), FloatingPoint(Double), Integer(Int), Boolean(Bool)
-    case Char(Character), Comment(String), StringLiteral(String)
-    case At
-    case WhiteSpace
+    case `if`, `else`, `for`, `in`, `while`, `do`
+    case type, reference, `init`, `operator`, `concept`
+    case assign, sqbrOpen, sqbrClose, comma, period, colon, semicolon, openParen, closeParen, returnArrow, bar, openBrace, closeBrace
+    case infixOperator(String), prefixOperator(String), postfixOperator(String)
+    case identifier(String), floatingPointLiteral(Double), integerLiteral(Int), booleanLiteral(Bool), nilLiteral
+    case comment(String), stringLiteral(String)
+    case at
+    case newLine
     
     var isValidParamToken: Bool {
         switch self {
-        case .Identifier, .SqbrOpen, .OpenParen, OpenBrace, FloatingPoint, Integer, Boolean, Char, StringLiteral:
-            return true
-            
-        default:
-            return false
+        case .identifier, .sqbrOpen, .openParen, openBrace, floatingPointLiteral, integerLiteral, booleanLiteral, stringLiteral: return true
+        default: return false
         }
     }
     var isCloseParen: Bool {
-        if case .CloseParen = self { return true } else { return false }
+        if case .closeParen = self { return true } else { return false }
     }
 }
 
 let operators: [String: Token] = [
-    "=": .Assign,
-    "[": .SqbrOpen,
-    "]": .SqbrClose,
-    ",": .Comma,
-    ".": .Period,
-    ":": .Colon,
-    ";": .Semicolon,
-    "(": .OpenParen,
-    ")": .CloseParen,
-    "->": .Returns,
-    "|": .Bar,
-    "}": .CloseBrace,
-    "{": .OpenBrace,
-    "@": .At
+    "=": .assign,
+    "[": .sqbrOpen,
+    "]": .sqbrClose,
+    ",": .comma,
+    ".": .period,
+    ":": .colon,
+    ";": .semicolon,
+    "(": .openParen,
+    ")": .closeParen,
+    "->": .returnArrow,
+    "|": .bar,
+    "}": .closeBrace,
+    "{": .openBrace,
+    "@": .at
 ]
 
 let stdlibOperators: [String] = ["<", ">", "<=", ">=", "/", "+", "-", "*", "%", "&&", "||", "...", "..<", "==", "!="]

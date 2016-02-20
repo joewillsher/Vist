@@ -120,15 +120,16 @@ final class ErrorCollector {
     }
     
     /// Runs a code block and catches any errors
-    func run(@noescape block: () throws -> ()) throws {
+    func run<T>(@noescape block: () throws -> T) throws -> T? {
         caught = false
 
         do {
-            try block()
+            return try block()
         }
         catch let error as VistError {
             errors.append(error)
         }
+        return nil
     }
     
     /// Throws all errors collected

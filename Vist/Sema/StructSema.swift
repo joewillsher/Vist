@@ -27,13 +27,12 @@ extension StructExpr: ExprTypeProvider {
         // maps over properties and gens types
         let members = try properties.flatMap { (a: VariableDecl) -> StructMember? in
             
-            try errorCollector.run {
+            return try errorCollector.run {
                 try a.typeForNode(structScope)
+                guard let t = a.value._type else { throw error(SemaError.structPropertyNotTyped(type: name, property: a.name), userVisible: false) }
+                return (a.name, t, a.isMutable)
             }
-            guard let t = a.value._type else { throw error(SemaError.structPropertyNotTyped(type: name, property: a.name), userVisible: false) }
-            return (a.name, t, a.isMutable)
         }
-        
         
         var ty = StructType(members: members, methods: [], name: name)
         

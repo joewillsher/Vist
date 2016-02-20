@@ -406,6 +406,12 @@ struct NullExpr: Expr {
     var _type: Ty? = BuiltinType.Null
 }
 
+struct PlaceholderExpr: Expr {
+    var _type: Ty? = BuiltinType.Null
+    var defined: DefinedType
+}
+
+
 
 //// FIXME: find another way to do this
 ///// used to lowe type name information

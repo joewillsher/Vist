@@ -166,7 +166,7 @@ extension RuntimePerformanceTests {
         
         let fileName = "LoopPerf"
         do {
-            try compileWithOptions(["-O", "-build-only", "\(fileName).vist"], inDirectory: testDir)
+            try compileWithOptions(["-build-only", "-O", "\(fileName).vist"], inDirectory: testDir)
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
@@ -194,7 +194,7 @@ extension RuntimePerformanceTests {
         
         let fileName = "FunctionPerf"
         do {
-            try compileWithOptions(["-O", "-build-only", "\(fileName).vist"], inDirectory: testDir)
+            try compileWithOptions([ "-build-only", "-O", "\(fileName).vist"], inDirectory: testDir)
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
@@ -260,18 +260,18 @@ extension ErrorTests {
         }
         catch {
             let e = ErrorCollection(errors: [
-                SemaError.NoVariable("b"),
-                SemaError.NoVariable("a"),
-                SemaError.NoFunction("print", [StdLib.IntType, StdLib.IntType]),
+                SemaError.noVariable("b"),
+                SemaError.noVariable("a"),
+                SemaError.noFunction("print", [StdLib.IntType, StdLib.IntType]),
                 ErrorCollection(errors: [
-                    SemaError.NoVariable("v"),
-                    SemaError.NoFunction("+", [StdLib.IntType, StdLib.BoolType]),
-                    SemaError.WrongFunctionReturnType(applied: StdLib.DoubleType, expected: StdLib.IntType)
+                    SemaError.noVariable("v"),
+                    SemaError.noFunction("+", [StdLib.IntType, StdLib.BoolType]),
+                    SemaError.wrongFunctionReturnType(applied: StdLib.DoubleType, expected: StdLib.IntType)
                     ]),
-                SemaError.NoVariable("print"),
-                SemaError.ImmutableVariable("x"),
-                SemaError.InvalidRedeclaration("x"),
-                SemaError.ImmutableProperty(p: "a", obj: "c", ty: "Foo")
+                SemaError.noVariable("print"),
+                SemaError.immutableVariable("x"),
+                SemaError.invalidRedeclaration("x"),
+                SemaError.immutableProperty(p: "a", ty: "Foo")
                 ])
             
             XCTAssertNotNil(error as? ErrorCollection)
@@ -290,12 +290,12 @@ extension ErrorTests {
         }
         catch {
             let e = ErrorCollection(errors: [
-                SemaError.ImmutableVariable("imm"),
-                SemaError.ImmutableVariable("imm"),
-                SemaError.ImmutableProperty(p: "a", obj: "mut", ty: "Foo"),
-                SemaError.NoPropertyNamed(type: "Foo", property: "x"),
-                SemaError.ImmutableVariable("tup"),
-                SemaError.NoTupleElement(index: 3, size: 2)
+                SemaError.immutableVariable("imm"),
+                SemaError.immutableVariable("imm"),
+                SemaError.immutableProperty(p: "a", ty: "Foo"),
+                SemaError.noPropertyNamed(type: "Foo", property: "x"),
+                SemaError.immutableVariable("tup"),
+                SemaError.noTupleElement(index: 3, size: 2)
                 ])
             
             XCTAssertNotNil(error as? ErrorCollection)

@@ -53,7 +53,9 @@ extension CollectionType where
     
 }
 
-extension LLVMBool: Swift.BooleanType, BooleanLiteralConvertible {
+// Extends LLVM bool to be initialisable from bool literal, and usable
+// as condition
+extension LLVMBool: BooleanType, BooleanLiteralConvertible {
     
     public init(booleanLiteral value: Bool) {
         self.init(value ? 1: 0)
@@ -64,9 +66,12 @@ extension LLVMBool: Swift.BooleanType, BooleanLiteralConvertible {
     }
 }
 
+/// Curried impl of `Expr.codeGenIn(_:irGen:)`.
+/// Returns a function which maps the codegen on a expr
 private func codeGenIn(stackFrame: StackFrame, irGen: IRGen) -> Expr throws -> LLVMValueRef {
     return { e in try e.nodeCodeGen(stackFrame, irGen: irGen) }
 }
+
 
 private func validateModule(ref: LLVMModuleRef) throws {
     var err = UnsafeMutablePointer<Int8>.alloc(1)
@@ -96,8 +101,8 @@ private func validateFunction(ref: LLVMValueRef, name: String) throws {
 extension IntegerLiteral: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
-        let rawType = BuiltinType.Int(size: size)
-        let value = LLVMConstInt(rawType.globalType(nil), UInt64(val), false)
+        let rawType = BuiltinType.Int(size: size).globalType(irGen.module)
+        let value = LLVMConstInt(rawType, UInt64(val), false)
         
         guard let type = self.type else { throw error(SemaError.integerNotTyped, userVisible: false) }
         return type.initialiseStdTypeFromBuiltinMembers(value, irGen: irGen)
@@ -1100,9 +1105,7 @@ extension PropertyLookupExpr: IRGenerator {
 private extension ChainableExpr {
     
     // TODO: move checks to sema phase!
-    // TODO: make protocol for lookups
     // TODO: add more conformants of ChainableExpr to this switch
-    // TODO: rename ChainableExpr
     // TODO: replace other uses of CannotLookupPropertyFromNonVariable with calls to `getVariable`
     
     func lookupVal(stackFrame: StackFrame, irGen: IRGen) throws -> (ptr: LLVMValueRef, val: LLVMValueRef) {
@@ -1199,30 +1202,36 @@ extension TupleMemberLookupExpr: IRGenerator {
     /// Returns the runtime variable for this lookup
     ///
     /// Walks through any recursive lookups and creates variables for intermediates
-    /// and calls the lookup from them
+    /// and calls the lookup from them    
     private func getVariable(stackFrame: StackFrame, irGen: IRGen) throws -> ContainerVariable {
         
+        // if we are looking up from a vanilla variable, return that
         if case let n as VariableExpr = object {
-            guard case let variable as ContainerVariable = try stackFrame.variable(n.name) else { throw error(IRError.NoVariable(n.name)) }
+            guard case let variable as TupleVariable = try stackFrame.variable(n.name) else { throw error(IRError.NoVariable(n.name)) }
             return variable
         }
         
+        /// The LLVM value of the object getting a property looked up -- the lookupee
         let (lookupPtr, lookupVal) = try object.lookupVal(stackFrame, irGen: irGen)
         
-        guard case let t as TupleType = object._type else { throw error(IRError.CannotLookupElementFromNonTuple) }
+        let variable: protocol<TupleVariable, MutableVariable>
+
+        switch object._type {
+        case let t as TupleType:
+            variable = MutableTupleVariable(type: t, ptr: lookupPtr, irName: "", irGen: irGen)
+            variable.value = lookupVal
+            
+        default:
+            throw error(IRError.NoTupleMemberAt(index))
+        }
         
-        let variable = MutableTupleVariable.alloc(t, irGen: irGen)
-        
-        variable.value = lookupVal
+        // store our object IR in this variable
         return variable
     }
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
-        
-        guard case let n as VariableExpr = object else { throw error(IRError.CannotLookupPropertyFromNonVariable, userVisible: false) }
-        guard case let variable as TupleVariable = try stackFrame.variable(n.name) else { throw error(IRError.NoTupleMemberAt(index))}
-        
-        return try variable.loadElementAtIndex(index)
+        guard case let st as TupleVariable = try getVariable(stackFrame, irGen: irGen) else { throw error(IRError.NoTupleMemberAt(index)) }
+        return try st.loadElementAtIndex(index)
     }
 }
 
@@ -1278,7 +1287,6 @@ extension AST {
         
         // validate whole module
         try validateModule(module)
-        
         LLVMDisposeBuilder(builder)
     }
 }

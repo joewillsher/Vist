@@ -1,27 +1,62 @@
 
 
 
-concept Foo { var v: Int }
-type Bar { var v: Int }
+concept Eq {
+    var a: Int, b: Int
+}
 
-func fn :: Foo = (f) {
+func foo :: Eq Int -> Int = (a b) do
+return a.b + b + a.a
+
+
+type Bar {
+    var x: Bool, b: Int, a: Int
+}
+
+let bar = Bar true 11 4
+let foo = foo bar 2
+
+print foo // test: 17
+
+
+
+
+concept TestC {
+    var t: Int
+}
+
+type Foo {
+    var t: Int
+}
+
+type Baz {
+    var foo: TestC
+}
+
+let b = Baz (Foo 1)
+let w = b.foo.t
+print w // test: 1
+
+
+
+
+concept Prot { var v: Int }
+type Baq { var v: Int }
+
+func fn :: Prot = (f) {
     print f.v
     print f.v
     print f.v
     print f.v
 }
+let uu = Baq 12
+fn uu // test: 12 12 12 12
 
-fn (Bar 12)
 
-
-//for i in 0 ... 1000 do
-//    print 1
-
+// todo: type interfarence resolution
 
 
 
-
-/*
 type I { var v: Int }
 concept X { var i: I }
 type A { var i: I }
@@ -31,74 +66,17 @@ var u = B (A (I 1))
 
 u.a.i.v = 2
 
-print u.a.i.v
+print u.a.i.v // test: 2
 
-let x = ( (1, u), 2)
+var x = ( (1, u), 2)
+
+print x.1 // test: 2
+print x.0 . 0 // test: 1
+
+print x. 0 . 1 . a.i.v // test: 2
 
 x. 0 . 1 . a.i.v = 11
-*/
 
-
-/*
-concept Eq {
-    var t: Int
-}
-
-
-type Bar (T | Eq) {
-    let t: T
-}
- */
-
-// todo: cacheing ptrs in immutable structs
-// todo: existential properties & storing
-
-
-
-//concept Any { }
-
-
-/*
-
- 
- 
-type Foo {
-    var a: Int
-}
-
-
-
-
-
-type Bar (T | Eq) {
-    let t: T
-}
-
-
-let b = (Foo 1)
-*/
-
-//func foo T :: T T -> Bool = (a b) do
-//    return true
-
-
-
-
-
-
-
-//type Array (Element | Foo Bar) {
-//
-//    var count: Int
-//    var capacity: Int
-//    var ptr: LLVM.Pointer
-//}
-
-
-
-
-// constrained by Eq
-//func equal (T | Eq) :: T T -> Bool = (a b) do
-//    return a == b
+print x. 0 . 1 . a.i.v // test: 11
 
 

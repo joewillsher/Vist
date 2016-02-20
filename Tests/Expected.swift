@@ -13,7 +13,7 @@ func expectedTestCaseOutput(path path: String) -> String? {
     guard let toks = try? contents.getTokens() else { return nil }
     
     let comments = toks
-        .flatMap { tok -> String? in if case .Comment(let c) = tok.0 { return c } else { return nil } }
+        .flatMap { tok -> String? in if case .comment(let c) = tok.0 { return c } else { return nil } }
         .filter { comment in comment.hasPrefix(" test: ") }
         .flatMap { comment in comment.stringByReplacingOccurrencesOfString(" test: ", withString: "").stringByReplacingOccurrencesOfString(" ", withString: "\n") }
     

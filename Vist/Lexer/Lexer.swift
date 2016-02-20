@@ -13,8 +13,8 @@ import Foundation
 //-------------------------------------------------------------------------------------------------------------------------
 
 enum LexerError: ErrorType {
-    case OutOfRange
-    case NoToken
+    case outOfRange
+    case noToken
 }
 
 private func identity<T>(a:T)->T { return a }
@@ -60,62 +60,60 @@ private extension Character {
     }
 }
 
-private enum Context {
-    case Alpha, Numeric, NewLine, Symbol, WhiteSpace, Comment(Bool), StringLiteral
+private enum LexerContext {
+    case alpha, numeric, newLine, symbol, comment(Bool), stringLiteral
 }
 
 private func == (lhs: Character, rhs: String) -> Bool { return lhs == Character(rhs) }
 private func != (lhs: Character, rhs: String) -> Bool { return !(lhs == rhs) }
-
 
 //-------------------------------------------------------------------------------------------------------------------------
 //  MARK:                                              Token
 //-------------------------------------------------------------------------------------------------------------------------
 
 private extension Token {
-
-    init(alpha: String) {
+    
+    static func fromIdentifier(alpha: String) -> Token {
         // Text tokens which are language keywords
         switch alpha {
-        case "let": self = .Let
-        case "var": self = .Var
-        case "func": self = .Func
-        case "return": self = .Return
-        case "if": self = .If
-        case "else": self = .Else
-        case "Void": self = .Void
-        case "true": self = .Boolean(true)
-        case "false": self = .Boolean(false)
-        case "for": self = .For
-        case "in": self = .In
-        case "do": self = .Do
-        case "while": self = .While
-        case "type": self = .Type
-        case "concept": self = .Concept
-        case "init": self = .Init
-        default: self = .Identifier(alpha)
+        case "let": return .`let`
+        case "var": return .`var`
+        case "func": return .`func`
+        case "return": return .`return`
+        case "if": return .`if`
+        case "else": return .`else`
+        case "Void": return .void
+        case "true": return .booleanLiteral(true)
+        case "false": return .booleanLiteral(false)
+        case "for": return .`for`
+        case "in": return .`in`
+        case "do": return .`do`
+        case "while": return .`while`
+        case "type": return .type
+        case "concept": return .concept
+        case "init": return .`init`
+        default: return .identifier(alpha)
         }
     }
     
-    init(numeric: String) {
+    static func fromNumberLiteral(numeric: String) -> Token {
         //number literal
         let numberFormatter = NSNumberFormatter()
-            numberFormatter.numberStyle = NSNumberFormatterStyle.DecimalStyle
+        numberFormatter.numberStyle = NSNumberFormatterStyle.DecimalStyle
         guard let number = numberFormatter.numberFromString(numeric.stringByReplacingOccurrencesOfString("_", withString: "")) else {
-            self = .Identifier(numeric)
-            return
+            return .identifier(numeric)
         }
         
         if numeric.characters.contains(".") {
-            self = .FloatingPoint(Double(number))
+            return .floatingPointLiteral(Double(number))
         }
         else {
-            self = .Integer(Int(number))
+            return .integerLiteral(Int(number))
         }
     }
     
-    init(symbol: String) {
-        self = (operators[symbol] ?? .InfixOperator(symbol)) ?? .InfixOperator(symbol)
+    static func fromSymbol(symbol: String) -> Token {
+        return (operators[symbol] ?? .infixOperator(symbol)) ?? .infixOperator(symbol)
     }
 }
 
@@ -144,17 +142,13 @@ private struct Lexer {
         self.chars =  (code+" ").characters.map(identity)
     }
     
-    mutating func reset() {
-        self = Lexer(code: code)
-    }
-    
     private var contextStart = 0
     private var index = 0
     
     private var charsInContext: [Character] = []
     
     private var tokens: [(Token, SourceLoc)] = []
-    private var context: Context? = nil {
+    private var context: LexerContext? = nil {
         didSet {
             if let _ = context { contextStartPos = pos }
         }
@@ -167,22 +161,13 @@ private struct Lexer {
         return chars[index]
     }
     
-    func charPtr(n: Int) throws -> Character {
+    func charPtr(n: Int) -> Character? {
         if index + n > 0 && index + n < chars.count { return chars[index+n] }
-        else { throw LexerError.OutOfRange }
-    }
-    func charPtrSafe(n: Int) -> Character {
-        return (try? charPtr(n)) ?? Character(" ")
-    }
-
-    
-    func getSubstring(start: Int, length: Int) -> String? {
-        if index + start + length > 0 && index + start + length < chars.count { return String(chars[index + start + length]) }
-        else { return nil }
+        return nil
     }
     
     private mutating func updatePos() throws {
-        if let a = (try? charPtr(-1)) where a == "\n" {
+        if let a = charPtr(-1) where a == "\n" {
             pos = (pos.0+1, 0)
         }
         else {
@@ -200,7 +185,7 @@ private struct Lexer {
     private mutating func consumeChar(n: Int = 1) throws {
         index += n
         try updatePos()
-        guard index < chars.count else { throw LexerError.OutOfRange }
+        guard index < chars.count else { throw LexerError.outOfRange }
     }
     
     private mutating func addChar() {
@@ -219,13 +204,13 @@ private struct Lexer {
     
     private mutating func formToken(str: String) throws -> Token {
         switch context {
-        case .Alpha?:           return Token(alpha: str)
-        case .Numeric?:         return Token(numeric: str)
-        case .Symbol?:          return Token(symbol: str)
-        case .StringLiteral?:   return .StringLiteral(str)
-        case .Comment?:         return .Comment(str)
-        case .WhiteSpace?:      return .WhiteSpace
-        default:                throw LexerError.NoToken
+        case .alpha?:           return Token.fromIdentifier(str)
+        case .numeric?:         return Token.fromNumberLiteral(str)
+        case .symbol?:          return Token.fromSymbol(str)
+        case .stringLiteral?:   return .stringLiteral(str)
+        case .comment?:         return .comment(str)
+        case .newLine?:         return .newLine
+        default:                throw LexerError.noToken
         }
     }
     
@@ -337,12 +322,12 @@ extension Lexer {
             
             switch (context, currentChar) {
                 
-            case (.Comment(let multiLine)?, let n): // comment end
+            case (.comment(let multiLine)?, let n): // comment end
                 
-                if (multiLine && (n == "/" && charPtrSafe(-1) == "*")) || (!multiLine && (n == "\n" || n == "\r")) {
+                if (multiLine && (n == "/" && charPtr(-1) == "*")) || (!multiLine && (n == "\n" || n == "\r")) {
                     try resetContext()
                     try consumeChar()
-                    if !multiLine { tokens.append((.WhiteSpace, SourceLoc(range: SourceRange.at(pos), string: "\n"))) } // if not multi line, add a new line token after it
+                    if !multiLine { tokens.append((.newLine, SourceLoc(range: SourceRange.at(pos), string: "\n"))) } // if not multi line, add a new line token after it
                     continue
                 }
                 addChar()
@@ -350,66 +335,66 @@ extension Lexer {
                 continue
                 
             case (_, "$"):
-                context = .Alpha
+                context = .alpha
                 addChar()
                 try consumeChar()
                 try lexNumber()
                 continue
                 
-            case (_, "/") where charPtrSafe(+1) == "/": // new comment
-                context = .Comment(false)
+            case (_, "/") where charPtr(+1) == "/": // new comment
+                context = .comment(false)
                 try consumeChar(2)
                 continue
                 
-            case (_, "/") where charPtrSafe(+1) == "*": // new multi line comment
-                context = .Comment(true)
+            case (_, "/") where charPtr(+1) == "*": // new multi line comment
+                context = .comment(true)
                 try consumeChar(2)
                 continue
                 
-            case (.StringLiteral?, "\"") where charPtrSafe(-1) != "\\": // comment end
+            case (.stringLiteral?, "\"") where charPtr(-1) != "\\": // comment end
                 try resetContext()
                 try consumeChar()
                 continue
                 
             case (_, "\""): // string literal start
-                context = .StringLiteral
+                context = .stringLiteral
                 try consumeChar()
                 continue
 
-            case (.StringLiteral?, _):
+            case (.stringLiteral?, _):
                 addChar()
                 try consumeChar()
                 continue
                 
-            case (.Alpha?, " "), (.Numeric?, "\t"):
+            case (.alpha?, " "), (.numeric?, "\t"):
                 try resetContext()
                 try consumeChar()
                 continue
                 
             case (_, let a) where a.isAlphaOr_():
-                context = .Alpha
+                context = .alpha
                 try lexString()
                 continue
                 
             case (_, let a) where a.isNum():
-                context = .Numeric
+                context = .numeric
                 try lexNumber()
                 continue
                 
             case (_, let s) where s.isSingleCharSymbol():
-                context = .Symbol
+                context = .symbol
                 addChar()
                 try consumeChar()
                 try resetContext()
                 continue
                 
             case (_, let s) where s.isSymbol():
-                context = .Symbol
+                context = .symbol
                 try lexSymbol()
                 continue
                 
             case (_, let s) where s.isWhiteSpace():
-                context = .WhiteSpace
+                context = .newLine
                 try lexWhiteSpace()
                 continue
                 

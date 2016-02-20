@@ -102,6 +102,11 @@ FunctionPass *createStdLibInlinePass() {
 //iterator invalidation errors.
 //
 
+StringRef truncatedName(StringRef fromString) {
+    auto idx = fromString.rfind("."); // remove the .0 suffix
+    return fromString.drop_back(fromString.size() - idx);
+}
+
 
 /// Called on functions in module, this is where the optimisations happen
 bool StdLibInline::runOnFunction(Function &function) {
@@ -229,12 +234,8 @@ bool StdLibInline::runOnFunction(Function &function) {
                             if (!ty->hasName())
                                 break;
                             
-                            StringRef name = ty->getName();
-                            auto idx = name.rfind("."); // remove the .0 suffix
-                            auto thisName = name.drop_back(name.size() - idx);
-                            Type *undefType = getNamedType(thisName, module);
+                            Type *undefType = getNamedType(truncatedName(ty->getStructName()), module);
                             UndefValue *undefValue = UndefValue::get(undefType); // the undef val
-                            
                             inst.setOperand(0, undefValue);
                         }
                     }
@@ -242,7 +243,7 @@ bool StdLibInline::runOnFunction(Function &function) {
                     // replace global types in stdlib with this module
                     if (StructType *ty = dyn_cast<StructType>(inst.getType()))
                         if (ty->hasName())
-                            inst.mutateType(getNamedType(ty->getStructName(), module));
+                            inst.mutateType(getNamedType(truncatedName(ty->getStructName()), module));
                     
                     // if the instruction is a return, assign to
                     // the `returnValueStorage` and jump out of temp block

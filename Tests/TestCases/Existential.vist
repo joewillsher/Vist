@@ -4,7 +4,7 @@ concept Eq {
 }
 
 func foo :: Eq Int -> Int = (a b) do
-    return a.b + b + a.a
+return a.b + b + a.a
 
 
 type Bar {
@@ -32,43 +32,47 @@ type Baz {
 }
 
 let b = Baz (Foo 1)
-let u = b.foo.t
-print u // test: 1
+let w = b.foo.t
+print w // test: 1
 
-type StackOf2 {
-var bottom: Int
-var top: Int
 
-func sum :: () -> Int = do
-return bottom + top
 
-@mutating
-func pop :: () -> Int = {
-let v = top
-top = bottom
-return v
+
+concept Prot { var v: Int }
+type Baq { var v: Int }
+
+func fn :: Prot = (f) {
+    print f.v
+    print f.v
+    print f.v
+    print f.v
 }
+let uu = Baq 12
+fn uu // test: 12 12 12 12
 
-@mutating
-func push :: Int = (val) {
-bottom = top
-top = val
-}
-}
 
-var stack = StackOf2 2 10
+// todo: type interfarence resolution
 
-print (stack.sum ()) // test: 12
 
-stack.push 3
-print (stack.bottom) // test: 10
-print (stack.top) // test: 3
-print (stack.sum ()) // test: 13
 
-print (stack.pop ()) // test: 3
-print (stack.pop ()) // test: 10
+type I { var v: Int }
+concept X { var i: I }
+type A { var i: I }
+type B { var a: X }
 
-stack = StackOf2 2 4
+var u = B (A (I 1))
 
-print stack.bottom == stack.top // test: false
+u.a.i.v = 2
 
+print u.a.i.v // test: 2
+
+var x = ( (1, u), 2)
+
+print x.1 // test: 2
+print x.0 . 0 // test: 1
+
+print x. 0 . 1 . a.i.v // test: 2
+
+x. 0 . 1 . a.i.v = 11
+
+print x. 0 . 1 . a.i.v // test: 11

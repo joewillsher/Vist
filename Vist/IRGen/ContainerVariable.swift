@@ -136,20 +136,18 @@ final class MutableTupleVariable: TupleVariable, MutableVariable {
     var irGen: IRGen
     var properties: [StructVariableProperty]
     
-    private init(type: TupleType, ptr: LLVMValueRef, irName: String, irGen: IRGen, properties: [StructVariableProperty]) {
+    init(type: TupleType, ptr: LLVMValueRef, irName: String, irGen: IRGen) {
         self.type = type.globalType(irGen.module)
         self.ptr = ptr
         self.irGen = irGen
-        self.properties = properties
+        self.properties = type.members.enumerate().map { (name: String($0), irType: $1.globalType(irGen.module)) }
         self.irName = irName
     }
     
     /// returns pointer to allocated memory
     class func alloc(type: TupleType, irName: String = "", irGen: IRGen) -> MutableTupleVariable {
-        let ps = type.members.enumerate().map { (name: String($0), irType: $1.globalType(irGen.module)) } as [StructVariableProperty]
-        
         let ptr = LLVMBuildAlloca(irGen.builder, type.globalType(irGen.module), irName)
-        return MutableTupleVariable(type: type, ptr: ptr, irName: irName, irGen: irGen, properties: ps)
+        return MutableTupleVariable(type: type, ptr: ptr, irName: irName, irGen: irGen)
     }
     
 }

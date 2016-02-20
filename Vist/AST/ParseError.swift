@@ -12,13 +12,14 @@ enum ParseError: VistError {
     case InvalidCall(String) // cant call (*2) or (.print())
     case NoIdentifier
     case ExpectedColon, ExpectedDoubleColon, ExpectedBar
-    case ExpectedAssignment
+    case ExpectedAssignment, conceptCannotProvideVal
     case NoOperator(String)
     case ExpectedIn
     case InvalidIfStatement
     case ObjectNotAllowedInTopLevelOfTypeImpl(Token), NoTypeName
     case NoPrecedenceForOperator, AttrDoesNotHaveParams, CannotChangeOpPrecedence(String, Int)
     case StdLibExprInvalid
+    case notVariableDecl
     
     case NoGenericParamName(on: String), NoGenericConstraints(parent: String, genericParam: String), ExpectedGenericConstraint
     
@@ -44,7 +45,9 @@ enum ParseError: VistError {
         case .AttrDoesNotHaveParams: return "Attribute expected param in parentheses"
         case let .CannotChangeOpPrecedence(op, prec): return "Operator '\(op)' has precedence \(prec), which can't be changed"
         case .ExpectedAssignment: return "Expected assignment expression"
+        case .conceptCannotProvideVal: return "Variable declaration in concept cannot provide a value"
         case .StdLibExprInvalid: return "Stdlib expression involving 'LLVM.' could not be parsed"
+        case notVariableDecl: return "Expected variable declaration"
         case let .NoGenericParamName(on): return "Generic parameter on '\(on)' must specify name"
         case let .NoGenericConstraints(parent, genericParam): return "'\(parent)'s generic parameter '\(genericParam)' supplies no constraints after '|'"
         case .ExpectedGenericConstraint: return "Expected generic parameter constraint"
