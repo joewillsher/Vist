@@ -38,7 +38,7 @@ extension FuncDecl: DeclTypeProvider {
         // if is a method
         if case let parentType as StorageType = parent?._type {
             
-            let mutableSelf = attrs.contains(.Mutating)
+            let mutableSelf = attrs.contains(.mutating)
             // add self
             fnScope[variable: "self"] = (type: parentType, mutable: mutableSelf)
             

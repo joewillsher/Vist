@@ -35,6 +35,16 @@ extension StorageType {
         return i
     }
     
+    func indexOfMethodNamed(name: String, argTypes: [Ty]) throws -> Int {
+        guard let i = methods.indexOf({ $0.name == name && $0.type.params.elementsEqual(argTypes, isEquivalent: ==)})
+            else { throw semaError(.noPropertyNamed(type: self.name, property: name)) }
+        return i
+    }
+    
+    func ptrToMethodNamed(name: String, type: FnType, module: LLVMModuleRef) -> LLVMValueRef {
+        return ptrToFunction(name.mangle(type.params, parentTypeName: self.name), type: type, module: module)
+    }
+    
     func globalType(module: LLVMModuleRef) -> LLVMTypeRef {
         
         // if no module is defined, we can only return the raw type
@@ -52,7 +62,6 @@ extension StorageType {
     func propertyType(name: String) throws -> Ty {
         return members[try indexOfMemberNamed(name)].type
     }
-    
     func propertyMutable(name: String) throws -> Bool {
         return members[try indexOfMemberNamed(name)].mutable
     }

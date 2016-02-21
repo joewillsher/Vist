@@ -37,8 +37,11 @@ extension ContainerVariable where Self: MutableVariable {
 
 /// A struct object
 protocol StructVariable: ContainerVariable {
+    var typeName: String { get }
     func loadPropertyNamed(name: String) throws -> LLVMValueRef
     func ptrToPropertyNamed(name: String) throws -> LLVMValueRef
+    
+    func ptrToMethodNamed(name: String, argTypes: [Ty]) -> LLVMValueRef
 }
 
 protocol TupleVariable: ContainerVariable {
@@ -67,6 +70,9 @@ extension StructVariable {
         return LLVMBuildLoad(irGen.builder, try ptrToPropertyNamed(name), "\(irName).\(name)")
     }
     
+    func ptrToMethodNamed(name: String, argTypes: [Ty]) -> LLVMValueRef {
+        return LLVMGetNamedFunction(irGen.module, name.mangle(argTypes, parentTypeName: typeName))
+    }
 }
 
 extension TupleVariable {
@@ -159,6 +165,7 @@ final class ParameterStructVariable: StructVariable {
     var type: LLVMTypeRef
     var ptr: LLVMValueRef = nil
     let irName: String
+    let typeName: String
     
     var value: LLVMValueRef
     
@@ -170,6 +177,7 @@ final class ParameterStructVariable: StructVariable {
         let ps = type.members.map { (name: $0.name, irType: $0.type.globalType(irGen.module)) } as [StructVariableProperty]
         
         self.type = type.globalType(irGen.module)
+        self.typeName = type.name
         self.irGen = irGen
         self.properties = ps
         self.value = val

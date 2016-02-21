@@ -7,18 +7,21 @@ concept Eq {
     func sum :: -> Int = do return 1
 }
 
-func foo :: Eq Int -> Int = (a b) do
-    return a.sum() + b
-
 
 type Bar {
-    var b: Int, a: Int
+    var x: Bool, b: Int, a: Int
     
     func sum :: -> Int = do
         return a + b
 }
 
-let bar = Bar 11 4
-//let foo = foo bar 2
+
+func foo :: Eq Int -> Int = (a b) do
+    return a.a + b
+
+let bar = Bar true 11 4
+let foo = foo bar 2
+
+print foo
 //
 //print foo // test: 17

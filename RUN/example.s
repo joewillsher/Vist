@@ -6,6 +6,21 @@ _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
+	movl	$6, %eax
+	movl	%eax, %edi
+	popq	%rbp
+	jmp	"_-Uprint_i64"          ## TAILCALL
+
+	.globl	_Bar_Bool_Int_Int
+	.align	4, 0x90
+_Bar_Bool_Int_Int:                      ## @Bar_Bool_Int_Int
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	movb	%dil, %al
+	movq	%rdx, -8(%rbp)          ## 8-byte Spill
+	movq	%rsi, %rdx
+	movq	-8(%rbp), %rcx          ## 8-byte Reload
 	popq	%rbp
 	retq
 

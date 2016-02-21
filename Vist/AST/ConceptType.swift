@@ -13,8 +13,9 @@ struct ConceptType: StorageType {
     
     func memberTypes(module: LLVMModuleRef) -> LLVMTypeRef {
         return StructType.withTypes([
-            BuiltinType.Array(el: BuiltinType.Int(size: 32), size: UInt32(requiredProperties.count)),
-            BuiltinType.OpaquePointer
+            BuiltinType.Array(el: BuiltinType.Int(size: 32), size: UInt32(requiredProperties.count)), // prop offset list
+            BuiltinType.Array(el: BuiltinType.OpaquePointer, size: UInt32(requiredFunctions.count)), // method witness list
+            BuiltinType.OpaquePointer // wrapped object
             ]).memberTypes(module)
     }
         
@@ -37,34 +38,29 @@ struct ConceptType: StorageType {
     
     /// Returns the metadata array map, which transforms the protocol's properties
     /// to an element in the `type`
-    ///
-    func existentialMetadataMapFor(structType: StructType, irGen: IRGen) throws -> LLVMValueRef {
+    func existentialPropertyMetadataFor(structType: StructType, irGen: IRGen) throws -> LLVMValueRef {
         
         let dataLayout = LLVMCreateTargetData(LLVMGetDataLayout(irGen.module))
         let conformingType = structType.globalType(irGen.module)
         
-        let indicies = try requiredProperties
+        let offsets = try requiredProperties
             .map { propName, _, _ in try structType.indexOfMemberNamed(propName) }
             .map { index in LLVMOffsetOfElement(dataLayout, conformingType, UInt32(index)) }
             .map (BuiltinType.intGen(size: 32))
         
-        let arrType = LLVMArrayType(LLVMInt32Type(), UInt32(indicies.count))
-        let ptr = LLVMBuildAlloca(irGen.builder, arrType, "metadata") // [n x i32]*
-        let i32PtrType = LLVMPointerType(LLVMInt32Type(), 0)
-        let basePtr = LLVMBuildBitCast(irGen.builder, ptr, i32PtrType, "") // i32*
+        return LLVMBuilder(irGen.builder).buildArrayOf(LLVMInt32Type(), values: offsets)
+    }
+    
+    /// Returns the metadata array of function pointers
+    func existentialMethodMetadataFor(structType: StructType, irGen: IRGen) throws -> LLVMValueRef {
         
-        for (i, offset) in indicies.enumerate() {
-            // Get pointer to element n
-            let indicies = [BuiltinType.intGen(size: 32)(i)].ptr()
-            defer { indicies.dealloc(1) }
-            
-            let el = LLVMBuildGEP(irGen.builder, basePtr, indicies, 1, "el.\(i)")
-            let bcElPtr = LLVMBuildBitCast(irGen.builder, el, i32PtrType, "el.ptr.\(i)")
-            // load val into memory
-            LLVMBuildStore(irGen.builder, offset, bcElPtr)
-        }
-                
-        return LLVMBuildLoad(irGen.builder, ptr, "")
+        let opaquePtrType = BuiltinType.OpaquePointer.globalType(irGen.module)
+        
+        let ptrs = requiredFunctions
+            .map { methodName, type in structType.ptrToMethodNamed(methodName, type: type, module: irGen.module) }
+            .map { ptr in LLVMBuildBitCast(irGen.builder, ptr, opaquePtrType, LLVMGetValueName(ptr)) }
+        
+        return LLVMBuilder(irGen.builder).buildArrayOf(opaquePtrType, values: ptrs)
     }
 }
 

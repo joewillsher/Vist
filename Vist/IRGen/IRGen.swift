@@ -428,6 +428,19 @@ private extension FunctionType {
 }
 
 
+/// Creates or gets a function pointer
+func ptrToFunction(mangledName: String, type: FnType, module: LLVMModuleRef) -> LLVMValueRef {
+    let f = LLVMGetNamedFunction(module, mangledName)
+    
+    // if already defined, we return it
+    if f != nil { return f }
+    
+    // otherwise we create a prototype
+    let newPointer = LLVMAddFunction(module, mangledName, type.globalType(module))
+    return newPointer
+}
+
+
 extension FuncDecl: IRGenerator {
     // function definition
     
@@ -455,7 +468,7 @@ extension FuncDecl: IRGenerator {
             parentType = nil
         }
         
-        // If existing function definition
+        // If existing function defined and implemented, return it
         let _fn = LLVMGetNamedFunction(irGen.module, mangledName)
         if _fn != nil && LLVMCountParams(_fn) == UInt32(paramCount + startIndex) && LLVMCountBasicBlocks(_fn) != 0 && LLVMGetEntryBasicBlock(_fn) != nil {
             return _fn
@@ -467,7 +480,7 @@ extension FuncDecl: IRGenerator {
         
         // make function
         let functionType = type.globalType(irGen.module)
-        let function = LLVMAddFunction(irGen.module, mangledName, functionType)
+        let function = ptrToFunction(mangledName, type: type, module: irGen.module)
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
         
         if irGen.isStdLib {
@@ -1083,13 +1096,12 @@ extension PropertyLookupExpr: IRGenerator {
             return variable
         }
         
-        /// The LLVM value of the object getting a property looked up -- the lookupee
+        // The LLVM value of the object getting a property looked up -- the lookupee
         let (lookupPtr, lookupVal) = try object.lookupVal(stackFrame, irGen: irGen)
         
         let variable: protocol<StructVariable, MutableVariable>
         
         // The lookupee can either be a struct, or concept existential
-        // Allocate the variable to return
         switch object._type {
         case let t as StructType:
             variable = MutableStructVariable(type: t, ptr: lookupPtr, irName: "", irGen: irGen)
@@ -1161,7 +1173,6 @@ extension MethodCallExpr: IRGenerator {
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         
         // get method from module
-        let f = LLVMGetNamedFunction(irGen.module, mangledName)
         let c = self.args.elements.count + 1
         
         guard let structType = self.structType else { throw irGenError(.notStructType, userVisible: false) }
@@ -1171,6 +1182,9 @@ extension MethodCallExpr: IRGenerator {
         
         guard case let variable as VariableExpr = object else { throw irGenError(.cannotLookupPropertyFromNonVariable, userVisible: false) } // FIXME: this should be possible
         guard case let selfRef as StructVariable = try stackFrame.variable(variable.name) else { throw irGenError(.notStructType) }
+        
+        let argTypes = self.args.elements.optionalMap({$0._type})!
+        let functionPtr = selfRef.ptrToMethodNamed(name, argTypes: argTypes)
         
         
         
@@ -1182,7 +1196,7 @@ extension MethodCallExpr: IRGenerator {
         let doNotUseName = _type == BuiltinType.Void || _type == BuiltinType.Null || _type == nil
         let n = doNotUseName ? "" : "\(name).res"
         
-        return LLVMBuildCall(irGen.builder, f, argBuffer, UInt32(c), n)
+        return LLVMBuildCall(irGen.builder, functionPtr, argBuffer, UInt32(c), n)
     }
 }
 
