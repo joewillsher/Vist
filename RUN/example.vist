@@ -4,7 +4,7 @@
 concept Eq {
     var a: Int, b: Int
     
-    func sum :: Int -> Int = do return 1
+    func sum :: -> Int = do return 1
 }
 
 func foo :: Eq Int -> Int = (a b) do
@@ -14,13 +14,11 @@ func foo :: Eq Int -> Int = (a b) do
 type Bar {
     var b: Int, a: Int
     
-    func sum :: Int -> Int = (x) do
-        return x + a + b
+    func sum :: -> Int = do
+        return a + b
 }
 
 let bar = Bar 11 4
-let foo = foo bar 2
-
-print foo // test: 17
-
-
+//let foo = foo bar 2
+//
+//print foo // test: 17

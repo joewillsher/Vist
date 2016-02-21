@@ -27,7 +27,7 @@ private protocol BasicBlockGenerator {
 extension ASTNode {
     
     private func nodeCodeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
-        guard case let gen as IRGenerator = self else { throw irGenError(.NotGenerator(self.dynamicType), userVisible: false) }
+        guard case let gen as IRGenerator = self else { throw irGenError(.notIRGenerator(self.dynamicType), userVisible: false) }
         return try gen.codeGen(stackFrame, irGen: irGen)
     }
     
@@ -76,14 +76,14 @@ private func codeGenIn(stackFrame: StackFrame, irGen: IRGen) -> Expr throws -> L
 private func validateModule(ref: LLVMModuleRef) throws {
     var err = UnsafeMutablePointer<Int8>.alloc(1)
     guard !LLVMVerifyModule(ref, LLVMReturnStatusAction, &err) else {
-        throw irGenError(.InvalidModule(ref, String.fromCString(err)), userVisible: false)
+        throw irGenError(.invalidModule(ref, String.fromCString(err)), userVisible: false)
     }
 }
 
 
 private func validateFunction(ref: LLVMValueRef, name: String) throws {
     guard !LLVMVerifyFunction(ref, LLVMReturnStatusAction) else {
-        throw irGenError(.InvalidFunction(name), userVisible: false)
+        throw irGenError(.invalidFunction(name), userVisible: false)
     }
 }
 
@@ -219,9 +219,9 @@ extension VariableDecl: IRGenerator {
             let v = try value.nodeCodeGen(stackFrame, irGen: irGen)
             
             // checks
-            guard v != nil else { throw irGenError(.CannotAssignToType(value.dynamicType), userVisible: false) }
+            guard v != nil else { throw irGenError(.cannotAssignToType(value.dynamicType), userVisible: false) }
             let type = LLVMTypeOf(v)
-            guard type != LLVMVoidType() else { throw irGenError(.CannotAssignToVoid, userVisible: false) }
+            guard type != LLVMVoidType() else { throw irGenError(.cannotAssignToVoid, userVisible: false) }
             
             // create variable
             let variable: MutableVariable
@@ -271,7 +271,7 @@ extension MutationExpr: IRGenerator {
             else {
                 let new = try value.nodeCodeGen(stackFrame, irGen: irGen)
                 
-                guard case let v as MutableVariable = variable else { throw irGenError(.NotMutable(object.name), userVisible: false) }
+                guard case let v as MutableVariable = variable else { throw irGenError(.notMutable(object.name), userVisible: false) }
                 v.value = new
             }
         case let sub as ArraySubscriptExpr:
@@ -289,14 +289,14 @@ extension MutationExpr: IRGenerator {
         case let propertyLookup as PropertyLookupExpr:
             // foo.bar = meme
             
-            guard case let storageVariable as MutableStructVariable = try propertyLookup.getVariable(stackFrame, irGen: irGen) else { throw irGenError(.NoProperty(type: propertyLookup.object.typeName, property: propertyLookup.propertyName)) }
+            guard case let storageVariable as MutableStructVariable = try propertyLookup.getVariable(stackFrame, irGen: irGen) else { throw irGenError(.noProperty(type: propertyLookup.object.typeName, property: propertyLookup.propertyName)) }
             
             let val = try value.nodeCodeGen(stackFrame, irGen: irGen)
             
             try storageVariable.store(val, inPropertyNamed: propertyLookup.propertyName)
             
         default:
-            throw irGenError(.Unreachable, userVisible: false)
+            throw irGenError(.unreachable, userVisible: false)
         }
         
         return nil
@@ -330,7 +330,7 @@ extension BinaryExpr: IRGenerator {
         let argBuffer = [lIR, rIR].ptr()
         defer { argBuffer.dealloc(2) }
         
-        guard fn != nil && LLVMCountParams(fn) == UInt32(2) else { throw irGenError(.WrongFunctionApplication(op), userVisible: false) }
+        guard fn != nil && LLVMCountParams(fn) == UInt32(2) else { throw irGenError(.wrongFunctionApplication(op), userVisible: false) }
         
         let doNotUseName = _type == BuiltinType.Void || _type == BuiltinType.Null || _type == nil
         let n = doNotUseName ? "": "\(op).res"
@@ -363,11 +363,11 @@ extension FunctionCallExpr: IRGenerator {
 
         // Lookup
         if let function = builtinBinaryInstruction(name, irGen: irGen) {
-            guard args.count == 2 else { throw irGenError(.WrongFunctionApplication(name), userVisible: false) }
+            guard args.count == 2 else { throw irGenError(.wrongFunctionApplication(name), userVisible: false) }
             return try function(args[0], args[1])
         }
         else if let function = builtinInstruction(name, irGen: irGen) {
-            guard args.count == 0 else { throw irGenError(.WrongFunctionApplication(name), userVisible: false) }
+            guard args.count == 0 else { throw irGenError(.wrongFunctionApplication(name), userVisible: false) }
             return function()
         }
         
@@ -402,7 +402,7 @@ extension FunctionCallExpr: IRGenerator {
         let argBuffer = argBuff.ptr()
         defer { argBuffer.dealloc(argCount) }
         
-        guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else { throw irGenError(.WrongFunctionApplication(name), userVisible: false) }
+        guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else { throw irGenError(.wrongFunctionApplication(name), userVisible: false) }
         
         let doNotUseName = _type == BuiltinType.Void || _type == BuiltinType.Null || _type == nil
         let n = doNotUseName ? "": "\(name)_res"
@@ -410,7 +410,7 @@ extension FunctionCallExpr: IRGenerator {
         // add call to IR
         let call = LLVMBuildCall(irGen.builder, fn, argBuffer, UInt32(argCount), n)
         
-        guard let fnType = self.fnType else { throw irGenError(.NotTyped, userVisible: false) }
+        guard let fnType = self.fnType else { throw irGenError(.notTyped, userVisible: false) }
         fnType.addMetadataTo(call)
         
         return call
@@ -422,7 +422,7 @@ extension FunctionCallExpr: IRGenerator {
 private extension FunctionType {
     
     private func paramTypeIR(irGen: IRGen) throws -> [LLVMTypeRef] {
-        guard let res = type else { throw irGenError(.TypeNotFound, userVisible: false) }
+        guard let res = type else { throw irGenError(.typeNotFound, userVisible: false) }
         return try res.nonVoid.map(globalType(irGen.module))
     }
 }
@@ -440,15 +440,15 @@ extension FuncDecl: IRGenerator {
         let paramTypeNames = fnType.paramType.typeNames(), paramCount = paramTypeNames.count
         
         if let parent = self.parent {
-            guard case let _parentType as StorageType = parent._type else { throw irGenError(.NoParentType, userVisible: false) }
-            guard let _type = fnType.type else { throw irGenError(.TypeNotFound, userVisible: false) }
+            guard case let _parentType as StorageType = parent._type else { throw irGenError(.noParentType, userVisible: false) }
+            guard let _type = fnType.type else { throw irGenError(.typeNotFound, userVisible: false) }
             
             type = FnType(params: [BuiltinType.Pointer(to: _parentType)] + _type.params, returns: _type.returns)
             startIndex = 1
             parentType = _parentType
         }
         else {
-            guard let t = fnType.type else { throw irGenError(.TypeNotFound, userVisible: false) }
+            guard let t = fnType.type else { throw irGenError(.typeNotFound, userVisible: false) }
             
             type = t
             startIndex = 0
@@ -533,7 +533,7 @@ extension FuncDecl: IRGenerator {
                 r = ExistentialVariable(ptr: param, conceptType: conceptExistentialType, mutable: false, irName: "self", irGen: irGen)
                 
             default:
-                throw irGenError(.Unreachable, userVisible: false)
+                throw irGenError(.unreachable, userVisible: false)
             }
             
             functionStackFrame.addVariable(r, named: "self")
@@ -600,7 +600,7 @@ extension ClosureExpr: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         
-        guard let type = self.type else { throw irGenError(.NotTyped, userVisible: false) }
+        guard let type = self.type else { throw irGenError(.notTyped, userVisible: false) }
         
         let paramBuffer = try type.params.map(globalType(irGen.module)).ptr()
         defer { paramBuffer.dealloc(type.params.count) }
@@ -901,7 +901,7 @@ extension ArrayExpr: IRGenerator {
     private func arrInstance(stackFrame: StackFrame, irGen: IRGen) throws -> ArrayVariable {
         
         // assume homogeneous
-        guard let elementType = elType?.globalType(irGen.module) else { throw irGenError(.TypeNotFound, userVisible: false) }
+        guard let elementType = elType?.globalType(irGen.module) else { throw irGenError(.typeNotFound, userVisible: false) }
         let arrayType = LLVMArrayType(elementType, UInt32(arr.count))
         
         // allocate memory for arr
@@ -922,7 +922,7 @@ extension ArrayExpr: IRGenerator {
 extension ArraySubscriptExpr: IRGenerator {
     
     private func backingArrayVariable(stackFrame: StackFrame, irGen: IRGen) throws -> ArrayVariable {
-        guard case let v as VariableExpr = arr, case let arr as ArrayVariable = try stackFrame.variable(v.name) else { throw irGenError(.SubscriptingNonVariableTypeNotAllowed) }
+        guard case let v as VariableExpr = arr, case let arr as ArrayVariable = try stackFrame.variable(v.name) else { throw irGenError(.subscriptingNonVariableTypeNotAllowed) }
         return arr
     }
     
@@ -945,7 +945,8 @@ extension ArraySubscriptExpr: IRGenerator {
 extension StructExpr: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
-        guard let type = self.type else { throw irGenError(.NotTyped, userVisible: false) }
+        
+        guard let type = type else { throw irGenError(.notTyped, userVisible: false) }
 
         // occupy stack frame
         stackFrame.addType(type, named: name)
@@ -979,7 +980,7 @@ extension ConceptExpr: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         
-        guard let conceptType = type else { throw irGenError(.NotTyped, userVisible: false) }
+        guard let conceptType = type else { throw irGenError(.notTyped, userVisible: false) }
         stackFrame.addConcept(conceptType, named: name)
         
         return nil
@@ -997,7 +998,7 @@ extension InitialiserDecl: IRGenerator {
             parentProperties = parent?.properties,
             parentType = parent?.type
             else {
-                throw irGenError(.TypeNotFound, userVisible: false)
+                throw irGenError(.typeNotFound, userVisible: false)
         }
         
         // make function
@@ -1005,7 +1006,7 @@ extension InitialiserDecl: IRGenerator {
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
         LLVMAddFunctionAttr(function, LLVMAlwaysInlineAttribute)
         
-        guard let impl = self.impl else {
+        guard let impl = impl else {
             return function
         }
         
@@ -1028,19 +1029,19 @@ extension InitialiserDecl: IRGenerator {
             
             let tyName = paramTypeNames[i]
             
+            let variable: RuntimeVariable
+            
             switch try stackFrame.type(tyName) {
             case let t as StructType:
-                let s = ParameterStructVariable(val: param, type: t, irName: irName, irGen: irGen)
-                initStackFrame.addVariable(s, named: paramName)
+                variable = ParameterStructVariable(val: param, type: t, irName: irName, irGen: irGen)
                 
             case let c as ConceptType:
-                let e = ExistentialVariable.alloc(c, fromExistential: param, mutable: false, irName: irName, irGen: irGen)
-                initStackFrame.addVariable(e, named: paramName)
+                variable = ExistentialVariable.alloc(c, fromExistential: param, mutable: false, irName: irName, irGen: irGen)
                 
             default:
-                let s = StackVariable(val: param, irName: irName, irGen: irGen)
-                initStackFrame.addVariable(s, named: paramName)
+                variable = StackVariable(val: param, irName: irName, irGen: irGen)
             }
+            initStackFrame.addVariable(variable, named: paramName)
         }
         
         // allocate struct
@@ -1049,11 +1050,11 @@ extension InitialiserDecl: IRGenerator {
         
         // add struct properties into scope
         for el in parentProperties {
-            let p = SelfReferencingMutableVariable(propertyName: el.name, parent: s) // initialiser can always assign
+            let p = SelfReferencingMutableVariable(propertyName: el.name, parent: s)
             initStackFrame.addVariable(p, named: el.name)
         }
         
-        // add args into scope
+        // COdegen for block body
         try impl.body.exprs.walkChildren { exp in
             try exp.nodeCodeGen(initStackFrame, irGen: irGen)
         }
@@ -1078,7 +1079,7 @@ extension PropertyLookupExpr: IRGenerator {
         
         // if we are looking up from a vanilla variable, return that
         if case let n as VariableExpr = object {
-            guard case let variable as StructVariable = try stackFrame.variable(n.name) else { throw irGenError(.NoVariable(n.name)) }
+            guard case let variable as StructVariable = try stackFrame.variable(n.name) else { throw irGenError(.noVariable(n.name)) }
             return variable
         }
         
@@ -1098,7 +1099,7 @@ extension PropertyLookupExpr: IRGenerator {
             variable = ExistentialVariable(ptr: lookupPtr, conceptType: c, mutable: true, irName: "", irGen: irGen)
             
         default:
-            throw irGenError(.CannotLookupPropertyFromThis(prop: propertyName))
+            throw irGenError(.cannotLookupPropertyFromThis(prop: propertyName))
         }
         
         // store our object IR in this variable
@@ -1106,7 +1107,7 @@ extension PropertyLookupExpr: IRGenerator {
     }
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
-        guard case let st as StructVariable = try getVariable(stackFrame, irGen: irGen) else { throw irGenError(.NoProperty(type: typeName, property: propertyName)) }
+        guard case let st as StructVariable = try getVariable(stackFrame, irGen: irGen) else { throw irGenError(.noProperty(type: typeName, property: propertyName)) }
         return try st.loadPropertyNamed(propertyName)
     }
 }
@@ -1125,7 +1126,7 @@ private extension ChainableExpr {
         case let propertyLookup as PropertyLookupExpr:
             
             let lookupVariable = try propertyLookup.getVariable(stackFrame, irGen: irGen)
-            guard case let structVariable as StructVariable = lookupVariable else { throw irGenError(.NotStructType) }
+            guard case let structVariable as StructVariable = lookupVariable else { throw irGenError(.notStructType) }
             
             return (
                 ptr: try structVariable.ptrToPropertyNamed(propertyLookup.propertyName),
@@ -1135,7 +1136,7 @@ private extension ChainableExpr {
         case let tupleLookup as TupleMemberLookupExpr:
             
             let lookupVariable = try tupleLookup.getVariable(stackFrame, irGen: irGen)
-            guard case let tupleVariable as TupleVariable = lookupVariable else { throw irGenError(.NoVariable(tupleLookup.desc)) }
+            guard case let tupleVariable as TupleVariable = lookupVariable else { throw irGenError(.noVariable(tupleLookup.desc)) }
             
             return (
                 ptr: tupleVariable.ptrToElementAtIndex(tupleLookup.index),
@@ -1146,7 +1147,7 @@ private extension ChainableExpr {
 //            return try stackFrame.variable(variable.name).value
             
         default:
-            throw irGenError(.CannotLookupPropertyFromNonVariable)
+            throw irGenError(.cannotLookupPropertyFromNonVariable)
         }
     }
     
@@ -1163,13 +1164,15 @@ extension MethodCallExpr: IRGenerator {
         let f = LLVMGetNamedFunction(irGen.module, mangledName)
         let c = self.args.elements.count + 1
         
-        guard let structType = self.structType else { throw irGenError(.NotStructType, userVisible: false) }
+        guard let structType = self.structType else { throw irGenError(.notStructType, userVisible: false) }
         
         // need to add self to beginning of params
         let ob = try object.nodeCodeGen(stackFrame, irGen: irGen)
         
-        guard case let variable as VariableExpr = object else { throw irGenError(.CannotLookupPropertyFromNonVariable, userVisible: false) } // FIXME: this should be possible
-        guard case let selfRef as MutableStructVariable = try stackFrame.variable(variable.name) else { throw irGenError(.NoVariable(variable.name), userVisible: false) }
+        guard case let variable as VariableExpr = object else { throw irGenError(.cannotLookupPropertyFromNonVariable, userVisible: false) } // FIXME: this should be possible
+        guard case let selfRef as StructVariable = try stackFrame.variable(variable.name) else { throw irGenError(.notStructType) }
+        
+        
         
         let args = try self.args.elements.map(codeGenIn(stackFrame, irGen: irGen))
         
@@ -1195,7 +1198,7 @@ extension TupleExpr: IRGenerator {
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         
         if elements.count == 0 { return nil }
-        guard let type = self.type else { throw irGenError(.NotTyped, userVisible: false) }
+        guard let type = self.type else { throw irGenError(.notTyped, userVisible: false) }
         
         let memeberIR = try elements.map(codeGenIn(stackFrame, irGen: irGen))
 
@@ -1219,7 +1222,7 @@ extension TupleMemberLookupExpr: IRGenerator {
         
         // if we are looking up from a vanilla variable, return that
         if case let n as VariableExpr = object {
-            guard case let variable as TupleVariable = try stackFrame.variable(n.name) else { throw irGenError(.NoVariable(n.name)) }
+            guard case let variable as TupleVariable = try stackFrame.variable(n.name) else { throw irGenError(.noVariable(n.name)) }
             return variable
         }
         
@@ -1234,7 +1237,7 @@ extension TupleMemberLookupExpr: IRGenerator {
             variable.value = lookupVal
             
         default:
-            throw irGenError(.NoTupleMemberAt(index))
+            throw irGenError(.noTupleMemberAt(index))
         }
         
         // store our object IR in this variable
@@ -1242,7 +1245,7 @@ extension TupleMemberLookupExpr: IRGenerator {
     }
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
-        guard case let st as TupleVariable = try getVariable(stackFrame, irGen: irGen) else { throw irGenError(.NoTupleMemberAt(index)) }
+        guard case let st as TupleVariable = try getVariable(stackFrame, irGen: irGen) else { throw irGenError(.noTupleMemberAt(index)) }
         return try st.loadElementAtIndex(index)
     }
 }

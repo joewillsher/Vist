@@ -12,16 +12,16 @@ enum SemaError: VistError {
     case noVariable(String)
     case heterogenousArray([Ty]), emptyArray
     case cannotSubscriptNonArrayVariable, nonIntegerSubscript
-    case nonBooleanCondition, notRangeType, differentTypeForMutation(String, Ty, Ty)
-    case immutableVariable(String), immutableProperty(p: String, ty: String), immutableObject(type: String)
+    case nonBooleanCondition, notRangeType, differentTypeForMutation(name: String?, from: Ty, to: Ty)
+    case immutableVariable(name: String, type: String), immutableProperty(p: String, ty: String), immutableObject(type: String), immutableTupleMember(index: Int)
     case cannotAssignToNullExpression(String)
     case noTupleElement(index: Int, size: Int)
     
-    case noFunction(String, [Ty])
+    case noFunction(String, [Ty]), wrongFuncParamList(applied: [String], forType: [Ty])
     case wrongFunctionReturnType(applied: Ty, expected: Ty)
     case wrongFunctionApplications(name: String, applied: [Ty], expected: [Ty])
     case noTypeNamed(String)
-    case noPropertyNamed(type: String, property: String), cannotStoreInParameterStruct(propertyName: String), notStructType(Ty?), notTupleType(Ty)
+    case noPropertyNamed(type: String, property: String), cannotStoreInParameterStruct(propertyName: String), notStructType(Ty?), notTupleType(Ty?)
     
     // not user visible
     case noStdBoolType, noStdIntType, notTypeProvider, noTypeForStruct, noTypeForTuple
@@ -29,7 +29,7 @@ enum SemaError: VistError {
     case typeNotFound, paramsNotTyped, integerNotTyped, boolNotTyped
     case noMemberwiseInit
     
-    case genericSubstitutionInvalid, notValidLookup
+    case genericSubstitutionInvalid, notValidLookup, unreachable(String), todo(String)
     
     var description: String {
         switch self {
@@ -40,7 +40,7 @@ enum SemaError: VistError {
         case .invalidRedeclaration(let t):
             return "Variable '\(t)' is already declared"
         case .invalidTypeRedeclaration(let t):
-            return "Type \(t) is already defined"
+            return "Type '\(t)' is already defined"
         case .noVariable(let v):
             return "Could not find variable '\(v)' in this scope"
         case .heterogenousArray(let arr):
@@ -49,7 +49,7 @@ enum SemaError: VistError {
         case .emptyArray:
             return "Empty array -- could not infer type"
         case .cannotSubscriptNonArrayVariable:
-            return "You can only subscript an array variable"
+            return "You can currently only subscript an array variable"
         case .nonIntegerSubscript:
             return "Subscript is not an integer"
         case .nonBooleanCondition:
@@ -57,22 +57,26 @@ enum SemaError: VistError {
         case .notRangeType:
             return "Expression is not of type 'Range'"
         case let .differentTypeForMutation(name, from, to):
-            return "Cannot change type of '\(name)' from '\(from)' to '\(to)'"
-        case .immutableVariable(let name):
-            return "Variable '\(name)' is immutable"
+            return (name.map { "Cannot change type of '\($0)'" } ?? "Could not change type") + " from '\(from.explicitName)' to '\(to.explicitName)'"
+        case .immutableVariable(let name, let type):
+            return "Variable '\(name)' of type '\(type)' is immutable"
         case let .immutableProperty(p, ty):
             return "Variable of type '\(ty)' does not have mutable property '\(p)'"
         case .immutableObject(let ty):
             return "Object of type '\(ty)' is immutable"
+        case .immutableTupleMember(let i):
+            return "Tuple member at index \(i) is immutable"
         case .cannotAssignToNullExpression(let name):
             return "Variable '\(name)' cannot be assigned to null typed expression"
         case let .noTupleElement(i, s):
-            return "Tuple of size \(s). Cannot access its element at index \(i)"
+            return "Could not extract element at index \(i) from tuple with \(s) elements"
             
         case let .wrongFunctionReturnType(applied, expected):
             return "Invalid return from function. '\(applied)' is not convertible to '\(expected)'"
         case let .noFunction(f, ts):
             return "Could not find function '\(f)' which accepts parameters of type '\(ts.asTupleDescription())'"
+        case let .wrongFuncParamList(applied, forType):
+            return "Could not bind parameter list '(\(applied.joinWithSeparator(" ")))' to param types '\(forType.asTupleDescription())'"
         case let .wrongFunctionApplications(name, applied, expected):
             return "Incorrect application of function '\(name)'. '\(applied.asTupleDescription())' is not convertible to '\(expected.asTupleDescription())'"
         case .noTypeNamed(let name):
@@ -84,7 +88,7 @@ enum SemaError: VistError {
         case .notStructType(let t):
             return "'\(t?.explicitName ?? "")' is not a struct type"
         case .notTupleType(let t):
-            return "'\(t)' is not a tuple type"
+            return "'\(t?.explicitName ?? "")' is not a tuple type"
             
             
             // not user visible
@@ -103,6 +107,8 @@ enum SemaError: VistError {
             
         case .genericSubstitutionInvalid: return "Generic substitution invalid"
         case .notValidLookup: return "Lookup expression was not valid"
+        case .unreachable(let message): return "Unreachable: \(message)"
+        case .todo(let message): return "Todo: \(message)"
         }
     }
 }

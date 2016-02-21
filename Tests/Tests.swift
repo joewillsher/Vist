@@ -289,9 +289,10 @@ extension ErrorTests {
                     SemaError.wrongFunctionReturnType(applied: StdLib.DoubleType, expected: StdLib.IntType)
                     ]),
                 SemaError.noVariable("print"),
-                SemaError.immutableVariable("x"),
+                SemaError.immutableVariable(name: "x", type: "Int"),
                 SemaError.invalidRedeclaration("x"),
-                SemaError.immutableProperty(p: "a", ty: "Foo")
+                SemaError.immutableProperty(p: "a", ty: "Foo"),
+                SemaError.invalidTypeRedeclaration("Foo")
                 ])
             
             XCTAssertNotNil(error as? ErrorCollection)
@@ -310,11 +311,11 @@ extension ErrorTests {
         }
         catch {
             let e = ErrorCollection(errors: [
-                SemaError.immutableVariable("imm"),
-                SemaError.immutableVariable("imm"),
+                SemaError.immutableVariable(name: "imm", type: "Foo"),
+                SemaError.immutableVariable(name: "imm", type: "Foo"),
                 SemaError.immutableProperty(p: "a", ty: "Foo"),
                 SemaError.noPropertyNamed(type: "Foo", property: "x"),
-                SemaError.immutableVariable("tup"),
+                SemaError.immutableVariable(name: "tup", type: "Int.Int.tuple"),
                 SemaError.noTupleElement(index: 3, size: 2)
                 ])
             

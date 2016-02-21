@@ -56,7 +56,7 @@ extension StorageType {
     func propertyMutable(name: String) throws -> Bool {
         return members[try indexOfMemberNamed(name)].mutable
     }
-    func getMethod(methodName: String, argTypes types: [Ty]) -> FnType? {
+    func getMethodType(methodName: String, argTypes types: [Ty]) -> FnType? {
         return methods[raw: methodName, paramTypes: types]
     }
     

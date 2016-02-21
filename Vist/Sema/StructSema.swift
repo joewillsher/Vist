@@ -183,9 +183,8 @@ extension MethodCallExpr: ExprTypeProvider {
         
         let args = try self.args.elements.map { try $0.typeForNode(scope) }
         
-        guard let fnType = parentType.getMethod(name, argTypes: args) else { throw semaError(.noFunction(name, args)) }
-        
-        self.mangledName = name.mangle(fnType, parentTypeName: parentType.name)
+        guard let fnType = parentType.getMethodType(name, argTypes: args) else { throw semaError(.noFunction(name, args)) }
+        mangledName = name.mangle(fnType, parentTypeName: parentType.name)
         
         // gen types for objects in call
         for arg in self.args.elements {
@@ -207,10 +206,9 @@ extension TupleExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         
-        guard elements.count != 1 else { return BuiltinType.Void }
+        guard elements.count != 0 else { return BuiltinType.Void }
         
         let tys = try elements.map { try $0.typeForNode(scope) }
-        
         let t = TupleType(members: tys)
         type = t
         return t

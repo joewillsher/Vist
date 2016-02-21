@@ -54,7 +54,7 @@ final class StackFrame {
         let inParent = try parentStackFrame?.variable(name)
         if let p = inParent { return p }
         
-        throw irGenError(.NoVariable(name))
+        throw irGenError(.noVariable(name))
     }
 
     func functionType(name: String) throws -> LLVMValueRef {
@@ -63,7 +63,7 @@ final class StackFrame {
         let inParent = try parentStackFrame?.functionType(name)
         if let p = inParent where p != nil { return p }
         
-        throw irGenError(.NoFunction(name))
+        throw irGenError(.noFunction(name))
     }
     
     func type(name: String) throws -> Ty {
@@ -76,7 +76,7 @@ final class StackFrame {
         let inParent = try parentStackFrame?.type(name)
         if let p = inParent { return p }
         
-        throw irGenError(.NoType(name))
+        throw irGenError(.noType(name))
     }
     
     func concept(name: String) throws -> ConceptType {
@@ -85,7 +85,7 @@ final class StackFrame {
         let inParent = try parentStackFrame?.concept(name)
         if let p = inParent { return p }
         
-        throw irGenError(.NoType(name))
+        throw irGenError(.noType(name))
     }
 }
 

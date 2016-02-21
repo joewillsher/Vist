@@ -145,6 +145,9 @@ final class VariableExpr: ChainableExpr {
 
 protocol ChainableExpr: Expr {
 }
+protocol LookupExpr: ChainableExpr {
+    var object: ChainableExpr { get }
+}
 
 
 final class MutationExpr: Expr {
@@ -243,7 +246,7 @@ final class FunctionImplementationExpr: Expr {
     var _type: Ty? = nil
 }
 
-final class TupleMemberLookupExpr: ChainableExpr {
+final class TupleMemberLookupExpr: LookupExpr {
     let index: Int
     let object: ChainableExpr
     
@@ -384,7 +387,7 @@ final class MethodCallExpr: ChainableExpr {
     var _type: Ty? = nil
 }
 
-final class PropertyLookupExpr: ChainableExpr {
+final class PropertyLookupExpr: LookupExpr {
     let propertyName: String
     let object: ChainableExpr
     

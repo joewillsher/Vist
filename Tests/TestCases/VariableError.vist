@@ -1,5 +1,4 @@
 
-
 let a = b
 
 print a
@@ -8,10 +7,10 @@ print 1 1
 
 
 func fib :: Int -> Int = (a) {
-    let v = v
-    let u = a + false
-    
-    return 1.2
+let v = v
+let u = a + false
+
+return 1.2
 }
 
 print
@@ -23,11 +22,13 @@ x = 2
 let x = 3
 
 type Foo {
-    let a: Int
+let a: Int
 }
 
 var c = Foo 1
 c.a = 2
+
+type Foo { }
 
 
 

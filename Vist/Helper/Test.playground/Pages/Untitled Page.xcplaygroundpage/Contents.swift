@@ -103,7 +103,7 @@ let d = ["_$fatalError_": 5]
 
 let m = "_fatalError".mangle()
 let n = "+".mangle()
-let a = "Foo.doo_Int"
+let a = "Eq.sum_Int"
 let l = "LLVM.foo_Int"
 
 m.demangleName()

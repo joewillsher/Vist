@@ -14,7 +14,7 @@ extension COpaquePointer {
             return try stdType.loadPropertyNamed(property, from: self, builder: builder, irName: irName)
         }
         else {
-            throw irGenError(.NotStructType, userVisible: false)
+            throw irGenError(.notStructType, userVisible: false)
         }
     }
     func load(index: Int, fromType type: Ty?, builder: LLVMBuilderRef, irName: String = "") throws -> LLVMValueRef {
@@ -22,7 +22,7 @@ extension COpaquePointer {
             return try stdType.loadPropertyAtIndex(index, from: self, builder: builder, irName: irName)
         }
         else {
-            throw irGenError(.NotStructType, userVisible: false)
+            throw irGenError(.notStructType, userVisible: false)
         }
     }
 
@@ -69,7 +69,7 @@ extension TupleType {
     
     /// Builds load of named property from struct
     private func loadPropertyAtIndex(index: Int, from value: LLVMValueRef, builder: LLVMBuilderRef, irName: String = "") throws -> LLVMValueRef {
-        guard index < self.members.count else { throw irGenError(.NoTupleMemberAt(index)) }
+        guard index < self.members.count else { throw irGenError(.noTupleMemberAt(index)) }
         return LLVMBuildExtractValue(builder, value, UInt32(index), irName)
     }
 

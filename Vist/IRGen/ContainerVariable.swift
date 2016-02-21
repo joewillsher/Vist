@@ -93,7 +93,7 @@ extension StructVariable where Self: MutableVariable {
 extension TupleVariable where Self: MutableVariable {
     
     func store(val: LLVMValueRef, inElementAtIndex index: Int) throws {
-        guard index < properties.count else { throw irGenError(.NoTupleMemberAt(index)) }
+        guard index < properties.count else { throw irGenError(.noTupleMemberAt(index)) }
         LLVMBuildStore(irGen.builder, val, ptrToElementAtIndex(index))
     }
 }

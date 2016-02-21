@@ -167,7 +167,7 @@ final class ExistentialVariable: StructVariable, MutableVariable {
         
         // index of property in the concept's table
         // use this to look up the index in self by getting the ixd from the runtime's array
-        guard let i = indexOfProperty(name) else { throw irGenError(.NoProperty(type: conceptType.name, property: name)) }
+        guard let i = indexOfProperty(name) else { throw irGenError(.noProperty(type: conceptType.name, property: name)) }
         
         let indexValue = BuiltinType.intGen(size: 32)(i) // i32
         let index = [indexValue].ptr()

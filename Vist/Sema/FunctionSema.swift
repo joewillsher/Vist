@@ -28,6 +28,9 @@ extension FuncDecl: DeclTypeProvider {
         guard let impl = self.impl else { return }
         // if body construct scope and parse inside it
         
+        // make surebound list is same length
+        guard impl.params.count == paramTypes.count else { throw semaError(.wrongFuncParamList(applied: impl.params, forType: paramTypes)) }
+        
         for (index, name) in impl.params.enumerate() {
             fnScope[variable: name] = (type: paramTypes[index], mutable: false)
         }

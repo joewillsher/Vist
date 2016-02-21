@@ -17,5 +17,6 @@ print mut.x
 
 let tup = (0, 1)
 tup.1 = 2
-tup.3 = 2
+var tup2 = (0, 1)
+tup2.3 = 2
 

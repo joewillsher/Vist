@@ -83,34 +83,43 @@ extension MutationExpr : ExprTypeProvider {
         let old = try object.typeForNode(scope)
         let new = try value.typeForNode(scope)
         
-        guard old == new else { throw semaError(.differentTypeForMutation(object.typeName, old, new)) }
-        
+        // make sure consistent types
+        guard old == new else { throw semaError(.differentTypeForMutation(name: (object as? VariableExpr)?.name, from: old, to: new)) }
+
+        // switch over object being mutated
         switch object {
         case let variable as VariableExpr:
-            
+
             guard let v = scope[variable: variable.name] else { throw semaError(.noVariable(variable.name)) }
-            guard v.mutable else { throw semaError(.immutableVariable(variable.name)) }
+            guard v.mutable else { throw semaError(.immutableVariable(name: variable.name, type: variable.typeName)) }
             
-        case let propertyLookup as PropertyLookupExpr:
+            return BuiltinType.Null
             
-            guard let type = propertyLookup.object._type else { throw semaError(.notStructType(propertyLookup._type)) }
-            let (_, parentMutable, mutable) = try propertyLookup.recursiveType(scope)
+        case let lookup as LookupExpr:
+            // if its a lookup expression we can 
             
-            guard let p = parentMutable where p else { throw semaError(.immutableObject(type: type.explicitName)) }
-            guard mutable else { throw semaError(.immutableProperty(p: propertyLookup.propertyName, ty: type.explicitName)) }
+            guard let type = lookup.object._type else { throw semaError(.notStructType(lookup._type)) }
+            let (_, parentMutable, mutable) = try lookup.recursiveType(scope)
             
-        case let memberLookup as TupleMemberLookupExpr:
-            break
-//            let objectName = memberLookup.object.desc
-//            let object = scope[variable: objectName]
-//            
-//            guard case _ as TupleType = object?.type else { throw semaError(.noVariable(objectName)) }
-//            guard let mutable = object?.mutable where mutable else { throw semaError(.immutableVariable(objectName)) }
+            guard let p = parentMutable where p else {
+                // provide nice error -- if its a variable we can put its name in the error message using '.immutableVariable'
+                if case let v as VariableExpr = lookup.object { throw semaError(.immutableVariable(name: v.name, type: v.typeName)) }
+                else { throw semaError(.immutableObject(type: type.explicitName)) }
+            }
             
-            // TODO: checks on mutation expressions
+            switch lookup {
+            case let tuple as TupleMemberLookupExpr:
+                guard mutable else { throw semaError(.immutableTupleMember(index: tuple.index)) }
+
+            case let prop as PropertyLookupExpr:
+                guard mutable else { throw semaError(.immutableProperty(p: prop.propertyName, ty: type.explicitName)) }
+                
+            default:
+                throw semaError(.unreachable("All lookup types accounted for"), userVisible: false)
+            }
             
         default:
-            break
+            throw semaError(.todo("Other chainable types need mutability debugging"))
         }
         
         return BuiltinType.Null
@@ -152,7 +161,7 @@ extension ChainableExpr {
             
 //        case let tuple as TupleExpr:
 //            return (type: _type, )
-//            
+            
         default:
             throw semaError(.notValidLookup, userVisible: false)
         }
@@ -168,7 +177,7 @@ extension VariableDecl : DeclTypeProvider {
     func typeForNode(scope: SemaScope) throws {
         // handle redeclaration
         if scope.containsVariable(name) {
-            throw semaError(.invalidTypeRedeclaration(name))
+            throw semaError(.invalidRedeclaration(name))
         }
         
         // if provided, get the explicit type
