@@ -1,10 +1,9 @@
 
 
-
 concept Eq {
     var a: Int, b: Int
     
-    func sum :: -> Int = do return 1
+    func sum :: -> Int
 }
 
 
@@ -12,16 +11,16 @@ type Bar {
     var x: Bool, b: Int, a: Int
     
     func sum :: -> Int = do
-        return a + b
+    return a + b
 }
 
 
 func foo :: Eq Int -> Int = (a b) do
-    return a.a + b
+    return a.sum () + b
+func foo2 :: Eq Int -> Int = (a b) do
+    return a.a + (a.b * 2) + b
 
 let bar = Bar true 11 4
-let foo = foo bar 2
+print (foo bar 2) // test: 17
+print (foo2 bar 2) // test: 28
 
-print foo
-//
-//print foo // test: 17

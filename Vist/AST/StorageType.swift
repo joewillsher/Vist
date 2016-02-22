@@ -66,15 +66,36 @@ extension StorageType {
         return members[try indexOfMemberNamed(name)].mutable
     }
     func getMethodType(methodName: String, argTypes types: [Ty]) -> FnType? {
-        return methods[raw: methodName, paramTypes: types]
+        return methods
+            .indexOf { $0.name == methodName && $0.type.params.elementsEqual(types, isEquivalent: ==) }
+            .map { methods[$0].type }
     }
     
     /// Returns whether a type models a concept
     func models(concept: ConceptType) -> Bool {
         // TODO: explicit, opt into methods, this should be a check in sema
-        for f in concept.requiredFunctions where !methods.contains({ $0.name.demangleName() == f.name.demangleName() && $0.type == f.type }) { return false }
+        for f in concept.requiredFunctions where !methods.contains({ $0.name.demangleName() == f.name && $0.type == f.type }) { return false }
         for p in concept.requiredProperties where !members.contains({ $0.name == p.name && $0.type == p.type }) { return false }
         return true
     }
 }
+
+
+extension CollectionType where Generator.Element == StructMethod {
+    
+    /// Lowers `StructMethod`s to `StorageVariableMethod`s
+    func lower(selfType selfType: StorageType, module: LLVMModuleRef) -> [StorageVariableMethod] {
+        return map { (mangledName: $0.name.mangle($0.type.params, parentTypeName: selfType.name), type: $0.type.withParent(selfType).globalType(module)) }
+    }
+}
+
+extension CollectionType where Generator.Element == StructMember {
+    
+    /// Lowers `StructMember`s to `StorageVariableProperty`s
+    func lower(module module: LLVMModuleRef) -> [StorageVariableProperty] {
+        return map { (name: $0.name, irType: $0.type.globalType(module)) }
+    }
+
+}
+
 

@@ -45,20 +45,18 @@ extension StructType {
     ///
     /// Provides compiler the interface of std types' initialiser
     ///
-    /// Returns the result of a function call to the initialise
-    ///
-    func initialiseStdTypeFromBuiltinMembers(val: LLVMValueRef..., irGen: IRGen, irName: String = "") -> LLVMValueRef {
+    /// Returns the result of a function call to the initialiser
+    func initialiseStdTypeFromBuiltinMembers(val: LLVMValueRef..., irGen: IRGen, irName: String = "")  throws -> LLVMValueRef {
         let tys = members.map { $0.1 }
-        let initName = name.mangle(FnType(params: tys, returns: BuiltinType.Void/*we con’t care what this is, its not used in mangling*/))
+        let initName = name.mangle(FnType(params: tys, returns: BuiltinType.void/*we con’t care what this is, its not used in mangling*/))
         
-        guard let (type, initialiser) = StdLib.getFunctionIR(initName, module: irGen.module) where initialiser != nil else { return nil }
+        guard let (type, initialiser) = StdLib.getFunctionIR(initName, module: irGen.module) where initialiser != nil else { throw irGenError(.noFunction(initName), userVisible: false) }
         
         let args = val.ptr()
         defer { args.dealloc(members.count) }
         
         let call = LLVMBuildCall(irGen.builder, initialiser, args, UInt32(val.count), irName)
         type.addMetadataTo(call)
-        
         return call
     }
     

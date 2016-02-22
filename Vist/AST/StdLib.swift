@@ -8,12 +8,12 @@
 
 struct StdLib {
     
-    static let IntType =    StructType(members: [("value", BuiltinType.Int(size: 64), true)],       methods: [], name: "Int")
-    static let Int32Type =    StructType(members: [("value", BuiltinType.Int(size: 32), true)],       methods: [], name: "Int32")
-    static let BoolType =   StructType(members: [("value", BuiltinType.Bool, true)],                methods: [], name: "Bool")
-    static let DoubleType = StructType(members: [("value", BuiltinType.Float(size: 64), true)],     methods: [], name: "Double")
-    static let RangeType =  StructType(members: [("start", IntType, true), ("end", IntType, true)], methods: [], name: "Range")
-    static let VoidType =   BuiltinType.Void
+    static let IntType =    StructType(members:   [("value", BuiltinType.int(size: 64), true)],       methods: [], name: "Int")
+    static let Int32Type =    StructType(members: [("value", BuiltinType.int(size: 32), true)],       methods: [], name: "Int32")
+    static let BoolType =   StructType(members:   [("value", BuiltinType.bool, true)],                methods: [], name: "Bool")
+    static let DoubleType = StructType(members:   [("value", BuiltinType.float(size: 64), true)],     methods: [], name: "Double")
+    static let RangeType =  StructType(members:   [("start", IntType, true), ("end", IntType, true)], methods: [], name: "Range")
+    private static let VoidType =   BuiltinType.void
     
     private static let types: [StructType] = [IntType, BoolType, DoubleType, RangeType]
     
@@ -67,13 +67,13 @@ struct StdLib {
         
 //         initialisers
         // ones which take Builtin types are used to wrap literals
-        ("Int",     FnType(params: [BuiltinType.Int(size: 64)],   returns: IntType)),
+        ("Int",     FnType(params: [BuiltinType.int(size: 64)],   returns: IntType)),
         ("Int",     FnType(params: [IntType],                     returns: IntType)),
-        ("Int32",   FnType(params: [BuiltinType.Int(size: 32)],   returns: Int32Type)),
+        ("Int32",   FnType(params: [BuiltinType.int(size: 32)],   returns: Int32Type)),
         ("Int32",   FnType(params: [Int32Type],                   returns: Int32Type)),
-        ("Bool",    FnType(params: [BuiltinType.Bool],            returns: BoolType)),
+        ("Bool",    FnType(params: [BuiltinType.bool],            returns: BoolType)),
         ("Bool",    FnType(params: [BoolType],                    returns: IntType)),
-        ("Float",   FnType(params: [BuiltinType.Float(size: 64)], returns: DoubleType)),
+        ("Float",   FnType(params: [BuiltinType.float(size: 64)], returns: DoubleType)),
         ("Float",   FnType(params: [DoubleType],                  returns: IntType)),
         ("Range",   FnType(params: [IntType, IntType],            returns: RangeType)),
         ("Range",   FnType(params: [RangeType],                   returns: RangeType))

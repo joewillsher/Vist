@@ -27,3 +27,8 @@ void () // test: 41
 func two :: -> Int = do return 2
 
 print (two ()) // test: 2
+
+let u = void
+
+
+

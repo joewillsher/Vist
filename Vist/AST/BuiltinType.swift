@@ -9,22 +9,22 @@
 
 
 enum BuiltinType: Ty {
-    case Null, Void
-    case Int(size: UInt32), Float(size: UInt32), Bool
-    indirect case Array(el: Ty, size: UInt32?)
-    indirect case Pointer(to: Ty)
-    case OpaquePointer
+    case null, void
+    case int(size: UInt32), float(size: UInt32), bool
+    indirect case array(el: Ty, size: UInt32?)
+    indirect case pointer(to: Ty)
+    case opaquePointer
     
     func globalType(module: LLVMModuleRef) -> LLVMTypeRef {
         switch self {
-        case .Null:                     return nil
-        case .Void:                     return LLVMVoidType()
-        case .Int(let s):               return LLVMIntType(s)
-        case Bool:                      return LLVMInt1Type()
-        case .Array(let el, let size):  return LLVMArrayType(el.globalType(module), size ?? 0)
-        case .Pointer(let to):          return LLVMPointerType(to.globalType(module), 0)
-        case .OpaquePointer:            return BuiltinType.Pointer(to: BuiltinType.Int(size: 8)).globalType(module)
-        case .Float(let s):
+        case .null:                     return nil
+        case .void:                     return LLVMVoidType()
+        case .int(let s):               return LLVMIntType(s)
+        case .bool:                      return LLVMInt1Type()
+        case .array(let el, let size):  return LLVMArrayType(el.globalType(module), size ?? 0)
+        case .pointer(let to):          return LLVMPointerType(to.globalType(module), 0)
+        case .opaquePointer:            return BuiltinType.pointer(to: BuiltinType.int(size: 8)).globalType(module)
+        case .float(let s):
             switch s {
             case 16:                    return LLVMHalfType()
             case 32:                    return LLVMFloatType()
@@ -37,31 +37,31 @@ enum BuiltinType: Ty {
     
     init?(_ str: String) {
         switch str {
-        case "LLVM.Int", "LLVM.Int64":  self = .Int(size: 64)
-        case "LLVM.Null":               self = .Null
-        case "LLVM.Int32":              self = .Int(size: 32)
-        case "LLVM.Int16":              self = .Int(size: 16)
-        case "LLVM.Int8":               self = .Int(size: 8)
-        case "LLVM.Bool":               self = .Bool
-        case "LLVM.Double":             self = .Float(size: 64)
-        case "LLVM.Float":              self = .Float(size: 32)
-        case "Void":                    self = .Void
-        case "LLVM.String":             self = .Array(el: BuiltinType.Int(size: 8), size: nil)
+        case "LLVM.Int", "LLVM.Int64":  self = .int(size: 64)
+        case "LLVM.Null":               self = .null
+        case "LLVM.Int32":              self = .int(size: 32)
+        case "LLVM.Int16":              self = .int(size: 16)
+        case "LLVM.Int8":               self = .int(size: 8)
+        case "LLVM.Bool":               self = .bool
+        case "LLVM.Double":             self = .float(size: 64)
+        case "LLVM.Float":              self = .float(size: 32)
+        case "Void":                    self = .void
+        case "LLVM.String":             self = .array(el: BuiltinType.int(size: 8), size: nil)
         case _ where str.characters.first == "[" && str.characters.last == "]":
             guard let el = BuiltinType(String(str.characters.dropFirst().dropLast())) else { return nil }
-            self = .Array(el: el, size: nil)
+            self = .array(el: el, size: nil)
             // hack: array type IR has no size which is wrong
         default: return nil
         }
     }
     init?(_ type: LLVMTypeRef) {
         switch type {
-        case LLVMVoidType(): self = .Void
-        case LLVMInt32Type(): self = .Int(size: 32)
-        case LLVMInt64Type(): self = .Int(size: 64)
-        case LLVMInt1Type(): self = .Bool
-        case LLVMDoubleType(): self = .Float(size: 64)
-        case LLVMFloatType(): self = .Float(size: 32)
+        case LLVMVoidType(): self = .void
+        case LLVMInt32Type(): self = .int(size: 32)
+        case LLVMInt64Type(): self = .int(size: 64)
+        case LLVMInt1Type(): self = .bool
+        case LLVMDoubleType(): self = .float(size: 64)
+        case LLVMFloatType(): self = .float(size: 32)
         default: return nil
         }
     }
@@ -69,14 +69,14 @@ enum BuiltinType: Ty {
     
     var explicitName: String {
         switch self {
-        case .Null:                     return "LLVM.Null"
-        case .Void:                     return "LLVM.Void"
-        case .Int(let s):               return "LLVM.Int\(s)"
-        case .Bool:                     return "LLVM.Bool"
-        case .Array(let el, let size):  return "[\(size) x \(el.mangledName)]" // not implemented
-        case .Pointer(let to):          return "\(to.mangledName)*"            // will never be implemented
-        case .OpaquePointer:            return "ptr"
-        case .Float(let s):
+        case .null:                     return "LLVM.Null"
+        case .void:                     return "LLVM.Void"
+        case .int(let s):               return "LLVM.Int\(s)"
+        case .bool:                     return "LLVM.Bool"
+        case .array(let el, let size):  return "[\(size) x \(el.mangledName)]" // not implemented
+        case .pointer(let to):          return "\(to.mangledName)*"            // will never be implemented
+        case .opaquePointer:            return "ptr"
+        case .float(let s):
             switch s {
             case 16:                    return "LLVM.Half"
             case 32:                    return "LLVM.Float"
@@ -89,25 +89,23 @@ enum BuiltinType: Ty {
     
     var mangledName: String {
         switch self {
-        case .Null:                     return "N"
-        case .Void:                     return "V"
-        case .Int(let s):               return "i\(s)"
-        case Bool:                      return "b"
-        case .Array(let el, _):         return "A\(el.mangledName)"
-        case .Pointer(let to):          return "P\(to.mangledName)"
-        case .Float(let s):             return "f\(s)"
-        case .OpaquePointer:            return "op"
+        case .null:                     return "N"
+        case .void:                     return "V"
+        case .int(let s):               return "i\(s)"
+        case .bool:                      return "b"
+        case .array(let el, _):         return "A\(el.mangledName)"
+        case .pointer(let to):          return "P\(to.mangledName)"
+        case .float(let s):             return "f\(s)"
+        case .opaquePointer:            return "op"
         }
     }
     
     static func intGen(size size: Swift.Int) -> UInt64 -> LLVMValueRef {
         return { val in
-            return LLVMConstInt(BuiltinType.Int(size: UInt32(size)).globalType(nil), val, false)
+            return LLVMConstInt(BuiltinType.int(size: UInt32(size)).globalType(nil), val, false)
         }
     }
-    static func intGen(size size: Swift.Int) -> Swift.Int -> LLVMValueRef {
-        return { val in
-            return intGen(size: size)(UInt64(val))
-        }
+    static func intGen(value: Swift.Int, size: Swift.Int) -> LLVMValueRef {
+        return intGen(size: size)(UInt64(value))
     }
 }

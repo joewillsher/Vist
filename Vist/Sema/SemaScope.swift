@@ -109,7 +109,7 @@ final class SemaScope {
         }
     }
     
-    init(parent: SemaScope, returnType: Ty? = BuiltinType.Void, semaContext: Ty? = nil) {
+    init(parent: SemaScope, returnType: Ty? = BuiltinType.void, semaContext: Ty? = nil) {
         self.parent = parent
         self.returnType = returnType
         self.variables = [:]
@@ -121,7 +121,7 @@ final class SemaScope {
     
     // used by the global scope & non capturing static function
     /// Declares a type without a parent
-    private init(returnType: Ty? = BuiltinType.Void, isStdLib: Bool, semaContext: Ty? = nil) {
+    private init(returnType: Ty? = BuiltinType.void, isStdLib: Bool, semaContext: Ty? = nil) {
         self.parent = nil
         self.returnType = returnType
         self.variables = [:]
@@ -137,7 +137,7 @@ final class SemaScope {
     }
     
     /// Creates a scope assocoiated with its parent which cannot read from its func, var, & type tables
-    static func nonCapturingScope(parent: SemaScope, returnType: Ty? = BuiltinType.Void, semaContext: Ty? = nil) -> SemaScope {
+    static func nonCapturingScope(parent: SemaScope, returnType: Ty? = BuiltinType.void, semaContext: Ty? = nil) -> SemaScope {
         return SemaScope(returnType: returnType, isStdLib: parent.isStdLib, semaContext: semaContext)
     }
 }

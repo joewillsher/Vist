@@ -10,31 +10,35 @@
 struct FnType: Ty {
     let params: [Ty], returns: Ty
     var metadata: [String]
+    let selfType: Ty?
     
     func globalType(module: LLVMModuleRef) -> LLVMTypeRef {
         
         let r: LLVMTypeRef
         if case _ as FnType = returns {
-            r = BuiltinType.Pointer(to: returns).globalType(module)
+            r = BuiltinType.pointer(to: returns).globalType(module)
         }
         else {
             r = returns.globalType(module)
         }
         
-        let count = nonVoid.count
-        let els = nonVoid.map{$0.globalType(module)}.ptr()
+        let members = nonVoid.map{$0.globalType(module)}
+        let selfRef = selfType.map { [BuiltinType.pointer(to: $0).globalType(module)] } ?? []
+        let els = (selfRef + members).ptr()
+        let count = nonVoid.count + selfRef.count
         defer { els.dealloc(count) }
         
         return LLVMFunctionType(r, els, UInt32(count), false)
     }
     
-    init(params: [Ty], returns: Ty = BuiltinType.Void, metadata: [String] = []) {
+    init(params: [Ty], returns: Ty = BuiltinType.void, metadata: [String] = [], selfType: Ty? = nil) {
         self.params = params
         self.returns = returns
         self.metadata = metadata
+        self.selfType = selfType
     }
     
-    static func taking(params: Ty..., ret: Ty = BuiltinType.Void) -> FnType {
+    static func taking(params: Ty..., ret: Ty = BuiltinType.void) -> FnType {
         return FnType(params: params, returns: ret)
     }
     static func returning(ret: Ty) -> FnType {
@@ -42,7 +46,7 @@ struct FnType: Ty {
     }
     
     var nonVoid: [Ty]  {
-        return params.filter { if case BuiltinType.Void = $0 { return false } else { return true } }
+        return params.filter { if case BuiltinType.void = $0 { return false } else { return true } }
     }
     
     func addMetadataTo(call: LLVMValueRef) {
@@ -66,6 +70,13 @@ struct FnType: Ty {
         return params
             .map { $0.mangledName }
             .joinWithSeparator("_")
+    }
+    
+    func withParent(parent: StorageType) -> FnType {
+        return FnType(params: params, returns: returns, metadata: metadata, selfType: parent)
+    }
+    func withOpaqueParent() -> FnType {
+        return FnType(params: params, returns: returns, metadata: metadata, selfType: BuiltinType.int(size: 8))
     }
 }
 

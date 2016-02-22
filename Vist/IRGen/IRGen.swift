@@ -101,11 +101,11 @@ private func validateFunction(ref: LLVMValueRef, name: String) throws {
 extension IntegerLiteral: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
-        let rawType = BuiltinType.Int(size: size).globalType(irGen.module)
+        let rawType = BuiltinType.int(size: size).globalType(irGen.module)
         let value = LLVMConstInt(rawType, UInt64(val), false)
         
-        guard let type = self.type else { throw semaError(.integerNotTyped, userVisible: false) }
-        return type.initialiseStdTypeFromBuiltinMembers(value, irGen: irGen)
+        guard let type = type else { throw semaError(.integerNotTyped, userVisible: false) }
+        return try type.initialiseStdTypeFromBuiltinMembers(value, irGen: irGen)
     }
 }
 
@@ -121,11 +121,11 @@ extension FloatingPointLiteral: IRGenerator {
 extension BooleanLiteral: IRGenerator {
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
-        let rawType = BuiltinType.Bool
-        let value = LLVMConstInt(rawType.globalType(nil), UInt64(val.hashValue), false)
+        let rawType = BuiltinType.bool.globalType(irGen.module)
+        let value = LLVMConstInt(rawType, UInt64(val.hashValue), false)
         
-        guard let type = self.type else { throw semaError(.boolNotTyped, userVisible: false) }
-        return type.initialiseStdTypeFromBuiltinMembers(value, irGen: irGen)
+        guard let type = type else { throw semaError(.boolNotTyped, userVisible: false) }
+        return try type.initialiseStdTypeFromBuiltinMembers(value, irGen: irGen)
     }
 }
 
@@ -228,13 +228,13 @@ extension VariableDecl: IRGenerator {
             
             switch value._type {
             case let structType as StructType:
-                variable = MutableStructVariable.alloc(structType, irName: irName, irGen: irGen)
+                variable = MutableStorageVariable.alloc(structType, irName: irName, irGen: irGen)
                 
             case let tupleType as TupleType:
                 variable = MutableTupleVariable.alloc(tupleType, irName: irName, irGen: irGen)
                 
             case let existentialType as ConceptType:
-                let existentialVariable = ExistentialVariable.alloc(existentialType, fromExistential: v, mutable: isMutable, irName: irName, irGen: irGen)
+                let existentialVariable = ExistentialVariable.assignFromExistential(v, conceptType: existentialType, mutable: isMutable, irName: irName, irGen: irGen)
                 stackFrame.addVariable(existentialVariable, named: name)
                 return v
                 
@@ -289,7 +289,7 @@ extension MutationExpr: IRGenerator {
         case let propertyLookup as PropertyLookupExpr:
             // foo.bar = meme
             
-            guard case let storageVariable as MutableStructVariable = try propertyLookup.getVariable(stackFrame, irGen: irGen) else { throw irGenError(.noProperty(type: propertyLookup.object.typeName, property: propertyLookup.propertyName)) }
+            guard case let storageVariable as MutableStorageVariable = try propertyLookup.getVariable(stackFrame, irGen: irGen) else { throw irGenError(.noProperty(type: propertyLookup.object.typeName, property: propertyLookup.propertyName)) }
             
             let val = try value.nodeCodeGen(stackFrame, irGen: irGen)
             
@@ -332,7 +332,7 @@ extension BinaryExpr: IRGenerator {
         
         guard fn != nil && LLVMCountParams(fn) == UInt32(2) else { throw irGenError(.wrongFunctionApplication(op), userVisible: false) }
         
-        let doNotUseName = _type == BuiltinType.Void || _type == BuiltinType.Null || _type == nil
+        let doNotUseName = _type == BuiltinType.void || _type == BuiltinType.null || _type == nil
         let n = doNotUseName ? "": "\(op).res"
         
         // add call to IR
@@ -404,7 +404,7 @@ extension FunctionCallExpr: IRGenerator {
         
         guard fn != nil && LLVMCountParams(fn) == UInt32(argCount) else { throw irGenError(.wrongFunctionApplication(name), userVisible: false) }
         
-        let doNotUseName = _type == BuiltinType.Void || _type == BuiltinType.Null || _type == nil
+        let doNotUseName = _type == BuiltinType.void || _type == BuiltinType.null || _type == nil
         let n = doNotUseName ? "": "\(name)_res"
         
         // add call to IR
@@ -456,7 +456,7 @@ extension FuncDecl: IRGenerator {
             guard case let _parentType as StorageType = parent._type else { throw irGenError(.noParentType, userVisible: false) }
             guard let _type = fnType.type else { throw irGenError(.typeNotFound, userVisible: false) }
             
-            type = FnType(params: [BuiltinType.Pointer(to: _parentType)] + _type.params, returns: _type.returns)
+            type = FnType(params: _type.params, returns: _type.returns, metadata: _type.metadata, selfType: _parentType)
             startIndex = 1
             parentType = _parentType
         }
@@ -516,11 +516,11 @@ extension FuncDecl: IRGenerator {
             
             switch try stackFrame.type(tyName) {
             case let t as StructType:
-                let s = ParameterStructVariable(val: param, type: t, irName: irName, irGen: irGen)
+                let s = ParameterStorageVariable(val: param, type: t, irName: irName, irGen: irGen)
                 functionStackFrame.addVariable(s, named: paramName)
                 
             case let c as ConceptType:
-                let e = ExistentialVariable.alloc(c, fromExistential: param, mutable: false, irName: irName, irGen: irGen)
+                let e = ExistentialVariable.assignFromExistential(param, conceptType: c, mutable: false, irName: irName, irGen: irGen)
                 functionStackFrame.addVariable(e, named: paramName)
                 
             default:
@@ -536,11 +536,11 @@ extension FuncDecl: IRGenerator {
             LLVMSetValueName(param, "self")
             // self's members
             
-            let r: protocol<MutableVariable, StructVariable>
+            let r: protocol<MutableVariable, StorageVariable>
             
             switch parentType {
             case let structType as StructType:
-                r = MutableStructVariable(type: structType, ptr: param, irName: "self", irGen: irGen)
+                r = MutableStorageVariable(type: structType, ptr: param, irName: "self", irGen: irGen)
 
             case let conceptExistentialType as ConceptType:
                 r = ExistentialVariable(ptr: param, conceptType: conceptExistentialType, mutable: false, irName: "self", irGen: irGen)
@@ -649,7 +649,7 @@ extension ClosureExpr: IRGenerator {
 //                
 //                let memTys = try t.members.map { ($0.0, try $0.1.globalType(irGen.module), $0.2) }
 //                
-//                let s = MutableStructVariable(type: ty, ptr: ptr, mutable: false, builder: irGen.builder, properties: memTys)
+//                let s = MutableStorageVariable(type: ty, ptr: ptr, mutable: false, builder: irGen.builder, properties: memTys)
 //                functionStackFrame.addVariable(name, val: s)
 //            }
 //            else {
@@ -813,7 +813,7 @@ extension ForInLoopStmt: IRGenerator {
         LLVMBuildBr(irGen.builder, loopHeader)
         LLVMPositionBuilderAtEnd(irGen.builder, loopHeader)
         
-        let intType = BuiltinType.Int(size: 64)
+        let intType = BuiltinType.int(size: 64)
         
         // define variable phi node
         let iteratorName = binded.name
@@ -829,7 +829,7 @@ extension ForInLoopStmt: IRGenerator {
         let next = LLVMBuildAdd(irGen.builder, one, loopCount, "next.\(iteratorName)")
         
         // gen the IR for the inner block
-        let loopCountInt = StdLib.IntType.initialiseStdTypeFromBuiltinMembers(loopCount, irGen: irGen, irName: iteratorName)
+        let loopCountInt = try StdLib.IntType.initialiseStdTypeFromBuiltinMembers(loopCount, irGen: irGen, irName: iteratorName)
         let loopVariable = StackVariable(val: loopCountInt, irName: iteratorName, irGen: irGen)
         let loopStackFrame = StackFrame(block: loopBody, vars: [iteratorName: loopVariable], function: stackFrame.function, parentStackFrame: stackFrame)
         
@@ -1036,7 +1036,7 @@ extension InitialiserDecl: IRGenerator {
         // TODO: Split this out into a function for funcs & closures to use as well
         for i in 0..<paramCount {
             let param = LLVMGetParam(function, UInt32(i))
-            let paramName = impl.params[i] ?? i.implicitParamName()
+            let paramName = impl.params[i]
             let irName = paramName.stringByReplacingOccurrencesOfString("$", withString: "param")
             LLVMSetValueName(param, paramName)
             
@@ -1046,10 +1046,10 @@ extension InitialiserDecl: IRGenerator {
             
             switch try stackFrame.type(tyName) {
             case let t as StructType:
-                variable = ParameterStructVariable(val: param, type: t, irName: irName, irGen: irGen)
+                variable = ParameterStorageVariable(val: param, type: t, irName: irName, irGen: irGen)
                 
             case let c as ConceptType:
-                variable = ExistentialVariable.alloc(c, fromExistential: param, mutable: false, irName: irName, irGen: irGen)
+                variable = ExistentialVariable.assignFromExistential(param, conceptType: c, mutable: false, irName: irName, irGen: irGen)
                 
             default:
                 variable = StackVariable(val: param, irName: irName, irGen: irGen)
@@ -1058,7 +1058,7 @@ extension InitialiserDecl: IRGenerator {
         }
         
         // allocate struct
-        let s = MutableStructVariable.alloc(parentType, irName: parentType.name, irGen: irGen)
+        let s = MutableStorageVariable.alloc(parentType, irName: parentType.name, irGen: irGen)
         stackFrame.addVariable(s, named: name)
         
         // add struct properties into scope
@@ -1092,19 +1092,19 @@ extension PropertyLookupExpr: IRGenerator {
         
         // if we are looking up from a vanilla variable, return that
         if case let n as VariableExpr = object {
-            guard case let variable as StructVariable = try stackFrame.variable(n.name) else { throw irGenError(.noVariable(n.name)) }
+            guard case let variable as StorageVariable = try stackFrame.variable(n.name) else { throw irGenError(.noVariable(n.name)) }
             return variable
         }
         
         // The LLVM value of the object getting a property looked up -- the lookupee
         let (lookupPtr, lookupVal) = try object.lookupVal(stackFrame, irGen: irGen)
         
-        let variable: protocol<StructVariable, MutableVariable>
+        let variable: protocol<StorageVariable, MutableVariable>
         
         // The lookupee can either be a struct, or concept existential
         switch object._type {
         case let t as StructType:
-            variable = MutableStructVariable(type: t, ptr: lookupPtr, irName: "", irGen: irGen)
+            variable = MutableStorageVariable(type: t, ptr: lookupPtr, irName: "", irGen: irGen)
             variable.value = lookupVal
 
         case let c as ConceptType:
@@ -1119,7 +1119,7 @@ extension PropertyLookupExpr: IRGenerator {
     }
     
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
-        guard case let st as StructVariable = try getVariable(stackFrame, irGen: irGen) else { throw irGenError(.noProperty(type: typeName, property: propertyName)) }
+        guard case let st as StorageVariable = try getVariable(stackFrame, irGen: irGen) else { throw irGenError(.noProperty(type: typeName, property: propertyName)) }
         return try st.loadPropertyNamed(propertyName)
     }
 }
@@ -1138,11 +1138,11 @@ private extension ChainableExpr {
         case let propertyLookup as PropertyLookupExpr:
             
             let lookupVariable = try propertyLookup.getVariable(stackFrame, irGen: irGen)
-            guard case let structVariable as StructVariable = lookupVariable else { throw irGenError(.notStructType) }
+            guard case let StorageVariable as StorageVariable = lookupVariable else { throw irGenError(.notStructType) }
             
             return (
-                ptr: try structVariable.ptrToPropertyNamed(propertyLookup.propertyName),
-                val: try structVariable.loadPropertyNamed(propertyLookup.propertyName)
+                ptr: try StorageVariable.ptrToPropertyNamed(propertyLookup.propertyName),
+                val: try StorageVariable.loadPropertyNamed(propertyLookup.propertyName)
             )
             
         case let tupleLookup as TupleMemberLookupExpr:
@@ -1175,25 +1175,23 @@ extension MethodCallExpr: IRGenerator {
         // get method from module
         let c = self.args.elements.count + 1
         
-        guard let structType = self.structType else { throw irGenError(.notStructType, userVisible: false) }
+        guard let structType = structType else { throw irGenError(.notStructType, userVisible: false) }
+        guard let fnType = fnType else { throw irGenError(.notTyped, userVisible: false) }
         
         // need to add self to beginning of params
         let ob = try object.nodeCodeGen(stackFrame, irGen: irGen)
         
         guard case let variable as VariableExpr = object else { throw irGenError(.cannotLookupPropertyFromNonVariable, userVisible: false) } // FIXME: this should be possible
-        guard case let selfRef as StructVariable = try stackFrame.variable(variable.name) else { throw irGenError(.notStructType) }
+        guard case let selfRef as StorageVariable = try stackFrame.variable(variable.name) else { throw irGenError(.notStructType) }
         
-        let argTypes = self.args.elements.optionalMap({$0._type})!
-        let functionPtr = selfRef.ptrToMethodNamed(name, argTypes: argTypes)
-        
-        
-        
+        let functionPtr = try selfRef.ptrToMethodNamed(name, fnType: fnType)
+                
         let args = try self.args.elements.map(codeGenIn(stackFrame, irGen: irGen))
         
-        let argBuffer = ([selfRef.ptr] + args).ptr()
+        let argBuffer = ([selfRef.instancePtr] + args).ptr()
         defer { argBuffer.dealloc(c) }
         
-        let doNotUseName = _type == BuiltinType.Void || _type == BuiltinType.Null || _type == nil
+        let doNotUseName = _type == BuiltinType.void || _type == BuiltinType.null || _type == nil
         let n = doNotUseName ? "" : "\(name).res"
         
         return LLVMBuildCall(irGen.builder, functionPtr, argBuffer, UInt32(c), n)

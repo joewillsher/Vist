@@ -12,7 +12,7 @@ enum IRError: VistError {
     case notMutable(String), notMutableProp(name: String, inType: String)
     case cannotAssignToVoid, cannotAssignToType(Expr.Type), cannotMutateParam
     case subscriptingNonVariableTypeNotAllowed
-    case noProperty(type: String, property: String), noTupleMemberAt(Int)
+    case noProperty(type: String, property: String), noTupleMemberAt(Int), noMethod(type: String, methodName: String)
     
     case cannotLookupPropertyFromNonVariable, notIRGenerator(ASTNode.Type), noParentType
     case cannotLookupPropertyFromThis(prop: String), cannotLookupElementFromNonTuple
@@ -40,9 +40,10 @@ enum IRError: VistError {
             
         case .subscriptingNonVariableTypeNotAllowed: return "Only subscripting a variable is permitted"
 
-        case let .noProperty(type, prop): return "Type '\(type)' does not contain member '\(prop)'"
-        case let .noTupleMemberAt(i): return "Tuple does not have member at index \(i)"
-
+        case .noProperty(let type, let prop): return "Type '\(type)' does not contain member '\(prop)'"
+        case .noTupleMemberAt(let i): return "Tuple does not have member at index \(i)"
+        case .noMethod(let type, let method): return "Type '\(type)' does not have method '\(method)'"
+            
         case .cannotLookupPropertyFromThis(let p): return "Cannot lookup property \(p)"
         case .cannotLookupElementFromNonTuple: return "Can only look up member by index from tuple"
             

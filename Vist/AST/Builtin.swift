@@ -8,56 +8,56 @@
 
 struct Builtin {
 
-    static let IntType = BuiltinType.Int(size: 64)
-    static let Int32Type = BuiltinType.Int(size: 32)
-    static let DoubleType = BuiltinType.Float(size: 64)
-    static let BoolType = BuiltinType.Bool
-    static let VoidType = BuiltinType.Void
+    private static let intType = BuiltinType.int(size: 64)
+    private static let int32Type = BuiltinType.int(size: 32)
+    private static let doubleType = BuiltinType.float(size: 64)
+    private static let boolType = BuiltinType.bool
+    private static let voidType = BuiltinType.void
     
-    static let IntBoolTupleType = TupleType(members: [IntType, BoolType])
+    static let IntBoolTupleType = TupleType(members: [intType, boolType])
     
     private static let functions: [(String, FnType)] = [
         // integer fns
-        ("LLVM.i_add", FnType(params: [IntType, IntType], returns: IntBoolTupleType)), // overflowing intrinsic functions
-        ("LLVM.i_sub", FnType(params: [IntType, IntType], returns: IntBoolTupleType)),
-        ("LLVM.i_mul", FnType(params: [IntType, IntType], returns: IntBoolTupleType)),
+        ("LLVM.i_add", FnType(params: [intType, intType], returns: IntBoolTupleType)), // overflowing intrinsic functions
+        ("LLVM.i_sub", FnType(params: [intType, intType], returns: IntBoolTupleType)),
+        ("LLVM.i_mul", FnType(params: [intType, intType], returns: IntBoolTupleType)),
         
-        ("LLVM.i_div", FnType(params: [IntType, IntType], returns: IntType)),
-        ("LLVM.i_rem", FnType(params: [IntType, IntType], returns: IntType)),
+        ("LLVM.i_div", FnType(params: [intType, intType], returns: intType)),
+        ("LLVM.i_rem", FnType(params: [intType, intType], returns: intType)),
         
-        ("LLVM.i_cmp_lt", FnType(params: [IntType, IntType], returns: BoolType)),
-        ("LLVM.i_cmp_lte", FnType(params: [IntType, IntType], returns: BoolType)),
-        ("LLVM.i_cmp_gt", FnType(params: [IntType, IntType], returns: BoolType)),
-        ("LLVM.i_cmp_gte", FnType(params: [IntType, IntType], returns: BoolType)),
-        ("LLVM.i_eq", FnType(params: [IntType, IntType], returns: BoolType)),
-        ("LLVM.i_neq", FnType(params: [IntType, IntType], returns: BoolType)),
+        ("LLVM.i_cmp_lt", FnType(params: [intType, intType], returns: boolType)),
+        ("LLVM.i_cmp_lte", FnType(params: [intType, intType], returns: boolType)),
+        ("LLVM.i_cmp_gt", FnType(params: [intType, intType], returns: boolType)),
+        ("LLVM.i_cmp_gte", FnType(params: [intType, intType], returns: boolType)),
+        ("LLVM.i_eq", FnType(params: [intType, intType], returns: boolType)),
+        ("LLVM.i_neq", FnType(params: [intType, intType], returns: boolType)),
         
         // bool fns
-        ("LLVM.b_and", FnType(params: [BoolType, BoolType], returns: BoolType)),
-        ("LLVM.b_or", FnType(params: [BoolType, BoolType], returns: BoolType)),
+        ("LLVM.b_and", FnType(params: [boolType, boolType], returns: boolType)),
+        ("LLVM.b_or", FnType(params: [boolType, boolType], returns: boolType)),
         
         // float fns
-        ("LLVM.f_add", FnType(params: [DoubleType, DoubleType], returns: DoubleType)),
-        ("LLVM.f_sub", FnType(params: [DoubleType, DoubleType], returns: DoubleType)),
-        ("LLVM.f_mul", FnType(params: [DoubleType, DoubleType], returns: DoubleType)),
-        ("LLVM.f_div", FnType(params: [DoubleType, DoubleType], returns: DoubleType)),
-        ("LLVM.f_rem", FnType(params: [DoubleType, DoubleType], returns: DoubleType)),
+        ("LLVM.f_add", FnType(params: [doubleType, doubleType], returns: doubleType)),
+        ("LLVM.f_sub", FnType(params: [doubleType, doubleType], returns: doubleType)),
+        ("LLVM.f_mul", FnType(params: [doubleType, doubleType], returns: doubleType)),
+        ("LLVM.f_div", FnType(params: [doubleType, doubleType], returns: doubleType)),
+        ("LLVM.f_rem", FnType(params: [doubleType, doubleType], returns: doubleType)),
         
-        ("LLVM.f_cmp_lt", FnType(params: [DoubleType, DoubleType], returns: BoolType)),
-        ("LLVM.f_cmp_lte", FnType(params: [DoubleType, DoubleType], returns: BoolType)),
-        ("LLVM.f_cmp_gt", FnType(params: [DoubleType, DoubleType], returns: BoolType)),
-        ("LLVM.f_cmp_gte", FnType(params: [DoubleType, DoubleType], returns: BoolType)),
-        ("LLVM.f_eq", FnType(params: [DoubleType, DoubleType], returns: BoolType)),
-        ("LLVM.f_neq", FnType(params: [DoubleType, DoubleType], returns: BoolType)),
+        ("LLVM.f_cmp_lt", FnType(params: [doubleType, doubleType], returns: boolType)),
+        ("LLVM.f_cmp_lte", FnType(params: [doubleType, doubleType], returns: boolType)),
+        ("LLVM.f_cmp_gt", FnType(params: [doubleType, doubleType], returns: boolType)),
+        ("LLVM.f_cmp_gte", FnType(params: [doubleType, doubleType], returns: boolType)),
+        ("LLVM.f_eq", FnType(params: [doubleType, doubleType], returns: boolType)),
+        ("LLVM.f_neq", FnType(params: [doubleType, doubleType], returns: boolType)),
         
         // runtime fns
-        ("_print", FnType(params: [IntType], returns: VoidType)),
-        ("_print", FnType(params: [DoubleType], returns: VoidType)),
-        ("_print", FnType(params: [BoolType], returns: VoidType)),
-        ("_print", FnType(params: [Int32Type], returns: VoidType)),
+        ("_print", FnType(params: [intType], returns: voidType)),
+        ("_print", FnType(params: [doubleType], returns: voidType)),
+        ("_print", FnType(params: [boolType], returns: voidType)),
+        ("_print", FnType(params: [int32Type], returns: voidType)),
         
         // intrinsic fns
-        ("LLVM.trap", FnType(params: [], returns: VoidType))
+        ("LLVM.trap", FnType(params: [], returns: voidType))
     ]
     
     private static let functionContainer = FunctionContainer(functions: functions, types: [])

@@ -16,7 +16,7 @@ extension String {
         return "\(n)\(mappedChars())_\(type.mangledName)"
     }
     func mangle(type: [Ty], parentTypeName: String? = nil) -> String {
-        return mangle(FnType(params: type, returns: BuiltinType.Void/*Doesnt matter*/), parentTypeName: parentTypeName)
+        return mangle(FnType(params: type, returns: BuiltinType.void/*Doesnt matter*/), parentTypeName: parentTypeName)
     }
     
     private static var mangleMap: [(Character, Character)] = [

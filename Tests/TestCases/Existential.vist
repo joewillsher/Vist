@@ -1,21 +1,27 @@
 
 concept Eq {
     var a: Int, b: Int
+    
+    func sum :: -> Int
 }
-
-func foo :: Eq Int -> Int = (a b) do
-return a.b + b + a.a
 
 
 type Bar {
     var x: Bool, b: Int, a: Int
+    
+    func sum :: -> Int = do
+    return a + b
 }
 
+
+func foo :: Eq Int -> Int = (a b) do
+    return a.sum () + b
+func foo2 :: Eq Int -> Int = (a b) do
+    return a.a + (a.b * 2) + b
+
 let bar = Bar true 11 4
-let foo = foo bar 2
-
-print foo // test: 17
-
+print (foo bar 2) // test: 17
+print (foo2 bar 2) // test: 28
 
 
 
@@ -32,8 +38,8 @@ type Baz {
 }
 
 let b = Baz (Foo 1)
-let w = b.foo.t
-print w // test: 1
+let w = b.foo
+print w.t // test: 1
 
 
 

@@ -384,6 +384,7 @@ final class MethodCallExpr: ChainableExpr {
     var mangledName: String = ""
     
     var structType: StorageType? = nil
+    var fnType: FnType? = nil
     var _type: Ty? = nil
 }
 
@@ -409,13 +410,13 @@ final class PropertyLookupExpr: LookupExpr {
 
 
 struct NullExpr: Expr {
-    var _type: Ty? = BuiltinType.Null
+    var _type: Ty? = BuiltinType.null
 }
 
-struct PlaceholderExpr: Expr {
-    var _type: Ty? = BuiltinType.Null
-    var defined: DefinedType
-}
+//struct PlaceholderExpr: Expr {
+//    var _type: Ty? = BuiltinType.null
+//    var defined: DefinedType
+//}
 
 
 
@@ -461,7 +462,7 @@ struct CommentExpr: Expr {
 }
 
 final class Void: TypedExpr {
-    var type: BuiltinType? = .Void
+    var type: BuiltinType? = .void
 }
 
 

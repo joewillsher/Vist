@@ -13,9 +13,9 @@ struct ConceptType: StorageType {
     
     func memberTypes(module: LLVMModuleRef) -> LLVMTypeRef {
         return StructType.withTypes([
-            BuiltinType.Array(el: BuiltinType.Int(size: 32), size: UInt32(requiredProperties.count)), // prop offset list
-            BuiltinType.Array(el: BuiltinType.OpaquePointer, size: UInt32(requiredFunctions.count)), // method witness list
-            BuiltinType.OpaquePointer // wrapped object
+            BuiltinType.array(el: BuiltinType.int(size: 32), size: UInt32(requiredProperties.count)), // prop offset list
+            BuiltinType.array(el: BuiltinType.opaquePointer, size: UInt32(requiredFunctions.count)), // method witness list
+            BuiltinType.opaquePointer // wrapped object
             ]).memberTypes(module)
     }
         
@@ -37,7 +37,7 @@ struct ConceptType: StorageType {
 
     
     /// Returns the metadata array map, which transforms the protocol's properties
-    /// to an element in the `type`
+    /// to an element in the `type`. Type `[n * i32]`
     func existentialPropertyMetadataFor(structType: StructType, irGen: IRGen) throws -> LLVMValueRef {
         
         let dataLayout = LLVMCreateTargetData(LLVMGetDataLayout(irGen.module))
@@ -51,10 +51,10 @@ struct ConceptType: StorageType {
         return LLVMBuilder(irGen.builder).buildArrayOf(LLVMInt32Type(), values: offsets)
     }
     
-    /// Returns the metadata array of function pointers
+    /// Returns the metadata array of function pointers. Type `[n * i8*]`
     func existentialMethodMetadataFor(structType: StructType, irGen: IRGen) throws -> LLVMValueRef {
         
-        let opaquePtrType = BuiltinType.OpaquePointer.globalType(irGen.module)
+        let opaquePtrType = BuiltinType.opaquePointer.globalType(irGen.module)
         
         let ptrs = requiredFunctions
             .map { methodName, type in structType.ptrToMethodNamed(methodName, type: type, module: irGen.module) }

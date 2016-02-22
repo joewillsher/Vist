@@ -267,8 +267,8 @@ bool StdLibInline::runOnFunction(Function &function) {
                         if (call->getCalledFunction()->isIntrinsic()) {
                             
                             Type *optionalFirstArgument = call->getNumOperands() == 1
-                            ? nullptr // if no arguments, we are not overloading
-                           : call->getOperand(0)->getType();
+                                ? nullptr // if no arguments, we are not overloading
+                                : call->getOperand(0)->getType();
                             
                             Function *intrinsic = getIntrinsic(call->getCalledFunction()->getName(),
                                                                module,

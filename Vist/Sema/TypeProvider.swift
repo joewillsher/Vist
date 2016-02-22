@@ -20,7 +20,7 @@ protocol DeclTypeProvider {
 // TODO: make private
 extension ExprTypeProvider {
     func typeForNode(scope: SemaScope) throws -> Ty {
-        return BuiltinType.Null
+        return BuiltinType.null
     }
 }
 

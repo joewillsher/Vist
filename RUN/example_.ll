@@ -33,7 +33,7 @@ entry:
   %metadata2 = alloca [1 x i8*]
   %8 = bitcast [1 x i8*]* %metadata2 to i8**
   %el.03 = getelementptr i8** %8, i32 0
-  store i8* bitcast (%Int.st ()* @Bar.Eq.sum-U_ to i8*), i8** %el.03
+  store i8* bitcast (%Int.st (%Bar.st*)* @Bar.sum_ to i8*), i8** %el.03
   %9 = load [1 x i8*]* %metadata2
   store [1 x i8*] %9, [1 x i8*]* %.method_metadata
   store %Bar.st %bar1, %Bar.st* %4
@@ -41,10 +41,34 @@ entry:
   store i8* %10, i8** %.opaque
   %11 = load %Eq.ex* %5
   %foo_res = call %Int.st @foo_Eq_Int(%Eq.ex %11, %Int.st %3)
-  %foo = alloca %Int.st
-  store %Int.st %foo_res, %Int.st* %foo
-  %foo4 = load %Int.st* %foo
-  call void @print_Int(%Int.st %foo4), !stdlib.call.optim !0
+  call void @print_Int(%Int.st %foo_res), !stdlib.call.optim !0
+  %bar4 = load %Bar.st* %bar
+  %12 = call %Int.st @Int_i64(i64 2), !stdlib.call.optim !0
+  %13 = alloca %Bar.st
+  %14 = alloca %Eq.ex
+  %.prop_metadata5 = getelementptr inbounds %Eq.ex* %14, i32 0, i32 0
+  %.method_metadata6 = getelementptr inbounds %Eq.ex* %14, i32 0, i32 1
+  %.opaque7 = getelementptr inbounds %Eq.ex* %14, i32 0, i32 2
+  %metadata8 = alloca [2 x i32]
+  %15 = bitcast [2 x i32]* %metadata8 to i32*
+  %el.09 = getelementptr i32* %15, i32 0
+  store i32 16, i32* %el.09
+  %el.110 = getelementptr i32* %15, i32 1
+  store i32 8, i32* %el.110
+  %16 = load [2 x i32]* %metadata8
+  store [2 x i32] %16, [2 x i32]* %.prop_metadata5
+  %metadata11 = alloca [1 x i8*]
+  %17 = bitcast [1 x i8*]* %metadata11 to i8**
+  %el.012 = getelementptr i8** %17, i32 0
+  store i8* bitcast (%Int.st (%Bar.st*)* @Bar.sum_ to i8*), i8** %el.012
+  %18 = load [1 x i8*]* %metadata11
+  store [1 x i8*] %18, [1 x i8*]* %.method_metadata6
+  store %Bar.st %bar4, %Bar.st* %13
+  %19 = bitcast %Bar.st* %13 to i8*
+  store i8* %19, i8** %.opaque7
+  %20 = load %Eq.ex* %14
+  %foo2_res = call %Int.st @foo2_Eq_Int(%Eq.ex %20, %Int.st %12)
+  call void @print_Int(%Int.st %foo2_res), !stdlib.call.optim !0
   ret void
 }
 
@@ -78,6 +102,23 @@ define internal %Int.st @foo_Eq_Int(%Eq.ex %a, %Int.st %b) {
 entry:
   %a1 = alloca %Eq.ex
   store %Eq.ex %a, %Eq.ex* %a1
+  %a2 = load %Eq.ex* %a1
+  %a.vtable_ptr = getelementptr inbounds %Eq.ex* %a1, i32 0, i32 1
+  %a.vtable_base_ptr = bitcast [1 x i8*]* %a.vtable_ptr to i8**
+  %0 = getelementptr i8** %a.vtable_base_ptr, i32 0
+  %1 = load i8** %0
+  %sum = bitcast i8* %1 to %Int.st (i8*)*
+  %a.element_pointer = getelementptr inbounds %Eq.ex* %a1, i32 0, i32 2
+  %a.opaque_instance_pointer = load i8** %a.element_pointer
+  %sum.res = call %Int.st %sum(i8* %a.opaque_instance_pointer)
+  %"+.res" = call %Int.st @-P_Int_Int(%Int.st %sum.res, %Int.st %b), !stdlib.call.optim !0
+  ret %Int.st %"+.res"
+}
+
+define internal %Int.st @foo2_Eq_Int(%Eq.ex %a, %Int.st %b) {
+entry:
+  %a1 = alloca %Eq.ex
+  store %Eq.ex %a, %Eq.ex* %a1
   %a.metadata_ptr = getelementptr inbounds %Eq.ex* %a1, i32 0, i32 0
   %metadata_base_ptr = bitcast [2 x i32]* %a.metadata_ptr to i32*
   %0 = getelementptr i32* %metadata_base_ptr, i32 0
@@ -87,15 +128,23 @@ entry:
   %2 = getelementptr i8* %a.opaque_instance_pointer, i32 %1
   %a.ptr = bitcast i8* %2 to %Int.st*
   %a2 = load %Int.st* %a.ptr
-  %"+.res" = call %Int.st @-P_Int_Int(%Int.st %a2, %Int.st %b), !stdlib.call.optim !0
-  ret %Int.st %"+.res"
+  %3 = getelementptr i32* %metadata_base_ptr, i32 1
+  %4 = load i32* %3
+  %5 = getelementptr i8* %a.opaque_instance_pointer, i32 %4
+  %b.ptr = bitcast i8* %5 to %Int.st*
+  %b3 = load %Int.st* %b.ptr
+  %6 = call %Int.st @Int_i64(i64 2), !stdlib.call.optim !0
+  %"*.res" = call %Int.st @-A_Int_Int(%Int.st %b3, %Int.st %6), !stdlib.call.optim !0
+  %"+.res" = call %Int.st @-P_Int_Int(%Int.st %"*.res", %Int.st %b), !stdlib.call.optim !0
+  %"+.res4" = call %Int.st @-P_Int_Int(%Int.st %a2, %Int.st %"+.res"), !stdlib.call.optim !0
+  ret %Int.st %"+.res4"
 }
-
-declare %Bool.st @Bool_b(i1)
 
 declare %Int.st @Int_i64(i64)
 
-declare %Int.st @Bar.Eq.sum-U_()
+declare %Int.st @-A_Int_Int(%Int.st, %Int.st)
+
+declare %Bool.st @Bool_b(i1)
 
 declare void @print_Int(%Int.st)
 

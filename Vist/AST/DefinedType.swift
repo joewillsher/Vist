@@ -59,7 +59,7 @@ enum DefinedType {
     func type(scope: SemaScope) throws -> Ty {
         switch self {
         case .Void:
-            return BuiltinType.Void
+            return BuiltinType.void
             
         case let .Type(typeName):
             
@@ -74,7 +74,7 @@ enum DefinedType {
             }
             
         case let .Tuple(elements):
-            return elements.isEmpty ? BuiltinType.Void : TupleType(members: try elements.map({try $0.type(scope)}))
+            return elements.isEmpty ? BuiltinType.void : TupleType(members: try elements.map({try $0.type(scope)}))
             
         case let .Function(functionType):
             return FnType(params: try functionType.paramType.tyArr(scope), returns: try functionType.returnType.type(scope))

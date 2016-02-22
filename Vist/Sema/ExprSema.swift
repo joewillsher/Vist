@@ -41,7 +41,7 @@ extension BooleanLiteral : ExprTypeProvider {
 extension StringLiteral : ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
-        let t = BuiltinType.Array(el: BuiltinType.Int(size: 8), size: UInt32(count))
+        let t = BuiltinType.array(el: BuiltinType.int(size: 8), size: UInt32(count))
         self.type = t
         return t
     }
@@ -51,7 +51,7 @@ extension NullExpr : ExprTypeProvider {
     
     mutating func typeForNode(scope: SemaScope) throws -> Ty {
         _type = nil
-        return BuiltinType.Null
+        return BuiltinType.null
     }
 }
 
@@ -89,11 +89,11 @@ extension MutationExpr : ExprTypeProvider {
         // switch over object being mutated
         switch object {
         case let variable as VariableExpr:
-
+            
             guard let v = scope[variable: variable.name] else { throw semaError(.noVariable(variable.name)) }
             guard v.mutable else { throw semaError(.immutableVariable(name: variable.name, type: variable.typeName)) }
             
-            return BuiltinType.Null
+            return BuiltinType.null
             
         case let lookup as LookupExpr:
             // if its a lookup expression we can 
@@ -122,7 +122,7 @@ extension MutationExpr : ExprTypeProvider {
             throw semaError(.todo("Other chainable types need mutability debugging"))
         }
         
-        return BuiltinType.Null
+        return BuiltinType.null
     }
 }
 
@@ -197,10 +197,10 @@ extension VariableDecl : DeclTypeProvider {
         }
         
         // if its a null expression
-        if let e = explicitType where value._type == BuiltinType.Null && value is NullExpr {
+        if let e = explicitType where value._type == BuiltinType.null && value is NullExpr {
             value._type = e
         } // otherwise, if the type is null, we are assigning to something we shouldn't be
-        else if objectType == BuiltinType.Null {
+        else if objectType == BuiltinType.null {
             throw semaError(.cannotAssignToNullExpression(name))
         }
         
@@ -217,8 +217,8 @@ extension VariableDecl : DeclTypeProvider {
 extension Void : ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
-        self.type = BuiltinType.Void
-        return BuiltinType.Void
+        self.type = BuiltinType.void
+        return BuiltinType.void
     }
 }
 
@@ -235,7 +235,7 @@ extension ClosureExpr : ExprTypeProvider {
     func typeForNode(scope: SemaScope) throws -> Ty {
         
         // no type inferrence from param list, just from AST context
-        let ty = (scope.semaContext as? FnType) ?? FnType(params: [BuiltinType.Void], returns: BuiltinType.Void)
+        let ty = (scope.semaContext as? FnType) ?? FnType(params: [BuiltinType.void], returns: BuiltinType.void)
         self.type = ty
         
         // we dont want implicit captutring
@@ -284,7 +284,7 @@ extension ArrayExpr : ExprTypeProvider {
         self.elType = elementType
         
         // assign array type to self and return
-        let t = BuiltinType.Array(el: elementType, size: UInt32(arr.count))
+        let t = BuiltinType.array(el: elementType, size: UInt32(arr.count))
         self.type = t
         return t
     }
@@ -296,7 +296,7 @@ extension ArraySubscriptExpr : ExprTypeProvider {
     func typeForNode(scope: SemaScope) throws -> Ty {
         
         // make sure its an array
-        guard case let v as VariableExpr = arr, case BuiltinType.Array(let type, _)? = scope[variable: v.name]?.type else { throw semaError(.cannotSubscriptNonArrayVariable) }
+        guard case let v as VariableExpr = arr, case BuiltinType.array(let type, _)? = scope[variable: v.name]?.type else { throw semaError(.cannotSubscriptNonArrayVariable) }
         
         // gen type for subscripting value
         guard try index.typeForNode(scope) == StdLib.IntType else { throw semaError(.nonIntegerSubscript) }

@@ -38,7 +38,7 @@
  
  The metadata array is occupied with this mapping when the existential is allocated from a known struct type.
  */
-final class ExistentialVariable: StructVariable, MutableVariable {
+final class ExistentialVariable: StorageVariable, MutableVariable {
     
     /// The rutime type of self
     var conceptType: ConceptType
@@ -47,52 +47,54 @@ final class ExistentialVariable: StructVariable, MutableVariable {
     var ptr: LLVMValueRef
     var irName: String, typeName: String
     var irGen: IRGen
-    var properties: [StructVariableProperty]
+    var properties: [StorageVariableProperty], methods: [StorageVariableMethod]
     
     /// If mutable, ptrs to elements can be cached
     let mutable: Bool
     var cachedElementPtrs: [String: LLVMValueRef] = [:]
     
     
-    init(ptr: LLVMValueRef, conceptType: ConceptType, mutable: Bool, metadataPtr: LLVMValueRef = nil, opaqueInstancePointer: LLVMValueRef = nil, irName: String, irGen: IRGen) {
+    init(ptr: LLVMValueRef, conceptType: ConceptType, mutable: Bool, propertyMetadataBasePtr: LLVMValueRef = nil, opaqueInstancePointer: LLVMValueRef = nil, methodMetadataBasePtr: LLVMValueRef = nil, irName: String, irGen: IRGen) {
         self.conceptType = conceptType
         self.ptr = ptr
         self.typeName = conceptType.name
         self.irName = irName
         self.irGen = irGen
         self.mutable = mutable
-        self._metadataPtr = metadataPtr
-        self._opaqueInstancePointer = opaqueInstancePointer
         
-        self.properties = conceptType.requiredProperties.map { (name: $0.name, irType: $0.type.globalType(irGen.module)) } as [StructVariableProperty]
+        self._propertyMetadataBasePtr = propertyMetadataBasePtr
+        self._opaqueInstancePointer = opaqueInstancePointer
+        self._methodMetadataBasePtr = methodMetadataBasePtr
+        
+        self.properties = conceptType.requiredProperties.lower(module: irGen.module)
+        self.methods = conceptType.requiredFunctions.lower(selfType: conceptType, module: irGen.module)
         self.type = conceptType.globalType(irGen.module)
     }
     
     /// Allocator from another existential object
-    ///
-    class func alloc(conceptType: ConceptType, fromExistential value: LLVMValueRef, mutable: Bool, irName: String = "", irGen: IRGen) -> ExistentialVariable {
+    class func assignFromExistential(value: LLVMValueRef, conceptType: ConceptType, mutable: Bool, irName: String = "", irGen: IRGen) -> ExistentialVariable {
         
         let exType = conceptType.globalType(irGen.module)
         let ptr = LLVMBuildAlloca(irGen.builder, exType, irName)
         LLVMBuildStore(irGen.builder, value, ptr)
         
-        return ExistentialVariable(ptr: ptr, conceptType: conceptType, mutable: mutable, metadataPtr: nil, opaqueInstancePointer: nil, irName: irName, irGen: irGen)
+        return ExistentialVariable(ptr: ptr, conceptType: conceptType, mutable: mutable, irName: irName, irGen: irGen)
     }
     
     /// Allocator from a non existential, Struct object
     ///
     /// This generates the runtime metadata and stores an opaque pointer to the struct instance
-    ///
     class func alloc(structType: StructType, conceptType: ConceptType, initWithValue value: LLVMValueRef, mutable: Bool, irName: String = "", irGen: IRGen) throws -> ExistentialVariable {
         let valueMem = LLVMBuildAlloca(irGen.builder, structType.globalType(irGen.module), "")
         return try ExistentialVariable.alloc(structType, conceptType: conceptType, initFromPtr: valueMem, initWithValue: value, mutable: mutable, irGen: irGen)
     }
     
+    /// Allocator from a struct object with a known destination ptr
     class func alloc(structType: StructType, conceptType: ConceptType, initFromPtr: LLVMValueRef, initWithValue value: LLVMValueRef, mutable: Bool, irName: String = "", irGen: IRGen) throws -> ExistentialVariable {
         
         let exType = conceptType.globalType(irGen.module)
         let ptr = LLVMBuildAlloca(irGen.builder, exType, irName)
-        let opaquePtrType = BuiltinType.OpaquePointer.globalType(irGen.module)
+        let opaquePtrType = BuiltinType.opaquePointer.globalType(irGen.module)
         
         let propArrayPtr = LLVMBuildStructGEP(irGen.builder, ptr, 0, "\(irName).prop_metadata") // [n x i32]*
         let methodArrayPtr = LLVMBuildStructGEP(irGen.builder, ptr, 1, "\(irName).method_metadata") // [n x i8*]*
@@ -108,12 +110,12 @@ final class ExistentialVariable: StructVariable, MutableVariable {
         let opaqueValueMem = LLVMBuildBitCast(irGen.builder, initFromPtr, opaquePtrType, "")
         LLVMBuildStore(irGen.builder, opaqueValueMem, structPtr)
         
-        return ExistentialVariable(ptr: ptr, conceptType: conceptType, mutable: mutable, metadataPtr: nil, opaqueInstancePointer: opaqueValueMem, irName: irName, irGen: irGen)
+        return ExistentialVariable(ptr: ptr, conceptType: conceptType, mutable: mutable, opaqueInstancePointer: opaqueValueMem, irName: irName, irGen: irGen)
     }
 
     
     func assignFrom(structType: StructType) throws {
-        let opaquePtrType = BuiltinType.OpaquePointer.globalType(irGen.module)
+        let opaquePtrType = BuiltinType.opaquePointer.globalType(irGen.module)
         
         let arrayPtr = LLVMBuildStructGEP(irGen.builder, ptr, 0, "\(irName).metadata")
         let arr = try conceptType.existentialPropertyMetadataFor(structType, irGen: irGen)
@@ -127,7 +129,6 @@ final class ExistentialVariable: StructVariable, MutableVariable {
     
     /// Returns a pointer to the element at offset `offset` from the opaque
     /// element pointer
-    ///
     private func getElementPtrAtOffset(offset: LLVMValueRef, ofType elementType: LLVMTypeRef, irName: String = "") -> LLVMValueRef {
         let offset = [offset].ptr()
         defer { offset.dealloc(1) }
@@ -135,37 +136,64 @@ final class ExistentialVariable: StructVariable, MutableVariable {
         return LLVMBuildBitCast(irGen.builder, instanceMemberPtr, elementType, "\(irName).ptr") // ElTy*
     }
     
-    private var _metadataPtr: LLVMValueRef
+    // MARK: instance member ptrs
+    // lazy so they arent recomputed
+    
+    private var _propertyMetadataBasePtr: LLVMValueRef
+    private var _methodMetadataBasePtr: LLVMValueRef
     private var _opaqueInstancePointer: LLVMValueRef
     
-    
-    /// Pointer to the metadata array: `i32*`
-    ///
-    private var metadataBasePtr: LLVMValueRef {
+    /// Pointer to the property metadata array: `i32*`
+    private var propertyMetadataBasePtr: LLVMValueRef {
         get {
-            if _metadataPtr != nil { return _metadataPtr }
-            let i32PtrType = BuiltinType.Pointer(to: BuiltinType.Int(size: 32)).globalType(irGen.module)
+            if _propertyMetadataBasePtr != nil { return _propertyMetadataBasePtr }
+            let i32PtrType = BuiltinType.pointer(to: BuiltinType.int(size: 32)).globalType(irGen.module)
             
             let arr = LLVMBuildStructGEP(irGen.builder, ptr, 0, "\(irName).metadata_ptr") // [n x i32]*
-            return LLVMBuildBitCast(irGen.builder, arr, i32PtrType, "metadata_base_ptr") // i32*
+            let v = LLVMBuildBitCast(irGen.builder, arr, i32PtrType, "metadata_base_ptr") // i32*
+            _propertyMetadataBasePtr = v
+            return v
         }
         set {
-            _metadataPtr = newValue
+            _propertyMetadataBasePtr = newValue
+        }
+    }
+    
+    /// Pointer to the function vtable array: `i8**`
+    private var methodMetadataBasePtr: LLVMValueRef {
+        get {
+            if _methodMetadataBasePtr != nil { return _methodMetadataBasePtr }
+            let opaquePtrType = BuiltinType.pointer(to: BuiltinType.opaquePointer).globalType(irGen.module)
+            
+            let arr = LLVMBuildStructGEP(irGen.builder, ptr, 1, "\(irName).vtable_ptr") // [n x i8*]*
+            let v = LLVMBuildBitCast(irGen.builder, arr, opaquePtrType, "\(irName).vtable_base_ptr") // i8**
+            _methodMetadataBasePtr = v
+            return v
+        }
+        set {
+            _methodMetadataBasePtr = newValue
         }
     }
     
     /// Pointer to the instance of the wrapped type: `i8*`
-    ///
     private var opaqueInstancePointer: LLVMValueRef {
         get {
             if _opaqueInstancePointer != nil { return _opaqueInstancePointer }
             let structElementPointer = LLVMBuildStructGEP(irGen.builder, ptr, 2, "\(irName).element_pointer") // i8**
-            return LLVMBuildLoad(irGen.builder, structElementPointer, "\(irName).opaque_instance_pointer") // i8*
+            let v = LLVMBuildLoad(irGen.builder, structElementPointer, "\(irName).opaque_instance_pointer") // i8*
+            _opaqueInstancePointer = v
+            return v
         }
         set {
             _opaqueInstancePointer = newValue
         }
     }
+    
+    var instancePtr: LLVMValueRef {
+        return opaqueInstancePointer
+    }
+    
+    // MARK: override StorageVariable methods for getting props/methods
     
     func ptrToPropertyNamed(name: String) throws -> LLVMValueRef { // returns ElTy
         // if immutable, look up this ptr from the cache
@@ -173,13 +201,13 @@ final class ExistentialVariable: StructVariable, MutableVariable {
         
         // index of property in the concept's table
         // use this to look up the index in self by getting the ixd from the runtime's array
-        guard let i = indexOfProperty(name) else { throw irGenError(.noProperty(type: conceptType.name, property: name)) }
+        guard let i = indexOfPropertyNamed(name) else { throw irGenError(.noProperty(type: conceptType.name, property: name)) }
         
-        let indexValue = BuiltinType.intGen(size: 32)(i) // i32
+        let indexValue = BuiltinType.intGen(i, size: 32) // i32
         let index = [indexValue].ptr()
         defer { index.dealloc(1) }
         
-        let pointerToArrayElement = LLVMBuildGEP(irGen.builder, metadataBasePtr, index, 1, "") // i32*
+        let pointerToArrayElement = LLVMBuildGEP(irGen.builder, propertyMetadataBasePtr, index, 1, "") // i32*
         let offset = LLVMBuildLoad(irGen.builder, pointerToArrayElement, "") // i32
                 
         let elementPtrType = LLVMPointerType(properties[i].irType, 0) // ElTy.Type
@@ -193,11 +221,21 @@ final class ExistentialVariable: StructVariable, MutableVariable {
         return LLVMBuildLoad(irGen.builder, try ptrToPropertyNamed(name), name)
     }
     
-    func ptrToMethodNamed(name: String, argTypes: [Ty]) -> LLVMValueRef {
+    func ptrToMethodNamed(name: String, fnType: FnType) throws -> LLVMValueRef {
         
+        let mangledName = name.mangle(fnType.params, parentTypeName: typeName)
+        guard let i = indexOfMethodHavingMangledName(mangledName) else { throw irGenError(.noMethod(type: typeName, methodName: name)) }
         
+        let indexValue = BuiltinType.intGen(i, size: 32) // i32
+        let index = [indexValue].ptr()
+        defer { index.dealloc(1) }
         
-        return nil
+        let pointerToArrayElement = LLVMBuildGEP(irGen.builder, methodMetadataBasePtr, index, 1, "") // i8**
+        let functionPointer = LLVMBuildLoad(irGen.builder, pointerToArrayElement, "") // i8*
+        
+        let functionType = BuiltinType.pointer(to: fnType.withOpaqueParent()).globalType(irGen.module)
+        let bitCast = LLVMBuildBitCast(irGen.builder, functionPointer, functionType, name) // fntype*
+        return bitCast
     }
     
 }

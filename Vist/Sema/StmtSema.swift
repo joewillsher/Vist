@@ -18,7 +18,7 @@ extension ReturnStmt: StmtTypeProvider {
         let returnType = try expr.typeForNode(retScope)
         
         guard let ret = scope.returnType where ret == returnType else {
-            throw semaError(.wrongFunctionReturnType(applied: returnType, expected: scope.returnType ?? BuiltinType.Null))
+            throw semaError(.wrongFunctionReturnType(applied: returnType, expected: scope.returnType ?? BuiltinType.null))
         }
     }
 }

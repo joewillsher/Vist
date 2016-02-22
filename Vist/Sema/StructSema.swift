@@ -14,12 +14,14 @@ extension StructExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         
-        if let _ = scope[type: name] {
-            throw semaError(.invalidTypeRedeclaration(name))
-        }
-        
         let errorCollector = ErrorCollector()
         let structScope = SemaScope(parent: scope, returnType: nil) // cannot return from Struct scope
+        
+        try errorCollector.run {
+            if let _ = scope[type: name] {
+                throw semaError(.invalidTypeRedeclaration(name))
+            }
+        }
         
         // add generic params to scope
         structScope.genericParameters = genericParameters
@@ -84,19 +86,15 @@ extension ConceptExpr: ExprTypeProvider {
         let conceptScope = SemaScope(parent: scope)
         let errorCollector = ErrorCollector()
         
-        try errorCollector.run {
-            try requiredMethods.walkChildren(errorCollector) { method in
-                try method.typeForNode(conceptScope)
-            }
+        try requiredMethods.walkChildren(errorCollector) { method in
+            try method.typeForNode(conceptScope)
         }
-        try errorCollector.run {
-            try requiredProperties.walkChildren(errorCollector) { method in
-                try method.typeForNode(conceptScope)
-            }
+        try requiredProperties.walkChildren(errorCollector) { property in
+            try property.typeForNode(conceptScope)
         }
         
         let methodTypes = try requiredMethods.walkChildren(errorCollector) { method throws -> StructMethod in
-            if let t = method.fnType.type { return (method.name.mangle(t, parentTypeName: name), t) }
+            if let t = method.fnType.type { return (method.name, t) }
             throw semaError(.structMethodNotTyped(type: name, methodName: method.name))
         }
         let propertyTypes = try requiredProperties.walkChildren(errorCollector) { prop throws -> StructMember in
@@ -193,6 +191,7 @@ extension MethodCallExpr: ExprTypeProvider {
         
         // assign type to self and return
         self._type = fnType.returns
+        self.fnType = fnType
         self.structType = parentType
         return fnType.returns
     }
@@ -206,7 +205,7 @@ extension TupleExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         
-        guard elements.count != 0 else { return BuiltinType.Void }
+        guard elements.count != 0 else { return BuiltinType.void }
         
         let tys = try elements.map { try $0.typeForNode(scope) }
         let t = TupleType(members: tys)

@@ -29,6 +29,10 @@ final class LLVMIntValue {
 }
 
 
+func LLVMDumpTypeOf(val: LLVMValueRef) {
+    LLVMDumpType(LLVMTypeOf(val))
+}
+
 final class LLVMBuilder {
     var builder: LLVMModuleRef
     init(_ builder: LLVMModuleRef) { self.builder = builder }
@@ -45,7 +49,7 @@ final class LLVMBuilder {
         
         for (i, offset) in values.enumerate() {
             // Get pointer to element n
-            let val = [BuiltinType.intGen(size: 32)(i)].ptr()
+            let val = [BuiltinType.intGen(i, size: 32)].ptr()
             defer { val.dealloc(1) }
             
             let el = LLVMBuildGEP(builder, basePtr, val, 1, "el.\(i)")
