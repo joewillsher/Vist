@@ -26,7 +26,6 @@ extension VistTest {
 }
 
 /// Test the compilation and output of code samples
-///
 final class OutputTests: XCTestCase, VistTest {
     
     /// pipe used as the stdout of the test cases
@@ -39,19 +38,16 @@ final class OutputTests: XCTestCase, VistTest {
 }
 
 /// Tests runtime performance
-///
 final class RuntimePerformanceTests: XCTestCase, VistTest {
     
 }
 
 /// Testing building the stdlib & runtime
-///
 final class CoreTests: XCTestCase, VistTest {
     
 }
 
 /// Tests the error handling & type checking system
-///
 final class ErrorTests: XCTestCase, VistTest {
     
 }
@@ -81,7 +77,6 @@ extension OutputTests {
     /// Control.vist
     ///
     /// tests `if` statements, variables
-    ///
     func testControlFlow() {
         let file = "Control.vist"
         do {
@@ -96,7 +91,6 @@ extension OutputTests {
     /// Loops.vist
     ///
     /// tests `for in` loops, `while` loops, mutation
-    ///
     func testLoops() {
         let file = "Loops.vist"
         do {
@@ -111,7 +105,6 @@ extension OutputTests {
     /// Type.vist
     ///
     /// tests type sytem, default initialisers, & methods
-    ///
     func testType() {
         let file = "Type.vist"
         do {
@@ -126,7 +119,6 @@ extension OutputTests {
     /// IntegerOps.vist
     ///
     /// tests integer operations
-    ///
     func testIntegerOps() {
         let file = "IntegerOps.vist"
         do {
@@ -141,7 +133,6 @@ extension OutputTests {
     /// Function.vist
     ///
     /// tests function decls and calling, tuples & type param labels
-    ///
     func testFunctions() {
         let file = "Function.vist"
         do {
@@ -157,7 +148,6 @@ extension OutputTests {
     /// Existential.vist
     ///
     /// Test concept existentials
-    ///
     func testExistential() {
         let file = "Existential.vist"
         do {
@@ -169,6 +159,18 @@ extension OutputTests {
         }
     }
     
+    /// Existential2.vist
+    func testExistential2() {
+        let file = "Existential.vist"
+        do {
+            try compileWithOptions(["-O", file], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
+        }
+        catch {
+            XCTFail("Compilation failed with error:\n\(error)\n\n")
+        }
+    }
+
 
 }
 
@@ -178,7 +180,6 @@ extension RuntimePerformanceTests {
     /// LoopPerf.vist
     ///
     /// Builds file and analyses performance of resulting binary
-    ///
     func testLoop() {
         
         let fileName = "LoopPerf"
@@ -206,7 +207,6 @@ extension RuntimePerformanceTests {
     /// FunctionPerf.vist
     ///
     /// Test non memoised fibbonaci
-    ///
     func testFunction() {
         
         let fileName = "FunctionPerf"
@@ -239,7 +239,6 @@ extension RuntimePerformanceTests {
 extension CoreTests {
     
     /// Runs a compilation of the standard library
-    ///
     func testStdLibCompile() {
         deleteFile("stdlib.bc", inDirectory: stdlibDir)
         deleteFile("stdlib.o", inDirectory: stdlibDir)
@@ -254,7 +253,6 @@ extension CoreTests {
     }
     
     /// Builds the runtime
-    ///
     func testRuntimeBuild() {
         deleteFile("runtime.bc", inDirectory: runtimeDir)
         do {

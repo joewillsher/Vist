@@ -140,6 +140,12 @@ entry:
   ret void
 }
 
+; Function Attrs: alwaysinline nounwind readnone
+define %Bool.st @-Uexpect_Bool_Bool(%Bool.st %val, %Bool.st %assume) #2 {
+entry:
+  ret %Bool.st %val
+}
+
 ; Function Attrs: alwaysinline noreturn nounwind
 define void @fatalError_() #4 {
 entry:
@@ -153,8 +159,8 @@ declare void @llvm.trap() #5
 ; Function Attrs: alwaysinline nounwind
 define void @assert_Bool(%Bool.st %"$0") #3 {
 entry:
-  %0 = extractvalue %Bool.st %"$0", 0
-  br i1 %0, label %then.0, label %else.1
+  %value.i = extractvalue %Bool.st %"$0", 0
+  br i1 %value.i, label %then.0, label %else.1
 
 then.0:                                           ; preds = %entry
   ret void
@@ -165,9 +171,9 @@ else.1:                                           ; preds = %entry
 }
 
 ; Function Attrs: alwaysinline nounwind
-define void @condFail_b(i1 %"$0") #3 {
+define void @condFail_b(i1 %cond) #3 {
 entry:
-  br i1 %"$0", label %then.0, label %cont.stmt
+  br i1 %cond, label %then.0, label %cont.stmt
 
 cont.stmt:                                        ; preds = %entry
   ret void
@@ -244,13 +250,41 @@ condFail_b.exit:                                  ; preds = %entry
 declare { i64, i1 } @llvm.smul.with.overflow.i64(i64, i64) #6
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Int.st @-D_Int_Int(%Int.st %a, %Int.st %b) #2 {
+define %Bool.st @-E-E_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
   %value = extractvalue %Int.st %a, 0
   %value1 = extractvalue %Int.st %b, 0
-  %div_res = udiv i64 %value, %value1
-  %Int1.i.fca.0.insert = insertvalue %Int.st undef, i64 %div_res, 0
-  ret %Int.st %Int1.i.fca.0.insert
+  %cmp_eq_res = icmp eq i64 %value, %value1
+  %Bool1.i.fca.0.insert = insertvalue %Bool.st undef, i1 %cmp_eq_res, 0
+  ret %Bool.st %Bool1.i.fca.0.insert
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define %Bool.st @"!-E_Int_Int"(%Int.st %a, %Int.st %b) #2 {
+entry:
+  %value = extractvalue %Int.st %a, 0
+  %value1 = extractvalue %Int.st %b, 0
+  %cmp_neq_res = icmp ne i64 %value, %value1
+  %Bool1.i.fca.0.insert = insertvalue %Bool.st undef, i1 %cmp_neq_res, 0
+  ret %Bool.st %Bool1.i.fca.0.insert
+}
+
+; Function Attrs: alwaysinline nounwind
+define %Int.st @-D_Int_Int(%Int.st %a, %Int.st %b) #3 {
+entry:
+  %value.i = extractvalue %Int.st %b, 0
+  %cmp_neq_res.i = icmp eq i64 %value.i, 0
+  br i1 %cmp_neq_res.i, label %else.1.i, label %assert_Bool.exit
+
+else.1.i:                                         ; preds = %entry
+  tail call void @llvm.trap() #7
+  unreachable
+
+assert_Bool.exit:                                 ; preds = %entry
+  %value = extractvalue %Int.st %a, 0
+  %div_res = udiv i64 %value, %value.i
+  %Int1.i4.fca.0.insert = insertvalue %Int.st undef, i64 %div_res, 0
+  ret %Int.st %Int1.i4.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
@@ -294,33 +328,53 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Bool.st @-G-E_Int_Int(%Int.st %a, %Int.st %b) #2 {
+define %Int.st @-L-L_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
   %value = extractvalue %Int.st %a, 0
   %value1 = extractvalue %Int.st %b, 0
-  %cmp_gte_res = icmp sge i64 %value, %value1
-  %Bool1.i.fca.0.insert = insertvalue %Bool.st undef, i1 %cmp_gte_res, 0
-  ret %Bool.st %Bool1.i.fca.0.insert
+  %shl_res = shl i64 %value, %value1
+  %Int1.i.fca.0.insert = insertvalue %Int.st undef, i64 %shl_res, 0
+  ret %Int.st %Int1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Bool.st @-E-E_Int_Int(%Int.st %a, %Int.st %b) #2 {
+define %Int.st @-G-G_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
   %value = extractvalue %Int.st %a, 0
   %value1 = extractvalue %Int.st %b, 0
-  %cmp_eq_res = icmp eq i64 %value, %value1
-  %Bool1.i.fca.0.insert = insertvalue %Bool.st undef, i1 %cmp_eq_res, 0
-  ret %Bool.st %Bool1.i.fca.0.insert
+  %shr_res = ashr i64 %value, %value1
+  %Int1.i.fca.0.insert = insertvalue %Int.st undef, i64 %shr_res, 0
+  ret %Int.st %Int1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
-define %Bool.st @"!-E_Int_Int"(%Int.st %a, %Int.st %b) #2 {
+define %Int.st @-T-N_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
   %value = extractvalue %Int.st %a, 0
   %value1 = extractvalue %Int.st %b, 0
-  %cmp_neq_res = icmp ne i64 %value, %value1
-  %Bool1.i.fca.0.insert = insertvalue %Bool.st undef, i1 %cmp_neq_res, 0
-  ret %Bool.st %Bool1.i.fca.0.insert
+  %and_res = and i64 %value1, %value
+  %Int1.i.fca.0.insert = insertvalue %Int.st undef, i64 %and_res, 0
+  ret %Int.st %Int1.i.fca.0.insert
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define %Int.st @-T-O_Int_Int(%Int.st %a, %Int.st %b) #2 {
+entry:
+  %value = extractvalue %Int.st %a, 0
+  %value1 = extractvalue %Int.st %b, 0
+  %or_res = or i64 %value1, %value
+  %Int1.i.fca.0.insert = insertvalue %Int.st undef, i64 %or_res, 0
+  ret %Int.st %Int1.i.fca.0.insert
+}
+
+; Function Attrs: alwaysinline nounwind readnone
+define %Int.st @-T-R_Int_Int(%Int.st %a, %Int.st %b) #2 {
+entry:
+  %value = extractvalue %Int.st %a, 0
+  %value1 = extractvalue %Int.st %b, 0
+  %xor_res = xor i64 %value1, %value
+  %Int1.i.fca.0.insert = insertvalue %Int.st undef, i64 %xor_res, 0
+  ret %Int.st %Int1.i.fca.0.insert
 }
 
 ; Function Attrs: alwaysinline nounwind readnone

@@ -25,6 +25,12 @@ struct Builtin {
         ("LLVM.i_div", FnType(params: [intType, intType], returns: intType)),
         ("LLVM.i_rem", FnType(params: [intType, intType], returns: intType)),
         
+        ("LLVM.i_shr", FnType(params: [intType, intType], returns: intType)),
+        ("LLVM.i_shl", FnType(params: [intType, intType], returns: intType)),
+        ("LLVM.i_and", FnType(params: [intType, intType], returns: intType)),
+        ("LLVM.i_or", FnType(params: [intType, intType], returns: intType)),
+        ("LLVM.i_xor", FnType(params: [intType, intType], returns: intType)),
+
         ("LLVM.i_cmp_lt", FnType(params: [intType, intType], returns: boolType)),
         ("LLVM.i_cmp_lte", FnType(params: [intType, intType], returns: boolType)),
         ("LLVM.i_cmp_gt", FnType(params: [intType, intType], returns: boolType)),
@@ -57,7 +63,8 @@ struct Builtin {
         ("_print", FnType(params: [int32Type], returns: voidType)),
         
         // intrinsic fns
-        ("LLVM.trap", FnType(params: [], returns: voidType))
+        ("LLVM.trap", FnType(params: [], returns: voidType)),
+        ("LLVM.expect", FnType(params: [boolType, boolType], returns: boolType))
     ]
     
     private static let functionContainer = FunctionContainer(functions: functions, types: [])

@@ -361,14 +361,9 @@ extension FunctionCallExpr: IRGenerator {
         
         let args = try self.args.elements.map(codeGenIn(stackFrame, irGen: irGen))
 
-        // Lookup
-        if let function = builtinBinaryInstruction(name, irGen: irGen) {
-            guard args.count == 2 else { throw irGenError(.wrongFunctionApplication(name), userVisible: false) }
-            return try function(args[0], args[1])
-        }
-        else if let function = builtinInstruction(name, irGen: irGen) {
-            guard args.count == 0 else { throw irGenError(.wrongFunctionApplication(name), userVisible: false) }
-            return function()
+        // Lookup from builtin
+        if let function = builtinInstruction(name, irGen: irGen) {
+            return try function(args)
         }
         
         // get function decl IR
@@ -1128,10 +1123,6 @@ extension PropertyLookupExpr: IRGenerator {
 
 
 private extension ChainableExpr {
-    
-    // TODO: move checks to sema phase!
-    // TODO: add more conformants of ChainableExpr to this switch
-    // TODO: replace other uses of CannotLookupPropertyFromNonVariable with calls to `getVariable`
     
     func lookupVal(stackFrame: StackFrame, irGen: IRGen) throws -> (ptr: LLVMValueRef, val: LLVMValueRef) {
         switch self {

@@ -25,6 +25,12 @@ struct StdLib {
         ("/", FnType(params: [IntType, IntType], returns: IntType)),
         ("%", FnType(params: [IntType, IntType], returns: IntType)),
         
+        (">>", FnType(params: [IntType, IntType], returns: IntType)),
+        ("<<", FnType(params: [IntType, IntType], returns: IntType)),
+        ("~&", FnType(params: [IntType, IntType], returns: IntType)),
+        ("~|", FnType(params: [IntType, IntType], returns: IntType)),
+        ("~^", FnType(params: [IntType, IntType], returns: IntType)),
+        
         (">",  FnType(params: [IntType, IntType], returns: BoolType)),
         (">=", FnType(params: [IntType, IntType], returns: BoolType)),
         ("<",  FnType(params: [IntType, IntType], returns: BoolType)),

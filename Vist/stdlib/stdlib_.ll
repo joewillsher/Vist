@@ -240,21 +240,36 @@ entry:
   ret void
 }
 
+; Function Attrs: alwaysinline
+define %Bool.st @-Uexpect_Bool_Bool(%Bool.st %val, %Bool.st %assume) #2 {
+entry:
+  %value = extractvalue %Bool.st %val, 0
+  %value1 = extractvalue %Bool.st %assume, 0
+  %0 = call i1 @llvm.expect.i1(i1 %value, i1 %value1)
+  %Bool_res = call %Bool.st @Bool_b(i1 %0)
+  ret %Bool.st %Bool_res
+}
+
+; Function Attrs: nounwind readnone
+declare i1 @llvm.expect.i1(i1, i1) #3
+
 ; Function Attrs: alwaysinline noreturn
-define void @fatalError_() #3 {
+define void @fatalError_() #4 {
 entry:
   call void @llvm.trap()
   ret void
 }
 
 ; Function Attrs: noreturn nounwind
-declare void @llvm.trap() #4
+declare void @llvm.trap() #5
 
 ; Function Attrs: alwaysinline
 define void @assert_Bool(%Bool.st %"$0") #2 {
 entry:
-  %0 = extractvalue %Bool.st %"$0", 0
-  br i1 %0, label %then.0, label %cont.0
+  %0 = call %Bool.st @Bool_b(i1 true), !stdlib.call.optim !2
+  %_expect_res = call %Bool.st @-Uexpect_Bool_Bool(%Bool.st %"$0", %Bool.st %0)
+  %1 = extractvalue %Bool.st %_expect_res, 0
+  br i1 %1, label %then.0, label %cont.0
 
 cont.stmt:                                        ; preds = %else.1, %then.0
   ret void
@@ -271,11 +286,13 @@ else.1:                                           ; preds = %cont.0
 }
 
 ; Function Attrs: alwaysinline
-define void @condFail_b(i1 %"$0") #2 {
+define void @condFail_b(i1 %cond) #2 {
 entry:
-  %Bool_res = call %Bool.st @Bool_b(i1 %"$0")
-  %0 = extractvalue %Bool.st %Bool_res, 0
-  br i1 %0, label %then.0, label %cont.stmt
+  %Bool_res = call %Bool.st @Bool_b(i1 %cond)
+  %0 = call %Bool.st @Bool_b(i1 false), !stdlib.call.optim !2
+  %_expect_res = call %Bool.st @-Uexpect_Bool_Bool(%Bool.st %Bool_res, %Bool.st %0)
+  %1 = extractvalue %Bool.st %_expect_res, 0
+  br i1 %1, label %then.0, label %cont.stmt
 
 cont.stmt:                                        ; preds = %entry, %then.0
   ret void
@@ -303,7 +320,7 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #5
+declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #3
 
 ; Function Attrs: alwaysinline
 define %Int.st @-M_Int_Int(%Int.st %a, %Int.st %b) #2 {
@@ -323,7 +340,7 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-declare { i64, i1 } @llvm.ssub.with.overflow.i64(i64, i64) #5
+declare { i64, i1 } @llvm.ssub.with.overflow.i64(i64, i64) #3
 
 ; Function Attrs: alwaysinline
 define %Int.st @-A_Int_Int(%Int.st %a, %Int.st %b) #2 {
@@ -343,11 +360,34 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-declare { i64, i1 } @llvm.smul.with.overflow.i64(i64, i64) #5
+declare { i64, i1 } @llvm.smul.with.overflow.i64(i64, i64) #3
+
+; Function Attrs: alwaysinline
+define %Bool.st @-E-E_Int_Int(%Int.st %a, %Int.st %b) #2 {
+entry:
+  %value = extractvalue %Int.st %a, 0
+  %value1 = extractvalue %Int.st %b, 0
+  %cmp_eq_res = icmp eq i64 %value, %value1
+  %Bool_res = call %Bool.st @Bool_b(i1 %cmp_eq_res)
+  ret %Bool.st %Bool_res
+}
+
+; Function Attrs: alwaysinline
+define %Bool.st @"!-E_Int_Int"(%Int.st %a, %Int.st %b) #2 {
+entry:
+  %value = extractvalue %Int.st %a, 0
+  %value1 = extractvalue %Int.st %b, 0
+  %cmp_neq_res = icmp ne i64 %value, %value1
+  %Bool_res = call %Bool.st @Bool_b(i1 %cmp_neq_res)
+  ret %Bool.st %Bool_res
+}
 
 ; Function Attrs: alwaysinline
 define %Int.st @-D_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
+  %0 = call %Int.st @Int_i64(i64 0), !stdlib.call.optim !2
+  %"!=.res" = call %Bool.st @"!-E_Int_Int"(%Int.st %b, %Int.st %0)
+  call void @assert_Bool(%Bool.st %"!=.res")
   %value = extractvalue %Int.st %a, 0
   %value1 = extractvalue %Int.st %b, 0
   %div_res = udiv i64 %value, %value1
@@ -396,33 +436,53 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define %Bool.st @-G-E_Int_Int(%Int.st %a, %Int.st %b) #2 {
+define %Int.st @-L-L_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
   %value = extractvalue %Int.st %a, 0
   %value1 = extractvalue %Int.st %b, 0
-  %cmp_gte_res = icmp sge i64 %value, %value1
-  %Bool_res = call %Bool.st @Bool_b(i1 %cmp_gte_res)
-  ret %Bool.st %Bool_res
+  %shl_res = shl i64 %value, %value1
+  %Int_res = call %Int.st @Int_i64(i64 %shl_res)
+  ret %Int.st %Int_res
 }
 
 ; Function Attrs: alwaysinline
-define %Bool.st @-E-E_Int_Int(%Int.st %a, %Int.st %b) #2 {
+define %Int.st @-G-G_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
   %value = extractvalue %Int.st %a, 0
   %value1 = extractvalue %Int.st %b, 0
-  %cmp_eq_res = icmp eq i64 %value, %value1
-  %Bool_res = call %Bool.st @Bool_b(i1 %cmp_eq_res)
-  ret %Bool.st %Bool_res
+  %shr_res = ashr i64 %value, %value1
+  %Int_res = call %Int.st @Int_i64(i64 %shr_res)
+  ret %Int.st %Int_res
 }
 
 ; Function Attrs: alwaysinline
-define %Bool.st @"!-E_Int_Int"(%Int.st %a, %Int.st %b) #2 {
+define %Int.st @-T-N_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
   %value = extractvalue %Int.st %a, 0
   %value1 = extractvalue %Int.st %b, 0
-  %cmp_neq_res = icmp ne i64 %value, %value1
-  %Bool_res = call %Bool.st @Bool_b(i1 %cmp_neq_res)
-  ret %Bool.st %Bool_res
+  %and_res = and i64 %value, %value1
+  %Int_res = call %Int.st @Int_i64(i64 %and_res)
+  ret %Int.st %Int_res
+}
+
+; Function Attrs: alwaysinline
+define %Int.st @-T-O_Int_Int(%Int.st %a, %Int.st %b) #2 {
+entry:
+  %value = extractvalue %Int.st %a, 0
+  %value1 = extractvalue %Int.st %b, 0
+  %or_res = or i64 %value, %value1
+  %Int_res = call %Int.st @Int_i64(i64 %or_res)
+  ret %Int.st %Int_res
+}
+
+; Function Attrs: alwaysinline
+define %Int.st @-T-R_Int_Int(%Int.st %a, %Int.st %b) #2 {
+entry:
+  %value = extractvalue %Int.st %a, 0
+  %value1 = extractvalue %Int.st %b, 0
+  %xor_res = xor i64 %value, %value1
+  %Int_res = call %Int.st @Int_i64(i64 %xor_res)
+  ret %Int.st %Int_res
 }
 
 ; Function Attrs: alwaysinline
@@ -574,9 +634,9 @@ entry:
 attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+ssse3,+cx16,+sse,+sse2,+sse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #2 = { alwaysinline }
-attributes #3 = { alwaysinline noreturn }
-attributes #4 = { noreturn nounwind }
-attributes #5 = { nounwind readnone }
+attributes #3 = { nounwind readnone }
+attributes #4 = { alwaysinline noreturn }
+attributes #5 = { noreturn nounwind }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}

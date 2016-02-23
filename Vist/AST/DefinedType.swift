@@ -21,47 +21,47 @@ final class FunctionType {
 
 
 enum DefinedType {
-    case Void
-    case Type(String)
-    indirect case Tuple([DefinedType])
-    case Function(FunctionType)
+    case void
+    case type(String)
+    indirect case tuple([DefinedType])
+    case function(FunctionType)
     
     init(_ str: String) {
-        self = .Type(str)
+        self = .type(str)
     }
     
     init(_ strs: [String]) {
         switch strs.count {
-        case 0: self = .Void
-        case 1: self = .Type(strs[0])
-        case _: self = .Tuple(strs.map(DefinedType.init))
+        case 0: self = .void
+        case 1: self = .type(strs[0])
+        case _: self = .tuple(strs.map(DefinedType.init))
         }
     }
     
     private func tyArr(scope: SemaScope) throws -> [Ty] {
         switch self {
-        case .Void:             return []
-        case .Type, .Function:  return [try type(scope)]
-        case .Tuple(let ts):    return try ts.flatMap { try $0.type(scope) }
+        case .void:             return []
+        case .type, .function:  return [try typeInScope(scope)]
+        case .tuple(let ts):    return try ts.flatMap { try $0.typeInScope(scope) }
         }
     }
     
     func typeNames() -> [String] {
         switch self {
-        case .Void, .Function:  return []
-        case let .Type(t):      return [t]
-        case let .Tuple(ts):    return ts.flatMap { $0.typeNames() }
+        case .void, .function:  return []
+        case let .type(t):      return [t]
+        case let .tuple(ts):    return ts.flatMap { $0.typeNames() }
         }
     }
     
     
     
-    func type(scope: SemaScope) throws -> Ty {
+    func typeInScope(scope: SemaScope) throws -> Ty {
         switch self {
-        case .Void:
+        case .void:
             return BuiltinType.void
             
-        case let .Type(typeName):
+        case let .type(typeName):
             
             if let builtin = BuiltinType(typeName) {
                 return builtin as Ty
@@ -73,11 +73,11 @@ enum DefinedType {
                 throw semaError(.noTypeNamed(typeName))
             }
             
-        case let .Tuple(elements):
-            return elements.isEmpty ? BuiltinType.void : TupleType(members: try elements.map({try $0.type(scope)}))
+        case let .tuple(elements):
+            return elements.isEmpty ? BuiltinType.void : TupleType(members: try elements.map({try $0.typeInScope(scope)}))
             
-        case let .Function(functionType):
-            return FnType(params: try functionType.paramType.tyArr(scope), returns: try functionType.returnType.type(scope))
+        case let .function(functionType):
+            return FnType(params: try functionType.paramType.tyArr(scope), returns: try functionType.returnType.typeInScope(scope))
         }
     }
 }
@@ -91,7 +91,7 @@ extension FunctionType {
     }
     
     func returnType(scope: SemaScope) throws -> Ty {
-        return try returnType.type(scope)
+        return try returnType.typeInScope(scope)
     }
 }
 

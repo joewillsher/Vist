@@ -7,50 +7,50 @@
 //
 
 enum ParseError: VistError {
-    case ExpectedParen,  ExpectedCloseBracket, NoToken(Token), ExpectedComma
-    case ExpectedOpenBrace, NotBlock
-    case InvalidCall(String) // cant call (*2) or (.print())
-    case NoIdentifier
-    case ExpectedColon, ExpectedDoubleColon, ExpectedBar
-    case ExpectedAssignment, conceptCannotProvideVal
-    case NoOperator(String)
-    case ExpectedIn
-    case InvalidIfStatement
-    case ObjectNotAllowedInTopLevelOfTypeImpl(Token), NoTypeName
-    case NoPrecedenceForOperator, AttrDoesNotHaveParams, CannotChangeOpPrecedence(String, Int)
-    case StdLibExprInvalid
+    case expectedParen, expectedCloseBracket, noToken(Token), expectedComma
+    case expectedOpenBrace, notBlock
+    case invalidCall(String) // cant call (*2) or (.print())
+    case noIdentifier
+    case expectedColon, expectedDoubleColon, expectedBar
+    case expectedAssignment, conceptCannotProvideVal
+    case noOperator(String)
+    case expectedIn
+    case invalidIfStatement
+    case objectNotAllowedInTopLevelOfTypeImpl(Token), noTypeName
+    case noPrecedenceForOperator, attrDoesNotHaveParams, cannotChangeOpPrecedence(String, Int)
+    case stdLibExprInvalid
     case notVariableDecl
     
-    case NoGenericParamName(on: String), NoGenericConstraints(parent: String, genericParam: String), ExpectedGenericConstraint
+    case noGenericParamName(on: String), noGenericConstraints(parent: String, genericParam: String), expectedGenericConstraint
     
     var description: String {
         switch self {
-        case let .NoToken(tok): return "Expected token '\(tok)'"
-        case .ExpectedParen: return "Expected paren"
-        case .ExpectedCloseBracket: return "Expected ']'"
-        case .ExpectedComma: return "Expected deliniating ','"
-        case .ExpectedColon: return "Expected ':' to declare storage type"
-        case .ExpectedBar: return "Expected '|' to constrain generic parameter"
-        case .ExpectedDoubleColon: return "Expected '::' to define function signature"
-        case let .InvalidCall(call): return "Invalid call to \(call)"
-        case .NoIdentifier: return "Expected identifier"
-        case let .NoOperator(op): return "No operator '\(op)'"
-        case .ExpectedIn: return "Expected 'in'"
-        case .NotBlock: return "Expected block expression"
-        case .ExpectedOpenBrace: return "Expected '{'"
-        case .InvalidIfStatement: return "If statement is invalid; a single unconditional 'else' expressions is only permitted in the final position"
-        case let .ObjectNotAllowedInTopLevelOfTypeImpl(tok): return "'\(tok)': object not allowed at top level of type implementation"
-        case .NoTypeName: return "Expected name for type"
-        case .NoPrecedenceForOperator: return "Operator requires a definition of precedence in parens, like '@operator(30)'"
-        case .AttrDoesNotHaveParams: return "Attribute expected param in parentheses"
-        case let .CannotChangeOpPrecedence(op, prec): return "Operator '\(op)' has precedence \(prec), which can't be changed"
-        case .ExpectedAssignment: return "Expected assignment expression"
+        case let .noToken(tok): return "Expected token '\(tok)'"
+        case .expectedParen: return "Expected paren"
+        case .expectedCloseBracket: return "Expected ']'"
+        case .expectedComma: return "Expected deliniating ','"
+        case .expectedColon: return "Expected ':' to declare storage type"
+        case .expectedBar: return "Expected '|' to constrain generic parameter"
+        case .expectedDoubleColon: return "Expected '::' to define function signature"
+        case let .invalidCall(call): return "Invalid call to \(call)"
+        case .noIdentifier: return "Expected identifier"
+        case let .noOperator(op): return "No operator '\(op)'"
+        case .expectedIn: return "Expected 'in'"
+        case .notBlock: return "Expected block expression"
+        case .expectedOpenBrace: return "Expected '{'"
+        case .invalidIfStatement: return "If statement is invalid; a single unconditional 'else' expressions is only permitted in the final position"
+        case let .objectNotAllowedInTopLevelOfTypeImpl(tok): return "'\(tok)': object not allowed at top level of type implementation"
+        case .noTypeName: return "Expected name for type"
+        case .noPrecedenceForOperator: return "Operator requires a definition of precedence in parens, like '@operator(30)'"
+        case .attrDoesNotHaveParams: return "Attribute expected param in parentheses"
+        case let .cannotChangeOpPrecedence(op, prec): return "Operator '\(op)' has precedence \(prec), which can't be changed"
+        case .expectedAssignment: return "Expected assignment expression"
         case .conceptCannotProvideVal: return "Variable declaration in concept cannot provide a value"
-        case .StdLibExprInvalid: return "Stdlib expression involving 'LLVM.' could not be parsed"
+        case .stdLibExprInvalid: return "Stdlib expression involving 'LLVM.' could not be parsed"
         case notVariableDecl: return "Expected variable declaration"
-        case let .NoGenericParamName(on): return "Generic parameter on '\(on)' must specify name"
-        case let .NoGenericConstraints(parent, genericParam): return "'\(parent)'s generic parameter '\(genericParam)' supplies no constraints after '|'"
-        case .ExpectedGenericConstraint: return "Expected generic parameter constraint"
+        case let .noGenericParamName(on): return "Generic parameter on '\(on)' must specify name"
+        case let .noGenericConstraints(parent, genericParam): return "'\(parent)'s generic parameter '\(genericParam)' supplies no constraints after '|'"
+        case .expectedGenericConstraint: return "Expected generic parameter constraint"
         }
     }
 }

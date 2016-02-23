@@ -92,7 +92,7 @@ enum BuiltinType: Ty {
         case .null:                     return "N"
         case .void:                     return "V"
         case .int(let s):               return "i\(s)"
-        case .bool:                      return "b"
+        case .bool:                     return "b"
         case .array(let el, _):         return "A\(el.mangledName)"
         case .pointer(let to):          return "P\(to.mangledName)"
         case .float(let s):             return "f\(s)"

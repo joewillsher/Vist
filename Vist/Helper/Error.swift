@@ -8,7 +8,6 @@
 
 
 /// A vist error -- implements ErrorType and CustomStringConvertible
-///
 typealias VistError = protocol<ErrorType, CustomStringConvertible>
 
 /// Error function -- always rethrows the error passed to it
@@ -18,8 +17,7 @@ typealias VistError = protocol<ErrorType, CustomStringConvertible>
 /// In release builds it crashes if the error is an internal logic failure
 ///
 /// If a source location is defined, the result is wrapped in a `PositionedError` struct
-///
-func error(err: VistError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = __FILE__, line: UInt = __LINE__, function: String = __FUNCTION__) -> VistError {
+func error(err: VistError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = #file, line: UInt = #line, function: String = #function) -> VistError {
     
     var error = err
     
@@ -38,13 +36,13 @@ func error(err: VistError, loc: SourceRange? = nil, userVisible: Bool = true, fi
     }
 }
 
-func semaError(err: SemaError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = __FILE__, line: UInt = __LINE__, function: String = __FUNCTION__) -> VistError {
+func semaError(err: SemaError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = #file, line: UInt = #line, function: String = #function) -> VistError {
     return error(err, loc: loc, userVisible: userVisible, file: file, line: line, function: function)
 }
-func parseError(err: ParseError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = __FILE__, line: UInt = __LINE__, function: String = __FUNCTION__) -> VistError {
+func parseError(err: ParseError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = #file, line: UInt = #line, function: String = #function) -> VistError {
     return error(err, loc: loc, userVisible: userVisible, file: file, line: line, function: function)
 }
-func irGenError(err: IRError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = __FILE__, line: UInt = __LINE__, function: String = __FUNCTION__) -> VistError {
+func irGenError(err: IRError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = #file, line: UInt = #line, function: String = #function) -> VistError {
     return error(err, loc: loc, userVisible: userVisible, file: file, line: line, function: function)
 }
 
@@ -57,7 +55,6 @@ protocol ErrorWrapper: VistError {
 }
 
 /// An error object, which describes the error and contains the source location information
-///
 struct PositionedError: ErrorWrapper {
     let error: VistError
     let range: SourceRange?
@@ -79,7 +76,6 @@ struct DebugError: ErrorWrapper {
 
 
 /// A collection of errors, conforming to ErrorType so it can be thrown
-///
 struct ErrorCollection: VistError {
     let errors: [VistError]
     

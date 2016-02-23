@@ -1,0 +1,56 @@
+
+
+
+concept TestC {
+var t: Int
+}
+
+type Foo {
+var t: Int
+}
+
+type Baz {
+var foo: TestC
+}
+
+let b = Baz (Foo 1)
+let w = b.foo
+print w.t // test: 1
+
+
+
+
+concept Prot { var v: Int }
+type Baq { var v: Int }
+
+func fn :: Prot = (f) {
+print f.v
+print f.v
+print f.v
+print f.v
+}
+let uu = Baq 12
+fn uu // test: 12 12 12 12
+
+
+type I { var v: Int }
+concept X { var i: I }
+type A { var i: I }
+type B { var a: X }
+
+var u = B (A (I 1))
+
+u.a.i.v = 2
+
+print u.a.i.v // test: 2
+
+var x = ( (1, u), 2)
+
+print x.1 // test: 2
+print x.0 . 0 // test: 1
+
+print x. 0 . 1 . a.i.v // test: 2
+
+x. 0 . 1 . a.i.v = 11
+
+print x. 0 . 1 . a.i.v // test: 11

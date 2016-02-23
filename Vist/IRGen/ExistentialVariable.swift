@@ -226,6 +226,8 @@ final class ExistentialVariable: StorageVariable, MutableVariable {
         let mangledName = name.mangle(fnType.params, parentTypeName: typeName)
         guard let i = indexOfMethodHavingMangledName(mangledName) else { throw irGenError(.noMethod(type: typeName, methodName: name)) }
         
+        let a = ExistentialVariable.ptrToMethodNamed(_:fnType:)
+        
         let indexValue = BuiltinType.intGen(i, size: 32) // i32
         let index = [indexValue].ptr()
         defer { index.dealloc(1) }

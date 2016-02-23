@@ -45,7 +45,7 @@ extension StructExpr: ExprTypeProvider {
             return try errorCollector.run {
                 try f.typeForNode(structScope)
                 guard let t = f.fnType.type else { throw semaError(.structMethodNotTyped(type: name, methodName: f.name), userVisible: false) }
-                return (f.name.mangle(t, parentTypeName: name), t)
+                return (f.name, t)
             }
         }
         
@@ -94,12 +94,12 @@ extension ConceptExpr: ExprTypeProvider {
         }
         
         let methodTypes = try requiredMethods.walkChildren(errorCollector) { method throws -> StructMethod in
-            if let t = method.fnType.type { return (method.name, t) }
-            throw semaError(.structMethodNotTyped(type: name, methodName: method.name))
+            guard let t = method.fnType.type else { throw semaError(.structMethodNotTyped(type: name, methodName: method.name)) }
+            return (method.name, t)
         }
         let propertyTypes = try requiredProperties.walkChildren(errorCollector) { prop throws -> StructMember in
-            if let t = prop.value._type { return (prop.name, t, true) }
-            throw semaError(.structPropertyNotTyped(type: name, property: prop.name))
+            guard let t = prop.value._type else { throw semaError(.structPropertyNotTyped(type: name, property: prop.name)) }
+            return (prop.name, t, true)
         }
         
         let ty = ConceptType(name: name, requiredFunctions: methodTypes, requiredProperties: propertyTypes)

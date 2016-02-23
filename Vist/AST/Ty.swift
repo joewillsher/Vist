@@ -73,14 +73,3 @@ func == (lhs: Ty, rhs: Ty) -> Bool {
     }
 }
 
-//@warn_unused_result
-//func == (lhs: [Ty], rhs: [Ty]) -> Bool {
-//    if lhs.isEmpty && rhs.isEmpty { return true }
-//    if lhs.count != rhs.count { return false }
-//    
-//    return lhs.elementsEqual(rhs, isEquivalent: ==)
-//}
-
-
-
-

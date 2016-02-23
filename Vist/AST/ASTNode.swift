@@ -45,7 +45,7 @@ extension _Typed {
 /// Typed protocol which defines a generic type
 ///
 protocol Typed: _Typed {
-    typealias Type: Ty
+    associatedtype Type: Ty
     var type: Type? { get set }
 }
 

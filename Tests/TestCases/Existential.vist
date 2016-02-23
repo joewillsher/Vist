@@ -10,9 +10,14 @@ type Bar {
     var x: Bool, b: Int, a: Int
     
     func sum :: -> Int = do
-    return a + b
+        return a + b
 }
 
+type Baz {
+    var a: Int, b: Int
+    
+    func sum :: -> Int = do return 1
+}
 
 func foo :: Eq Int -> Int = (a b) do
     return a.sum () + b
@@ -20,65 +25,8 @@ func foo2 :: Eq Int -> Int = (a b) do
     return a.a + (a.b * 2) + b
 
 let bar = Bar true 11 4
+let baz = Baz 2 3
+
 print (foo bar 2) // test: 17
 print (foo2 bar 2) // test: 28
-
-
-
-concept TestC {
-    var t: Int
-}
-
-type Foo {
-    var t: Int
-}
-
-type Baz {
-    var foo: TestC
-}
-
-let b = Baz (Foo 1)
-let w = b.foo
-print w.t // test: 1
-
-
-
-
-concept Prot { var v: Int }
-type Baq { var v: Int }
-
-func fn :: Prot = (f) {
-    print f.v
-    print f.v
-    print f.v
-    print f.v
-}
-let uu = Baq 12
-fn uu // test: 12 12 12 12
-
-
-// todo: type interfarence resolution
-
-
-
-type I { var v: Int }
-concept X { var i: I }
-type A { var i: I }
-type B { var a: X }
-
-var u = B (A (I 1))
-
-u.a.i.v = 2
-
-print u.a.i.v // test: 2
-
-var x = ( (1, u), 2)
-
-print x.1 // test: 2
-print x.0 . 0 // test: 1
-
-print x. 0 . 1 . a.i.v // test: 2
-
-x. 0 . 1 . a.i.v = 11
-
-print x. 0 . 1 . a.i.v // test: 11
+print (foo baz 2) // test: 3

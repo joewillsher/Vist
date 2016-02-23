@@ -72,9 +72,11 @@ struct FnType: Ty {
             .joinWithSeparator("_")
     }
     
+    /// Returns a version of this type, but with a defined parent
     func withParent(parent: StorageType) -> FnType {
         return FnType(params: params, returns: returns, metadata: metadata, selfType: parent)
     }
+    /// Returns a version of this type, but with a parent of type i8 (so ptrs to it are i8*)
     func withOpaqueParent() -> FnType {
         return FnType(params: params, returns: returns, metadata: metadata, selfType: BuiltinType.int(size: 8))
     }

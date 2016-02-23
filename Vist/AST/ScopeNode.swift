@@ -113,7 +113,7 @@ final class ErrorCollector {
     
     // on init, captures scope
     // so if not thrown fatal error has helpful info
-    init(file: StaticString = __FILE__, line: UInt = __LINE__, function: String = __FUNCTION__) {
+    init(file: StaticString = #file, line: UInt = #line, function: String = #function) {
         self.file = file
         self.line = line
         self.function = function

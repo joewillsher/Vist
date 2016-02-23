@@ -74,7 +74,7 @@ extension StorageType {
     /// Returns whether a type models a concept
     func models(concept: ConceptType) -> Bool {
         // TODO: explicit, opt into methods, this should be a check in sema
-        for f in concept.requiredFunctions where !methods.contains({ $0.name.demangleName() == f.name && $0.type == f.type }) { return false }
+        for f in concept.requiredFunctions where !methods.contains({ $0.name == f.name && $0.type == f.type }) { return false }
         for p in concept.requiredProperties where !members.contains({ $0.name == p.name && $0.type == p.type }) { return false }
         return true
     }
