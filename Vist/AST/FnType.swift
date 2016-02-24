@@ -6,36 +6,47 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
+enum CallingConvention {
+    case thin
+    case method(selfType: Ty)
+    //case thick(contextPtr: )
+}
+
 
 struct FnType: Ty {
     let params: [Ty], returns: Ty
     var metadata: [String]
-    let selfType: Ty?
+    let callingConvention: CallingConvention
     
     func globalType(module: LLVMModuleRef) -> LLVMTypeRef {
         
-        let r: LLVMTypeRef
+        let ret: LLVMTypeRef
         if case _ as FnType = returns {
-            r = BuiltinType.pointer(to: returns).globalType(module)
+            ret = BuiltinType.pointer(to: returns).globalType(module)
         }
         else {
-            r = returns.globalType(module)
+            ret = returns.globalType(module)
         }
         
-        let members = nonVoid.map{$0.globalType(module)}
-        let selfRef = selfType.map { [BuiltinType.pointer(to: $0).globalType(module)] } ?? []
-        let els = (selfRef + members).ptr()
-        let count = nonVoid.count + selfRef.count
-        defer { els.dealloc(count) }
+        var members: [LLVMValueRef] = []
         
-        return LLVMFunctionType(r, els, UInt32(count), false)
+        if case .method(let ty) = callingConvention {
+            members.append(BuiltinType.pointer(to: ty).globalType(module))
+        }
+
+        members += nonVoid.map {$0.globalType(module)}
+        
+        let els = members.ptr()
+        defer { els.dealloc(members.count) }
+        
+        return LLVMFunctionType(ret, els, UInt32(members.count), false)
     }
     
-    init(params: [Ty], returns: Ty = BuiltinType.void, metadata: [String] = [], selfType: Ty? = nil) {
+    init(params: [Ty], returns: Ty = BuiltinType.void, metadata: [String] = [], callingConvention: CallingConvention = .thin) {
         self.params = params
         self.returns = returns
         self.metadata = metadata
-        self.selfType = selfType
+        self.callingConvention = callingConvention
     }
     
     static func taking(params: Ty..., ret: Ty = BuiltinType.void) -> FnType {
@@ -74,11 +85,11 @@ struct FnType: Ty {
     
     /// Returns a version of this type, but with a defined parent
     func withParent(parent: StorageType) -> FnType {
-        return FnType(params: params, returns: returns, metadata: metadata, selfType: parent)
+        return FnType(params: params, returns: returns, metadata: metadata, callingConvention: .method(selfType: parent))
     }
     /// Returns a version of this type, but with a parent of type i8 (so ptrs to it are i8*)
     func withOpaqueParent() -> FnType {
-        return FnType(params: params, returns: returns, metadata: metadata, selfType: BuiltinType.int(size: 8))
+        return FnType(params: params, returns: returns, metadata: metadata, callingConvention: .method(selfType: BuiltinType.int(size: 8)))
     }
 }
 

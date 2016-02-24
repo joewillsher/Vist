@@ -426,6 +426,16 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
+define %Bool.st @-G-E_Int_Int(%Int.st %a, %Int.st %b) #2 {
+entry:
+  %value = extractvalue %Int.st %a, 0
+  %value1 = extractvalue %Int.st %b, 0
+  %cmp_gte_res = icmp sge i64 %value, %value1
+  %Bool_res = call %Bool.st @Bool_b(i1 %cmp_gte_res)
+  ret %Bool.st %Bool_res
+}
+
+; Function Attrs: alwaysinline
 define %Bool.st @-G_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
   %value = extractvalue %Int.st %a, 0

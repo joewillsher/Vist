@@ -264,7 +264,6 @@ extension MutationExpr: IRGenerator {
             let variable = try stackFrame.variable(object.name)
             
             if case let arrayVariable as ArrayVariable = variable, case let arrayExpression as ArrayExpr = value {
-                
                 let newArray = try arrayExpression.arrInstance(stackFrame, irGen: irGen)
                 arrayVariable.assignFrom(newArray)
             }
@@ -283,11 +282,17 @@ extension MutationExpr: IRGenerator {
             
             arr.store(val, inElementAtIndex: i)
 
-        case let tupMember as TupleMemberLookupExpr:
-            break
+        case let tupMemberLookup as TupleMemberLookupExpr:
+            // tuple.1 = newValue
+            
+            guard case let storageVariable as MutableTupleVariable = try tupMemberLookup.getVariable(stackFrame, irGen: irGen) else { throw irGenError(.noTupleMemberAt(tupMemberLookup.index)) }
+            
+            let val = try value.nodeCodeGen(stackFrame, irGen: irGen)
+            
+            try storageVariable.store(val, inElementAtIndex: tupMemberLookup.index)
             
         case let propertyLookup as PropertyLookupExpr:
-            // foo.bar = meme
+            // foo.bar = newValue
             
             guard case let storageVariable as MutableStorageVariable = try propertyLookup.getVariable(stackFrame, irGen: irGen) else { throw irGenError(.noProperty(type: propertyLookup.object.typeName, property: propertyLookup.propertyName)) }
             
@@ -451,7 +456,7 @@ extension FuncDecl: IRGenerator {
             guard case let _parentType as StorageType = parent._type else { throw irGenError(.noParentType, userVisible: false) }
             guard let _type = fnType.type else { throw irGenError(.typeNotFound, userVisible: false) }
             
-            type = FnType(params: _type.params, returns: _type.returns, metadata: _type.metadata, selfType: _parentType)
+            type = _type.withParent(_parentType)
             startIndex = 1
             parentType = _parentType
         }
@@ -786,7 +791,7 @@ extension ForInLoopStmt: IRGenerator {
     // loop.exit:                                         ; preds = %loop.body
     //
     //    ; EXIT
-
+    
     private func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         
         // generate loop and termination blocks
@@ -966,7 +971,7 @@ extension StructExpr: IRGenerator {
         // IRGen on elements
         let errorCollector = ErrorCollector()
         
-        let m = type.memberTypes(irGen.module)
+        _ = type.memberTypes(irGen.module)
         
         
         try initialisers.walkChildren(errorCollector) { i in
@@ -1001,10 +1006,10 @@ extension InitialiserDecl: IRGenerator {
         
         let paramTypeNames = ty.paramType.typeNames(), paramCount = paramTypeNames.count
         guard let
+            parentType = parent?.type,
             functionType = ty.type?.globalType(irGen.module),
             name = parent?.name,
-            parentProperties = parent?.properties,
-            parentType = parent?.type
+            parentProperties = parent?.properties
             else {
                 throw irGenError(.typeNotFound, userVisible: false)
         }
@@ -1020,7 +1025,7 @@ extension InitialiserDecl: IRGenerator {
         
         let entry = LLVMAppendBasicBlock(function, "entry")
         LLVMPositionBuilderAtEnd(irGen.builder, entry)
-
+        
         // Add function type to stack frame
         stackFrame.addFunctionType(functionType, named: name)
         

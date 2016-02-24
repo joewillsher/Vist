@@ -318,6 +318,16 @@ entry:
 }
 
 ; Function Attrs: alwaysinline nounwind readnone
+define %Bool.st @-G-E_Int_Int(%Int.st %a, %Int.st %b) #2 {
+entry:
+  %value = extractvalue %Int.st %a, 0
+  %value1 = extractvalue %Int.st %b, 0
+  %cmp_gte_res = icmp sge i64 %value, %value1
+  %Bool1.i.fca.0.insert = insertvalue %Bool.st undef, i1 %cmp_gte_res, 0
+  ret %Bool.st %Bool1.i.fca.0.insert
+}
+
+; Function Attrs: alwaysinline nounwind readnone
 define %Bool.st @-G_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
   %value = extractvalue %Int.st %a, 0

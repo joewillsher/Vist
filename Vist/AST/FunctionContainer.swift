@@ -20,7 +20,6 @@ struct FunctionContainer {
     /// Tuples are of the unmangled name and the type object
     ///
     /// Optionally takes an array of metadata to apply to all functions
-    ///
     init (functions: [(String, FnType)], types: [StructType], metadata: [String] = []) {
         var t: [String: FnType] = [:]
         
@@ -42,7 +41,6 @@ struct FunctionContainer {
     /// - parameter types: Applied arg types
     ///
     /// - returns: An optional tuple of `(mangledName, type)`
-    ///
     subscript(fn fn: String, types types: [Ty]) -> (mangledName: String, type: FnType)? {
         get {
             let mangled = fn.mangle(types)

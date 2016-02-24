@@ -132,6 +132,10 @@ func <= :: Int Int -> Bool = (a b) do
     return Bool (LLVM.i_cmp_lte a.value b.value)
 
 @public @inline @operator(30)
+func >= :: Int Int -> Bool = (a b) do
+    return Bool (LLVM.i_cmp_gte a.value b.value)
+
+@public @inline @operator(30)
 func > :: Int Int -> Bool = (a b) do
     return Bool (LLVM.i_cmp_gt a.value b.value)
 
