@@ -7,6 +7,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 %Bar.st = type { %Bool.st, %Int.st, %Int.st }
 %Baz.st = type { %Int.st, %Int.st }
 %Eq.ex = type { [2 x i32], [1 x i8*], i8* }
+%Foo.st = type { %Bar.st, %Bool.st }
 
 define void @main() {
 entry:
@@ -122,6 +123,18 @@ entry:
   %41 = call %Int.st @Int_i64(i64 3), !stdlib.call.optim !0
   %"~^.res" = call %Int.st @-T-R_Int_Int(%Int.st %40, %Int.st %41), !stdlib.call.optim !0
   call void @print_Int(%Int.st %"~^.res"), !stdlib.call.optim !0
+  %42 = call %Bool.st @Bool_b(i1 false), !stdlib.call.optim !0
+  %43 = call %Int.st @Int_i64(i64 1), !stdlib.call.optim !0
+  %44 = call %Int.st @Int_i64(i64 1), !stdlib.call.optim !0
+  %Bar_res23 = call %Bar.st @Bar_Bool_Int_Int(%Bool.st %42, %Int.st %43, %Int.st %44)
+  %45 = call %Bool.st @Bool_b(i1 false), !stdlib.call.optim !0
+  %Foo_res = call %Foo.st @Foo_Bar_Bool(%Bar.st %Bar_res23, %Bool.st %45)
+  %f = alloca %Foo.st
+  store %Foo.st %Foo_res, %Foo.st* %f
+  %f.a.ptr = getelementptr inbounds %Foo.st* %f, i32 0, i32 0
+  %.x.ptr = getelementptr inbounds %Bar.st* %f.a.ptr, i32 0, i32 0
+  %46 = load %Bool.st* %.x.ptr
+  call void @print_Bool(%Bool.st %46), !stdlib.call.optim !0
   ret void
 }
 
@@ -200,17 +213,17 @@ entry:
   %a.opaque_instance_pointer = load i8** %a.element_pointer
   %2 = getelementptr i8* %a.opaque_instance_pointer, i32 %1
   %a.ptr = bitcast i8* %2 to %Int.st*
-  %a2 = load %Int.st* %a.ptr
-  %3 = getelementptr i32* %metadata_base_ptr, i32 1
-  %4 = load i32* %3
-  %5 = getelementptr i8* %a.opaque_instance_pointer, i32 %4
-  %b.ptr = bitcast i8* %5 to %Int.st*
-  %b3 = load %Int.st* %b.ptr
-  %6 = call %Int.st @Int_i64(i64 2), !stdlib.call.optim !0
-  %"*.res" = call %Int.st @-A_Int_Int(%Int.st %b3, %Int.st %6), !stdlib.call.optim !0
+  %3 = load %Int.st* %a.ptr
+  %4 = getelementptr i32* %metadata_base_ptr, i32 1
+  %5 = load i32* %4
+  %6 = getelementptr i8* %a.opaque_instance_pointer, i32 %5
+  %b.ptr = bitcast i8* %6 to %Int.st*
+  %7 = load %Int.st* %b.ptr
+  %8 = call %Int.st @Int_i64(i64 2), !stdlib.call.optim !0
+  %"*.res" = call %Int.st @-A_Int_Int(%Int.st %7, %Int.st %8), !stdlib.call.optim !0
   %"+.res" = call %Int.st @-P_Int_Int(%Int.st %"*.res", %Int.st %b), !stdlib.call.optim !0
-  %"+.res4" = call %Int.st @-P_Int_Int(%Int.st %a2, %Int.st %"+.res"), !stdlib.call.optim !0
-  ret %Int.st %"+.res4"
+  %"+.res2" = call %Int.st @-P_Int_Int(%Int.st %3, %Int.st %"+.res"), !stdlib.call.optim !0
+  ret %Int.st %"+.res2"
 }
 
 declare %Int.st @-A_Int_Int(%Int.st, %Int.st)
@@ -228,6 +241,34 @@ declare %Int.st @-T-N_Int_Int(%Int.st, %Int.st)
 declare %Int.st @-T-O_Int_Int(%Int.st, %Int.st)
 
 declare %Int.st @-T-R_Int_Int(%Int.st, %Int.st)
+
+; Function Attrs: alwaysinline
+define %Foo.st @Foo_Bar_Bool(%Bar.st %"$0", %Bool.st %"$1") #0 {
+entry:
+  %Foo = alloca %Foo.st
+  %Foo.a.ptr = getelementptr inbounds %Foo.st* %Foo, i32 0, i32 0
+  store %Bar.st %"$0", %Bar.st* %Foo.a.ptr
+  %Foo.b.ptr = getelementptr inbounds %Foo.st* %Foo, i32 0, i32 1
+  store %Bool.st %"$1", %Bool.st* %Foo.b.ptr
+  %Foo1 = load %Foo.st* %Foo
+  ret %Foo.st %Foo1
+}
+
+declare void @print_Bool(%Bool.st)
+
+define internal %Foo.st @meme_Foo(%Foo.st %d) {
+entry:
+  %d.a = extractvalue %Foo.st %d, 0
+  %d.a1 = alloca %Bar.st
+  store %Bar.st %d.a, %Bar.st* %d.a1
+  %0 = load %Bar.st* %d.a1
+  %d.b = extractvalue %Foo.st %d, 1
+  %d.b2 = alloca %Bool.st
+  store %Bool.st %d.b, %Bool.st* %d.b2
+  %1 = load %Bool.st* %d.b2
+  %Foo_res = call %Foo.st @Foo_Bar_Bool(%Bar.st %0, %Bool.st %1)
+  ret %Foo.st %Foo_res
+}
 
 attributes #0 = { alwaysinline }
 

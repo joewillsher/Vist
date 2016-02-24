@@ -4,7 +4,7 @@
 	.align	4, 0x90
 _main:                                  ## @main
 	.cfi_startproc
-## BB#0:                                ## %foo_Eq_Int.exit131
+## BB#0:                                ## %foo_Eq_Int.exit151
 	pushq	%rbp
 Ltmp0:
 	.cfi_def_cfa_offset 16
@@ -58,7 +58,7 @@ LBB0_2:                                 ## %inlined.-A_Int_Int.condFail_b.exit.i
 	movb	%cl, -113(%rbp)         ## 1-byte Spill
 	jo	LBB0_3
 	jmp	LBB0_4
-LBB0_3:                                 ## %inlined.-P_Int_Int.then.0.i.i118
+LBB0_3:                                 ## %inlined.-P_Int_Int.then.0.i.i138
 	ud2
 LBB0_4:                                 ## %inlined.-P_Int_Int.condFail_b.exit.i
 	movq	-96(%rbp), %rax         ## 8-byte Reload
@@ -69,7 +69,7 @@ LBB0_4:                                 ## %inlined.-P_Int_Int.condFail_b.exit.i
 	movb	%dl, -129(%rbp)         ## 1-byte Spill
 	jo	LBB0_5
 	jmp	LBB0_6
-LBB0_5:                                 ## %inlined.-P_Int_Int.then.0.i20.i
+LBB0_5:                                 ## %inlined.-P_Int_Int.then.0.i18.i
 	ud2
 LBB0_6:                                 ## %foo2_Eq_Int.exit
 	movq	-128(%rbp), %rdi        ## 8-byte Reload
@@ -133,9 +133,22 @@ LBB0_8:                                 ## %foo_Eq_Int.exit
 	callq	"_-Uprint_i64"
 	movl	$6, %eax
 	movl	%eax, %edi
+	callq	"_-Uprint_i64"
+	movq	%rsp, %rdi
+	movq	%rdi, %rcx
+	addq	$-32, %rcx
+	movq	%rcx, %rsp
+	movb	$0, -8(%rdi)
+	movq	$1, -16(%rdi)
+	movq	$1, -24(%rdi)
+	movb	$0, -32(%rdi)
+	movb	-32(%rdi), %dl
+	movzbl	%dl, %eax
+	andl	$1, %eax
+	movl	%eax, %edi
 	movq	%rbp, %rsp
 	popq	%rbp
-	jmp	"_-Uprint_i64"          ## TAILCALL
+	jmp	"_-Uprint_b"            ## TAILCALL
 	.cfi_endproc
 
 	.globl	_Bar_Bool_Int_Int
@@ -189,6 +202,25 @@ _Baz.sum_:                              ## @Baz.sum_
 	movl	$1, %eax
                                         ## kill: RAX<def> EAX<kill>
 	movq	%rdi, -8(%rbp)          ## 8-byte Spill
+	popq	%rbp
+	retq
+
+	.globl	_Foo_Bar_Bool
+	.align	4, 0x90
+_Foo_Bar_Bool:                          ## @Foo_Bar_Bool
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	movb	%sil, %al
+	movb	%r8b, %r9b
+	movq	%rdi, %r10
+	andb	$1, %r9b
+	movb	%r9b, 24(%rdi)
+	movq	%rdx, 8(%rdi)
+	andb	$1, %al
+	movb	%al, (%rdi)
+	movq	%rcx, 16(%rdi)
+	movq	%r10, %rax
 	popq	%rbp
 	retq
 

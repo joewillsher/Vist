@@ -45,10 +45,9 @@ final class StackFrame {
         concepts[name] = val
     }
     
-    /// Return a variable
-    /// If not in this scope, parent scopes are recursively searched
+    /// Return a variable,
+    /// if not in this scope, parent scopes are recursively searched
     func variable(name: String) throws -> RuntimeVariable {
-        
         if let v = runtimeVariables[name] { return v }
         
         let inParent = try parentStackFrame?.variable(name)
@@ -73,8 +72,7 @@ final class StackFrame {
         
         if let c = try? concept(name) { return c }
 
-        let inParent = try parentStackFrame?.type(name)
-        if let p = inParent { return p }
+        if let p = try parentStackFrame?.type(name) { return p }
         
         throw irGenError(.noType(name))
     }
@@ -82,8 +80,7 @@ final class StackFrame {
     func concept(name: String) throws -> ConceptType {
         if let v = concepts[name] { return v }
         
-        let inParent = try parentStackFrame?.concept(name)
-        if let p = inParent { return p }
+        if let p = try parentStackFrame?.concept(name) { return p }
         
         throw irGenError(.noType(name))
     }

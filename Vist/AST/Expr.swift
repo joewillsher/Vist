@@ -65,8 +65,6 @@ final class FloatingPointLiteral: Typed, ChainableExpr {
         self.val = val
     }
     
-    
-    
     var type: StructType? = nil
 }
 
@@ -85,7 +83,7 @@ final class IntegerLiteral: Typed, ChainableExpr {
     var type: StructType? = nil
 }
 
-final class BooleanLiteral: TypedExpr {
+final class BooleanLiteral: Typed, ChainableExpr {
     let val: Bool
     
     init(val: Bool) {
@@ -143,7 +141,7 @@ final class VariableExpr: ChainableExpr {
     }
 }
 
-protocol ChainableExpr: Expr {
+protocol ChainableExpr: Expr, RuntimeVariableProvider, IRGenerator {
 }
 protocol LookupExpr: ChainableExpr {
     var object: ChainableExpr { get }

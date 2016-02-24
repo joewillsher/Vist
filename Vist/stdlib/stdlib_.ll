@@ -92,9 +92,9 @@ entry:
   %v = alloca %Int.st
   store %Int.st %0, %Int.st* %v
   %v.value.ptr = getelementptr inbounds %Int.st* %v, i32 0, i32 0
-  %v.value = load i64* %v.value.ptr
+  %1 = load i64* %v.value.ptr
   %Int.value.ptr = getelementptr inbounds %Int.st* %Int, i32 0, i32 0
-  store i64 %v.value, i64* %Int.value.ptr
+  store i64 %1, i64* %Int.value.ptr
   %Int1 = load %Int.st* %Int
   ret %Int.st %Int1
 }
@@ -147,9 +147,9 @@ entry:
   %b = alloca %Bool.st
   store %Bool.st %0, %Bool.st* %b
   %b.value.ptr = getelementptr inbounds %Bool.st* %b, i32 0, i32 0
-  %b.value = load i1* %b.value.ptr
+  %1 = load i1* %b.value.ptr
   %Bool.value.ptr = getelementptr inbounds %Bool.st* %Bool, i32 0, i32 0
-  store i1 %b.value, i1* %Bool.value.ptr
+  store i1 %1, i1* %Bool.value.ptr
   %Bool1 = load %Bool.st* %Bool
   ret %Bool.st %Bool1
 }
@@ -211,42 +211,60 @@ entry:
 ; Function Attrs: alwaysinline
 define void @print_Int(%Int.st %a) #2 {
 entry:
-  %value = extractvalue %Int.st %a, 0
-  call void @-Uprint_i64(i64 %value)
+  %a.value = extractvalue %Int.st %a, 0
+  %a.value1 = alloca i64
+  store i64 %a.value, i64* %a.value1
+  %0 = load i64* %a.value1
+  call void @-Uprint_i64(i64 %0)
   ret void
 }
 
 ; Function Attrs: alwaysinline
 define void @print_Int32(%Int32.st %a) #2 {
 entry:
-  %value = extractvalue %Int32.st %a, 0
-  call void @-Uprint_i32(i32 %value)
+  %a.value = extractvalue %Int32.st %a, 0
+  %a.value1 = alloca i32
+  store i32 %a.value, i32* %a.value1
+  %0 = load i32* %a.value1
+  call void @-Uprint_i32(i32 %0)
   ret void
 }
 
 ; Function Attrs: alwaysinline
 define void @print_Bool(%Bool.st %a) #2 {
 entry:
-  %value = extractvalue %Bool.st %a, 0
-  call void @-Uprint_b(i1 %value)
+  %a.value = extractvalue %Bool.st %a, 0
+  %a.value1 = alloca i1
+  store i1 %a.value, i1* %a.value1
+  %0 = load i1* %a.value1
+  call void @-Uprint_b(i1 %0)
   ret void
 }
 
 ; Function Attrs: alwaysinline
 define void @print_Double(%Double.st %a) #2 {
 entry:
-  %value = extractvalue %Double.st %a, 0
-  call void @-Uprint_f64(double %value)
+  %a.value = extractvalue %Double.st %a, 0
+  %a.value1 = alloca double
+  store double %a.value, double* %a.value1
+  %0 = load double* %a.value1
+  call void @-Uprint_f64(double %0)
   ret void
 }
 
 ; Function Attrs: alwaysinline
 define %Bool.st @-Uexpect_Bool_Bool(%Bool.st %val, %Bool.st %assume) #2 {
 entry:
-  %value = extractvalue %Bool.st %val, 0
-  %value1 = extractvalue %Bool.st %assume, 0
-  %0 = call i1 @llvm.expect.i1(i1 %value, i1 %value1)
-  %Bool_res = call %Bool.st @Bool_b(i1 %0)
+  %val.value = extractvalue %Bool.st %val, 0
+  %val.value1 = alloca i1
+  store i1 %val.value, i1* %val.value1
+  %0 = load i1* %val.value1
+  %assume.value = extractvalue %Bool.st %assume, 0
+  %assume.value2 = alloca i1
+  store i1 %assume.value, i1* %assume.value2
+  %1 = load i1* %assume.value2
+  %2 = call i1 @llvm.expect.i1(i1 %0, i1 %1)
+  %Bool_res = call %Bool.st @Bool_b(i1 %2)
   ret %Bool.st %Bool_res
 }
 
@@ -305,17 +323,23 @@ then.0:                                           ; preds = %entry
 ; Function Attrs: alwaysinline
 define %Int.st @-P_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.st %a, 0
-  %value1 = extractvalue %Int.st %b, 0
-  %add_res = call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %value, i64 %value1)
+  %a.value = extractvalue %Int.st %a, 0
+  %a.value1 = alloca i64
+  store i64 %a.value, i64* %a.value1
+  %0 = load i64* %a.value1
+  %b.value = extractvalue %Int.st %b, 0
+  %b.value2 = alloca i64
+  store i64 %b.value, i64* %b.value2
+  %1 = load i64* %b.value2
+  %add_res = call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %0, i64 %1)
   %v = alloca { i64, i1 }
   store { i64, i1 } %add_res, { i64, i1 }* %v
   %v.1.ptr = getelementptr inbounds { i64, i1 }* %v, i32 0, i32 1
-  %v.1 = load i1* %v.1.ptr
-  call void @condFail_b(i1 %v.1)
+  %2 = load i1* %v.1.ptr
+  call void @condFail_b(i1 %2)
   %v.0.ptr = getelementptr inbounds { i64, i1 }* %v, i32 0, i32 0
-  %v.0 = load i64* %v.0.ptr
-  %Int_res = call %Int.st @Int_i64(i64 %v.0)
+  %3 = load i64* %v.0.ptr
+  %Int_res = call %Int.st @Int_i64(i64 %3)
   ret %Int.st %Int_res
 }
 
@@ -325,17 +349,23 @@ declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #3
 ; Function Attrs: alwaysinline
 define %Int.st @-M_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.st %a, 0
-  %value1 = extractvalue %Int.st %b, 0
-  %sub_res = call { i64, i1 } @llvm.ssub.with.overflow.i64(i64 %value, i64 %value1)
+  %a.value = extractvalue %Int.st %a, 0
+  %a.value1 = alloca i64
+  store i64 %a.value, i64* %a.value1
+  %0 = load i64* %a.value1
+  %b.value = extractvalue %Int.st %b, 0
+  %b.value2 = alloca i64
+  store i64 %b.value, i64* %b.value2
+  %1 = load i64* %b.value2
+  %sub_res = call { i64, i1 } @llvm.ssub.with.overflow.i64(i64 %0, i64 %1)
   %v = alloca { i64, i1 }
   store { i64, i1 } %sub_res, { i64, i1 }* %v
   %v.1.ptr = getelementptr inbounds { i64, i1 }* %v, i32 0, i32 1
-  %v.1 = load i1* %v.1.ptr
-  call void @condFail_b(i1 %v.1)
+  %2 = load i1* %v.1.ptr
+  call void @condFail_b(i1 %2)
   %v.0.ptr = getelementptr inbounds { i64, i1 }* %v, i32 0, i32 0
-  %v.0 = load i64* %v.0.ptr
-  %Int_res = call %Int.st @Int_i64(i64 %v.0)
+  %3 = load i64* %v.0.ptr
+  %Int_res = call %Int.st @Int_i64(i64 %3)
   ret %Int.st %Int_res
 }
 
@@ -345,17 +375,23 @@ declare { i64, i1 } @llvm.ssub.with.overflow.i64(i64, i64) #3
 ; Function Attrs: alwaysinline
 define %Int.st @-A_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.st %a, 0
-  %value1 = extractvalue %Int.st %b, 0
-  %mul_res = call { i64, i1 } @llvm.smul.with.overflow.i64(i64 %value, i64 %value1)
+  %a.value = extractvalue %Int.st %a, 0
+  %a.value1 = alloca i64
+  store i64 %a.value, i64* %a.value1
+  %0 = load i64* %a.value1
+  %b.value = extractvalue %Int.st %b, 0
+  %b.value2 = alloca i64
+  store i64 %b.value, i64* %b.value2
+  %1 = load i64* %b.value2
+  %mul_res = call { i64, i1 } @llvm.smul.with.overflow.i64(i64 %0, i64 %1)
   %v = alloca { i64, i1 }
   store { i64, i1 } %mul_res, { i64, i1 }* %v
   %v.1.ptr = getelementptr inbounds { i64, i1 }* %v, i32 0, i32 1
-  %v.1 = load i1* %v.1.ptr
-  call void @condFail_b(i1 %v.1)
+  %2 = load i1* %v.1.ptr
+  call void @condFail_b(i1 %2)
   %v.0.ptr = getelementptr inbounds { i64, i1 }* %v, i32 0, i32 0
-  %v.0 = load i64* %v.0.ptr
-  %Int_res = call %Int.st @Int_i64(i64 %v.0)
+  %3 = load i64* %v.0.ptr
+  %Int_res = call %Int.st @Int_i64(i64 %3)
   ret %Int.st %Int_res
 }
 
@@ -365,9 +401,15 @@ declare { i64, i1 } @llvm.smul.with.overflow.i64(i64, i64) #3
 ; Function Attrs: alwaysinline
 define %Bool.st @-E-E_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.st %a, 0
-  %value1 = extractvalue %Int.st %b, 0
-  %cmp_eq_res = icmp eq i64 %value, %value1
+  %a.value = extractvalue %Int.st %a, 0
+  %a.value1 = alloca i64
+  store i64 %a.value, i64* %a.value1
+  %0 = load i64* %a.value1
+  %b.value = extractvalue %Int.st %b, 0
+  %b.value2 = alloca i64
+  store i64 %b.value, i64* %b.value2
+  %1 = load i64* %b.value2
+  %cmp_eq_res = icmp eq i64 %0, %1
   %Bool_res = call %Bool.st @Bool_b(i1 %cmp_eq_res)
   ret %Bool.st %Bool_res
 }
@@ -375,9 +417,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Bool.st @"!-E_Int_Int"(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.st %a, 0
-  %value1 = extractvalue %Int.st %b, 0
-  %cmp_neq_res = icmp ne i64 %value, %value1
+  %a.value = extractvalue %Int.st %a, 0
+  %a.value1 = alloca i64
+  store i64 %a.value, i64* %a.value1
+  %0 = load i64* %a.value1
+  %b.value = extractvalue %Int.st %b, 0
+  %b.value2 = alloca i64
+  store i64 %b.value, i64* %b.value2
+  %1 = load i64* %b.value2
+  %cmp_neq_res = icmp ne i64 %0, %1
   %Bool_res = call %Bool.st @Bool_b(i1 %cmp_neq_res)
   ret %Bool.st %Bool_res
 }
@@ -388,9 +436,15 @@ entry:
   %0 = call %Int.st @Int_i64(i64 0), !stdlib.call.optim !2
   %"!=.res" = call %Bool.st @"!-E_Int_Int"(%Int.st %b, %Int.st %0)
   call void @assert_Bool(%Bool.st %"!=.res")
-  %value = extractvalue %Int.st %a, 0
-  %value1 = extractvalue %Int.st %b, 0
-  %div_res = udiv i64 %value, %value1
+  %a.value = extractvalue %Int.st %a, 0
+  %a.value1 = alloca i64
+  store i64 %a.value, i64* %a.value1
+  %1 = load i64* %a.value1
+  %b.value = extractvalue %Int.st %b, 0
+  %b.value2 = alloca i64
+  store i64 %b.value, i64* %b.value2
+  %2 = load i64* %b.value2
+  %div_res = udiv i64 %1, %2
   %Int_res = call %Int.st @Int_i64(i64 %div_res)
   ret %Int.st %Int_res
 }
@@ -398,9 +452,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Int.st @"%_Int_Int"(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.st %a, 0
-  %value1 = extractvalue %Int.st %b, 0
-  %rem_res = urem i64 %value, %value1
+  %a.value = extractvalue %Int.st %a, 0
+  %a.value1 = alloca i64
+  store i64 %a.value, i64* %a.value1
+  %0 = load i64* %a.value1
+  %b.value = extractvalue %Int.st %b, 0
+  %b.value2 = alloca i64
+  store i64 %b.value, i64* %b.value2
+  %1 = load i64* %b.value2
+  %rem_res = urem i64 %0, %1
   %Int_res = call %Int.st @Int_i64(i64 %rem_res)
   ret %Int.st %Int_res
 }
@@ -408,9 +468,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Bool.st @-L_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.st %a, 0
-  %value1 = extractvalue %Int.st %b, 0
-  %cmp_lt_res = icmp slt i64 %value, %value1
+  %a.value = extractvalue %Int.st %a, 0
+  %a.value1 = alloca i64
+  store i64 %a.value, i64* %a.value1
+  %0 = load i64* %a.value1
+  %b.value = extractvalue %Int.st %b, 0
+  %b.value2 = alloca i64
+  store i64 %b.value, i64* %b.value2
+  %1 = load i64* %b.value2
+  %cmp_lt_res = icmp slt i64 %0, %1
   %Bool_res = call %Bool.st @Bool_b(i1 %cmp_lt_res)
   ret %Bool.st %Bool_res
 }
@@ -418,9 +484,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Bool.st @-L-E_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.st %a, 0
-  %value1 = extractvalue %Int.st %b, 0
-  %cmp_lte_res = icmp sle i64 %value, %value1
+  %a.value = extractvalue %Int.st %a, 0
+  %a.value1 = alloca i64
+  store i64 %a.value, i64* %a.value1
+  %0 = load i64* %a.value1
+  %b.value = extractvalue %Int.st %b, 0
+  %b.value2 = alloca i64
+  store i64 %b.value, i64* %b.value2
+  %1 = load i64* %b.value2
+  %cmp_lte_res = icmp sle i64 %0, %1
   %Bool_res = call %Bool.st @Bool_b(i1 %cmp_lte_res)
   ret %Bool.st %Bool_res
 }
@@ -428,9 +500,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Bool.st @-G-E_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.st %a, 0
-  %value1 = extractvalue %Int.st %b, 0
-  %cmp_gte_res = icmp sge i64 %value, %value1
+  %a.value = extractvalue %Int.st %a, 0
+  %a.value1 = alloca i64
+  store i64 %a.value, i64* %a.value1
+  %0 = load i64* %a.value1
+  %b.value = extractvalue %Int.st %b, 0
+  %b.value2 = alloca i64
+  store i64 %b.value, i64* %b.value2
+  %1 = load i64* %b.value2
+  %cmp_gte_res = icmp sge i64 %0, %1
   %Bool_res = call %Bool.st @Bool_b(i1 %cmp_gte_res)
   ret %Bool.st %Bool_res
 }
@@ -438,9 +516,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Bool.st @-G_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.st %a, 0
-  %value1 = extractvalue %Int.st %b, 0
-  %cmp_gt_res = icmp sgt i64 %value, %value1
+  %a.value = extractvalue %Int.st %a, 0
+  %a.value1 = alloca i64
+  store i64 %a.value, i64* %a.value1
+  %0 = load i64* %a.value1
+  %b.value = extractvalue %Int.st %b, 0
+  %b.value2 = alloca i64
+  store i64 %b.value, i64* %b.value2
+  %1 = load i64* %b.value2
+  %cmp_gt_res = icmp sgt i64 %0, %1
   %Bool_res = call %Bool.st @Bool_b(i1 %cmp_gt_res)
   ret %Bool.st %Bool_res
 }
@@ -448,9 +532,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Int.st @-L-L_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.st %a, 0
-  %value1 = extractvalue %Int.st %b, 0
-  %shl_res = shl i64 %value, %value1
+  %a.value = extractvalue %Int.st %a, 0
+  %a.value1 = alloca i64
+  store i64 %a.value, i64* %a.value1
+  %0 = load i64* %a.value1
+  %b.value = extractvalue %Int.st %b, 0
+  %b.value2 = alloca i64
+  store i64 %b.value, i64* %b.value2
+  %1 = load i64* %b.value2
+  %shl_res = shl i64 %0, %1
   %Int_res = call %Int.st @Int_i64(i64 %shl_res)
   ret %Int.st %Int_res
 }
@@ -458,9 +548,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Int.st @-G-G_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.st %a, 0
-  %value1 = extractvalue %Int.st %b, 0
-  %shr_res = ashr i64 %value, %value1
+  %a.value = extractvalue %Int.st %a, 0
+  %a.value1 = alloca i64
+  store i64 %a.value, i64* %a.value1
+  %0 = load i64* %a.value1
+  %b.value = extractvalue %Int.st %b, 0
+  %b.value2 = alloca i64
+  store i64 %b.value, i64* %b.value2
+  %1 = load i64* %b.value2
+  %shr_res = ashr i64 %0, %1
   %Int_res = call %Int.st @Int_i64(i64 %shr_res)
   ret %Int.st %Int_res
 }
@@ -468,9 +564,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Int.st @-T-N_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.st %a, 0
-  %value1 = extractvalue %Int.st %b, 0
-  %and_res = and i64 %value, %value1
+  %a.value = extractvalue %Int.st %a, 0
+  %a.value1 = alloca i64
+  store i64 %a.value, i64* %a.value1
+  %0 = load i64* %a.value1
+  %b.value = extractvalue %Int.st %b, 0
+  %b.value2 = alloca i64
+  store i64 %b.value, i64* %b.value2
+  %1 = load i64* %b.value2
+  %and_res = and i64 %0, %1
   %Int_res = call %Int.st @Int_i64(i64 %and_res)
   ret %Int.st %Int_res
 }
@@ -478,9 +580,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Int.st @-T-O_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.st %a, 0
-  %value1 = extractvalue %Int.st %b, 0
-  %or_res = or i64 %value, %value1
+  %a.value = extractvalue %Int.st %a, 0
+  %a.value1 = alloca i64
+  store i64 %a.value, i64* %a.value1
+  %0 = load i64* %a.value1
+  %b.value = extractvalue %Int.st %b, 0
+  %b.value2 = alloca i64
+  store i64 %b.value, i64* %b.value2
+  %1 = load i64* %b.value2
+  %or_res = or i64 %0, %1
   %Int_res = call %Int.st @Int_i64(i64 %or_res)
   ret %Int.st %Int_res
 }
@@ -488,9 +596,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Int.st @-T-R_Int_Int(%Int.st %a, %Int.st %b) #2 {
 entry:
-  %value = extractvalue %Int.st %a, 0
-  %value1 = extractvalue %Int.st %b, 0
-  %xor_res = xor i64 %value, %value1
+  %a.value = extractvalue %Int.st %a, 0
+  %a.value1 = alloca i64
+  store i64 %a.value, i64* %a.value1
+  %0 = load i64* %a.value1
+  %b.value = extractvalue %Int.st %b, 0
+  %b.value2 = alloca i64
+  store i64 %b.value, i64* %b.value2
+  %1 = load i64* %b.value2
+  %xor_res = xor i64 %0, %1
   %Int_res = call %Int.st @Int_i64(i64 %xor_res)
   ret %Int.st %Int_res
 }
@@ -498,9 +612,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Bool.st @-N-N_Bool_Bool(%Bool.st %a, %Bool.st %b) #2 {
 entry:
-  %value = extractvalue %Bool.st %a, 0
-  %value1 = extractvalue %Bool.st %b, 0
-  %cmp_and_res = and i1 %value, %value1
+  %a.value = extractvalue %Bool.st %a, 0
+  %a.value1 = alloca i1
+  store i1 %a.value, i1* %a.value1
+  %0 = load i1* %a.value1
+  %b.value = extractvalue %Bool.st %b, 0
+  %b.value2 = alloca i1
+  store i1 %b.value, i1* %b.value2
+  %1 = load i1* %b.value2
+  %cmp_and_res = and i1 %0, %1
   %Bool_res = call %Bool.st @Bool_b(i1 %cmp_and_res)
   ret %Bool.st %Bool_res
 }
@@ -508,9 +628,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Bool.st @-O-O_Bool_Bool(%Bool.st %a, %Bool.st %b) #2 {
 entry:
-  %value = extractvalue %Bool.st %a, 0
-  %value1 = extractvalue %Bool.st %b, 0
-  %cmp_or_res = or i1 %value, %value1
+  %a.value = extractvalue %Bool.st %a, 0
+  %a.value1 = alloca i1
+  store i1 %a.value, i1* %a.value1
+  %0 = load i1* %a.value1
+  %b.value = extractvalue %Bool.st %b, 0
+  %b.value2 = alloca i1
+  store i1 %b.value, i1* %b.value2
+  %1 = load i1* %b.value2
+  %cmp_or_res = or i1 %0, %1
   %Bool_res = call %Bool.st @Bool_b(i1 %cmp_or_res)
   ret %Bool.st %Bool_res
 }
@@ -518,9 +644,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Double.st @-P_Double_Double(%Double.st %a, %Double.st %b) #2 {
 entry:
-  %value = extractvalue %Double.st %a, 0
-  %value1 = extractvalue %Double.st %b, 0
-  %add_res = fadd double %value, %value1
+  %a.value = extractvalue %Double.st %a, 0
+  %a.value1 = alloca double
+  store double %a.value, double* %a.value1
+  %0 = load double* %a.value1
+  %b.value = extractvalue %Double.st %b, 0
+  %b.value2 = alloca double
+  store double %b.value, double* %b.value2
+  %1 = load double* %b.value2
+  %add_res = fadd double %0, %1
   %Double_res = call %Double.st @Double_f64(double %add_res)
   ret %Double.st %Double_res
 }
@@ -528,9 +660,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Double.st @-M_Double_Double(%Double.st %a, %Double.st %b) #2 {
 entry:
-  %value = extractvalue %Double.st %a, 0
-  %value1 = extractvalue %Double.st %b, 0
-  %sub_res = fsub double %value, %value1
+  %a.value = extractvalue %Double.st %a, 0
+  %a.value1 = alloca double
+  store double %a.value, double* %a.value1
+  %0 = load double* %a.value1
+  %b.value = extractvalue %Double.st %b, 0
+  %b.value2 = alloca double
+  store double %b.value, double* %b.value2
+  %1 = load double* %b.value2
+  %sub_res = fsub double %0, %1
   %Double_res = call %Double.st @Double_f64(double %sub_res)
   ret %Double.st %Double_res
 }
@@ -538,9 +676,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Double.st @-A_Double_Double(%Double.st %a, %Double.st %b) #2 {
 entry:
-  %value = extractvalue %Double.st %a, 0
-  %value1 = extractvalue %Double.st %b, 0
-  %mul_res = fmul double %value, %value1
+  %a.value = extractvalue %Double.st %a, 0
+  %a.value1 = alloca double
+  store double %a.value, double* %a.value1
+  %0 = load double* %a.value1
+  %b.value = extractvalue %Double.st %b, 0
+  %b.value2 = alloca double
+  store double %b.value, double* %b.value2
+  %1 = load double* %b.value2
+  %mul_res = fmul double %0, %1
   %Double_res = call %Double.st @Double_f64(double %mul_res)
   ret %Double.st %Double_res
 }
@@ -548,9 +692,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Double.st @-D_Double_Double(%Double.st %a, %Double.st %b) #2 {
 entry:
-  %value = extractvalue %Double.st %a, 0
-  %value1 = extractvalue %Double.st %b, 0
-  %div_res = fdiv double %value, %value1
+  %a.value = extractvalue %Double.st %a, 0
+  %a.value1 = alloca double
+  store double %a.value, double* %a.value1
+  %0 = load double* %a.value1
+  %b.value = extractvalue %Double.st %b, 0
+  %b.value2 = alloca double
+  store double %b.value, double* %b.value2
+  %1 = load double* %b.value2
+  %div_res = fdiv double %0, %1
   %Double_res = call %Double.st @Double_f64(double %div_res)
   ret %Double.st %Double_res
 }
@@ -558,9 +708,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Double.st @"%_Double_Double"(%Double.st %a, %Double.st %b) #2 {
 entry:
-  %value = extractvalue %Double.st %a, 0
-  %value1 = extractvalue %Double.st %b, 0
-  %rem_res = frem double %value, %value1
+  %a.value = extractvalue %Double.st %a, 0
+  %a.value1 = alloca double
+  store double %a.value, double* %a.value1
+  %0 = load double* %a.value1
+  %b.value = extractvalue %Double.st %b, 0
+  %b.value2 = alloca double
+  store double %b.value, double* %b.value2
+  %1 = load double* %b.value2
+  %rem_res = frem double %0, %1
   %Double_res = call %Double.st @Double_f64(double %rem_res)
   ret %Double.st %Double_res
 }
@@ -568,9 +724,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Bool.st @-L_Double_Double(%Double.st %a, %Double.st %b) #2 {
 entry:
-  %value = extractvalue %Double.st %a, 0
-  %value1 = extractvalue %Double.st %b, 0
-  %cmp_lt_res = fcmp olt double %value, %value1
+  %a.value = extractvalue %Double.st %a, 0
+  %a.value1 = alloca double
+  store double %a.value, double* %a.value1
+  %0 = load double* %a.value1
+  %b.value = extractvalue %Double.st %b, 0
+  %b.value2 = alloca double
+  store double %b.value, double* %b.value2
+  %1 = load double* %b.value2
+  %cmp_lt_res = fcmp olt double %0, %1
   %Bool_res = call %Bool.st @Bool_b(i1 %cmp_lt_res)
   ret %Bool.st %Bool_res
 }
@@ -578,9 +740,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Bool.st @-L-E_Double_Double(%Double.st %a, %Double.st %b) #2 {
 entry:
-  %value = extractvalue %Double.st %a, 0
-  %value1 = extractvalue %Double.st %b, 0
-  %cmp_lte_res = fcmp ole double %value, %value1
+  %a.value = extractvalue %Double.st %a, 0
+  %a.value1 = alloca double
+  store double %a.value, double* %a.value1
+  %0 = load double* %a.value1
+  %b.value = extractvalue %Double.st %b, 0
+  %b.value2 = alloca double
+  store double %b.value, double* %b.value2
+  %1 = load double* %b.value2
+  %cmp_lte_res = fcmp ole double %0, %1
   %Bool_res = call %Bool.st @Bool_b(i1 %cmp_lte_res)
   ret %Bool.st %Bool_res
 }
@@ -588,9 +756,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Bool.st @-G_Double_Double(%Double.st %a, %Double.st %b) #2 {
 entry:
-  %value = extractvalue %Double.st %a, 0
-  %value1 = extractvalue %Double.st %b, 0
-  %cmp_gt_res = fcmp ogt double %value, %value1
+  %a.value = extractvalue %Double.st %a, 0
+  %a.value1 = alloca double
+  store double %a.value, double* %a.value1
+  %0 = load double* %a.value1
+  %b.value = extractvalue %Double.st %b, 0
+  %b.value2 = alloca double
+  store double %b.value, double* %b.value2
+  %1 = load double* %b.value2
+  %cmp_gt_res = fcmp ogt double %0, %1
   %Bool_res = call %Bool.st @Bool_b(i1 %cmp_gt_res)
   ret %Bool.st %Bool_res
 }
@@ -598,9 +772,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Bool.st @-G-E_Double_Double(%Double.st %a, %Double.st %b) #2 {
 entry:
-  %value = extractvalue %Double.st %a, 0
-  %value1 = extractvalue %Double.st %b, 0
-  %cmp_gte_res = fcmp oge double %value, %value1
+  %a.value = extractvalue %Double.st %a, 0
+  %a.value1 = alloca double
+  store double %a.value, double* %a.value1
+  %0 = load double* %a.value1
+  %b.value = extractvalue %Double.st %b, 0
+  %b.value2 = alloca double
+  store double %b.value, double* %b.value2
+  %1 = load double* %b.value2
+  %cmp_gte_res = fcmp oge double %0, %1
   %Bool_res = call %Bool.st @Bool_b(i1 %cmp_gte_res)
   ret %Bool.st %Bool_res
 }
@@ -608,9 +788,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Bool.st @-E-E_Double_Double(%Double.st %a, %Double.st %b) #2 {
 entry:
-  %value = extractvalue %Double.st %a, 0
-  %value1 = extractvalue %Double.st %b, 0
-  %cmp_eq_res = fcmp oeq double %value, %value1
+  %a.value = extractvalue %Double.st %a, 0
+  %a.value1 = alloca double
+  store double %a.value, double* %a.value1
+  %0 = load double* %a.value1
+  %b.value = extractvalue %Double.st %b, 0
+  %b.value2 = alloca double
+  store double %b.value, double* %b.value2
+  %1 = load double* %b.value2
+  %cmp_eq_res = fcmp oeq double %0, %1
   %Bool_res = call %Bool.st @Bool_b(i1 %cmp_eq_res)
   ret %Bool.st %Bool_res
 }
@@ -618,9 +804,15 @@ entry:
 ; Function Attrs: alwaysinline
 define %Bool.st @"!-E_Double_Double"(%Double.st %a, %Double.st %b) #2 {
 entry:
-  %value = extractvalue %Double.st %a, 0
-  %value1 = extractvalue %Double.st %b, 0
-  %cmp_neq_res = fcmp one double %value, %value1
+  %a.value = extractvalue %Double.st %a, 0
+  %a.value1 = alloca double
+  store double %a.value, double* %a.value1
+  %0 = load double* %a.value1
+  %b.value = extractvalue %Double.st %b, 0
+  %b.value2 = alloca double
+  store double %b.value, double* %b.value2
+  %1 = load double* %b.value2
+  %cmp_neq_res = fcmp one double %0, %1
   %Bool_res = call %Bool.st @Bool_b(i1 %cmp_neq_res)
   ret %Bool.st %Bool_res
 }

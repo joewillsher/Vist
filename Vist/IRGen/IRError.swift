@@ -17,7 +17,7 @@ enum IRError: VistError {
     case cannotLookupPropertyFromNonVariable, notIRGenerator(ASTNode.Type), noParentType
     case cannotLookupPropertyFromThis(prop: String), cannotLookupElementFromNonTuple
     
-    case notTyped, notStructType
+    case notTyped, notStructType, cannotGetPtrFromParamStruct
     case invalidModule(LLVMModuleRef, String?), invalidFunction(String)
     
     case unreachable
@@ -48,6 +48,7 @@ enum IRError: VistError {
         case .cannotLookupElementFromNonTuple: return "Can only look up member by index from tuple"
             
         case .cannotLookupPropertyFromNonVariable: return "Only property lookup from a variable object is permitted"
+        case .cannotGetPtrFromParamStruct: return "Cannot lookup prop from param struct as base ptr is not defined"
         case .notIRGenerator(let t): return "'\(t)' is not an IR generator"
         case .noParentType: return "Parent type is not a struct or does not exist"
         case .notTyped: return "Expression is not typed"

@@ -22,8 +22,44 @@ protocol MutableVariable: RuntimeVariable {
     var value: LLVMValueRef { get set }
 }
 
-extension MutableVariable {
+extension Ty {
     
+    func variableForPtr(ptr: LLVMValueRef, irGen: IRGen) throws -> RuntimeVariable {
+        
+        switch self {
+        case let t as StructType:
+            return MutableStructVariable(type: t, ptr: ptr, irName: "", irGen: irGen)
+            
+        case let c as ConceptType:
+            return ExistentialVariable(ptr: ptr, conceptType: c, mutable: true, irName: "", irGen: irGen)
+            
+        case let type:
+            return ReferenceVariable(type: type, ptr: ptr, irName: "", irGen: irGen)
+        }
+    }
+    func variableForVal(val: LLVMValueRef, irGen: IRGen) throws -> RuntimeVariable {
+        
+        switch self {
+        case let t as StructType:
+            let v = MutableStructVariable.alloc(t, irGen: irGen)
+            v.value = val
+            return v
+            
+        case let e as ConceptType:
+            return ExistentialVariable.assignFromExistential(val, conceptType: e, mutable: true, irGen: irGen)
+            
+        case let type:
+            let v = ReferenceVariable.alloc(type, irName: "", irGen: irGen)
+            v.value = val
+            return v
+        }
+    }
+
+
+}
+
+
+extension MutableVariable {
     var value: LLVMValueRef {
         get {
             return LLVMBuildLoad(irGen.builder, ptr, irName)
@@ -53,18 +89,20 @@ final class ReferenceVariable: MutableVariable {
         self.irGen = irGen
         self.irName = irName
     }
+    convenience init(type: Ty, ptr: LLVMValueRef, irName: String, irGen: IRGen) {
+        self.init(type: type.globalType(irGen.module), ptr: ptr, irName: irName, irGen: irGen)
+    }
     
     /// returns pointer to allocated memory
-    class func alloc(type: LLVMTypeRef, irName: String, irGen: IRGen) -> ReferenceVariable {
-        let ptr = LLVMBuildAlloca(irGen.builder, type, irName)
-        return ReferenceVariable(type: type, ptr: ptr, irName: irName, irGen: irGen)
+    class func alloc(type: Ty, irName: String, irGen: IRGen) -> ReferenceVariable {
+        let ty = type.globalType(irGen.module)
+        let ptr = LLVMBuildAlloca(irGen.builder, ty, irName)
+        return ReferenceVariable(type: ty, ptr: ptr, irName: irName, irGen: irGen)
     }
 }
 
 
-/// A variable type passed by value
-///
-/// Instances use SSA
+/// A variable type passed by value, instances use SSA
 final class StackVariable: RuntimeVariable {
     var type: LLVMTypeRef
     var val: LLVMValueRef
@@ -87,4 +125,42 @@ final class StackVariable: RuntimeVariable {
         return val != nil
     }
 }
+
+/// Variables that can hold a mutable reference to self.
+///
+/// Self capturing functions use this by setting `parent` to the self pointer param
+/// any calls to load from/store into this variable are forwarded to the parent's
+/// member access functions
+final class SelfReferencingMutableVariable: MutableVariable {
+    var ptr: LLVMValueRef {
+        return try! parent.ptrToPropertyNamed(name)
+    }
+    var type: LLVMTypeRef {
+        return parent.typeOfPropertyNamed(name)!
+    }
+    
+    /// unowned ref to struct this belongs to
+    private unowned var parent: protocol<MutableVariable, StorageVariable>
+    
+    var irGen: IRGen
+    var irName: String { return "\(parent.irName).\(name)" }
+    let name: String
+    
+    init(propertyName name: String, parent: protocol<MutableVariable, StorageVariable>) {
+        self.name = name
+        self.parent = parent
+        self.irGen = parent.irGen
+    }
+    
+    var value: LLVMValueRef {
+        get {
+            return try! parent.loadPropertyNamed(self.name)
+        }
+        set {
+            try! parent.store(newValue, inPropertyNamed: name)
+        }
+    }
+    
+}
+
 

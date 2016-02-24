@@ -112,20 +112,6 @@ final class ExistentialVariable: StorageVariable, MutableVariable {
         
         return ExistentialVariable(ptr: ptr, conceptType: conceptType, mutable: mutable, opaqueInstancePointer: opaqueValueMem, irName: irName, irGen: irGen)
     }
-
-    
-    func assignFrom(structType: StructType) throws {
-        let opaquePtrType = BuiltinType.opaquePointer.globalType(irGen.module)
-        
-        let arrayPtr = LLVMBuildStructGEP(irGen.builder, ptr, 0, "\(irName).metadata")
-        let arr = try conceptType.existentialPropertyMetadataFor(structType, irGen: irGen)
-        LLVMBuildStore(irGen.builder, arr, arrayPtr)
-
-        let valueMem = LLVMBuildAlloca(irGen.builder, structType.globalType(irGen.module), "")
-        LLVMBuildStore(irGen.builder, value, valueMem)
-        let opaqueValueMem = LLVMBuildBitCast(irGen.builder, valueMem, opaquePtrType, "")
-        LLVMBuildStore(irGen.builder, opaqueValueMem, opaqueInstancePointer)
-    }
     
     /// Returns a pointer to the element at offset `offset` from the opaque
     /// element pointer
@@ -148,7 +134,6 @@ final class ExistentialVariable: StorageVariable, MutableVariable {
         get {
             if _propertyMetadataBasePtr != nil { return _propertyMetadataBasePtr }
             let i32PtrType = BuiltinType.pointer(to: BuiltinType.int(size: 32)).globalType(irGen.module)
-            
             let arr = LLVMBuildStructGEP(irGen.builder, ptr, 0, "\(irName).metadata_ptr") // [n x i32]*
             let v = LLVMBuildBitCast(irGen.builder, arr, i32PtrType, "metadata_base_ptr") // i32*
             _propertyMetadataBasePtr = v
@@ -164,7 +149,6 @@ final class ExistentialVariable: StorageVariable, MutableVariable {
         get {
             if _methodMetadataBasePtr != nil { return _methodMetadataBasePtr }
             let opaquePtrType = BuiltinType.pointer(to: BuiltinType.opaquePointer).globalType(irGen.module)
-            
             let arr = LLVMBuildStructGEP(irGen.builder, ptr, 1, "\(irName).vtable_ptr") // [n x i8*]*
             let v = LLVMBuildBitCast(irGen.builder, arr, opaquePtrType, "\(irName).vtable_base_ptr") // i8**
             _methodMetadataBasePtr = v
@@ -215,10 +199,6 @@ final class ExistentialVariable: StorageVariable, MutableVariable {
         
         if !mutable { cachedElementPtrs[name] = ptr }
         return ptr
-    }
-    
-    func loadPropertyNamed(name: String) throws -> LLVMValueRef {
-        return LLVMBuildLoad(irGen.builder, try ptrToPropertyNamed(name), name)
     }
     
     func ptrToMethodNamed(name: String, fnType: FnType) throws -> LLVMValueRef {

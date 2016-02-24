@@ -37,3 +37,18 @@ print 8 >> 3
 print 6 ~& 5
 print 5 ~| 3
 print 5 ~^ 3
+
+type Foo {
+    var a: Bar, b: Bool
+}
+
+let f = Foo (Bar false 1 1) false
+
+print f.a.x
+
+func meme :: Foo -> Foo = (d) {
+    return Foo d.a d.b
+}
+
+
+

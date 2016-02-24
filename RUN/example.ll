@@ -7,9 +7,10 @@ target triple = "x86_64-apple-macosx10.11.0"
 %Int.st = type { i64 }
 %Eq.ex = type { [2 x i32], [1 x i8*], i8* }
 %Baz.st = type { %Int.st, %Int.st }
+%Foo.st = type { %Bar.st, %Bool.st }
 
 define void @main() {
-foo_Eq_Int.exit131:
+foo_Eq_Int.exit151:
   tail call void @-Uprint_i64(i64 17)
   %0 = alloca %Bar.st, align 8
   %1 = alloca %Eq.ex, align 8
@@ -32,48 +33,48 @@ foo_Eq_Int.exit131:
   %6 = bitcast i8** %.opaque7 to %Bar.st**
   store %Bar.st* %0, %Bar.st** %6, align 8
   %7 = load %Eq.ex* %1, align 8
-  %.fca.0.0.extract23 = extractvalue %Eq.ex %7, 0, 0
-  %.fca.0.1.extract24 = extractvalue %Eq.ex %7, 0, 1
-  %.fca.2.extract26 = extractvalue %Eq.ex %7, 2
-  %8 = sext i32 %.fca.0.0.extract23 to i64
-  %9 = getelementptr i8* %.fca.2.extract26, i64 %8
+  %.fca.0.0.extract47 = extractvalue %Eq.ex %7, 0, 0
+  %.fca.0.1.extract48 = extractvalue %Eq.ex %7, 0, 1
+  %.fca.2.extract50 = extractvalue %Eq.ex %7, 2
+  %8 = sext i32 %.fca.0.0.extract47 to i64
+  %9 = getelementptr i8* %.fca.2.extract50, i64 %8
   %10 = bitcast i8* %9 to i64*
   %11 = load i64* %10, align 8
-  %12 = sext i32 %.fca.0.1.extract24 to i64
-  %13 = getelementptr i8* %.fca.2.extract26, i64 %12
+  %12 = sext i32 %.fca.0.1.extract48 to i64
+  %13 = getelementptr i8* %.fca.2.extract50, i64 %12
   %14 = bitcast i8* %13 to i64*
   %15 = load i64* %14, align 8
   %mul_res.i = call { i64, i1 } @llvm.smul.with.overflow.i64(i64 %15, i64 2) #1
   %mul_res.fca.1.extract.i = extractvalue { i64, i1 } %mul_res.i, 1
   br i1 %mul_res.fca.1.extract.i, label %inlined.-A_Int_Int.then.0.i.i, label %inlined.-A_Int_Int.condFail_b.exit.i
 
-inlined.-A_Int_Int.then.0.i.i:                    ; preds = %foo_Eq_Int.exit131
+inlined.-A_Int_Int.then.0.i.i:                    ; preds = %foo_Eq_Int.exit151
   call void @llvm.trap() #1
   unreachable
 
-inlined.-A_Int_Int.condFail_b.exit.i:             ; preds = %foo_Eq_Int.exit131
+inlined.-A_Int_Int.condFail_b.exit.i:             ; preds = %foo_Eq_Int.exit151
   %mul_res.fca.0.extract.i = extractvalue { i64, i1 } %mul_res.i, 0
-  %add_res.i116 = call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %mul_res.fca.0.extract.i, i64 2) #1
-  %add_res.fca.1.extract.i117 = extractvalue { i64, i1 } %add_res.i116, 1
-  br i1 %add_res.fca.1.extract.i117, label %inlined.-P_Int_Int.then.0.i.i118, label %inlined.-P_Int_Int.condFail_b.exit.i
+  %add_res.i136 = call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %mul_res.fca.0.extract.i, i64 2) #1
+  %add_res.fca.1.extract.i137 = extractvalue { i64, i1 } %add_res.i136, 1
+  br i1 %add_res.fca.1.extract.i137, label %inlined.-P_Int_Int.then.0.i.i138, label %inlined.-P_Int_Int.condFail_b.exit.i
 
-inlined.-P_Int_Int.then.0.i.i118:                 ; preds = %inlined.-A_Int_Int.condFail_b.exit.i
+inlined.-P_Int_Int.then.0.i.i138:                 ; preds = %inlined.-A_Int_Int.condFail_b.exit.i
   call void @llvm.trap() #1
   unreachable
 
 inlined.-P_Int_Int.condFail_b.exit.i:             ; preds = %inlined.-A_Int_Int.condFail_b.exit.i
-  %add_res.fca.0.extract.i119 = extractvalue { i64, i1 } %add_res.i116, 0
-  %add_res17.i = call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %11, i64 %add_res.fca.0.extract.i119) #1
-  %add_res.fca.1.extract19.i = extractvalue { i64, i1 } %add_res17.i, 1
-  br i1 %add_res.fca.1.extract19.i, label %inlined.-P_Int_Int.then.0.i20.i, label %foo2_Eq_Int.exit
+  %add_res.fca.0.extract.i139 = extractvalue { i64, i1 } %add_res.i136, 0
+  %add_res15.i = call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %11, i64 %add_res.fca.0.extract.i139) #1
+  %add_res.fca.1.extract17.i = extractvalue { i64, i1 } %add_res15.i, 1
+  br i1 %add_res.fca.1.extract17.i, label %inlined.-P_Int_Int.then.0.i18.i, label %foo2_Eq_Int.exit
 
-inlined.-P_Int_Int.then.0.i20.i:                  ; preds = %inlined.-P_Int_Int.condFail_b.exit.i
+inlined.-P_Int_Int.then.0.i18.i:                  ; preds = %inlined.-P_Int_Int.condFail_b.exit.i
   call void @llvm.trap() #1
   unreachable
 
 foo2_Eq_Int.exit:                                 ; preds = %inlined.-P_Int_Int.condFail_b.exit.i
-  %add_res.fca.0.extract23.i = extractvalue { i64, i1 } %add_res17.i, 0
-  tail call void @-Uprint_i64(i64 %add_res.fca.0.extract23.i)
+  %add_res.fca.0.extract21.i = extractvalue { i64, i1 } %add_res15.i, 0
+  tail call void @-Uprint_i64(i64 %add_res.fca.0.extract21.i)
   %16 = alloca %Baz.st, align 8
   %17 = alloca %Eq.ex, align 8
   %.prop_metadata14 = getelementptr inbounds %Eq.ex* %17, i64 0, i32 0
@@ -99,8 +100,8 @@ foo2_Eq_Int.exit:                                 ; preds = %inlined.-P_Int_Int.
   %.fca.2.extract = extractvalue %Eq.ex %23, 2
   %24 = bitcast i8* %.fca.1.0.extract to %Int.st (i8*)*
   %sum.res.i = call %Int.st %24(i8* %.fca.2.extract)
-  %value.i = extractvalue %Int.st %sum.res.i, 0
-  %add_res.i = call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %value.i, i64 2)
+  %a.value.i = extractvalue %Int.st %sum.res.i, 0
+  %add_res.i = call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %a.value.i, i64 2)
   %add_res.fca.1.extract.i = extractvalue { i64, i1 } %add_res.i, 1
   br i1 %add_res.fca.1.extract.i, label %inlined.-P_Int_Int.then.0.i.i, label %foo_Eq_Int.exit
 
@@ -116,6 +117,11 @@ foo_Eq_Int.exit:                                  ; preds = %foo2_Eq_Int.exit
   tail call void @-Uprint_i64(i64 4)
   tail call void @-Uprint_i64(i64 7)
   tail call void @-Uprint_i64(i64 6)
+  %f = alloca %Foo.st, align 8
+  store %Foo.st { %Bar.st { %Bool.st zeroinitializer, %Int.st { i64 1 }, %Int.st { i64 1 } }, %Bool.st zeroinitializer }, %Foo.st* %f, align 8
+  %25 = getelementptr inbounds %Foo.st* %f, i64 0, i32 0, i32 0, i32 0
+  %26 = load i1* %25, align 8
+  tail call void @-Uprint_b(i1 %26)
   ret void
 }
 
@@ -168,8 +174,25 @@ entry:
   ret %Int.st { i64 1 }
 }
 
+; Function Attrs: alwaysinline nounwind readnone
+define %Foo.st @Foo_Bar_Bool(%Bar.st %"$0", %Bool.st %"$1") #0 {
+entry:
+  %"$0.fca.0.0.extract" = extractvalue %Bar.st %"$0", 0, 0
+  %"$0.fca.1.0.extract" = extractvalue %Bar.st %"$0", 1, 0
+  %"$0.fca.2.0.extract" = extractvalue %Bar.st %"$0", 2, 0
+  %"$1.fca.0.extract" = extractvalue %Bool.st %"$1", 0
+  %Foo1.fca.0.0.0.insert = insertvalue %Foo.st undef, i1 %"$0.fca.0.0.extract", 0, 0, 0
+  %Foo1.fca.0.1.0.insert = insertvalue %Foo.st %Foo1.fca.0.0.0.insert, i64 %"$0.fca.1.0.extract", 0, 1, 0
+  %Foo1.fca.0.2.0.insert = insertvalue %Foo.st %Foo1.fca.0.1.0.insert, i64 %"$0.fca.2.0.extract", 0, 2, 0
+  %Foo1.fca.1.0.insert = insertvalue %Foo.st %Foo1.fca.0.2.0.insert, i1 %"$1.fca.0.extract", 1, 0
+  ret %Foo.st %Foo1.fca.1.0.insert
+}
+
 ; Function Attrs: noinline nounwind ssp uwtable
 declare void @-Uprint_i64(i64) #3
+
+; Function Attrs: noinline nounwind ssp uwtable
+declare void @-Uprint_b(i1 zeroext) #3
 
 ; Function Attrs: nounwind readnone
 declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #2

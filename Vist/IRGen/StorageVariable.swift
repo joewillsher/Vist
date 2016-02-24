@@ -10,17 +10,16 @@
 typealias StorageVariableProperty = (name: String, irType: LLVMTypeRef)
 typealias StorageVariableMethod = (mangledName: String, irType: LLVMTypeRef)
 
+/// An object which is an abstract type, including structs,
+/// tuples, and existentials
 protocol ContainerVariable: RuntimeVariable {
     var ptr: LLVMValueRef { get }
     var properties: [StorageVariableProperty] { get }
 }
 
 extension ContainerVariable {
-    
     var value: LLVMValueRef {
-        get {
-            return LLVMBuildLoad(irGen.builder, ptr, irName)
-        }
+        return LLVMBuildLoad(irGen.builder, ptr, irName)
     }
 }
 extension ContainerVariable where Self: MutableVariable {
@@ -36,7 +35,8 @@ extension ContainerVariable where Self: MutableVariable {
 }
 
 
-/// A struct object
+/// An object with a struct interface, i.e. it allows element
+/// access by strings and can define methods
 protocol StorageVariable: ContainerVariable {
     var typeName: String { get }
     var methods: [StorageVariableMethod] { get }
@@ -46,6 +46,8 @@ protocol StorageVariable: ContainerVariable {
     
     func ptrToMethodNamed(name: String, fnType: FnType) throws -> LLVMValueRef
     
+    /// ptr to the underlying object, for structs this is
+    /// identical to `ptr`
     var instancePtr: LLVMValueRef { get }
 }
 
@@ -57,33 +59,58 @@ protocol TupleVariable: ContainerVariable {
 
 
 
-
+// Default implementations of functions, these make sense as how
+// a struct-type object would typically allow member/method access
 
 extension StorageVariable {
     
+    // helper functions, cannot be overriden
     func indexOfPropertyNamed(name: String) -> Int? {
         return properties.indexOf { $0.name == name }
     }
     func indexOfMethodHavingMangledName(mangledName: String) -> Int? {
         return methods.indexOf { $0.mangledName == mangledName }
     }
+    func typeOfPropertyNamed(name: String) -> LLVMTypeRef? {
+        return indexOfPropertyNamed(name).map { properties[$0].irType }
+    }
     
+    // member access 
     func ptrToPropertyNamed(name: String) throws -> LLVMValueRef {
         guard let i = indexOfPropertyNamed(name) else { throw semaError(.noPropertyNamed(type: irName, property: name)) }
         return LLVMBuildStructGEP(irGen.builder, ptr, UInt32(i), "\(irName).\(name).ptr")
     }
-    
     func loadPropertyNamed(name: String) throws -> LLVMValueRef {
         return LLVMBuildLoad(irGen.builder, try ptrToPropertyNamed(name), "\(irName).\(name)")
     }
     
+    // method access
     func ptrToMethodNamed(name: String, fnType: FnType) -> LLVMValueRef {
         return LLVMGetNamedFunction(irGen.module, name.mangle(fnType.params, parentTypeName: typeName))
     }
     
+    // the instance ptr defaults to self
     var instancePtr: LLVMValueRef {
         return ptr
     }
+    
+    func variableForPropertyNamed(name: String, type: Ty?) throws -> RuntimeVariable {
+        
+        switch type {
+        case let t as StructType:
+            return MutableStructVariable(type: t, ptr: try ptrToPropertyNamed(name), irName: "", irGen: irGen)
+
+        case let c as ConceptType:
+            return ExistentialVariable(ptr: try ptrToPropertyNamed(name), conceptType: c, mutable: true, irName: "", irGen: irGen)
+            
+        case let type?:
+            return ReferenceVariable(type: type, ptr: try ptrToPropertyNamed(name), irName: "", irGen: irGen)
+            
+        default:
+            throw irGenError(.notTyped, userVisible: false)
+        }
+    }
+
 }
 
 extension TupleVariable {
@@ -96,9 +123,29 @@ extension TupleVariable {
         return LLVMBuildLoad(irGen.builder, ptrToElementAtIndex(index), "\(irName).\(index)")
     }
     
+    func variableForElementAtIndex(index: Int, type: Ty?) throws -> RuntimeVariable {
+        
+        switch type {
+        case let t as StructType:
+            return MutableStructVariable(type: t, ptr: ptrToElementAtIndex(index), irName: "", irGen: irGen)
+            
+        case let c as ConceptType:
+            return ExistentialVariable(ptr: ptrToElementAtIndex(index), conceptType: c, mutable: true, irName: "", irGen: irGen)
+            
+        case let type?:
+            return ReferenceVariable(type: type, ptr: ptrToElementAtIndex(index), irName: "", irGen: irGen)
+            
+        default:
+            throw irGenError(.notTyped, userVisible: false)
+        }
+    }
+    
 }
 
 
+// mutable container member store functions
+// these cannot be oberriden but they call on the function which allows
+// element access
 
 extension StorageVariable where Self: MutableVariable {
     
@@ -118,8 +165,10 @@ extension TupleVariable where Self: MutableVariable {
 
 
 
+// MARK: Implementations
 
-final class MutableStorageVariable: StorageVariable, MutableVariable {
+/// A mutable struct IR variable
+final class MutableStructVariable: StorageVariable, MutableVariable {
     var type: LLVMTypeRef
     var ptr: LLVMValueRef
     let irName: String
@@ -139,13 +188,14 @@ final class MutableStorageVariable: StorageVariable, MutableVariable {
     }
     
     /// returns pointer to allocated memory
-    class func alloc(type: StructType, irName: String = "", irGen: IRGen) -> MutableStorageVariable {
+    class func alloc(type: StructType, irName: String = "", irGen: IRGen) -> MutableStructVariable {
         let ptr = LLVMBuildAlloca(irGen.builder, type.globalType(irGen.module), irName)
-        return MutableStorageVariable(type: type, ptr: ptr, irName: irName, irGen: irGen)
+        return MutableStructVariable(type: type, ptr: ptr, irName: irName, irGen: irGen)
     }
     
 }
 
+/// A mutable tuple IR variable
 final class MutableTupleVariable: TupleVariable, MutableVariable {
     var type: LLVMTypeRef
     var ptr: LLVMValueRef
@@ -171,11 +221,11 @@ final class MutableTupleVariable: TupleVariable, MutableVariable {
 }
 
 
-
-/// function param struct, load by value not ptr
+// FIXME: ALlow this to generate a ptr if it needs to
+/// function param variable for storage types, load *by value* not ptr
 final class ParameterStorageVariable: StorageVariable {
     var type: LLVMTypeRef
-    var ptr: LLVMValueRef = nil
+    var ptr: LLVMValueRef = nil // cannot access through this
     let irName: String
     let typeName: String
     
@@ -199,49 +249,23 @@ final class ParameterStorageVariable: StorageVariable {
     // override StorageVariable's loadPropertyNamed(_:) function to
     // just extract the value from our value, and not use the pointer
     func loadPropertyNamed(name: String) throws -> LLVMValueRef {
-        guard let i = indexOfPropertyNamed(name) else { throw semaError(.noPropertyNamed(type: irName, property: name)) }
-        return LLVMBuildExtractValue(irGen.builder, value, UInt32(i), name)
-    }
-}
-
-
-
-/// Variables that can hold a mutable reference to self
-///
-/// Initialisers can do this easily because *"self"* is declared in the function
-///
-/// Self capturing functions use this by setting `parent` to the self pointer param 
-final class SelfReferencingMutableVariable: MutableVariable {
-    var ptr: LLVMValueRef {
-        return try! parent.ptrToPropertyNamed(name)
-    }
-    var type: LLVMTypeRef {
-        return nil
+        guard let i = indexOfPropertyNamed(name) else { throw irGenError(.noProperty(type: typeName, property: name)) }
+        return LLVMBuildExtractValue(irGen.builder, value, UInt32(i), "\(irName).\(name)")
     }
     
-    /// unowned ref to struct this belongs to
-    private unowned var parent: protocol<MutableVariable, StorageVariable>
-    
-    var irGen: IRGen
-    var irName: String { return "\(parent.irName).\(name)" }
-    let name: String
-    
-    init(propertyName name: String, parent: protocol<MutableVariable, StorageVariable>) {
-        self.name = name
-        self.parent = parent
-        self.irGen = parent.irGen
+    // cannot get props by ptr
+    func ptrToPropertyNamed(name: String) throws -> LLVMValueRef {
+        guard let i = indexOfPropertyNamed(name), ty = typeOfPropertyNamed(name) else { throw irGenError(.noProperty(type: typeName, property: name)) }
+        let val = LLVMBuildExtractValue(irGen.builder, value, UInt32(i), "\(irName).\(name)")
+        let ptr = LLVMBuildAlloca(irGen.builder, ty, "\(irName).\(name)")
+        LLVMBuildStore(irGen.builder, val, ptr)
+        return ptr
     }
     
-    var value: LLVMValueRef {
-        get {
-            return try! parent.loadPropertyNamed(self.name)
-        }
-        set {
-            try! parent.store(newValue, inPropertyNamed: name)
-        }
-    }
     
 }
+
+
 
 
 
