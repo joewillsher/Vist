@@ -1,0 +1,24 @@
+
+type Bar {
+var x: Bool, b: Int, a: Int
+}
+
+
+type Foo {
+var a: Bar, b: Bool
+}
+
+var f = Foo (Bar false 1 1) false
+
+f.a.x = true
+
+print f.a.x // test: true
+
+var a = (1, (2, 2), f)
+
+a.0 = 2
+a.1 = (1, 1)
+a.1 .1 = 4
+
+print a.0 // test: 2
+print a.1 .1 // test: 4

@@ -25,12 +25,8 @@ extension ContainerVariable {
 extension ContainerVariable where Self: MutableVariable {
     
     var value: LLVMValueRef {
-        get {
-            return LLVMBuildLoad(irGen.builder, ptr, irName)
-        }
-        set {
-            LLVMBuildStore(irGen.builder, newValue, ptr)
-        }
+        get { return LLVMBuildLoad(irGen.builder, ptr, irName) }
+        set { LLVMBuildStore(irGen.builder, newValue, ptr) }
     }
 }
 
@@ -253,15 +249,14 @@ final class ParameterStorageVariable: StorageVariable {
         return LLVMBuildExtractValue(irGen.builder, value, UInt32(i), "\(irName).\(name)")
     }
     
-    // cannot get props by ptr
+    // cannot get props by ptr; load, alloc, and store into new loc
     func ptrToPropertyNamed(name: String) throws -> LLVMValueRef {
-        guard let i = indexOfPropertyNamed(name), ty = typeOfPropertyNamed(name) else { throw irGenError(.noProperty(type: typeName, property: name)) }
-        let val = LLVMBuildExtractValue(irGen.builder, value, UInt32(i), "\(irName).\(name)")
+        guard let ty = typeOfPropertyNamed(name) else { throw irGenError(.noProperty(type: typeName, property: name)) }
+        let val = try loadPropertyNamed(name)
         let ptr = LLVMBuildAlloca(irGen.builder, ty, "\(irName).\(name)")
         LLVMBuildStore(irGen.builder, val, ptr)
         return ptr
     }
-    
     
 }
 

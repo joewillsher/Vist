@@ -10,7 +10,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 %Foo.st = type { %Bar.st, %Bool.st }
 
 define void @main() {
-foo_Eq_Int.exit151:
+foo_Eq_Int.exit191:
   tail call void @-Uprint_i64(i64 17)
   %0 = alloca %Bar.st, align 8
   %1 = alloca %Eq.ex, align 8
@@ -48,23 +48,23 @@ foo_Eq_Int.exit151:
   %mul_res.fca.1.extract.i = extractvalue { i64, i1 } %mul_res.i, 1
   br i1 %mul_res.fca.1.extract.i, label %inlined.-A_Int_Int.then.0.i.i, label %inlined.-A_Int_Int.condFail_b.exit.i
 
-inlined.-A_Int_Int.then.0.i.i:                    ; preds = %foo_Eq_Int.exit151
+inlined.-A_Int_Int.then.0.i.i:                    ; preds = %foo_Eq_Int.exit191
   call void @llvm.trap() #1
   unreachable
 
-inlined.-A_Int_Int.condFail_b.exit.i:             ; preds = %foo_Eq_Int.exit151
+inlined.-A_Int_Int.condFail_b.exit.i:             ; preds = %foo_Eq_Int.exit191
   %mul_res.fca.0.extract.i = extractvalue { i64, i1 } %mul_res.i, 0
-  %add_res.i136 = call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %mul_res.fca.0.extract.i, i64 2) #1
-  %add_res.fca.1.extract.i137 = extractvalue { i64, i1 } %add_res.i136, 1
-  br i1 %add_res.fca.1.extract.i137, label %inlined.-P_Int_Int.then.0.i.i138, label %inlined.-P_Int_Int.condFail_b.exit.i
+  %add_res.i176 = call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %mul_res.fca.0.extract.i, i64 2) #1
+  %add_res.fca.1.extract.i177 = extractvalue { i64, i1 } %add_res.i176, 1
+  br i1 %add_res.fca.1.extract.i177, label %inlined.-P_Int_Int.then.0.i.i178, label %inlined.-P_Int_Int.condFail_b.exit.i
 
-inlined.-P_Int_Int.then.0.i.i138:                 ; preds = %inlined.-A_Int_Int.condFail_b.exit.i
+inlined.-P_Int_Int.then.0.i.i178:                 ; preds = %inlined.-A_Int_Int.condFail_b.exit.i
   call void @llvm.trap() #1
   unreachable
 
 inlined.-P_Int_Int.condFail_b.exit.i:             ; preds = %inlined.-A_Int_Int.condFail_b.exit.i
-  %add_res.fca.0.extract.i139 = extractvalue { i64, i1 } %add_res.i136, 0
-  %add_res15.i = call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %11, i64 %add_res.fca.0.extract.i139) #1
+  %add_res.fca.0.extract.i179 = extractvalue { i64, i1 } %add_res.i176, 0
+  %add_res15.i = call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %11, i64 %add_res.fca.0.extract.i179) #1
   %add_res.fca.1.extract17.i = extractvalue { i64, i1 } %add_res15.i, 1
   br i1 %add_res.fca.1.extract17.i, label %inlined.-P_Int_Int.then.0.i18.i, label %foo2_Eq_Int.exit
 
@@ -119,9 +119,42 @@ foo_Eq_Int.exit:                                  ; preds = %foo2_Eq_Int.exit
   tail call void @-Uprint_i64(i64 6)
   %f = alloca %Foo.st, align 8
   store %Foo.st { %Bar.st { %Bool.st zeroinitializer, %Int.st { i64 1 }, %Int.st { i64 1 } }, %Bool.st zeroinitializer }, %Foo.st* %f, align 8
-  %25 = getelementptr inbounds %Foo.st* %f, i64 0, i32 0, i32 0, i32 0
-  %26 = load i1* %25, align 8
-  tail call void @-Uprint_b(i1 %26)
+  %.x.ptr = getelementptr inbounds %Foo.st* %f, i64 0, i32 0, i32 0
+  store %Bool.st { i1 true }, %Bool.st* %.x.ptr, align 8
+  tail call void @-Uprint_b(i1 true)
+  %25 = alloca { %Int.st, %Int.st }, align 8
+  %.0.ptr = getelementptr inbounds { %Int.st, %Int.st }* %25, i64 0, i32 0
+  store %Int.st { i64 2 }, %Int.st* %.0.ptr, align 8
+  %.1.ptr = getelementptr inbounds { %Int.st, %Int.st }* %25, i64 0, i32 1
+  store %Int.st { i64 2 }, %Int.st* %.1.ptr, align 8
+  %26 = load { %Int.st, %Int.st }* %25, align 8
+  %f26 = load %Foo.st* %f, align 8
+  %27 = alloca { %Int.st, { %Int.st, %Int.st }, %Foo.st }, align 8
+  %.0.ptr27 = getelementptr inbounds { %Int.st, { %Int.st, %Int.st }, %Foo.st }* %27, i64 0, i32 0
+  store %Int.st { i64 1 }, %Int.st* %.0.ptr27, align 8
+  %.1.ptr28 = getelementptr inbounds { %Int.st, { %Int.st, %Int.st }, %Foo.st }* %27, i64 0, i32 1
+  store { %Int.st, %Int.st } %26, { %Int.st, %Int.st }* %.1.ptr28, align 8
+  %.2.ptr = getelementptr inbounds { %Int.st, { %Int.st, %Int.st }, %Foo.st }* %27, i64 0, i32 2
+  store %Foo.st %f26, %Foo.st* %.2.ptr, align 8
+  %28 = load { %Int.st, { %Int.st, %Int.st }, %Foo.st }* %27, align 8
+  %a = alloca { %Int.st, { %Int.st, %Int.st }, %Foo.st }, align 8
+  store { %Int.st, { %Int.st, %Int.st }, %Foo.st } %28, { %Int.st, { %Int.st, %Int.st }, %Foo.st }* %a, align 8
+  %a.0.ptr = getelementptr inbounds { %Int.st, { %Int.st, %Int.st }, %Foo.st }* %a, i64 0, i32 0
+  store %Int.st { i64 2 }, %Int.st* %a.0.ptr, align 8
+  %a.1.ptr = getelementptr inbounds { %Int.st, { %Int.st, %Int.st }, %Foo.st }* %a, i64 0, i32 1
+  %29 = alloca { %Int.st, %Int.st }, align 8
+  %.0.ptr29 = getelementptr inbounds { %Int.st, %Int.st }* %29, i64 0, i32 0
+  store %Int.st { i64 1 }, %Int.st* %.0.ptr29, align 8
+  %.1.ptr30 = getelementptr inbounds { %Int.st, %Int.st }* %29, i64 0, i32 1
+  store %Int.st { i64 1 }, %Int.st* %.1.ptr30, align 8
+  %30 = load { %Int.st, %Int.st }* %29, align 8
+  store { %Int.st, %Int.st } %30, { %Int.st, %Int.st }* %a.1.ptr, align 8
+  %31 = getelementptr inbounds { %Int.st, { %Int.st, %Int.st }, %Foo.st }* %a, i64 0, i32 0, i32 0
+  %32 = load i64* %31, align 8
+  tail call void @-Uprint_i64(i64 %32)
+  %.1.ptr33 = getelementptr inbounds { %Int.st, { %Int.st, %Int.st }, %Foo.st }* %a, i64 0, i32 1, i32 1
+  store %Int.st { i64 4 }, %Int.st* %.1.ptr33, align 8
+  tail call void @-Uprint_i64(i64 4)
   ret void
 }
 

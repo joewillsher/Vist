@@ -16,6 +16,8 @@ protocol Printable {
     var astString: String { get }
 }
 
+// TODO: DebugPrintableType type 
+
 extension Printable {
     
     var astString: String {

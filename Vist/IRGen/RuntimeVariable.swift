@@ -30,6 +30,9 @@ extension Ty {
         case let t as StructType:
             return MutableStructVariable(type: t, ptr: ptr, irName: "", irGen: irGen)
             
+        case let t as TupleType:
+            return MutableTupleVariable(type: t, ptr: ptr, irName: "", irGen: irGen)
+            
         case let c as ConceptType:
             return ExistentialVariable(ptr: ptr, conceptType: c, mutable: true, irName: "", irGen: irGen)
             
@@ -39,20 +42,23 @@ extension Ty {
     }
     func variableForVal(val: LLVMValueRef, irGen: IRGen) throws -> RuntimeVariable {
         
+        let v: MutableVariable
         switch self {
         case let t as StructType:
-            let v = MutableStructVariable.alloc(t, irGen: irGen)
-            v.value = val
-            return v
+            v = MutableStructVariable.alloc(t, irGen: irGen)
+            
+        case let t as TupleType:
+            v = MutableTupleVariable.alloc(t, irGen: irGen)
             
         case let e as ConceptType:
             return ExistentialVariable.assignFromExistential(val, conceptType: e, mutable: true, irGen: irGen)
             
         case let type:
-            let v = ReferenceVariable.alloc(type, irName: "", irGen: irGen)
-            v.value = val
-            return v
+            v = ReferenceVariable.alloc(type, irName: "", irGen: irGen)
         }
+        
+        v.value = val
+        return v
     }
 
 
@@ -61,12 +67,8 @@ extension Ty {
 
 extension MutableVariable {
     var value: LLVMValueRef {
-        get {
-            return LLVMBuildLoad(irGen.builder, ptr, irName)
-        }
-        set {
-            LLVMBuildStore(irGen.builder, newValue, ptr)
-        }
+        get { return LLVMBuildLoad(irGen.builder, ptr, irName) }
+        set { LLVMBuildStore(irGen.builder, newValue, ptr) }
     }
     
 }
@@ -132,33 +134,26 @@ final class StackVariable: RuntimeVariable {
 /// any calls to load from/store into this variable are forwarded to the parent's
 /// member access functions
 final class SelfReferencingMutableVariable: MutableVariable {
-    var ptr: LLVMValueRef {
-        return try! parent.ptrToPropertyNamed(name)
-    }
-    var type: LLVMTypeRef {
-        return parent.typeOfPropertyNamed(name)!
-    }
+    var ptr: LLVMValueRef { return try! parent.ptrToPropertyNamed(name) }
+    var type: LLVMTypeRef { return parent.typeOfPropertyNamed(name)! }
     
+    typealias ParentType = protocol<MutableVariable, StorageVariable>
     /// unowned ref to struct this belongs to
-    private unowned var parent: protocol<MutableVariable, StorageVariable>
+    private unowned var parent: ParentType
     
     var irGen: IRGen
     var irName: String { return "\(parent.irName).\(name)" }
     let name: String
     
-    init(propertyName name: String, parent: protocol<MutableVariable, StorageVariable>) {
+    init(propertyName name: String, parent: ParentType) {
         self.name = name
         self.parent = parent
         self.irGen = parent.irGen
     }
     
     var value: LLVMValueRef {
-        get {
-            return try! parent.loadPropertyNamed(self.name)
-        }
-        set {
-            try! parent.store(newValue, inPropertyNamed: name)
-        }
+        get { return try! parent.loadPropertyNamed(name) }
+        set { try! parent.store(newValue, inPropertyNamed: name) }
     }
     
 }

@@ -133,8 +133,56 @@ entry:
   store %Foo.st %Foo_res, %Foo.st* %f
   %f.a.ptr = getelementptr inbounds %Foo.st* %f, i32 0, i32 0
   %.x.ptr = getelementptr inbounds %Bar.st* %f.a.ptr, i32 0, i32 0
-  %46 = load %Bool.st* %.x.ptr
-  call void @print_Bool(%Bool.st %46), !stdlib.call.optim !0
+  %46 = call %Bool.st @Bool_b(i1 true), !stdlib.call.optim !0
+  store %Bool.st %46, %Bool.st* %.x.ptr
+  %f.a.ptr24 = getelementptr inbounds %Foo.st* %f, i32 0, i32 0
+  %.x.ptr25 = getelementptr inbounds %Bar.st* %f.a.ptr24, i32 0, i32 0
+  %47 = load %Bool.st* %.x.ptr25
+  call void @print_Bool(%Bool.st %47), !stdlib.call.optim !0
+  %48 = call %Int.st @Int_i64(i64 1), !stdlib.call.optim !0
+  %49 = call %Int.st @Int_i64(i64 2), !stdlib.call.optim !0
+  %50 = call %Int.st @Int_i64(i64 2), !stdlib.call.optim !0
+  %51 = alloca { %Int.st, %Int.st }
+  %.0.ptr = getelementptr inbounds { %Int.st, %Int.st }* %51, i32 0, i32 0
+  store %Int.st %49, %Int.st* %.0.ptr
+  %.1.ptr = getelementptr inbounds { %Int.st, %Int.st }* %51, i32 0, i32 1
+  store %Int.st %50, %Int.st* %.1.ptr
+  %52 = load { %Int.st, %Int.st }* %51
+  %f26 = load %Foo.st* %f
+  %53 = alloca { %Int.st, { %Int.st, %Int.st }, %Foo.st }
+  %.0.ptr27 = getelementptr inbounds { %Int.st, { %Int.st, %Int.st }, %Foo.st }* %53, i32 0, i32 0
+  store %Int.st %48, %Int.st* %.0.ptr27
+  %.1.ptr28 = getelementptr inbounds { %Int.st, { %Int.st, %Int.st }, %Foo.st }* %53, i32 0, i32 1
+  store { %Int.st, %Int.st } %52, { %Int.st, %Int.st }* %.1.ptr28
+  %.2.ptr = getelementptr inbounds { %Int.st, { %Int.st, %Int.st }, %Foo.st }* %53, i32 0, i32 2
+  store %Foo.st %f26, %Foo.st* %.2.ptr
+  %54 = load { %Int.st, { %Int.st, %Int.st }, %Foo.st }* %53
+  %a = alloca { %Int.st, { %Int.st, %Int.st }, %Foo.st }
+  store { %Int.st, { %Int.st, %Int.st }, %Foo.st } %54, { %Int.st, { %Int.st, %Int.st }, %Foo.st }* %a
+  %a.0.ptr = getelementptr inbounds { %Int.st, { %Int.st, %Int.st }, %Foo.st }* %a, i32 0, i32 0
+  %55 = call %Int.st @Int_i64(i64 2), !stdlib.call.optim !0
+  store %Int.st %55, %Int.st* %a.0.ptr
+  %a.1.ptr = getelementptr inbounds { %Int.st, { %Int.st, %Int.st }, %Foo.st }* %a, i32 0, i32 1
+  %56 = call %Int.st @Int_i64(i64 1), !stdlib.call.optim !0
+  %57 = call %Int.st @Int_i64(i64 1), !stdlib.call.optim !0
+  %58 = alloca { %Int.st, %Int.st }
+  %.0.ptr29 = getelementptr inbounds { %Int.st, %Int.st }* %58, i32 0, i32 0
+  store %Int.st %56, %Int.st* %.0.ptr29
+  %.1.ptr30 = getelementptr inbounds { %Int.st, %Int.st }* %58, i32 0, i32 1
+  store %Int.st %57, %Int.st* %.1.ptr30
+  %59 = load { %Int.st, %Int.st }* %58
+  store { %Int.st, %Int.st } %59, { %Int.st, %Int.st }* %a.1.ptr
+  %a.0.ptr31 = getelementptr inbounds { %Int.st, { %Int.st, %Int.st }, %Foo.st }* %a, i32 0, i32 0
+  %60 = load %Int.st* %a.0.ptr31
+  call void @print_Int(%Int.st %60), !stdlib.call.optim !0
+  %a.1.ptr32 = getelementptr inbounds { %Int.st, { %Int.st, %Int.st }, %Foo.st }* %a, i32 0, i32 1
+  %.1.ptr33 = getelementptr inbounds { %Int.st, %Int.st }* %a.1.ptr32, i32 0, i32 1
+  %61 = call %Int.st @Int_i64(i64 4), !stdlib.call.optim !0
+  store %Int.st %61, %Int.st* %.1.ptr33
+  %a.1.ptr34 = getelementptr inbounds { %Int.st, { %Int.st, %Int.st }, %Foo.st }* %a, i32 0, i32 1
+  %.1.ptr35 = getelementptr inbounds { %Int.st, %Int.st }* %a.1.ptr34, i32 0, i32 1
+  %62 = load %Int.st* %.1.ptr35
+  call void @print_Int(%Int.st %62), !stdlib.call.optim !0
   ret void
 }
 
@@ -255,20 +303,6 @@ entry:
 }
 
 declare void @print_Bool(%Bool.st)
-
-define internal %Foo.st @meme_Foo(%Foo.st %d) {
-entry:
-  %d.a = extractvalue %Foo.st %d, 0
-  %d.a1 = alloca %Bar.st
-  store %Bar.st %d.a, %Bar.st* %d.a1
-  %0 = load %Bar.st* %d.a1
-  %d.b = extractvalue %Foo.st %d, 1
-  %d.b2 = alloca %Bool.st
-  store %Bool.st %d.b, %Bool.st* %d.b2
-  %1 = load %Bool.st* %d.b2
-  %Foo_res = call %Foo.st @Foo_Bar_Bool(%Bar.st %0, %Bool.st %1)
-  ret %Foo.st %Foo_res
-}
 
 attributes #0 = { alwaysinline }
 

@@ -93,8 +93,6 @@ extension MutationExpr : ExprTypeProvider {
             guard let v = scope[variable: variable.name] else { throw semaError(.noVariable(variable.name)) }
             guard v.mutable else { throw semaError(.immutableVariable(name: variable.name, type: variable.typeName)) }
             
-            return BuiltinType.null
-            
         case let lookup as LookupExpr:
             // if its a lookup expression we can 
             
@@ -203,7 +201,6 @@ extension VariableDecl : DeclTypeProvider {
         else if objectType == BuiltinType.null {
             throw semaError(.cannotAssignToNullExpression(name))
         }
-        
     }
 }
 

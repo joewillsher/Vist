@@ -135,10 +135,6 @@ final class VariableExpr: ChainableExpr {
     }
     
     var _type: Ty? = nil
-    
-    var desc: String {
-        return name
-    }
 }
 
 protocol ChainableExpr: Expr, RuntimeVariableProvider, IRGenerator {
@@ -254,10 +250,6 @@ final class TupleMemberLookupExpr: LookupExpr {
     }
     
     var _type: Ty? = nil
-    
-    var desc: String {
-        return "tuple.\(index)"
-    }
 }
 
 
@@ -282,10 +274,6 @@ final class ArrayExpr: ChainableExpr, Typed {
     
     var elType: Ty?
     var type: BuiltinType? = nil
-    
-    var desc: String {
-        return "array"
-    }
 }
 
 final class ArraySubscriptExpr: ChainableExpr {
@@ -298,10 +286,6 @@ final class ArraySubscriptExpr: ChainableExpr {
     }
     
     var _type: Ty? = nil
-    
-    var desc: String {
-        return "array[\(index)]"
-    }
 }
 
 

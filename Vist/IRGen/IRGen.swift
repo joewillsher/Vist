@@ -316,20 +316,14 @@ extension MutationExpr: IRGenerator {
         case let tupMemberLookup as TupleMemberLookupExpr:
             // tuple.1 = newValue
             
-            guard case let storageVariable as MutableTupleVariable = try tupMemberLookup.variableGen(stackFrame, irGen: irGen) else { throw irGenError(.noTupleMemberAt(tupMemberLookup.index)) }
-            
-            let val = try value.nodeCodeGen(stackFrame, irGen: irGen)
-            
-            try storageVariable.store(val, inElementAtIndex: tupMemberLookup.index)
+            guard case let storageVariable as MutableVariable = try tupMemberLookup.variableGen(stackFrame, irGen: irGen) else { throw irGenError(.noTupleMemberAt(tupMemberLookup.index)) }
+            storageVariable.value = try value.nodeCodeGen(stackFrame, irGen: irGen)
             
         case let propertyLookup as PropertyLookupExpr:
             // foo.bar = newValue
             
-            guard case let storageVariable as MutableStructVariable = try propertyLookup.variableGen(stackFrame, irGen: irGen) else { throw irGenError(.noProperty(type: propertyLookup.object.typeName, property: propertyLookup.propertyName)) }
-            
-            let val = try value.nodeCodeGen(stackFrame, irGen: irGen)
-            
-            try storageVariable.store(val, inPropertyNamed: propertyLookup.propertyName)
+            guard case let storageVariable as MutableVariable = try propertyLookup.variableGen(stackFrame, irGen: irGen) else { throw irGenError(.noProperty(type: propertyLookup.object.typeName, property: propertyLookup.propertyName)) }
+            storageVariable.value = try value.nodeCodeGen(stackFrame, irGen: irGen)
             
         default:
             throw irGenError(.unreachable, userVisible: false)
@@ -1074,7 +1068,6 @@ extension InitialiserDecl: IRGenerator {
             let tyName = paramTypeNames[i]
             
             let variable: RuntimeVariable
-            
             switch try stackFrame.type(tyName) {
             case let t as StructType:
                 variable = ParameterStorageVariable(val: param, type: t, irName: irName, irGen: irGen)
@@ -1090,7 +1083,7 @@ extension InitialiserDecl: IRGenerator {
         
         // allocate struct, self instance
         let s = MutableStructVariable.alloc(parentType, irName: parentType.name, irGen: irGen)
-        stackFrame.addVariable(s, named: name)
+        initStackFrame.addVariable(s, named: "self")
         
         // add struct properties into scope
         for el in parentProperties {
@@ -1111,7 +1104,6 @@ extension InitialiserDecl: IRGenerator {
     }
 }
 
-// TODO: Property lookup and tuple member lookup **EXPR**s conform into 1 type
 
 extension PropertyLookupExpr: RuntimeVariableProvider, IRGenerator {
 
@@ -1189,8 +1181,9 @@ extension TupleExpr: IRGenerator {
 extension TupleMemberLookupExpr: RuntimeVariableProvider, IRGenerator {
     
     func variableGen(stackFrame: StackFrame, irGen: IRGen) throws -> RuntimeVariable {
-        guard case let tupleVariable as TupleVariable = try object.variableGen(stackFrame, irGen: irGen) else { throw irGenError(.noVariable(desc)) }
-        return try tupleVariable.variableForElementAtIndex(index, type: object._type)
+        guard case let tupleVariable as TupleVariable = try object.variableGen(stackFrame, irGen: irGen) else { throw irGenError(.notTupleType) }
+        guard let type = _type else { throw irGenError(.notTyped, userVisible: false) }
+        return try type.variableForPtr(tupleVariable.ptrToElementAtIndex(index), irGen: irGen)
     }
     
     func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
@@ -1253,11 +1246,6 @@ extension AST {
         LLVMDisposeBuilder(builder)
     }
 }
-
-
-
-
-
 
 
 

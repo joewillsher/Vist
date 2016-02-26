@@ -17,7 +17,7 @@ enum IRError: VistError {
     case cannotLookupPropertyFromNonVariable, notIRGenerator(ASTNode.Type), noParentType
     case cannotLookupPropertyFromThis(prop: String), cannotLookupElementFromNonTuple
     
-    case notTyped, notStructType, cannotGetPtrFromParamStruct
+    case notTyped, notStructType, notTupleType, cannotGetPtrFromParamStruct
     case invalidModule(LLVMModuleRef, String?), invalidFunction(String)
     
     case unreachable
@@ -53,6 +53,7 @@ enum IRError: VistError {
         case .noParentType: return "Parent type is not a struct or does not exist"
         case .notTyped: return "Expression is not typed"
         case .notStructType: return "Expression was not a struct type"
+        case .notTupleType: return "Expression was not a tuple type"
             
         case .invalidModule(_, let desc): return "Invalid module generated:\n\t~\(desc?.stringByReplacingOccurrencesOfString("\n", withString: "\n\t~") ?? "")"
         case .invalidFunction(let f): return "Invalid function IR for '\(f)'"
