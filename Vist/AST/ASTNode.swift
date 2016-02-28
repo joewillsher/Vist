@@ -55,7 +55,6 @@ extension Typed {
     /// This property gets from and sets to the specifically typed `type` property
     /// 
     /// It should only be used by API, use the `type` property instead
-    ///
     @available(*, unavailable, message="Use the `type` property")
     var _type: Ty? {
         get {

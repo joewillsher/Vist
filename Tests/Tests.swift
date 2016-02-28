@@ -9,7 +9,6 @@
 import XCTest
 import Foundation
 
-
 // tests can define comments which define the expected output of the program
 // `// test: 1 2` will add "1\n2\n" to the expected result of the program
 

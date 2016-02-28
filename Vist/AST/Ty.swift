@@ -68,6 +68,10 @@ func == (lhs: Ty, rhs: Ty) -> Bool {
         return l.models(r)
     case (let l as ConceptType, let r as StorageType):
         return r.models(l)
+    case (let l as StorageType, let r as GenericType):
+        return l.validSubstitutionFor(r)
+    case (let l as GenericType, let r as StorageType):
+        return r.validSubstitutionFor(l)
     default:
         return lhs.globalType(nil) == rhs.globalType(nil)
     }

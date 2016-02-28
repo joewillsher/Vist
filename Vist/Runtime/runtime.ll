@@ -54,17 +54,8 @@ define void @"$print_b"(i1 zeroext %b) #0 {
   store i8 %2, i8* %1, align 1
   %3 = load i8* %1, align 1
   %4 = trunc i8 %3 to i1
-  br i1 %4, label %5, label %7
-
-; <label>:5                                       ; preds = %0
-  %6 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str3, i32 0, i32 0))
-  br label %9
-
-; <label>:7                                       ; preds = %0
-  %8 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([7 x i8]* @.str4, i32 0, i32 0))
-  br label %9
-
-; <label>:9                                       ; preds = %7, %5
+  %5 = select i1 %4, i8* getelementptr inbounds ([6 x i8]* @.str3, i32 0, i32 0), i8* getelementptr inbounds ([7 x i8]* @.str4, i32 0, i32 0)
+  %6 = call i32 (i8*, ...)* @printf(i8* %5)
   ret void
 }
 

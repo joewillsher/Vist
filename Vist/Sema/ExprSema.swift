@@ -14,6 +14,7 @@
 extension IntegerLiteral : ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
+        // TODO: modify the AST to make this a function call
         let ty = StdLib.IntType
         self.type = ty
         return ty

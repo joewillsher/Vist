@@ -78,6 +78,9 @@ extension StorageType {
         for p in concept.requiredProperties where !members.contains({ $0.name == p.name && $0.type == p.type }) { return false }
         return true
     }
+    func validSubstitutionFor(generic: GenericType) -> Bool {
+        return generic.concepts.map(models).contains(false)
+    }
 }
 
 

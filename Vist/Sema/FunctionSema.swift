@@ -60,23 +60,7 @@ extension FuncDecl: DeclTypeProvider {
 extension BinaryExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
-        
-        let args = [lhs, rhs]
-        
-        // gen types for objects in call
-        for arg in args {
-            try arg.typeForNode(scope)
-        }
-        
-        guard let argTypes = args.optionalMap({ $0._type }) else { throw semaError(.paramsNotTyped, userVisible: false) }
-        
-        let (mangledName, fnType) = try scope.function(op, argTypes: argTypes)
-        self.mangledName = mangledName
-        
-        // assign type to self and return
-        self.fnType = fnType
-        self._type = fnType.returns
-        return fnType.returns
+        return try semaFunctionCall(scope)
     }
 }
 
@@ -84,14 +68,21 @@ extension BinaryExpr: ExprTypeProvider {
 extension FunctionCallExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
+        return try semaFunctionCall(scope)
+    }
+}
+
+extension FunctionCall {
+    
+    func semaFunctionCall(scope: SemaScope) throws -> Ty {
         
         // gen types for objects in call
-        for arg in args.elements {
+        for arg in argArr {
             try arg.typeForNode(scope)
         }
         
         // get from table
-        guard let argTypes = args.elements.optionalMap({ $0._type }) else { throw semaError(.paramsNotTyped, userVisible: false) }
+        guard let argTypes = argArr.optionalMap({ $0._type }) else { throw semaError(.paramsNotTyped, userVisible: false) }
         
         let (mangledName, fnType) = try scope.function(name, argTypes: argTypes)
         self.mangledName = mangledName

@@ -19,10 +19,11 @@ typealias VistError = protocol<ErrorType, CustomStringConvertible>
 /// If a source location is defined, the result is wrapped in a `PositionedError` struct
 func error(err: VistError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = #file, line: UInt = #line, function: String = #function) -> VistError {
     
-    var error = err
-    
-    #if DEBUG
-        error = DebugError(error: error, userVisible: userVisible, file: file, line: line, function: function)
+    var error: VistError
+    #if TEST
+        error = err
+    #elseif DEBUG
+        error = DebugError(error: err, userVisible: userVisible, file: file, line: line, function: function)
     #else
         if !userVisible {
             fatalError("Compiler assertion failed \(err)", file: file, line: line)
@@ -42,7 +43,8 @@ func semaError(err: SemaError, loc: SourceRange? = nil, userVisible: Bool = true
 func parseError(err: ParseError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = #file, line: UInt = #line, function: String = #function) -> VistError {
     return error(err, loc: loc, userVisible: userVisible, file: file, line: line, function: function)
 }
-func irGenError(err: IRError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = #file, line: UInt = #line, function: String = #function) -> VistError {
+/// IRGen error default `userVisible` is false
+func irGenError(err: IRError, loc: SourceRange? = nil, userVisible: Bool = false, file: StaticString = #file, line: UInt = #line, function: String = #function) -> VistError {
     return error(err, loc: loc, userVisible: userVisible, file: file, line: line, function: function)
 }
 

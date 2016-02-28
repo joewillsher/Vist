@@ -164,7 +164,16 @@ final class MutationExpr: Expr {
 //  MARK:                                               Operators
 //-------------------------------------------------------------------------------------------------------------------------
 
-final class BinaryExpr: Expr {
+protocol FunctionCall: class, Expr, _Typed {
+    var name: String { get }
+    var argArr: [Expr] { get }
+    var _type: Ty? { get set }
+
+    var mangledName: String { get set }
+    var fnType: FnType? { get set }
+}
+
+final class BinaryExpr: FunctionCall {
     let op: String
     let lhs: Expr, rhs: Expr
     
@@ -175,6 +184,9 @@ final class BinaryExpr: Expr {
     }
     
     var mangledName: String = ""
+    
+    var name: String { return op }
+    var argArr: [Expr] { return [lhs, rhs] }
     
     var fnType: FnType? = nil
     var _type: Ty? = nil
@@ -211,7 +223,7 @@ final class PostfixExpr: Expr {
 //  MARK:                                               Functions
 //-------------------------------------------------------------------------------------------------------------------------
 
-final class FunctionCallExpr: Expr {
+final class FunctionCallExpr: Expr, FunctionCall {
     let name: String
     let args: TupleExpr
     
@@ -222,6 +234,7 @@ final class FunctionCallExpr: Expr {
     }
     
     var mangledName: String
+    var argArr: [Expr] { return args.elements }
     
     var fnType: FnType? = nil
     var _type: Ty? = nil

@@ -88,7 +88,6 @@ struct StdLib {
     /// Container initialised with functions, provides subscript to look up functions by name and type
     ///
     /// Adds the `stdlib.call.optim` metadata tag to all of them
-    ///
     private static let functionContainer = FunctionContainer(functions: functions, types: types, metadata: ["stdlib.call.optim"])
     
     
@@ -100,7 +99,6 @@ struct StdLib {
     // MARK: Exposed functions
     
     /// Returns the struct type of a named StdLib object
-    ///
     static func getStdLibType(id: String) -> StructType? {
         return functionContainer[type: id]
     }
@@ -112,7 +110,6 @@ struct StdLib {
     /// - parameter args: Applied arg types
     ///
     /// - returns: An optional tuple of `(mangledName, type)`
-    ///
     static func getStdLibFunction(name: String, args: [Ty]) -> (mangledName: String, type: FnType)? {
         return functionContainer[fn: name, types: args]
     }    
@@ -122,7 +119,6 @@ struct StdLib {
     /// - parameter id: mangled name
     ///
     /// - returns: An optional tuple of `(type, functionIRRef)`
-    ///
     static func getFunctionIR(mangledName: String, module: LLVMModuleRef) -> (type: FnType, functionIR: LLVMValueRef)? {
         guard let (mangledName, type) = functionContainer[mangledName: mangledName] else { return nil }
         let functionType = type.globalType(module)
