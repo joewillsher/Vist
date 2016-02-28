@@ -444,7 +444,7 @@ extension FunctionCallExpr: IRGenerator {
 }
 
 
-private extension FunctionType {
+private extension DefinedFunctionType {
     
     private func paramTypeIR(irGen: IRGen) throws -> [LLVMTypeRef] {
         guard let res = type else { throw irGenError(.typeNotFound) }

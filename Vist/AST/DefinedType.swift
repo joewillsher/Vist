@@ -7,7 +7,7 @@
 //
 
 
-final class FunctionType {
+final class DefinedFunctionType {
     let paramType: DefinedType
     let returnType: DefinedType
     
@@ -24,7 +24,7 @@ enum DefinedType {
     case void
     case type(String)
     indirect case tuple([DefinedType])
-    case function(FunctionType)
+    case function(DefinedFunctionType)
     
     init(_ str: String) {
         self = .type(str)
@@ -84,7 +84,7 @@ enum DefinedType {
 
 
 
-extension FunctionType {
+extension DefinedFunctionType {
     
     func params(scope: SemaScope) throws -> [Ty] {
         return try paramType.tyArr(scope)

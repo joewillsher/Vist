@@ -22,7 +22,12 @@
 		<key>Tests.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>3</integer>
+			<integer>1</integer>
+		</dict>
+		<key>VHIR.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>2</integer>
 		</dict>
 		<key>Vist.xcscheme</key>
 		<dict>
@@ -33,6 +38,11 @@
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
 		<key>D41BF5491C5CD797004A1962</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>D457F6201C83658C0095EDED</key>
 		<dict>
 			<key>primary</key>
 			<true/>
