@@ -24,6 +24,20 @@
 		D45D4CF91C73962F00918E04 /* StorageType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45D4CF71C73962F00918E04 /* StorageType.swift */; };
 		D45D4D001C75CB4F00918E04 /* IRMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45D4CFF1C75CB4E00918E04 /* IRMetadata.swift */; };
 		D45D4D011C75CB4F00918E04 /* IRMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45D4CFF1C75CB4E00918E04 /* IRMetadata.swift */; };
+		D45FC7AD1C8450CF0060F974 /* VHIR.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45FC7AC1C8450CF0060F974 /* VHIR.swift */; };
+		D45FC7AE1C8450CF0060F974 /* VHIR.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45FC7AC1C8450CF0060F974 /* VHIR.swift */; };
+		D45FC7B01C8450E30060F974 /* Module.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45FC7AF1C8450E30060F974 /* Module.swift */; };
+		D45FC7B11C8450E30060F974 /* Module.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45FC7AF1C8450E30060F974 /* Module.swift */; };
+		D45FC7B31C8450E90060F974 /* Function.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45FC7B21C8450E90060F974 /* Function.swift */; };
+		D45FC7B41C8450E90060F974 /* Function.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45FC7B21C8450E90060F974 /* Function.swift */; };
+		D45FC7B61C8450F40060F974 /* BasicBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45FC7B51C8450F40060F974 /* BasicBlock.swift */; };
+		D45FC7B71C8450F40060F974 /* BasicBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45FC7B51C8450F40060F974 /* BasicBlock.swift */; };
+		D45FC7B91C8450FC0060F974 /* Inst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45FC7B81C8450FC0060F974 /* Inst.swift */; };
+		D45FC7BA1C8450FC0060F974 /* Inst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45FC7B81C8450FC0060F974 /* Inst.swift */; };
+		D45FC7BC1C8451010060F974 /* Value.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45FC7BB1C8451010060F974 /* Value.swift */; };
+		D45FC7BD1C8451010060F974 /* Value.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45FC7BB1C8451010060F974 /* Value.swift */; };
+		D45FC7BF1C8453130060F974 /* Builder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45FC7BE1C8453130060F974 /* Builder.swift */; };
+		D45FC7C01C8453130060F974 /* Builder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45FC7BE1C8453130060F974 /* Builder.swift */; };
 		D46BC1BD1C66587300B9147E /* ScopeNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46BC1BC1C66587300B9147E /* ScopeNode.swift */; };
 		D46BC1BE1C66587300B9147E /* ScopeNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46BC1BC1C66587300B9147E /* ScopeNode.swift */; };
 		D46BC1C01C6685C500B9147E /* DefinedType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46BC1BF1C6685C500B9147E /* DefinedType.swift */; };
@@ -179,6 +193,13 @@
 		D45D4CF71C73962F00918E04 /* StorageType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StorageType.swift; path = AST/StorageType.swift; sourceTree = "<group>"; };
 		D45D4CFE1C74F5E400918E04 /* stdlib.bc */ = {isa = PBXFileReference; lastKnownFileType = file; name = stdlib.bc; path = stdlib/stdlib.bc; sourceTree = "<group>"; };
 		D45D4CFF1C75CB4E00918E04 /* IRMetadata.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IRMetadata.swift; path = IRGen/IRMetadata.swift; sourceTree = "<group>"; };
+		D45FC7AC1C8450CF0060F974 /* VHIR.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VHIR.swift; path = Vist/VHIR/VHIR.swift; sourceTree = SOURCE_ROOT; };
+		D45FC7AF1C8450E30060F974 /* Module.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Module.swift; path = Vist/VHIR/Module.swift; sourceTree = SOURCE_ROOT; };
+		D45FC7B21C8450E90060F974 /* Function.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Function.swift; path = Vist/VHIR/Function.swift; sourceTree = SOURCE_ROOT; };
+		D45FC7B51C8450F40060F974 /* BasicBlock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BasicBlock.swift; path = Vist/VHIR/BasicBlock.swift; sourceTree = SOURCE_ROOT; };
+		D45FC7B81C8450FC0060F974 /* Inst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Inst.swift; path = Vist/VHIR/Inst.swift; sourceTree = SOURCE_ROOT; };
+		D45FC7BB1C8451010060F974 /* Value.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Value.swift; path = Vist/VHIR/Value.swift; sourceTree = SOURCE_ROOT; };
+		D45FC7BE1C8453130060F974 /* Builder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Builder.swift; path = Vist/VHIR/Builder.swift; sourceTree = SOURCE_ROOT; };
 		D4644BE31C40619800364B99 /* stdlib.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib.ll; path = stdlib/stdlib.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D4644BE51C40619800364B99 /* stdlib.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = stdlib.vist; path = stdlib/stdlib.vist; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D4644BE61C4072D600364B99 /* runtime.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = runtime.cpp; path = Runtime/runtime.cpp; sourceTree = "<group>"; };
@@ -352,6 +373,13 @@
 		D457F6221C83658C0095EDED /* VHIR */ = {
 			isa = PBXGroup;
 			children = (
+				D45FC7AC1C8450CF0060F974 /* VHIR.swift */,
+				D45FC7AF1C8450E30060F974 /* Module.swift */,
+				D45FC7BE1C8453130060F974 /* Builder.swift */,
+				D45FC7B21C8450E90060F974 /* Function.swift */,
+				D45FC7B51C8450F40060F974 /* BasicBlock.swift */,
+				D45FC7BB1C8451010060F974 /* Value.swift */,
+				D45FC7B81C8450FC0060F974 /* Inst.swift */,
 			);
 			name = VHIR;
 			path = ../VHIR;
@@ -663,6 +691,7 @@
 				D4E35B561C5D0CA000683486 /* Token.swift in Sources */,
 				D4E35B571C5D0CA000683486 /* Parser.swift in Sources */,
 				D4E35B581C5D0CA000683486 /* ASTNode.swift in Sources */,
+				D45FC7BA1C8450FC0060F974 /* Inst.swift in Sources */,
 				D4E35B591C5D0CA000683486 /* Expr.swift in Sources */,
 				D4E35B5A1C5D0CA000683486 /* Stmt.swift in Sources */,
 				D4E35B7C1C5D0E7100683486 /* Config.swift in Sources */,
@@ -685,16 +714,20 @@
 				D4E35B661C5D0CA000683486 /* SemaScope.swift in Sources */,
 				D4E35B671C5D0CA000683486 /* Mangle.swift in Sources */,
 				D4E35B681C5D0CA000683486 /* Initialiser.swift in Sources */,
+				D45FC7C01C8453130060F974 /* Builder.swift in Sources */,
 				D4DFFD581C7E1B9A001C677E /* IRFunction.swift in Sources */,
 				D4E35B691C5D0CA000683486 /* TypeProvider.swift in Sources */,
 				D4FC9D191C5FEE4E0031F1BD /* IRError.swift in Sources */,
+				D45FC7BD1C8451010060F974 /* Value.swift in Sources */,
 				D4C697E11C6A5C9200645AD1 /* ConceptType.swift in Sources */,
 				D4E35B6A1C5D0CA000683486 /* ASTInterface.swift in Sources */,
+				D45FC7AE1C8450CF0060F974 /* VHIR.swift in Sources */,
 				D4E35B6B1C5D0CA000683486 /* LinkAST.swift in Sources */,
 				D45D4CF91C73962F00918E04 /* StorageType.swift in Sources */,
 				D4E35B6C1C5D0CA000683486 /* IRGen.swift in Sources */,
 				D4E35B6D1C5D0CA000683486 /* StackFrame.swift in Sources */,
 				D4C697E41C6AB80E00645AD1 /* ExistentialVariable.swift in Sources */,
+				D45FC7B71C8450F40060F974 /* BasicBlock.swift in Sources */,
 				D45D4D011C75CB4F00918E04 /* IRMetadata.swift in Sources */,
 				D4E35B6E1C5D0CA000683486 /* RuntimeVariable.swift in Sources */,
 				D4E35B6F1C5D0CA000683486 /* ArrayVariable.swift in Sources */,
@@ -702,8 +735,10 @@
 				D4E347251C6253D700CC2F8E /* ExprSema.swift in Sources */,
 				D4E35B821C5E3ECE00683486 /* Expected.swift in Sources */,
 				D4E35B701C5D0CA000683486 /* StorageVariable.swift in Sources */,
+				D45FC7B41C8450E90060F974 /* Function.swift in Sources */,
 				D4E35B711C5D0CA000683486 /* BuiltinFunction.swift in Sources */,
 				D4C697EB1C6B7F4E00645AD1 /* CreateType.cpp in Sources */,
+				D45FC7B11C8450E30060F974 /* Module.swift in Sources */,
 				D4E35B731C5D0CA000683486 /* Intrinsic.cpp in Sources */,
 				D4E3472F1C62552B00CC2F8E /* StmtSema.swift in Sources */,
 				D4E5E3301C8367D900457B73 /* VHIRTests.swift in Sources */,
@@ -726,12 +761,15 @@
 				D431F4C31C55743C005D439F /* StdLibInline.cpp in Sources */,
 				D46BC1BD1C66587300B9147E /* ScopeNode.swift in Sources */,
 				D497A78D1C3B012700DFE39E /* StackFrame.swift in Sources */,
+				D45FC7BF1C8453130060F974 /* Builder.swift in Sources */,
 				D4FC9D181C5FEE4E0031F1BD /* IRError.swift in Sources */,
 				D4A2CC111C4FF58C00BB9A12 /* Builtin.swift in Sources */,
 				D46BC1C01C6685C500B9147E /* DefinedType.swift in Sources */,
 				D4A2CBFF1C4FF52400BB9A12 /* Decl.swift in Sources */,
+				D45FC7B91C8450FC0060F974 /* Inst.swift in Sources */,
 				D45D4D001C75CB4F00918E04 /* IRMetadata.swift in Sources */,
 				D497A76C1C3B003A00DFE39E /* main.swift in Sources */,
+				D45FC7B31C8450E90060F974 /* Function.swift in Sources */,
 				D4E3472B1C62550D00CC2F8E /* StructSema.swift in Sources */,
 				D497A77B1C3B00C600DFE39E /* Mangle.swift in Sources */,
 				D4A2CC131C503D1800BB9A12 /* StdLib.swift in Sources */,
@@ -748,6 +786,7 @@
 				D4A2CC0A1C4FF56500BB9A12 /* ASTNode.swift in Sources */,
 				D497A77D1C3B00C600DFE39E /* SemaScope.swift in Sources */,
 				D4DFFD571C7E1B9A001C677E /* IRFunction.swift in Sources */,
+				D45FC7AD1C8450CF0060F974 /* VHIR.swift in Sources */,
 				D497A78E1C3B012700DFE39E /* StorageVariable.swift in Sources */,
 				D497A76B1C3B003A00DFE39E /* Compile.swift in Sources */,
 				D497A7941C3B015700DFE39E /* Print.swift in Sources */,
@@ -755,6 +794,7 @@
 				D4A2CC001C4FF52400BB9A12 /* Expr.swift in Sources */,
 				D4C697E01C6A5C9200645AD1 /* ConceptType.swift in Sources */,
 				D497A7831C3B00FE00DFE39E /* ASTInterface.swift in Sources */,
+				D45FC7BC1C8451010060F974 /* Value.swift in Sources */,
 				D497A78B1C3B012700DFE39E /* IRGen.swift in Sources */,
 				D4C697E31C6AB80E00645AD1 /* ExistentialVariable.swift in Sources */,
 				D4DE28141C5906830096E798 /* FunctionContainer.swift in Sources */,
@@ -775,7 +815,9 @@
 				D41BF5531C5CD996004A1962 /* CommandLine.swift in Sources */,
 				D4FAE45C1C3DCEEE00C9EE05 /* BuiltinFunction.swift in Sources */,
 				D4A2CC0D1C4FF56500BB9A12 /* StructType.swift in Sources */,
+				D45FC7B01C8450E30060F974 /* Module.swift in Sources */,
 				D4A2CC031C4FF52D00BB9A12 /* Parser.swift in Sources */,
+				D45FC7B61C8450F40060F974 /* BasicBlock.swift in Sources */,
 				D4A2CC0E1C4FF56500BB9A12 /* TupleType.swift in Sources */,
 				D4A2CC0F1C4FF56500BB9A12 /* Ty.swift in Sources */,
 				D4A2CC011C4FF52400BB9A12 /* Stmt.swift in Sources */,

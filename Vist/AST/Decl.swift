@@ -34,12 +34,12 @@ final class VariableDeclGroup: Decl, StructMemberExpr {
 
 final class FuncDecl: Decl, StructMemberExpr {
     let name: String
-    let fnType: FunctionType
+    let fnType: DefinedFunctionType
     let impl: FunctionImplementationExpr?
     let attrs: [FunctionAttributeExpr]
     let genericParameters: [ConstrainedType]
     
-    init(name: String, type: FunctionType, impl: FunctionImplementationExpr?, attrs: [FunctionAttributeExpr], genericParameters: [ConstrainedType]) {
+    init(name: String, type: DefinedFunctionType, impl: FunctionImplementationExpr?, attrs: [FunctionAttributeExpr], genericParameters: [ConstrainedType]) {
         self.name = name
         self.fnType = type
         self.impl = impl
@@ -57,11 +57,11 @@ final class FuncDecl: Decl, StructMemberExpr {
 
 
 final class InitialiserDecl: Decl, StructMemberExpr {
-    let ty: FunctionType
+    let ty: DefinedFunctionType
     let impl: FunctionImplementationExpr?
     weak var parent: StructExpr?
     
-    init(ty: FunctionType, impl: FunctionImplementationExpr?, parent: StructExpr?) {
+    init(ty: DefinedFunctionType, impl: FunctionImplementationExpr?, parent: StructExpr?) {
         self.ty = ty
         self.impl = impl
         self.parent = parent

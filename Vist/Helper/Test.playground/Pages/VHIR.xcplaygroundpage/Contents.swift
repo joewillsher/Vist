@@ -55,11 +55,13 @@ final class BasicBlock: VHIR {
     var name: String
     var parameters: [Value]?
     var instructions: [Inst]
+    var parentFunction: Function
     
-    init(name: String, parameters: [Value]?) {
+    init(name: String, parameters: [Value]?, parentFunction: Function) {
         self.name = name
         self.parameters = parameters
         self.instructions = []
+        self.parentFunction = parentFunction
     }
     
     func addInstruction(instr: Inst) throws {
@@ -69,31 +71,46 @@ final class BasicBlock: VHIR {
     func indexOfInst(inst: Inst) -> Int? {
         return instructions.indexOf { $0 === inst }
     }
+    func indexOfVal(val: Value) -> Int? {
+        return instructions.indexOf { $0 === val }
+    }
+
     
     func paramNamed(name: String) throws -> Value {
-        guard let i = parameters?.indexOf({$0.name == name}), let p = parameters?[i] else { throw VHIRError.noParamNamed(name) }
+        guard let i = parameters?.indexOf({$0.irName == name}), let p = parameters?[i] else { throw VHIRError.noParamNamed(name) }
         return p
     }
 }
 
 /// A value, instruction results, literals, etc
 protocol Value: VHIR {
-    var name: String { get }
+    var irName: String? { get set }
     var type: Type? { get }
+    var parentBlock: BasicBlock? { get }
 }
 /// An instruction o
 protocol Inst: Value {
     var args: [Value] { get }
     var type: Type? { get }
     var instName: String { get }
-    var parentBlock: BasicBlock { get }
 }
 
-extension Inst {
+extension Value {
     
-    var name: String {
-        return "meme"
+    func getInstNumber() -> String? {
+        guard let blocks = parentBlock?.parentFunction.blocks else { return nil }
+        
+        var count = 0
+        blockLoop: for block in blocks {
+            for inst in block.instructions {
+                if inst === self { break blockLoop }
+                if inst.irName == nil { count += 1 }
+            }
+        }
+        
+        return String(count)
     }
+    
 }
 
 
@@ -101,11 +118,12 @@ protocol Type: VHIR {
 }
 
 final class BBParam: Value {
-    var name: String
+    var irName: String?
     var type: Type?
+    var parentBlock: BasicBlock?
     
-    init(name: String, type: Type) {
-        self.name = name
+    init(irName: String, type: Type) {
+        self.irName = irName
         self.type = type
     }
 }
@@ -126,44 +144,52 @@ final class FunctionType: Type {
 
 final class BinaryInst: Inst {
     let l: Value, r: Value
+    var irName: String?
     
     var args: [Value] { return [l, r] }
     var type: Type? { return l.type }
     let instName: String
-    var parentBlock: BasicBlock
+    var parentBlock: BasicBlock?
     
-    init(name: String, l: Value, r: Value, block: BasicBlock) {
+    init(name: String, l: Value, r: Value, irName: String? = nil, block: BasicBlock?) {
         self.instName = name
         self.l = l
         self.r = r
+        self.irName = irName
         self.parentBlock = block
     }
 }
 
 final class ReturnInst: Inst {
     var value: Value
+    var irName: String?
     
     var args: [Value] { return [value] }
     var type: Type? = nil
-    var instName: String = ""
-    var parentBlock: BasicBlock
+    var instName: String = "return"
+    var parentBlock: BasicBlock?
     
-    init(value: Value, parentBlock: BasicBlock) {
+    init(value: Value, parentBlock: BasicBlock?) {
         self.value = value
         self.parentBlock = parentBlock
     }
     
     var vhir: String {
-        return "return $\(value.name)"
+        return "return %\(value.name)"
     }
+    
 }
 
 
 final class IntValue: Value {
-    var name: String
+    var irName: String?
     var type: Type? { return IntType(size: 64) }
-    
-    init(name: String) { self.name = name }
+    var parentBlock: BasicBlock?
+
+    init(irName: String, parentBlock: BasicBlock?) {
+        self.irName = irName
+        self.parentBlock = parentBlock
+    }
 }
 
 // $instruction
@@ -186,15 +212,27 @@ extension CollectionType where Generator.Element == Type {
 
 
 extension Value {
+    var name: String {
+        get {
+            return irName ?? getInstNumber() ?? "<null>"
+        }
+        set {
+            irName = newValue
+        }
+    }
+
     var vhir: String {
+        return valueName
+    }
+    var valueName: String {
         return "%\(name)\(type.map { ": \($0.vhir)" } ?? "")"
     }
 }
 extension Inst {
     var vhir: String {
-        let a = args.map{$0.vhir}
+        let a = args.map{$0.valueName}
         let w = a.joinWithSeparator(", ")
-        return "$\(name) = $\(instName) \(w)"
+        return "%\(name) = $\(instName) \(w)"
     }
 }
 extension BasicBlock {
@@ -235,7 +273,8 @@ extension Module {
 final class Builder {
     var module: Module
     var position: Int?
-    var parentBlock: BasicBlock?
+    var block: BasicBlock?
+    var function: Function?
     
     init(module: Module) {
         self.module = module
@@ -258,17 +297,19 @@ extension Builder {
     func setInsertPoint(node: VHIR) throws {
         switch node {
         case let f as Function:
-            let b = try f.getLastBlock()
-            parentBlock = b
+            guard let b = try? f.getLastBlock() else {
+                function = f; return
+            }
+            block = b
             position = b.instructions.endIndex
             
         case let b as BasicBlock:
-            parentBlock = b
+            block = b
             position = b.instructions.endIndex
             
         case let i as Inst:
-            guard let p = i.parentBlock.indexOfInst(i) else { throw VHIRError.instNotInBB }
-            parentBlock = i.parentBlock
+            guard let p = i.parentBlock?.indexOfInst(i) else { throw VHIRError.instNotInBB }
+            block = i.parentBlock
             position = p
             
         default:
@@ -276,29 +317,32 @@ extension Builder {
         }
     }
     
-    func addBasicBlock(name: String, function: Function, params: [Value]? = nil) throws -> BasicBlock {
-        if let _ = function.blocks {
-            let bb = BasicBlock(name: name, parameters: params)
+    func addBasicBlock(name: String, params: [Value]? = nil) throws -> BasicBlock {
+        if let function = function, let _ = function.blocks {
+            let bb = BasicBlock(name: name, parameters: params, parentFunction: function)
             function.blocks?.append(bb)
+            block = bb
             return bb
         }
-        else {
+        else if let function = function {
             let fnParams = zip(function.paramNames, function.type.params).map(BBParam.init).map { $0 as Value }
-            let bb = BasicBlock(name: name, parameters: fnParams + (params ?? []))
+            let bb = BasicBlock(name: name, parameters: fnParams + (params ?? []), parentFunction: function)
             function.blocks = [bb]
+            block = bb
             return bb
         }
+        throw VHIRError.noFunctionBody
     }
     
-    func createBinaryInst(name: String, l: Value, r: Value) throws -> BinaryInst {
-        guard let p = parentBlock else { throw VHIRError.noParentBlock }
-        let i = BinaryInst(name: name, l: l, r: r, block: p)
+    func createBinaryInst(name: String, l: Value, r: Value, irName: String? = nil) throws -> BinaryInst {
+        guard let p = block else { throw VHIRError.noParentBlock }
+        let i = BinaryInst(name: name, l: l, r: r, irName: irName, block: p)
         try p.addInstruction(i)
         return i
     }
     
     func createReturnInst(value: Value) throws -> ReturnInst {
-        guard let p = parentBlock else { throw VHIRError.noParentBlock }
+        guard let p = block else { throw VHIRError.noParentBlock }
         let r = ReturnInst(value: value, parentBlock: p)
         try p.addInstruction(r)
         return r
@@ -315,23 +359,22 @@ let builder = module.getBuilder()
 let fnType = FunctionType(params: [IntType(size: 64), IntType(size: 64)], returns: IntType(size: 64))
 let fn = try module.addFunction("add", type: fnType, paramNames: ["a", "b"])
 
-try builder.addBasicBlock("entry", function: fn)
 try builder.setInsertPoint(fn)
-let sum = try builder.createBinaryInst("iadd", l: try fn.paramNamed("a"), r: try fn.paramNamed("b"))
-try builder.createReturnInst(sum)
+try builder.addBasicBlock("entry")
+let s = try builder.createBinaryInst("iadd", l: try fn.paramNamed("a"), r: try fn.paramNamed("b"), irName: nil)
+let t = try builder.createBinaryInst("iadd", l: s, r: try fn.paramNamed("b"), irName: nil)
+let w = try builder.createBinaryInst("iadd", l: s, r: t, irName: nil)
+try builder.createReturnInst(w)
+s.name = "foo"
 
 print(module.vhir)
 /*
  func @add : (%Int64, %Int64) -> %Int64 {
  #entry(%a: %Int64, %b: %Int64):
-	$meme = $iadd %a: %Int64, %b: %Int64
-	return $meme
+	%meme = $iadd %a: %Int64, %b: %Int64
+	return %meme
  }
 */
-
-
-
-
 
 
 

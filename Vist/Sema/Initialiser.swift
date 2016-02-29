@@ -26,7 +26,7 @@ extension StructExpr {
         let block = BlockExpr(exprs: initialisations)
         let body = FunctionImplementationExpr(params: [], body: block)
         
-        let ty = FunctionType(paramType: .void, returnType: .type(name))
+        let ty = DefinedFunctionType(paramType: .void, returnType: .type(name))
         
         return InitialiserDecl(ty: ty, impl: body, parent: self)
     }
@@ -49,7 +49,7 @@ extension StructExpr {
         let block = BlockExpr(exprs: initialisations)
         let body = FunctionImplementationExpr(params: params, body: block)
         
-        let ty = FunctionType(paramType: DefinedType(types), returnType: .type(name))
+        let ty = DefinedFunctionType(paramType: DefinedType(types), returnType: .type(name))
         
         return InitialiserDecl(ty: ty, impl: body, parent: self)
     }

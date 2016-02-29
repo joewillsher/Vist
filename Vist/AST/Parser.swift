@@ -709,17 +709,17 @@ extension Parser {
 extension Parser {
     
     /// Parses the function type signature, like `Int Int -> Int` or `() -> Bool`
-    private func parseFunctionType() throws -> FunctionType {
+    private func parseFunctionType() throws -> DefinedFunctionType {
         
         // param type
-        var ty = FunctionType(paramType: try parseTypeExpr(), returnType: DefinedType.void)
+        var ty = DefinedFunctionType(paramType: try parseTypeExpr(), returnType: DefinedType.void)
 
         // case like `func fn: Int = `
         guard case .returnArrow = currentToken else { return ty }
         getNextToken() // eat '->'
         
         // case like `func fn: Int -> Int =`
-        ty = FunctionType(paramType: ty.paramType, returnType: try parseTypeExpr())
+        ty = DefinedFunctionType(paramType: ty.paramType, returnType: try parseTypeExpr())
         
         // curried case like `func fn: Int -> Int -> Int =`
         while case .returnArrow = currentToken {
@@ -727,9 +727,9 @@ extension Parser {
 
             let params = ty.returnType
             let returns = try parseTypeExpr()
-            let out = FunctionType(paramType: params, returnType: returns)
+            let out = DefinedFunctionType(paramType: params, returnType: returns)
             
-            ty = FunctionType(paramType: ty.paramType, returnType: .function(out))
+            ty = DefinedFunctionType(paramType: ty.paramType, returnType: .function(out))
         }
         
         return ty
@@ -811,7 +811,7 @@ extension Parser {
     /// Function parses the whole closure — used by functions & initialisers etc
     ///
     /// - returns: The function implementation—with parameter labels and the block’s expressions
-    private func parseClosureDeclaration(anon anon: Bool = false, type: FunctionType) throws -> FunctionImplementationExpr {
+    private func parseClosureDeclaration(anon anon: Bool = false, type: DefinedFunctionType) throws -> FunctionImplementationExpr {
         let names: [String]
         
         if case .openParen = currentToken {
