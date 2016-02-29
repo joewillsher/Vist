@@ -23,7 +23,7 @@ final class BasicBlock: VHIR {
         self.parentFunction = parentFunction
     }
     
-    func addInstruction(inst: Inst, after: Inst? = nil) throws {
+    func insert(inst: Inst, after: Inst? = nil) throws {
         if let after = after {
             instructions.insert(inst, atIndex: try indexOfInst(after).successor())
         }
@@ -35,7 +35,13 @@ final class BasicBlock: VHIR {
         guard let i = parameters?.indexOf({$0.irName == name}), let p = parameters?[i] else { throw VHIRError.noParamNamed(name) }
         return Operand(p)
     }
-    
+    func set(inst: Inst, newValue: Inst) throws {
+        instructions[try indexOfInst(inst)] = newValue
+    }
+    func remove(inst: Inst) throws {
+        instructions.removeAtIndex(try indexOfInst(inst))
+    }
+
     private func indexOfInst(inst: Inst) throws -> Int {
         guard let i = instructions.indexOf({ $0 === inst }) else { throw VHIRError.instNotInBB }
         return i
@@ -43,12 +49,6 @@ final class BasicBlock: VHIR {
     
     private func instAtIndex(index: Int) -> Inst {
         return instructions[index]
-    }
-    func set(inst: Inst, newValue: Inst) throws {
-        instructions[try indexOfInst(inst)] = newValue
-    }
-    func remove(inst: Inst) throws {
-        instructions.removeAtIndex(try indexOfInst(inst))
     }
 }
 

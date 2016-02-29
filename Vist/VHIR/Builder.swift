@@ -62,17 +62,19 @@ extension Builder {
     
     func createBinaryInst(name: String, l: Operand, r: Operand, irName: String? = nil) throws -> BinaryInst {
         guard let block = block else { throw VHIRError.noParentBlock }
-        let i = BinaryInst(name: name, l: l, r: r, irName: irName)
-        i.parentBlock = block
-        try block.addInstruction(i)
-        return i
+        let binInst = BinaryInst(name: name, l: l, r: r, irName: irName)
+        binInst.parentBlock = block
+        try block.insert(binInst, after: inst)
+        inst = binInst
+        return binInst
     }
     
     func createReturnInst(value: Operand) throws -> ReturnInst {
-        guard let p = block else { throw VHIRError.noParentBlock }
-        let r = ReturnInst(value: value, parentBlock: p)
-        try p.addInstruction(r)
-        return r
+        guard let block = block else { throw VHIRError.noParentBlock }
+        let retInst = ReturnInst(value: value, parentBlock: block)
+        try block.insert(retInst, after: inst)
+        inst = retInst
+        return retInst
     }
     
 }

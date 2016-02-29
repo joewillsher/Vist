@@ -834,7 +834,7 @@ extension Parser {
         
         while true {
             if case .closeBrace = currentToken { break }
-            exprs += try parseExpr(currentToken)
+            exprs.appendContentsOf(try parseExpr(currentToken))
         }
         getNextToken() // eat '}'
         return BlockExpr(exprs: exprs, variables: names)
@@ -986,7 +986,7 @@ extension Parser {
         conceptScopeLoop: while true {
             switch currentToken {
             case .`var`, .`let`:
-                properties += try parseVariableDecl(.type)
+                properties.appendContentsOf(try parseVariableDecl(.type))
                 
             case .`func`:
                 methods.append(try parseFuncDeclaration(.type))
@@ -1051,7 +1051,7 @@ extension Parser {
         typeScopeLoop: while true {
             switch currentToken {
             case .`var`, .`let`:
-                properties += try parseVariableDecl(.concept)
+                properties.appendContentsOf(try parseVariableDecl(.concept))
                 
             case .`func`:
                 methods.append(try parseFuncDeclaration(.concept))
@@ -1181,7 +1181,7 @@ extension Parser {
         exprs = []
         
         while let tok = tok() {
-            exprs += try parseExpr(tok)
+            exprs.appendContentsOf(try parseExpr(tok))
         }
         
         return AST(exprs: exprs)

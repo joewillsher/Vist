@@ -12,3 +12,17 @@ protocol Inst: Value {
     var type: Type? { get }
     var instName: String { get }
 }
+
+
+extension Inst {
+    /// Removes the function from its parent
+    func removeFromParent() throws {
+        try parentBlock?.remove(self)
+    }
+    /// Removes the function from its parent and
+    /// drops all references to it
+    func eraseFromParent() throws {
+        removeAllUses()
+        try parentBlock?.remove(self)
+    }
+}
