@@ -5,7 +5,7 @@ protocol VHIR: class {
 }
 
 enum VHIRError: ErrorType {
-    case noFunctionBody, instNotInBB, cannotMoveBuilderHere, noParentBlock
+    case noFunctionBody, instNotInBB, cannotMoveBuilderHere, noParentBlock, noParamNamed(String)
 }
 
 
@@ -39,6 +39,11 @@ final class Function: VHIR {
         return last
     }
     
+    func paramNamed(name: String) throws -> Value {
+        guard let p = try blocks?.first?.paramNamed(name) else { throw VHIRError.noParamNamed(name) }
+        return p
+    }
+    
     
 }
 
@@ -64,6 +69,11 @@ final class BasicBlock: VHIR {
     func indexOfInst(inst: Inst) -> Int? {
         return instructions.indexOf { $0 === inst }
     }
+    
+    func paramNamed(name: String) throws -> Value {
+        guard let i = parameters?.indexOf({$0.name == name}), let p = parameters?[i] else { throw VHIRError.noParamNamed(name) }
+        return p
+    }
 }
 
 /// A value, instruction results, literals, etc
@@ -87,14 +97,8 @@ extension Inst {
 }
 
 
-
 protocol Type: VHIR {
 }
-
-
-
-
-
 
 final class BBParam: Value {
     var name: String
@@ -156,8 +160,10 @@ final class ReturnInst: Inst {
 
 
 final class IntValue: Value {
-    var name: String = "a"
+    var name: String
     var type: Type? { return IntType(size: 64) }
+    
+    init(name: String) { self.name = name }
 }
 
 // $instruction
@@ -302,10 +308,6 @@ extension Builder {
 
 
 
-
-
-
-
 let module = Module()
 let builder = module.getBuilder()
 
@@ -315,14 +317,14 @@ let fn = try module.addFunction("add", type: fnType, paramNames: ["a", "b"])
 
 try builder.addBasicBlock("entry", function: fn)
 try builder.setInsertPoint(fn)
-let sum = try builder.createBinaryInst("iadd", l: IntValue(), r: IntValue())
+let sum = try builder.createBinaryInst("iadd", l: try fn.paramNamed("a"), r: try fn.paramNamed("b"))
 try builder.createReturnInst(sum)
 
 print(module.vhir)
 /*
  func @add : (%Int64, %Int64) -> %Int64 {
  #entry(%a: %Int64, %b: %Int64):
-	$meme = $iadd %a: %Int64, %a: %Int64
+	$meme = $iadd %a: %Int64, %b: %Int64
 	return $meme
  }
 */
