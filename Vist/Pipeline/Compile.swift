@@ -95,6 +95,8 @@ func compileDocuments(fileNames: [String],
         try ast.vhirGen(m)
         
         
+        try m.vhir.writeToFile("\(currentDirectory)/\(file).vhir", atomically: true, encoding: NSUTF8StringEncoding)
+        
         print(m.vhir)
         
         

@@ -1,0 +1,7 @@
+
+func @main : () -> Builtin.Void {
+#entry:
+    %a = $integer_literal %Builtin.Int64 1
+    %0 = $struct %Int (%a: Builtin.Int64)
+    return ()
+}
