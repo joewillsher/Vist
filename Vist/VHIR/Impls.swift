@@ -53,15 +53,11 @@ final class ReturnInst: Inst {
     var instName: String = "return"
     weak var parentBlock: BasicBlock?
     
-    init(value: Operand, parentBlock: BasicBlock?) {
+    init(value: Operand, parentBlock: BasicBlock?, irName: String? = nil) {
         self.value = value
+        self.irName = irName
         self.parentBlock = parentBlock
-    }
-    
-    var vhir: String {
-        return "return %\(value.name)"
-    }
-    
+    }    
 }
 
 final class IntLiteralInst: Inst {
@@ -98,7 +94,17 @@ final class StructInitInst: Inst {
 }
 
 
-
+final class VoidValue: Value {
+    var type: Ty? { return BuiltinType.void }
+    weak var parentBlock: BasicBlock?
+    var uses: [Operand] = []
+    var irName: String? = nil
+    
+    var name: String {
+        get { return "()" }
+        set { }
+    }
+}
 final class IntLiteralValue: Value {
     var value: Int
     

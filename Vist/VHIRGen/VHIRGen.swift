@@ -31,6 +31,8 @@ extension AST: VHIRGenerator {
             try x.vhirGen(module)
         }
         
+        try builder.setInsertPoint(main)
+        try builder.createReturnVoid()
     }
 }
 
@@ -44,9 +46,7 @@ extension IntegerLiteral: VHIRGenerator {
 extension VariableDecl: VHIRGenerator {
     
     func vhirGen(module: Module) throws -> Value {
-        
         let v = try value.vhirGen(module)
-                
         return v
     }
 }

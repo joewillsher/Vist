@@ -19,6 +19,9 @@ protocol Value: class, VHIR {
     /// The list of uses of `self`. A collection of `Operand`
     /// instances whose `value`s point to self, to 
     var uses: [Operand] { get set }
+    
+    /// The formatted name as shown in IR
+    var name: String { get set }
 }
 
 extension Value {
@@ -72,7 +75,7 @@ extension Value {
     // MARK: implement protocol methods
     
     var name: String {
-        get { return irName ?? getInstNumber() ?? "<null>" }
+        get { return "%\(irName ?? getInstNumber() ?? "<null>")" }
         set { irName = newValue }
     }
 }

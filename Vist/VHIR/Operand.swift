@@ -20,6 +20,8 @@ final class Operand: Value {
         try! value?.removeUse(self)
     }
     
+    // forward all interface to `value`
+    
     var irName: String? {
         get { return value?.irName }
         set { value?.irName = newValue }
@@ -29,5 +31,9 @@ final class Operand: Value {
     var uses: [Operand] {
         get { return value?.uses ?? [] }
         set { value?.uses = newValue }
+    }
+    var name: String {
+        get { return value!.name }
+        set { value?.name = newValue }
     }
 }

@@ -15,6 +15,8 @@
 		D409D20C1C850673002D5863 /* Type.swift in Sources */ = {isa = PBXBuildFile; fileRef = D409D20A1C850673002D5863 /* Type.swift */; };
 		D409D20E1C859360002D5863 /* VHIRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D409D20D1C859360002D5863 /* VHIRGen.swift */; };
 		D409D20F1C859360002D5863 /* VHIRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D409D20D1C859360002D5863 /* VHIRGen.swift */; };
+		D409D2141C860185002D5863 /* IRLower.swift in Sources */ = {isa = PBXBuildFile; fileRef = D409D2131C860185002D5863 /* IRLower.swift */; };
+		D409D2151C860185002D5863 /* IRLower.swift in Sources */ = {isa = PBXBuildFile; fileRef = D409D2131C860185002D5863 /* IRLower.swift */; };
 		D40FC4CA1C48323E00122397 /* StdTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D40FC4C91C48323E00122397 /* StdTypes.swift */; };
 		D40FC4CC1C4932F200122397 /* Initialiser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D40FC4CB1C4932F100122397 /* Initialiser.swift */; };
 		D40FC4CE1C4AAB0E00122397 /* Intrinsic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D40FC4CD1C4AAB0E00122397 /* Intrinsic.cpp */; };
@@ -186,6 +188,7 @@
 		D409D2071C84F397002D5863 /* Impls.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Impls.swift; path = Vist/VHIR/Impls.swift; sourceTree = SOURCE_ROOT; };
 		D409D20A1C850673002D5863 /* Type.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Type.swift; path = Vist/VHIR/Type.swift; sourceTree = SOURCE_ROOT; };
 		D409D20D1C859360002D5863 /* VHIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VHIRGen.swift; path = VHIRGen/VHIRGen.swift; sourceTree = "<group>"; };
+		D409D2131C860185002D5863 /* IRLower.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IRLower.swift; path = IRLower/IRLower.swift; sourceTree = "<group>"; };
 		D40FC4C91C48323E00122397 /* StdTypes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StdTypes.swift; path = IRGen/StdTypes.swift; sourceTree = "<group>"; };
 		D40FC4CB1C4932F100122397 /* Initialiser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Initialiser.swift; path = Sema/Initialiser.swift; sourceTree = "<group>"; };
 		D40FC4CD1C4AAB0E00122397 /* Intrinsic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Intrinsic.cpp; path = Helper/Intrinsic.cpp; sourceTree = "<group>"; };
@@ -309,6 +312,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		D409D2161C86018A002D5863 /* IRLower */ = {
+			isa = PBXGroup;
+			children = (
+				D409D2131C860185002D5863 /* IRLower.swift */,
+			);
+			name = IRLower;
+			sourceTree = "<group>";
+		};
 		D40FC4D11C4AB98600122397 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
@@ -490,6 +501,7 @@
 				D4B1FA041C300AA8001E7BCC /* Sema */,
 				D457F6221C83658C0095EDED /* VHIR */,
 				D457F6191C835EF40095EDED /* VHIRGen */,
+				D409D2161C86018A002D5863 /* IRLower */,
 				D46DA5F51C297ADA006AF1BE /* IRGen */,
 				D431F4C01C556DF5005D439F /* Optimiser */,
 				D431F4C41C557795005D439F /* Linking */,
@@ -739,6 +751,7 @@
 				D4FC9D191C5FEE4E0031F1BD /* IRError.swift in Sources */,
 				D45FC7BD1C8451010060F974 /* Value.swift in Sources */,
 				D4C697E11C6A5C9200645AD1 /* ConceptType.swift in Sources */,
+				D409D2151C860185002D5863 /* IRLower.swift in Sources */,
 				D4E35B6A1C5D0CA000683486 /* ASTInterface.swift in Sources */,
 				D45FC7AE1C8450CF0060F974 /* VHIR.swift in Sources */,
 				D4E35B6B1C5D0CA000683486 /* LinkAST.swift in Sources */,
@@ -832,6 +845,7 @@
 				D497A7801C3B00C600DFE39E /* TypeProvider.swift in Sources */,
 				D40FC4CE1C4AAB0E00122397 /* Intrinsic.cpp in Sources */,
 				D470D7AE1C56A98100791B40 /* Optimiser.cpp in Sources */,
+				D409D2141C860185002D5863 /* IRLower.swift in Sources */,
 				D497A77E1C3B00C600DFE39E /* SemaTypeCheck.swift in Sources */,
 				D409D20E1C859360002D5863 /* VHIRGen.swift in Sources */,
 				D497A7921C3B015700DFE39E /* Config.swift in Sources */,

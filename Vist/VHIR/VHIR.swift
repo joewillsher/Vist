@@ -41,7 +41,7 @@ private extension CollectionType where Generator.Element == Ty {
 
 extension Value {
     var valueName: String {
-        return "%\(name)\(type.map { ": \($0.vhir)" } ?? "")"
+        return "\(name)\(type.map { ": \($0.vhir)" } ?? "")"
     }
     var vhir: String {
         return valueName
@@ -51,12 +51,12 @@ extension Inst {
     var vhir: String {
         let a = args.map{$0.valueName}
         let w = a.joinWithSeparator(", ")
-        return "%\(name) = $\(instName) \(w)"
+        return "\(name) = $\(instName) \(w)"
     }
 }
 extension BasicBlock {
     var vhir: String {
-        let p = parameters?.map { $0.vhir }
+        let p = parameters?.count > 0 ? parameters?.map({ $0.vhir }) : nil
         let pString = p.map { "(\($0.joinWithSeparator(", ")))"} ?? ""
         let i = instructions.map { $0.vhir }
         let iString = "\n\t\(i.joinWithSeparator("\n\t"))\n"
@@ -77,12 +77,12 @@ extension FnType {
 }
 extension BuiltinType {
     var vhir: String {
-        return "%\(explicitName)"
+        return explicitName
     }
 }
 extension StorageType {
     var vhir: String {
-        return "%\(irName)"
+        return irName
     }
 }
 extension TupleType {
@@ -98,15 +98,19 @@ extension Module {
     }
 }
 
-
 extension IntLiteralInst {
     var vhir: String {
-        return "%\(name) = $\(instName) %\(value.type!.explicitName) \(value.value)"
+        return "\(name) = $\(instName) %\(value.type!.explicitName) \(value.value)"
     }
 }
 extension StructInitInst {
     var vhir: String {
-        return "%\(name) = $\(instName) %\(type!.explicitName) \(args.vhirValueTuple())"
+        return "\(name) = $\(instName) %\(type!.explicitName) \(args.vhirValueTuple())"
+    }
+}
+extension ReturnInst {
+    var vhir: String {
+        return "return \(value.name)"
     }
 }
 
