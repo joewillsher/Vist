@@ -8,7 +8,7 @@
 
 
 final class Builder {
-    var module: Module
+    weak var module: Module?
     var inst: Inst?
     var block: BasicBlock?
     var function: Function?
@@ -25,26 +25,30 @@ extension Builder {
         switch node {
         case let f as Function:
             guard let b = try? f.getLastBlock() else {
-                function = f; return
+                function = f
+                try addBasicBlock("entry")
+                return
             }
-            block = b
             inst = b.instructions.last
+            block = b
+            function = f
             
         case let b as BasicBlock:
-            block = b
             inst = b.instructions.last
+            block = b
+            function = b.parentFunction
             
         case let i as Inst:
-            block = i.parentBlock
             inst = i
-            
+            block = i.parentBlock
+            function = i.parentBlock?.parentFunction
         default:
             throw VHIRError.cannotMoveBuilderHere
         }
     }
     
     func addBasicBlock(name: String, params: [Value]? = nil) throws -> BasicBlock {
-        if let function = function, let _ = function.blocks {
+        if let function = function, let b = function.blocks where !b.isEmpty {
             let bb = BasicBlock(name: name, parameters: params, parentFunction: function)
             function.blocks?.append(bb)
             block = bb
@@ -57,7 +61,16 @@ extension Builder {
             block = bb
             return bb
         }
-        throw VHIRError.noFunctionBody
+        else {
+            throw VHIRError.noFunctionBody
+        }
+    }
+    
+    func createFunction(name: String, type: FnType, paramNames: [String]) throws -> Function {
+        let f = Function(name: name, type: type, paramNames: paramNames)
+        module?.addFunction(f)
+        try setInsertPoint(f)
+        return f
     }
     
     func createBuiltinBinaryInst(i: BuiltinInst, l: Operand, r: Operand, irName: String? = nil) throws -> BuiltinBinaryInst {
@@ -65,7 +78,7 @@ extension Builder {
         let binInst = BuiltinBinaryInst(inst: i, l: l, r: r, irName: irName)
         binInst.parentBlock = block
         try block.insert(binInst, after: inst)
-        inst = binInst
+        try setInsertPoint(binInst)
         return binInst
     }
     
@@ -73,8 +86,33 @@ extension Builder {
         guard let block = block else { throw VHIRError.noParentBlock }
         let retInst = ReturnInst(value: value, parentBlock: block)
         try block.insert(retInst, after: inst)
-        inst = retInst
+        try setInsertPoint(retInst)
         return retInst
     }
     
+    func createStruct(type: StructType, values: [Operand]) throws -> StructInitInst {
+        guard let block = block else { throw VHIRError.noParentBlock }
+        let s = StructInitInst(type: type, args: values)
+        s.parentBlock = block
+        try block.insert(s)
+        try setInsertPoint(s)
+        return s
+    }
+    
+    
+    private func buildIntLiteralVal(val: Int) throws-> IntLiteralInst {
+        guard let block = block else { throw VHIRError.noParentBlock }
+        let v = IntLiteralInst(val: val)
+        v.parentBlock = block
+        try block.insert(v)
+        try setInsertPoint(v)
+        return v
+    }
+    
+    func buildIntLiteral(val: Int, irName: String) throws-> StructInitInst {
+        
+        let v = try buildIntLiteralVal(val)
+        return try createStruct(StdLib.intType, values: [Operand(v)])
+        
+    }
 }

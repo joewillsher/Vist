@@ -15,6 +15,7 @@ protocol VHIR {
 
 enum VHIRError: ErrorType {
     case noFunctionBody, instNotInBB, cannotMoveBuilderHere, noParentBlock, noParamNamed(String), noUse
+    case notGenerator
 }
 
 // $instruction
@@ -24,8 +25,14 @@ enum VHIRError: ErrorType {
 
 // MARK: VHIR gen, this is where I start making code to print
 
+private extension CollectionType where Generator.Element : VHIR {
+    func vhirValueTuple() -> String {
+        let a = map { "\($0.vhir)" }
+        return "(\(a.joinWithSeparator(", ")))"
+    }
+}
 private extension CollectionType where Generator.Element == Ty {
-    func typeTupleVHIR() -> String {
+    func vhirTypeTuple() -> String {
         let a = map { "\($0.vhir)" }
         return "(\(a.joinWithSeparator(", ")))"
     }
@@ -35,6 +42,9 @@ private extension CollectionType where Generator.Element == Ty {
 extension Value {
     var valueName: String {
         return "%\(name)\(type.map { ": \($0.vhir)" } ?? "")"
+    }
+    var vhir: String {
+        return valueName
     }
 }
 extension Inst {
@@ -62,7 +72,7 @@ extension Function {
 }
 extension FnType {
     var vhir: String {
-        return "\(params.typeTupleVHIR()) -> \(returns.vhir)"
+        return "\(params.vhirTypeTuple()) -> \(returns.vhir)"
     }
 }
 extension BuiltinType {
@@ -77,7 +87,7 @@ extension StorageType {
 }
 extension TupleType {
     var vhir: String {
-        return members.typeTupleVHIR()
+        return members.vhirTypeTuple()
     }
 }
 extension Module {
@@ -89,6 +99,16 @@ extension Module {
 }
 
 
+extension IntLiteralInst {
+    var vhir: String {
+        return "%\(name) = $\(instName) %\(value.type!.explicitName) \(value.value)"
+    }
+}
+extension StructInitInst {
+    var vhir: String {
+        return "%\(name) = $\(instName) %\(type!.explicitName) \(args.vhirValueTuple())"
+    }
+}
 
 
 

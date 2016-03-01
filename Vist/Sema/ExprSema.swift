@@ -15,7 +15,7 @@ extension IntegerLiteral : ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         // TODO: modify the AST to make this a function call
-        let ty = StdLib.IntType
+        let ty = StdLib.intType
         self.type = ty
         return ty
     }
@@ -24,7 +24,7 @@ extension IntegerLiteral : ExprTypeProvider {
 extension FloatingPointLiteral : ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
-        let ty = StdLib.DoubleType
+        let ty = StdLib.doubleType
         self.type = ty
         return ty
     }
@@ -33,7 +33,7 @@ extension FloatingPointLiteral : ExprTypeProvider {
 extension BooleanLiteral : ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
-        let ty = StdLib.BoolType
+        let ty = StdLib.boolType
         self.type = ty
         return ty
     }
@@ -297,7 +297,7 @@ extension ArraySubscriptExpr : ExprTypeProvider {
         guard case let v as VariableExpr = arr, case BuiltinType.array(let type, _)? = scope[variable: v.name]?.type else { throw semaError(.cannotSubscriptNonArrayVariable) }
         
         // gen type for subscripting value
-        guard try index.typeForNode(scope) == StdLib.IntType else { throw semaError(.nonIntegerSubscript) }
+        guard try index.typeForNode(scope) == StdLib.intType else { throw semaError(.nonIntegerSubscript) }
         
         // assign type to self and return
         self._type = type

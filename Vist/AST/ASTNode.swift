@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-protocol ASTNode: Printable {}
+protocol ASTNode: Printable, VHIRGenerator {}
 
 // use behaviour delegates (when released in swift 3) to make `let (delated) type: Ty { get }`
 ///

@@ -11,14 +11,15 @@
 final class Module: VHIR {
     var functions: [Function] = []
     var typeList: [TypeAlias] = []
-    private var _builder: Builder?
+    var builder: Builder!
+    
+    init() {
+        builder = Builder(module: self)
+    }
 }
 
 extension Module {
-    var builder: Builder { return _builder ?? Builder(module: self) }
-    
-    func addFunction(name: String, type: FnType, paramNames: [String]) throws -> Function {
-        let f = Function(name: name, type: type, paramNames: paramNames)
+    func addFunction(f: Function) -> Function {
         functions.append(f)
         return f
     }

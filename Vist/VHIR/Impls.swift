@@ -64,15 +64,51 @@ final class ReturnInst: Inst {
     
 }
 
-
-final class IntValue: Value {
+final class IntLiteralInst: Inst {
+    var value: IntLiteralValue
+    
     var irName: String?
-    var type: Ty? { return BuiltinType.int(size: 32) }
+    var type: Ty? { return BuiltinType.int(size: 64) }
+    var args: [Operand] { return [Operand(value)] }
+    weak var parentBlock: BasicBlock?
+    var uses: [Operand] = []
+    var instName: String = "integer_literal"
+    
+    init(val: Int, irName: String? = nil) {
+        self.value = IntLiteralValue(val: val)
+        self.irName = irName
+    }
+}
+
+final class StructInitInst: Inst {
+    var args: [Operand]
+    
+    var irName: String?
+    var type: Ty? { return structType }
+    var structType: StructType
+    weak var parentBlock: BasicBlock?
+    var uses: [Operand] = []
+    var instName: String = "struct"
+    
+    init(type: StructType, args: [Operand], irName: String? = nil) {
+        self.args = args
+        self.irName = irName
+        self.structType = type
+    }
+}
+
+
+
+final class IntLiteralValue: Value {
+    var value: Int
+    
+    var irName: String?
+    var type: Ty? { return BuiltinType.int(size: 64) }
     weak var parentBlock: BasicBlock?
     var uses: [Operand] = []
     
-    init(irName: String, parentBlock: BasicBlock?) {
+    init(val: Int, irName: String? = nil) {
+        self.value = val
         self.irName = irName
-        self.parentBlock = parentBlock
     }
 }

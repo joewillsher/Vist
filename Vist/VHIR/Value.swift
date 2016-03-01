@@ -75,6 +75,4 @@ extension Value {
         get { return irName ?? getInstNumber() ?? "<null>" }
         set { irName = newValue }
     }
-    
-    var vhir: String { return valueName }    
 }

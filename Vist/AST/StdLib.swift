@@ -8,81 +8,81 @@
 
 struct StdLib {
     
-    static let IntType =    StructType(members:   [("value", BuiltinType.int(size: 64), true)],       methods: [], name: "Int")
-    static let Int32Type =    StructType(members: [("value", BuiltinType.int(size: 32), true)],       methods: [], name: "Int32")
-    static let BoolType =   StructType(members:   [("value", BuiltinType.bool, true)],                methods: [], name: "Bool")
-    static let DoubleType = StructType(members:   [("value", BuiltinType.float(size: 64), true)],     methods: [], name: "Double")
-    static let RangeType =  StructType(members:   [("start", IntType, true), ("end", IntType, true)], methods: [], name: "Range")
-    private static let VoidType =   BuiltinType.void
+    static let intType =    StructType(members:   [("value", BuiltinType.int(size: 64), true)],       methods: [], name: "Int")
+    static let int32Type =  StructType(members:   [("value", BuiltinType.int(size: 32), true)],       methods: [], name: "Int32")
+    static let boolType =   StructType(members:   [("value", BuiltinType.bool, true)],                methods: [], name: "Bool")
+    static let doubleType = StructType(members:   [("value", BuiltinType.float(size: 64), true)],     methods: [], name: "Double")
+    static let rangeType =  StructType(members:   [("start", intType, true), ("end", intType, true)], methods: [], name: "Range")
+    private static let voidType = BuiltinType.void
     
-    private static let types: [StructType] = [IntType, BoolType, DoubleType, RangeType]
+    private static let types: [StructType] = [intType, boolType, doubleType, rangeType]
     
     private static let functions: [(String, FnType)] = [
         // int
-        ("+", FnType(params: [IntType, IntType], returns: IntType)),
-        ("-", FnType(params: [IntType, IntType], returns: IntType)),
-        ("*", FnType(params: [IntType, IntType], returns: IntType)),
-        ("/", FnType(params: [IntType, IntType], returns: IntType)),
-        ("%", FnType(params: [IntType, IntType], returns: IntType)),
+        ("+", FnType(params: [intType, intType], returns: intType)),
+        ("-", FnType(params: [intType, intType], returns: intType)),
+        ("*", FnType(params: [intType, intType], returns: intType)),
+        ("/", FnType(params: [intType, intType], returns: intType)),
+        ("%", FnType(params: [intType, intType], returns: intType)),
         
-        (">>", FnType(params: [IntType, IntType], returns: IntType)),
-        ("<<", FnType(params: [IntType, IntType], returns: IntType)),
-        ("~&", FnType(params: [IntType, IntType], returns: IntType)),
-        ("~|", FnType(params: [IntType, IntType], returns: IntType)),
-        ("~^", FnType(params: [IntType, IntType], returns: IntType)),
+        (">>", FnType(params: [intType, intType], returns: intType)),
+        ("<<", FnType(params: [intType, intType], returns: intType)),
+        ("~&", FnType(params: [intType, intType], returns: intType)),
+        ("~|", FnType(params: [intType, intType], returns: intType)),
+        ("~^", FnType(params: [intType, intType], returns: intType)),
         
-        (">",  FnType(params: [IntType, IntType], returns: BoolType)),
-        (">=", FnType(params: [IntType, IntType], returns: BoolType)),
-        ("<",  FnType(params: [IntType, IntType], returns: BoolType)),
-        ("<=", FnType(params: [IntType, IntType], returns: BoolType)),
-        ("==", FnType(params: [IntType, IntType], returns: BoolType)),
-        ("!=", FnType(params: [IntType, IntType], returns: BoolType)),
+        (">",  FnType(params: [intType, intType], returns: boolType)),
+        (">=", FnType(params: [intType, intType], returns: boolType)),
+        ("<",  FnType(params: [intType, intType], returns: boolType)),
+        ("<=", FnType(params: [intType, intType], returns: boolType)),
+        ("==", FnType(params: [intType, intType], returns: boolType)),
+        ("!=", FnType(params: [intType, intType], returns: boolType)),
         
         // bool
-        ("&&", FnType(params: [BoolType, BoolType], returns: BoolType)),
-        ("||", FnType(params: [BoolType, BoolType], returns: BoolType)),
+        ("&&", FnType(params: [boolType, boolType], returns: boolType)),
+        ("||", FnType(params: [boolType, boolType], returns: boolType)),
         
         // double
-        ("+", FnType(params: [DoubleType, DoubleType], returns: DoubleType)),
-        ("-", FnType(params: [DoubleType, DoubleType], returns: DoubleType)),
-        ("*", FnType(params: [DoubleType, DoubleType], returns: DoubleType)),
-        ("/", FnType(params: [DoubleType, DoubleType], returns: DoubleType)),
-        ("%", FnType(params: [DoubleType, DoubleType], returns: DoubleType)),
+        ("+", FnType(params: [doubleType, doubleType], returns: doubleType)),
+        ("-", FnType(params: [doubleType, doubleType], returns: doubleType)),
+        ("*", FnType(params: [doubleType, doubleType], returns: doubleType)),
+        ("/", FnType(params: [doubleType, doubleType], returns: doubleType)),
+        ("%", FnType(params: [doubleType, doubleType], returns: doubleType)),
         
-        (">",  FnType(params: [DoubleType, DoubleType], returns: BoolType)),
-        (">=", FnType(params: [DoubleType, DoubleType], returns: BoolType)),
-        ("<",  FnType(params: [DoubleType, DoubleType], returns: BoolType)),
-        ("<=", FnType(params: [DoubleType, DoubleType], returns: BoolType)),
-        ("==", FnType(params: [DoubleType, DoubleType], returns: BoolType)),
-        ("!=", FnType(params: [DoubleType, DoubleType], returns: BoolType)),
+        (">",  FnType(params: [doubleType, doubleType], returns: boolType)),
+        (">=", FnType(params: [doubleType, doubleType], returns: boolType)),
+        ("<",  FnType(params: [doubleType, doubleType], returns: boolType)),
+        ("<=", FnType(params: [doubleType, doubleType], returns: boolType)),
+        ("==", FnType(params: [doubleType, doubleType], returns: boolType)),
+        ("!=", FnType(params: [doubleType, doubleType], returns: boolType)),
 
         // range
-        ("...", FnType(params: [IntType, IntType], returns: RangeType)),
-        ("..<", FnType(params: [IntType, IntType], returns: RangeType)),
+        ("...", FnType(params: [intType, intType], returns: rangeType)),
+        ("..<", FnType(params: [intType, intType], returns: rangeType)),
         
         
         
         // fns
-        ("print",      FnType(params: [IntType],    returns: VoidType)),
-        ("print",      FnType(params: [Int32Type], returns: VoidType)),
-        ("print",      FnType(params: [BoolType],   returns: VoidType)),
-        ("print",      FnType(params: [DoubleType], returns: VoidType)),
-        ("assert",     FnType(params: [BoolType],   returns: VoidType)),
-        ("fatalError", FnType(params: [],           returns: VoidType)),
+        ("print",      FnType(params: [intType],    returns: voidType)),
+        ("print",      FnType(params: [int32Type], returns: voidType)),
+        ("print",      FnType(params: [boolType],   returns: voidType)),
+        ("print",      FnType(params: [doubleType], returns: voidType)),
+        ("assert",     FnType(params: [boolType],   returns: voidType)),
+        ("fatalError", FnType(params: [],           returns: voidType)),
         
         
 //         initialisers
         // ones which take Builtin types are used to wrap literals
-        ("Int",     FnType(params: [BuiltinType.int(size: 64)],   returns: IntType)),
-        ("Int",     FnType(params: [IntType],                     returns: IntType)),
-        ("Int32",   FnType(params: [BuiltinType.int(size: 32)],   returns: Int32Type)),
-        ("Int32",   FnType(params: [Int32Type],                   returns: Int32Type)),
-        ("Bool",    FnType(params: [BuiltinType.bool],            returns: BoolType)),
-        ("Bool",    FnType(params: [BoolType],                    returns: IntType)),
-        ("Float",   FnType(params: [BuiltinType.float(size: 64)], returns: DoubleType)),
-        ("Float",   FnType(params: [DoubleType],                  returns: IntType)),
-        ("Range",   FnType(params: [IntType, IntType],            returns: RangeType)),
-        ("Range",   FnType(params: [RangeType],                   returns: RangeType))
+        ("Int",     FnType(params: [BuiltinType.int(size: 64)],   returns: intType)),
+        ("Int",     FnType(params: [intType],                     returns: intType)),
+        ("Int32",   FnType(params: [BuiltinType.int(size: 32)],   returns: int32Type)),
+        ("Int32",   FnType(params: [int32Type],                   returns: int32Type)),
+        ("Bool",    FnType(params: [BuiltinType.bool],            returns: boolType)),
+        ("Bool",    FnType(params: [boolType],                    returns: intType)),
+        ("Float",   FnType(params: [BuiltinType.float(size: 64)], returns: doubleType)),
+        ("Float",   FnType(params: [doubleType],                  returns: intType)),
+        ("Range",   FnType(params: [intType, intType],            returns: rangeType)),
+        ("Range",   FnType(params: [rangeType],                   returns: rangeType))
     ]
     
     /// Container initialised with functions, provides subscript to look up functions by name and type

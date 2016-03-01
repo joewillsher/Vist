@@ -8,13 +8,46 @@
 
 
 protocol VHIRGenerator {
-    func vhirGen(module: Module) throws
+    func vhirGen(module: Module) throws -> Value
+}
+
+extension ASTNode {
+    func vhirGen(module: Module) throws -> Value {
+        throw VHIRError.notGenerator
+    }
 }
 
 extension AST: VHIRGenerator {
     
     func vhirGen(module: Module) throws {
         
+        let builder = module.builder
+        
+        let mainTy = FnType(params: [], returns: BuiltinType.void)
+        let main = try builder.createFunction("main", type: mainTy, paramNames: [])
+        
+        for case let x as VHIRGenerator in exprs {
+            try builder.setInsertPoint(main)
+            try x.vhirGen(module)
+        }
+        
+    }
+}
+
+extension IntegerLiteral: VHIRGenerator {
+    
+    func vhirGen(module: Module) throws -> Value {
+        return try module.builder.buildIntLiteral(val, irName: "a")
+    }
+}
+
+extension VariableDecl: VHIRGenerator {
+    
+    func vhirGen(module: Module) throws -> Value {
+        
+        let v = try value.vhirGen(module)
+                
+        return v
     }
 }
 

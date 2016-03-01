@@ -57,7 +57,7 @@ extension ElseIfBlockStmt: StmtTypeProvider {
         if condition == nil { return }
         
         // otherwise make sure its a Bool
-        guard let condition = c where condition == StdLib.BoolType else { throw semaError(.nonBooleanCondition) }
+        guard let condition = c where condition == StdLib.boolType else { throw semaError(.nonBooleanCondition) }
     }
     
 }
@@ -76,10 +76,10 @@ extension ForInLoopStmt: StmtTypeProvider {
         let loopScope = SemaScope(parent: scope, returnType: scope.returnType)
         
         // add bound name to scopes
-        loopScope[variable: binded.name] = (type: StdLib.IntType, mutable: false)
+        loopScope[variable: binded.name] = (type: StdLib.intType, mutable: false)
         
         // gen types for iterator
-        guard try iterator.typeForNode(scope) == StdLib.RangeType else { throw semaError(.notRangeType) }
+        guard try iterator.typeForNode(scope) == StdLib.rangeType else { throw semaError(.notRangeType) }
         
         // parse inside of loop in loop scope
         try block.exprs.walkChildren { exp in
@@ -98,7 +98,7 @@ extension WhileLoopStmt: StmtTypeProvider {
         let loopScope = SemaScope(parent: scope, returnType: scope.returnType)
         
         // gen types for iterator
-        guard try condition.typeForNode(scope) == StdLib.BoolType else { throw semaError(.nonBooleanCondition) }
+        guard try condition.typeForNode(scope) == StdLib.boolType else { throw semaError(.nonBooleanCondition) }
         
         // parse inside of loop in loop scope
         try block.exprs.walkChildren { exp in

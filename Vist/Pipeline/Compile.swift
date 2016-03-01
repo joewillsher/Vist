@@ -89,7 +89,8 @@ func compileDocuments(fileNames: [String],
         
         let file = fileNames.first!.stringByReplacingOccurrencesOfString(".vist", withString: "")
         
-        
+        if verbose { print("\n-----------------------------VHIR-----------------------------\n") }
+
         let m = Module()
         try ast.vhirGen(m)
         

@@ -829,10 +829,10 @@ extension ForInLoopStmt: IRGenerator {
         
         let startValue = try rangeIterator
             .load("start", fromType: iterator._type, builder: irGen.builder, irName: "start")
-            .load("value", fromType: StdLib.IntType, builder: irGen.builder, irName: "start.value")
+            .load("value", fromType: StdLib.intType, builder: irGen.builder, irName: "start.value")
         let endValue = try rangeIterator
             .load("end",   fromType: iterator._type, builder: irGen.builder, irName: "end")
-            .load("value", fromType: StdLib.IntType, builder: irGen.builder, irName: "end.value")
+            .load("value", fromType: StdLib.intType, builder: irGen.builder, irName: "end.value")
         
         // move into loop block
         LLVMBuildBr(irGen.builder, loopHeader)
@@ -854,7 +854,7 @@ extension ForInLoopStmt: IRGenerator {
         let next = LLVMBuildAdd(irGen.builder, one, loopCount, "next.\(iteratorName)")
         
         // gen the IR for the inner block
-        let loopCountInt = try StdLib.IntType.initialiseStdTypeFromBuiltinMembers(loopCount, irGen: irGen, irName: iteratorName)
+        let loopCountInt = try StdLib.intType.initialiseStdTypeFromBuiltinMembers(loopCount, irGen: irGen, irName: iteratorName)
         let loopVariable = StackVariable(val: loopCountInt, irName: iteratorName, irGen: irGen)
         let loopStackFrame = StackFrame(block: loopBody, vars: [iteratorName: loopVariable], function: stackFrame.function, parentStackFrame: stackFrame)
         
