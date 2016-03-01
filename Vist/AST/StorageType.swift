@@ -29,7 +29,7 @@ protocol StorageType: Ty {
 }
 
 extension StorageType {
-    
+        
     func indexOfMemberNamed(name: String) throws -> Int {
         guard let i = members.indexOf({ $0.name == name }) else { throw semaError(.noPropertyNamed(type: self.name, property: name)) }
         return i

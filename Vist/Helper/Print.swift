@@ -13,10 +13,7 @@ private func t(n:Int) -> String {
 }
 
 protocol Printable {
-    var astString: String { get }
 }
-
-// TODO: DebugPrintableType type 
 
 extension Printable {
     

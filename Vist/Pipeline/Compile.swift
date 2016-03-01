@@ -90,6 +90,15 @@ func compileDocuments(fileNames: [String],
         let file = fileNames.first!.stringByReplacingOccurrencesOfString(".vist", withString: "")
         
         
+        let m = Module()
+        try ast.vhirGen(m)
+        
+        
+        print(m.vhir)
+        return
+        
+        
+        
         
         
         

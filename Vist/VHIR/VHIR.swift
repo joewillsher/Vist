@@ -8,7 +8,8 @@
 
 //: [Previous](@previous)
 
-protocol VHIR: class {
+protocol VHIR {
+    /// VHIR code to print
     var vhir: String { get }
 }
 
@@ -23,7 +24,7 @@ enum VHIRError: ErrorType {
 
 // MARK: VHIR gen, this is where I start making code to print
 
-private extension CollectionType where Generator.Element == Type {
+private extension CollectionType where Generator.Element == Ty {
     func typeTupleVHIR() -> String {
         let a = map { "\($0.vhir)" }
         return "(\(a.joinWithSeparator(", ")))"
@@ -59,18 +60,31 @@ extension Function {
         return "func @\(name) : \(type.vhir)\(bString)"
     }
 }
-extension IntType {
-    var vhir: String { return "%Int\(size)" }
-}
-extension FunctionType {
+extension FnType {
     var vhir: String {
         return "\(params.typeTupleVHIR()) -> \(returns.vhir)"
     }
 }
+extension BuiltinType {
+    var vhir: String {
+        return "%\(explicitName)"
+    }
+}
+extension StorageType {
+    var vhir: String {
+        return "%\(irName)"
+    }
+}
+extension TupleType {
+    var vhir: String {
+        return members.typeTupleVHIR()
+    }
+}
 extension Module {
     var vhir: String {
+        let t = typeList.map { $0.vhir }
         let f = functions.map { $0.vhir }
-        return f.joinWithSeparator("\n\n")
+        return (t+f).joinWithSeparator("\n\n")
     }
 }
 

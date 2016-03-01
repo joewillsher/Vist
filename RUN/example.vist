@@ -1,8 +1,3 @@
 
-type Box T {
-    var a: T
-}
-
-let w = Box 1
-
+let a = 1
 

@@ -9,7 +9,7 @@
 /// An instruction o
 protocol Inst: Value {
     var args: [Operand] { get }
-    var type: Type? { get }
+    var type: Ty? { get }
     var instName: String { get }
 }
 

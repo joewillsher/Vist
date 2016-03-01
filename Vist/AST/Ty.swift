@@ -6,11 +6,7 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-protocol Ty: Printable {
-    /// The type used in IR -- A vanilla type, agnostic of module
-    /// if it is a builtin type. For structs, existentials etc
-    /// this returns the globally named typealias
-    func globalType(module: LLVMModuleRef) -> LLVMTypeRef
+protocol Ty: Printable, VHIR {
     
     /// Name used in mangling function signatures
     var mangledName: String { get }
@@ -26,18 +22,19 @@ extension Ty {
     var explicitName: String {
         return mangledName
     }
+    
+    func globalType(m: LLVMModuleRef) -> LLVMValueRef {
+        fatalError("TODO: shouldnt be reachable as working on VHIR")
+    }
 }
 
 extension BuiltinType: Equatable {}
 extension FnType: Equatable {}
 
-
 @warn_unused_result
 func == (lhs: StructType, rhs: StructType) -> Bool {
     return lhs.name == rhs.name
 }
-
-
 
 func globalType(module: LLVMModuleRef) -> Ty throws -> LLVMValueRef {
     return { val in
@@ -48,12 +45,28 @@ func globalType(module: LLVMModuleRef) -> Ty throws -> LLVMValueRef {
 // MARK: Cannonical equality functions, compares their module-agnostic type info
 
 @warn_unused_result
-func == <T: Ty> (lhs: T, rhs: T) -> Bool {
-    return lhs.globalType(nil) == rhs.globalType(nil)
+func == (lhs: Ty?, rhs: Ty) -> Bool {
+    if let l = lhs { return l == rhs } else { return false }
 }
 @warn_unused_result
-func == <T: Ty> (lhs: Ty?, rhs: T) -> Bool {
-    return lhs?.globalType(nil) == rhs.globalType(nil)
+func == (lhs: StructMember, rhs: StructMember) -> Bool {
+    return lhs.name == rhs.name && lhs.type == rhs.type
+}
+@warn_unused_result
+func == (lhs: StructMethod, rhs: StructMethod) -> Bool {
+    return lhs.name == rhs.name && lhs.type == rhs.type
+}
+@warn_unused_result
+func == (lhs: BuiltinType, rhs: BuiltinType) -> Bool {
+    return lhs.explicitName == rhs.explicitName
+}
+@warn_unused_result
+func == (lhs: FnType, rhs: FnType) -> Bool {
+    return lhs.params.elementsEqual(rhs.params, isEquivalent: ==) && lhs.returns == rhs.returns
+}
+@warn_unused_result
+func == (lhs: TupleType, rhs: TupleType) -> Bool {
+    return lhs.members.elementsEqual(rhs.members, isEquivalent: ==)
 }
 
 @warn_unused_result
@@ -72,8 +85,17 @@ func == (lhs: Ty, rhs: Ty) -> Bool {
         return l.validSubstitutionFor(r)
     case (let l as GenericType, let r as StorageType):
         return r.validSubstitutionFor(l)
+        
+    case (let l as FnType, let r as FnType):
+        return r == l
+    case (let lhs as StorageType, let rhs as StorageType):
+        return lhs.name == rhs.name && lhs.members.elementsEqual(rhs.members, isEquivalent: ==) && lhs.methods.elementsEqual(rhs.methods, isEquivalent: ==)
+    case (let l as BuiltinType, let r as BuiltinType):
+        return l == r
+    case (let l as TupleType, let r as TupleType):
+        return l == r
     default:
-        return lhs.globalType(nil) == rhs.globalType(nil)
+        return false
     }
 }
 

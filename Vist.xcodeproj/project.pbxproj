@@ -11,6 +11,10 @@
 		D409D2061C84EB94002D5863 /* Operand.swift in Sources */ = {isa = PBXBuildFile; fileRef = D409D2041C84EB94002D5863 /* Operand.swift */; };
 		D409D2081C84F397002D5863 /* Impls.swift in Sources */ = {isa = PBXBuildFile; fileRef = D409D2071C84F397002D5863 /* Impls.swift */; };
 		D409D2091C84F397002D5863 /* Impls.swift in Sources */ = {isa = PBXBuildFile; fileRef = D409D2071C84F397002D5863 /* Impls.swift */; };
+		D409D20B1C850673002D5863 /* Type.swift in Sources */ = {isa = PBXBuildFile; fileRef = D409D20A1C850673002D5863 /* Type.swift */; };
+		D409D20C1C850673002D5863 /* Type.swift in Sources */ = {isa = PBXBuildFile; fileRef = D409D20A1C850673002D5863 /* Type.swift */; };
+		D409D20E1C859360002D5863 /* VHIRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D409D20D1C859360002D5863 /* VHIRGen.swift */; };
+		D409D20F1C859360002D5863 /* VHIRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D409D20D1C859360002D5863 /* VHIRGen.swift */; };
 		D40FC4CA1C48323E00122397 /* StdTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D40FC4C91C48323E00122397 /* StdTypes.swift */; };
 		D40FC4CC1C4932F200122397 /* Initialiser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D40FC4CB1C4932F100122397 /* Initialiser.swift */; };
 		D40FC4CE1C4AAB0E00122397 /* Intrinsic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D40FC4CD1C4AAB0E00122397 /* Intrinsic.cpp */; };
@@ -180,6 +184,8 @@
 /* Begin PBXFileReference section */
 		D409D2041C84EB94002D5863 /* Operand.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Operand.swift; path = Vist/VHIR/Operand.swift; sourceTree = SOURCE_ROOT; };
 		D409D2071C84F397002D5863 /* Impls.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Impls.swift; path = Vist/VHIR/Impls.swift; sourceTree = SOURCE_ROOT; };
+		D409D20A1C850673002D5863 /* Type.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Type.swift; path = Vist/VHIR/Type.swift; sourceTree = SOURCE_ROOT; };
+		D409D20D1C859360002D5863 /* VHIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VHIRGen.swift; path = VHIRGen/VHIRGen.swift; sourceTree = "<group>"; };
 		D40FC4C91C48323E00122397 /* StdTypes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StdTypes.swift; path = IRGen/StdTypes.swift; sourceTree = "<group>"; };
 		D40FC4CB1C4932F100122397 /* Initialiser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Initialiser.swift; path = Sema/Initialiser.swift; sourceTree = "<group>"; };
 		D40FC4CD1C4AAB0E00122397 /* Intrinsic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Intrinsic.cpp; path = Helper/Intrinsic.cpp; sourceTree = "<group>"; };
@@ -372,6 +378,7 @@
 		D457F6191C835EF40095EDED /* VHIRGen */ = {
 			isa = PBXGroup;
 			children = (
+				D409D20D1C859360002D5863 /* VHIRGen.swift */,
 			);
 			name = VHIRGen;
 			sourceTree = "<group>";
@@ -388,6 +395,7 @@
 				D45FC7BB1C8451010060F974 /* Value.swift */,
 				D45FC7B81C8450FC0060F974 /* Inst.swift */,
 				D409D2071C84F397002D5863 /* Impls.swift */,
+				D409D20A1C850673002D5863 /* Type.swift */,
 			);
 			name = VHIR;
 			path = ../VHIR;
@@ -715,10 +723,12 @@
 				D4E3472C1C62550D00CC2F8E /* StructSema.swift in Sources */,
 				D4E35B621C5D0CA000683486 /* Builtin.swift in Sources */,
 				D4E35B631C5D0CA000683486 /* StdLib.swift in Sources */,
+				D409D20C1C850673002D5863 /* Type.swift in Sources */,
 				D47802AD1C5FAEA800D2FA9C /* ParseError.swift in Sources */,
 				D4E35B641C5D0CA000683486 /* SemaError.swift in Sources */,
 				D45D4CF61C7151D900918E04 /* GenericVariable.swift in Sources */,
 				D4E35B651C5D0CA000683486 /* SemaTypeCheck.swift in Sources */,
+				D409D20F1C859360002D5863 /* VHIRGen.swift in Sources */,
 				D46BC1BE1C66587300B9147E /* ScopeNode.swift in Sources */,
 				D4E35B661C5D0CA000683486 /* SemaScope.swift in Sources */,
 				D4E35B671C5D0CA000683486 /* Mangle.swift in Sources */,
@@ -793,6 +803,7 @@
 				D4328DC71C7080AE00AEF56B /* LLVMPtrWrapper.swift in Sources */,
 				D4FAE45E1C3DDE3100C9EE05 /* FunctionAttribute.swift in Sources */,
 				D497A78A1C3B012700DFE39E /* ArrayVariable.swift in Sources */,
+				D409D20B1C850673002D5863 /* Type.swift in Sources */,
 				D497A7841C3B00FE00DFE39E /* LinkAST.swift in Sources */,
 				D4A2CC0A1C4FF56500BB9A12 /* ASTNode.swift in Sources */,
 				D497A77D1C3B00C600DFE39E /* SemaScope.swift in Sources */,
@@ -822,6 +833,7 @@
 				D40FC4CE1C4AAB0E00122397 /* Intrinsic.cpp in Sources */,
 				D470D7AE1C56A98100791B40 /* Optimiser.cpp in Sources */,
 				D497A77E1C3B00C600DFE39E /* SemaTypeCheck.swift in Sources */,
+				D409D20E1C859360002D5863 /* VHIRGen.swift in Sources */,
 				D497A7921C3B015700DFE39E /* Config.swift in Sources */,
 				D497A76F1C3B005600DFE39E /* Lexer.swift in Sources */,
 				D41BF5531C5CD996004A1962 /* CommandLine.swift in Sources */,

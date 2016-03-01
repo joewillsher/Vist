@@ -16,7 +16,7 @@ final class Operand: Value {
         value.addUse(self)
     }
     
-    deinit { //
+    deinit {
         try! value?.removeUse(self)
     }
     
@@ -24,7 +24,7 @@ final class Operand: Value {
         get { return value?.irName }
         set { value?.irName = newValue }
     }
-    var type: Type? { return value?.type }
+    var type: Ty? { return value?.type }
     var parentBlock: BasicBlock? { return value?.parentBlock }
     var uses: [Operand] {
         get { return value?.uses ?? [] }

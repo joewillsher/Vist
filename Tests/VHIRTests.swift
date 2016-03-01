@@ -14,9 +14,6 @@ final class VHIRTests: XCTestCase {
     
     func testFunction() {
         
-        let fnType = FunctionType(params: [IntType(size: 64), IntType(size: 64)], returns: IntType(size: 64))
-        let fn = Function(name: "add", type: fnType, blocks: nil)
-        
         
     }
     

@@ -60,9 +60,9 @@ extension Builder {
         throw VHIRError.noFunctionBody
     }
     
-    func createBinaryInst(name: String, l: Operand, r: Operand, irName: String? = nil) throws -> BinaryInst {
+    func createBuiltinBinaryInst(i: BuiltinInst, l: Operand, r: Operand, irName: String? = nil) throws -> BuiltinBinaryInst {
         guard let block = block else { throw VHIRError.noParentBlock }
-        let binInst = BinaryInst(name: name, l: l, r: r, irName: irName)
+        let binInst = BuiltinBinaryInst(inst: i, l: l, r: r, irName: irName)
         binInst.parentBlock = block
         try block.insert(binInst, after: inst)
         inst = binInst

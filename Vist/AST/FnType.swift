@@ -18,30 +18,6 @@ struct FnType: Ty {
     var metadata: [String]
     let callingConvention: CallingConvention
     
-    func globalType(module: LLVMModuleRef) -> LLVMTypeRef {
-        
-        let ret: LLVMTypeRef
-        if case _ as FnType = returns {
-            ret = BuiltinType.pointer(to: returns).globalType(module)
-        }
-        else {
-            ret = returns.globalType(module)
-        }
-        
-        var members: [LLVMValueRef] = []
-        
-        if case .method(let ty) = callingConvention {
-            members.append(BuiltinType.pointer(to: ty).globalType(module))
-        }
-
-        members += nonVoid.map {$0.globalType(module)}
-        
-        let els = members.ptr()
-        defer { els.dealloc(members.count) }
-        
-        return LLVMFunctionType(ret, els, UInt32(members.count), false)
-    }
-    
     init(params: [Ty], returns: Ty = BuiltinType.void, metadata: [String] = [], callingConvention: CallingConvention = .thin) {
         self.params = params
         self.returns = returns

@@ -11,11 +11,11 @@
 /// of basic blocks
 final class Function: VHIR {
     var name: String
-    var type: FunctionType
+    var type: FnType
     var paramNames: [String]
     var blocks: [BasicBlock]?
     
-    init(name: String, type: FunctionType, paramNames: [String]) {
+    init(name: String, type: FnType, paramNames: [String]) {
         self.name = name
         self.type = type
         self.paramNames = paramNames

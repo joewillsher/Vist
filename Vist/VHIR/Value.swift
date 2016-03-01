@@ -7,11 +7,11 @@
 //
 
 /// A value, instruction results, literals, etc
-protocol Value: VHIR {
+protocol Value: class, VHIR {
     /// An explicit name to give self in the ir repr
     var irName: String? { get set }
     
-    var type: Type? { get }
+    var type: Ty? { get }
     
     /// The block containing `self`
     weak var parentBlock: BasicBlock? { get }
