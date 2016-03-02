@@ -50,6 +50,12 @@ final class BasicBlock: VHIR {
     private func instAtIndex(index: Int) -> Inst {
         return instructions[index]
     }
+    
+    /// Returns the instruction using the operand
+    func userOfOperand(operand: Operand) -> Inst? {
+        let f = instructions.indexOf { inst in inst.args.contains { arg in arg === operand } }
+        return f.map { instructions[$0] }
+    }
 }
 
 

@@ -110,15 +110,22 @@ extension TypeAlias {
 }
 
 
+extension Inst {
+    var useComment: String {
+        let u = uses.map { $0.user!.name }
+        return uses.isEmpty ? "" : " \t// uses: \(u.joinWithSeparator(", "))"
+    }
+}
+
 
 extension IntLiteralInst {
     var vhir: String {
-        return "\(name) = int_literal %\(value.type!.explicitName): \(value.value)"
+        return "\(name) = int_literal \(value.value) \(useComment)"
     }
 }
 extension StructInitInst {
     var vhir: String {
-        return "\(name) = struct %\(type!.explicitName): \(args.vhirValueTuple())"
+        return "\(name) = struct %\(type!.explicitName) \(args.vhirValueTuple()) \(useComment)"
     }
 }
 extension ReturnInst {
@@ -128,19 +135,19 @@ extension ReturnInst {
 }
 extension VariableInst {
     var vhir: String {
-        return "variable_decl \(name) = \(value.valueName)"
+        return "variable_decl \(name) = \(value.valueName) \(useComment)"
     }
 }
 extension FunctionCallInst {
     var vhir: String {
-        return "\(name) = call @\(function.name) %\(type!.explicitName): \(args.vhirValueTuple())"
+        return "\(name) = call @\(function.name) \(args.vhirValueTuple()) \(useComment)"
     }
 }
 extension BuiltinBinaryInst {
     var vhir: String {
         let a = args.map{$0.valueName}
         let w = a.joinWithSeparator(", ")
-        return "\(name) = \(instName) \(w)"
+        return "\(name) = \(instName) \(w) \(useComment)"
     }
 }
 

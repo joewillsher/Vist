@@ -13,6 +13,7 @@ final class IntLiteralInst: Inst {
     var type: Ty? { return BuiltinType.int(size: 64) }
     weak var parentBlock: BasicBlock?
     var uses: [Operand] = []
+    var args: [Operand] { return [Operand(value)] }
     
     private init(val: Int, irName: String? = nil) {
         self.value = IntLiteralValue(val: val)

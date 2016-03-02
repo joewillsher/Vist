@@ -40,4 +40,8 @@ final class Operand: Value {
         get { return value!.name }
         set { value?.name = newValue }
     }
+    
+    var user: Inst? {
+        return parentBlock?.userOfOperand(self)
+    }
 }

@@ -8,6 +8,7 @@
 
 /// An instruction o
 protocol Inst: Value {
+    var args: [Operand] { get }
 }
 
 extension Inst {

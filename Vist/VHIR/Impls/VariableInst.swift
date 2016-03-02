@@ -16,6 +16,7 @@ final class VariableInst: Inst {
     var type: Ty?
     weak var parentBlock: BasicBlock?
     var uses: [Operand] = []
+    var args: [Operand] { return [value] }
     
     private init(value: Operand, irName: String? = nil) {
         self.value = value

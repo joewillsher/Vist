@@ -13,6 +13,7 @@ final class ReturnInst: Inst {
     var irName: String? = nil
     
     var uses: [Operand] = []
+    var args: [Operand] { return [value] }
     var type: Ty?
     weak var parentBlock: BasicBlock?
     
