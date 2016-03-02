@@ -1,5 +1,5 @@
 //
-//  Type.swift
+//  TypeAlias.swift
 //  Vist
 //
 //  Created by Josef Willsher on 29/02/2016.
@@ -12,7 +12,15 @@ class TypeAlias: Ty {
     var targetType: StorageType
     
     func lowerType(module: Module) -> LLVMTypeRef {
-        return targetType.lowerType(module)
+        if module.loweredModule == nil { return targetType.lowerType(module) }
+        
+        let found = getNamedType(targetType.irName, module.loweredModule)
+        if found != nil { return found }
+        
+        let type = targetType.lowerType(module)
+        let namedType = createNamedType(type, targetType.irName)
+        
+        return namedType
     }
     
     init(name: String, targetType: StorageType) {

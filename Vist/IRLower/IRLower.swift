@@ -15,6 +15,7 @@ extension Module {
     func irLower(module: LLVMModuleRef, isStdLib: Bool) throws {
         
         let irGen = (LLVMCreateBuilder(), module, isStdLib) as IRGen
+        loweredModule = module
         
         for fn in functions {
             LLVMAddFunction(irGen.module, fn.name, fn.type.lowerType(self))
@@ -63,9 +64,9 @@ extension IntLiteralInst: IRLower {
 
 extension StructInitInst: IRLower {
     func irLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        guard case let t as TypeAlias = type, case let ty as StructType = t.targetType else { throw irGenError(.notStructType) }
-        var val = LLVMGetUndef(ty.lowerType(module))
-                
+        guard case let t as TypeAlias = type else { throw irGenError(.notStructType) }
+        var val = LLVMGetUndef(t.lowerType(module))
+        
         for (i, el) in args.enumerate() {
             val = LLVMBuildInsertValue(irGen.builder, val, el.loweredValue, UInt32(i), "")
         }
@@ -105,6 +106,8 @@ extension FunctionCallInst: IRLower {
         let fn = function.functionPointer(irGen)
         
         let call = LLVMBuildCall(irGen.builder, fn, args, UInt32(argCount), irName ?? "")
+        
+        function.type.addMetadataTo(call)
         
         return call
     }

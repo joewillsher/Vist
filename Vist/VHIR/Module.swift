@@ -12,6 +12,7 @@ final class Module: VHIR {
     var functions: [Function] = []
     var typeList: [TypeAlias] = []
     var builder: Builder!
+    var loweredModule: LLVMModuleRef = nil
     
     init() {
         builder = Builder(module: self)
@@ -28,6 +29,7 @@ extension Module {
         typeList.append(TypeAlias(name: name, targetType: targetType))
     }
     
+    /// Returns the module's definition of `type`
     func getOrAddType(type: StorageType) -> TypeAlias {
         if let t = typeList.indexOf({$0.targetType == type}) {
             return typeList[t]
