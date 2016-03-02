@@ -23,11 +23,12 @@ final class Function: VHIR {
     var name: String
     var type: FnType
     private var impl: FunctionImpl?
-    weak var parentModule: Module?
+    unowned var parentModule: Module
     
-    private init(name: String, type: FnType) {
+    private init(name: String, type: FnType, module: Module) {
         self.name = name
-        self.type = type
+        self.parentModule = module
+        self.type = type.usingTypesIn(module)
     }
     
     var hasBody: Bool { return (impl?.blocks.count != 0) ?? false }
@@ -49,8 +50,16 @@ final class Function: VHIR {
         guard let p = try impl?.blocks.first?.paramNamed(name) else { throw VHIRError.noParamNamed(name) }
         return p
     }
+    
 }
 
+extension FnType {
+    func usingTypesIn(module: Module) -> FnType {
+        let params = self.params.map { ($0 as? StorageType).map { module.getOrAddType($0) } ?? $0 }
+        let returns = (self.returns as? StorageType).map { module.getOrAddType($0) } ?? self.returns
+        return FnType(params: params, returns: returns, metadata: metadata, callingConvention: callingConvention)
+    }
+}
 
 extension Builder {
     
@@ -67,12 +76,12 @@ extension Builder {
         function.impl = FunctionImpl(paramNames: paramNames, blocks: [bb])
         try setInsertPoint(bb)
     }
-
+    
     /// Creates function prototype an adds to module
     func createFunctionPrototype(name: String, type: FnType) throws -> Function {
-        let f = Function(name: name, type: type)
-        f.parentModule = module
-        module?.addFunction(f)
+        guard let module = module else { throw VHIRError.noModule }
+        let f = Function(name: name, type: type, module: module)
+        module.addFunction(f)
         return f
     }
     

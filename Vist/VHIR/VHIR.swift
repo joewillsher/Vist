@@ -13,7 +13,7 @@ protocol VHIR {
 }
 
 enum VHIRError: ErrorType {
-    case noFunctionBody, instNotInBB, cannotMoveBuilderHere, noParentBlock, noParamNamed(String), noUse, noType
+    case noFunctionBody, instNotInBB, cannotMoveBuilderHere, noParentBlock, noParamNamed(String), noUse, noType, noModule
     case notGenerator, paramsNotTyped
 }
 
@@ -143,4 +143,5 @@ extension BuiltinBinaryInst {
         return "\(name) = \(instName) \(w)"
     }
 }
+
 
