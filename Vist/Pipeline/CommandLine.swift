@@ -24,6 +24,7 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
     let o = flags.contains("-O")
     let lib = flags.contains("-lib") // undocumented
     let buildStdLib = flags.contains("-build-stdlib")
+    let oldIRGen = flags.contains("-irgen-old")
     let preserveIntermediate = flags.contains("-preserve")
     
     if flags.contains("-build-runtime") {
@@ -63,7 +64,8 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
                                  optim: true,
                                  preserve: true,
                                  generateLibrary: true,
-                                 isStdLib: true)
+                                 isStdLib: true,
+                                 oldIRGen: true)
         }
         if !files.isEmpty {
             try compileDocuments(files,
@@ -78,7 +80,8 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
                                  optim: o,
                                  preserve: preserveIntermediate,
                                  generateLibrary: lib,
-                                 isStdLib: false)
+                                 isStdLib: false,
+                                 oldIRGen: oldIRGen)
         }
         
         #if DEBUG

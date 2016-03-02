@@ -31,6 +31,20 @@ struct StructType: StorageType {
             UInt32(members.count),
             false)
     }
+    func lowerType(module: LLVMModuleRef) -> LLVMTypeRef {
+        
+        // if no module is defined, we can only return the raw type
+        if module == nil { return lowerType(module) }
+        
+        let found = getNamedType(irName, module)
+        if found != nil { return found }
+        
+        let type = lowerType(Module())
+        let namedType = createNamedType(type, irName)
+        
+        return namedType
+    }
+
     
     static func named(n: String) -> StructType {
         return StructType(members: [], methods: [], name: n)

@@ -12,6 +12,7 @@ protocol Ty: Printable, VHIR {
     var mangledName: String { get }
     
     func lowerType(module: Module) -> LLVMTypeRef
+    func lowerType(m: LLVMModuleRef) -> LLVMValueRef
     
     /// The explicit name of this type. The same as the
     /// mangled name, unless the mangled name uses a different
@@ -26,7 +27,7 @@ extension Ty {
     }
     
     func lowerType(m: LLVMModuleRef) -> LLVMValueRef {
-        fatalError("TODO: shouldnt be reachable as working on VHIR")
+        return lowerType(Module())
     }
 }
 

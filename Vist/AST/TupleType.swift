@@ -25,6 +25,17 @@ final class TupleType: Ty {
             UInt32(members.count),
             false)
     }
+    func lowerType(module: LLVMModuleRef) -> LLVMTypeRef {
+        let arr = members
+            .map { $0.lowerType(module) }
+            .ptr()
+        defer { arr.dealloc(members.count) }
+        
+        return LLVMStructType(
+            arr,
+            UInt32(members.count),
+            false)
+    }
     
     func propertyType(index: Int) throws -> Ty {
         guard index < members.count else { throw semaError(.noTupleElement(index: index, size: members.count)) }

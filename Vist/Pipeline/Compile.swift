@@ -32,7 +32,8 @@ func compileDocuments(fileNames: [String],
     optim: Bool = true,
     preserve: Bool = false,
     generateLibrary: Bool = false,
-    isStdLib: Bool = false)
+    isStdLib: Bool = false,
+    oldIRGen: Bool = false)
     throws {
         
         let currentDirectory = isStdLib ? stdLibDirectory: inDirectory
@@ -89,44 +90,31 @@ func compileDocuments(fileNames: [String],
         
         let file = fileNames.first!.stringByReplacingOccurrencesOfString(".vist", withString: "")
         
-        if verbose { print("\n----------------------------VHIR GEN-------------------------------\n") }
-
+        
         let m = Module()
-        try ast.vhirGen(m)
-        
-        
-        try m.vhir.writeToFile("\(currentDirectory)/\(file).vhir", atomically: true, encoding: NSUTF8StringEncoding)
-        
-        print(m.vhir)
+
+        if !oldIRGen {
+            if verbose { print("\n----------------------------VHIR GEN-------------------------------\n") }
+            
+            try ast.vhirGen(m)
+            try m.vhir.writeToFile("\(currentDirectory)/\(file).vhir", atomically: true, encoding: NSUTF8StringEncoding)
+            
+            if verbose { print(m.vhir) }
+        }
         
         if verbose { print("\n------------------------------LLVM IR------------------------------\n") }
 
         var module = LLVMModuleCreateWithName("vist_module")
-
-        if isStdLib { linkWithRuntime(&module, withFile: "\(runtimeDirectory)/runtime.bc") }
+        
+        if isStdLib {
+            linkWithRuntime(&module, withFile: "\(runtimeDirectory)/runtime.bc")
+        }
         configModule(module)
-
-        try m.irLower(module, isStdLib: true)
-//        LLVMDumpModule(module)
-        
-//        print("")
-        
-//        return
-        
-        
-        
-        
-        
-        
-        // Create vist program module and link against the helper bytecode
-        
-        
-        
         
         defer {
             // remove files
             if !preserve {
-                for file in ["\(file).ll", "\(file)_.ll", "\(file).s"] {
+                for file in ["\(file).ll", "\(file)_.ll", "\(file).s", "\(file).vhir"] {
                     
                     let rmTask = NSTask()
                     rmTask.currentDirectoryPath = currentDirectory
@@ -140,10 +128,13 @@ func compileDocuments(fileNames: [String],
         }
         
         // Generate LLVM IR code for program
+        if oldIRGen {
+            try ast.irGen(module: module, isLibrary: generateLibrary, isStdLib: isStdLib)
+        }
+        else {
+            try m.irLower(module, isStdLib: true)
+        }
         
-//        try ast.irGen(module: module, isLibrary: generateLibrary, isStdLib: isStdLib)
-        try m.irLower(module, isStdLib: true)
-
         // print and write to file
         try String.fromCString(LLVMPrintModuleToString(module))?.writeToFile("\(currentDirectory)/\(file)_.ll", atomically: true, encoding: NSUTF8StringEncoding)
         

@@ -17,7 +17,7 @@ protocol StorageType: Ty {
     
     var members: [StructMember] { get }
     var methods: [StructMethod] { get }
-    
+        
     /// Name this type is given at the global scope of IR
     var irName: String { get }
 }
@@ -38,8 +38,6 @@ extension StorageType {
     func ptrToMethodNamed(name: String, type: FnType, module: LLVMModuleRef) -> LLVMValueRef {
         return ptrToFunction(name.mangle(type.params, parentTypeName: self.name), type: type, module: module)
     }
-    
-    // TODO: Implement lowerType methods in conformants -- not here
     
     func propertyType(name: String) throws -> Ty {
         return members[try indexOfMemberNamed(name)].type

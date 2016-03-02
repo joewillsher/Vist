@@ -40,7 +40,12 @@ struct GenericType: StorageType {
             BuiltinType.opaquePointer
             ]).lowerType(module)
     }
-    
+    func lowerType(module: LLVMModuleRef) -> LLVMTypeRef {
+        return StructType.withTypes([
+            BuiltinType.array(el: BuiltinType.int(size: 32), size: UInt32(concepts.flatMap({$0.requiredProperties}).count)),
+            BuiltinType.opaquePointer
+            ]).lowerType(module)
+    }
     
     var irName: String {
         return "\(parentName).\(name).gen"
