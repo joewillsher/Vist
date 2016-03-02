@@ -23,13 +23,15 @@ final class Operand: Value {
     var loweredValue: LLVMValueRef = nil
     
     // forward all interface to `value`
-    
+    var type: Ty? { return value?.type }
     var irName: String? {
         get { return value?.irName }
         set { value?.irName = newValue }
     }
-    var type: Ty? { return value?.type }
-    var parentBlock: BasicBlock? { return value?.parentBlock }
+    var parentBlock: BasicBlock? {
+        get { return value?.parentBlock }
+        set { value?.parentBlock = newValue }
+    }
     var uses: [Operand] {
         get { return value?.uses ?? [] }
         set { value?.uses = newValue }

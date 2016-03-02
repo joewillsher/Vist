@@ -996,7 +996,7 @@ extension StructExpr: IRGenerator {
         // IRGen on elements
         let errorCollector = ErrorCollector()
         
-        _ = type.memberTypes(irGen.module)
+        _ = type.lowerType(irGen.module)
         
         
         try initialisers.walkChildren(errorCollector) { i in
@@ -1200,11 +1200,10 @@ extension TupleMemberLookupExpr: RuntimeVariableProvider, IRGenerator {
 
 extension AST {
     
-    func irGen(module m: LLVMModuleRef, isLibrary: Bool, isStdLib: Bool) throws {
+    func irGen(module module: LLVMModuleRef, isLibrary: Bool, isStdLib: Bool) throws {
         
         // initialise global objects
         let builder = LLVMCreateBuilder()
-        let module = m
         
         // main arguments
         let argBuffer = [LLVMTypeRef]().ptr()

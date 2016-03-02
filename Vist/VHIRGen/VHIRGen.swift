@@ -39,7 +39,7 @@ extension AST: VHIRGenerator {
 extension IntegerLiteral: VHIRGenerator {
     
     func vhirGen(module: Module) throws -> Value {
-        return try module.builder.buildIntLiteral(val, irName: "a")
+        return try module.builder.buildIntLiteral(val)
     }
 }
 
@@ -47,7 +47,15 @@ extension VariableDecl: VHIRGenerator {
     
     func vhirGen(module: Module) throws -> Value {
         let v = try value.vhirGen(module)
-        return v
+        let decl = try module.builder.buildVariableDecl(Operand(v), irName: name)
+        return decl
     }
 }
+
+//extension FunctionCallExpr: VHIRGenerator {
+//    
+//    func vhirGen(module: Module) throws -> Value {
+//        
+//    }
+//}
 

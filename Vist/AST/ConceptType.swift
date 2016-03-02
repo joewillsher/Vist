@@ -11,13 +11,13 @@ struct ConceptType: StorageType {
     let name: String
     let requiredFunctions: [StructMethod], requiredProperties: [StructMember]
     
-//    func memberTypes(module: LLVMModuleRef) -> LLVMTypeRef {
-//        return StructType.withTypes([
-//            BuiltinType.array(el: BuiltinType.int(size: 32), size: UInt32(requiredProperties.count)), // prop offset list
-//            BuiltinType.array(el: BuiltinType.opaquePointer, size: UInt32(requiredFunctions.count)), // method witness list
-//            BuiltinType.opaquePointer // wrapped object
-//            ]).memberTypes(module)
-//    }
+    func lowerType(module: Module) -> LLVMTypeRef {
+        return StructType.withTypes([
+            BuiltinType.array(el: BuiltinType.int(size: 32), size: UInt32(requiredProperties.count)), // prop offset list
+            BuiltinType.array(el: BuiltinType.opaquePointer, size: UInt32(requiredFunctions.count)), // method witness list
+            BuiltinType.opaquePointer // wrapped object
+            ]).lowerType(module)
+    }
     
     var irName: String {
         return "\(name).ex"

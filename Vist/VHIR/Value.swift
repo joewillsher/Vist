@@ -14,7 +14,7 @@ protocol Value: class, VHIR {
     var type: Ty? { get }
     
     /// The block containing `self`
-    weak var parentBlock: BasicBlock? { get }
+    weak var parentBlock: BasicBlock? { get set }
     
     /// The list of uses of `self`. A collection of `Operand`
     /// instances whose `value`s point to self, to 

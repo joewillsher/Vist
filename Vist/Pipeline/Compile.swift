@@ -99,14 +99,19 @@ func compileDocuments(fileNames: [String],
         
         print(m.vhir)
         
-        if verbose { print("\n----------------------------VHIR LOWER-----------------------------\n") }
+        if verbose { print("\n------------------------------LLVM IR------------------------------\n") }
 
         var module = LLVMModuleCreateWithName("vist_module")
 
-        
+        if isStdLib { linkWithRuntime(&module, withFile: "\(runtimeDirectory)/runtime.bc") }
+        configModule(module)
+
         try m.irLower(module, isStdLib: true)
+//        LLVMDumpModule(module)
         
-        return
+//        print("")
+        
+//        return
         
         
         
@@ -115,11 +120,6 @@ func compileDocuments(fileNames: [String],
         
         // Create vist program module and link against the helper bytecode
         
-        if isStdLib {
-            linkWithRuntime(&module, withFile: "\(runtimeDirectory)/runtime.bc")
-        }
-        
-        configModule(module)
         
         
         
@@ -139,12 +139,11 @@ func compileDocuments(fileNames: [String],
             }
         }
         
-        if verbose { print("\n---------------------------LLVM IR----------------------------\n") }
-        
         // Generate LLVM IR code for program
         
-        try ast.irGen(module: module, isLibrary: generateLibrary, isStdLib: isStdLib)
-        
+//        try ast.irGen(module: module, isLibrary: generateLibrary, isStdLib: isStdLib)
+        try m.irLower(module, isStdLib: true)
+
         // print and write to file
         try String.fromCString(LLVMPrintModuleToString(module))?.writeToFile("\(currentDirectory)/\(file)_.ll", atomically: true, encoding: NSUTF8StringEncoding)
         

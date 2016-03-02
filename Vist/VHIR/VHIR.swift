@@ -18,7 +18,7 @@ enum VHIRError: ErrorType {
     case notGenerator
 }
 
-// $instruction
+// instruction
 // %identifier
 // @function
 // #basicblock
@@ -51,19 +51,12 @@ extension Value {
         return valueName
     }
 }
-extension Inst {
-    var vhir: String {
-        let a = args.map{$0.valueName}
-        let w = a.joinWithSeparator(", ")
-        return "\(name) = $\(instName) \(w)"
-    }
-}
 extension BasicBlock {
     var vhir: String {
         let p = parameters?.count > 0 ? parameters?.map({ $0.vhir }) : nil
         let pString = p.map { "(\($0.joinWithSeparator(", ")))"} ?? ""
         let i = instructions.map { $0.vhir }
-        let iString = "\n\t\(i.joinWithSeparator("\n\t"))\n"
+        let iString = "\n  \(i.joinWithSeparator("\n  "))\n"
         return "#\(name)\(pString):\(iString)"
     }
 }
@@ -74,6 +67,21 @@ extension Function {
         return "func @\(name) : \(type.vhir)\(bString)"
     }
 }
+
+extension Module {
+    var vhir: String {
+        let t = typeList.map { $0.declVHIR }
+        let f = functions.map { $0.vhir }
+        return t.joinWithSeparator("\n") + "\n\n" + f.joinWithSeparator("\n\n")
+    }
+}
+
+
+
+
+
+
+
 extension FnType {
     var vhir: String {
         return "\(params.vhirTypeTuple()) -> \(returns.vhir)"
@@ -94,22 +102,25 @@ extension TupleType {
         return members.vhirTypeTuple()
     }
 }
-extension Module {
+extension TypeAlias {
+    var declVHIR: String {
+        return "type %\(name) = \(targetType.vhir)"
+    }
     var vhir: String {
-        let t = typeList.map { $0.vhir }
-        let f = functions.map { $0.vhir }
-        return (t+f).joinWithSeparator("\n\n")
+        return "%\(name)"
     }
 }
 
+
+
 extension IntLiteralInst {
     var vhir: String {
-        return "\(name) = $\(instName) %\(value.type!.explicitName) \(value.value)"
+        return "\(name) = \(instName) %\(value.type!.explicitName) \(value.value)"
     }
 }
 extension StructInitInst {
     var vhir: String {
-        return "\(name) = $\(instName) %\(type!.explicitName) \(args.vhirValueTuple())"
+        return "\(name) = \(instName) %\(type!.explicitName) \(args.vhirValueTuple())"
     }
 }
 extension ReturnInst {
@@ -117,8 +128,18 @@ extension ReturnInst {
         return "return \(value.name)"
     }
 }
-
-
+extension VariableInst {
+    var vhir: String {
+        return "\(instName) \(name) = \(value.valueName)"
+    }
+}
+extension BuiltinBinaryInst {
+    var vhir: String {
+        let a = args.map{$0.valueName}
+        let w = a.joinWithSeparator(", ")
+        return "\(name) = \(instName) \(w)"
+    }
+}
 
 
 //: [Next](@next)

@@ -48,7 +48,6 @@ final class ReturnInst: Inst {
     var irName: String?
     
     var uses: [Operand] = []
-    var args: [Operand] { return [value] }
     var type: Ty?
     var instName: String = "return"
     weak var parentBlock: BasicBlock?
@@ -65,7 +64,6 @@ final class IntLiteralInst: Inst {
     
     var irName: String?
     var type: Ty? { return BuiltinType.int(size: 64) }
-    var args: [Operand] { return [Operand(value)] }
     weak var parentBlock: BasicBlock?
     var uses: [Operand] = []
     var instName: String = "integer_literal"
@@ -90,6 +88,24 @@ final class StructInitInst: Inst {
         self.args = args
         self.irName = irName
         self.structType = type
+    }
+}
+
+final class VariableInst: Inst {
+    var value: Operand
+    //var ownership: [OwnershipAttrs] // specify ref/val semantics
+    // also memory management info stored
+    
+    var irName: String?
+    var type: Ty?
+    weak var parentBlock: BasicBlock?
+    var uses: [Operand] = []
+    var instName: String = "variable_decl"
+    
+    init(value: Operand, irName: String? = nil) {
+        self.value = value
+        self.type = value.type
+        self.irName = irName
     }
 }
 

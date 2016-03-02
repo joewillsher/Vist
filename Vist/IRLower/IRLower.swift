@@ -30,14 +30,12 @@ extension Function: IRLower {
         
         guard let blocks = blocks else { return fn }
         
-        
-        
         for bb in blocks {
             
-            LLVMAppendBasicBlock(fn, bb.name)
+            let block = LLVMAppendBasicBlock(fn, bb.name)
+            LLVMPositionBuilderAtEnd(irGen.builder, block)
             
             for case let inst as protocol<IRLower, Inst> in bb.instructions {
-                
                 let v = try inst.irLower(module, irGen: irGen)
                 inst.updateUsesWithLoweredVal(v)
             }
@@ -57,14 +55,36 @@ extension IntLiteralInst: IRLower {
 
 extension StructInitInst: IRLower {
     func irLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        guard case let t as StructType = type else { throw irGenError(.notStructType) }
-        let mem = LLVMBuildAlloca(irGen.builder, t.lowerType(module), "")
-        
+        guard case let t as TypeAlias = type, case let ty as StructType = t.targetType else { throw irGenError(.notStructType) }
+        var val = LLVMGetUndef(ty.lowerType(module))
+                
         for (i, el) in args.enumerate() {
-            LLVMBuildInsertValue(irGen.builder, mem, el.loweredValue, UInt32(i), "")
+            val = LLVMBuildInsertValue(irGen.builder, val, el.loweredValue, UInt32(i), "")
         }
         
-        return LLVMBuildLoad(irGen.builder, mem, irName ?? "")
+        return val
+    }
+}
+
+extension ReturnInst: IRLower {
+    
+    func irLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        
+        if case _ as VoidValue = value.value {
+            return LLVMBuildRetVoid(irGen.builder)
+        }
+        else {
+            // TODO
+            return nil
+        }
+    }
+}
+extension VariableInst: IRLower {
+    func irLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        guard let type = type else { throw irGenError(.notTyped) }
+        let mem = LLVMBuildAlloca(irGen.builder, type.lowerType(module), irName ?? "")
+        LLVMBuildStore(irGen.builder, value.loweredValue, mem)
+        return mem
     }
 }
 

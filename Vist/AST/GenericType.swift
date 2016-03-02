@@ -34,11 +34,11 @@ struct GenericType: StorageType {
     }
     
     // TODO: Reimplement this
-    func memberTypes(module: LLVMModuleRef) -> LLVMTypeRef {
+    func lowerType(module: Module) -> LLVMTypeRef {
         return StructType.withTypes([
             BuiltinType.array(el: BuiltinType.int(size: 32), size: UInt32(concepts.flatMap({$0.requiredProperties}).count)),
             BuiltinType.opaquePointer
-            ]).memberTypes(module)
+            ]).lowerType(module)
     }
     
     

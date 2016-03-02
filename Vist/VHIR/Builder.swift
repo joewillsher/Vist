@@ -47,6 +47,13 @@ extension Builder {
         }
     }
     
+    private func addToCurrentBlock(inst: Inst) throws {
+        guard let block = block else { throw VHIRError.noParentBlock }
+        inst.parentBlock = block
+        try block.insert(inst)
+        try setInsertPoint(inst)
+    }
+    
     func addBasicBlock(name: String, params: [Value]? = nil) throws -> BasicBlock {
         if let function = function, let b = function.blocks where !b.isEmpty {
             let bb = BasicBlock(name: name, parameters: params, parentFunction: function)
@@ -75,11 +82,8 @@ extension Builder {
     }
     
     func createBuiltin(i: BuiltinInst, l: Operand, r: Operand, irName: String? = nil) throws -> BuiltinBinaryInst {
-        guard let block = block else { throw VHIRError.noParentBlock }
         let binInst = BuiltinBinaryInst(inst: i, l: l, r: r, irName: irName)
-        binInst.parentBlock = block
-        try block.insert(binInst, after: inst)
-        try setInsertPoint(binInst)
+        try addToCurrentBlock(binInst)
         return binInst
     }
     
@@ -87,37 +91,32 @@ extension Builder {
         return try createReturn(Operand(VoidValue()))
     }
     func createReturn(value: Operand, irName: String? = nil) throws -> ReturnInst {
-        guard let block = block else { throw VHIRError.noParentBlock }
         let retInst = ReturnInst(value: value, parentBlock: block, irName: irName)
-        retInst.parentBlock = block
-        try block.insert(retInst, after: inst)
-        try setInsertPoint(retInst)
+        try addToCurrentBlock(retInst)
         return retInst
     }
     
     func createStruct(type: StructType, values: [Operand], irName: String? = nil) throws -> StructInitInst {
-        guard let block = block else { throw VHIRError.noParentBlock }
         let s = StructInitInst(type: type, args: values, irName: irName)
-        s.parentBlock = block
-        try block.insert(s)
-        try setInsertPoint(s)
+        try addToCurrentBlock(s)
         return s
     }
     
     
     private func buildBuiltinInt(val: Int, irName: String? = nil) throws-> IntLiteralInst {
-        guard let block = block else { throw VHIRError.noParentBlock }
         let v = IntLiteralInst(val: val, irName: irName)
-        v.parentBlock = block
-        try block.insert(v)
-        try setInsertPoint(v)
+        try addToCurrentBlock(v)
         return v
     }
     
     func buildIntLiteral(val: Int, irName: String? = nil) throws-> StructInitInst {
-        
         let v = try buildBuiltinInt(val, irName: irName.map { "\($0).value" })
         return try createStruct(StdLib.intType, values: [Operand(v)], irName: irName)
-        
+    }
+    
+    func buildVariableDecl(value: Operand, irName: String? = nil) throws -> VariableInst {
+        let v = VariableInst(value: value, irName: irName)
+        try addToCurrentBlock(v)
+        return v
     }
 }

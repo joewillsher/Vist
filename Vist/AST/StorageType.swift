@@ -39,10 +39,7 @@ extension StorageType {
         return ptrToFunction(name.mangle(type.params, parentTypeName: self.name), type: type, module: module)
     }
     
-    func lowerType(module: Module) -> LLVMTypeRef {
-        guard let i = module.typeList.indexOf({$0.name == name}) else { return nil }
-        return module.typeList[i].lowerType(module)
-    }
+    // TODO: Implement lowerType methods in conformants -- not here
     
     func propertyType(name: String) throws -> Ty {
         return members[try indexOfMemberNamed(name)].type

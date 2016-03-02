@@ -20,7 +20,6 @@ class TypeAlias: Ty {
         self.targetType = targetType
     }
     
-    var vhir: String { return "type %\(name) = \(targetType.vhir)" }
     var mangledName: String { return name }
 }
 

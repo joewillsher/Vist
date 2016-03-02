@@ -20,7 +20,7 @@ struct StructType: StorageType {
         self.methods = methods
     }
     
-    func memberTypes(module: LLVMModuleRef) -> LLVMTypeRef {
+    func lowerType(module: Module) -> LLVMTypeRef {
         let arr = members
             .map { $0.type.lowerType(module) }
             .ptr()
