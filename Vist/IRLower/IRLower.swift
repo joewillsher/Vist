@@ -17,6 +17,10 @@ extension Module {
         let irGen = (LLVMCreateBuilder(), module, isStdLib) as IRGen
         
         for fn in functions {
+            LLVMAddFunction(irGen.module, fn.name, fn.type.lowerType(self))
+        }
+        
+        for fn in functions {
             try fn.irLower(self, irGen: irGen)
         }
         
@@ -26,7 +30,7 @@ extension Module {
 extension Function: IRLower {
     func irLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         
-        let fn = LLVMAddFunction(irGen.module, name, type.lowerType(module))
+        let fn = functionPointer(irGen)
         
         guard let blocks = blocks else { return fn }
         
@@ -43,6 +47,10 @@ extension Function: IRLower {
         }
         
         return fn
+    }
+    
+    func functionPointer(irGen: IRGen) -> LLVMValueRef {
+        return LLVMGetNamedFunction(irGen.module, name)
     }
 }
 
@@ -70,12 +78,11 @@ extension ReturnInst: IRLower {
     
     func irLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         
-        if case _ as VoidValue = value.value {
+        if case _ as VoidLiteralValue = value.value {
             return LLVMBuildRetVoid(irGen.builder)
         }
         else {
-            // TODO
-            return nil
+            return LLVMBuildRet(irGen.builder, value.loweredValue)
         }
     }
 }
@@ -85,6 +92,21 @@ extension VariableInst: IRLower {
         let mem = LLVMBuildAlloca(irGen.builder, type.lowerType(module), irName ?? "")
         LLVMBuildStore(irGen.builder, value.loweredValue, mem)
         return mem
+    }
+}
+
+extension FunctionCallInst: IRLower {
+    func irLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        
+        let args = self.args.map { $0.loweredValue }.ptr()
+        let argCount = self.args.count
+        defer { args.dealloc(argCount) }
+        
+        let fn = function.functionPointer(irGen)
+        
+        let call = LLVMBuildCall(irGen.builder, fn, args, UInt32(argCount), irName ?? "")
+        
+        return call
     }
 }
 

@@ -8,7 +8,6 @@
 
 /// An instruction o
 protocol Inst: Value {
-    var instName: String { get }
 }
 
 extension Inst {

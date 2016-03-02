@@ -53,3 +53,15 @@ final class BasicBlock: VHIR {
 }
 
 
+final class BBParam: Value {
+    var irName: String?
+    var type: Ty?
+    weak var parentBlock: BasicBlock?
+    var uses: [Operand] = []
+    
+    init(irName: String, type: Ty) {
+        self.irName = irName
+        self.type = type
+    }
+}
+

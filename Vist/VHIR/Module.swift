@@ -37,5 +37,19 @@ extension Module {
             return getOrAddType(type)
         }
     }
+    
+    func getOrAddFunction(name: String, type: FnType) throws -> Function {
+        if let f = functionNamed(name, paramTypes: type.params) { return f }
+        return try builder.createFunctionPrototype(name, type: type)
+    }
+    
+    func getStdLibFunction(name: String, argTypes: [Ty]) throws -> Function? {
+        guard let (mangledName, fnTy) = StdLib.getStdLibFunction(name, args: argTypes) else { return nil }
+        return try builder.createFunctionPrototype(mangledName, type: fnTy)
+    }
+    
+    func functionNamed(name: String, paramTypes: [Ty]) -> Function? {
+        return functions.indexOf({$0.name == name && $0.type.params.elementsEqual(paramTypes, isEquivalent: ==)}).map { functions[$0] }
+    }
 }
 

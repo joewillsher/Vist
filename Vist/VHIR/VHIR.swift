@@ -6,7 +6,6 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-//: [Previous](@previous)
 
 protocol VHIR {
     /// VHIR code to print
@@ -15,15 +14,14 @@ protocol VHIR {
 
 enum VHIRError: ErrorType {
     case noFunctionBody, instNotInBB, cannotMoveBuilderHere, noParentBlock, noParamNamed(String), noUse, noType
-    case notGenerator
+    case notGenerator, paramsNotTyped
 }
 
 // instruction
 // %identifier
 // @function
-// #basicblock
+// $basicblock
 
-// MARK: VHIR gen, this is where I start making code to print
 
 private extension CollectionType where Generator.Element : VHIR {
     func vhirValueTuple() -> String {
@@ -57,7 +55,7 @@ extension BasicBlock {
         let pString = p.map { "(\($0.joinWithSeparator(", ")))"} ?? ""
         let i = instructions.map { $0.vhir }
         let iString = "\n  \(i.joinWithSeparator("\n  "))\n"
-        return "#\(name)\(pString):\(iString)"
+        return "$\(name)\(pString):\(iString)"
     }
 }
 extension Function {
@@ -115,12 +113,12 @@ extension TypeAlias {
 
 extension IntLiteralInst {
     var vhir: String {
-        return "\(name) = \(instName) %\(value.type!.explicitName) \(value.value)"
+        return "\(name) = int_literal %\(value.type!.explicitName): \(value.value)"
     }
 }
 extension StructInitInst {
     var vhir: String {
-        return "\(name) = \(instName) %\(type!.explicitName) \(args.vhirValueTuple())"
+        return "\(name) = struct %\(type!.explicitName): \(args.vhirValueTuple())"
     }
 }
 extension ReturnInst {
@@ -130,7 +128,12 @@ extension ReturnInst {
 }
 extension VariableInst {
     var vhir: String {
-        return "\(instName) \(name) = \(value.valueName)"
+        return "variable_decl \(name) = \(value.valueName)"
+    }
+}
+extension FunctionCallInst {
+    var vhir: String {
+        return "\(name) = call @\(function.name) %\(type!.explicitName): \(args.vhirValueTuple())"
     }
 }
 extension BuiltinBinaryInst {
@@ -141,5 +144,3 @@ extension BuiltinBinaryInst {
     }
 }
 
-
-//: [Next](@next)

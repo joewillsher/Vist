@@ -24,7 +24,7 @@ extension AST: VHIRGenerator {
         let builder = module.builder
         
         let mainTy = FnType(params: [], returns: BuiltinType.void)
-        let main = try builder.createFunction("main", type: mainTy, paramNames: [])
+        let main = try builder.buildFunction("main", type: mainTy, paramNames: [])
         
         for case let x as VHIRGenerator in exprs {
             try builder.setInsertPoint(main)
@@ -32,7 +32,8 @@ extension AST: VHIRGenerator {
         }
         
         try builder.setInsertPoint(main)
-        try builder.createReturnVoid()
+        try builder.buildReturnVoid()
+        
     }
 }
 
@@ -47,15 +48,35 @@ extension VariableDecl: VHIRGenerator {
     
     func vhirGen(module: Module) throws -> Value {
         let v = try value.vhirGen(module)
-        let decl = try module.builder.buildVariableDecl(Operand(v), irName: name)
-        return decl
+        return try module.builder.buildVariableDecl(Operand(v), irName: name)
     }
 }
 
-//extension FunctionCallExpr: VHIRGenerator {
-//    
-//    func vhirGen(module: Module) throws -> Value {
-//        
-//    }
-//}
+extension BinaryExpr {
+    
+    func vhirGen(module: Module) throws -> Value {
+        let args = try argArr.map { Operand(try $0.vhirGen(module)) }
+        guard let argTypes = argArr.optionalMap({ $0._type }) else { throw VHIRError.paramsNotTyped }
+        
+        if let stdlib = try module.getStdLibFunction(name, argTypes: argTypes) {
+            return try module.builder.buildFunctionCall(stdlib, args: args)
+        }
+        
+        fatalError()
+    }
+}
+
+extension FunctionCallExpr: VHIRGenerator {
+    
+    func vhirGen(module: Module) throws -> Value {
+        let args = try argArr.map { Operand(try $0.vhirGen(module)) }
+        guard let argTypes = argArr.optionalMap({ $0._type }) else { throw VHIRError.paramsNotTyped }
+        
+        if let stdlib = try module.getStdLibFunction(name, argTypes: argTypes) {
+            return try module.builder.buildFunctionCall(stdlib, args: args)
+        }
+        
+        fatalError()
+    }
+}
 
