@@ -92,12 +92,12 @@ final class ReferenceVariable: MutableVariable {
         self.irName = irName
     }
     convenience init(type: Ty, ptr: LLVMValueRef, irName: String, irGen: IRGen) {
-        self.init(type: type.globalType(irGen.module), ptr: ptr, irName: irName, irGen: irGen)
+        self.init(type: type.lowerType(irGen.module), ptr: ptr, irName: irName, irGen: irGen)
     }
     
     /// returns pointer to allocated memory
     class func alloc(type: Ty, irName: String, irGen: IRGen) -> ReferenceVariable {
-        let ty = type.globalType(irGen.module)
+        let ty = type.lowerType(irGen.module)
         let ptr = LLVMBuildAlloca(irGen.builder, ty, irName)
         return ReferenceVariable(type: ty, ptr: ptr, irName: irName, irGen: irGen)
     }

@@ -68,6 +68,7 @@ extension Builder {
     
     func createFunction(name: String, type: FnType, paramNames: [String]) throws -> Function {
         let f = Function(name: name, type: type, paramNames: paramNames)
+        f.parentModule = module
         module?.addFunction(f)
         try setInsertPoint(f)
         return f
@@ -88,6 +89,7 @@ extension Builder {
     func createReturn(value: Operand, irName: String? = nil) throws -> ReturnInst {
         guard let block = block else { throw VHIRError.noParentBlock }
         let retInst = ReturnInst(value: value, parentBlock: block, irName: irName)
+        retInst.parentBlock = block
         try block.insert(retInst, after: inst)
         try setInsertPoint(retInst)
         return retInst
@@ -114,8 +116,8 @@ extension Builder {
     
     func buildIntLiteral(val: Int, irName: String? = nil) throws-> StructInitInst {
         
-        let v = try buildBuiltinInt(val, irName: irName)
-        return try createStruct(StdLib.intType, values: [Operand(v)])
+        let v = try buildBuiltinInt(val, irName: irName.map { "\($0).value" })
+        return try createStruct(StdLib.intType, values: [Operand(v)], irName: irName)
         
     }
 }

@@ -275,7 +275,7 @@ extension ArrayExpr : ExprTypeProvider {
         }
         
         // make sure array is homogeneous
-        guard Set(types.map { $0.globalType(nil) }).count == 1 else { throw semaError(.heterogenousArray(types)) }
+        guard Set(types.map { $0.lowerType(nil) }).count == 1 else { throw semaError(.heterogenousArray(types)) }
         
         // get element type and assign to self
         guard let elementType = types.first else { throw semaError(.emptyArray) }

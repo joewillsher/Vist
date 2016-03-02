@@ -20,6 +20,8 @@ final class Operand: Value {
         try! value?.removeUse(self)
     }
     
+    var loweredValue: LLVMValueRef = nil
+    
     // forward all interface to `value`
     
     var irName: String? {

@@ -68,13 +68,13 @@ final class ExistentialVariable: StorageVariable, MutableVariable {
         
         self.properties = conceptType.requiredProperties.lower(module: irGen.module)
         self.methods = conceptType.requiredFunctions.lower(selfType: conceptType, module: irGen.module)
-        self.type = conceptType.globalType(irGen.module)
+        self.type = conceptType.lowerType(irGen.module)
     }
     
     /// Allocator from another existential object
     class func assignFromExistential(value: LLVMValueRef, conceptType: ConceptType, mutable: Bool, irName: String = "", irGen: IRGen) -> ExistentialVariable {
         
-        let exType = conceptType.globalType(irGen.module)
+        let exType = conceptType.lowerType(irGen.module)
         let ptr = LLVMBuildAlloca(irGen.builder, exType, irName)
         LLVMBuildStore(irGen.builder, value, ptr)
         
@@ -85,16 +85,16 @@ final class ExistentialVariable: StorageVariable, MutableVariable {
     ///
     /// This generates the runtime metadata and stores an opaque pointer to the struct instance
     class func alloc(structType: StructType, conceptType: ConceptType, initWithValue value: LLVMValueRef, mutable: Bool, irName: String = "", irGen: IRGen) throws -> ExistentialVariable {
-        let valueMem = LLVMBuildAlloca(irGen.builder, structType.globalType(irGen.module), "")
+        let valueMem = LLVMBuildAlloca(irGen.builder, structType.lowerType(irGen.module), "")
         return try ExistentialVariable.alloc(structType, conceptType: conceptType, initFromPtr: valueMem, initWithValue: value, mutable: mutable, irGen: irGen)
     }
     
     /// Allocator from a struct object with a known destination ptr
     class func alloc(structType: StructType, conceptType: ConceptType, initFromPtr: LLVMValueRef, initWithValue value: LLVMValueRef, mutable: Bool, irName: String = "", irGen: IRGen) throws -> ExistentialVariable {
         
-        let exType = conceptType.globalType(irGen.module)
+        let exType = conceptType.lowerType(irGen.module)
         let ptr = LLVMBuildAlloca(irGen.builder, exType, irName)
-        let opaquePtrType = BuiltinType.opaquePointer.globalType(irGen.module)
+        let opaquePtrType = BuiltinType.opaquePointer.lowerType(irGen.module)
         
         let propArrayPtr = LLVMBuildStructGEP(irGen.builder, ptr, 0, "\(irName).prop_metadata") // [n x i32]*
         let methodArrayPtr = LLVMBuildStructGEP(irGen.builder, ptr, 1, "\(irName).method_metadata") // [n x i8*]*
@@ -133,7 +133,7 @@ final class ExistentialVariable: StorageVariable, MutableVariable {
     private var propertyMetadataBasePtr: LLVMValueRef {
         get {
             if _propertyMetadataBasePtr != nil { return _propertyMetadataBasePtr }
-            let i32PtrType = BuiltinType.pointer(to: BuiltinType.int(size: 32)).globalType(irGen.module)
+            let i32PtrType = BuiltinType.pointer(to: BuiltinType.int(size: 32)).lowerType(irGen.module)
             let arr = LLVMBuildStructGEP(irGen.builder, ptr, 0, "\(irName).metadata_ptr") // [n x i32]*
             let v = LLVMBuildBitCast(irGen.builder, arr, i32PtrType, "metadata_base_ptr") // i32*
             _propertyMetadataBasePtr = v
@@ -148,7 +148,7 @@ final class ExistentialVariable: StorageVariable, MutableVariable {
     private var methodMetadataBasePtr: LLVMValueRef {
         get {
             if _methodMetadataBasePtr != nil { return _methodMetadataBasePtr }
-            let opaquePtrType = BuiltinType.pointer(to: BuiltinType.opaquePointer).globalType(irGen.module)
+            let opaquePtrType = BuiltinType.pointer(to: BuiltinType.opaquePointer).lowerType(irGen.module)
             let arr = LLVMBuildStructGEP(irGen.builder, ptr, 1, "\(irName).vtable_ptr") // [n x i8*]*
             let v = LLVMBuildBitCast(irGen.builder, arr, opaquePtrType, "\(irName).vtable_base_ptr") // i8**
             _methodMetadataBasePtr = v
@@ -215,7 +215,7 @@ final class ExistentialVariable: StorageVariable, MutableVariable {
         let pointerToArrayElement = LLVMBuildGEP(irGen.builder, methodMetadataBasePtr, index, 1, "") // i8**
         let functionPointer = LLVMBuildLoad(irGen.builder, pointerToArrayElement, "") // i8*
         
-        let functionType = BuiltinType.pointer(to: fnType.withOpaqueParent()).globalType(irGen.module)
+        let functionType = BuiltinType.pointer(to: fnType.withOpaqueParent()).lowerType(irGen.module)
         let bitCast = LLVMBuildBitCast(irGen.builder, functionPointer, functionType, name) // fntype*
         return bitCast
     }

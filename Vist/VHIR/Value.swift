@@ -54,6 +54,11 @@ extension Value {
         if let i = uses.indexOf({$0.value === self}) { uses.removeAtIndex(i) } else { throw VHIRError.noUse }
     }
     
+    func updateUsesWithLoweredVal(val: LLVMValueRef) {
+        for use in uses {
+            use.loweredValue = val
+        }
+    }
     
     /// If `self` doesn't have an `irName`, this provides the 
     /// number to use in the ir repr

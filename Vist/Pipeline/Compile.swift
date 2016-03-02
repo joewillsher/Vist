@@ -89,7 +89,7 @@ func compileDocuments(fileNames: [String],
         
         let file = fileNames.first!.stringByReplacingOccurrencesOfString(".vist", withString: "")
         
-        if verbose { print("\n-----------------------------VHIR-----------------------------\n") }
+        if verbose { print("\n----------------------------VHIR GEN-------------------------------\n") }
 
         let m = Module()
         try ast.vhirGen(m)
@@ -99,6 +99,12 @@ func compileDocuments(fileNames: [String],
         
         print(m.vhir)
         
+        if verbose { print("\n----------------------------VHIR LOWER-----------------------------\n") }
+
+        var module = LLVMModuleCreateWithName("vist_module")
+
+        
+        try m.irLower(module, isStdLib: true)
         
         return
         
@@ -107,7 +113,6 @@ func compileDocuments(fileNames: [String],
         
         
         
-        var module = LLVMModuleCreateWithName("vist_module")
         // Create vist program module and link against the helper bytecode
         
         if isStdLib {

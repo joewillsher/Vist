@@ -174,7 +174,7 @@ final class MutableStructVariable: StorageVariable, MutableVariable {
     var properties: [StorageVariableProperty], methods: [StorageVariableMethod]
     
     init(type: StructType, ptr: LLVMValueRef, irName: String, irGen: IRGen) {
-        self.type = type.globalType(irGen.module)
+        self.type = type.lowerType(irGen.module)
         self.typeName = type.name
         self.ptr = ptr
         self.irGen = irGen
@@ -185,7 +185,7 @@ final class MutableStructVariable: StorageVariable, MutableVariable {
     
     /// returns pointer to allocated memory
     class func alloc(type: StructType, irName: String = "", irGen: IRGen) -> MutableStructVariable {
-        let ptr = LLVMBuildAlloca(irGen.builder, type.globalType(irGen.module), irName)
+        let ptr = LLVMBuildAlloca(irGen.builder, type.lowerType(irGen.module), irName)
         return MutableStructVariable(type: type, ptr: ptr, irName: irName, irGen: irGen)
     }
     
@@ -201,16 +201,16 @@ final class MutableTupleVariable: TupleVariable, MutableVariable {
     var properties: [StorageVariableProperty]
     
     init(type: TupleType, ptr: LLVMValueRef, irName: String, irGen: IRGen) {
-        self.type = type.globalType(irGen.module)
+        self.type = type.lowerType(irGen.module)
         self.ptr = ptr
         self.irGen = irGen
-        self.properties = type.members.enumerate().map { (name: String($0), irType: $1.globalType(irGen.module)) }
+        self.properties = type.members.enumerate().map { (name: String($0), irType: $1.lowerType(irGen.module)) }
         self.irName = irName
     }
     
     /// returns pointer to allocated memory
     class func alloc(type: TupleType, irName: String = "", irGen: IRGen) -> MutableTupleVariable {
-        let ptr = LLVMBuildAlloca(irGen.builder, type.globalType(irGen.module), irName)
+        let ptr = LLVMBuildAlloca(irGen.builder, type.lowerType(irGen.module), irName)
         return MutableTupleVariable(type: type, ptr: ptr, irName: irName, irGen: irGen)
     }
     
@@ -235,7 +235,7 @@ final class ParameterStorageVariable: StorageVariable {
         self.properties = type.members.lower(module: irGen.module)
         self.methods = type.methods.lower(selfType: type, module: irGen.module)
 
-        self.type = type.globalType(irGen.module)
+        self.type = type.lowerType(irGen.module)
         self.typeName = type.name
         self.irGen = irGen
         self.value = val

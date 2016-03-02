@@ -111,7 +111,7 @@ private func validateFunction(ref: LLVMValueRef, name: String) throws {
 extension IntegerLiteral: RuntimeVariableProvider, IRGenerator {
     
     func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
-        let rawType = BuiltinType.int(size: size).globalType(irGen.module)
+        let rawType = BuiltinType.int(size: size).lowerType(irGen.module)
         let value = LLVMConstInt(rawType, UInt64(val), false)
         
         guard let type = type else { throw semaError(.integerNotTyped) }
@@ -129,7 +129,7 @@ extension IntegerLiteral: RuntimeVariableProvider, IRGenerator {
 extension FloatingPointLiteral: RuntimeVariableProvider, IRGenerator {
     
     func codeGen(stackFrame: StackFrame, irGen: IRGen) -> LLVMValueRef {
-        return LLVMConstReal(type!.globalType(nil), val)
+        return LLVMConstReal(type!.lowerType(nil), val)
     }
     func variableGen(stackFrame: StackFrame, irGen: IRGen) throws -> RuntimeVariable {
         return StackVariable(val: codeGen(stackFrame, irGen: irGen), irName: "", irGen: irGen)
@@ -140,7 +140,7 @@ extension FloatingPointLiteral: RuntimeVariableProvider, IRGenerator {
 extension BooleanLiteral: RuntimeVariableProvider, IRGenerator {
     
     func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
-        let rawType = BuiltinType.bool.globalType(irGen.module)
+        let rawType = BuiltinType.bool.lowerType(irGen.module)
         let value = LLVMConstInt(rawType, UInt64(val.hashValue), false)
         
         guard let type = type else { throw semaError(.boolNotTyped) }
@@ -204,7 +204,7 @@ extension VariableDecl: IRGenerator {
             // handle assigning a closure
             
             // Function being made
-            let fn = LLVMAddFunction(irGen.module, name, ty.globalType(irGen.module))
+            let fn = LLVMAddFunction(irGen.module, name, ty.lowerType(irGen.module))
             
             // make and move into entry block
             let entryBlock = LLVMAppendBasicBlock(fn, "entry")
@@ -448,7 +448,7 @@ private extension DefinedFunctionType {
     
     private func paramTypeIR(irGen: IRGen) throws -> [LLVMTypeRef] {
         guard let res = type else { throw irGenError(.typeNotFound) }
-        return try res.nonVoid.map(globalType(irGen.module))
+        return try res.nonVoid.map(lowerType(irGen.module))
     }
 }
 
@@ -461,7 +461,7 @@ func ptrToFunction(mangledName: String, type: FnType, module: LLVMModuleRef) -> 
     if f != nil { return f }
     
     // otherwise we create a prototype
-    let newPointer = LLVMAddFunction(module, mangledName, type.globalType(module))
+    let newPointer = LLVMAddFunction(module, mangledName, type.lowerType(module))
     return newPointer
 }
 
@@ -504,7 +504,7 @@ extension FuncDecl: IRGenerator {
         defer { paramBuffer.dealloc(paramCount) }
         
         // make function
-        let functionType = type.globalType(irGen.module)
+        let functionType = type.lowerType(irGen.module)
         let function = ptrToFunction(mangledName, type: type, module: irGen.module)
         LLVMSetFunctionCallConv(function, LLVMCCallConv.rawValue)
         
@@ -585,7 +585,7 @@ extension FuncDecl: IRGenerator {
         
         // generate bb for body
         do {
-            try impl?.body.bbGen(innerStackFrame: functionStackFrame, ret: type.returns.globalType(irGen.module), irGen: irGen)
+            try impl?.body.bbGen(innerStackFrame: functionStackFrame, ret: type.returns.lowerType(irGen.module), irGen: irGen)
         }
         catch {
             LLVMDeleteFunction(function)
@@ -603,7 +603,7 @@ extension ReturnStmt: IRGenerator {
     
     func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         
-        if expr._type?.globalType(irGen.module) == LLVMVoidType() {
+        if expr._type?.lowerType(irGen.module) == LLVMVoidType() {
             return LLVMBuildRetVoid(irGen.builder)
         }
         
@@ -640,12 +640,12 @@ extension ClosureExpr: IRGenerator {
         
         guard let type = self.type else { throw irGenError(.notTyped) }
         
-        let paramBuffer = try type.params.map(globalType(irGen.module)).ptr()
+        let paramBuffer = try type.params.map(lowerType(irGen.module)).ptr()
         defer { paramBuffer.dealloc(type.params.count) }
         
         let name = "closure"//.mangle()
         
-        let functionType = type.globalType(irGen.module)
+        let functionType = type.lowerType(irGen.module)
         let function = LLVMAddFunction(irGen.module, name, functionType)
         
         // setup function block
@@ -672,7 +672,7 @@ extension ClosureExpr: IRGenerator {
 //                let tyName = type.params[i].name
 //                let t = try stackFrame.type(tyName)
 //                
-//                let memTys = try t.members.map { ($0.0, try $0.1.globalType(irGen.module), $0.2) }
+//                let memTys = try t.members.map { ($0.0, try $0.1.lowerType(irGen.module), $0.2) }
 //                
 //                let s = MutableStructVariable(type: ty, ptr: ptr, mutable: false, builder: irGen.builder, properties: memTys)
 //                functionStackFrame.addVariable(name, val: s)
@@ -684,7 +684,7 @@ extension ClosureExpr: IRGenerator {
         }
         
         do {
-            try BlockExpr(exprs: exprs).bbGen(innerStackFrame: functionStackFrame, ret: type.returns.globalType(irGen.module), irGen: irGen)
+            try BlockExpr(exprs: exprs).bbGen(innerStackFrame: functionStackFrame, ret: type.returns.lowerType(irGen.module), irGen: irGen)
         } catch {
             LLVMDeleteFunction(function)
             throw error
@@ -842,7 +842,7 @@ extension ForInLoopStmt: IRGenerator {
         
         // define variable phi node
         let iteratorName = binded.name
-        let loopCount = LLVMBuildPhi(irGen.builder, intType.globalType(irGen.module), "loop.count.\(iteratorName)")
+        let loopCount = LLVMBuildPhi(irGen.builder, intType.lowerType(irGen.module), "loop.count.\(iteratorName)")
         
         // add incoming value to phi node
         let num1 = [startValue].ptr(), incoming1 = [stackFrame.block].ptr()
@@ -939,7 +939,7 @@ extension ArrayExpr: IRGenerator {
     private func arrInstance(stackFrame: StackFrame, irGen: IRGen) throws -> ArrayVariable {
         
         // assume homogeneous
-        guard let elementType = elType?.globalType(irGen.module) else { throw irGenError(.typeNotFound) }
+        guard let elementType = elType?.lowerType(irGen.module) else { throw irGenError(.typeNotFound) }
         let arrayType = LLVMArrayType(elementType, UInt32(arr.count))
         
         // allocate memory for arr
@@ -1032,7 +1032,7 @@ extension InitialiserDecl: IRGenerator {
         let paramTypeNames = ty.paramType.typeNames(), paramCount = paramTypeNames.count
         guard let
             parentType = parent?.type,
-            functionType = ty.type?.globalType(irGen.module),
+            functionType = ty.type?.lowerType(irGen.module),
             name = parent?.name,
             parentProperties = parent?.properties
             else {

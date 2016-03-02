@@ -80,7 +80,7 @@ final class StructInitInst: Inst {
     var args: [Operand]
     
     var irName: String?
-    var type: Ty? { return structType }
+    var type: Ty? { return module?.getOrAddType(structType) }
     var structType: StructType
     weak var parentBlock: BasicBlock?
     var uses: [Operand] = []

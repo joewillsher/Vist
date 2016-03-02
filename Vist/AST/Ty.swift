@@ -11,6 +11,8 @@ protocol Ty: Printable, VHIR {
     /// Name used in mangling function signatures
     var mangledName: String { get }
     
+    func lowerType(module: Module) -> LLVMTypeRef
+    
     /// The explicit name of this type. The same as the
     /// mangled name, unless the mangled name uses a different
     /// naming system, like the builtin types
@@ -23,7 +25,7 @@ extension Ty {
         return mangledName
     }
     
-    func globalType(m: LLVMModuleRef) -> LLVMValueRef {
+    func lowerType(m: LLVMModuleRef) -> LLVMValueRef {
         fatalError("TODO: shouldnt be reachable as working on VHIR")
     }
 }
@@ -36,9 +38,9 @@ func == (lhs: StructType, rhs: StructType) -> Bool {
     return lhs.name == rhs.name
 }
 
-func globalType(module: LLVMModuleRef) -> Ty throws -> LLVMValueRef {
+func lowerType(module: LLVMModuleRef) -> Ty throws -> LLVMValueRef {
     return { val in
-        return val.globalType(module)
+        return val.lowerType(module)
     }
 }
 

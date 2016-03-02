@@ -23,9 +23,19 @@ extension Module {
         functions.append(f)
         return f
     }
-
-    func addType(name: String, targetType: Ty) {
+    
+    func addType(name: String, targetType: StorageType) {
         typeList.append(TypeAlias(name: name, targetType: targetType))
+    }
+    
+    func getOrAddType(type: StorageType) -> Ty {
+        if let t = typeList.indexOf({$0.targetType == type}) {
+            return typeList[t]
+        }
+        else {
+            addType(type.name, targetType: type)
+            return getOrAddType(type)
+        }
     }
 }
 

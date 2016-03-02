@@ -9,20 +9,14 @@
 typealias StructMember = (name: String, type: Ty, mutable: Bool)
 typealias StructMethod = (name: String, type: FnType)
 
-
 /// A type which can have elements looked up by name,
 /// for example structs and existential protocols
-///
 protocol StorageType: Ty {
     /// User visible type name
     var name: String { get }
     
     var members: [StructMember] { get }
     var methods: [StructMethod] { get }
-    
-    /// LLVM type representing self.
-    /// A struct of `{member-types...}`
-    func memberTypes(module: LLVMModuleRef) -> LLVMTypeRef
     
     /// Name this type is given at the global scope of IR
     var irName: String { get }
@@ -45,18 +39,9 @@ extension StorageType {
         return ptrToFunction(name.mangle(type.params, parentTypeName: self.name), type: type, module: module)
     }
     
-    func globalType(module: LLVMModuleRef) -> LLVMTypeRef {
-        
-        // if no module is defined, we can only return the raw type
-        if module == nil { return memberTypes(module) }
-        
-        let found = getNamedType(irName, module)
-        if found != nil { return found }
-        
-        let type = memberTypes(module)
-        let namedType = createNamedType(type, irName)
-        
-        return namedType
+    func lowerType(module: Module) -> LLVMTypeRef {
+        guard let i = module.typeList.indexOf({$0.name == name}) else { return nil }
+        return module.typeList[i].lowerType(module)
     }
     
     func propertyType(name: String) throws -> Ty {
@@ -88,7 +73,7 @@ extension CollectionType where Generator.Element == StructMethod {
     
     /// Lowers `StructMethod`s to `StorageVariableMethod`s
     func lower(selfType selfType: StorageType, module: LLVMModuleRef) -> [StorageVariableMethod] {
-        return map { (mangledName: $0.name.mangle($0.type.params, parentTypeName: selfType.name), type: $0.type.withParent(selfType).globalType(module)) }
+        return map { (mangledName: $0.name.mangle($0.type.params, parentTypeName: selfType.name), type: $0.type.withParent(selfType).lowerType(module)) }
     }
 }
 
@@ -96,7 +81,7 @@ extension CollectionType where Generator.Element == StructMember {
     
     /// Lowers `StructMember`s to `StorageVariableProperty`s
     func lower(module module: LLVMModuleRef) -> [StorageVariableProperty] {
-        return map { (name: $0.name, irType: $0.type.globalType(module)) }
+        return map { (name: $0.name, irType: $0.type.lowerType(module)) }
     }
 
 }

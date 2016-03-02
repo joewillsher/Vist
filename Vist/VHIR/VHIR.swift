@@ -14,7 +14,7 @@ protocol VHIR {
 }
 
 enum VHIRError: ErrorType {
-    case noFunctionBody, instNotInBB, cannotMoveBuilderHere, noParentBlock, noParamNamed(String), noUse
+    case noFunctionBody, instNotInBB, cannotMoveBuilderHere, noParentBlock, noParamNamed(String), noUse, noType
     case notGenerator
 }
 
@@ -27,14 +27,18 @@ enum VHIRError: ErrorType {
 
 private extension CollectionType where Generator.Element : VHIR {
     func vhirValueTuple() -> String {
-        let a = map { "\($0.vhir)" }
+        let a = map { $0.vhir }
         return "(\(a.joinWithSeparator(", ")))"
     }
 }
 private extension CollectionType where Generator.Element == Ty {
     func vhirTypeTuple() -> String {
-        let a = map { "\($0.vhir)" }
+        let a = map { $0.vhir }
         return "(\(a.joinWithSeparator(", ")))"
+    }
+    func vhirTypeStruct() -> String {
+        let a = map { "\($0.vhir)" }
+        return "{ \(a.joinWithSeparator(", ")) }"
     }
 }
 
@@ -77,12 +81,12 @@ extension FnType {
 }
 extension BuiltinType {
     var vhir: String {
-        return explicitName
+        return "%\(explicitName)"
     }
 }
 extension StorageType {
     var vhir: String {
-        return irName
+        return members.map { $0.type }.vhirTypeStruct()
     }
 }
 extension TupleType {

@@ -121,7 +121,7 @@ struct StdLib {
     /// - returns: An optional tuple of `(type, functionIRRef)`
     static func getFunctionIR(mangledName: String, module: LLVMModuleRef) -> (type: FnType, functionIR: LLVMValueRef)? {
         guard let (mangledName, type) = functionContainer[mangledName: mangledName] else { return nil }
-        let functionType = type.globalType(module)
+        let functionType = type.lowerType(module)
         
         let found = LLVMGetNamedFunction(module, mangledName)
         if found != nil { return (type, found) }

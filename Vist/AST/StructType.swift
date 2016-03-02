@@ -13,7 +13,7 @@ struct StructType: StorageType {
     var methods: [StructMethod]
     var genericTypes: [GenericType] = []
     var concepts: [ConceptType] = []
-    
+        
     init(members: [StructMember], methods: [StructMethod], name: String) {
         self.name = name
         self.members = members
@@ -22,7 +22,7 @@ struct StructType: StorageType {
     
     func memberTypes(module: LLVMModuleRef) -> LLVMTypeRef {
         let arr = members
-            .map { $0.type.globalType(module) }
+            .map { $0.type.lowerType(module) }
             .ptr()
         defer { arr.dealloc(members.count) }
         

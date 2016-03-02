@@ -14,6 +14,7 @@ final class Function: VHIR {
     var type: FnType
     var paramNames: [String]
     var blocks: [BasicBlock]?
+    weak var parentModule: Module?
     
     init(name: String, type: FnType, paramNames: [String]) {
         self.name = name

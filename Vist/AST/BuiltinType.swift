@@ -15,6 +15,26 @@ enum BuiltinType: Ty {
     indirect case pointer(to: Ty)
     case opaquePointer
     
+    func lowerType(module: Module) -> LLVMTypeRef {
+        switch self {
+        case .null:                     return nil
+        case .void:                     return LLVMVoidType()
+        case .int(let s):               return LLVMIntType(s)
+        case .bool:                      return LLVMInt1Type()
+        case .array(let el, let size):  return LLVMArrayType(el.lowerType(module), size ?? 0)
+        case .pointer(let to):          return LLVMPointerType(to.lowerType(module), 0)
+        case .opaquePointer:            return BuiltinType.pointer(to: BuiltinType.int(size: 8)).lowerType(module)
+        case .float(let s):
+            switch s {
+            case 16:                    return LLVMHalfType()
+            case 32:                    return LLVMFloatType()
+            case 64:                    return LLVMDoubleType()
+            case 128:                   return LLVMFP128Type()
+            default:                    fatalError(SemaError.invalidFloatType(s).description)
+            }
+        }
+    }
+
     init?(_ type: LLVMTypeRef) {
         switch type {
         case LLVMVoidType(): self = .void

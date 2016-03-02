@@ -24,6 +24,30 @@ struct FnType: Ty {
         self.metadata = metadata
         self.callingConvention = callingConvention
     }
+    func lowerType(module: Module) -> LLVMTypeRef {
+        
+        let ret: LLVMTypeRef
+        if case _ as FnType = returns {
+            ret = BuiltinType.pointer(to: returns).lowerType(module)
+        }
+        else {
+            ret = returns.lowerType(module)
+        }
+        
+        var members: [LLVMValueRef] = []
+        
+        if case .method(let ty) = callingConvention {
+            members.append(BuiltinType.pointer(to: ty).lowerType(module))
+        }
+        
+        members += nonVoid.map {$0.lowerType(module)}
+        
+        let els = members.ptr()
+        defer { els.dealloc(members.count) }
+        
+        return LLVMFunctionType(ret, els, UInt32(members.count), false)
+    }
+
     
     static func taking(params: Ty..., ret: Ty = BuiltinType.void) -> FnType {
         return FnType(params: params, returns: ret)

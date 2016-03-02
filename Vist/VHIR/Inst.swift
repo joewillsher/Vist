@@ -13,7 +13,6 @@ protocol Inst: Value {
     var instName: String { get }
 }
 
-
 extension Inst {
     /// Removes the function from its parent
     func removeFromParent() throws {
@@ -24,5 +23,9 @@ extension Inst {
     func eraseFromParent() throws {
         removeAllUses()
         try parentBlock?.remove(self)
+    }
+    
+    var module: Module? {
+        return parentBlock?.parentFunction.parentModule
     }
 }

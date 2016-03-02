@@ -14,9 +14,9 @@ final class TupleType: Ty {
         self.members = members
     }
     
-    func globalType(module: LLVMModuleRef) -> LLVMTypeRef {
+    func lowerType(module: Module) -> LLVMTypeRef {
         let arr = members
-            .map { $0.globalType(module) }
+            .map { $0.lowerType(module) }
             .ptr()
         defer { arr.dealloc(members.count) }
         

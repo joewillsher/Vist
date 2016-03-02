@@ -1,7 +1,6 @@
-
-func @main : () -> Builtin.Void {
+func @main : () -> %Builtin.Void {
 #entry:
-    %a = $integer_literal %Builtin.Int64 1
-    %0 = $struct %Int (%a: Builtin.Int64)
-    return ()
+	%a.value = $integer_literal %Builtin.Int64 1
+	%a = $struct %Int (%a.value: %Builtin.Int64)
+	return ()
 }
