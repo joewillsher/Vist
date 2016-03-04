@@ -7,23 +7,28 @@
 //
 
 
-final class BuiltinBinaryInst: Inst {
+final class BuiltinBinaryInst: InstBase {
     let l: Operand, r: Operand
-    var irName: String?
-    
-    var uses: [Operand] = []
-    var args: [Operand] { return [l, r] }
-    var type: Ty? { return l.type }
+
+    override var type: Ty? { return l.type }
     let inst: BuiltinInst
     var instName: String { return inst.rawValue }
-    weak var parentBlock: BasicBlock?
     
     private init(inst: BuiltinInst, l: Operand, r: Operand, irName: String? = nil) {
         self.inst = inst
         self.l = l
         self.r = r
+        super.init()
+        self.args = [l, r]
         self.irName = irName
     }
+    
+    override var instVHIR: String {
+        let a = args.map{$0.valueName}
+        let w = a.joinWithSeparator(", ")
+        return "\(name) = \(instName) \(w) \(useComment)"
+    }
+
 }
 
 enum BuiltinInst: String {

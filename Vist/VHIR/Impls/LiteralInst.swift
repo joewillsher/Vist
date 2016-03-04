@@ -6,18 +6,20 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-final class IntLiteralInst: Inst {
+final class IntLiteralInst: InstBase {
     var value: IntLiteralValue
     
-    var irName: String?
-    var type: Ty? { return BuiltinType.int(size: 64) }
-    weak var parentBlock: BasicBlock?
-    var uses: [Operand] = []
-    var args: [Operand] { return [Operand(value)] }
+    override var type: Ty? { return BuiltinType.int(size: 64) }
     
     private init(val: Int, irName: String? = nil) {
         self.value = IntLiteralValue(val: val)
+        super.init()
         self.irName = irName
+        self.args = [Operand(value)]
+    }
+    
+    override var instVHIR: String {
+        return "\(name) = int_literal \(value.value) \(useComment)"
     }
 }
 
@@ -63,3 +65,4 @@ extension Builder {
         return try buildStructInit(StdLib.intType, values: [Operand(v)], irName: irName)
     }
 }
+

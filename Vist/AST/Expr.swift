@@ -11,7 +11,7 @@
 ///      - literals, tuples, parens, array, closure
 ///      - Call expression, operator, methods, casts
 ///      - Sub expressions of syntax structures, like `type name generic params`
-protocol Expr: ASTNode, _Typed, ExprTypeProvider {}
+protocol Expr: ASTNode, _Typed, ExprTypeProvider, VHIRGenerator {}
 protocol TypedExpr: Expr, Typed {}
 
 final class BlockExpr: TypedExpr, ScopeNode {
@@ -164,7 +164,7 @@ final class MutationExpr: Expr {
 //  MARK:                                               Operators
 //-------------------------------------------------------------------------------------------------------------------------
 
-protocol FunctionCall: class, Expr, _Typed {
+protocol FunctionCall: class, Expr, _Typed, VHIRGenerator {
     var name: String { get }
     var argArr: [Expr] { get }
     var _type: Ty? { get set }

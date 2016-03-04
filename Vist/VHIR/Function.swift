@@ -54,6 +54,7 @@ final class Function: VHIR {
 }
 
 extension FnType {
+    /// Replaces the function's memeber types with the module's typealias
     func usingTypesIn(module: Module) -> FnType {
         let params = self.params.map { ($0 as? StorageType).map { module.getOrAddType($0) } ?? $0 }
         let returns = (self.returns as? StorageType).map { module.getOrAddType($0) } ?? self.returns
@@ -63,6 +64,7 @@ extension FnType {
 
 extension Builder {
     
+    /// Builds a function and adds it to the module. Declares a body and entry block
     func buildFunction(name: String, type: FnType, paramNames: [String]) throws -> Function {
         let f = try createFunctionPrototype(name, type: type)
         try buildFunctionEntryBlock(f, paramNames: paramNames)
@@ -70,6 +72,7 @@ extension Builder {
         return f
     }
     
+    /// Builds an entry block for the function, passes the params of the function in
     func buildFunctionEntryBlock(function: Function, paramNames: [String]) throws {
         let fnParams = zip(paramNames, function.type.params).map(BBParam.init).map { $0 as Value }
         let bb = BasicBlock(name: "entry", parameters: fnParams, parentFunction: function)

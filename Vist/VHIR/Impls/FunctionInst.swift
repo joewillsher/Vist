@@ -7,20 +7,20 @@
 //
 
 
-final class FunctionCallInst: Inst {
-    var args: [Operand]
+final class FunctionCallInst: InstBase {
     var function: Function
     
-    var irName: String?
-    var type: Ty?
-    weak var parentBlock: BasicBlock?
-    var uses: [Operand] = []
+    override var type: Ty? { return function.type.returns }
     
     private init(function: Function, args: [Operand], irName: String? = nil) {
+        self.function = function
+        super.init()
         self.args = args
         self.irName = irName
-        self.type = function.type.returns
-        self.function = function
+    }
+    
+    override var instVHIR: String {
+        return "\(name) = call @\(function.name) \(args.vhirValueTuple()) \(useComment)"
     }
 }
 

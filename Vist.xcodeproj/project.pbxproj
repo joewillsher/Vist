@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D408D94E1C89097C002E364D /* Scope.swift in Sources */ = {isa = PBXBuildFile; fileRef = D408D94D1C89097C002E364D /* Scope.swift */; };
+		D408D94F1C89097C002E364D /* Scope.swift in Sources */ = {isa = PBXBuildFile; fileRef = D408D94D1C89097C002E364D /* Scope.swift */; };
 		D409D2051C84EB94002D5863 /* Operand.swift in Sources */ = {isa = PBXBuildFile; fileRef = D409D2041C84EB94002D5863 /* Operand.swift */; };
 		D409D2061C84EB94002D5863 /* Operand.swift in Sources */ = {isa = PBXBuildFile; fileRef = D409D2041C84EB94002D5863 /* Operand.swift */; };
 		D409D20B1C850673002D5863 /* TypeAlias.swift in Sources */ = {isa = PBXBuildFile; fileRef = D409D20A1C850673002D5863 /* TypeAlias.swift */; };
@@ -190,6 +192,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D408D94D1C89097C002E364D /* Scope.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Scope.swift; path = VHIRGen/Scope.swift; sourceTree = "<group>"; };
 		D409D2041C84EB94002D5863 /* Operand.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Operand.swift; path = Vist/VHIR/Operand.swift; sourceTree = SOURCE_ROOT; };
 		D409D20A1C850673002D5863 /* TypeAlias.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TypeAlias.swift; path = Vist/VHIR/TypeAlias.swift; sourceTree = SOURCE_ROOT; };
 		D409D20D1C859360002D5863 /* VHIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VHIRGen.swift; path = VHIRGen/VHIRGen.swift; sourceTree = "<group>"; };
@@ -399,6 +402,7 @@
 		D457F6191C835EF40095EDED /* VHIRGen */ = {
 			isa = PBXGroup;
 			children = (
+				D408D94D1C89097C002E364D /* Scope.swift */,
 				D409D20D1C859360002D5863 /* VHIRGen.swift */,
 			);
 			name = VHIRGen;
@@ -737,6 +741,7 @@
 				D4E35B521C5D0CA000683486 /* Assemble.cpp in Sources */,
 				D4E35B541C5D0CA000683486 /* TargetMachine.cpp in Sources */,
 				D4E35B551C5D0CA000683486 /* Lexer.swift in Sources */,
+				D408D94F1C89097C002E364D /* Scope.swift in Sources */,
 				D46BC1C11C6685C500B9147E /* DefinedType.swift in Sources */,
 				D4E35B561C5D0CA000683486 /* Token.swift in Sources */,
 				D409D2061C84EB94002D5863 /* Operand.swift in Sources */,
@@ -824,6 +829,7 @@
 				D4A2CC111C4FF58C00BB9A12 /* Builtin.swift in Sources */,
 				D46BC1C01C6685C500B9147E /* DefinedType.swift in Sources */,
 				D4DB927C1C875BB900718B78 /* ReturnInst.swift in Sources */,
+				D408D94E1C89097C002E364D /* Scope.swift in Sources */,
 				D4A2CBFF1C4FF52400BB9A12 /* Decl.swift in Sources */,
 				D4DB92861C875C1200718B78 /* StructInst.swift in Sources */,
 				D45FC7B91C8450FC0060F974 /* Inst.swift in Sources */,

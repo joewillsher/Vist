@@ -6,14 +6,17 @@ $entry:
   %1 = struct %Int (%0: %Builtin.Int64)  	// uses: %4
   %2 = int_literal 1  	// uses: %3
   %3 = struct %Int (%2: %Builtin.Int64)  	// uses: %4
-  %4 = call @-P_Int_Int (%1: %Int, %3: %Int)  	// uses: %b
+  %4 = call @-P_Int_Int (%1: %Int, %3: %Int)  	// uses: %b, %5
   variable_decl %b = %4: %Int 
-  %5 = int_literal 4  	// uses: %6
-  %6 = struct %Int (%5: %Builtin.Int64)  	// uses: %7
-  %7 = call @print_Int (%6: %Int) 
+  %5 = call @foo_Int (%4: %Int) 
   return ()
 }
 
-func @-P_Int_Int : (%Int, %Int) -> %Int
+func @foo_Int : (%Int) -> %Int {
+$entry(%a: %Int):
+  %0 = call @print_Int (%a: %Int) 
+}
 
 func @print_Int : (%Int) -> %Builtin.Void
+
+func @-P_Int_Int : (%Int, %Int) -> %Int

@@ -6,19 +6,20 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-final class StructInitInst: Inst {
-    var args: [Operand]
+final class StructInitInst: InstBase {
     
-    var irName: String?
-    var type: Ty? { return module?.getOrAddType(structType) }
+    override var type: Ty? { return module?.getOrAddType(structType) }
     var structType: StructType
-    weak var parentBlock: BasicBlock?
-    var uses: [Operand] = []
     
     private init(type: StructType, args: [Operand], irName: String? = nil) {
+        self.structType = type
+        super.init()
         self.args = args
         self.irName = irName
-        self.structType = type
+    }
+    
+    override var instVHIR: String {
+        return "\(name) = struct %\(type!.explicitName) \(args.vhirValueTuple()) \(useComment)"
     }
 }
 

@@ -7,20 +7,19 @@
 //
 
 
-
-final class ReturnInst: Inst {
+final class ReturnInst: InstBase {
     var value: Operand
-    var irName: String? = nil
-    
-    var uses: [Operand] = []
-    var args: [Operand] { return [value] }
-    var type: Ty?
-    weak var parentBlock: BasicBlock?
     
     private init(value: Operand, parentBlock: BasicBlock?) {
         self.value = value
+        super.init()
         self.parentBlock = parentBlock
-    }    
+        self.args = [value]
+    }
+    
+    override var instVHIR: String {
+        return "return \(value.name)"
+    }
 }
 
 
@@ -30,7 +29,7 @@ extension Builder {
         return try buildReturn(Operand(VoidLiteralValue()))
     }
     func buildReturn(value: Operand) throws -> ReturnInst {
-        let retInst = ReturnInst(value: value, parentBlock: block)
+        let retInst = ReturnInst(value: value, parentBlock: insertPoint.block)
         try addToCurrentBlock(retInst)
         return retInst
     }

@@ -40,18 +40,21 @@ extension Module {
         }
     }
     
+    /// Returns the function from the module. Adds prototype it if not already there
     func getOrAddFunction(name: String, type: FnType) throws -> Function {
-        if let f = functionNamed(name, paramTypes: type.params) { return f }
+        if let f = functionNamed(name) { return f }
         return try builder.createFunctionPrototype(name, type: type)
     }
     
-    func getStdLibFunction(name: String, argTypes: [Ty]) throws -> Function? {
+    /// Returns a stdlib function, updating the module fn list if needed
+    func stdLibFunctionNamed(name: String, argTypes: [Ty]) throws -> Function? {
         guard let (mangledName, fnTy) = StdLib.getStdLibFunction(name, args: argTypes) else { return nil }
-        return try builder.createFunctionPrototype(mangledName, type: fnTy)
+        return try getOrAddFunction(mangledName, type: fnTy)
     }
     
-    func functionNamed(name: String, paramTypes: [Ty]) -> Function? {
-        return functions.indexOf({$0.name == name && $0.type.params.elementsEqual(paramTypes, isEquivalent: ==)}).map { functions[$0] }
+    /// Returns a function from the module by name
+    func functionNamed(name: String) -> Function? {
+        return functions.indexOf({$0.name == name}).map { functions[$0] }
     }
 }
 

@@ -6,9 +6,33 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-/// An instruction o
 protocol Inst: Value {
-    var args: [Operand] { get }
+    var type: Ty? { get }
+    
+    var irName: String? { get set }
+    weak var parentBlock: BasicBlock? { get set }
+    
+    var uses: [Operand] { get set }
+    var args: [Operand] { get set }
+}
+
+/// An instruction o
+class InstBase: Inst {
+    
+    /// Self's type, override with a computed getter
+    var type: Ty? { return nil }
+    /// override with the IR description, called by base to print this inst
+    var instVHIR: String { fatalError() }
+    
+    var irName: String?
+    weak var parentBlock: BasicBlock?
+    
+    var uses: [Operand] = []
+    var args: [Operand] = []
+    init() {}
+    
+    // calls into the subclasses overriden `instVHIR`
+    var vhir: String { return instVHIR }
 }
 
 extension Inst {
@@ -23,7 +47,7 @@ extension Inst {
         try parentBlock?.remove(self)
     }
     
-    var module: Module? {
+    var module: Module! {
         return parentBlock?.parentFunction.parentModule
     }
 }

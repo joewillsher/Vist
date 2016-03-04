@@ -7,22 +7,24 @@
 //
 
 
-final class VariableInst: Inst {
+final class VariableInst: InstBase {
     var value: Operand
     //var ownership: [OwnershipAttrs] // specify ref/val semantics
     // also memory management info stored
     
-    var irName: String?
-    var type: Ty?
-    weak var parentBlock: BasicBlock?
-    var uses: [Operand] = []
-    var args: [Operand] { return [value] }
+    override var type: Ty? { return value.type }
     
     private init(value: Operand, irName: String? = nil) {
         self.value = value
-        self.type = value.type
+        super.init()
         self.irName = irName
+        self.args = [value]
     }
+    
+    override var instVHIR: String {
+        return "variable_decl \(name) = \(value.valueName) \(useComment)"
+    }
+
 }
 
 extension Builder {

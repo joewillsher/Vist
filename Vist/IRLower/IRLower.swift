@@ -50,10 +50,15 @@ extension Function: IRLower {
         return fn
     }
     
-    func functionPointer(irGen: IRGen) -> LLVMValueRef {
+    private func functionPointer(irGen: IRGen) -> LLVMValueRef {
         return LLVMGetNamedFunction(irGen.module, name)
     }
 }
+
+
+
+
+
 
 
 extension IntLiteralInst: IRLower {
@@ -104,9 +109,7 @@ extension FunctionCallInst: IRLower {
         defer { args.dealloc(argCount) }
         
         let fn = function.functionPointer(irGen)
-        
         let call = LLVMBuildCall(irGen.builder, fn, args, UInt32(argCount), irName ?? "")
-        
         function.type.addMetadataTo(call)
         
         return call

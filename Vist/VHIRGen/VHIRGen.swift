@@ -8,27 +8,45 @@
 
 
 protocol VHIRGenerator {
-    func vhirGen(module: Module) throws -> Value
+    func vhirGen(module module: Module, scope: Scope) throws -> Value
+}
+protocol VHIRStmtGenerator {
+    func vhirStmtGen(module module: Module, scope: Scope) throws
 }
 
-extension ASTNode {
-    func vhirGen(module: Module) throws -> Value {
+// MARK: Special
+
+extension Expr {
+    func vhirGen(module module: Module, scope: Scope) throws -> Value {
+        throw VHIRError.notGenerator
+    }
+}
+extension Stmt {
+    func vhirStmtGen(module module: Module, scope: Scope) throws {
+        throw VHIRError.notGenerator
+    }
+}
+extension Decl {
+    func vhirStmtGen(module module: Module, scope: Scope) throws {
         throw VHIRError.notGenerator
     }
 }
 
-extension AST: VHIRGenerator {
+
+extension AST {
     
-    func vhirGen(module: Module) throws {
+    func vhirGenAST(module module: Module) throws {
         
         let builder = module.builder
+        let scope = Scope()
         
         let mainTy = FnType(params: [], returns: BuiltinType.void)
         let main = try builder.buildFunction("main", type: mainTy, paramNames: [])
         
-        for case let x as VHIRGenerator in exprs {
+        for x in exprs {
             try builder.setInsertPoint(main)
-            try x.vhirGen(module)
+            if case let g as VHIRGenerator = x { try g.vhirGen(module: module, scope: scope) }
+            else if case let g as VHIRStmtGenerator = x { try g.vhirStmtGen(module: module, scope: scope) }
         }
         
         try builder.setInsertPoint(main)
@@ -37,46 +55,78 @@ extension AST: VHIRGenerator {
     }
 }
 
+// MARK: Lower AST nodes to instructions
+
 extension IntegerLiteral: VHIRGenerator {
     
-    func vhirGen(module: Module) throws -> Value {
+    func vhirGen(module module: Module, scope: Scope) throws -> Value {
         return try module.builder.buildIntLiteral(val)
     }
 }
 
 extension VariableDecl: VHIRGenerator {
     
-    func vhirGen(module: Module) throws -> Value {
-        let v = try value.vhirGen(module)
+    func vhirGen(module module: Module, scope: Scope) throws -> Value {
+        let v = try value.vhirGen(module: module, scope: scope)
+        scope.add(v, name: name)
         return try module.builder.buildVariableDecl(Operand(v), irName: name)
     }
 }
 
-extension BinaryExpr {
+extension FunctionCall/*: VHIRGenerator*/ {
     
-    func vhirGen(module: Module) throws -> Value {
-        let args = try argArr.map { Operand(try $0.vhirGen(module)) }
+    func vhirGen(module module: Module, scope: Scope) throws -> Value {
+        let args = try argArr.map { Operand(try $0.vhirGen(module: module, scope: scope)) }
         guard let argTypes = argArr.optionalMap({ $0._type }) else { throw VHIRError.paramsNotTyped }
         
-        if let stdlib = try module.getStdLibFunction(name, argTypes: argTypes) {
+        if let stdlib = try module.stdLibFunctionNamed(name, argTypes: argTypes) {
             return try module.builder.buildFunctionCall(stdlib, args: args)
         }
         
-        fatalError()
+        let function = module.functionNamed(mangledName)!
+        return try module.builder.buildFunctionCall(function, args: args)
     }
 }
 
-extension FunctionCallExpr: VHIRGenerator {
+extension FuncDecl: VHIRStmtGenerator {
     
-    func vhirGen(module: Module) throws -> Value {
-        let args = try argArr.map { Operand(try $0.vhirGen(module)) }
-        guard let argTypes = argArr.optionalMap({ $0._type }) else { throw VHIRError.paramsNotTyped }
+    func vhirStmtGen(module module: Module, scope: Scope) throws {
+        guard let type = fnType.type else { throw VHIRError.noType }
         
-        if let stdlib = try module.getStdLibFunction(name, argTypes: argTypes) {
-            return try module.builder.buildFunctionCall(stdlib, args: args)
+        let originalInsertPoint = module.builder.insertPoint
+        
+        // if body
+        if let impl = impl {
+            
+            let function = try module.builder.buildFunction(mangledName, type: type, paramNames: impl.params)
+            try module.builder.setInsertPoint(function)
+            
+            let fnScope = Scope(parent: scope)
+            
+            for p in impl.params {
+                fnScope.add(try function.paramNamed(p), name: p)
+            }
+            
+            for case let x as VHIRGenerator in impl.body.exprs {
+                try x.vhirGen(module: module, scope: fnScope)
+            }
+            
+            module.builder.insertPoint = originalInsertPoint
+        }
+        else {
+            try module.builder.createFunctionPrototype(mangledName, type: type)
         }
         
-        fatalError()
     }
 }
+
+extension VariableExpr: VHIRGenerator {
+    
+    func vhirGen(module module: Module, scope: Scope) throws -> Value {
+        return scope.variableNamed(name)!
+    }
+}
+
+
+
 

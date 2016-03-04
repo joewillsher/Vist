@@ -298,7 +298,7 @@ extension ErrorTests {
                 ErrorCollection(errors: [
                     SemaError.noVariable("v"),
                     SemaError.noFunction("+", [StdLib.intType, StdLib.boolType]),
-                    SemaError.wrongFunctionReturnType(applied: StdLib.DoubleType, expected: StdLib.intType)
+                    SemaError.wrongFunctionReturnType(applied: StdLib.doubleType, expected: StdLib.intType)
                     ]),
                 SemaError.noVariable("print"),
                 SemaError.immutableVariable(name: "x", type: "Int"),
