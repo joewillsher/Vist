@@ -10,7 +10,6 @@ func interfaceASTGen(ast: AST) throws -> AST {
     
     let interface = AST(exprs: [])
     
-    
     for exp in ast.exprs {
         
         if case let e as VariableDecl = exp {

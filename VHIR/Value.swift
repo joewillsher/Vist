@@ -7,7 +7,7 @@
 //
 
 /// A value, instruction results, literals, etc
-protocol Value: class, VHIR {
+protocol Value: class, VHIRElement {
     /// An explicit name to give self in the ir repr
     var irName: String? { get set }
     
@@ -54,6 +54,7 @@ extension Value {
         if let i = uses.indexOf({$0.value === self}) { uses.removeAtIndex(i) } else { throw VHIRError.noUse }
     }
     
+    /// Adds the lowered val to all users
     func updateUsesWithLoweredVal(val: LLVMValueRef) {
         for use in uses {
             use.loweredValue = val
@@ -67,10 +68,12 @@ extension Value {
         
         var count = 0
         blockLoop: for block in blocks {
-            for inst in block.instructions {
+            instLoop: for inst in block.instructions {
                 if case let o as Operand = self where o.value === inst { break blockLoop }
                 if inst === self { break blockLoop }
-                if inst.irName == nil { count += 1 }
+                // we dont want to provide a name for void exprs
+                // remove iteration here, plus in instrs that could be void, remove the `%0 = `...
+                if inst.irName == nil && inst.type != BuiltinType.void { count += 1 }
             }
         }
         

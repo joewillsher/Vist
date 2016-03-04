@@ -6,12 +6,13 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-protocol Ty: Printable, VHIR {
+protocol Ty: Printable, VHIRElement {
     
     /// Name used in mangling function signatures
     var mangledName: String { get }
     
     func lowerType(module: Module) -> LLVMTypeRef
+    /// Old type lowering function, dont call this outside of irgen
     func lowerType(m: LLVMModuleRef) -> LLVMValueRef
     
     /// The explicit name of this type. The same as the
@@ -49,6 +50,10 @@ func lowerType(module: LLVMModuleRef) -> Ty throws -> LLVMValueRef {
 
 @warn_unused_result
 func == (lhs: Ty?, rhs: Ty) -> Bool {
+    if let l = lhs { return l == rhs } else { return false }
+}
+@warn_unused_result
+func != (lhs: Ty?, rhs: Ty) -> Bool {
     if let l = lhs { return l == rhs } else { return false }
 }
 @warn_unused_result

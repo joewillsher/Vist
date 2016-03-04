@@ -8,7 +8,7 @@
 
 
 /// The module type, functions get put into this
-final class Module: VHIR {
+final class Module: VHIRElement {
     var functions: [Function] = []
     var typeList: [TypeAlias] = []
     var builder: Builder!

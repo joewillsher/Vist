@@ -93,26 +93,29 @@ extension FuncDecl: VHIRStmtGenerator {
     func vhirStmtGen(module module: Module, scope: Scope) throws {
         guard let type = fnType.type else { throw VHIRError.noType }
         
-        let originalInsertPoint = module.builder.insertPoint
         
-        // if body
+        // if has body
         if let impl = impl {
+            let originalInsertPoint = module.builder.insertPoint
             
+            // make function and move into it
             let function = try module.builder.buildFunction(mangledName, type: type, paramNames: impl.params)
             try module.builder.setInsertPoint(function)
             
+            // make scope and occupy it with params
             let fnScope = Scope(parent: scope)
-            
             for p in impl.params {
                 fnScope.add(try function.paramNamed(p), name: p)
             }
             
+            // vhir gen for body
             for case let x as VHIRGenerator in impl.body.exprs {
                 try x.vhirGen(module: module, scope: fnScope)
             }
             
             module.builder.insertPoint = originalInsertPoint
         }
+            // if no body, just add a prototype
         else {
             try module.builder.createFunctionPrototype(mangledName, type: type)
         }

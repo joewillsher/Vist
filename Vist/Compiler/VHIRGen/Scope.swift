@@ -6,7 +6,8 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-/// A semantic scope, housing the declared vars
+/// A semantic scope, containing the declared vars for
+/// the VHIRGen phase.
 final class Scope {
     private var variables: [String: Value]
     weak var parent: Scope?

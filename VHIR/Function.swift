@@ -19,7 +19,7 @@ private final class FunctionImpl {
 
 /// A VHIR function, has a type and ismade of a series
 /// of basic blocks
-final class Function: VHIR {
+final class Function: VHIRElement {
     var name: String
     var type: FnType
     private var impl: FunctionImpl?

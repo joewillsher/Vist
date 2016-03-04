@@ -10,7 +10,7 @@
 ///
 /// Params are passed into the phi nodes as
 /// parameters ala swift
-final class BasicBlock: VHIR {
+final class BasicBlock: VHIRElement {
     var name: String
     var parameters: [Value]?
     var instructions: [Inst]

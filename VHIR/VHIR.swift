@@ -7,7 +7,12 @@
 //
 
 
-protocol VHIR {
+/// VHIR namespace
+struct VHIR {}
+
+
+/// Able to be printed as a VHIR instruction
+protocol VHIRElement {
     /// VHIR code to print
     var vhir: String { get }
 }
@@ -22,7 +27,7 @@ enum VHIRError: ErrorType {
 // @function
 // $basicblock
 
-extension CollectionType where Generator.Element : VHIR {
+extension CollectionType where Generator.Element : VHIRElement {
     func vhirValueTuple() -> String {
         let a = map { $0.vhir }
         return "(\(a.joinWithSeparator(", ")))"

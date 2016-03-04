@@ -220,7 +220,7 @@ extension Parser {
             case .identifier(let id):
                 
                 // handle native llvm type in stdlib
-                if case .period? = inspectNextToken(), case .identifier(let n)? = inspectNextToken(2) where id == "LLVM" && isStdLib {
+                if case .period? = inspectNextToken(), case .identifier(let n)? = inspectNextToken(2) where id == "Builtin" && isStdLib {
                     elements.append("LLVM.\(n)")    // param
                     getNextToken(3)// eat LLVM.Id
                 }
@@ -233,7 +233,7 @@ extension Parser {
                 guard case .identifier(let id) = getNextToken() else { throw parseError(.noIdentifier, loc: rangeOfCurrentToken()) }
                 
                 // handle native llvm type in stdlib
-                if case .period? = inspectNextToken(), case .identifier(let n)? = inspectNextToken(2) where id == "LLVM" && isStdLib {
+                if case .period? = inspectNextToken(), case .identifier(let n)? = inspectNextToken(2) where id == "Builtin" && isStdLib {
                     elements.append("LLVM.\(n)")    // param
                     getNextToken(2)// eat LLVM.Id
                 }
@@ -373,7 +373,7 @@ extension Parser {
             
             return MutationExpr(object: VariableExpr(name: token), value: exp)
             
-        case .period? where token == "LLVM" && isStdLib:
+        case .period? where token == "Builtin" && isStdLib:
             getNextToken(2) // eat 'LLVM.'
             
             guard case .identifier(let id) = currentToken else { throw parseError(.stdLibExprInvalid, userVisible: false) }
@@ -763,7 +763,7 @@ extension Parser {
         }
         
         let functionName: String
-        if case .period? = inspectNextToken(), case .identifier(let n)? = inspectNextToken(2) where s == "LLVM" && isStdLib {
+        if case .period? = inspectNextToken(), case .identifier(let n)? = inspectNextToken(2) where s == "Builtin" && isStdLib {
             functionName = "LLVM.\(n)"
             getNextToken(2) // eat
         }
