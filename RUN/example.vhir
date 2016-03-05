@@ -2,21 +2,11 @@ type %Int = { %Builtin.Int64 }
 
 func @main : () -> %Builtin.Void {
 $entry:
-  %0 = int_literal 2  	// uses: %0
-  %0 = struct %Int (%0: %Builtin.Int64)  	// uses: %0
-  %0 = int_literal 1  	// uses: %0
-  %0 = struct %Int (%0: %Builtin.Int64)  	// uses: %0
-  %0 = call @-P_Int_Int (%0: %Int, %0: %Int)  	// uses: %b, %0
-  variable_decl %b = %0: %Int 
-  %0 = call @foo_Int (%0: %Int) 
+  %0 = int_literal 1  	// uses: %1
+  %1 = struct %Int (%0: %Builtin.Int64)  	// uses: %a, %2
+  variable_decl %a = %1: %Int 
+  %2 = call @print_Int (%1: %Int) 
   return ()
 }
 
-func @foo_Int : (%Int) -> %Int {
-$entry(%a: %Int):
-  %0 = call @print_Int (%a: %Int) 
-}
-
 func @print_Int : (%Int) -> %Builtin.Void
-
-func @-P_Int_Int : (%Int, %Int) -> %Int

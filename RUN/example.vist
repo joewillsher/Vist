@@ -1,6 +1,4 @@
 
 
-func foo :: Int -> Int = (a) do print a
-
-let b = 2 + 1
-foo b
+let a = 1
+print a

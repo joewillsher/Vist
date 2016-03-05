@@ -73,7 +73,7 @@ extension Value {
                 if inst === self { break blockLoop }
                 // we dont want to provide a name for void exprs
                 // remove iteration here, plus in instrs that could be void, remove the `%0 = `...
-                if inst.irName == nil && inst.type != BuiltinType.void { count += 1 }
+                if inst.irName == nil /*&& inst.type != BuiltinType.void*/ { count += 1 }
             }
         }
         
