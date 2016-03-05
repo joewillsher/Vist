@@ -7,10 +7,6 @@
 //
 
 
-/// VHIR namespace
-struct VHIR {}
-
-
 /// Able to be printed as a VHIR instruction
 protocol VHIRElement {
     /// VHIR code to print

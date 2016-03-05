@@ -10,16 +10,16 @@ A vist program is first transformed into a series of tokens: `let`, `identifier=
 These are then parsed to form an AST (abstract syntax tree).
 
 ```
-				(declaration)
-				/			   	    \
-	   name=“a”	    (value)
-								     |
- 						   int_literal=1
+                (declaration)
+                /          \
+            name=“a”	    (value)
+                            |
+                      int_literal=1
  
-			   (function call)
-				/			   	    \
-	name=“print”	  args:
-									- (variable) — name=“a”
+               (function call)
+                /            \
+     name=“print”           args:
+                            - (variable) — name=“a”
 ```
 
 I then run a semantic analysis pass, where I add type information to the tree and check it is valid Vist code. I fund out here that `a` has type `Int`, and `print`, a function in the standard library, has type `Int -> ()`.
