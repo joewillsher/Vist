@@ -1,20 +1,21 @@
 type %Int = { %Builtin.Int64 }
 
-func @main : () -> %Builtin.Void {
+func @main: () -> %Builtin.Void {
 $entry:
   %0 = int_literal 1  	// uses: %1
-  %1 = struct %Int (%0: %Builtin.Int64)  	// uses: %4
-  %2 = int_literal 1  	// uses: %3
-  %3 = struct %Int (%2: %Builtin.Int64)  	// uses: %4
-  %4 = tuple (%1: %Int, %3: %Int)  	// uses: %a
-  variable_decl %a = %4: (%Int, %Int)  	// uses: %5
-  %5 = tuple_extract 0 (%a: (%Int, %Int))  	// uses: %b
-  variable_decl %b = %5: %Int  	// uses: %6
-  %6 = call @print_Int (%b: %Int) 
-  %7 = int_literal 22  	// uses: %8
-  %8 = struct %Int (%7: %Builtin.Int64)  	// uses: %9
-  %9 = call @print_Int (%8: %Int) 
+  %1 = struct %Int (%0: %Builtin.Int64)  	// uses: %x
+  variable_decl %x = %1: %Int  	// uses: %4
+  %2 = int_literal 2  	// uses: %3
+  %3 = struct %Int (%2: %Builtin.Int64)  	// uses: %y
+  variable_decl %y = %3: %Int  	// uses: %5
+  %4 = struct_extract #Int.value (%x: %Int)  	// uses: %6
+  %5 = struct_extract #Int.value (%y: %Int)  	// uses: %6
+  %6 = builtin i_add %4: %Builtin.Int64, %5: %Builtin.Int64  	// uses: %z
+  variable_decl %z = %6: (%Builtin.Int64, %Builtin.Bool)  	// uses: %7
+  %7 = tuple_extract 0 (%z: (%Builtin.Int64, %Builtin.Bool))  	// uses: %u
+  variable_decl %u = %7: %Builtin.Int64  	// uses: %8
+  %8 = call @-Uprint_i64 (%u: %Builtin.Int64) 
   return ()
 }
 
-func @print_Int : (%Int) -> %Builtin.Void
+func @-Uprint_i64: (%Builtin.Int64) -> %Builtin.Void

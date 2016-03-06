@@ -99,7 +99,7 @@ struct StdLib {
     // MARK: Exposed functions
     
     /// Returns the struct type of a named StdLib object
-    static func getStdLibType(id: String) -> StructType? {
+    static func typeNamed(id: String) -> StructType? {
         return functionContainer[type: id]
     }
 
@@ -110,7 +110,7 @@ struct StdLib {
     /// - parameter args: Applied arg types
     ///
     /// - returns: An optional tuple of `(mangledName, type)`
-    static func getStdLibFunction(name: String, args: [Ty]) -> (mangledName: String, type: FnType)? {
+    static func functionNamed(name: String, args: [Ty]) -> (mangledName: String, type: FnType)? {
         return functionContainer[fn: name, types: args]
     }    
     

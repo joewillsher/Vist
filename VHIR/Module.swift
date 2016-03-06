@@ -50,9 +50,16 @@ extension Module {
     
     /// Returns a stdlib function, updating the module fn list if needed
     func stdLibFunctionNamed(name: String, argTypes: [Ty]) throws -> Function? {
-        guard let (mangledName, fnTy) = StdLib.getStdLibFunction(name, args: argTypes) else { return nil }
+        guard let (mangledName, fnTy) = StdLib.functionNamed(name, args: argTypes) else { return nil }
         return try getOrAddFunction(mangledName, type: fnTy)
     }
+    
+    /// Returns a stdlib function, updating the module fn list if needed
+    func runtimeFunctionNamed(name: String, argTypes: [Ty]) throws -> Function? {
+        guard let (mangledName, fnTy) = Runtime.functionNamed(name, argTypes: argTypes) else { return nil }
+        return try getOrAddFunction(mangledName, type: fnTy)
+    }
+
     
     /// Returns a function from the module by name
     func functionNamed(name: String) -> Function? {

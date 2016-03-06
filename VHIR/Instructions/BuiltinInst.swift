@@ -10,14 +10,16 @@
 final class BuiltinBinaryInst: InstBase {
     let l: Operand, r: Operand
 
-    override var type: Ty? { return l.type }
+    override var type: Ty? { return returnType }
     let inst: BuiltinInst
     var instName: String { return inst.rawValue }
+    var returnType: Ty
     
-    private init(inst: BuiltinInst, l: Operand, r: Operand, irName: String? = nil) {
+    private init(inst: BuiltinInst, l: Operand, r: Operand, returnType: Ty, irName: String? = nil) {
         self.inst = inst
         self.l = l
         self.r = r
+        self.returnType = returnType
         super.init()
         self.args = [l, r]
         self.irName = irName
@@ -38,8 +40,8 @@ enum BuiltinInst: String {
 
 extension Builder {
     
-    func buildBuiltin(i: BuiltinInst, l: Operand, r: Operand, irName: String? = nil) throws -> BuiltinBinaryInst {
-        let binInst = BuiltinBinaryInst(inst: i, l: l, r: r, irName: irName)
+    func buildBuiltin(i: BuiltinInst, l: Operand, r: Operand, returnType: Ty, irName: String? = nil) throws -> BuiltinBinaryInst {
+        let binInst = BuiltinBinaryInst(inst: i, l: l, r: r, returnType: returnType, irName: irName)
         try addToCurrentBlock(binInst)
         return binInst
     }

@@ -67,7 +67,7 @@ final class StackFrame {
     
     func type(name: String) throws -> Ty {
         if let b = BuiltinType(name) { return b }
-        if let t = StdLib.getStdLibType(name) { return t }
+        if let t = StdLib.typeNamed(name) { return t }
         if let v = types[name] { return v }
         
         if let c = try? concept(name) { return c }

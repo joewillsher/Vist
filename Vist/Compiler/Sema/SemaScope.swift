@@ -52,11 +52,14 @@ final class SemaScope {
         
         // if not stdlib, lookup from the stdlib defs
         // if stdlib lookup from builtin fns
-        if let stdLibFunction = StdLib.getStdLibFunction(name, args: argTypes) where !isStdLib {
+        if let stdLibFunction = StdLib.functionNamed(name, args: argTypes) where !isStdLib {
             return stdLibFunction
         }
-        else if let builtinFunction = Builtin.getBuiltinFunction(name, argTypes: argTypes) where isStdLib {
+        else if let builtinFunction = Builtin.functionNamed(name, argTypes: argTypes) where isStdLib {
             return builtinFunction
+        }
+        else if let runtime = Runtime.functionNamed(name, argTypes: argTypes) where isStdLib {
+            return runtime
         }
         else if let localFunctionType = functions[raw: name, paramTypes: argTypes] {
             return (name.mangle(localFunctionType.params), localFunctionType)
@@ -79,7 +82,7 @@ final class SemaScope {
     
     subscript(type type: String) -> StorageType? {
         get {
-            if let t = StdLib.getStdLibType(type) where !isStdLib {
+            if let t = StdLib.typeNamed(type) where !isStdLib {
                 return t
             }
             else if let v = types[type] {

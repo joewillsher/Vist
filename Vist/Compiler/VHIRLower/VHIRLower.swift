@@ -135,10 +135,10 @@ extension ReturnInst: VHIRLower {
 
 extension VariableInst: VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        guard let type = type else { throw irGenError(.notTyped) }
+//        guard let type = type else { throw irGenError(.notTyped) }
         
-        let mem = LLVMBuildAlloca(irGen.builder, type.lowerType(module), irName ?? "")
-        LLVMBuildStore(irGen.builder, value.loweredValue, mem)
+//        let mem = LLVMBuildAlloca(irGen.builder, type.lowerType(module), irName ?? "")
+//        LLVMBuildStore(irGen.builder, value.loweredValue, mem)
         return value.loweredValue
     }
 }
@@ -170,13 +170,26 @@ extension TupleCreateInst: VHIRLower {
         
         return val
     }
-    
 }
 
 extension TupleExtractInst: VHIRLower {
     
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         return LLVMBuildExtractValue(irGen.builder, tuple.loweredValue, UInt32(elementIndex), "")
+    }
+}
+
+extension StructExtractInst: VHIRLower {
+    
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        
+    }
+}
+
+extension BuiltinInst: VHIRLower {
+    
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        
     }
 }
 

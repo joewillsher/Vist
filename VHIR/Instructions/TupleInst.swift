@@ -51,7 +51,7 @@ extension Builder {
         try addToCurrentBlock(s)
         return s
     }
-    func buildTupleExtract(tuple: Operand, index: Int, elementType: Ty, irName: String? = nil) throws -> TupleExtractInst {
+    func buildTupleExtract(tuple: Operand, index: Int, irName: String? = nil) throws -> TupleExtractInst {
         guard let elType = try (tuple.type as? TupleType)?.propertyType(index) else { throw VHIRError.noType }
         let s = TupleExtractInst(tuple: tuple, index: index, elementType: elType.usingTypesIn(module), irName: irName)
         try addToCurrentBlock(s)

@@ -103,7 +103,6 @@ func compileDocuments(fileNames: [String],
             if verbose { print(m.vhir) }
         }
         
-        if verbose { print("\n------------------------------LLVM IR------------------------------\n") }
 
         var module = LLVMModuleCreateWithName("vist_module")
         
@@ -130,9 +129,11 @@ func compileDocuments(fileNames: [String],
         
         // Generate LLVM IR code for program
         if oldIRGen {
+            if verbose { print("\n------------------------------LLVM IR------------------------------\n") }
             try ast.irGen(module: module, isLibrary: generateLibrary, isStdLib: isStdLib || parseStdLib)
         }
         else {
+            if verbose { print("\n-----------------------------IR LOWER------------------------------\n") }
             try m.vhirLower(module, isStdLib: isStdLib || parseStdLib)
         }
         

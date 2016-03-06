@@ -66,7 +66,7 @@ extension Function {
     var vhir: String {
         let b = blocks?.map { $0.vhir }
         let bString = b.map { " {\n\($0.joinWithSeparator("\n"))}" } ?? ""
-        return "func @\(name) : \(type.vhir)\(bString)"
+        return "func @\(name): \(type.vhir)\(bString)"
     }
 }
 

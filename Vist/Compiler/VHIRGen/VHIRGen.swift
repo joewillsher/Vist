@@ -78,16 +78,19 @@ extension FunctionCall/*: VHIRGenerator*/ {
     
     func vhirGen(module module: Module, scope: Scope) throws -> Value {
         let args = try argArr.map { Operand(try $0.vhirGen(module: module, scope: scope)) }
-        guard let argTypes = argArr.optionalMap({ $0._type }) else { throw VHIRError.paramsNotTyped }
+        guard let argTypes = argArr.optionalMap({ $0._type }), returnType = _type else { throw VHIRError.paramsNotTyped }
         
         if let stdlib = try module.stdLibFunctionNamed(name, argTypes: argTypes) {
             return try module.builder.buildFunctionCall(stdlib, args: args)
+        }
+        else if let runtime = try module.runtimeFunctionNamed(name, argTypes: argTypes) {
+            return try module.builder.buildFunctionCall(runtime, args: args)
         }
         else if
             let prefixRange = name.rangeOfString("Builtin."),
             let instruction = BuiltinInst(rawValue: name.stringByReplacingCharactersInRange(prefixRange, withString: "")) where args.count == 2{
             
-            return try module.builder.buildBuiltin(instruction, l: args[0], r: args[1])
+            return try module.builder.buildBuiltin(instruction, l: args[0], r: args[1], returnType: returnType)
         }
         
         let function = module.functionNamed(mangledName)!
@@ -155,10 +158,15 @@ extension TupleExpr: VHIRGenerator {
 extension TupleMemberLookupExpr: VHIRGenerator {
     
     func vhirGen(module module: Module, scope: Scope) throws -> Value {
-        guard let type = _type else { throw VHIRError.noType }
-        
         let tuple = try object.vhirGen(module: module, scope: scope)
-        return try module.builder.buildTupleExtract(Operand(tuple), index: index, elementType: type)
+        return try module.builder.buildTupleExtract(Operand(tuple), index: index)
+    }
+}
+extension PropertyLookupExpr: VHIRGenerator {
+    
+    func vhirGen(module module: Module, scope: Scope) throws -> Value {
+        let object = try self.object.vhirGen(module: module, scope: scope)
+        return try module.builder.buildStructExtract(Operand(object), property: propertyName)
     }
 }
 

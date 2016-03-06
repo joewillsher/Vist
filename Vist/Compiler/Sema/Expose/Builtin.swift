@@ -77,7 +77,7 @@ struct Builtin {
     ///
     /// - returns: An optional tuple of `(mangledName, type)`
     ///
-    static func getBuiltinFunction(name: String, argTypes args: [Ty]) -> (mangledName: String, type: FnType)? {
+    static func functionNamed(name: String, argTypes args: [Ty]) -> (mangledName: String, type: FnType)? {
         return functionContainer[fn: name, types: args]
     }
 }
