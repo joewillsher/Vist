@@ -24,6 +24,7 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
     let o = flags.contains("-O")
     let lib = flags.contains("-lib") // undocumented
     let buildStdLib = flags.contains("-build-stdlib")
+    let parseStdLib = flags.contains("-parse-stdlib")
     let oldIRGen = flags.contains("-irgen-old")
     let preserveIntermediate = flags.contains("-preserve")
     
@@ -38,11 +39,13 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
                 "  -help -h\t\t- Print help\n" +
                 "  -verbose -v\t\t- Print all stages of the compile\n" +
                 "  -profile -p\t\t- Record time of program execution\n" +
+                "  -old-irgen\t\t- Use the old IRGen pass instead of VHIR\n" +
                 "  -dump-ast\t\t- Dump syntax tree\n" +
                 "  -emit-ir\t\t- Only generate LLVM IR file\n" +
                 "  -emit-asm\t\t- Only generate assembly code\n" +
                 "  -build-only -b\t- Do not run the program\n" +
                 "  -build-stdlib\t\t- Build the standard library too\n" +
+                "  -parse-stdlib\t\t- Compile the module as if it were the stdlib. This exposes Builtin functions\n" +
                 "  -build-runtime\t\t- Build the runtime too\n" +
                 "  -preserve\t\t- Keep intermediate LLVM IR and ASM files")
     }
@@ -65,6 +68,7 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
                                  preserve: true,
                                  generateLibrary: true,
                                  isStdLib: true,
+                                 parseStdLib: true,
                                  oldIRGen: true)
         }
         if !files.isEmpty {
@@ -81,6 +85,7 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
                                  preserve: preserveIntermediate,
                                  generateLibrary: lib,
                                  isStdLib: false,
+                                 parseStdLib: parseStdLib,
                                  oldIRGen: oldIRGen)
         }
         

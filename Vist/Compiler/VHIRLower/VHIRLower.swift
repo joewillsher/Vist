@@ -6,42 +6,76 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
+enum IRLowerError: VistError {
+    case notLowerable(Value)
+    
+    var description: String {
+        switch self {
+        case .notLowerable(let v): return "value '\(v.vhir)' is not Lowerable"
+        }
+    }
+}
 
-protocol IRLower {
-    func irLower(module: Module, irGen: IRGen) throws -> LLVMValueRef
+protocol VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef
+}
+
+extension Operand: VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        if loweredValue != nil { return loweredValue }
+        if case let lowerable as VHIRLower = value {
+            return try lowerable.vhirLower(module, irGen: irGen)
+        }
+        else {
+            throw error(IRLowerError.notLowerable(self))
+        }
+    }
 }
 
 extension Module {
-    func irLower(module: LLVMModuleRef, isStdLib: Bool) throws {
+    func vhirLower(module: LLVMModuleRef, isStdLib: Bool) throws {
         
         let irGen = (LLVMCreateBuilder(), module, isStdLib) as IRGen
         loweredModule = module
         
         for fn in functions {
-            LLVMAddFunction(irGen.module, fn.name, fn.type.lowerType(self))
+            let f = LLVMAddFunction(irGen.module, fn.name, fn.type.lowerType(self))
+            fn.loweredFunction = f
         }
         
         for fn in functions {
-            try fn.irLower(self, irGen: irGen)
+            try fn.vhirLower(self, irGen: irGen)
         }
         
     }
 }
 
-extension Function: IRLower {
-    func irLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+extension Function: VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         
         let fn = functionPointer(irGen)
         
         guard let blocks = blocks else { return fn }
         
-        for bb in blocks {
+        for (i, bb) in blocks.enumerate() {
+            
+            
+            if i == 0 {
+                // add vals to first block from fn input
+                for pi in 0..<LLVMCountParams(fn) {
+                    let param = LLVMGetParam(fn, pi)
+                    bb.parameters?[Int(pi)].loweredValue = param
+                    LLVMSetValueName(param, params?[Int(pi)].irName ?? "")
+                }
+            }
+            // do phi node shit if its all complicated
+            else {}
             
             let block = LLVMAppendBasicBlock(fn, bb.name)
             LLVMPositionBuilderAtEnd(irGen.builder, block)
             
-            for case let inst as protocol<IRLower, Inst> in bb.instructions {
-                let v = try inst.irLower(module, irGen: irGen)
+            for case let inst as protocol<VHIRLower, Inst> in bb.instructions {
+                let v = try inst.vhirLower(module, irGen: irGen)
                 inst.updateUsesWithLoweredVal(v)
             }
             
@@ -59,16 +93,21 @@ extension Function: IRLower {
 
 
 
+extension BBParam: VHIRLower {
+    
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        return nil
+    }
+}
 
-
-extension IntLiteralInst: IRLower {
-    func irLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+extension IntLiteralInst: VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         return LLVMConstInt(type!.lowerType(module), UInt64(value.value), false)
     }
 }
 
-extension StructInitInst: IRLower {
-    func irLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+extension StructInitInst: VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         guard case let t as TypeAlias = type else { throw irGenError(.notStructType) }
         var val = LLVMGetUndef(t.lowerType(module))
         
@@ -80,29 +119,31 @@ extension StructInitInst: IRLower {
     }
 }
 
-extension ReturnInst: IRLower {
+extension ReturnInst: VHIRLower {
     
-    func irLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         
         if case _ as VoidLiteralValue = value.value {
             return LLVMBuildRetVoid(irGen.builder)
         }
         else {
-            return LLVMBuildRet(irGen.builder, value.loweredValue)
+            let v = try value.vhirLower(module, irGen: irGen)
+            return LLVMBuildRet(irGen.builder, v)
         }
     }
 }
-extension VariableInst: IRLower {
-    func irLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+extension VariableInst: VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         guard let type = type else { throw irGenError(.notTyped) }
+        
         let mem = LLVMBuildAlloca(irGen.builder, type.lowerType(module), irName ?? "")
         LLVMBuildStore(irGen.builder, value.loweredValue, mem)
         return mem
     }
 }
 
-extension FunctionCallInst: IRLower {
-    func irLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+extension FunctionCallInst: VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         
         let args = self.args.map { $0.loweredValue }.ptr()
         let argCount = self.args.count

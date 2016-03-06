@@ -47,6 +47,10 @@ struct GenericType: StorageType {
             ]).lowerType(module)
     }
     
+    func usingTypesIn(module: Module) -> Ty {
+        return GenericType(name: name, concepts: concepts.map { $0.usingTypesIn(module) as! ConceptType }, parentName: parentName)
+    }
+    
     var irName: String {
         return "\(parentName).\(name).gen"
     }

@@ -8,7 +8,7 @@
 
 final class StructInitInst: InstBase {
     
-    override var type: Ty? { return module?.getOrAddType(structType) }
+    override var type: Ty? { return module.getOrAddType(structType) }
     var structType: StructType
     
     private init(type: StructType, args: [Operand], irName: String? = nil) {
@@ -22,6 +22,8 @@ final class StructInitInst: InstBase {
         return "\(name) = struct %\(type!.explicitName) \(args.vhirValueTuple()) \(useComment)"
     }
 }
+
+
 
 extension Builder {
     func buildStructInit(type: StructType, values: [Operand], irName: String? = nil) throws -> StructInitInst {

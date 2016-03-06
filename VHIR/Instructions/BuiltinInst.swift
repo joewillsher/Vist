@@ -26,9 +26,9 @@ final class BuiltinBinaryInst: InstBase {
     override var instVHIR: String {
         let a = args.map{$0.valueName}
         let w = a.joinWithSeparator(", ")
-        return "\(name) = \(instName) \(w) \(useComment)"
+        return "\(name) = builtin \(instName) \(w) \(useComment)"
     }
-
+    
 }
 
 enum BuiltinInst: String {

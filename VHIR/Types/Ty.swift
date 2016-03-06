@@ -12,6 +12,10 @@ protocol Ty: Printable, VHIRElement {
     var mangledName: String { get }
     
     func lowerType(module: Module) -> LLVMTypeRef
+    /// Replaces the function's memeber types with the module's typealias
+    func usingTypesIn(module: Module) -> Ty
+    
+    
     /// Old type lowering function, dont call this outside of irgen
     func lowerType(m: LLVMModuleRef) -> LLVMValueRef
     

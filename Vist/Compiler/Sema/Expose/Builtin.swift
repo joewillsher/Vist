@@ -14,13 +14,13 @@ struct Builtin {
     private static let boolType = BuiltinType.bool
     private static let voidType = BuiltinType.void
     
-    static let IntBoolTupleType = TupleType(members: [intType, boolType])
+    static let intBoolTupleType = TupleType(members: [intType, boolType])
     
     private static let functions: [(String, FnType)] = [
         // integer fns
-        ("Builtin.i_add", FnType(params: [intType, intType], returns: IntBoolTupleType)), // overflowing intrinsic functions
-        ("Builtin.i_sub", FnType(params: [intType, intType], returns: IntBoolTupleType)),
-        ("Builtin.i_mul", FnType(params: [intType, intType], returns: IntBoolTupleType)),
+        ("Builtin.i_add", FnType(params: [intType, intType], returns: intBoolTupleType)), // overflowing intrinsic functions
+        ("Builtin.i_sub", FnType(params: [intType, intType], returns: intBoolTupleType)),
+        ("Builtin.i_mul", FnType(params: [intType, intType], returns: intBoolTupleType)),
         
         ("Builtin.i_div", FnType(params: [intType, intType], returns: intType)),
         ("Builtin.i_rem", FnType(params: [intType, intType], returns: intType)),

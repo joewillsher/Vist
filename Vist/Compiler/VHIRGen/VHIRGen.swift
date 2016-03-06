@@ -82,6 +82,12 @@ extension FunctionCall/*: VHIRGenerator*/ {
         if let stdlib = try module.stdLibFunctionNamed(name, argTypes: argTypes) {
             return try module.builder.buildFunctionCall(stdlib, args: args)
         }
+        else if
+            let prefixRange = name.rangeOfString("Builtin."),
+            let instruction = BuiltinInst(rawValue: name.stringByReplacingCharactersInRange(prefixRange, withString: "")) where args.count == 2{
+            
+            return try module.builder.buildBuiltin(instruction, l: args[0], r: args[1])
+        }
         
         let function = module.functionNamed(mangledName)!
         return try module.builder.buildFunctionCall(function, args: args)
@@ -92,7 +98,6 @@ extension FuncDecl: VHIRStmtGenerator {
     
     func vhirStmtGen(module module: Module, scope: Scope) throws {
         guard let type = fnType.type else { throw VHIRError.noType }
-        
         
         // if has body
         if let impl = impl {
@@ -130,6 +135,29 @@ extension VariableExpr: VHIRGenerator {
     }
 }
 
+extension ReturnStmt: VHIRGenerator {
+    
+    func vhirGen(module module: Module, scope: Scope) throws -> Value {
+        return try module.builder.buildReturn(Operand(try expr.vhirGen(module: module, scope: scope)))
+    }
+}
 
+extension TupleExpr: VHIRGenerator {
+    
+    func vhirGen(module module: Module, scope: Scope) throws -> Value {
+        guard let type = type else { throw VHIRError.noType }
+        let elements = try self.elements.map { try $0.vhirGen(module: module, scope: scope) }.map(Operand.init)
+        return try module.builder.buildTupleCreate(type, elements: elements)
+    }
+}
 
+extension TupleMemberLookupExpr: VHIRGenerator {
+    
+    func vhirGen(module module: Module, scope: Scope) throws -> Value {
+        guard let type = _type else { throw VHIRError.noType }
+        
+        let tuple = try object.vhirGen(module: module, scope: scope)
+        return try module.builder.buildTupleExtract(Operand(tuple), index: index, elementType: type)
+    }
+}
 

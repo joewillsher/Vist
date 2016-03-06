@@ -1,3 +1,12 @@
 
-let a = 1
-print a
+
+let a = (1, 1)
+let b = a.0
+
+/*
+let x = 1
+let y = 2
+let z = Builtin.i_add x.value y.value
+let u = z.0
+_print u
+*/

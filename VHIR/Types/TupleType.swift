@@ -37,6 +37,10 @@ final class TupleType: Ty {
             false)
     }
     
+    func usingTypesIn(module: Module) -> Ty {
+        return TupleType(members: members.map { $0.usingTypesIn(module) })
+    }
+    
     func propertyType(index: Int) throws -> Ty {
         guard index < members.count else { throw semaError(.noTupleElement(index: index, size: members.count)) }
         return members[index]

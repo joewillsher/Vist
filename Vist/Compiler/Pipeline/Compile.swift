@@ -33,6 +33,7 @@ func compileDocuments(fileNames: [String],
     preserve: Bool = false,
     generateLibrary: Bool = false,
     isStdLib: Bool = false,
+    parseStdLib: Bool = false,
     oldIRGen: Bool = false)
     throws {
         
@@ -41,7 +42,7 @@ func compileDocuments(fileNames: [String],
         var head: AST? = nil
         var all: [AST] = []
         
-        let globalScope = SemaScope.globalScope(isStdLib)
+        let globalScope = SemaScope.globalScope(isStdLib || parseStdLib)
         
         for (index, fileName) in fileNames.enumerate() {
             
@@ -60,7 +61,7 @@ func compileDocuments(fileNames: [String],
             if verbose { print("\n\n------------------------------AST-------------------------------\n") }
             
             // parse tokens & generate AST
-            let ast = try Parser.parseWith(tokens, isStdLib: true)
+            let ast = try Parser.parseWith(tokens, isStdLib: isStdLib || parseStdLib)
             
             if dumpAST { print(ast.astString); return }
             if verbose { print(ast.astString) }
@@ -129,10 +130,10 @@ func compileDocuments(fileNames: [String],
         
         // Generate LLVM IR code for program
         if oldIRGen {
-            try ast.irGen(module: module, isLibrary: generateLibrary, isStdLib: isStdLib)
+            try ast.irGen(module: module, isLibrary: generateLibrary, isStdLib: isStdLib || parseStdLib)
         }
         else {
-            try m.irLower(module, isStdLib: true)
+            try m.vhirLower(module, isStdLib: isStdLib || parseStdLib)
         }
         
         // print and write to file

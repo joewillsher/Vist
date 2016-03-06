@@ -7,11 +7,11 @@
 //
 
 private final class FunctionImpl {
-    var paramNames: [String]
     var blocks: [BasicBlock]
+    var params: [BBParam]
     
-    init(paramNames: [String], blocks: [BasicBlock]) {
-        self.paramNames = paramNames
+    init(paramNames: [String], type: FnType, blocks: [BasicBlock]) {
+        params = zip(paramNames, type.params).map(BBParam.init)
         self.blocks = blocks
     }
 }
@@ -23,12 +23,14 @@ final class Function: VHIRElement {
     var name: String
     var type: FnType
     private var impl: FunctionImpl?
-    unowned var parentModule: Module
+    private unowned var parentModule: Module
+    
+    var loweredFunction: LLVMValueRef = nil
     
     private init(name: String, type: FnType, module: Module) {
         self.name = name
         self.parentModule = module
-        self.type = type.usingTypesIn(module)
+        self.type = type
     }
     
     var hasBody: Bool { return (impl?.blocks.count != 0) ?? false }
@@ -36,6 +38,7 @@ final class Function: VHIRElement {
         get { return impl?.blocks }
         set { _ = newValue.map { impl?.blocks = $0 } }
     }
+    var params: [BBParam]? { return impl?.params }
     
     func getEntryBlock() throws -> BasicBlock {
         guard let first = impl?.blocks.first else { throw VHIRError.noFunctionBody }
@@ -51,15 +54,9 @@ final class Function: VHIRElement {
         return p
     }
     
-}
-
-extension FnType {
-    /// Replaces the function's memeber types with the module's typealias
-    func usingTypesIn(module: Module) -> FnType {
-        let params = self.params.map { ($0 as? StorageType).map { module.getOrAddType($0) } ?? $0 }
-        let returns = (self.returns as? StorageType).map { module.getOrAddType($0) } ?? self.returns
-        return FnType(params: params, returns: returns, metadata: metadata, callingConvention: callingConvention)
-    }
+    func dumpIR() { if loweredFunction != nil { LLVMDumpValue(loweredFunction) } else { print("\(name) <NULL>") } }
+    
+    var module: Module { return parentModule }
 }
 
 extension Builder {
@@ -74,16 +71,15 @@ extension Builder {
     
     /// Builds an entry block for the function, passes the params of the function in
     func buildFunctionEntryBlock(function: Function, paramNames: [String]) throws {
-        let fnParams = zip(paramNames, function.type.params).map(BBParam.init).map { $0 as Value }
-        let bb = BasicBlock(name: "entry", parameters: fnParams, parentFunction: function)
-        function.impl = FunctionImpl(paramNames: paramNames, blocks: [bb])
+        function.impl = FunctionImpl(paramNames: paramNames, type: function.type, blocks: [])
+        let bb = BasicBlock(name: "entry", parameters: function.params!.map(Operand.init), parentFunction: function)
+        function.blocks = [bb]
         try setInsertPoint(bb)
     }
     
     /// Creates function prototype an adds to module
     func createFunctionPrototype(name: String, type: FnType) throws -> Function {
-        guard let module = module else { throw VHIRError.noModule }
-        let f = Function(name: name, type: type, module: module)
+        let f = Function(name: name, type: type.usingTypesIn(module) as! FnType, module: module)
         module.addFunction(f)
         return f
     }

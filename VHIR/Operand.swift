@@ -28,7 +28,7 @@ final class Operand: Value {
         get { return value?.irName }
         set { value?.irName = newValue }
     }
-    var parentBlock: BasicBlock? {
+    var parentBlock: BasicBlock! {
         get { return value?.parentBlock }
         set { value?.parentBlock = newValue }
     }
@@ -44,4 +44,6 @@ final class Operand: Value {
     var user: Inst? {
         return parentBlock?.userOfOperand(self)
     }
+    
+    func dumpIR() { if loweredValue != nil { LLVMDumpValue(loweredValue) } else { print("\(irName) <NULL>") } }
 }

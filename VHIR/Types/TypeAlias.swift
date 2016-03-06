@@ -7,7 +7,7 @@
 //
 
 
-class TypeAlias: Ty {
+final class TypeAlias: Ty {
     var name: String
     var targetType: StorageType
     
@@ -21,6 +21,9 @@ class TypeAlias: Ty {
         let namedType = createNamedType(type, targetType.irName)
         
         return namedType
+    }
+    func usingTypesIn(module: Module) -> Ty {
+        return self
     }
     
     init(name: String, targetType: StorageType) {

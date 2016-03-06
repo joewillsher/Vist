@@ -165,6 +165,8 @@
 		D43B3A8F1C8A12D70039FB2E /* ASTInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A8C1C8A12D70039FB2E /* ASTInterface.swift */; };
 		D43B3A901C8A12D70039FB2E /* LinkAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A8D1C8A12D70039FB2E /* LinkAST.swift */; };
 		D43B3A911C8A12D70039FB2E /* LinkAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A8D1C8A12D70039FB2E /* LinkAST.swift */; };
+		D4CF76771C8CD4A70058A8EC /* TupleInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF76761C8CD4A70058A8EC /* TupleInst.swift */; };
+		D4CF76781C8CD4A70058A8EC /* TupleInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF76761C8CD4A70058A8EC /* TupleInst.swift */; };
 		D4DE28191C5969830096E798 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4DE28181C5969830096E798 /* libz.tbd */; };
 		D4E35B7D1C5D0F0700683486 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4DE28181C5969830096E798 /* libz.tbd */; };
 		D4E35B7F1C5D216600683486 /* Pipe.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E35B7E1C5D216600683486 /* Pipe.swift */; };
@@ -303,6 +305,7 @@
 		D4BBE4191C4157E7001B8934 /* runtime.bc */ = {isa = PBXFileReference; lastKnownFileType = file; name = runtime.bc; path = Runtime/runtime.bc; sourceTree = "<group>"; };
 		D4BBE41A1C4157E7001B8934 /* runtime.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = runtime.ll; path = Runtime/runtime.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
 		D4BBE41E1C41584C001B8934 /* stdlib.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = stdlib.o; path = stdlib/stdlib.o; sourceTree = "<group>"; };
+		D4CF76761C8CD4A70058A8EC /* TupleInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TupleInst.swift; path = Instructions/TupleInst.swift; sourceTree = "<group>"; };
 		D4DB92771C866FF300718B78 /* example.vhir */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vhir; path = RUN/example.vhir; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
 		D4DE28181C5969830096E798 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
@@ -389,6 +392,7 @@
 				D43B39D41C8A0F3A0039FB2E /* LiteralInst.swift */,
 				D43B39D51C8A0F3A0039FB2E /* ReturnInst.swift */,
 				D43B39D61C8A0F3A0039FB2E /* StructInst.swift */,
+				D4CF76761C8CD4A70058A8EC /* TupleInst.swift */,
 				D43B39D71C8A0F3A0039FB2E /* VariableInst.swift */,
 			);
 			name = Instructions;
@@ -825,6 +829,7 @@
 				D43B39A21C8A0EDF0039FB2E /* Value.swift in Sources */,
 				D43B3A7C1C8A11600039FB2E /* StackFrame.swift in Sources */,
 				D43B3A1E1C8A105B0039FB2E /* Expr.swift in Sources */,
+				D4CF76781C8CD4A70058A8EC /* TupleInst.swift in Sources */,
 				D43B3A6A1C8A11600039FB2E /* CreateType.cpp in Sources */,
 				D43B3A411C8A10C80039FB2E /* SemaError.swift in Sources */,
 				D43B3A3D1C8A10C80039FB2E /* Initialiser.swift in Sources */,
@@ -862,6 +867,7 @@
 				D43B39B21C8A0F140039FB2E /* FnType.swift in Sources */,
 				D43B3A901C8A12D70039FB2E /* LinkAST.swift in Sources */,
 				D43B39BC1C8A0F140039FB2E /* Ty.swift in Sources */,
+				D4CF76771C8CD4A70058A8EC /* TupleInst.swift in Sources */,
 				D43B3A3E1C8A10C80039FB2E /* Mangle.swift in Sources */,
 				D43B39B61C8A0F140039FB2E /* StorageType.swift in Sources */,
 				D43B39B41C8A0F140039FB2E /* GenericType.swift in Sources */,

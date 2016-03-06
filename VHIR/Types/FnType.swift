@@ -48,6 +48,13 @@ struct FnType: Ty {
         return LLVMFunctionType(ret, els, UInt32(members.count), false)
     }
     
+    /// Replaces the function's memeber types with the module's typealias
+    func usingTypesIn(module: Module) -> Ty {
+        let params = self.params.map { $0.usingTypesIn(module) }
+        let returns = self.returns.usingTypesIn(module)
+        return FnType(params: params, returns: returns, metadata: metadata, callingConvention: callingConvention)
+    }
+    
     func lowerType(module: LLVMTypeRef) -> LLVMTypeRef {
         
         let ret: LLVMTypeRef

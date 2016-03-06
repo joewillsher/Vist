@@ -221,8 +221,8 @@ extension Parser {
                 
                 // handle native llvm type in stdlib
                 if case .period? = inspectNextToken(), case .identifier(let n)? = inspectNextToken(2) where id == "Builtin" && isStdLib {
-                    elements.append("LLVM.\(n)")    // param
-                    getNextToken(3)// eat LLVM.Id
+                    elements.append("Builtin.\(n)")    // param
+                    getNextToken(3)// eat Builtin.Id
                 }
                 else {
                     elements.append(id)    // param
@@ -234,8 +234,8 @@ extension Parser {
                 
                 // handle native llvm type in stdlib
                 if case .period? = inspectNextToken(), case .identifier(let n)? = inspectNextToken(2) where id == "Builtin" && isStdLib {
-                    elements.append("LLVM.\(n)")    // param
-                    getNextToken(2)// eat LLVM.Id
+                    elements.append("Builtin.\(n)")    // param
+                    getNextToken(2)// eat Builtin.Id
                 }
                 else {
                     elements.append(id)    // param
@@ -374,10 +374,10 @@ extension Parser {
             return MutationExpr(object: VariableExpr(name: token), value: exp)
             
         case .period? where token == "Builtin" && isStdLib:
-            getNextToken(2) // eat 'LLVM.'
+            getNextToken(2) // eat 'Builtin.'
             
             guard case .identifier(let id) = currentToken else { throw parseError(.stdLibExprInvalid, userVisible: false) }
-            return try parseIdentifierExpr("LLVM.\(id)")
+            return try parseIdentifierExpr("Builtin.\(id)")
             
         case .period?: // property or fn
             getNextToken(2) // eat `.`
@@ -764,7 +764,7 @@ extension Parser {
         
         let functionName: String
         if case .period? = inspectNextToken(), case .identifier(let n)? = inspectNextToken(2) where s == "Builtin" && isStdLib {
-            functionName = "LLVM.\(n)"
+            functionName = "Builtin.\(n)"
             getNextToken(2) // eat
         }
         else {

@@ -3,10 +3,12 @@ type %Int = { %Builtin.Int64 }
 func @main : () -> %Builtin.Void {
 $entry:
   %0 = int_literal 1  	// uses: %1
-  %1 = struct %Int (%0: %Builtin.Int64)  	// uses: %a, %2
-  variable_decl %a = %1: %Int 
-  %2 = call @print_Int (%1: %Int) 
+  %1 = struct %Int (%0: %Builtin.Int64)  	// uses: %4
+  %2 = int_literal 1  	// uses: %3
+  %3 = struct %Int (%2: %Builtin.Int64)  	// uses: %4
+  %4 = tuple (%1: %Int, %3: %Int)  	// uses: %a, %5
+  variable_decl %a = %4: (%Int, %Int) 
+  %5 = tuple_extract 0 (%4: (%Int, %Int))  	// uses: %b
+  variable_decl %b = %5: %Int 
   return ()
 }
-
-func @print_Int : (%Int) -> %Builtin.Void

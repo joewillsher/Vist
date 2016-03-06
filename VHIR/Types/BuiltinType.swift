@@ -100,6 +100,8 @@ enum BuiltinType: Ty {
         }
     }
     
+    func usingTypesIn(module: Module) -> Ty { return self }
+    
     static func intGen(size size: Swift.Int) -> UInt64 -> LLVMValueRef {
         fatalError("TODO: shouldnt be reachable as working on VHIR")
     }

@@ -12,11 +12,11 @@
 /// parameters ala swift
 final class BasicBlock: VHIRElement {
     var name: String
-    var parameters: [Value]?
+    var parameters: [Operand]?
     var instructions: [Inst]
-    var parentFunction: Function
+    unowned var parentFunction: Function
     
-    init(name: String, parameters: [Value]?, parentFunction: Function) {
+    init(name: String, parameters: [Operand]?, parentFunction: Function) {
         self.name = name
         self.parameters = parameters
         self.instructions = []
@@ -33,6 +33,7 @@ final class BasicBlock: VHIRElement {
     }
     func paramNamed(name: String) throws -> Operand {
         guard let i = parameters?.indexOf({$0.irName == name}), let p = parameters?[i] else { throw VHIRError.noParamNamed(name) }
+        p.parentBlock = self
         return Operand(p)
     }
     func set(inst: Inst, newValue: Inst) throws {
@@ -47,14 +48,24 @@ final class BasicBlock: VHIRElement {
         return i
     }
     
-    private func instAtIndex(index: Int) -> Inst {
-        return instructions[index]
-    }
-    
     /// Returns the instruction using the operand
     func userOfOperand(operand: Operand) -> Inst? {
         let f = instructions.indexOf { inst in inst.args.contains { arg in arg === operand } }
         return f.map { instructions[$0] }
+    }
+    
+    var module: Module { return parentFunction.module }
+}
+
+extension Builder {
+    
+    /// Appends this block to the function and sets it to the insert point
+    func addBasicBlock(name: String, params: [Operand]? = nil) throws -> BasicBlock {
+        guard let function = insertPoint.function, let b = function.blocks where !b.isEmpty else { throw VHIRError.noFunctionBody }
+        let bb = BasicBlock(name: name, parameters: params, parentFunction: function)
+        function.blocks?.append(bb)
+        try setInsertPoint(bb)
+        return bb
     }
 }
 
@@ -62,7 +73,7 @@ final class BasicBlock: VHIRElement {
 final class BBParam: Value {
     var irName: String?
     var type: Ty?
-    weak var parentBlock: BasicBlock?
+    weak var parentBlock: BasicBlock!
     var uses: [Operand] = []
     
     init(irName: String, type: Ty) {

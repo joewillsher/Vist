@@ -14,7 +14,7 @@ protocol Value: class, VHIRElement {
     var type: Ty? { get }
     
     /// The block containing `self`
-    weak var parentBlock: BasicBlock? { get set }
+    weak var parentBlock: BasicBlock! { get set }
     
     /// The list of uses of `self`. A collection of `Operand`
     /// instances whose `value`s point to self, to 
@@ -25,6 +25,11 @@ protocol Value: class, VHIRElement {
 }
 
 extension Value {
+    
+    func dump() { print(vhir) }
+    
+    var module: Module { return parentBlock.module }
+    var parentFunction: Function { return parentBlock.parentFunction }
     
     /// Removes all `Operand` instances which point to `self`
     func removeAllUses() {
@@ -64,7 +69,7 @@ extension Value {
     /// If `self` doesn't have an `irName`, this provides the 
     /// number to use in the ir repr
     func getInstNumber() -> String? {
-        guard let blocks = parentBlock?.parentFunction.blocks else { return nil }
+        guard let blocks = parentBlock.parentFunction.blocks else { return nil }
         
         var count = 0
         blockLoop: for block in blocks {

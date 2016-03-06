@@ -41,6 +41,12 @@ struct ConceptType: StorageType {
     var methods: [StructMethod] {
         return requiredFunctions
     }
+    
+    func usingTypesIn(module: Module) -> Ty {
+        let fns = requiredFunctions.map { (name: $0.name, type: $0.type.usingTypesIn(module) as! FnType)  as StructMethod }
+        let mems = requiredProperties.map { ($0.name, $0.type.usingTypesIn(module), $0.mutable) as StructMember }
+        return ConceptType(name: name, requiredFunctions: fns, requiredProperties: mems)
+    }
 
     
     /// Returns the metadata array map, which transforms the protocol's properties

@@ -8,9 +8,13 @@
 
 
 /// Able to be printed as a VHIR instruction
-protocol VHIRElement {
+protocol VHIRElement: CustomDebugStringConvertible {
     /// VHIR code to print
     var vhir: String { get }
+}
+
+extension VHIRElement {
+    var debugDescription: String { return vhir }
 }
 
 enum VHIRError: ErrorType {
@@ -112,7 +116,7 @@ extension TypeAlias {
 
 extension Inst {
     var useComment: String {
-        let u = uses.map { $0.user!.name }
+        let u = uses.map { $0.user?.name ?? "" }
         return uses.isEmpty ? "" : " \t// uses: \(u.joinWithSeparator(", "))"
     }
 }

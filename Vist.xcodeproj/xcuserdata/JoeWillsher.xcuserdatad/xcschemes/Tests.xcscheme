@@ -62,6 +62,10 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "-parse-stdlib"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "-irgen-old"
             isEnabled = "NO">
          </CommandLineArgument>

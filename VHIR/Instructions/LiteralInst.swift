@@ -28,7 +28,7 @@ final class IntLiteralValue: Value {
     
     var irName: String?
     var type: Ty? { return BuiltinType.int(size: 64) }
-    weak var parentBlock: BasicBlock?
+    weak var parentBlock: BasicBlock!
     var uses: [Operand] = []
     
     private init(val: Int, irName: String? = nil) {
@@ -40,7 +40,7 @@ final class IntLiteralValue: Value {
 
 final class VoidLiteralValue: Value {
     var type: Ty? { return BuiltinType.void }
-    weak var parentBlock: BasicBlock?
+    weak var parentBlock: BasicBlock!
     var uses: [Operand] = []
     var irName: String? = nil
     
@@ -53,14 +53,14 @@ final class VoidLiteralValue: Value {
 
 extension Builder {
     /// Builds a builtin i64 object
-    func buildBuiltinInt(val: Int, irName: String? = nil) throws-> IntLiteralInst {
+    func buildBuiltinInt(val: Int, irName: String? = nil) throws -> IntLiteralInst {
         let v = IntLiteralInst(val: val, irName: irName)
         try addToCurrentBlock(v)
         return v
     }
     
     /// Builds an `Int` literal from a value
-    func buildIntLiteral(val: Int, irName: String? = nil) throws-> StructInitInst {
+    func buildIntLiteral(val: Int, irName: String? = nil) throws -> StructInitInst {
         let v = try buildBuiltinInt(val, irName: irName.map { "\($0).value" })
         return try buildStructInit(StdLib.intType, values: [Operand(v)], irName: irName)
     }

@@ -7,11 +7,6 @@
 //
 
 protocol Inst: Value {
-    var type: Ty? { get }
-    
-    var irName: String? { get set }
-    weak var parentBlock: BasicBlock? { get set }
-    
     var uses: [Operand] { get set }
     var args: [Operand] { get set }
 }
@@ -25,11 +20,10 @@ class InstBase: Inst {
     var instVHIR: String { fatalError() }
     
     var irName: String?
-    weak var parentBlock: BasicBlock?
+    weak var parentBlock: BasicBlock!
     
     var uses: [Operand] = []
     var args: [Operand] = []
-    init() {}
     
     // calls into the subclasses overriden `instVHIR`
     var vhir: String { return instVHIR }
@@ -38,16 +32,12 @@ class InstBase: Inst {
 extension Inst {
     /// Removes the function from its parent
     func removeFromParent() throws {
-        try parentBlock?.remove(self)
+        try parentBlock.remove(self)
     }
     /// Removes the function from its parent and
     /// drops all references to it
     func eraseFromParent() throws {
         removeAllUses()
-        try parentBlock?.remove(self)
-    }
-    
-    var module: Module! {
-        return parentBlock?.parentFunction.parentModule
+        try parentBlock.remove(self)
     }
 }

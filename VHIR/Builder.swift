@@ -14,7 +14,7 @@ final class InsertPoint {
 
 
 final class Builder {
-    weak var module: Module?
+    weak var module: Module!
     var insertPoint = InsertPoint()
     
     init(module: Module) {
@@ -56,14 +56,5 @@ extension Builder {
         try block.insert(inst)
         try setInsertPoint(inst)
     }
-    
-    /// Appends this block to the function and sets it to the insert point
-    func addBasicBlock(name: String, params: [Value]? = nil) throws -> BasicBlock {
-        guard let function = insertPoint.function, let b = function.blocks where !b.isEmpty else { throw VHIRError.noFunctionBody }
-        let bb = BasicBlock(name: name, parameters: params, parentFunction: function)
-        function.blocks?.append(bb)
-        try setInsertPoint(bb)
-        return bb
-    }
-    
+        
 }

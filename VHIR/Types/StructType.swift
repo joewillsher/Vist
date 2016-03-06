@@ -44,6 +44,10 @@ struct StructType: StorageType {
         
         return namedType
     }
+    
+    func usingTypesIn(module: Module) -> Ty {
+        return module.getOrAddType(self)
+    }
 
     
     static func named(n: String) -> StructType {

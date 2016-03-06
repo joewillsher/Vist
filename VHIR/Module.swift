@@ -17,6 +17,8 @@ final class Module: VHIRElement {
     init() {
         builder = Builder(module: self)
     }
+    
+    var module: Module { return self }
 }
 
 extension Module {
@@ -56,5 +58,7 @@ extension Module {
     func functionNamed(name: String) -> Function? {
         return functions.indexOf({$0.name == name}).map { functions[$0] }
     }
+    
+    func dumpIR() { if loweredModule != nil { LLVMDumpValue(loweredModule) } else { print("module <NULL>") } }
 }
 
