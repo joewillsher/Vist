@@ -12,7 +12,7 @@ These are then parsed to form an AST (abstract syntax tree).
 ```
                 (declaration)
                 /          \
-            name=“a”	    (value)
+            name=“a”	 (value)
                             |
                       int_literal=1
  
