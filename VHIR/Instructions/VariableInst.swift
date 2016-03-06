@@ -9,7 +9,7 @@
 
 final class VariableInst: InstBase {
     var value: Operand
-    //var ownership: [OwnershipAttrs] // specify ref/val semantics
+    //var attrs: [OwnershipAttrs] // specify ref/val semantics
     // also memory management info stored
     
     override var type: Ty? { return value.type }

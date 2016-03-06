@@ -2,6 +2,8 @@
 
 let a = (1, 1)
 let b = a.0
+print b
+print 22
 
 /*
 let x = 1

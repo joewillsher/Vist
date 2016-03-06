@@ -67,9 +67,10 @@ extension IntegerLiteral: VHIRGenerator {
 extension VariableDecl: VHIRGenerator {
     
     func vhirGen(module module: Module, scope: Scope) throws -> Value {
-        let v = try value.vhirGen(module: module, scope: scope)
-        scope.add(v, name: name)
-        return try module.builder.buildVariableDecl(Operand(v), irName: name)
+        let val = try value.vhirGen(module: module, scope: scope)
+        let variable = try module.builder.buildVariableDecl(Operand(val), irName: name)
+        scope.add(variable, name: name)
+        return variable
     }
 }
 

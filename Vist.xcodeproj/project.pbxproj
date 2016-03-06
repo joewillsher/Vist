@@ -498,7 +498,6 @@
 		D46DA5F51C297ADA006AF1BE /* IRGen */ = {
 			isa = PBXGroup;
 			children = (
-				D43B3A5B1C8A11600039FB2E /* GenericVariable.swift */,
 				D43B3A5F1C8A11600039FB2E /* IRGen.swift */,
 				D43B3A5E1C8A11600039FB2E /* IRError.swift */,
 				D4B0DCE41C66CB1B000B4E97 /* Variables */,
@@ -592,6 +591,7 @@
 		D4B0DCE41C66CB1B000B4E97 /* Variables */ = {
 			isa = PBXGroup;
 			children = (
+				D43B3A5B1C8A11600039FB2E /* GenericVariable.swift */,
 				D43B3A621C8A11600039FB2E /* StackFrame.swift */,
 				D43B3A611C8A11600039FB2E /* RuntimeVariable.swift */,
 				D43B3A641C8A11600039FB2E /* StorageVariable.swift */,
