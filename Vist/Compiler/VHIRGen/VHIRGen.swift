@@ -90,7 +90,7 @@ extension FunctionCall/*: VHIRGenerator*/ {
             let prefixRange = name.rangeOfString("Builtin."),
             let instruction = BuiltinInst(rawValue: name.stringByReplacingCharactersInRange(prefixRange, withString: "")) where args.count == 2{
             
-            return try module.builder.buildBuiltin(instruction, l: args[0], r: args[1], returnType: returnType)
+            return try module.builder.buildBuiltinCall(instruction, args: args[0], args[1], returnType: returnType)
         }
         
         let function = module.functionNamed(mangledName)!

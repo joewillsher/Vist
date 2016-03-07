@@ -55,15 +55,10 @@ struct Builtin {
         ("Builtin.f_cmp_gte", FnType(params: [doubleType, doubleType], returns: boolType)),
         ("Builtin.f_eq", FnType(params: [doubleType, doubleType], returns: boolType)),
         ("Builtin.f_neq", FnType(params: [doubleType, doubleType], returns: boolType)),
-        
-        // runtime fns
-        ("_print", FnType(params: [intType], returns: voidType)),
-        ("_print", FnType(params: [doubleType], returns: voidType)),
-        ("_print", FnType(params: [boolType], returns: voidType)),
-        ("_print", FnType(params: [int32Type], returns: voidType)),
-        
+                
         // intrinsic fns
         ("Builtin.trap", FnType(params: [], returns: voidType)),
+        ("Builtin.cond_fail", FnType(params: [boolType], returns: voidType)),
         ("Builtin.expect", FnType(params: [boolType, boolType], returns: boolType))
     ]
     

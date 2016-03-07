@@ -182,16 +182,68 @@ extension TupleExtractInst: VHIRLower {
 extension StructExtractInst: VHIRLower {
     
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        
+        let index = try structType.indexOfMemberNamed(propertyName)
+        return LLVMBuildExtractValue(irGen.builder, object.loweredValue, UInt32(index), "")
     }
 }
 
-extension BuiltinInst: VHIRLower {
+extension BuiltinInstCall: VHIRLower {
     
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         
+        let args = self.args.map { $0.loweredValue }
+        
+        let intrinsic: LLVMValueRef
+        
+        switch inst {
+        case .iadd: intrinsic = getIntrinsic("llvm.sadd.with.overflow", irGen.module, LLVMTypeOf(l.loweredValue), false)
+        case .imul: intrinsic = getIntrinsic("llvm.smul.with.overflow", irGen.module, LLVMTypeOf(l.loweredValue), false)
+        case .isub: intrinsic = getIntrinsic("llvm.ssub.with.overflow", irGen.module, LLVMTypeOf(l.loweredValue), false)
+            
+        case .condfail: return nil // logic to fail on false, make an if branch
+
+            // handle calls which arent intrinsics, but builtin
+            // instructions. Return these directly
+        case .idiv: return LLVMBuildSDiv(irGen.builder, l.loweredValue, r.loweredValue, "")
+        }
+        
+        let ir = args.ptr()
+        defer { ir.dealloc(args.count) }
+        
+        return LLVMBuildCall(irGen.builder, intrinsic, ir, UInt32(args.count), "")
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

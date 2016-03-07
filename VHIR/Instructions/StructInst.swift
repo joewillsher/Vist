@@ -40,7 +40,7 @@ final class StructExtractInst: InstBase {
     }
     
     override var instVHIR: String {
-        return "\(name) = struct_extract #\(structType.explicitName).\(propertyName) \(args.vhirValueTuple()) \(useComment)"
+        return "\(name) = struct_extract \(object.vhir), #\(structType.explicitName).\(propertyName) \(useComment)"
     }
 }
 

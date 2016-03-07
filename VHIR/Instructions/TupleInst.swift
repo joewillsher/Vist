@@ -41,7 +41,7 @@ final class TupleExtractInst: InstBase {
     }
     
     override var instVHIR: String {
-        return "\(name) = tuple_extract \(elementIndex) \(args.vhirValueTuple()) \(useComment)"
+        return "\(name) = tuple_extract \(tuple.vhir), \(elementIndex) \(useComment)"
     }
 }
 
