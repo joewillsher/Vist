@@ -66,6 +66,7 @@ extension Module {
         return functions.indexOf({$0.name == name}).map { functions[$0] }
     }
     
-    func dumpIR() { if loweredModule != nil { LLVMDumpValue(loweredModule) } else { print("module <NULL>") } }
+    func dumpIR() { if loweredModule != nil { LLVMDumpModule(loweredModule) } else { print("module <NULL>") } }
+    func dump() { print(vhir) }
 }
 

@@ -7,12 +7,12 @@
 //
 
 final class IntLiteralInst: InstBase {
-    var value: IntLiteralValue
+    var value: LiteralValue<Int>
     
-    override var type: Ty? { return BuiltinType.int(size: 64) }
+    override var type: Ty? { return value.type }
     
     private init(val: Int, irName: String? = nil) {
-        self.value = IntLiteralValue(val: val)
+        self.value = LiteralValue(val: val)
         super.init()
         self.irName = irName
         self.args = [Operand(value)]
@@ -22,16 +22,39 @@ final class IntLiteralInst: InstBase {
         return "\(name) = int_literal \(value.value) \(useComment)"
     }
 }
+final class BoolLiteralInst: InstBase {
+    var value: LiteralValue<Bool>
+    
+    override var type: Ty? { return value.type }
+    
+    private init(val: Bool, irName: String? = nil) {
+        self.value = LiteralValue(val: val)
+        super.init()
+        self.irName = irName
+        self.args = [Operand(value)]
+    }
+    
+    override var instVHIR: String {
+        return "\(name) = bool_literal \(value.value) \(useComment)"
+    }
+}
 
-final class IntLiteralValue: Value {
-    var value: Int
+final class LiteralValue<Literal>: Value {
+    var value: Literal
     
     var irName: String?
-    var type: Ty? { return BuiltinType.int(size: 64) }
+    var type: Ty? {
+        switch value {
+        case is Int: return BuiltinType.int(size: 64)
+        case is Bool: return BuiltinType.bool
+        case is Swift.Void: return BuiltinType.void
+        default: fatalError("Invalid literal")
+        }
+    }
     weak var parentBlock: BasicBlock!
     var uses: [Operand] = []
     
-    private init(val: Int, irName: String? = nil) {
+    private init(val: Literal, irName: String? = nil) {
         self.value = val
         self.irName = irName
     }
@@ -62,7 +85,25 @@ extension Builder {
     /// Builds an `Int` literal from a value
     func buildIntLiteral(val: Int, irName: String? = nil) throws -> StructInitInst {
         let v = try buildBuiltinInt(val, irName: irName.map { "\($0).value" })
-        return try buildStructInit(StdLib.intType, values: [Operand(v)], irName: irName)
+        return try buildStructInit(StdLib.intType, values: Operand(v), irName: irName)
+    }
+    
+    
+    /// Builds a builtin i1 object
+    func buildBuiltinBool(val: Bool, irName: String? = nil) throws -> BoolLiteralInst {
+        let v = BoolLiteralInst(val: val, irName: irName)
+        try addToCurrentBlock(v)
+        return v
+    }
+    
+    /// Builds an `Bool` literal from a value
+    func buildBoolLiteral(val: Bool, irName: String? = nil) throws -> StructInitInst {
+        let v = try buildBuiltinBool(val, irName: irName.map { "\($0).value" })
+        return try buildStructInit(StdLib.boolType, values: Operand(v), irName: irName)
+    }
+    
+    func createVoidLiteral() -> VoidLiteralValue {
+        return VoidLiteralValue()
     }
 }
 

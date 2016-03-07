@@ -48,6 +48,10 @@ final class Function: VHIRElement {
         guard let last = impl?.blocks.last else { throw VHIRError.noFunctionBody }
         return last
     }
+    func indexOfBlock(block: BasicBlock) throws -> Int {
+        guard let index = blocks?.indexOf({$0 === block}) else { throw VHIRError.bbNotInFn }
+        return index
+    }
     
     func paramNamed(name: String) throws -> Operand {
         guard let p = try impl?.blocks.first?.paramNamed(name) else { throw VHIRError.noParamNamed(name) }
@@ -72,7 +76,8 @@ extension Builder {
     /// Builds an entry block for the function, passes the params of the function in
     func buildFunctionEntryBlock(function: Function, paramNames: [String]) throws {
         function.impl = FunctionImpl(paramNames: paramNames, type: function.type, blocks: [])
-        let bb = BasicBlock(name: "entry", parameters: function.params!.map(Operand.init), parentFunction: function)
+        let bb = BasicBlock(name: "entry", parameters: function.params!.map(Operand.init), parentFunction: function, predecessors: [])
+        try setInsertPoint(bb)
         function.blocks = [bb]
         try setInsertPoint(bb)
     }
@@ -85,7 +90,6 @@ extension Builder {
     }
     
 }
-
 
 
 

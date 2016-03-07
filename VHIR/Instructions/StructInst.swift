@@ -46,7 +46,7 @@ final class StructExtractInst: InstBase {
 
 
 extension Builder {
-    func buildStructInit(type: StructType, values: [Operand], irName: String? = nil) throws -> StructInitInst {
+    func buildStructInit(type: StructType, values: Operand..., irName: String? = nil) throws -> StructInitInst {
         let s = StructInitInst(type: type, args: values, irName: irName)
         try addToCurrentBlock(s)
         return s

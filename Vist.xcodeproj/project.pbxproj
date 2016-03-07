@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D411C8951C8DB61D00478988 /* BreakInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D411C8941C8DB61D00478988 /* BreakInst.swift */; };
+		D411C8961C8DB61D00478988 /* BreakInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D411C8941C8DB61D00478988 /* BreakInst.swift */; };
+		D411C8981C8DD00000478988 /* DCE.swift in Sources */ = {isa = PBXBuildFile; fileRef = D411C8971C8DD00000478988 /* DCE.swift */; };
+		D411C8991C8DD00000478988 /* DCE.swift in Sources */ = {isa = PBXBuildFile; fileRef = D411C8971C8DD00000478988 /* DCE.swift */; };
 		D41BF54D1C5CD797004A1962 /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41BF54C1C5CD797004A1962 /* Tests.swift */; };
 		D41BF5551C5CDC8C004A1962 /* TestCases in Resources */ = {isa = PBXBuildFile; fileRef = D41BF5541C5CDC8C004A1962 /* TestCases */; };
 		D43B39911C8A0EDF0039FB2E /* BasicBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39871C8A0EDF0039FB2E /* BasicBlock.swift */; };
@@ -200,6 +204,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D411C8941C8DB61D00478988 /* BreakInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BreakInst.swift; path = Instructions/BreakInst.swift; sourceTree = "<group>"; };
+		D411C8971C8DD00000478988 /* DCE.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DCE.swift; path = Optimiser/DCE.swift; sourceTree = "<group>"; };
 		D41BF54A1C5CD797004A1962 /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D41BF54C1C5CD797004A1962 /* Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests.swift; sourceTree = "<group>"; };
 		D41BF54E1C5CD797004A1962 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -309,7 +315,7 @@
 		D4BBE41E1C41584C001B8934 /* stdlib.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = stdlib.o; path = stdlib/stdlib.o; sourceTree = "<group>"; };
 		D4CF76761C8CD4A70058A8EC /* TupleInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TupleInst.swift; path = Instructions/TupleInst.swift; sourceTree = "<group>"; };
 		D4CF767C1C8CF8490058A8EC /* Runtime.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Runtime.swift; path = Compiler/Sema/Expose/Runtime.swift; sourceTree = "<group>"; };
-		D4DB92771C866FF300718B78 /* example.vhir */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vhir; path = RUN/example.vhir; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
+		D4DB92771C866FF300718B78 /* example.vhir */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vhir; path = RUN/example.vhir; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
 		D4DE28181C5969830096E798 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		D4E35B7E1C5D216600683486 /* Pipe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pipe.swift; sourceTree = "<group>"; };
@@ -398,6 +404,7 @@
 				D43B39D61C8A0F3A0039FB2E /* StructInst.swift */,
 				D4CF76761C8CD4A70058A8EC /* TupleInst.swift */,
 				D43B39D71C8A0F3A0039FB2E /* VariableInst.swift */,
+				D411C8941C8DB61D00478988 /* BreakInst.swift */,
 			);
 			name = Instructions;
 			sourceTree = "<group>";
@@ -646,6 +653,7 @@
 		D4DB927E1C875BBB00718B78 /* Optimiser */ = {
 			isa = PBXGroup;
 			children = (
+				D411C8971C8DD00000478988 /* DCE.swift */,
 			);
 			name = Optimiser;
 			sourceTree = "<group>";
@@ -767,6 +775,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D411C8991C8DD00000478988 /* DCE.swift in Sources */,
 				D43B39E11C8A0F3A0039FB2E /* StructInst.swift in Sources */,
 				D43B3A491C8A10C80039FB2E /* StructSema.swift in Sources */,
 				D43B39B91C8A0F140039FB2E /* StructType.swift in Sources */,
@@ -782,6 +791,7 @@
 				D43B3A091C8A10390039FB2E /* Token.swift in Sources */,
 				D43B39E31C8A0F3A0039FB2E /* VariableInst.swift in Sources */,
 				D43B3A0F1C8A104F0039FB2E /* Parser.swift in Sources */,
+				D411C8961C8DB61D00478988 /* BreakInst.swift in Sources */,
 				D43B3A2D1C8A10A50039FB2E /* StdLib.swift in Sources */,
 				D4CF767E1C8CF8490058A8EC /* Runtime.swift in Sources */,
 				D43B3A071C8A10390039FB2E /* Lexer.swift in Sources */,
@@ -859,6 +869,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D43B3A1F1C8A105B0039FB2E /* Print.swift in Sources */,
+				D411C8951C8DB61D00478988 /* BreakInst.swift in Sources */,
 				D43B3A791C8A11600039FB2E /* RuntimeVariable.swift in Sources */,
 				D43B3A6B1C8A11600039FB2E /* ExistentialVariable.swift in Sources */,
 				D43B3A651C8A11600039FB2E /* ArrayVariable.swift in Sources */,
@@ -883,6 +894,7 @@
 				D43B3A501C8A11180039FB2E /* VHIRGen.swift in Sources */,
 				D43B39FE1C8A100E0039FB2E /* LinkRuntime.swift in Sources */,
 				D43B3A691C8A11600039FB2E /* CreateType.cpp in Sources */,
+				D411C8981C8DD00000478988 /* DCE.swift in Sources */,
 				D43B3A2C1C8A10A50039FB2E /* StdLib.swift in Sources */,
 				D43B3A531C8A11410039FB2E /* VHIRLower.swift in Sources */,
 				D43B3A461C8A10C80039FB2E /* StmtSema.swift in Sources */,

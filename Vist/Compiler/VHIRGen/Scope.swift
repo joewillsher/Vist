@@ -25,7 +25,6 @@ final class Scope {
         if let v = variables[name] { return v }
         return parent?.variableNamed(name)
     }
-    
 }
 
 

@@ -64,6 +64,13 @@ extension IntegerLiteral: VHIRGenerator {
     }
 }
 
+extension BooleanLiteral: VHIRGenerator {
+    
+    func vhirGen(module module: Module, scope: Scope) throws -> Value {
+        return try module.builder.buildBoolLiteral(val)
+    }
+}
+
 extension VariableDecl: VHIRGenerator {
     
     func vhirGen(module module: Module, scope: Scope) throws -> Value {
@@ -118,9 +125,7 @@ extension FuncDecl: VHIRStmtGenerator {
             }
             
             // vhir gen for body
-            for case let x as VHIRGenerator in impl.body.exprs {
-                try x.vhirGen(module: module, scope: fnScope)
-            }
+            try impl.body.vhirStmtGen(module: module, scope: fnScope)
             
             module.builder.insertPoint = originalInsertPoint
         }
@@ -169,4 +174,68 @@ extension PropertyLookupExpr: VHIRGenerator {
         return try module.builder.buildStructExtract(Operand(object), property: propertyName)
     }
 }
+
+extension BlockExpr: VHIRGenerator {
+    
+    func vhirStmtGen(module module: Module, scope: Scope) throws {
+        for case let x as VHIRGenerator in exprs {
+            try x.vhirGen(module: module, scope: scope)
+        }
+    }
+}
+
+extension ConditionalStmt: VHIRStmtGenerator {
+    
+    func vhirStmtGen(module module: Module, scope: Scope) throws {
+        
+        // the if statement's exit bb
+        let exitBlock = try module.builder.addBasicBlock("exit")
+        
+        for (index, branch) in statements.enumerate() {
+            
+            // the success block, and the failure
+            let ifBlock = try module.builder.addBasicBlock(branch.condition == nil ? "else.\(index)" : "if.\(index)")
+            let failBlock: BasicBlock
+            
+            if let c = branch.condition {
+                let cond = try c.vhirGen(module: module, scope: scope)
+                let v = try module.builder.buildStructExtract(Operand(cond), property: "value")
+                
+                // if its the last block, a condition fail takes
+                // us to the exit
+                if index == statements.endIndex.predecessor() {
+                    failBlock = exitBlock
+                }
+                    // otherwise it takes us to a landing pad for the next
+                    // condition to be evaluated
+                else {
+                    failBlock = try module.builder.addBasicBlock("fail.\(index)", predecessor: ifBlock)
+                }
+                
+                try module.builder.buildCondBreak(ifBlock, elseBlock: failBlock, condition: Operand(v), params: nil)
+            }
+                // if its unconditional, we go to the exit afterwards
+            else {
+                failBlock = exitBlock
+                try module.builder.buildBreak(ifBlock, params: nil)
+            }
+            
+            // move into the if block, and evaluate its expressions
+            // in a new scope
+            let ifScope = Scope(parent: scope)
+            try module.builder.setInsertPoint(ifBlock)
+            try branch.block.vhirStmtGen(module: module, scope: ifScope)
+            
+            // once we're done move out to the fail block
+            try module.builder.buildBreak(failBlock, params: nil)
+            try module.builder.setInsertPoint(failBlock)
+        }
+        
+        // move to the exit block and (for aesthetic reasons) put it after them
+        try module.builder.setInsertPoint(exitBlock)
+        try exitBlock.moveAfter(try exitBlock.parentFunction.getLastBlock())
+    }
+}
+
+
 

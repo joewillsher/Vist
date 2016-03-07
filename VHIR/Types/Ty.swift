@@ -57,6 +57,10 @@ func == (lhs: Ty?, rhs: Ty) -> Bool {
     if let l = lhs { return l == rhs } else { return false }
 }
 @warn_unused_result
+func == (lhs: Ty?, rhs: Ty?) -> Bool {
+    if let l = lhs, let r = rhs { return l == r } else { return false }
+}
+@warn_unused_result
 func != (lhs: Ty?, rhs: Ty) -> Bool {
     if let l = lhs { return l == rhs } else { return false }
 }

@@ -57,22 +57,13 @@ extension Function: VHIRLower {
         
         guard let blocks = blocks else { return fn }
         
-        for (i, bb) in blocks.enumerate() {
+        for bb in blocks {
+            bb.loweredBlock = LLVMAppendBasicBlock(fn, bb.name)
+        }
+        
+        for bb in blocks {
             
-            
-            if i == 0 {
-                // add vals to first block from fn input
-                for pi in 0..<LLVMCountParams(fn) {
-                    let param = LLVMGetParam(fn, pi)
-                    bb.parameters?[Int(pi)].loweredValue = param
-                    LLVMSetValueName(param, params?[Int(pi)].irName ?? "")
-                }
-            }
-            // do phi node shit if its all complicated
-            else {}
-            
-            let block = LLVMAppendBasicBlock(fn, bb.name)
-            LLVMPositionBuilderAtEnd(irGen.builder, block)
+            LLVMPositionBuilderAtEnd(irGen.builder, bb.loweredBlock)
             
             for case let inst as protocol<VHIRLower, Inst> in bb.instructions {
                 let v = try inst.vhirLower(module, irGen: irGen)
@@ -103,6 +94,11 @@ extension BBParam: VHIRLower {
 extension IntLiteralInst: VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         return LLVMConstInt(type!.lowerType(module), UInt64(value.value), false)
+    }
+}
+extension BoolLiteralInst: VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        return LLVMConstInt(type!.lowerType(module), value.value ? 1 : 0, false)
     }
 }
 
@@ -201,7 +197,7 @@ extension BuiltinInstCall: VHIRLower {
         case .isub: intrinsic = getIntrinsic("llvm.ssub.with.overflow", irGen.module, LLVMTypeOf(l.loweredValue), false)
             
         case .condfail: return nil // logic to fail on false, make an if branch
-
+            
             // handle calls which arent intrinsics, but builtin
             // instructions. Return these directly
         case .idiv: return LLVMBuildSDiv(irGen.builder, l.loweredValue, r.loweredValue, "")
@@ -214,7 +210,19 @@ extension BuiltinInstCall: VHIRLower {
     }
 }
 
+extension BreakInst: VHIRLower {
+    
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        return LLVMBuildBr(irGen.builder, block.loweredBlock)
+    }
+}
 
+extension CondBreakInst: VHIRLower {
+    
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        return LLVMBuildCondBr(irGen.builder, condition.loweredValue, block.loweredBlock, elseBlock.loweredBlock)
+    }
+}
 
 
 

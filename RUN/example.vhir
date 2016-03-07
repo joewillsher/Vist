@@ -1,19 +1,38 @@
+type %Bool = { %Builtin.Bool }
 type %Int = { %Builtin.Int64 }
 
 func @main: () -> %Builtin.Void {
 $entry:
-  %0 = int_literal 1  	// uses: %1
-  %1 = struct %Int (%0: %Builtin.Int64)  	// uses: %x
-  variable_decl %x = %1: %Int  	// uses: %y, %2
-  variable_decl %y = %x: %Int  	// uses: %3
-  %2 = struct_extract %x: %Int, #Int.value  	// uses: %4
-  %3 = struct_extract %y: %Int, #Int.value  	// uses: %4
-  %4 = builtin i_add %2: %Builtin.Int64, %3: %Builtin.Int64  	// uses: %z
-  variable_decl %z = %4: (%Builtin.Int64, %Builtin.Bool)  	// uses: %5
-  %5 = tuple_extract %z: (%Builtin.Int64, %Builtin.Bool), 0  	// uses: %u
-  variable_decl %u = %5: %Builtin.Int64  	// uses: %6
-  %6 = call @-Uprint_i64 (%u: %Builtin.Int64) 
+  %0 = bool_literal true  	// uses: %1
+  %1 = struct %Bool (%0: %Builtin.Bool)  	// uses: %2
+  %2 = struct_extract %1: %Bool, #Bool.value  	// uses: 
+  break %2: %Builtin.Bool, if.0, fail.0
+
+$exit:
+  %4 = bool_literal false  	// uses: %5
+  %5 = struct %Bool (%4: %Builtin.Bool)  	// uses: %6
+  %6 = call @print_Bool (%5: %Bool) 
   return ()
+
+$if.0:
+  %8 = int_literal 1  	// uses: %9
+  %9 = struct %Int (%8: %Builtin.Int64)  	// uses: %10
+  %10 = call @print_Int (%9: %Int) 
+  break fail.0
+
+$fail.0:
+  %12 = bool_literal true  	// uses: %13
+  %13 = struct %Bool (%12: %Builtin.Bool)  	// uses: %14
+  %14 = struct_extract %13: %Bool, #Bool.value  	// uses: 
+  break %14: %Builtin.Bool, if.1, exit
+
+$if.1:
+  %16 = int_literal 2  	// uses: %17
+  %17 = struct %Int (%16: %Builtin.Int64)  	// uses: %18
+  %18 = call @print_Int (%17: %Int) 
+  break exit
 }
 
-func @-Uprint_i64: (%Builtin.Int64) -> %Builtin.Void
+func @print_Int: (%Int) -> %Builtin.Void
+
+func @print_Bool: (%Bool) -> %Builtin.Void

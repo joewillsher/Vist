@@ -26,7 +26,7 @@ final class ReturnInst: InstBase {
 extension Builder {
     
     func buildReturnVoid() throws -> ReturnInst {
-        return try buildReturn(Operand(VoidLiteralValue()))
+        return try buildReturn(Operand(createVoidLiteral()))
     }
     func buildReturn(value: Operand) throws -> ReturnInst {
         let retInst = ReturnInst(value: value, parentBlock: insertPoint.block)

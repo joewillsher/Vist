@@ -28,7 +28,12 @@ final class BuiltinInstCall: InstBase {
     override var instVHIR: String {
         let a = args.map{$0.valueName}
         let w = a.joinWithSeparator(", ")
-        return "\(name) = builtin \(instName) \(w) \(useComment)"
+        switch inst {
+        case .condfail:
+            return "cond_fail \(w)"
+        default:
+            return "\(name) = builtin \(instName) \(w) \(useComment)"
+        }
     }
     
 }

@@ -101,6 +101,11 @@ func compileDocuments(fileNames: [String],
             try m.vhir.writeToFile("\(currentDirectory)/\(file).vhir", atomically: true, encoding: NSUTF8StringEncoding)
             
             if verbose { print(m.vhir) }
+            
+            if verbose { print("\n----------------------------VHIR OPT-------------------------------\n") }
+
+            try m.runPasses(.high)
+            if verbose { print(m.vhir) }
         }
         
 

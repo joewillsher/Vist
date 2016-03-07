@@ -26,6 +26,7 @@ extension Builder {
     
     /// Sets the builder's insert point to this function
     func setInsertPoint(f: Function) throws {
+        if insertPoint.function === f { return }
         guard let b = try? f.getLastBlock() else {
             insertPoint.function = f
             try addBasicBlock("entry")

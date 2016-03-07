@@ -13,14 +13,16 @@
 final class BasicBlock: VHIRElement {
     var name: String
     var parameters: [Operand]?
-    var instructions: [Inst]
+    var instructions: [Inst], predecessors: [BasicBlock]
     unowned var parentFunction: Function
+    var loweredBlock: LLVMValueRef = nil
     
-    init(name: String, parameters: [Operand]?, parentFunction: Function) {
+    init(name: String, parameters: [Operand]?, parentFunction: Function, predecessors: [BasicBlock]) {
         self.name = name
         self.parameters = parameters
         self.instructions = []
         self.parentFunction = parentFunction
+        self.predecessors = predecessors
     }
     
     func insert(inst: Inst, after: Inst? = nil) throws {
@@ -42,6 +44,18 @@ final class BasicBlock: VHIRElement {
     func remove(inst: Inst) throws {
         instructions.removeAtIndex(try indexOfInst(inst))
     }
+    
+    func removeFromParent() throws {
+        parentFunction.blocks?.removeAtIndex(try parentFunction.indexOfBlock(self))
+    }
+    func moveAfter(after: BasicBlock) throws {
+        try removeFromParent()
+        parentFunction.blocks?.insert(self, atIndex: try parentFunction.indexOfBlock(after).successor())
+    }
+    func moveBefore(before: BasicBlock) throws {
+        try removeFromParent()
+        parentFunction.blocks?.insert(self, atIndex: try parentFunction.indexOfBlock(before).predecessor())
+    }
 
     private func indexOfInst(inst: Inst) throws -> Int {
         guard let i = instructions.indexOf({ $0 === inst }) else { throw VHIRError.instNotInBB }
@@ -60,13 +74,19 @@ final class BasicBlock: VHIRElement {
 extension Builder {
     
     /// Appends this block to the function and sets it to the insert point
-    func addBasicBlock(name: String, params: [Operand]? = nil) throws -> BasicBlock {
+    ///
+    /// - parameter name:   The block name
+    /// - parameter params: Params to pass into the block
+    /// - parameter predecessor:    Define an explicit predecessor block -- if none
+    ///                             are defined it will use the fn's last block
+    func addBasicBlock(name: String, params: [Operand]? = nil, predecessor: BasicBlock? = nil) throws -> BasicBlock {
         guard let function = insertPoint.function, let b = function.blocks where !b.isEmpty else { throw VHIRError.noFunctionBody }
-        let bb = BasicBlock(name: name, parameters: params, parentFunction: function)
+        
+        let pred =  (predecessor ?? b.last).map { [$0] } ?? []
+        let bb = BasicBlock(name: name, parameters: params, parentFunction: function, predecessors: pred)
         function.blocks?.append(bb)
-        try setInsertPoint(bb)
         return bb
-    }
+    }        
 }
 
 

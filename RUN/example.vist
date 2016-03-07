@@ -1,6 +1,9 @@
 
-let x = 1
-let y = x
-let z = Builtin.i_add x.value y.value
-let u = z.0
-_print u
+if true {
+    print 1
+}
+else if true {
+    print 2
+}
+
+print false

@@ -2,17 +2,31 @@
 target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-macosx10.11.0"
 
+%Bool.st = type { i1 }
+%Int.st = type { i64 }
+
 define void @main() {
 entry:
-  %0 = call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 1, i64 1)
-  %1 = extractvalue { i64, i1 } %0, 0
-  call void @-Uprint_i64(i64 %1)
+  br i1 true, label %if.0, label %fail.0
+
+exit:                                             ; preds = %if.1, %fail.0
+  call void @print_Bool(%Bool.st zeroinitializer), !stdlib.call.optim !0
   ret void
+
+if.0:                                             ; preds = %entry
+  call void @print_Int(%Int.st { i64 1 }), !stdlib.call.optim !0
+  br label %fail.0
+
+fail.0:                                           ; preds = %if.0, %entry
+  br i1 true, label %if.1, label %exit
+
+if.1:                                             ; preds = %fail.0
+  call void @print_Int(%Int.st { i64 2 }), !stdlib.call.optim !0
+  br label %exit
 }
 
-declare void @-Uprint_i64(i64)
+declare void @print_Int(%Int.st)
 
-; Function Attrs: nounwind readnone
-declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #0
+declare void @print_Bool(%Bool.st)
 
-attributes #0 = { nounwind readnone }
+!0 = !{!"stdlib.call.optim"}

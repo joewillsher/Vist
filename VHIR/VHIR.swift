@@ -18,8 +18,8 @@ extension VHIRElement {
 }
 
 enum VHIRError: ErrorType {
-    case noFunctionBody, instNotInBB, cannotMoveBuilderHere, noParentBlock, noParamNamed(String), noUse, noType, noModule
-    case notGenerator, paramsNotTyped
+    case noFunctionBody, instNotInBB, bbNotInFn, cannotMoveBuilderHere, noParentBlock, noParamNamed(String), noUse, noType, noModule
+    case notGenerator, paramsNotTyped, wrongBlockParams
     case builtinIncorrectOperands(inst: BuiltinInst, recieved: Int)
 }
 
