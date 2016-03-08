@@ -38,7 +38,7 @@ extension Module {
     
     func runPasses(optLevel: OptLevel) throws {
         
-        for function in functions {
+        for _ in functions {
 //            try DCEPass.create(optLevel, function: function)
         }
         

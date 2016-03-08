@@ -6,14 +6,14 @@ target triple = "x86_64-apple-macosx10.11.0"
 
 define void @main() {
 entry:
-  br i1 true, label %if.0, label %exit
-
-exit:                                             ; preds = %if.0, %entry
+  %0 = call %Int.st @foo_Int(%Int.st { i64 1 })
+  call void @print_Int(%Int.st %0), !stdlib.call.optim !0
   ret void
+}
 
-if.0:                                             ; preds = %entry
-  call void @print_Int(%Int.st { i64 1 }), !stdlib.call.optim !0
-  br label %exit
+define %Int.st @foo_Int(%Int.st) {
+entry:
+  ret %Int.st %0
 }
 
 declare void @print_Int(%Int.st)

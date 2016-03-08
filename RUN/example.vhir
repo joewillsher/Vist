@@ -1,21 +1,18 @@
-type %Bool = { %Builtin.Bool }
+
 type %Int = { %Builtin.Int64 }
 
 func @main: () -> %Builtin.Void {
 $entry:
-  %0 = bool_literal true  	// uses: %1
-  %1 = struct %Bool (%0: %Builtin.Bool)  	// uses: %2
-  %2 = struct_extract %1: %Bool, #Bool.value  	// uses: 
-  break %2: %Builtin.Bool, if.0, exit
-
-$exit:			// preds: if.0
+  %0 = int_literal 1  	// uses: %1
+  %1 = struct %Int (%0: %Builtin.Int64)  	// uses: %2
+  %2 = call @foo_Int (%1: %Int)  	// uses: %3
+  %3 = call @print_Int (%2: %Int) 
   return ()
+}
 
-$if.0:			// preds: entry
-  %5 = int_literal 1  	// uses: %6
-  %6 = struct %Int (%5: %Builtin.Int64)  	// uses: %7
-  %7 = call @print_Int (%6: %Int) 
-  break exit
+func @foo_Int: (%Int) -> %Int {
+$entry(%a: %Int):
+  return %a
 }
 
 func @print_Int: (%Int) -> %Builtin.Void

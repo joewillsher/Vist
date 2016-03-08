@@ -6,9 +6,10 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
+
 final class StructInitInst: InstBase {
     
-    override var type: Ty? { return module.getOrAddType(structType) }
+    override var type: Ty? { return module.getOrInsertAliasTo(structType) }
     var structType: StructType
     
     private init(type: StructType, args: [Operand], irName: String? = nil) {
@@ -58,4 +59,15 @@ extension Builder {
         try addToCurrentBlock(s)
         return s
     }
+    
+    
+    // TODO: make stdlib struct messing in the compiler nicer
+
+//    func buildStdlibStructExtract(object: Operand, type: String, property: String, irName: String? = nil) throws -> StructExtractInst {
+//        guard case let alias as TypeAlias = object.type, case let structType as StructType = alias.targetType else { throw VHIRError.noType }
+//        let elType = try structType.propertyType(property)
+//        let s = StructExtractInst(object: object, property: property, propertyType: elType.usingTypesIn(module), structType: structType, irName: irName)
+//        try addToCurrentBlock(s)
+//        return s
+//    }
 }

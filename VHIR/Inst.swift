@@ -11,13 +11,15 @@ protocol Inst: Value {
     var args: [Operand] { get set }
 }
 
-/// An instruction o
+/// An instruction. Must be overriden but is used to remove
+/// a lot of the state boilerplate that cant be defaulted
+/// using just protocols
 class InstBase: Inst {
     
     /// Self's type, override with a computed getter
-    var type: Ty? { return nil }
+    var type: Ty? { fatalError("Override me") }
     /// override with the IR description, called by base to print this inst
-    var instVHIR: String { fatalError() }
+    var instVHIR: String { fatalError("Override me") }
     
     var irName: String?
     weak var parentBlock: BasicBlock!

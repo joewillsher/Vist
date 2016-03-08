@@ -18,7 +18,7 @@ extension VHIRElement {
 }
 
 enum VHIRError: ErrorType {
-    case noFunctionBody, instNotInBB, bbNotInFn, cannotMoveBuilderHere, noParentBlock, noParamNamed(String), noUse, noType, noModule
+    case noFunctionBody, hasBody, instNotInBB, bbNotInFn, cannotMoveBuilderHere, noParentBlock, noParamNamed(String), noUse, noType, noModule
     case notGenerator, paramsNotTyped, wrongBlockParams
     case builtinIncorrectOperands(inst: BuiltinInst, recieved: Int)
 }
@@ -77,7 +77,7 @@ extension Module {
     var vhir: String {
         let t = typeList.map { $0.declVHIR }
         let f = functions.map { $0.vhir }
-        return t.joinWithSeparator("\n") + "\n\n" + f.joinWithSeparator("\n\n")
+        return "\n" + t.joinWithSeparator("\n") + "\n\n" + f.joinWithSeparator("\n\n")
     }
 }
 

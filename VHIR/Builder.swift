@@ -6,10 +6,12 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
+
+/// The builder's insert point
 final class InsertPoint {
-    var inst: Inst?
-    var block: BasicBlock?
-    var function: Function?
+    private(set) var inst: Inst?
+    private(set) var block: BasicBlock?
+    private(set) var function: Function?
 }
 
 
@@ -24,30 +26,32 @@ final class Builder {
 
 extension Builder {
     
-    /// Sets the builder's insert point to this function
-    func setInsertPoint(f: Function) throws {
-        if insertPoint.function === f { return }
-        guard let b = try? f.getLastBlock() else {
-            insertPoint.function = f
-//            let entry = try addBasicBlock("entry")
-            try buildFunctionEntryBlock(f)
+    // internal functions in the builder
+    
+    /// Sets the builder's insert point to `function`
+    func setInsertPoint(function: Function) throws {
+        if insertPoint.function === function { return }
+        guard let b = function.lastBlock else {
+            insertPoint.function = function
+            try buildFunctionEntryBlock(function)
+            insertPoint.block = function.entryBlock
             return
         }
         insertPoint.inst = b.instructions.last
         insertPoint.block = b
-        insertPoint.function = f
+        insertPoint.function = function
     }
-    /// Sets the builder's insert point to this block
-    func setInsertPoint(b: BasicBlock) throws {
-        insertPoint.inst = b.instructions.last
-        insertPoint.block = b
-        insertPoint.function = b.parentFunction
+    /// Sets the builder's insert point to `block`
+    func setInsertPoint(block: BasicBlock) throws {
+        insertPoint.inst = block.instructions.last
+        insertPoint.block = block
+        insertPoint.function = block.parentFunction
     }
-    /// Sets the builder's insert point to this instruction
-    func setInsertPoint(i: Inst) throws {
-        insertPoint.inst = i
-        insertPoint.block = i.parentBlock
-        insertPoint.function = i.parentBlock?.parentFunction
+    /// Sets the builder's insert point to `inst`
+    func setInsertPoint(inst: Inst) throws {
+        insertPoint.inst = inst
+        insertPoint.block = inst.parentBlock
+        insertPoint.function = inst.parentBlock?.parentFunction
     }
     
     /// Inserts the instruction to the end of the block, and updates its
@@ -55,8 +59,7 @@ extension Builder {
     func addToCurrentBlock(inst: Inst) throws {
         guard let block = insertPoint.block else { throw VHIRError.noParentBlock }
         inst.parentBlock = block
-        try block.insert(inst)
+        block.append(inst)
         try setInsertPoint(inst)
     }
-        
 }

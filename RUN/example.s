@@ -11,5 +11,15 @@ _main:                                  ## @main
 	popq	%rbp
 	jmp	"_-Uprint_i64"          ## TAILCALL
 
+	.globl	_foo_Int
+	.align	4, 0x90
+_foo_Int:                               ## @foo_Int
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	movq	%rdi, %rax
+	popq	%rbp
+	retq
+
 
 .subsections_via_symbols

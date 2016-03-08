@@ -26,14 +26,31 @@ private enum BlockApplication {
     }
 }
 
+final class BBParam: Value {
+    var paramName: String
+    var type: Ty?
+    var parentBlock: BasicBlock!
+    var uses: [Operand] = []
+    
+    init(paramName: String, type: Ty) {
+        self.paramName = paramName
+        self.type = type
+    }
+    var irName: String? {
+        get { return paramName }
+        set { if let v = newValue { paramName = v } }
+    }
+}
+
+
 /// A collection of instructions
 ///
 /// Params are passed into the phi nodes as
 /// parameters ala swift
 final class BasicBlock: VHIRElement {
     var name: String
-    var instructions: [Inst] = []
-    unowned var parentFunction: Function
+    private(set) var instructions: [Inst] = []
+    weak var parentFunction: Function!
     var loweredBlock: LLVMValueRef = nil
     
     // block params are `BBParam`s
@@ -49,28 +66,16 @@ final class BasicBlock: VHIRElement {
         applications = []
     }
     
-    func insert(inst: Inst, after: Inst? = nil) throws {
-        if let after = after {
-            instructions.insert(inst, atIndex: try indexOfInst(after).successor())
-        }
-        else {
-            instructions.append(inst)
-        }
+    func insert(inst: Inst, after: Inst) throws {
+        instructions.insert(inst, atIndex: try indexOfInst(after).successor())
     }
-    func paramNamed(name: String) throws -> Operand {
-        
-        for application in applications {
-            switch application {
-            case .entry(let params):
-                guard let i = params.indexOf({ $0.paramName == name }) else { throw VHIRError.noParamNamed(name) }
-                return Operand(params[i])
-                
-            case .body:
-                guard let operand = parameters?.indexOf({$0.paramName == name}) else { throw VHIRError.noParamNamed(name) }
-                return Operand(parameters![operand])
-            }
-        }
-        throw VHIRError.noParamNamed(name)
+    func append(inst: Inst) {
+        instructions.append(inst)
+    }
+    
+    func paramNamed(name: String) throws -> BBParam {
+        guard let param = parameters?.find({ $0.paramName == name }) else { throw VHIRError.noParamNamed(name) }
+        return param
     }
     
     /// Adds the entry application to a block -- used by Function builder
@@ -90,8 +95,16 @@ final class BasicBlock: VHIRElement {
         
         applications.append(.body(predecessor: block, params: args))
     }
+    private func indexOfInst(inst: Inst) throws -> Int {
+        guard let i = instructions.indexOf({ $0 === inst }) else { throw VHIRError.instNotInBB }
+        return i
+    }
     
-    
+    /// Returns the instruction using the operand
+    func userOfOperand(operand: Operand) -> Inst? {
+        let f = instructions.indexOf { inst in inst.args.contains { arg in arg === operand } }
+        return f.map { instructions[$0] }
+    }
     
     // instructions
     func set(inst: Inst, newValue: Inst) throws {
@@ -100,30 +113,7 @@ final class BasicBlock: VHIRElement {
     func remove(inst: Inst) throws {
         instructions.removeAtIndex(try indexOfInst(inst))
     }
-    
-    // moving and structure
-    /// Returns the instruction using the operand
-    func userOfOperand(operand: Operand) -> Inst? {
-        let f = instructions.indexOf { inst in inst.args.contains { arg in arg === operand } }
-        return f.map { instructions[$0] }
-    }
-    func removeFromParent() throws {
-        parentFunction.blocks?.removeAtIndex(try parentFunction.indexOfBlock(self))
-    }
-    func moveAfter(after: BasicBlock) throws {
-        try removeFromParent()
-        parentFunction.blocks?.insert(self, atIndex: try parentFunction.indexOfBlock(after).successor())
-    }
-    func moveBefore(before: BasicBlock) throws {
-        try removeFromParent()
-        parentFunction.blocks?.insert(self, atIndex: try parentFunction.indexOfBlock(before).predecessor())
-    }
 
-    private func indexOfInst(inst: Inst) throws -> Int {
-        guard let i = instructions.indexOf({ $0 === inst }) else { throw VHIRError.instNotInBB }
-        return i
-    }
-    
     
     var module: Module { return parentFunction.module }
 }
@@ -132,29 +122,13 @@ extension Builder {
     
     /// Appends this block to the function. Thus does not modify the insert
     /// point, make any breaks to this block, or apply any params to it
-    func addBasicBlock(name: String, parameters: [BBParam]? = nil) throws -> BasicBlock {
+    func appendBasicBlock(name: String, parameters: [BBParam]? = nil) throws -> BasicBlock {
         guard let function = insertPoint.function, let b = function.blocks where !b.isEmpty else { throw VHIRError.noFunctionBody }
         
         let bb = BasicBlock(name: name, parameters: parameters, parentFunction: function)
-        function.blocks?.append(bb)
+        bb.appendToParent()
         return bb
     }
 }
 
-
-final class BBParam: Value {
-    var paramName: String
-    var type: Ty?
-    weak var parentBlock: BasicBlock!
-    var uses: [Operand] = []
-    
-    init(paramName: String, type: Ty) {
-        self.paramName = paramName
-        self.type = type
-    }
-    var irName: String? {
-        get { return paramName }
-        set { _ = newValue.map { paramName = $0 } }
-    }
-}
 

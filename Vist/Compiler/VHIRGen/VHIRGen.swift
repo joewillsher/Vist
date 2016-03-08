@@ -120,8 +120,8 @@ extension FuncDecl: VHIRStmtGenerator {
             
             // make scope and occupy it with params
             let fnScope = Scope(parent: scope)
-            for p in impl.params {
-                fnScope.add(try function.paramNamed(p), name: p)
+            for param in impl.params {
+                fnScope.add(try function.paramNamed(param), name: param)
             }
             
             // vhir gen for body
@@ -189,12 +189,12 @@ extension ConditionalStmt: VHIRStmtGenerator {
     func vhirStmtGen(module module: Module, scope: Scope) throws {
         
         // the if statement's exit bb
-        let exitBlock = try module.builder.addBasicBlock("exit")
+        let exitBlock = try module.builder.appendBasicBlock("exit")
         
         for (index, branch) in statements.enumerate() {
             
             // the success block, and the failure
-            let ifBlock = try module.builder.addBasicBlock(branch.condition == nil ? "else.\(index)" : "if.\(index)")
+            let ifBlock = try module.builder.appendBasicBlock(branch.condition == nil ? "else.\(index)" : "if.\(index)")
             let failBlock: BasicBlock
             
             if let c = branch.condition {
@@ -209,8 +209,7 @@ extension ConditionalStmt: VHIRStmtGenerator {
                     // otherwise it takes us to a landing pad for the next
                     // condition to be evaluated
                 else {
-                    failBlock = try module.builder.addBasicBlock("fail.\(index)")
-//                    failBlock = try module.builder.addBasicBlock("fail.\(index)", predecessor: ifBlock)
+                    failBlock = try module.builder.appendBasicBlock("fail.\(index)")
                 }
                 
                 try module.builder.buildCondBreak(ifBlock, elseBlock: failBlock, condition: Operand(v), params: nil)
@@ -235,7 +234,6 @@ extension ConditionalStmt: VHIRStmtGenerator {
         
     }
     
-    
 }
 
 
@@ -244,8 +242,8 @@ extension ForInLoopStmt: VHIRStmtGenerator {
     func vhirStmtGen(module module: Module, scope: Scope) throws {
         
         let range = try iterator.vhirGen(module: module, scope: scope)
-        let start = try module.builder.buildStructExtract(Operand(range), property: "start")
-        let end = try module.builder.buildStructExtract(Operand(range), property: "end")
+        _ = try module.builder.buildStructExtract(Operand(range), property: "start")
+        _ = try module.builder.buildStructExtract(Operand(range), property: "end")
         
 //        let loop = module.builder.addBasicBlock("loop", params: <#T##[Operand]?#>)
         

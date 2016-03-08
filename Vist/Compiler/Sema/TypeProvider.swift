@@ -44,9 +44,16 @@ extension CollectionType where Index == Int {
     
     /// An impl of flatmap which flatmaps but returns nil if the size changes
     @warn_unused_result
-    public func optionalMap<T>(@noescape transform: (Self.Generator.Element) throws -> T?) rethrows -> [T]? {
+    public func optionalMap<T>(@noescape transform: (Generator.Element) throws -> T?) rethrows -> [T]? {
         let new = try flatMap(transform)
         if new.count == count { return new } else { return nil }
+    }
+}
+extension CollectionType {
+    
+    @warn_unused_result
+    public func find(@noescape predicate: (Generator.Element) throws -> Bool) rethrows -> Generator.Element? {
+        return try indexOf(predicate).map { self[$0] }
     }
     
 }

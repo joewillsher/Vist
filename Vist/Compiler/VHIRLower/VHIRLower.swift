@@ -87,7 +87,9 @@ extension Function: VHIRLower {
 extension BBParam: VHIRLower {
     
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        return nil
+        // assuming its a function param 🤔🤔
+        let i = parentFunction.params?.indexOf({$0.name == name})
+        return LLVMGetParam(parentFunction.loweredFunction, UInt32(i!))
     }
 }
 

@@ -46,7 +46,7 @@ struct StructType: StorageType {
     }
     
     func usingTypesIn(module: Module) -> Ty {
-        return module.getOrAddType(self)
+        return module.getOrInsertAliasTo(self)
     }
 
     

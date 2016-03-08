@@ -2,3 +2,6 @@
 //if true do print 1
 
 // for a in 1 ... 10 do print a
+
+func foo :: Int -> Int = (a) do return a
+print (foo 1)

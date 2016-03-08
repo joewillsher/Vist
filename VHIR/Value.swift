@@ -37,6 +37,7 @@ extension Value {
         uses.removeAll()
     }
     
+    
     /// Replaces all `Operand` instances which point to `self`
     /// with `val`
     func replaceAllUsesWith(val: Value) {
@@ -56,7 +57,8 @@ extension Value {
     
     /// Removes `use` from self's uses record
     func removeUse(use: Operand) throws {
-        if let i = uses.indexOf({$0.value === self}) { uses.removeAtIndex(i) } else { throw VHIRError.noUse }
+        guard let i = uses.indexOf({$0.value === self}) else { throw VHIRError.noUse }
+        uses.removeAtIndex(i)
     }
     
     /// Adds the lowered val to all users
