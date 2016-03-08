@@ -44,7 +44,7 @@ extension AST {
         let main = try builder.buildFunction("main", type: mainTy, paramNames: [])
         
         for x in exprs {
-            try builder.setInsertPoint(main)
+//            try builder.setInsertPoint(main)
             if case let g as VHIRGenerator = x { try g.vhirGen(module: module, scope: scope) }
             else if case let g as VHIRStmtGenerator = x { try g.vhirStmtGen(module: module, scope: scope) }
         }
@@ -128,6 +128,7 @@ extension FuncDecl: VHIRStmtGenerator {
             try impl.body.vhirStmtGen(module: module, scope: fnScope)
             
             module.builder.insertPoint = originalInsertPoint
+            
         }
             // if no body, just add a prototype
         else {
@@ -195,6 +196,7 @@ extension ConditionalStmt: VHIRStmtGenerator {
             
             // the success block, and the failure
             let ifBlock = try module.builder.appendBasicBlock(branch.condition == nil ? "else.\(index)" : "if.\(index)")
+            try exitBlock.moveAfter(ifBlock)
             let failBlock: BasicBlock
             
             if let c = branch.condition {
@@ -210,6 +212,7 @@ extension ConditionalStmt: VHIRStmtGenerator {
                     // condition to be evaluated
                 else {
                     failBlock = try module.builder.appendBasicBlock("fail.\(index)")
+                    try exitBlock.moveAfter(failBlock)
                 }
                 
                 try module.builder.buildCondBreak(ifBlock, elseBlock: failBlock, condition: Operand(v), params: nil)

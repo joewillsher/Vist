@@ -37,7 +37,6 @@ extension Value {
         uses.removeAll()
     }
     
-    
     /// Replaces all `Operand` instances which point to `self`
     /// with `val`
     func replaceAllUsesWith(val: Value) {

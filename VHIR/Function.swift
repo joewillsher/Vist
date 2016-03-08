@@ -74,6 +74,9 @@ final class Function: VHIRElement {
 extension BasicBlock {
     func removeFromParent() throws {
         parentFunction.body?.blocks.removeAtIndex(try parentFunction.indexOf(self))
+    }
+    func eraseFromParent() throws {
+        parentFunction.body?.blocks.removeAtIndex(try parentFunction.indexOf(self))
         parentFunction = nil
     }
     func moveAfter(after: BasicBlock) throws {

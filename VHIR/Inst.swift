@@ -39,7 +39,8 @@ extension Inst {
     /// Removes the function from its parent and
     /// drops all references to it
     func eraseFromParent() throws {
-        removeAllUses()
         try parentBlock.remove(self)
+        removeAllUses()
+        parentBlock = nil
     }
 }

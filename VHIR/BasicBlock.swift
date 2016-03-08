@@ -29,7 +29,7 @@ private enum BlockApplication {
 final class BBParam: Value {
     var paramName: String
     var type: Ty?
-    var parentBlock: BasicBlock!
+    weak var parentBlock: BasicBlock!
     var uses: [Operand] = []
     
     init(paramName: String, type: Ty) {

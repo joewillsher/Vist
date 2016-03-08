@@ -8,25 +8,23 @@
 
 
 /// The builder's insert point
-final class InsertPoint {
+struct InsertPoint {
     private(set) var inst: Inst?
     private(set) var block: BasicBlock?
     private(set) var function: Function?
 }
 
-
+/// Handles adding instructions to the module
 final class Builder {
     weak var module: Module!
     var insertPoint = InsertPoint()
     
-    init(module: Module) {
-        self.module = module
-    }
+    init(module: Module) { self.module = module }
 }
 
 extension Builder {
     
-    // internal functions in the builder
+    // 😣😣 this is 😷, sort out an InsertPoint interface which is stable over changes of IR
     
     /// Sets the builder's insert point to `function`
     func setInsertPoint(function: Function) throws {
