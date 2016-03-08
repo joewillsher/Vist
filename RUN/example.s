@@ -8,13 +8,8 @@ _main:                                  ## @main
 	movq	%rsp, %rbp
 	movl	$1, %eax
 	movl	%eax, %edi
-	callq	"_-Uprint_i64"
-	movl	$2, %eax
-	movl	%eax, %edi
-	callq	"_-Uprint_i64"
-	xorl	%edi, %edi
 	popq	%rbp
-	jmp	"_-Uprint_b"            ## TAILCALL
+	jmp	"_-Uprint_i64"          ## TAILCALL
 
 
 .subsections_via_symbols

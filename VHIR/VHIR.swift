@@ -60,7 +60,9 @@ extension BasicBlock {
         let pString = p.map { "(\($0.joinWithSeparator(", ")))"} ?? ""
         let i = instructions.map { $0.vhir }
         let iString = "\n  \(i.joinWithSeparator("\n  "))\n"
-        return "$\(name)\(pString):\(iString)"
+        let preds = predecessors.map { $0.name }
+        let predComment = predecessors.isEmpty ? "" : "\t\t\t// preds: \(preds.joinWithSeparator(", "))"
+        return "$\(name)\(pString):\(predComment)\(iString)"
     }
 }
 extension Function {

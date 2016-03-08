@@ -29,7 +29,8 @@ extension Builder {
         if insertPoint.function === f { return }
         guard let b = try? f.getLastBlock() else {
             insertPoint.function = f
-            try addBasicBlock("entry")
+//            let entry = try addBasicBlock("entry")
+            try buildFunctionEntryBlock(f)
             return
         }
         insertPoint.inst = b.instructions.last

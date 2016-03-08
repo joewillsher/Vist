@@ -6,23 +6,47 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
+/// The application of a block -- can either be
+/// and entry block or a block you break to
+private enum BlockApplication {
+    case entry(params: [BBParam])
+    case body(predecessor: BasicBlock, params: [Operand]?)
+    
+    var params: [Operand]? {
+        switch self {
+        case .entry(let params): return params.map(Operand.init)
+        case .body(_, let params): return params
+        }
+    }
+    var predecessor: BasicBlock? {
+        switch self {
+        case .body(let predecessor, _): return predecessor
+        case .entry: return nil
+        }
+    }
+}
+
 /// A collection of instructions
 ///
 /// Params are passed into the phi nodes as
 /// parameters ala swift
 final class BasicBlock: VHIRElement {
     var name: String
-    var parameters: [Operand]?
-    var instructions: [Inst], predecessors: [BasicBlock]
+    var instructions: [Inst] = []
     unowned var parentFunction: Function
     var loweredBlock: LLVMValueRef = nil
     
-    init(name: String, parameters: [Operand]?, parentFunction: Function, predecessors: [BasicBlock]) {
+    // block params are `BBParam`s
+    // block args are `Operand`s
+    let parameters: [BBParam]?
+    private var applications: [BlockApplication]
+    var predecessors: [BasicBlock] { return applications.flatMap { $0.predecessor } }
+    
+    init(name: String, parameters: [BBParam]?, parentFunction: Function) {
         self.name = name
         self.parameters = parameters
-        self.instructions = []
         self.parentFunction = parentFunction
-        self.predecessors = predecessors
+        applications = []
     }
     
     func insert(inst: Inst, after: Inst? = nil) throws {
@@ -34,10 +58,42 @@ final class BasicBlock: VHIRElement {
         }
     }
     func paramNamed(name: String) throws -> Operand {
-        guard let i = parameters?.indexOf({$0.irName == name}), let p = parameters?[i] else { throw VHIRError.noParamNamed(name) }
-        p.parentBlock = self
-        return Operand(p)
+        
+        for application in applications {
+            switch application {
+            case .entry(let params):
+                guard let i = params.indexOf({ $0.paramName == name }) else { throw VHIRError.noParamNamed(name) }
+                return Operand(params[i])
+                
+            case .body:
+                guard let operand = parameters?.indexOf({$0.paramName == name}) else { throw VHIRError.noParamNamed(name) }
+                return Operand(parameters![operand])
+            }
+        }
+        throw VHIRError.noParamNamed(name)
     }
+    
+    /// Adds the entry application to a block -- used by Function builder
+    func addEntryApplication(args: [BBParam]) throws {
+        applications.insert(.entry(params: args), atIndex: 0)
+    }
+    
+    /// Applies the parameters to this block, `from` sepecifies the
+    /// predecessor to associate these `params` with
+    func addApplication(from block: BasicBlock, args: [Operand]?) throws {
+        // make sure application is correctly typed
+        if let vals = parameters?.optionalMap({$0.type}) {
+            guard let equal = args?.optionalMap({ $0.type })?.elementsEqual(vals, isEquivalent: ==)
+                where equal else { throw VHIRError.paramsNotTyped }
+        }
+        else { guard args == nil else { throw VHIRError.paramsNotTyped }}
+        
+        applications.append(.body(predecessor: block, params: args))
+    }
+    
+    
+    
+    // instructions
     func set(inst: Inst, newValue: Inst) throws {
         instructions[try indexOfInst(inst)] = newValue
     }
@@ -45,6 +101,12 @@ final class BasicBlock: VHIRElement {
         instructions.removeAtIndex(try indexOfInst(inst))
     }
     
+    // moving and structure
+    /// Returns the instruction using the operand
+    func userOfOperand(operand: Operand) -> Inst? {
+        let f = instructions.indexOf { inst in inst.args.contains { arg in arg === operand } }
+        return f.map { instructions[$0] }
+    }
     func removeFromParent() throws {
         parentFunction.blocks?.removeAtIndex(try parentFunction.indexOfBlock(self))
     }
@@ -62,43 +124,37 @@ final class BasicBlock: VHIRElement {
         return i
     }
     
-    /// Returns the instruction using the operand
-    func userOfOperand(operand: Operand) -> Inst? {
-        let f = instructions.indexOf { inst in inst.args.contains { arg in arg === operand } }
-        return f.map { instructions[$0] }
-    }
     
     var module: Module { return parentFunction.module }
 }
 
 extension Builder {
     
-    /// Appends this block to the function and sets it to the insert point
-    ///
-    /// - parameter name:   The block name
-    /// - parameter params: Params to pass into the block
-    /// - parameter predecessor:    Define an explicit predecessor block -- if none
-    ///                             are defined it will use the fn's last block
-    func addBasicBlock(name: String, params: [Operand]? = nil, predecessor: BasicBlock? = nil) throws -> BasicBlock {
+    /// Appends this block to the function. Thus does not modify the insert
+    /// point, make any breaks to this block, or apply any params to it
+    func addBasicBlock(name: String, parameters: [BBParam]? = nil) throws -> BasicBlock {
         guard let function = insertPoint.function, let b = function.blocks where !b.isEmpty else { throw VHIRError.noFunctionBody }
         
-        let pred =  (predecessor ?? b.last).map { [$0] } ?? []
-        let bb = BasicBlock(name: name, parameters: params, parentFunction: function, predecessors: pred)
+        let bb = BasicBlock(name: name, parameters: parameters, parentFunction: function)
         function.blocks?.append(bb)
         return bb
-    }        
+    }
 }
 
 
 final class BBParam: Value {
-    var irName: String?
+    var paramName: String
     var type: Ty?
     weak var parentBlock: BasicBlock!
     var uses: [Operand] = []
     
-    init(irName: String, type: Ty) {
-        self.irName = irName
+    init(paramName: String, type: Ty) {
+        self.paramName = paramName
         self.type = type
+    }
+    var irName: String? {
+        get { return paramName }
+        set { _ = newValue.map { paramName = $0 } }
     }
 }
 

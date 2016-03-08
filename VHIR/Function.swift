@@ -9,10 +9,12 @@
 private final class FunctionImpl {
     var blocks: [BasicBlock]
     var params: [BBParam]
+    var paramNames: [String]
     
     init(paramNames: [String], type: FnType, blocks: [BasicBlock]) {
         params = zip(paramNames, type.params).map(BBParam.init)
         self.blocks = blocks
+        self.paramNames = paramNames
     }
 }
 
@@ -36,7 +38,7 @@ final class Function: VHIRElement {
     var hasBody: Bool { return (impl?.blocks.count != 0) ?? false }
     var blocks: [BasicBlock]? {
         get { return impl?.blocks }
-        set { _ = newValue.map { impl?.blocks = $0 } }
+        set { if let v = newValue { impl?.blocks = v } }
     }
     var params: [BBParam]? { return impl?.params }
     
@@ -68,17 +70,18 @@ extension Builder {
     /// Builds a function and adds it to the module. Declares a body and entry block
     func buildFunction(name: String, type: FnType, paramNames: [String]) throws -> Function {
         let f = try createFunctionPrototype(name, type: type)
-        try buildFunctionEntryBlock(f, paramNames: paramNames)
+        f.impl = FunctionImpl(paramNames: paramNames, type: type, blocks: [])
+        try buildFunctionEntryBlock(f)
         try setInsertPoint(f)
         return f
     }
     
     /// Builds an entry block for the function, passes the params of the function in
-    func buildFunctionEntryBlock(function: Function, paramNames: [String]) throws {
-        function.impl = FunctionImpl(paramNames: paramNames, type: function.type, blocks: [])
-        let bb = BasicBlock(name: "entry", parameters: function.params!.map(Operand.init), parentFunction: function, predecessors: [])
-        try setInsertPoint(bb)
-        function.blocks = [bb]
+    func buildFunctionEntryBlock(function: Function) throws {
+        let bb = BasicBlock(name: "entry", parameters: function.params, parentFunction: function)
+        try bb.addEntryApplication(function.params!)
+        
+        function.blocks?.insert(bb, atIndex: 0)
         try setInsertPoint(bb)
     }
     

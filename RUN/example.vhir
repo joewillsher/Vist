@@ -6,33 +6,16 @@ $entry:
   %0 = bool_literal true  	// uses: %1
   %1 = struct %Bool (%0: %Builtin.Bool)  	// uses: %2
   %2 = struct_extract %1: %Bool, #Bool.value  	// uses: 
-  break %2: %Builtin.Bool, if.0, fail.0
+  break %2: %Builtin.Bool, if.0, exit
 
-$exit:
-  %4 = bool_literal false  	// uses: %5
-  %5 = struct %Bool (%4: %Builtin.Bool)  	// uses: %6
-  %6 = call @print_Bool (%5: %Bool) 
+$exit:			// preds: if.0
   return ()
 
-$if.0:
-  %8 = int_literal 1  	// uses: %9
-  %9 = struct %Int (%8: %Builtin.Int64)  	// uses: %10
-  %10 = call @print_Int (%9: %Int) 
-  break fail.0
-
-$fail.0:
-  %12 = bool_literal true  	// uses: %13
-  %13 = struct %Bool (%12: %Builtin.Bool)  	// uses: %14
-  %14 = struct_extract %13: %Bool, #Bool.value  	// uses: 
-  break %14: %Builtin.Bool, if.1, exit
-
-$if.1:
-  %16 = int_literal 2  	// uses: %17
-  %17 = struct %Int (%16: %Builtin.Int64)  	// uses: %18
-  %18 = call @print_Int (%17: %Int) 
+$if.0:			// preds: entry
+  %5 = int_literal 1  	// uses: %6
+  %6 = struct %Int (%5: %Builtin.Int64)  	// uses: %7
+  %7 = call @print_Int (%6: %Int) 
   break exit
 }
 
 func @print_Int: (%Int) -> %Builtin.Void
-
-func @print_Bool: (%Bool) -> %Builtin.Void

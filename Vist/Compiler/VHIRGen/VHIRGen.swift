@@ -209,7 +209,8 @@ extension ConditionalStmt: VHIRStmtGenerator {
                     // otherwise it takes us to a landing pad for the next
                     // condition to be evaluated
                 else {
-                    failBlock = try module.builder.addBasicBlock("fail.\(index)", predecessor: ifBlock)
+                    failBlock = try module.builder.addBasicBlock("fail.\(index)")
+//                    failBlock = try module.builder.addBasicBlock("fail.\(index)", predecessor: ifBlock)
                 }
                 
                 try module.builder.buildCondBreak(ifBlock, elseBlock: failBlock, condition: Operand(v), params: nil)
@@ -226,14 +227,30 @@ extension ConditionalStmt: VHIRStmtGenerator {
             try module.builder.setInsertPoint(ifBlock)
             try branch.block.vhirStmtGen(module: module, scope: ifScope)
             
-            // once we're done move out to the fail block
-            try module.builder.buildBreak(failBlock, params: nil)
+            // once we're done in success, break to the exit and
+            // move into the fail for the next round
+            try module.builder.buildBreak(exitBlock, params: nil)
             try module.builder.setInsertPoint(failBlock)
         }
         
-        // move to the exit block and (for aesthetic reasons) put it after them
-        try module.builder.setInsertPoint(exitBlock)
-        try exitBlock.moveAfter(try exitBlock.parentFunction.getLastBlock())
+    }
+    
+    
+}
+
+
+extension ForInLoopStmt: VHIRStmtGenerator {
+    
+    func vhirStmtGen(module module: Module, scope: Scope) throws {
+        
+        let range = try iterator.vhirGen(module: module, scope: scope)
+        let start = try module.builder.buildStructExtract(Operand(range), property: "start")
+        let end = try module.builder.buildStructExtract(Operand(range), property: "end")
+        
+//        let loop = module.builder.addBasicBlock("loop", params: <#T##[Operand]?#>)
+        
+        
+        
     }
 }
 
