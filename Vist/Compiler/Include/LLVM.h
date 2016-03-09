@@ -32,5 +32,7 @@
 #import "llvm-c/Transforms/Scalar.h"
 #import "llvm-c/Transforms/Vectorize.h"
 
+//#include "clang/Basic/CharInfo.h"
+
 
 #endif /* LLVM_h */

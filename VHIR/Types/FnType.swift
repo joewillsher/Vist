@@ -43,7 +43,7 @@ struct FnType: Ty {
         members += nonVoid.map {$0.lowerType(module)}
         
         let els = members.ptr()
-        defer { els.dealloc(members.count) }
+        defer { els.destroy(members.count) }
         
         return LLVMFunctionType(ret, els, UInt32(members.count), false)
     }
@@ -74,7 +74,7 @@ struct FnType: Ty {
         members += nonVoid.map {$0.lowerType(module)}
         
         let els = members.ptr()
-        defer { els.dealloc(members.count) }
+        defer { els.destroy(members.count) }
         
         return LLVMFunctionType(ret, els, UInt32(members.count), false)
     }
@@ -98,7 +98,7 @@ struct FnType: Ty {
             let mdString = LLVMMDString(metadata, attrLength)
             
             let attrs = [mdString].ptr()
-            defer { attrs.dealloc(1) }
+            defer { attrs.destroy(1) }
             let mdNode = LLVMMDNode(attrs, 1)
             
             let kindID = LLVMGetMDKindID(metadata, attrLength)

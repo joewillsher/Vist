@@ -8,11 +8,11 @@
 
 /// The builtin functions
 struct Builtin {
-    private static let intType = BuiltinType.int(size: 64)
-    private static let int32Type = BuiltinType.int(size: 32)
-    private static let doubleType = BuiltinType.float(size: 64)
-    private static let boolType = BuiltinType.bool
-    private static let voidType = BuiltinType.void
+    static let intType = BuiltinType.int(size: 64)
+    static let int32Type = BuiltinType.int(size: 32)
+    static let doubleType = BuiltinType.float(size: 64)
+    static let boolType = BuiltinType.bool
+    static let voidType = BuiltinType.void
     
     static let intBoolTupleType = TupleType(members: [intType, boolType])
     

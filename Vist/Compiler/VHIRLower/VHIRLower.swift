@@ -53,7 +53,7 @@ extension Module {
 extension Function: VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         
-        let fn = functionPointer(irGen)
+        let fn = functionPointerInModule(irGen.module)
         
         guard let blocks = blocks else { return fn }
         
@@ -75,13 +75,10 @@ extension Function: VHIRLower {
         return fn
     }
     
-    private func functionPointer(irGen: IRGen) -> LLVMValueRef {
-        return LLVMGetNamedFunction(irGen.module, name)
+    private func functionPointerInModule(module: LLVMModuleRef) -> LLVMValueRef {
+        return LLVMGetNamedFunction(module, name)
     }
 }
-
-
-
 
 
 extension BBParam: VHIRLower {
@@ -148,7 +145,7 @@ extension FunctionCallInst: VHIRLower {
         let argCount = self.args.count
         defer { args.dealloc(argCount) }
         
-        let fn = function.functionPointer(irGen)
+        let fn = function.functionPointerInModule(irGen.module)
         let call = LLVMBuildCall(irGen.builder, fn, args, UInt32(argCount), irName ?? "")
         function.type.addMetadataTo(call)
         
@@ -206,7 +203,7 @@ extension BuiltinInstCall: VHIRLower {
         }
         
         let ir = args.ptr()
-        defer { ir.dealloc(args.count) }
+        defer { ir.destroy(args.count) }
         
         return LLVMBuildCall(irGen.builder, intrinsic, ir, UInt32(args.count), "")
     }
@@ -222,7 +219,7 @@ extension BreakInst: VHIRLower {
 extension CondBreakInst: VHIRLower {
     
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        return LLVMBuildCondBr(irGen.builder, condition.loweredValue, block.loweredBlock, elseBlock.loweredBlock)
+        return LLVMBuildCondBr(irGen.builder, condition.loweredValue, thenCall.block.loweredBlock, elseCall.block.loweredBlock)
     }
 }
 

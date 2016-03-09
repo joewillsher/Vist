@@ -24,7 +24,7 @@ struct StructType: StorageType {
         let arr = members
             .map { $0.type.lowerType(module) }
             .ptr()
-        defer { arr.dealloc(members.count) }
+        defer { arr.destroy(members.count) }
         
         return LLVMStructType(
             arr,
@@ -46,7 +46,11 @@ struct StructType: StorageType {
     }
     
     func usingTypesIn(module: Module) -> Ty {
-        return module.getOrInsertAliasTo(self)
+        let mappedEls = members.map { ($0.name, $0.type.usingTypesIn(module), $0.mutable) as StructMember }
+        var newTy = StructType(members: mappedEls, methods: methods, name: name)
+        newTy.genericTypes = genericTypes
+        newTy.concepts = concepts
+        return module.getOrInsertAliasTo(newTy)
     }
 
     

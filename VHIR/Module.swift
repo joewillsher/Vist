@@ -9,9 +9,7 @@
 
 /// The module type, functions get put into this
 final class Module: VHIRElement {
-    private(set) var functions: [Function] = []
-    private(set) var typeList: [TypeAlias] = []
-    private(set) var builder: Builder!
+    private(set) var functions: [Function] = [], typeList: [TypeAlias] = [], builder: Builder!
     var loweredModule: LLVMModuleRef = nil
     
     init() { builder = Builder(module: self) }
@@ -30,8 +28,8 @@ extension Module {
     
     /// Returns the module's definition of `type`
     func getOrInsertAliasTo(type: StorageType) -> TypeAlias {
-        if let t = typeList.indexOf({$0.targetType == type}) {
-            return typeList[t]
+        if let definedType = typeList.find({$0.targetType.name == type.name}) {
+            return definedType
         }
         else {
             insert(type.name, targetType: type)
@@ -42,4 +40,3 @@ extension Module {
     func dumpIR() { if loweredModule != nil { LLVMDumpModule(loweredModule) } else { print("module <NULL>") } }
     func dump() { print(vhir) }
 }
-

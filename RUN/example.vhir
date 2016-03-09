@@ -1,31 +1,31 @@
 
-type %Bool = { %Builtin.Bool }
 type %Int = { %Builtin.Int64 }
+type %Range = { %Int, %Int }
 
 func @main: () -> %Builtin.Void {
 $entry:
-  %0 = bool_literal true  	// uses: %1
-  %1 = struct %Bool (%0: %Builtin.Bool)  	// uses: %2
-  %2 = struct_extract %1: %Bool, #Bool.value  	// uses: 
-  break %2: %Builtin.Bool, if.0, exit
+  %0 = int_literal 1  	// uses: %1
+  %1 = struct %Int (%0: %Builtin.Int64)  	// uses: %4
+  %2 = int_literal 10  	// uses: %3
+  %3 = struct %Int (%2: %Builtin.Int64)  	// uses: %4
+  %4 = call @..._Int_Int (%1: %Int, %3: %Int)  	// uses: %5
+  %5 = struct_extract %4: %Range, #Range.start  	// uses: %6
+  %6 = struct_extract %5: %Int, #Int.value  	// uses: %7
+  break loop(%6: %Builtin.Int64)
 
-$if.0:			// preds: entry
-  %4 = int_literal 3  	// uses: %5
-  %5 = struct %Int (%4: %Builtin.Int64)  	// uses: %6
-  %6 = call @print_Int (%5: %Int) 
-  break exit
+$loop(%loop.count: %Builtin.Int64):			// preds: entry, loop
+  %8 = struct %Int (%loop.count: %Builtin.Int64)  	// uses: %9
+  %9 = call @print_Int (%8: %Int) 
+  %10 = int_literal 1  	// uses: %count.it
+  %count.it = builtin i_add %loop.count: %Builtin.Int64, %10: %Builtin.Int64  	// uses: %13
+  %11 = bool_literal false  	// uses: %12
+  %12 = struct %Bool (%11: %Builtin.Bool)  	// uses: 
+  break %12: %Bool, loop(%count.it: %Builtin.Int64), loop.exit
 
-$exit:			// preds: if.0
-  %8 = int_literal 1  	// uses: %9
-  %9 = struct %Int (%8: %Builtin.Int64)  	// uses: %10
-  %10 = call @foo_Int (%9: %Int)  	// uses: %11
-  %11 = call @print_Int (%10: %Int) 
+$loop.exit:			// preds: loop
   return ()
 }
 
-func @print_Int: (%Int) -> %Builtin.Void
+func @..._Int_Int: (%Int, %Int) -> %Range
 
-func @foo_Int: (%Int) -> %Int {
-$entry(%a: %Int):
-  return %a
-}
+func @print_Int: (%Int) -> %Builtin.Void

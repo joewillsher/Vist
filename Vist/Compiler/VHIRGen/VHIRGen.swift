@@ -85,7 +85,7 @@ extension FunctionCall/*: VHIRGenerator*/ {
     
     func vhirGen(module module: Module, scope: Scope) throws -> Value {
         let args = try argArr.map { Operand(try $0.vhirGen(module: module, scope: scope)) }
-        guard let argTypes = argArr.optionalMap({ $0._type }), returnType = _type else { throw VHIRError.paramsNotTyped }
+        guard let argTypes = argArr.optionalMap({ $0._type }) else { throw VHIRError.paramsNotTyped }
         
         if let stdlib = try module.stdLibFunctionNamed(name, argTypes: argTypes) {
             return try module.builder.buildFunctionCall(stdlib, args: args)
@@ -97,7 +97,7 @@ extension FunctionCall/*: VHIRGenerator*/ {
             let prefixRange = name.rangeOfString("Builtin."),
             let instruction = BuiltinInst(rawValue: name.stringByReplacingCharactersInRange(prefixRange, withString: "")) where args.count == 2{
             
-            return try module.builder.buildBuiltinCall(instruction, args: args[0], args[1], returnType: returnType)
+            return try module.builder.buildBuiltinCall(instruction, args: args[0], args[1])
         }
         
         let function = module.functionNamed(mangledName)!
@@ -148,7 +148,8 @@ extension VariableExpr: VHIRGenerator {
 extension ReturnStmt: VHIRGenerator {
     
     func vhirGen(module module: Module, scope: Scope) throws -> Value {
-        return try module.builder.buildReturn(Operand(try expr.vhirGen(module: module, scope: scope)))
+        let retVal = try expr.vhirGen(module: module, scope: scope)
+        return try module.builder.buildReturn(Operand(retVal))
     }
 }
 
@@ -190,12 +191,12 @@ extension ConditionalStmt: VHIRStmtGenerator {
     func vhirStmtGen(module module: Module, scope: Scope) throws {
         
         // the if statement's exit bb
-        let exitBlock = try module.builder.appendBasicBlock("exit")
+        let exitBlock = try module.builder.appendBasicBlock(name: "exit")
         
         for (index, branch) in statements.enumerate() {
             
             // the success block, and the failure
-            let ifBlock = try module.builder.appendBasicBlock(branch.condition == nil ? "else.\(index)" : "if.\(index)")
+            let ifBlock = try module.builder.appendBasicBlock(name: branch.condition == nil ? "else.\(index)" : "if.\(index)")
             try exitBlock.moveAfter(ifBlock)
             let failBlock: BasicBlock
             
@@ -211,16 +212,18 @@ extension ConditionalStmt: VHIRStmtGenerator {
                     // otherwise it takes us to a landing pad for the next
                     // condition to be evaluated
                 else {
-                    failBlock = try module.builder.appendBasicBlock("fail.\(index)")
+                    failBlock = try module.builder.appendBasicBlock(name: "fail.\(index)")
                     try exitBlock.moveAfter(failBlock)
                 }
                 
-                try module.builder.buildCondBreak(ifBlock, elseBlock: failBlock, condition: Operand(v), params: nil)
+                try module.builder.buildCondBreak(Operand(v),
+                                                  then: (block: ifBlock, params: nil),
+                                                  else: (block: failBlock, params: nil))
             }
                 // if its unconditional, we go to the exit afterwards
             else {
                 failBlock = exitBlock
-                try module.builder.buildBreak(ifBlock, params: nil)
+                try module.builder.buildBreak(ifBlock)
             }
             
             // move into the if block, and evaluate its expressions
@@ -245,13 +248,31 @@ extension ForInLoopStmt: VHIRStmtGenerator {
     func vhirStmtGen(module module: Module, scope: Scope) throws {
         
         let range = try iterator.vhirGen(module: module, scope: scope)
-        _ = try module.builder.buildStructExtract(Operand(range), property: "start")
-        _ = try module.builder.buildStructExtract(Operand(range), property: "end")
+        let startInt = try module.builder.buildStructExtract(Operand(range), property: "start")
+        let start = try module.builder.buildStructExtract(Operand(startInt), property: "value")
+//        _ = try module.builder.buildStructExtract(Operand(range), property: "end")
         
-//        let loop = module.builder.addBasicBlock("loop", params: <#T##[Operand]?#>)
+        let loopCountParam = BBParam(paramName: "loop.count", type: Builtin.intType)
+        let loopBlock = try module.builder.appendBasicBlock(name: "loop", parameters: [loopCountParam])
+        let exitBlock = try module.builder.appendBasicBlock(name: "loop.exit")
         
+        try module.builder.buildBreak(loopBlock, params: [Operand(start)])
+        try module.builder.setInsertPoint(loopBlock)
         
+        let loopScope = Scope(parent: scope)
+        let loopVariable = try module.builder.buildStructInit(StdLib.intType, values: Operand(loopCountParam))
+        loopScope.add(loopVariable, name: binded.name)
         
+        try block.vhirStmtGen(module: module, scope: loopScope)
+        
+        let one = try module.builder.buildBuiltinInt(1)
+        let iterated = try module.builder.buildBuiltinCall(.iadd, args: Operand(loopCountParam), Operand(one), irName: "count.it")
+        let condition = try module.builder.buildBoolLiteral(false)
+        try module.builder.buildCondBreak(Operand(condition),
+                                          then: (block: loopBlock, params: [Operand(iterated)]),
+                                          else: (block: exitBlock, params: nil))
+        
+        try module.builder.setInsertPoint(exitBlock)
     }
 }
 

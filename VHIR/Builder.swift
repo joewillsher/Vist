@@ -9,9 +9,7 @@
 
 /// The builder's insert point
 struct InsertPoint {
-    private(set) var inst: Inst?
-    private(set) var block: BasicBlock?
-    private(set) var function: Function?
+    private(set) var inst: Inst?, block: BasicBlock?, function: Function?
 }
 
 /// Handles adding instructions to the module

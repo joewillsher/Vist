@@ -41,6 +41,7 @@ private extension Character {
     
     func isNumOr_() -> Bool {
         return isdigit(value) != 0 || self == "_" || self == "."
+        
     }
     
     func isSymbol() -> Bool {

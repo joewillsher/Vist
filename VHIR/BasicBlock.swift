@@ -122,7 +122,7 @@ extension Builder {
     
     /// Appends this block to the function. Thus does not modify the insert
     /// point, make any breaks to this block, or apply any params to it
-    func appendBasicBlock(name: String, parameters: [BBParam]? = nil) throws -> BasicBlock {
+    func appendBasicBlock(name name: String, parameters: [BBParam]? = nil) throws -> BasicBlock {
         guard let function = insertPoint.function, let b = function.blocks where !b.isEmpty else { throw VHIRError.noFunctionBody }
         
         let bb = BasicBlock(name: name, parameters: parameters, parentFunction: function)

@@ -6,75 +6,76 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
+typealias BlockCall = (block: BasicBlock, params: [Operand]?)
+
 final class BreakInst: InstBase {
     var block: BasicBlock, params: [Operand]?
     
     override var type: Ty? { return nil }
     
-    private init(block: BasicBlock, params: [Operand]?) {
-        self.block = block
-        self.params = params
+    private init(call: BlockCall) {
+        self.block = call.block
+        self.params = call.params
         super.init()
         self.irName = irName
         self.args = params ?? []
     }
     
     override var instVHIR: String {
-        let d: [Ty]? = params?.optionalMap({$0.type})
-        return "break \(block.name)\(d?.vhirTypeTuple() ?? "")"
+        return "break \(block.name)\(params?.vhirValueTuple() ?? "")"
     }
     
 }
 
 final class CondBreakInst: InstBase {
-    var block: BasicBlock, elseBlock: BasicBlock, params: [Operand]?
+    var thenCall: BlockCall, elseCall: BlockCall
     var condition: Operand
     
     override var type: Ty? { return nil }
     
-    private init(block: BasicBlock, elseBlock: BasicBlock, condition: Operand, params: [Operand]?) {
-        self.block = block
-        self.elseBlock = elseBlock
+    private init(then: BlockCall, `else`: BlockCall, condition: Operand) {
+        self.thenCall = then
+        self.elseCall = `else`
         self.condition = condition
         super.init()
         self.irName = irName
-        self.args = params ?? []
+        self.args = (thenCall.params ?? []) + (elseCall.params ?? [])
     }
     
     override var instVHIR: String {
-        return "break \(condition.vhir), \(block.name)\(params?.vhirValueTuple() ?? ""), \(elseBlock.name)\(params?.vhirValueTuple() ?? "")"
+        return "break \(condition.vhir), \(thenCall.block.name)\(thenCall.params?.vhirValueTuple() ?? ""), \(elseCall.block.name)\(elseCall.params?.vhirValueTuple() ?? "")"
     }
 }
 
 extension Builder {
     
-    func buildBreak(block: BasicBlock, params: [Operand]?) throws -> BreakInst {
-        if let _ = block.parameters {
+    func buildBreak(block: BasicBlock, params: [Operand]? = nil) throws -> BreakInst {
+//        if let _ = block.parameters {
 //            guard let applied = params?.map({$0.1})
 //                where paramTypes.map({ $0.paramName }).elementsEqual(applied, isEquivalent: ==)
 //                else { throw VHIRError.wrongBlockParams }
-        }
-        let s = BreakInst(block: block, params: params)
+//        }
+        let s = BreakInst(call: (block: block, params: params))
         try addToCurrentBlock(s)
         
         guard let sourceBlock = insertPoint.block else { throw VHIRError.noParentBlock }
         try block.addApplication(from: sourceBlock, args: params)
-        
         return s
     }
-    func buildCondBreak(block: BasicBlock, elseBlock: BasicBlock, condition: Operand, params: [Operand]?) throws -> CondBreakInst {
-        if let _ = block.parameters {
+    
+    func buildCondBreak(condition: Operand, then: BlockCall, `else`: BlockCall) throws -> CondBreakInst {
+//        if let _ = thenBlock.block.parameters {
 //            guard let applied = params?.optionalMap({$0.type}),
 //                let b = applied.optionalMap({ $0.type! })
 //                where paramTypes.map({ $0.1 }).elementsEqual(b, isEquivalent: ==)
 //                else { throw VHIRError.wrongBlockParams }
-        }
-        let s = CondBreakInst(block: block, elseBlock: elseBlock, condition: condition, params: params)
+//        }
+        let s = CondBreakInst(then: then, else: `else`, condition: condition)
         try addToCurrentBlock(s)
         
         guard let sourceBlock = insertPoint.block else { throw VHIRError.noParentBlock }
-        try block.addApplication(from: sourceBlock, args: params)
-        
+        try then.block.addApplication(from: sourceBlock, args: then.params)
+        try `else`.block.addApplication(from: sourceBlock, args: `else`.params)
         return s
     }
 }

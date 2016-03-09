@@ -18,7 +18,7 @@ final class TupleType: Ty {
         let arr = members
             .map { $0.lowerType(module) }
             .ptr()
-        defer { arr.dealloc(members.count) }
+        defer { arr.destroy(members.count) }
         
         return LLVMStructType(
             arr,
@@ -29,7 +29,7 @@ final class TupleType: Ty {
         let arr = members
             .map { $0.lowerType(module) }
             .ptr()
-        defer { arr.dealloc(members.count) }
+        defer { arr.destroy(members.count) }
         
         return LLVMStructType(
             arr,

@@ -13,9 +13,10 @@ final class BuiltinInstCall: InstBase {
     var instName: String { return inst.rawValue }
     var returnType: Ty
     
-    private init(inst: BuiltinInst, args: [Operand], returnType: Ty, irName: String? = nil) {
+    private init?(inst: BuiltinInst, args: [Operand], irName: String? = nil) {
         self.inst = inst
-        self.returnType = returnType
+        guard let argTypes = args.optionalMap({ $0.type }), let retTy = inst.returnType(params: argTypes) else { return nil }
+        self.returnType = retTy
         super.init()
         self.args = args
         self.irName = irName
@@ -48,14 +49,19 @@ enum BuiltinInst: String {
         case .condfail: return 1
         }
     }
+    func returnType(params params: [Ty]) -> Ty? {
+        switch self {
+        case .iadd, .isub, .imul, .idiv: return params.first
+        case .condfail: return Builtin.voidType
+        }
+    }
 }
 
 
 extension Builder {
     
-    func buildBuiltinCall(i: BuiltinInst, args: Operand..., returnType: Ty, irName: String? = nil) throws -> BuiltinInstCall {
-        guard args.count == i.expectedNumOperands else { throw VHIRError.builtinIncorrectOperands(inst: i, recieved: args.count) }
-        let binInst = BuiltinInstCall(inst: i, args: args, returnType: returnType, irName: irName)
+    func buildBuiltinCall(i: BuiltinInst, args: Operand..., irName: String? = nil) throws -> BuiltinInstCall {
+        guard args.count == i.expectedNumOperands, let binInst = BuiltinInstCall(inst: i, args: args, irName: irName) else { throw VHIRError.builtinIncorrectOperands(inst: i, recieved: args.count) }
         try addToCurrentBlock(binInst)
         return binInst
     }
