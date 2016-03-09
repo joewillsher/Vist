@@ -181,9 +181,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		D4BCA7FC1C9069FC0087A98D /* PBXContainerItemProxy */ = {
+		D4BCA8041C90ED470087A98D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = D4BCA7F81C9069FB0087A98D /* Editor.xcodeproj */;
+			containerPortal = D4BCA8001C90ED470087A98D /* Editor.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = D4BCA7E41C9069FB0087A98D;
 			remoteInfo = Editor;
@@ -320,7 +320,7 @@
 		D4BBE4191C4157E7001B8934 /* runtime.bc */ = {isa = PBXFileReference; lastKnownFileType = file; name = runtime.bc; path = Runtime/runtime.bc; sourceTree = "<group>"; };
 		D4BBE41A1C4157E7001B8934 /* runtime.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = runtime.ll; path = Runtime/runtime.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
 		D4BBE41E1C41584C001B8934 /* stdlib.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = stdlib.o; path = stdlib/stdlib.o; sourceTree = "<group>"; };
-		D4BCA7F81C9069FB0087A98D /* Editor.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Editor.xcodeproj; path = Editor/Editor.xcodeproj; sourceTree = "<group>"; };
+		D4BCA8001C90ED470087A98D /* Editor.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Editor.xcodeproj; path = ../Editor/Editor.xcodeproj; sourceTree = "<group>"; };
 		D4CF76761C8CD4A70058A8EC /* TupleInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TupleInst.swift; path = Instructions/TupleInst.swift; sourceTree = "<group>"; };
 		D4CF767C1C8CF8490058A8EC /* Runtime.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Runtime.swift; path = Compiler/Sema/Expose/Runtime.swift; sourceTree = "<group>"; };
 		D4DB92771C866FF300718B78 /* example.vhir */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vhir; path = RUN/example.vhir; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
@@ -544,7 +544,7 @@
 		D47FF0711B812052003F9920 = {
 			isa = PBXGroup;
 			children = (
-				D4BCA7F81C9069FB0087A98D /* Editor.xcodeproj */,
+				D4BCA8001C90ED470087A98D /* Editor.xcodeproj */,
 				D4DB9D641C1DFB8700503153 /* Source */,
 				D43B39E71C8A0F920039FB2E /* Include */,
 				D47D4BE01C38427200B22B3C /* Docs */,
@@ -650,10 +650,10 @@
 			name = Pipeline;
 			sourceTree = "<group>";
 		};
-		D4BCA7F91C9069FB0087A98D /* Products */ = {
+		D4BCA8011C90ED470087A98D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D4BCA7FD1C9069FC0087A98D /* Editor.app */,
+				D4BCA8051C90ED470087A98D /* Editor.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -770,8 +770,8 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = D4BCA7F91C9069FB0087A98D /* Products */;
-					ProjectRef = D4BCA7F81C9069FB0087A98D /* Editor.xcodeproj */;
+					ProductGroup = D4BCA8011C90ED470087A98D /* Products */;
+					ProjectRef = D4BCA8001C90ED470087A98D /* Editor.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -783,11 +783,11 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		D4BCA7FD1C9069FC0087A98D /* Editor.app */ = {
+		D4BCA8051C90ED470087A98D /* Editor.app */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.application;
 			path = Editor.app;
-			remoteRef = D4BCA7FC1C9069FC0087A98D /* PBXContainerItemProxy */;
+			remoteRef = D4BCA8041C90ED470087A98D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
