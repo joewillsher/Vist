@@ -19,6 +19,11 @@ class ViewController: NSViewController {
     private let numberColor = NSColor(calibratedRed: 154/256, green: 140/256, blue: 256/256, alpha: 1)
     private let commentColor = NSColor(calibratedRed: 65/256, green: 229/256, blue: 55/256, alpha: 0.63)
     
+    private let instructionColor = NSColor(calibratedRed: 154/256, green: 60/256, blue: 255/256, alpha: 1)
+    private let functionColor = NSColor(calibratedRed: 32/256, green: 149/256, blue: 255/256, alpha: 1)
+    private let blockColor = NSColor(calibratedRed: 227/256, green: 142/256, blue: 81/256, alpha: 1)
+    private let typeColor = NSColor(calibratedRed: 22/256, green: 185/256, blue: 227/256, alpha: 1)
+    
     override func viewDidLoad() {
         textView = NSTextView(frame: view.frame)
         view.addSubview(textView)
@@ -31,40 +36,75 @@ class ViewController: NSViewController {
     }
     
     func colourKeywords() {
-        guard let string = textView.string, let range = textView.string?.rangeOfString(string) else { return }
+        guard let string = textView.string else { return }
         
-        string.enumerateSubstringsInRange(range, options: NSStringEnumerationOptions.ByWords) {
-            (substring, substringRange, enclosingRange, _) in
-            guard let sub = substring where !substringRange.isEmpty else { return }
-            self.textView.setTextColor(self.colourForWord(sub), range: string.asNSRange(substringRange))
-        }
-
-        string.enumerateSubstringsInRange(range, options: NSStringEnumerationOptions.ByLines) {
-            (substring, substringRange, enclosingRange, _) in
-            guard let sub = substring where !substringRange.isEmpty else { return }
-            guard let commentDeclRange = sub.rangeOfString("//") else { return }
+        do {
+            var unsearchedRange = string.startIndex..<string.endIndex
             
-            let green = string.asNSRange(commentDeclRange.startIndex.advancedBy(string.startIndex.distanceTo(sub.startIndex))..<substringRange.endIndex)
-            self.textView.setTextColor(self.commentColor, range: green)
+            for line in string.componentsSeparatedByCharactersInSet(.newlineCharacterSet()) {
+                let unsearchedString = string[unsearchedRange]
+                guard let lineRange = unsearchedString.rangeOfString(line) else { continue }
+                
+                let offset = string.startIndex.distanceTo(unsearchedRange.startIndex)
+                unsearchedRange.startIndex = unsearchedRange.startIndex.advancedBy(unsearchedString.startIndex.distanceTo(lineRange.endIndex))
+                
+                let lineNSRange = NSRange(location: offset + unsearchedString.startIndex.distanceTo(lineRange.startIndex), length: lineRange.startIndex.distanceTo(lineRange.endIndex))
+                if case .vhir = language where line.hasPrefix("$") {
+                    textView.setTextColor(blockColor, range: lineNSRange)
+                }
+                else {
+                    textView.setTextColor(.whiteColor(), range: lineNSRange)
+                }
+                
+                guard let _ = line.rangeOfString("//") else { continue }
+                let commentRange = unsearchedString.rangeOfString("//")!
+                let commentNSRange = NSRange(location: offset + unsearchedString.startIndex.distanceTo(commentRange.startIndex), length: commentRange.startIndex.distanceTo(lineRange.endIndex))
+                textView.setTextColor(commentColor, range: commentNSRange)
+            }
+        }
+        
+        do {
+            var unsearchedRange = string.startIndex..<string.endIndex
+            let set = NSMutableCharacterSet.whitespaceAndNewlineCharacterSet()
+            set.addCharactersInString("():,")
+            
+            for word in string.componentsSeparatedByCharactersInSet(set) {
+                let unsearchedString = string[unsearchedRange]
+                guard let wordRange = unsearchedString.rangeOfString(word) else { continue }
+                
+                let offset = string.startIndex.distanceTo(unsearchedRange.startIndex)
+                unsearchedRange.startIndex = unsearchedRange.startIndex.advancedBy(unsearchedString.startIndex.distanceTo(wordRange.endIndex))
+                
+                let nsRange = NSRange(location: offset + unsearchedString.startIndex.distanceTo(wordRange.startIndex), length: wordRange.count)
+                if let c = colourForWord(word) { textView.setTextColor(c, range: nsRange) }
+            }
         }
         
     }
     
-    private let vistKeywords = ["let", "var", "func", "do", "return", "for", "in", "type", "concept", "mutating"]
-    private let vhirKeywords = ["struct", "struct_extract", "variable_decl", "builtin", "return", "call", "tuple", "tuple_extract", "int_literal", "bool_literal", "break"]
+    private let vistKeywords = ["let", "var", "func", "do", "return", "for", "in", "type", "concept", "@mutating", "if", "else"]
+    private let vhirKeywords = ["struct", "struct_extract", "variable_decl", "builtin", "return", "call", "tuple", "tuple_extract", "int_literal", "bool_literal", "break", "i_add", "i_sub", "i_mul", "condfail", "func", "type"]
+    private let types = ["Int", "Bool", "Double", "Int32", "Float", "Range", "Builtin.Int32", "Builtin.Int64", "Builtin.Void", "Builtin.Double"]
     
-    private func colourForWord(str: String) -> NSColor {
+    private func colourForWord(str: String) -> NSColor? {
         
         if let _ = Int(str) { return numberColor }
         
         switch language {
         case .vist where vistKeywords.contains(str): return keywordColor
         case .vhir where vhirKeywords.contains(str): return keywordColor
-        default: return .whiteColor()
+        case .vhir where str.hasPrefix("@"): return functionColor
+        case .vist where types.contains(str): return typeColor
+        case .vhir where types.contains({str.hasSuffix($0)}): return typeColor
+        case .vhir where str.hasPrefix("%"): return .whiteColor()
+        default: return nil
         }
     }
     
 }
+
+
+
 
 extension ViewController: NSTextViewDelegate {
     

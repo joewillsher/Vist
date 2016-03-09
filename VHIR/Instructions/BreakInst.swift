@@ -22,7 +22,7 @@ final class BreakInst: InstBase {
     }
     
     override var instVHIR: String {
-        return "break \(block.name)\(params?.vhirValueTuple() ?? "")"
+        return "break $\(block.name)\(params?.vhirValueTuple() ?? "")"
     }
     
 }
@@ -43,7 +43,7 @@ final class CondBreakInst: InstBase {
     }
     
     override var instVHIR: String {
-        return "break \(condition.vhir), \(thenCall.block.name)\(thenCall.params?.vhirValueTuple() ?? ""), \(elseCall.block.name)\(elseCall.params?.vhirValueTuple() ?? "")"
+        return "break \(condition.vhir), $\(thenCall.block.name)\(thenCall.params?.vhirValueTuple() ?? ""), $\(elseCall.block.name)\(elseCall.params?.vhirValueTuple() ?? "")"
     }
 }
 
