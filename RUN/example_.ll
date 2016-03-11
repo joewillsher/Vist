@@ -9,15 +9,18 @@ define void @main() {
 entry:
   %0 = call %Range.st @..._Int_Int(%Int.st zeroinitializer, %Int.st { i64 100 }), !stdlib.call.optim !0
   %1 = extractvalue %Range.st %0, 0
-  %2 = extractvalue %Int.st %1, 0
+  %2 = extractvalue %Range.st %0, 1
+  %3 = extractvalue %Int.st %1, 0
+  %4 = extractvalue %Int.st %2, 0
   br label %loop
 
 loop:                                             ; preds = %loop, %entry
-  %loop.count = phi i64 [ %2, %entry ], [ %count.it, %loop ]
-  %3 = insertvalue %Int.st undef, i64 %loop.count, 0
-  call void @print_Int(%Int.st %3), !stdlib.call.optim !0
+  %loop.count = phi i64 [ %3, %entry ], [ %count.it, %loop ]
+  %5 = insertvalue %Int.st undef, i64 %loop.count, 0
+  call void @print_Int(%Int.st %5), !stdlib.call.optim !0
   %count.it = add i64 %loop.count, 1
-  br i1 false, label %loop, label %loop.exit
+  %6 = icmp sle i64 %count.it, %4
+  br i1 %6, label %loop, label %loop.exit
 
 loop.exit:                                        ; preds = %loop
   ret void

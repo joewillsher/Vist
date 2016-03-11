@@ -245,6 +245,7 @@ extension BuiltinInstCall: VHIRLower {
             
             // handle calls which arent intrinsics, but builtin
             // instructions. Return these directly
+        case .lte: return LLVMBuildICmp(irGen.builder, LLVMIntSLE, l.loweredValue, r.loweredValue, irName ?? "")
         case .iaddoverflow: return LLVMBuildAdd(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
         case .idiv: return LLVMBuildSDiv(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
         }

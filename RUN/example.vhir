@@ -8,18 +8,20 @@ $entry:
   %1 = struct %Int (%0: %Builtin.Int64)  	// uses: %4
   %2 = int_literal 100  	// uses: %3
   %3 = struct %Int (%2: %Builtin.Int64)  	// uses: %4
-  %4 = call @..._Int_Int (%1: %Int, %3: %Int)  	// uses: %5
-  %5 = struct_extract %4: %Range, #Range.start  	// uses: %6
-  %6 = struct_extract %5: %Int, #Int.value  	// uses: 
-  break $loop(%6: %Builtin.Int64)
+  %4 = call @..._Int_Int (%1: %Int, %3: %Int)  	// uses: %5, %6
+  %5 = struct_extract %4: %Range, #Range.start  	// uses: %7
+  %6 = struct_extract %4: %Range, #Range.end  	// uses: %8
+  %7 = struct_extract %5: %Int, #Int.value  	// uses: 
+  %8 = struct_extract %6: %Int, #Int.value  	// uses: 
+  break $loop(%7: %Builtin.Int64)
 
 $loop(%loop.count: %Builtin.Int64):			// preds: entry, loop
-  %8 = struct %Int (%6: %Builtin.Int64)  	// uses: %9
-  %9 = call @print_Int (%8: %Int) 
-  %10 = int_literal 1  	// uses: %count.it
-  %count.it = builtin i_add_overflow %6: %Builtin.Int64, %10: %Builtin.Int64  	// uses: %12
-  %11 = bool_literal false  	// uses: 
-  break %11: %Builtin.Bool, $loop(%count.it: %Builtin.Int64), $loop.exit
+  %10 = struct %Int (%7: %Builtin.Int64)  	// uses: %11
+  %11 = call @print_Int (%10: %Int) 
+  %12 = int_literal 1  	// uses: %count.it
+  %count.it = builtin i_add_overflow %7: %Builtin.Int64, %12: %Builtin.Int64  	// uses: %13, %14
+  %13 = builtin comp_lt_e %count.it: %Builtin.Int64, %8: %Builtin.Int64  	// uses: 
+  break %13: %Builtin.Bool, $loop(%count.it: %Builtin.Int64), $loop.exit
 
 $loop.exit:			// preds: loop
   return ()

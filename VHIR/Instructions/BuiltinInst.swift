@@ -42,10 +42,11 @@ final class BuiltinInstCall: InstBase {
 enum BuiltinInst: String {
     case iadd = "i_add", isub = "i_sub", imul = "i_mul", idiv = "i_div", iaddoverflow = "i_add_overflow"
     case condfail = "cond_fail"
+    case lte = "comp_lt_e"
     
     var expectedNumOperands: Int {
         switch  self {
-        case .iadd, .isub, .imul, .idiv, .iaddoverflow: return 2
+        case .iadd, .isub, .imul, .idiv, .iaddoverflow, .lte: return 2
         case .condfail: return 1
         }
     }
@@ -53,6 +54,7 @@ enum BuiltinInst: String {
         switch self {
         case .iadd, .isub, .imul: return TupleType(members: [params.first!, Builtin.boolType])
         case .idiv, .iaddoverflow: return params.first
+        case .lte: return Builtin.boolType
         case .condfail: return Builtin.voidType
         }
     }

@@ -244,33 +244,54 @@ extension ConditionalStmt: VHIRStmtGenerator {
 
 extension ForInLoopStmt: VHIRStmtGenerator {
     
+//        break $loop(%6: %Builtin.Int64)
+//    
+//    $loop(%loop.count: %Builtin.Int64):                                           // preds: entry, loop
+//        %8 = struct %Int (%loop.count: %Builtin.Int64)                              // uses: %9
+//    
+//        BODY...
+//
+//        %count.it = builtin i_add %loop.count: %Builtin.Int64, %10: %Builtin.Int64  // uses: %13
+//        %11 = bool_literal false                                                    // uses: %12
+//        %12 = struct %Bool (%11: %Builtin.Bool)                                     // uses:
+//        break %12: %Bool, $loop(%count.it: %Builtin.Int64), $loop.exit
+//    
+//    $loop.exit:                                                                   // preds: loop
+    
     func vhirStmtGen(module module: Module, scope: Scope) throws {
         
+        // extract loop start and ends as builtin ints
         let range = try iterator.vhirGen(module: module, scope: scope)
         let startInt = try module.builder.buildStructExtract(Operand(range), property: "start")
+        let endInt = try module.builder.buildStructExtract(Operand(range), property: "end")
         let start = try module.builder.buildStructExtract(Operand(startInt), property: "value")
-//        _ = try module.builder.buildStructExtract(Operand(range), property: "end")
+        let end = try module.builder.buildStructExtract(Operand(endInt), property: "value")
         
+        // loop count, builtin int
         let loopCountParam = BBParam(paramName: "loop.count", type: Builtin.intType)
         let loopBlock = try module.builder.appendBasicBlock(name: "loop", parameters: [loopCountParam])
         let exitBlock = try module.builder.appendBasicBlock(name: "loop.exit")
         
+        // break into the loop block
         let loopOperand = BlockOperand(value: start, param: loopCountParam)
         try module.builder.buildBreak(loopBlock, args: [loopOperand])
         try module.builder.setInsertPoint(loopBlock)
         
+        // make the loop's vhirgen scope and build the stdint count to put in it
         let loopScope = Scope(parent: scope)
         let loopVariable = try module.builder.buildStructInit(StdLib.intType, values: loopOperand)
         loopScope.add(loopVariable, name: binded.name)
         
+        // vhirgen the body of the loop
         try block.vhirStmtGen(module: module, scope: loopScope)
         
+        // iterate the loop count and check whether we are within range
         let one = try module.builder.buildBuiltinInt(1)
         let iterated = try module.builder.buildBuiltinCall(.iaddoverflow, args: loopOperand, Operand(one), irName: "count.it")
+        let condition = try module.builder.buildBuiltinCall(.lte, args: Operand(iterated), Operand(end))
         
-        // cond, false atm whoops
-        let condition = try module.builder.buildBuiltinBool(false)
-        
+        // cond break -- leave the loop or go again
+        // call the loop block but with the iterated loop count
         let iteratedLoopOperand = BlockOperand(value: iterated, param: loopCountParam)
         try module.builder.buildCondBreak(Operand(condition),
                                           then: (block: loopBlock, args: [iteratedLoopOperand]),

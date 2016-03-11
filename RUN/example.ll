@@ -5,7 +5,16 @@ target triple = "x86_64-apple-macosx10.11.0"
 ; Function Attrs: nounwind
 define void @main() #0 {
 entry:
-  tail call void @-Uprint_i64(i64 0)
+  br label %loop
+
+loop:                                             ; preds = %loop, %entry
+  %loop.count = phi i64 [ 0, %entry ], [ %count.it, %loop ]
+  tail call void @-Uprint_i64(i64 %loop.count)
+  %count.it = add nuw nsw i64 %loop.count, 1
+  %exitcond = icmp eq i64 %count.it, 101
+  br i1 %exitcond, label %loop.exit, label %loop
+
+loop.exit:                                        ; preds = %loop
   ret void
 }
 
