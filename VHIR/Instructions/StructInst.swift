@@ -60,7 +60,7 @@ extension Builder {
         return s
     }
     
-    
+    // TODO: compound extracting
     // TODO: make stdlib struct messing in the compiler nicer
 
 //    func buildStdlibStructExtract(object: Operand, type: String, property: String, irName: String? = nil) throws -> StructExtractInst {

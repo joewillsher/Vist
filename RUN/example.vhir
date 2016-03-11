@@ -1,32 +1,25 @@
 
+type %Bool = { %Builtin.Bool }
 type %Int = { %Builtin.Int64 }
-type %Range = { %Int, %Int }
 
 func @main : () -> %Builtin.Void {
 $entry:
-  %0 = int_literal 0  	// uses: %1
-  %1 = struct %Int (%0: %Builtin.Int64)  	// uses: %4
-  %2 = int_literal 100  	// uses: %3
-  %3 = struct %Int (%2: %Builtin.Int64)  	// uses: %4
-  %4 = call @..._Int_Int (%1: %Int, %3: %Int)  	// uses: %5, %6
-  %5 = struct_extract %4: %Range, #Range.start  	// uses: %7
-  %6 = struct_extract %4: %Range, #Range.end  	// uses: %8
-  %7 = struct_extract %5: %Int, #Int.value  	// uses: 
-  %8 = struct_extract %6: %Int, #Int.value  	// uses: 
-  break $loop(%7: %Builtin.Int64)
+  break $cond
 
-$loop(%loop.count: %Builtin.Int64):			// preds: entry, loop
-  %10 = struct %Int (%7: %Builtin.Int64)  	// uses: %11
-  %11 = call @print_Int (%10: %Int) 
-  %12 = int_literal 1  	// uses: %count.it
-  %count.it = builtin i_add_overflow %7: %Builtin.Int64, %12: %Builtin.Int64  	// uses: %13, %14
-  %13 = builtin comp_lt_e %count.it: %Builtin.Int64, %8: %Builtin.Int64  	// uses: 
-  break %13: %Builtin.Bool, $loop(%count.it: %Builtin.Int64), $loop.exit
+$cond:			// preds: entry, loop
+  %1 = bool_literal false  	// uses: %2
+  %2 = struct %Bool (%1: %Builtin.Bool)  	// uses: %cond
+  %cond = struct_extract %2: %Bool, #Bool.value  	// uses: 
+  break %cond: %Builtin.Bool, $loop, $loop.exit
 
-$loop.exit:			// preds: loop
+$loop:			// preds: cond
+  %4 = int_literal 1  	// uses: %5
+  %5 = struct %Int (%4: %Builtin.Int64)  	// uses: %6
+  %6 = call @print_Int (%5: %Int) 
+  break $cond
+
+$loop.exit:			// preds: cond
   return ()
 }
-
-func @..._Int_Int : (%Int, %Int) -> %Range
 
 func @print_Int : (%Int) -> %Builtin.Void

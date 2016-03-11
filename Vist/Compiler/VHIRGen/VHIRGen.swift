@@ -96,7 +96,7 @@ extension FunctionCall/*: VHIRGenerator*/ {
             let prefixRange = name.rangeOfString("Builtin."),
             let instruction = BuiltinInst(rawValue: name.stringByReplacingCharactersInRange(prefixRange, withString: "")) where args.count == 2{
             
-            return try module.builder.buildBuiltinCall(instruction, args: args[0], args[1])
+            return try module.builder.buildBuiltinInstruction(instruction, args: args[0], args[1])
         }
         
         let function = module.functionNamed(mangledName)!
@@ -215,14 +215,14 @@ extension ConditionalStmt: VHIRStmtGenerator {
                     try exitBlock.moveAfter(failBlock)
                 }
                 
-                try module.builder.buildCondBreak(Operand(v),
-                                                  then: (block: ifBlock, args: nil),
-                                                  else: (block: failBlock, args: nil))
+                try module.builder.buildCondBreak(if: Operand(v),
+                                                  to: (block: ifBlock, args: nil),
+                                                  elseTo: (block: failBlock, args: nil))
             }
                 // if its unconditional, we go to the exit afterwards
             else {
                 failBlock = exitBlock
-                try module.builder.buildBreak(ifBlock)
+                try module.builder.buildBreak(to: ifBlock)
             }
             
             // move into the if block, and evaluate its expressions
@@ -233,7 +233,7 @@ extension ConditionalStmt: VHIRStmtGenerator {
             
             // once we're done in success, break to the exit and
             // move into the fail for the next round
-            try module.builder.buildBreak(exitBlock)
+            try module.builder.buildBreak(to: exitBlock)
             try module.builder.setInsertPoint(failBlock)
         }
         
@@ -274,7 +274,7 @@ extension ForInLoopStmt: VHIRStmtGenerator {
         
         // break into the loop block
         let loopOperand = BlockOperand(value: start, param: loopCountParam)
-        try module.builder.buildBreak(loopBlock, args: [loopOperand])
+        try module.builder.buildBreak(to: loopBlock, args: [loopOperand])
         try module.builder.setInsertPoint(loopBlock)
         
         // make the loop's vhirgen scope and build the stdint count to put in it
@@ -287,19 +287,51 @@ extension ForInLoopStmt: VHIRStmtGenerator {
         
         // iterate the loop count and check whether we are within range
         let one = try module.builder.buildBuiltinInt(1)
-        let iterated = try module.builder.buildBuiltinCall(.iaddoverflow, args: loopOperand, Operand(one), irName: "count.it")
-        let condition = try module.builder.buildBuiltinCall(.lte, args: Operand(iterated), Operand(end))
+        let iterated = try module.builder.buildBuiltinInstruction(.iaddoverflow, args: loopOperand, Operand(one), irName: "count.it")
+        let condition = try module.builder.buildBuiltinInstruction(.lte, args: Operand(iterated), Operand(end))
         
         // cond break -- leave the loop or go again
         // call the loop block but with the iterated loop count
         let iteratedLoopOperand = BlockOperand(value: iterated, param: loopCountParam)
-        try module.builder.buildCondBreak(Operand(condition),
-                                          then: (block: loopBlock, args: [iteratedLoopOperand]),
-                                          else: (block: exitBlock, args: nil))
+        try module.builder.buildCondBreak(if: Operand(condition),
+                                          to: (block: loopBlock, args: [iteratedLoopOperand]),
+                                          elseTo: (block: exitBlock, args: nil))
         
         try module.builder.setInsertPoint(exitBlock)
     }
 }
+
+extension WhileLoopStmt: VHIRStmtGenerator {
+    
+    func vhirStmtGen(module module: Module, scope: Scope) throws {
+        
+        // setup blocks
+        let condBlock = try module.builder.appendBasicBlock(name: "cond")
+        let loopBlock = try module.builder.appendBasicBlock(name: "loop")
+        let exitBlock = try module.builder.appendBasicBlock(name: "loop.exit")
+        
+        try module.builder.buildBreak(to: condBlock)
+        try module.builder.setInsertPoint(condBlock)
+        
+        let condBool = try condition.vhirGen(module: module, scope: scope)
+        let cond = try module.builder.buildStructExtract(Operand(condBool), property: "value", irName: "cond")
+        
+        try module.builder.buildCondBreak(if: Operand(cond),
+                                          to: (block: loopBlock, args: nil),
+                                          elseTo: (block: exitBlock, args: nil))
+        
+        try module.builder.setInsertPoint(loopBlock)
+        try block.vhirStmtGen(module: module, scope: scope)
+        try module.builder.buildBreak(to: condBlock)
+        
+        try module.builder.setInsertPoint(exitBlock)
+    }
+}
+
+
+
+
+
 
 
 
