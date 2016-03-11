@@ -37,6 +37,7 @@ extension Module {
         
         let irGen = (LLVMCreateBuilder(), module, isStdLib) as IRGen
         loweredModule = module
+        loweredBuilder = irGen.builder
         
         for fn in functions {
             let f = LLVMAddFunction(irGen.module, fn.name, fn.type.lowerType(self))
@@ -55,21 +56,26 @@ extension Function: VHIRLower {
         
         let fn = functionPointerInModule(irGen.module)
         
+        // if no body, return
         guard let blocks = blocks else { return fn }
         
+        // declare blocks, so break instructions have something to br to
         for bb in blocks {
             bb.loweredBlock = LLVMAppendBasicBlock(fn, bb.name)
+            LLVMPositionBuilderAtEnd(irGen.builder, bb.loweredBlock)
+            
+            for param in bb.parameters ?? [] {
+                try param.vhirLower(module, irGen: irGen)
+            }
         }
         
         for bb in blocks {
-            
             LLVMPositionBuilderAtEnd(irGen.builder, bb.loweredBlock)
             
             for case let inst as protocol<VHIRLower, Inst> in bb.instructions {
                 let v = try inst.vhirLower(module, irGen: irGen)
                 inst.updateUsesWithLoweredVal(v)
             }
-            
         }
         
         return fn
@@ -80,13 +86,53 @@ extension Function: VHIRLower {
     }
 }
 
+extension BasicBlock {
+    
+    func loweredValForParamNamed(name: String, predBlock: BasicBlock) throws -> LLVMValueRef {
+        
+        // VHIR:
+        //  - block has a list of named params
+        //  - blocks have applications
+        //  - applications have args, with `loweredValue`s
+        
+        // LLVM:
+        //  - block has phis
+        //  - phis have incoming values
+        
+        // Lower:
+        //  - when a `loweredValue` gets updated it should reach into the
+        
+        guard let application = applications.find({$0.predecessor === predBlock}), case let blockOperand as BlockOperand = application.args?.find({$0.name == name}) else { throw VHIRError.noFunctionBody }
+        return blockOperand.loweredValue
+    }
+    
+}
+
 
 extension BBParam: VHIRLower {
     
+    private func buildPhi() -> LLVMValueRef {
+        phi = LLVMBuildPhi(module.loweredBuilder, type!.lowerType(module), paramName)
+        return phi
+    }
+    
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        // assuming its a function param 🤔🤔
-        let i = parentFunction.params?.indexOf({$0.name == name})
-        return LLVMGetParam(parentFunction.loweredFunction, UInt32(i!))
+        
+        if let functionParamIndex = parentFunction.params?.indexOf({$0.name == name}) {
+            return LLVMGetParam(parentFunction.loweredFunction, UInt32(functionParamIndex))
+        }
+        else if phi != nil {
+            return phi
+        }
+        else {
+            let phi = buildPhi()
+
+            for operand in try parentBlock.appliedArgsForParam(self) {
+                operand.phi = phi
+            }
+            
+            return phi
+        }
     }
 }
 
@@ -107,7 +153,7 @@ extension StructInitInst: VHIRLower {
         var val = LLVMGetUndef(t.lowerType(module))
         
         for (i, el) in args.enumerate() {
-            val = LLVMBuildInsertValue(irGen.builder, val, el.loweredValue, UInt32(i), "")
+            val = LLVMBuildInsertValue(irGen.builder, val, el.loweredValue, UInt32(i), irName ?? "")
         }
         
         return val
@@ -160,7 +206,7 @@ extension TupleCreateInst: VHIRLower {
         var val = LLVMGetUndef(t.lowerType(module))
         
         for (i, el) in args.enumerate() {
-            val = LLVMBuildInsertValue(irGen.builder, val, el.loweredValue, UInt32(i), "")
+            val = LLVMBuildInsertValue(irGen.builder, val, el.loweredValue, UInt32(i), irName ?? "")
         }
         
         return val
@@ -170,7 +216,7 @@ extension TupleCreateInst: VHIRLower {
 extension TupleExtractInst: VHIRLower {
     
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        return LLVMBuildExtractValue(irGen.builder, tuple.loweredValue, UInt32(elementIndex), "")
+        return LLVMBuildExtractValue(irGen.builder, tuple.loweredValue, UInt32(elementIndex), irName ?? "")
     }
 }
 
@@ -178,7 +224,7 @@ extension StructExtractInst: VHIRLower {
     
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         let index = try structType.indexOfMemberNamed(propertyName)
-        return LLVMBuildExtractValue(irGen.builder, object.loweredValue, UInt32(index), "")
+        return LLVMBuildExtractValue(irGen.builder, object.loweredValue, UInt32(index), irName ?? "")
     }
 }
 
@@ -199,20 +245,21 @@ extension BuiltinInstCall: VHIRLower {
             
             // handle calls which arent intrinsics, but builtin
             // instructions. Return these directly
-        case .idiv: return LLVMBuildSDiv(irGen.builder, l.loweredValue, r.loweredValue, "")
+        case .iaddoverflow: return LLVMBuildAdd(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
+        case .idiv: return LLVMBuildSDiv(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
         }
         
         let ir = args.ptr()
         defer { ir.destroy(args.count) }
         
-        return LLVMBuildCall(irGen.builder, intrinsic, ir, UInt32(args.count), "")
+        return LLVMBuildCall(irGen.builder, intrinsic, ir, UInt32(args.count), irName ?? "")
     }
 }
 
 extension BreakInst: VHIRLower {
     
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        return LLVMBuildBr(irGen.builder, block.loweredBlock)
+        return LLVMBuildBr(irGen.builder, call.block.loweredBlock)
     }
 }
 
@@ -222,5 +269,6 @@ extension CondBreakInst: VHIRLower {
         return LLVMBuildCondBr(irGen.builder, condition.loweredValue, thenCall.block.loweredBlock, elseCall.block.loweredBlock)
     }
 }
+
 
 

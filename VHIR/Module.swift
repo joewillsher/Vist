@@ -11,6 +11,7 @@
 final class Module: VHIRElement {
     private(set) var functions: [Function] = [], typeList: [TypeAlias] = [], builder: Builder!
     var loweredModule: LLVMModuleRef = nil
+    var loweredBuilder: LLVMModuleRef = nil
     
     init() { builder = Builder(module: self) }
     var module: Module { return self }

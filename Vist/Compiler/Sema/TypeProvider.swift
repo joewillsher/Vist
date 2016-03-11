@@ -55,6 +55,13 @@ extension CollectionType {
     public func find(@noescape predicate: (Generator.Element) throws -> Bool) rethrows -> Generator.Element? {
         return try indexOf(predicate).map { self[$0] }
     }
+}
+extension CollectionType where Generator.Element: Equatable {
+    
+    @warn_unused_result
+    public func find(element: Generator.Element) -> Generator.Element? {
+        return indexOf(element).map { self[$0] }
+    }
     
 }
 

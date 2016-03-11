@@ -8,22 +8,22 @@
 
 /// The application of a block -- can either be
 /// and entry block or a block you break to
-private enum BlockApplication {
-    case entry(params: [BBParam])
-    case body(predecessor: BasicBlock, params: [Operand]?)
+final class BlockApplication {
     
-    var params: [Operand]? {
-        switch self {
-        case .entry(let params): return params.map(Operand.init)
-        case .body(_, let params): return params
-        }
+    static func entry(params: [BBParam]?) -> BlockApplication { return BlockApplication(params: params?.map(Operand.init), predecessor: nil) }
+    static func body(predecessor: BasicBlock, params: [BlockOperand]?) -> BlockApplication { return BlockApplication(params: params, predecessor: predecessor) }
+    
+    var args: [Operand]?
+    var predecessor: BasicBlock?
+    
+    var phi: LLVMValueRef?
+    
+    init(params: [Operand]?, predecessor: BasicBlock?) {
+        self.args = params
+        self.predecessor = predecessor
     }
-    var predecessor: BasicBlock? {
-        switch self {
-        case .body(let predecessor, _): return predecessor
-        case .entry: return nil
-        }
-    }
+    
+    var isEntry: Bool { return predecessor == nil }
 }
 
 final class BBParam: Value {
@@ -31,6 +31,8 @@ final class BBParam: Value {
     var type: Ty?
     weak var parentBlock: BasicBlock!
     var uses: [Operand] = []
+    
+    var phi: LLVMValueRef = nil
     
     init(paramName: String, type: Ty) {
         self.paramName = paramName
@@ -45,8 +47,9 @@ final class BBParam: Value {
 
 /// A collection of instructions
 ///
-/// Params are passed into the phi nodes as
-/// parameters ala swift
+/// Params are passed between blocks in parameters, blocks can
+/// reference insts in other blocks. The entry block of a function
+/// is called with params of the function
 final class BasicBlock: VHIRElement {
     var name: String
     private(set) var instructions: [Inst] = []
@@ -56,7 +59,7 @@ final class BasicBlock: VHIRElement {
     // block params are `BBParam`s
     // block args are `Operand`s
     let parameters: [BBParam]?
-    private var applications: [BlockApplication]
+    private(set) var applications: [BlockApplication]
     var predecessors: [BasicBlock] { return applications.flatMap { $0.predecessor } }
     
     init(name: String, parameters: [BBParam]?, parentFunction: Function) {
@@ -77,15 +80,23 @@ final class BasicBlock: VHIRElement {
         guard let param = parameters?.find({ $0.paramName == name }) else { throw VHIRError.noParamNamed(name) }
         return param
     }
+    func appliedArgsForParam(param: BBParam) throws -> [BlockOperand] {
+        
+        guard let i = parameters?.indexOf({$0 === param}),
+            let args = applications.optionalMap({ $0.args?[i] as? BlockOperand })
+            else { throw VHIRError.noParamNamed(param.name) }
+        
+        return args
+    }
     
     /// Adds the entry application to a block -- used by Function builder
     func addEntryApplication(args: [BBParam]) throws {
-        applications.insert(.entry(params: args), atIndex: 0)
+        applications.insert(.entry(args), atIndex: 0)
     }
     
     /// Applies the parameters to this block, `from` sepecifies the
     /// predecessor to associate these `params` with
-    func addApplication(from block: BasicBlock, args: [Operand]?) throws {
+    func addApplication(from block: BasicBlock, args: [BlockOperand]?) throws {
         // make sure application is correctly typed
         if let vals = parameters?.optionalMap({$0.type}) {
             guard let equal = args?.optionalMap({ $0.type })?.elementsEqual(vals, isEquivalent: ==)
@@ -93,7 +104,7 @@ final class BasicBlock: VHIRElement {
         }
         else { guard args == nil else { throw VHIRError.paramsNotTyped }}
         
-        applications.append(.body(predecessor: block, params: args))
+        applications.append(.body(block, params: args))
     }
     private func indexOfInst(inst: Inst) throws -> Int {
         guard let i = instructions.indexOf({ $0 === inst }) else { throw VHIRError.instNotInBB }
@@ -113,7 +124,6 @@ final class BasicBlock: VHIRElement {
     func remove(inst: Inst) throws {
         instructions.removeAtIndex(try indexOfInst(inst))
     }
-
     
     var module: Module { return parentFunction.module }
 }
@@ -127,6 +137,7 @@ extension Builder {
         
         let bb = BasicBlock(name: name, parameters: parameters, parentFunction: function)
         bb.appendToParent()
+        for p in parameters ?? [] { p.parentBlock = bb }
         return bb
     }
 }

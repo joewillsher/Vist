@@ -125,6 +125,8 @@ extension MutationExpr : ExprTypeProvider {
     }
 }
 
+
+// TODO: Define rvalue and lvalue prototol to constrain assignments and stuff
 extension ChainableExpr {
     
     func recursiveType(scope: SemaScope) throws -> (type: Ty, parentMutable: Bool?, mutable: Bool) {

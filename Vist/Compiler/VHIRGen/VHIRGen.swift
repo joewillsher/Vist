@@ -44,7 +44,6 @@ extension AST {
         let main = try builder.buildFunction("main", type: mainTy, paramNames: [])
         
         for x in exprs {
-//            try builder.setInsertPoint(main)
             if case let g as VHIRGenerator = x { try g.vhirGen(module: module, scope: scope) }
             else if case let g as VHIRStmtGenerator = x { try g.vhirStmtGen(module: module, scope: scope) }
         }
@@ -217,8 +216,8 @@ extension ConditionalStmt: VHIRStmtGenerator {
                 }
                 
                 try module.builder.buildCondBreak(Operand(v),
-                                                  then: (block: ifBlock, params: nil),
-                                                  else: (block: failBlock, params: nil))
+                                                  then: (block: ifBlock, args: nil),
+                                                  else: (block: failBlock, args: nil))
             }
                 // if its unconditional, we go to the exit afterwards
             else {
@@ -234,7 +233,7 @@ extension ConditionalStmt: VHIRStmtGenerator {
             
             // once we're done in success, break to the exit and
             // move into the fail for the next round
-            try module.builder.buildBreak(exitBlock, params: nil)
+            try module.builder.buildBreak(exitBlock)
             try module.builder.setInsertPoint(failBlock)
         }
         
@@ -256,21 +255,26 @@ extension ForInLoopStmt: VHIRStmtGenerator {
         let loopBlock = try module.builder.appendBasicBlock(name: "loop", parameters: [loopCountParam])
         let exitBlock = try module.builder.appendBasicBlock(name: "loop.exit")
         
-        try module.builder.buildBreak(loopBlock, params: [Operand(start)])
+        let loopOperand = BlockOperand(value: start, param: loopCountParam)
+        try module.builder.buildBreak(loopBlock, args: [loopOperand])
         try module.builder.setInsertPoint(loopBlock)
         
         let loopScope = Scope(parent: scope)
-        let loopVariable = try module.builder.buildStructInit(StdLib.intType, values: Operand(loopCountParam))
+        let loopVariable = try module.builder.buildStructInit(StdLib.intType, values: loopOperand)
         loopScope.add(loopVariable, name: binded.name)
         
         try block.vhirStmtGen(module: module, scope: loopScope)
         
         let one = try module.builder.buildBuiltinInt(1)
-        let iterated = try module.builder.buildBuiltinCall(.iadd, args: Operand(loopCountParam), Operand(one), irName: "count.it")
-        let condition = try module.builder.buildBoolLiteral(false)
+        let iterated = try module.builder.buildBuiltinCall(.iaddoverflow, args: loopOperand, Operand(one), irName: "count.it")
+        
+        // cond, false atm whoops
+        let condition = try module.builder.buildBuiltinBool(false)
+        
+        let iteratedLoopOperand = BlockOperand(value: iterated, param: loopCountParam)
         try module.builder.buildCondBreak(Operand(condition),
-                                          then: (block: loopBlock, params: [Operand(iterated)]),
-                                          else: (block: exitBlock, params: nil))
+                                          then: (block: loopBlock, args: [iteratedLoopOperand]),
+                                          else: (block: exitBlock, args: nil))
         
         try module.builder.setInsertPoint(exitBlock)
     }

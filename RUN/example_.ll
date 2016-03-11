@@ -2,16 +2,28 @@
 target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-macosx10.11.0"
 
+%Range.st = type { %Int.st, %Int.st }
 %Int.st = type { i64 }
 
 define void @main() {
 entry:
-  %0 = call %Int.st @-A_Int_Int(%Int.st { i64 1 }, %Int.st { i64 2 }), !stdlib.call.optim !0
-  call void @print_Int(%Int.st %0), !stdlib.call.optim !0
-  ret void 
+  %0 = call %Range.st @..._Int_Int(%Int.st zeroinitializer, %Int.st { i64 100 }), !stdlib.call.optim !0
+  %1 = extractvalue %Range.st %0, 0
+  %2 = extractvalue %Int.st %1, 0
+  br label %loop
+
+loop:                                             ; preds = %loop, %entry
+  %loop.count = phi i64 [ %2, %entry ], [ %count.it, %loop ]
+  %3 = insertvalue %Int.st undef, i64 %loop.count, 0
+  call void @print_Int(%Int.st %3), !stdlib.call.optim !0
+  %count.it = add i64 %loop.count, 1
+  br i1 false, label %loop, label %loop.exit
+
+loop.exit:                                        ; preds = %loop
+  ret void
 }
 
-declare %Int.st @-A_Int_Int(%Int.st, %Int.st)
+declare %Range.st @..._Int_Int(%Int.st, %Int.st)
 
 declare void @print_Int(%Int.st)
 
