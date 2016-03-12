@@ -40,15 +40,17 @@ class Operand: Value {
         get { return value!.name }
         set { value?.name = newValue }
     }
+    var operandName: String { return "<operand of \(name) by \(user?.name)>" }
     
     var user: Inst? {
         return parentBlock?.userOfOperand(self)
     }
-    
+        
     func setLoweredValue(val: LLVMValueRef) { loweredValue = val }
     
     func dumpIR() { if loweredValue != nil { LLVMDumpValue(loweredValue) } else { print("\(irName) <NULL>") } }
 }
+
 
 /// An operand applied to a block, loweredValue is lazily evaluated
 /// so phi nodes can be created when theyre needed, allowing their values

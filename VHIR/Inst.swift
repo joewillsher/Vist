@@ -9,6 +9,7 @@
 protocol Inst: Value {
     var uses: [Operand] { get set }
     var args: [Operand] { get set }
+    var instHasSideEffects: Bool { get }
 }
 
 /// An instruction. Must be overriden but is used to remove
@@ -29,6 +30,15 @@ class InstBase: Inst {
     
     // calls into the subclasses overriden `instVHIR`
     var vhir: String { return instVHIR }
+    
+    private(set) var hasSideEffects = false
+    var instHasSideEffects: Bool { return hasSideEffects }
+    
+//    init(args: [Operand], uses: [Operand], irName: String? = nil) {
+//        self.args = args
+//        self.uses = uses
+//        self.irName = irName
+//    }
 }
 
 extension Inst {
@@ -39,8 +49,17 @@ extension Inst {
     /// Removes the function from its parent and
     /// drops all references to it
     func eraseFromParent() throws {
+        
+        // tell self's operands that we're not using it any more
+        for arg in args {
+            try arg.value?.removeUse(arg)
+            arg.value = nil
+        }
+        // remove this from everthing
         try parentBlock.remove(self)
         removeAllUses()
+        args.removeAll()
         parentBlock = nil
     }
+    
 }

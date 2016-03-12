@@ -37,6 +37,13 @@ final class BuiltinInstCall: InstBase {
         }
     }
     
+    override var hasSideEffects: Bool {
+        switch inst {
+        case .condfail: return true
+        default: return false
+        }
+    }
+    
 }
 
 enum BuiltinInst: String {

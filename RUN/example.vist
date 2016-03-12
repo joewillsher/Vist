@@ -1,3 +1,5 @@
 
+let a = 2, b = 1
+
 while false do print 1
 

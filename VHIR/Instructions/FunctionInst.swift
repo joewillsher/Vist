@@ -22,6 +22,8 @@ final class FunctionCallInst: InstBase {
     override var instVHIR: String {
         return "\(name) = call @\(function.name) \(args.vhirValueTuple()) \(useComment)"
     }
+    
+    override var hasSideEffects: Bool { return true }
 }
 
 

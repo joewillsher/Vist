@@ -14,6 +14,7 @@ final class StructInitInst: InstBase {
     
     private init(type: StructType, args: [Operand], irName: String? = nil) {
         self.structType = type
+//        super.init(args: args, uses: [], irName: irName)
         super.init()
         self.args = args
         self.irName = irName

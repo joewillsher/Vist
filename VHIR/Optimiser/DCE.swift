@@ -38,12 +38,13 @@ extension Module {
     
     func runPasses(optLevel: OptLevel) throws {
         
-        for _ in functions {
-//            try DCEPass.create(optLevel, function: function)
+        for function in functions {
+            try DCEPass.create(optLevel, function: function)
         }
         
     }
 }
+
 
 final class DCEPass: FunctionPass {
     
@@ -51,9 +52,11 @@ final class DCEPass: FunctionPass {
     
     func runOn(function: Function) throws {
         
-        for bb in function.blocks ?? [] {
-            for inst in bb.instructions where inst.uses.isEmpty {
-                try inst.removeFromParent()
+        for bb in function.blocks?.lazy.reverse() ?? [] {
+            for inst in bb.instructions.lazy.reverse() {
+                if inst.uses.isEmpty && !inst.instHasSideEffects {
+                    try inst.eraseFromParent()
+                }
             }
         }
         

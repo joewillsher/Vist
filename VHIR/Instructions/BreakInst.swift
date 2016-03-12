@@ -24,6 +24,7 @@ final class BreakInst: InstBase {
         return "break $\(call.block.name)\(call.args?.vhirValueTuple() ?? "")"
     }
     
+    override var hasSideEffects: Bool { return true }
 }
 
 final class CondBreakInst: InstBase {
@@ -44,6 +45,8 @@ final class CondBreakInst: InstBase {
     override var instVHIR: String {
         return "break \(condition.vhir), $\(thenCall.block.name)\(thenCall.args?.vhirValueTuple() ?? ""), $\(elseCall.block.name)\(elseCall.args?.vhirValueTuple() ?? "")"
     }
+    
+    override var hasSideEffects: Bool { return true }
 }
 
 extension Builder {

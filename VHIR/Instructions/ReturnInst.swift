@@ -20,6 +20,8 @@ final class ReturnInst: InstBase {
     override var instVHIR: String {
         return "return \(value.name)"
     }
+    
+    override var hasSideEffects: Bool { return true }
 }
 
 

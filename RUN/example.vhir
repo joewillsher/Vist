@@ -4,18 +4,24 @@ type %Int = { %Builtin.Int64 }
 
 func @main : () -> %Builtin.Void {
 $entry:
+  %0 = int_literal 2  	// uses: %1
+  %1 = struct %Int (%0: %Builtin.Int64)  	// uses: %a
+  variable_decl %a = %1: %Int 
+  %2 = int_literal 1  	// uses: %3
+  %3 = struct %Int (%2: %Builtin.Int64)  	// uses: %b
+  variable_decl %b = %3: %Int 
   break $cond
 
 $cond:			// preds: entry, loop
-  %1 = bool_literal false  	// uses: %2
-  %2 = struct %Bool (%1: %Builtin.Bool)  	// uses: %cond
-  %cond = struct_extract %2: %Bool, #Bool.value  	// uses: 
+  %5 = bool_literal false  	// uses: %6
+  %6 = struct %Bool (%5: %Builtin.Bool)  	// uses: %cond
+  %cond = struct_extract %6: %Bool, #Bool.value  	// uses: 
   break %cond: %Builtin.Bool, $loop, $loop.exit
 
 $loop:			// preds: cond
-  %4 = int_literal 1  	// uses: %5
-  %5 = struct %Int (%4: %Builtin.Int64)  	// uses: %6
-  %6 = call @print_Int (%5: %Int) 
+  %8 = int_literal 1  	// uses: %9
+  %9 = struct %Int (%8: %Builtin.Int64)  	// uses: %10
+  %10 = call @print_Int (%9: %Int) 
   break $cond
 
 $loop.exit:			// preds: cond

@@ -113,8 +113,8 @@ final class BasicBlock: VHIRElement {
     
     /// Returns the instruction using the operand
     func userOfOperand(operand: Operand) -> Inst? {
-        let f = instructions.indexOf { inst in inst.args.contains { arg in arg === operand } }
-        return f.map { instructions[$0] }
+        let f = instructions.find { inst in inst.args.contains { arg in arg === operand } }
+        return f
     }
     
     // instructions
