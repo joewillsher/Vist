@@ -74,8 +74,8 @@ enum BuiltinType: Ty {
         case .int(let s):               return "Builtin.Int\(s)"
         case .bool:                     return "Builtin.Bool"
         case .array(let el, let size):  return "[\(size) x \(el.mangledName)]" // not implemented
-        case .pointer(let to):          return "\(to.mangledName)*"            // will never be implemented
-        case .opaquePointer:            return "ptr"
+        case .pointer(let to):          return "*\(to.mangledName)"
+        case .opaquePointer:            return "*Builtin.Int8"
         case .float(let s):
             switch s {
             case 16:                    return "Builtin.Half"

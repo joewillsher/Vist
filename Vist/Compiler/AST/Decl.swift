@@ -70,3 +70,11 @@ final class InitialiserDecl: Decl, StructMemberExpr {
     
     var mangledName: String
 }
+
+
+
+
+
+
+
+

@@ -26,7 +26,7 @@ final class BlockApplication {
     var isEntry: Bool { return predecessor == nil }
 }
 
-final class BBParam: Value {
+final class BBParam: RValue {
     var paramName: String
     var type: Ty?
     weak var parentBlock: BasicBlock!
@@ -112,8 +112,8 @@ final class BasicBlock: VHIRElement {
     }
     
     /// Returns the instruction using the operand
-    func userOfOperand(operand: Operand) -> Inst? {
-        let f = instructions.find { inst in inst.args.contains { arg in arg === operand } }
+    func userOf(use: Operand) -> Inst? {
+        let f = instructions.find { inst in inst.args.contains { arg in arg === use } }
         return f
     }
     

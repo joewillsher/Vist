@@ -319,7 +319,7 @@ protocol TypeExpr: Expr {
 
 typealias ConstrainedType = (name: String, constraints: [String], parentName: String)
 
-final class StructExpr: TypedExpr, ScopeNode, TypeExpr {
+final class StructExpr: Typed, ScopeNode, TypeExpr {
     let name: String
     let properties: [VariableDecl]
     let methods: [FuncDecl]

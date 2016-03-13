@@ -6,16 +6,9 @@ target triple = "x86_64-apple-macosx10.11.0"
 
 define void @main() {
 entry:
-  br label %cond
-
-cond:                                             ; preds = %loop, %entry
-  br i1 false, label %loop, label %loop.exit
-
-loop:                                             ; preds = %cond
+  %a = alloca %Int.st
+  store %Int.st { i64 1 }, %Int.st* %a
   call void @print_Int(%Int.st { i64 1 }), !stdlib.call.optim !0
-  br label %cond
-
-loop.exit:                                        ; preds = %cond
   ret void
 }
 

@@ -10,6 +10,13 @@ enum CallingConvention {
     case thin
     case method(selfType: Ty)
     //case thick(contextPtr: )
+    
+    var name: String {
+        switch self {
+        case .thin: return "thin"
+        case .method: return "method"
+        }
+    }
 }
 
 

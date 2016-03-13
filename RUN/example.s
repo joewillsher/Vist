@@ -6,8 +6,10 @@ _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
+	movl	$1, %eax
+	movl	%eax, %edi
 	popq	%rbp
-	retq
+	jmp	"_-Uprint_i64"          ## TAILCALL
 
 
 .subsections_via_symbols

@@ -53,6 +53,11 @@ extension Builder {
         try addToCurrentBlock(s)
         return s
     }
+    func buildEmptyStruct(type: StructType, irName: String? = nil) throws -> StructInitInst {
+        let s = StructInitInst(type: type, args: [], irName: irName)
+        try addToCurrentBlock(s)
+        return s
+    }
     func buildStructExtract(object: Operand, property: String, irName: String? = nil) throws -> StructExtractInst {
         guard case let alias as TypeAlias = object.type, case let structType as StructType = alias.targetType else { throw VHIRError.noType }
         let elType = try structType.propertyType(property)

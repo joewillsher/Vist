@@ -1,5 +1,11 @@
 
-let a = 2, b = 1
+var a = 1
 
-while false do print 1
+print a
 
+//
+//type Foo {
+//    let a: Int
+//}
+//
+//let f = Foo 1

@@ -97,7 +97,7 @@ func compileDocuments(fileNames: [String],
         if !oldIRGen {
             if verbose { print("\n----------------------------VHIR GEN-------------------------------\n") }
             
-            try ast.vhirGenAST(module: m)
+            try ast.emitAST(module: m)
             try m.vhir.writeToFile("\(currentDirectory)/\(file).vhir", atomically: true, encoding: NSUTF8StringEncoding)
             
             if verbose { print(m.vhir) }

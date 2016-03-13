@@ -24,12 +24,12 @@ protocol Value: class, VHIRElement {
     var name: String { get set }
 }
 
-extension Value {
-    
-    func dump() { print(vhir) }
-    
-    var module: Module { return parentBlock.module }
-    var parentFunction: Function { return parentBlock.parentFunction }
+protocol RValue: Value {
+}
+protocol LValue: Value {
+}
+
+extension RValue {
     
     /// Removes all `Operand` instances which point to `self`
     func removeAllUses() {
@@ -39,7 +39,7 @@ extension Value {
     
     /// Replaces all `Operand` instances which point to `self`
     /// with `val`
-    func replaceAllUsesWith(val: Value) {
+    func replaceAllUsesWith(val: RValue) {
         let u = uses
         removeAllUses()
         
@@ -66,6 +66,14 @@ extension Value {
             use.setLoweredValue(val)
         }
     }
+}
+
+extension Value {
+    
+    func dump() { print(vhir) }
+    
+    var module: Module { return parentBlock.module }
+    var parentFunction: Function { return parentBlock.parentFunction }
     
     /// If `self` doesn't have an `irName`, this provides the 
     /// number to use in the ir repr
@@ -93,3 +101,6 @@ extension Value {
         set { irName = newValue }
     }
 }
+
+
+

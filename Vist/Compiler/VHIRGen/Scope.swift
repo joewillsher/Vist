@@ -9,19 +9,19 @@
 /// A semantic scope, containing the declared vars for
 /// the VHIRGen phase.
 final class Scope {
-    private var variables: [String: Value]
-    weak var parent: Scope?
+    private var variables: [String: Accessor]
+    private weak var parent: Scope?
     
     init(parent: Scope? = nil) {
         self.parent = parent
         self.variables = [:]
     }
     
-    func add(variable: Value, name: String) {
+    func add(variable: Accessor, name: String) {
         variables[name] = variable
     }
     
-    func variableNamed(name: String) -> Value? {
+    func variableNamed(name: String) -> Accessor? {
         if let v = variables[name] { return v }
         return parent?.variableNamed(name)
     }

@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-protocol Inst: Value {
+protocol Inst: RValue {
     var uses: [Operand] { get set }
     var args: [Operand] { get set }
     var instHasSideEffects: Bool { get }

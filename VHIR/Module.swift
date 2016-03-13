@@ -38,6 +38,10 @@ extension Module {
         }
     }
     
+    func typeNamed(name: String) -> TypeAlias? {
+        return typeList.find {$0.name == name}
+    }
+    
     func dumpIR() { if loweredModule != nil { LLVMDumpModule(loweredModule) } else { print("module <NULL>") } }
     func dump() { print(vhir) }
 }

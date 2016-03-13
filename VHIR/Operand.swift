@@ -7,11 +7,11 @@
 //
 
 
-class Operand: Value {
+class Operand: RValue {
     /// The underlying value
-    var value: Value?
+    var value: RValue?
     
-    init(_ value: Value) {
+    init(_ value: RValue) {
         self.value = value
         value.addUse(self)
     }
@@ -43,7 +43,7 @@ class Operand: Value {
     var operandName: String { return "<operand of \(name) by \(user?.name)>" }
     
     var user: Inst? {
-        return parentBlock?.userOfOperand(self)
+        return parentBlock?.userOf(self)
     }
         
     func setLoweredValue(val: LLVMValueRef) { loweredValue = val }
@@ -57,7 +57,7 @@ class Operand: Value {
 /// to be calculated
 final class BlockOperand: Operand {
     
-    init(value: Value, param: BBParam) {
+    init(value: RValue, param: BBParam) {
         self.param = param
         self.predBlock = value.parentBlock
         super.init(value)
@@ -68,6 +68,10 @@ final class BlockOperand: Operand {
     
     /// Sets the phi's value for the incoming block `self.predBlock`
     override func setLoweredValue(val: LLVMValueRef) {
+        guard val != nil else {
+            loweredValue = nil
+            return
+        }
         let incoming = [val].ptr(), incomingBlocks = [predBlock.loweredBlock].ptr()
         defer { incoming.destroy(); incomingBlocks.destroy() }
         LLVMAddIncoming(param.phi, incoming, incomingBlocks, 1)
