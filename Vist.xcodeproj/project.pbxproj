@@ -173,8 +173,8 @@
 		D4728BDE1C944397003294B0 /* Accessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BDC1C944397003294B0 /* Accessor.swift */; };
 		D4728BE11C9475A5003294B0 /* Optimiser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BE01C9475A5003294B0 /* Optimiser.swift */; };
 		D4728BE21C9475A5003294B0 /* Optimiser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BE01C9475A5003294B0 /* Optimiser.swift */; };
-		D4728BE41C960D79003294B0 /* Memory.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BE31C960D79003294B0 /* Memory.swift */; };
-		D4728BE51C960D79003294B0 /* Memory.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BE31C960D79003294B0 /* Memory.swift */; };
+		D4728BE41C960D79003294B0 /* MemoryInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BE31C960D79003294B0 /* MemoryInst.swift */; };
+		D4728BE51C960D79003294B0 /* MemoryInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BE31C960D79003294B0 /* MemoryInst.swift */; };
 		D4728BE71C960E22003294B0 /* Folding.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BE61C960E22003294B0 /* Folding.swift */; };
 		D4728BE81C960E22003294B0 /* Folding.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BE61C960E22003294B0 /* Folding.swift */; };
 		D4728BEA1C960E31003294B0 /* Variable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BE91C960E31003294B0 /* Variable.swift */; };
@@ -322,7 +322,7 @@
 		D4644BE61C4072D600364B99 /* runtime.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = runtime.cpp; path = Runtime/runtime.cpp; sourceTree = "<group>"; };
 		D4728BDC1C944397003294B0 /* Accessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Accessor.swift; sourceTree = "<group>"; };
 		D4728BE01C9475A5003294B0 /* Optimiser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Optimiser.swift; path = Optimiser/Optimiser.swift; sourceTree = "<group>"; };
-		D4728BE31C960D79003294B0 /* Memory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Memory.swift; path = Instructions/Memory.swift; sourceTree = "<group>"; };
+		D4728BE31C960D79003294B0 /* MemoryInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MemoryInst.swift; path = Instructions/MemoryInst.swift; sourceTree = "<group>"; };
 		D4728BE61C960E22003294B0 /* Folding.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Folding.swift; path = Optimiser/Folding.swift; sourceTree = "<group>"; };
 		D4728BE91C960E31003294B0 /* Variable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Variable.swift; path = Optimiser/Variable.swift; sourceTree = "<group>"; };
 		D47E66581B88D9A20051D586 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -428,7 +428,7 @@
 				D4CF76761C8CD4A70058A8EC /* TupleInst.swift */,
 				D43B39D71C8A0F3A0039FB2E /* VariableInst.swift */,
 				D411C8941C8DB61D00478988 /* BreakInst.swift */,
-				D4728BE31C960D79003294B0 /* Memory.swift */,
+				D4728BE31C960D79003294B0 /* MemoryInst.swift */,
 			);
 			name = Instructions;
 			sourceTree = "<group>";
@@ -880,7 +880,7 @@
 				D43B39DB1C8A0F3A0039FB2E /* FunctionInst.swift in Sources */,
 				D43B39F71C8A100E0039FB2E /* Assemble.cpp in Sources */,
 				D43B3A741C8A11600039FB2E /* IRError.swift in Sources */,
-				D4728BE51C960D79003294B0 /* Memory.swift in Sources */,
+				D4728BE51C960D79003294B0 /* MemoryInst.swift in Sources */,
 				D43B3A681C8A11600039FB2E /* BuiltinFunction.swift in Sources */,
 				D43B3A011C8A100E0039FB2E /* main.swift in Sources */,
 				D43B3A3B1C8A10C80039FB2E /* FunctionSema.swift in Sources */,
@@ -934,7 +934,7 @@
 				D43B3A0C1C8A104F0039FB2E /* ParseError.swift in Sources */,
 				D43B39971C8A0EDF0039FB2E /* Inst.swift in Sources */,
 				D43B39B81C8A0F140039FB2E /* StructType.swift in Sources */,
-				D4728BE41C960D79003294B0 /* Memory.swift in Sources */,
+				D4728BE41C960D79003294B0 /* MemoryInst.swift in Sources */,
 				D43B39991C8A0EDF0039FB2E /* Module.swift in Sources */,
 				D43B39F61C8A100E0039FB2E /* Assemble.cpp in Sources */,
 				D43B39D81C8A0F3A0039FB2E /* BuiltinInst.swift in Sources */,

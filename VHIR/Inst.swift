@@ -34,11 +34,11 @@ class InstBase: Inst {
     private(set) var hasSideEffects = false
     var instHasSideEffects: Bool { return hasSideEffects }
     
-//    init(args: [Operand], uses: [Operand], irName: String? = nil) {
-//        self.args = args
-//        self.uses = uses
-//        self.irName = irName
-//    }
+    init(args: [Operand], irName: String? = nil) {
+        self.args = args
+        self.uses = []
+        self.irName = irName
+    }
 }
 
 extension Inst {

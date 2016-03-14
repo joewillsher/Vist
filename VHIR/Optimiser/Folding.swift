@@ -21,7 +21,7 @@ final class ConstantFoldingPass: FunctionPass {
             switch builtin.inst {
             case .iadd:
                 
-                let args = builtin.args
+                _ = builtin.args
                 
                 
                 

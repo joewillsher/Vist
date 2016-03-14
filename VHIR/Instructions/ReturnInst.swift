@@ -12,9 +12,8 @@ final class ReturnInst: InstBase {
     
     private init(value: Operand, parentBlock: BasicBlock?) {
         self.value = value
-        super.init()
+        super.init(args: [value], irName: nil)
         self.parentBlock = parentBlock
-        self.args = [value]
     }
     
     override var instVHIR: String {

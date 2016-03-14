@@ -11,11 +11,9 @@ final class IntLiteralInst: InstBase {
     
     override var type: Ty? { return value.type }
     
-    private init(val: Int, irName: String? = nil) {
-        self.value = LiteralValue(val: val)
-        super.init()
-        self.irName = irName
-        self.args = [Operand(value)]
+    private init(val: Int, irName: String?) {
+        self.value = LiteralValue(val: val, irName: nil)
+        super.init(args: [Operand(value)], irName: irName)
     }
     
     override var instVHIR: String {
@@ -27,11 +25,9 @@ final class BoolLiteralInst: InstBase {
     
     override var type: Ty? { return value.type }
     
-    private init(val: Bool, irName: String? = nil) {
-        self.value = LiteralValue(val: val)
-        super.init()
-        self.irName = irName
-        self.args = [Operand(value)]
+    private init(val: Bool, irName: String?) {
+        self.value = LiteralValue(val: val, irName: nil)
+        super.init(args: [Operand(value)], irName: irName)
     }
     
     override var instVHIR: String {
@@ -54,7 +50,7 @@ final class LiteralValue<Literal>: RValue {
     weak var parentBlock: BasicBlock!
     var uses: [Operand] = []
     
-    private init(val: Literal, irName: String? = nil) {
+    private init(val: Literal, irName: String?) {
         self.value = val
         self.irName = irName
     }

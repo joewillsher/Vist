@@ -6,21 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-final class Address: LValue {
-    var irName: String? = nil
-    let memType: Ty
-    
-    var type: Ty? { return BuiltinType.pointer(to: memType) }
-    
-    private init(memType: Ty) {
-        self.memType = memType
-    }
-    
-    /// The block containing `self`
-    weak var parentBlock: BasicBlock!
-    
-    var uses: [Operand] = []
-}
+
 
 
 
@@ -30,9 +16,14 @@ final class Address: LValue {
 protocol Accessor {
     func getter() throws -> RValue
 }
+/// An Accessor which allows setting, as well as self lookup by ptr
+protocol GetSetAccessor: Accessor {
+    func setter(val: Operand) throws
+    func accessor() -> Address
+}
 
 /// Provides access to a value with backing memory. This value
-final class RefAccessor: Accessor {
+final class RefAccessor: GetSetAccessor {
     
     private var addr: Address
     
@@ -57,22 +48,6 @@ final class ValAccessor: Accessor {
     
     func getter() -> RValue { return value }
 }
-
-extension Builder {
-    
-    func referenceAccessor(value: RValue) throws -> RefAccessor {
-        let allocation = try module.builder.buildAlloc(value.type!)
-        try module.builder.buildStore(Operand(value), to: allocation.address)
-        return RefAccessor(allocation.address)
-    }
-    func addressOfType(type: Ty) -> Address {
-        let addr = Address(memType: type)
-        addr.parentBlock = insertPoint.block
-        return addr
-    }
-    
-}
-
 
 
 /*

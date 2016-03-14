@@ -26,7 +26,7 @@ protocol Value: class, VHIRElement {
 
 protocol RValue: Value {
 }
-protocol LValue: Value {
+protocol LValue: RValue {
 }
 
 extension RValue {

@@ -12,12 +12,10 @@ final class TupleCreateInst: InstBase {
     override var type: Ty? { return tupleType }
     var tupleType: TupleType, elements: [Operand]
     
-    private init(type: TupleType, elements: [Operand], irName: String? = nil) {
+    private init(type: TupleType, elements: [Operand], irName: String?) {
         self.tupleType = type
         self.elements = elements
-        super.init()
-        self.args = elements
-        self.irName = irName
+        super.init(args: elements, irName: irName)
     }
     
     override var instVHIR: String {
@@ -31,13 +29,11 @@ final class TupleExtractInst: InstBase, LValue {
     var tuple: Operand, elementIndex: Int
     var elementType: Ty
     
-    private init(tuple: Operand, index: Int, elementType: Ty, irName: String? = nil) {
+    private init(tuple: Operand, index: Int, elementType: Ty, irName: String?) {
         self.tuple = tuple
         self.elementIndex = index
         self.elementType = elementType
-        super.init()
-        self.args = [tuple]
-        self.irName = irName
+        super.init(args: [tuple], irName: irName)
     }
     
     override var instVHIR: String {
@@ -49,14 +45,12 @@ final class TupleInsertInst: InstBase, LValue {
     var tuple: Operand, value: Operand, elementIndex: Int
     var elementType: Ty
     
-    private init(tuple: Operand, value: Operand, index: Int, elementType: Ty, irName: String? = nil) {
+    private init(tuple: Operand, value: Operand, index: Int, elementType: Ty, irName: String?) {
         self.tuple = tuple
         self.value = value
         self.elementIndex = index
         self.elementType = elementType
-        super.init()
-        self.args = [tuple]
-        self.irName = irName
+        super.init(args: [tuple], irName: irName)
     }
     
     override var instVHIR: String {

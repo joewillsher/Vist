@@ -12,11 +12,9 @@ final class FunctionCallInst: InstBase {
     
     override var type: Ty? { return function.type.returns }
     
-    private init(function: Function, args: [Operand], irName: String? = nil) {
+    private init(function: Function, args: [Operand], irName: String?) {
         self.function = function
-        super.init()
-        self.args = args
-        self.irName = irName
+        super.init(args: args, irName: irName)
     }
     
     override var instVHIR: String {

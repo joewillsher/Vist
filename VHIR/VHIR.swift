@@ -70,7 +70,7 @@ extension Function {
         let b = blocks?.map { $0.vhir }
         let bString = b.map { " {\n\($0.joinWithSeparator("\n"))}" } ?? ""
         let conv = type.callingConvention.name
-        return "func @\(name) : &convention(\(conv)) \(type.vhir)\(bString)"
+        return "func @\(name) : &\(conv) \(type.vhir)\(bString)"
     }
 }
 
@@ -121,7 +121,7 @@ extension TypeAlias {
 extension Inst {
     var useComment: String {
         let u = uses.map { $0.user?.name ?? "" }
-        return uses.isEmpty ? "" : " \t// uses: \(u.joinWithSeparator(", "))"
+        return uses.isEmpty ? "" : " \t// user\(uses.count == 1 ? "" : "s"): \(u.joinWithSeparator(", "))"
     }
 }
 

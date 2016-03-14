@@ -25,7 +25,7 @@ These are then parsed to form an AST (abstract syntax tree).
 I then run a semantic analysis pass, where I add type information to the tree and check it is valid Vist code. I fund out here that `a` has type `Int`, and `print`, a function in the standard library, has type `Int -> ()`.
 
 
-
+	
 
 ```
 type %Int = { %Builtin.Int64 }

@@ -13,13 +13,11 @@ final class BuiltinInstCall: InstBase {
     var instName: String { return inst.rawValue }
     var returnType: Ty
     
-    private init?(inst: BuiltinInst, args: [Operand], irName: String? = nil) {
+    private init?(inst: BuiltinInst, args: [Operand], irName: String?) {
         self.inst = inst
         guard let argTypes = args.optionalMap({ $0.type }), let retTy = inst.returnType(params: argTypes) else { return nil }
         self.returnType = retTy
-        super.init()
-        self.args = args
-        self.irName = irName
+        super.init(args: args, irName: irName)
     }
     
     // utils for bin instructions

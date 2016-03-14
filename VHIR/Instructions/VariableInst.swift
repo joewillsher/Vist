@@ -14,11 +14,9 @@ final class VariableInst: InstBase {
     
     override var type: Ty? { return value.type }
     
-    private init(value: Operand, irName: String? = nil) {
+    private init(value: Operand, irName: String?) {
         self.value = value
-        super.init()
-        self.irName = irName
-        self.args = [value]
+        super.init(args: [value], irName: irName)
     }
     
     override var instVHIR: String {

@@ -12,12 +12,9 @@ final class StructInitInst: InstBase {
     override var type: Ty? { return module.getOrInsertAliasTo(structType) }
     var structType: StructType
     
-    private init(type: StructType, args: [Operand], irName: String? = nil) {
+    private init(type: StructType, args: [Operand], irName: String?) {
         self.structType = type
-//        super.init(args: args, uses: [], irName: irName)
-        super.init()
-        self.args = args
-        self.irName = irName
+        super.init(args: args, irName: irName)
     }
     
     override var instVHIR: String {
@@ -36,9 +33,7 @@ final class StructExtractInst: InstBase {
         self.propertyName = property
         self.propertyType = propertyType
         self.structType = structType
-        super.init()
-        self.args = [object]
-        self.irName = irName
+        super.init(args: [object], irName: irName)
     }
     
     override var instVHIR: String {

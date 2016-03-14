@@ -15,9 +15,7 @@ final class BreakInst: InstBase {
     
     private init(call: BlockCall) {
         self.call = call
-        super.init()
-        self.irName = irName
-        self.args = args ?? []
+        super.init(args: call.args ?? [], irName: nil)
     }
     
     override var instVHIR: String {
@@ -37,9 +35,8 @@ final class CondBreakInst: InstBase {
         self.thenCall = then
         self.elseCall = `else`
         self.condition = condition
-        super.init()
-        self.irName = irName
-        self.args = (thenCall.args ?? []) + (elseCall.args ?? [])
+        let args = (thenCall.args ?? []) + (elseCall.args ?? [])
+        super.init(args: args, irName: nil)
     }
     
     override var instVHIR: String {
