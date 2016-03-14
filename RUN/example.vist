@@ -1,8 +1,4 @@
 
-type Box T {
-    var a: T
-}
-
-let w = Box 1
-
-
+var a = 1
+a = 2
+print a

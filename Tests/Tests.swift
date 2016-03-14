@@ -294,11 +294,11 @@ extension ErrorTests {
             let e = ErrorCollection(errors: [
                 SemaError.noVariable("b"),
                 SemaError.noVariable("a"),
-                SemaError.noFunction("print", [StdLib.IntType, StdLib.IntType]),
+                SemaError.noFunction("print", [StdLib.intType, StdLib.intType]),
                 ErrorCollection(errors: [
                     SemaError.noVariable("v"),
-                    SemaError.noFunction("+", [StdLib.IntType, StdLib.BoolType]),
-                    SemaError.wrongFunctionReturnType(applied: StdLib.DoubleType, expected: StdLib.IntType)
+                    SemaError.noFunction("+", [StdLib.intType, StdLib.boolType]),
+                    SemaError.wrongFunctionReturnType(applied: StdLib.doubleType, expected: StdLib.intType)
                     ]),
                 SemaError.noVariable("print"),
                 SemaError.immutableVariable(name: "x", type: "Int"),

@@ -6,18 +6,10 @@ _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
+	movl	$2, %eax
+	movl	%eax, %edi
 	popq	%rbp
-	retq
-
-	.globl	_Foo_T
-	.align	4, 0x90
-_Foo_T:                                 ## @Foo_T
-## BB#0:                                ## %entry
-	pushq	%rbp
-	movq	%rsp, %rbp
-	movq	%rdi, %rax
-	popq	%rbp
-	retq
+	jmp	"_-Uprint_i64"          ## TAILCALL
 
 
 .subsections_via_symbols

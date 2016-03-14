@@ -1,0 +1,18 @@
+
+type %Int = { %Builtin.Int64 }
+
+func @main : &thin () -> %Builtin.Void {
+$entry:
+  %0 = int_literal 1  	// user: %1
+  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %3
+  %2 = alloc %Int  	// users: %3, %6, %7
+  %3 = store %1 in %2: %*Int 
+  %4 = int_literal 2  	// user: %5
+  %5 = struct %Int (%4: %Builtin.Int64)  	// user: %6
+  %6 = store %5 in %2: %*Int 
+  %7 = load %2: %*Int  	// user: %8
+  %8 = call @print_Int (%7: %*Int) 
+  return ()
+}
+
+func @print_Int : &thin (%Int) -> %Builtin.Void

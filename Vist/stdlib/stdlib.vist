@@ -5,24 +5,24 @@
 // ----------------------------------------------------
 
 type Int {
-    var value: LLVM.Int64
+    var value: Builtin.Int64
     
-    init LLVM.Int64 = (v) do value = v
+    init Builtin.Int64 = (v) do value = v
     init () = {
         let v = 0
         value = v.value
     }
 }
 type Int32 {
-    var value: LLVM.Int32
+    var value: Builtin.Int32
     
-    init LLVM.Int32 = (v) do value = v
+    init Builtin.Int32 = (v) do value = v
 }
 
 type Bool {
-    var value: LLVM.Bool
+    var value: Builtin.Bool
 
-    init LLVM.Bool = (v) do value = v
+    init Builtin.Bool = (v) do value = v
     init () = {
         let b = false
         value = b.value
@@ -30,9 +30,9 @@ type Bool {
 }
 
 type Double {
-    var value: LLVM.Double
+    var value: Builtin.Double
 
-    init LLVM.Double = (v) do value = v
+    init Builtin.Double = (v) do value = v
 }
 
 type Range {
@@ -50,7 +50,7 @@ type Range {
 //
 //    var count: Int
 //    var capacity: Int
-//    var ptr: LLVM.Pointer
+//    var ptr: Builtin.Pointer
 //
 //}
 
@@ -67,16 +67,16 @@ type Range {
 // TODO: print message
 
 @inline func _expect :: Bool Bool -> Bool = (val assume) do
-    return Bool (LLVM.expect val.value assume.value)
+    return Bool (Builtin.expect val.value assume.value)
 
-@public @inline @noreturn func fatalError :: () = do LLVM.trap ()
+@public @inline @noreturn func fatalError :: () = do Builtin.trap ()
 @public @inline func assert :: Bool = do
-    if _expect $0 true do () else do LLVM.trap ()
+    if _expect $0 true do () else do Builtin.trap ()
 
 
-// internal function to stdlib, takes a LLVM.Int and fails if true
-@inline func condFail :: LLVM.Bool = (cond) do
-    if _expect (Bool cond) false do LLVM.trap ()
+// internal function to stdlib, takes a Builtin.Int and fails if true
+@inline func condFail :: Builtin.Bool = (cond) do
+    if _expect (Bool cond) false do Builtin.trap ()
 
 
 
@@ -87,135 +87,135 @@ type Range {
 // int
 @public @inline @operator(80)
 func + :: Int Int -> Int = (a b) {
-    let v = LLVM.i_add a.value b.value
+    let v = Builtin.i_add a.value b.value
     condFail v.1
     return Int v.0
 }
 
 @public @inline @operator(80)
 func - :: Int Int -> Int = (a b) {
-    let v = LLVM.i_sub a.value b.value
+    let v = Builtin.i_sub a.value b.value
     condFail v.1
     return Int v.0
 }
 
 @public @inline @operator(100)
 func * :: Int Int -> Int = (a b) {
-    let v = LLVM.i_mul a.value b.value
+    let v = Builtin.i_mul a.value b.value
     condFail v.1
     return Int v.0
 }
 
 @public @inline @operator(20)
 func == :: Int Int -> Bool = (a b) do
-    return Bool (LLVM.i_eq a.value b.value)
+    return Bool (Builtin.i_eq a.value b.value)
 
 @public @inline @operator(20)
 func != :: Int Int -> Bool = (a b) do
-    return Bool (LLVM.i_neq a.value b.value)
+    return Bool (Builtin.i_neq a.value b.value)
 
 @public @inline @operator(100)
 func / :: Int Int -> Int = (a b) {
     assert b != 0
-    return Int (LLVM.i_div a.value b.value)
+    return Int (Builtin.i_div a.value b.value)
 }
 @public @inline @operator(90)
 func % :: Int Int -> Int = (a b) do
-    return Int (LLVM.i_rem a.value b.value)
+    return Int (Builtin.i_rem a.value b.value)
 
 @public @inline @operator(30)
 func < :: Int Int -> Bool = (a b) do
-    return Bool (LLVM.i_cmp_lt a.value b.value)
+    return Bool (Builtin.i_cmp_lt a.value b.value)
 
 @public @inline @operator(30)
 func <= :: Int Int -> Bool = (a b) do
-    return Bool (LLVM.i_cmp_lte a.value b.value)
+    return Bool (Builtin.i_cmp_lte a.value b.value)
 
 @public @inline @operator(30)
 func >= :: Int Int -> Bool = (a b) do
-    return Bool (LLVM.i_cmp_gte a.value b.value)
+    return Bool (Builtin.i_cmp_gte a.value b.value)
 
 @public @inline @operator(30)
 func > :: Int Int -> Bool = (a b) do
-    return Bool (LLVM.i_cmp_gt a.value b.value)
+    return Bool (Builtin.i_cmp_gt a.value b.value)
 
 @public @inline @operator(10)
 func << :: Int Int -> Int = (a b) do
-    return Int (LLVM.i_shl a.value b.value)
+    return Int (Builtin.i_shl a.value b.value)
 
 @public @inline @operator(10)
 func >> :: Int Int -> Int = (a b) do
-    return Int (LLVM.i_shr a.value b.value)
+    return Int (Builtin.i_shr a.value b.value)
 
 @public @inline @operator(15)
 func ~& :: Int Int -> Int = (a b) do
-    return Int (LLVM.i_and a.value b.value)
+    return Int (Builtin.i_and a.value b.value)
 
 @public @inline @operator(10)
 func ~| :: Int Int -> Int = (a b) do
-    return Int (LLVM.i_or a.value b.value)
+    return Int (Builtin.i_or a.value b.value)
 
 @public @inline @operator(10)
 func ~^ :: Int Int -> Int = (a b) do
-    return Int (LLVM.i_xor a.value b.value)
+    return Int (Builtin.i_xor a.value b.value)
 
 
 
 // bool
 @public @inline @operator(15)
 func && :: Bool Bool -> Bool = (a b) do
-    return Bool (LLVM.b_and a.value b.value)
+    return Bool (Builtin.b_and a.value b.value)
 
 @public @inline @operator(10)
 func || :: Bool Bool -> Bool = (a b) do
-    return Bool (LLVM.b_or a.value b.value)
+    return Bool (Builtin.b_or a.value b.value)
 // TODO:: ! prefix operator
 
 
 // float
 @public @inline @operator(80)
 func + :: Double Double -> Double = (a b) do
-    return Double (LLVM.f_add a.value b.value)
+    return Double (Builtin.f_add a.value b.value)
 
 @public @inline @operator(80)
 func - :: Double Double -> Double = (a b) do
-    return Double (LLVM.f_sub a.value b.value)
+    return Double (Builtin.f_sub a.value b.value)
 
 @public @inline @operator(100)
 func * :: Double Double -> Double = (a b) do
-    return Double (LLVM.f_mul a.value b.value)
+    return Double (Builtin.f_mul a.value b.value)
 
 @public @inline @operator(100)
 func / :: Double Double -> Double = (a b) do
-    return Double (LLVM.f_div a.value b.value)
+    return Double (Builtin.f_div a.value b.value)
 
 @public @inline @operator(90)
 func % :: Double Double -> Double = (a b) do
-    return Double (LLVM.f_rem a.value b.value)
+    return Double (Builtin.f_rem a.value b.value)
 
 @public @inline @operator(30)
 func < :: Double Double -> Bool = (a b) do
-    return Bool (LLVM.f_cmp_lt a.value b.value)
+    return Bool (Builtin.f_cmp_lt a.value b.value)
 
 @public @inline @operator(30)
 func <= :: Double Double -> Bool = (a b) do
-    return Bool (LLVM.f_cmp_lte a.value b.value)
+    return Bool (Builtin.f_cmp_lte a.value b.value)
 
 @public @inline @operator(30)
 func > :: Double Double -> Bool = (a b) do
-    return Bool (LLVM.f_cmp_gt a.value b.value)
+    return Bool (Builtin.f_cmp_gt a.value b.value)
 
 @public @inline @operator(30)
 func >= :: Double Double -> Bool = (a b) do
-    return Bool (LLVM.f_cmp_gte a.value b.value)
+    return Bool (Builtin.f_cmp_gte a.value b.value)
 
 @public @inline @operator(20)
 func == :: Double Double -> Bool = (a b) do
-    return Bool (LLVM.f_eq a.value b.value)
+    return Bool (Builtin.f_eq a.value b.value)
 
 @public @inline @operator(20)
 func != :: Double Double -> Bool = (a b) do
-    return Bool (LLVM.f_neq a.value b.value)
+    return Bool (Builtin.f_neq a.value b.value)
 
 
 
