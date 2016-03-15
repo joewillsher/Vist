@@ -21,9 +21,12 @@ protocol VHIRLower {
 }
 
 extension Operand: VHIRLower {
+    
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        if loweredValue != nil { return loweredValue }
-        if case let lowerable as VHIRLower = value {
+        if loweredValue != nil {
+            return loweredValue
+        }
+        else if case let lowerable as VHIRLower = value {
             return try lowerable.vhirLower(module, irGen: irGen)
         }
         else {
@@ -228,8 +231,12 @@ extension BuiltinInstCall: VHIRLower {
             // handle calls which arent intrinsics, but builtin
             // instructions. Return these directly
         case .lte: return LLVMBuildICmp(irGen.builder, LLVMIntSLE, l.loweredValue, r.loweredValue, irName ?? "")
+        case .lt: return LLVMBuildICmp(irGen.builder, LLVMIntSLT, l.loweredValue, r.loweredValue, irName ?? "")
+        case .gte: return LLVMBuildICmp(irGen.builder, LLVMIntSGE, l.loweredValue, r.loweredValue, irName ?? "")
+        case .gt: return LLVMBuildICmp(irGen.builder, LLVMIntSGT, l.loweredValue, r.loweredValue, irName ?? "")
         case .iaddoverflow: return LLVMBuildAdd(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
         case .idiv: return LLVMBuildSDiv(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
+        case .irem: return LLVMBuildSRem(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
         }
         
         let ir = args.ptr()
@@ -253,8 +260,8 @@ extension CondBreakInst: VHIRLower {
 
 extension AllocInst: VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        let addr = LLVMBuildAlloca(irGen.builder, address.memType.lowerType(module), irName ?? "")
-        address.loweredAddress = addr
+        let addr = LLVMBuildAlloca(irGen.builder, memType.lowerType(module), irName ?? "")
+        updateUsesWithLoweredAddress(addr)
         return addr
     }
 }

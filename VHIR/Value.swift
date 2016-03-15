@@ -68,6 +68,17 @@ extension RValue {
     }
 }
 
+extension LValue {
+    
+    /// Adds the lowered val to all users
+    func updateUsesWithLoweredAddress(val: LLVMValueRef) {
+        for case let use as PtrOperand in uses {
+            use.setLoweredAddress(val)
+        }
+    }
+
+}
+
 extension Value {
     
     func dump() { print(vhir) }

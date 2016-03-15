@@ -18,7 +18,7 @@ extension VHIRElement {
 }
 
 enum VHIRError: ErrorType {
-    case noFunctionBody, hasBody, instNotInBB, bbNotInFn, cannotMoveBuilderHere, noParentBlock, noParamNamed(String), noUse, noType, noModule
+    case noFunctionBody, hasBody, instNotInBB, bbNotInFn, cannotMoveBuilderHere, noParentBlock, noParamNamed(String), noUse, noType(StaticString), noModule
     case notGenerator, paramsNotTyped, wrongBlockParams
     case builtinIncorrectOperands(inst: BuiltinInst, recieved: Int)
 }
@@ -30,7 +30,7 @@ enum VHIRError: ErrorType {
 
 extension CollectionType where Generator.Element : VHIRElement {
     func vhirValueTuple() -> String {
-        let a = map { $0.vhir }
+        let a = map { $0.vhir }        
         return "(\(a.joinWithSeparator(", ")))"
     }
 }

@@ -7,7 +7,7 @@
 //
 
 /// - Declaration / Decl
-protocol Decl: ASTNode, DeclTypeProvider, VHIRStmtGenerator {}
+protocol Decl: ASTNode, DeclTypeProvider, StmtEmitter {}
 
 
 final class VariableDecl: Decl, StructMemberExpr {

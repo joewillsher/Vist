@@ -7,21 +7,21 @@
 //
 
 
-protocol VHIRGenerator {
-    func emitValue(module module: Module, scope: Scope) throws -> Accessor
+protocol RValueEmitter {
+    func emitRValue(module module: Module, scope: Scope) throws -> Accessor
 }
-protocol VHIRStmtGenerator {
+protocol StmtEmitter {
     func emitStmt(module module: Module, scope: Scope) throws
 }
 
-private protocol RValueEmitter {
-    func emitRValue(module module: Module, scope: Scope) throws -> GetSetAccessor
+protocol LValueEmitter: RValueEmitter {
+    func emitLValue(module module: Module, scope: Scope) throws -> GetSetAccessor
 }
 
-// MARK: Special
+
 
 extension Expr {
-    func emitValue(module module: Module, scope: Scope) throws -> Accessor {
+    func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         throw VHIRError.notGenerator
     }
 }
@@ -48,9 +48,8 @@ extension AST {
         let main = try builder.buildFunction("main", type: mainTy, paramNames: [])
         
         for x in exprs {
-            if case let g as VHIRGenerator = x {
-                try g.emitValue(module: module, scope: scope) }
-            else if case let g as VHIRStmtGenerator = x { try g.emitStmt(module: module, scope: scope) }
+            if case let g as RValueEmitter = x { try g.emitRValue(module: module, scope: scope) }
+            else if case let g as StmtEmitter = x { try g.emitStmt(module: module, scope: scope) }
         }
         
         try builder.setInsertPoint(main)
@@ -66,33 +65,33 @@ private extension RValue {
     /// Builds a reference accessor which can store into & load from
     /// the memory it allocates
     func buildReferenceAccessor() throws -> GetSetAccessor {
-        let allocation = try module.builder.buildAlloc(type!)
-        try module.builder.buildStore(Operand(self), to: allocation.address)
-        return RefAccessor(allocation.address)
+        let allocation = PtrOperand(try module.builder.buildAlloc(type!))
+        try module.builder.buildStore(Operand(self), in: allocation)
+        return RefAccessor(allocation)
     }
 }
 
 // MARK: Lower AST nodes to instructions
 
-extension IntegerLiteral: VHIRGenerator {
+extension IntegerLiteral: RValueEmitter {
     
-    func emitValue(module module: Module, scope: Scope) throws -> Accessor {
+    func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         return try module.builder.buildIntLiteral(val).accessor
     }
 }
 
-extension BooleanLiteral: VHIRGenerator {
+extension BooleanLiteral: RValueEmitter {
     
-    func emitValue(module module: Module, scope: Scope) throws -> Accessor {
+    func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         return try module.builder.buildBoolLiteral(val).accessor
     }
 }
 
-extension VariableDecl: VHIRGenerator {
+extension VariableDecl: RValueEmitter {
     
-    func emitValue(module module: Module, scope: Scope) throws -> Accessor {
+    func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
 
-        let val = try value.emitValue(module: module, scope: scope).getter()
+        let val = try value.emitRValue(module: module, scope: scope).getter()
         
         if isMutable {
             let variable = try val.buildReferenceAccessor()
@@ -109,8 +108,8 @@ extension VariableDecl: VHIRGenerator {
 
 extension FunctionCall/*: VHIRGenerator*/ {
     
-    func emitValue(module module: Module, scope: Scope) throws -> Accessor {
-        let args = try argArr.map { Operand(try $0.emitValue(module: module, scope: scope).getter()) }
+    func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
+        let args = try argArr.map { Operand(try $0.emitRValue(module: module, scope: scope).getter()) }
         guard let argTypes = argArr.optionalMap({ $0._type }) else { throw VHIRError.paramsNotTyped }
         
         if let stdlib = try module.stdLibFunctionNamed(name, argTypes: argTypes) {
@@ -132,10 +131,10 @@ extension FunctionCall/*: VHIRGenerator*/ {
     }
 }
 
-extension FuncDecl: VHIRStmtGenerator {
+extension FuncDecl: StmtEmitter {
     
     func emitStmt(module module: Module, scope: Scope) throws {
-        guard let type = fnType.type else { throw VHIRError.noType }
+        guard let type = fnType.type else { throw VHIRError.noType(#file) }
         
         // if has body
         guard let impl = impl else {
@@ -165,55 +164,69 @@ extension FuncDecl: VHIRStmtGenerator {
 
 
 
-extension VariableExpr: VHIRGenerator {
+extension VariableExpr: LValueEmitter {
     
-    func emitValue(module module: Module, scope: Scope) throws -> Accessor {
+    func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         return scope.variableNamed(name)!
+    }
+    func emitLValue(module module: Module, scope: Scope) throws -> GetSetAccessor {
+        return scope.variableNamed(name)! as! GetSetAccessor
     }
 }
 
-extension ReturnStmt: VHIRGenerator {
+extension ReturnStmt: RValueEmitter {
     
-    func emitValue(module module: Module, scope: Scope) throws -> Accessor {
-        let retVal = try expr.emitValue(module: module, scope: scope).getter()
+    func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
+        let retVal = try expr.emitRValue(module: module, scope: scope).getter()
         return try module.builder.buildReturn(Operand(retVal)).accessor
     }
 }
 
-extension TupleExpr: VHIRGenerator {
+extension TupleExpr: RValueEmitter {
     
-    func emitValue(module module: Module, scope: Scope) throws -> Accessor {
-        guard let type = type else { throw VHIRError.noType }
-        let elements = try self.elements.map { try $0.emitValue(module: module, scope: scope).getter() }.map(Operand.init)
+    func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
+        guard let type = type else { throw VHIRError.noType(#file) }
+        let elements = try self.elements.map { try $0.emitRValue(module: module, scope: scope).getter() }.map(Operand.init)
         return try module.builder.buildTupleCreate(type, elements: elements).accessor
     }
 }
 
-extension TupleMemberLookupExpr: VHIRGenerator {
+extension TupleMemberLookupExpr: RValueEmitter, LValueEmitter {
     
-    func emitValue(module module: Module, scope: Scope) throws -> Accessor {
-        let tuple = try object.emitValue(module: module, scope: scope).getter()
+    func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
+        let tuple = try object.emitRValue(module: module, scope: scope).getter()
         return try module.builder.buildTupleExtract(Operand(tuple), index: index).accessor
     }
-}
-extension PropertyLookupExpr: VHIRGenerator {
     
-    func emitValue(module module: Module, scope: Scope) throws -> Accessor {
-        let object = try self.object.emitValue(module: module, scope: scope).getter()
+    func emitLValue(module module: Module, scope: Scope) throws -> GetSetAccessor {
+        guard case let o as LValueEmitter = object else { fatalError() }
+        
+        let tuple = try o.emitLValue(module: module, scope: scope)
+        let addr = tuple.accessor()
+        
+        let el = try module.builder.buildTupleElementPtr(addr, index: index)
+        
+        return RefAccessor(PtrOperand(el))
+    }
+}
+extension PropertyLookupExpr: RValueEmitter {
+    
+    func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
+        let object = try self.object.emitRValue(module: module, scope: scope).getter()
         return try module.builder.buildStructExtract(Operand(object), property: propertyName).accessor
     }
 }
 
-extension BlockExpr: VHIRStmtGenerator {
+extension BlockExpr: StmtEmitter {
     
     func emitStmt(module module: Module, scope: Scope) throws {
-        for case let x as VHIRGenerator in exprs {
-            try x.emitValue(module: module, scope: scope)
+        for case let x as RValueEmitter in exprs {
+            try x.emitRValue(module: module, scope: scope)
         }
     }
 }
 
-extension ConditionalStmt: VHIRStmtGenerator {
+extension ConditionalStmt: StmtEmitter {
     
     func emitStmt(module module: Module, scope: Scope) throws {
         
@@ -228,7 +241,7 @@ extension ConditionalStmt: VHIRStmtGenerator {
             let failBlock: BasicBlock
             
             if let c = branch.condition {
-                let cond = try c.emitValue(module: module, scope: scope).getter()
+                let cond = try c.emitRValue(module: module, scope: scope).getter()
                 let v = try module.builder.buildStructExtract(Operand(cond), property: "value")
                 
                 // if its the last block, a condition fail takes
@@ -270,7 +283,7 @@ extension ConditionalStmt: VHIRStmtGenerator {
 }
 
 
-extension ForInLoopStmt: VHIRStmtGenerator {
+extension ForInLoopStmt: StmtEmitter {
     
 //        break $loop(%6: %Builtin.Int64)
 //    
@@ -289,7 +302,7 @@ extension ForInLoopStmt: VHIRStmtGenerator {
     func emitStmt(module module: Module, scope: Scope) throws {
         
         // extract loop start and ends as builtin ints
-        let range = try iterator.emitValue(module: module, scope: scope).getter()
+        let range = try iterator.emitRValue(module: module, scope: scope).getter()
         let startInt = try module.builder.buildStructExtract(Operand(range), property: "start")
         let endInt = try module.builder.buildStructExtract(Operand(range), property: "end")
         let start = try module.builder.buildStructExtract(Operand(startInt), property: "value")
@@ -329,7 +342,7 @@ extension ForInLoopStmt: VHIRStmtGenerator {
     }
 }
 
-extension WhileLoopStmt: VHIRStmtGenerator {
+extension WhileLoopStmt: StmtEmitter {
     
     func emitStmt(module module: Module, scope: Scope) throws {
         
@@ -342,7 +355,7 @@ extension WhileLoopStmt: VHIRStmtGenerator {
         try module.builder.buildBreak(to: condBlock)
         try module.builder.setInsertPoint(condBlock)
         
-        let condBool = try condition.emitValue(module: module, scope: scope).getter()
+        let condBool = try condition.emitRValue(module: module, scope: scope).getter()
         let cond = try module.builder.buildStructExtract(Operand(condBool), property: "value", irName: "cond")
         
         // cond break into/past loop
@@ -358,9 +371,9 @@ extension WhileLoopStmt: VHIRStmtGenerator {
     }
 }
 
-extension StructExpr: VHIRGenerator {
+extension StructExpr: RValueEmitter {
     
-    func emitValue(module module: Module, scope: Scope) throws -> Accessor {
+    func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         
         guard let type = type else { throw irGenError(.notTyped) }
         
@@ -382,10 +395,10 @@ extension StructExpr: VHIRGenerator {
     }
 }
 
-extension InitialiserDecl: VHIRStmtGenerator {
+extension InitialiserDecl: StmtEmitter {
     
     func emitStmt(module module: Module, scope: Scope) throws {
-        guard let type = ty.type, selfType = parent?.type else { throw VHIRError.noType }
+        guard let type = ty.type, selfType = parent?.type else { throw VHIRError.noType(#file) }
         
         // if has body
         guard let impl = impl else {
@@ -402,8 +415,12 @@ extension InitialiserDecl: VHIRStmtGenerator {
         // make scope and occupy it with params
         let fnScope = Scope(parent: scope)
         
-        let selfVar = RefAccessor(try module.builder.buildAlloc(selfType, irName: "self").address)
+        let selfVar = RefAccessor(PtrOperand(try module.builder.buildAlloc(selfType, irName: "self")))
         fnScope.add(selfVar, name: "self")
+        
+        // add self elements into the scope, whose accessors are elements of selfvar
+        
+        
         
         for param in impl.params {
             fnScope.add(ValAccessor(try function.paramNamed(param)), name: param)
@@ -417,18 +434,18 @@ extension InitialiserDecl: VHIRStmtGenerator {
     }
 }
 
-extension MutationExpr: VHIRGenerator {
+extension MutationExpr: RValueEmitter {
     
-    func emitValue(module module: Module, scope: Scope) throws -> Accessor {
+    func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         
-        let lvalAccessor = try object.emitValue(module: module, scope: scope), rval = try value.emitValue(module: module, scope: scope)
+        let lvalAccessor = try object.emitRValue(module: module, scope: scope), rval = try value.emitRValue(module: module, scope: scope)
         
         guard case let accessor as GetSetAccessor = lvalAccessor else { return VoidLiteralValue().accessor }
         
         try accessor.setter(Operand(try rval.getter()))
         
         // TODO:
-        //  - Each `emitValue` function should return an accessor
+        //  - Each `emitRValue` function should return an accessor
         //  - lval here can use the referencesaccessor setter to store
         //    into the lhs if its a variable
         

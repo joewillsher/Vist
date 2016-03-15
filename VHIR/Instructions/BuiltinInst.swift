@@ -45,21 +45,22 @@ final class BuiltinInstCall: InstBase {
 }
 
 enum BuiltinInst: String {
-    case iadd = "i_add", isub = "i_sub", imul = "i_mul", idiv = "i_div", iaddoverflow = "i_add_overflow"
+    case iadd = "i_add", isub = "i_sub", imul = "i_mul", idiv = "i_div", irem = "i_rem"
+    case iaddoverflow = "i_add_overflow"
     case condfail = "cond_fail"
-    case lte = "comp_lt_e"
+    case lte = "cmp_lte", gte = "cmp_gte", lt = "cmp_lt", gt = "cmp_gt"
     
     var expectedNumOperands: Int {
         switch  self {
-        case .iadd, .isub, .imul, .idiv, .iaddoverflow, .lte: return 2
+        case .iadd, .isub, .imul, .idiv, .iaddoverflow, .irem, .lte, .gte, .lt, .gt: return 2
         case .condfail: return 1
         }
     }
     func returnType(params params: [Ty]) -> Ty? {
         switch self {
         case .iadd, .isub, .imul: return TupleType(members: [params.first!, Builtin.boolType])
-        case .idiv, .iaddoverflow: return params.first
-        case .lte: return Builtin.boolType
+        case .idiv, .iaddoverflow, .irem: return params.first
+        case .lte, .gte, .lt, .gt: return Builtin.boolType
         case .condfail: return Builtin.voidType
         }
     }

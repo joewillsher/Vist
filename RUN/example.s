@@ -6,7 +6,7 @@ _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	movl	$2, %eax
+	movl	$1100, %eax             ## imm = 0x44C
 	movl	%eax, %edi
 	popq	%rbp
 	jmp	"_-Uprint_i64"          ## TAILCALL

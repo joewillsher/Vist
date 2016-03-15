@@ -15,6 +15,8 @@ class Operand: RValue {
         self.value = value
         value.addUse(self)
     }
+    @available(*, unavailable, message="`Operand` initialisers should not take `Operand`s")
+    init(_ operand: Operand) { fatalError() }
     
     deinit {
         try! value?.removeUse(self)
@@ -51,6 +53,16 @@ class Operand: RValue {
     func dumpIR() { if loweredValue != nil { LLVMDumpValue(loweredValue) } else { print("\(irName) <NULL>") } }
 }
 
+
+final class PtrOperand: Operand, LValue {
+    
+    private(set) var loweredAddress: LLVMValueRef = nil
+    
+    func setLoweredAddress(val: LLVMValueRef) {
+        loweredAddress = val
+    }
+    
+}
 
 /// An operand applied to a block, loweredValue is lazily evaluated
 /// so phi nodes can be created when theyre needed, allowing their values

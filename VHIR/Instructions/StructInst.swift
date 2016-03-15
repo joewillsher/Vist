@@ -54,7 +54,7 @@ extension Builder {
         return s
     }
     func buildStructExtract(object: Operand, property: String, irName: String? = nil) throws -> StructExtractInst {
-        guard case let alias as TypeAlias = object.type, case let structType as StructType = alias.targetType else { throw VHIRError.noType }
+        guard case let alias as TypeAlias = object.type, case let structType as StructType = alias.targetType else { throw VHIRError.noType(#file) }
         let elType = try structType.propertyType(property)
         let s = StructExtractInst(object: object, property: property, propertyType: elType.usingTypesIn(module), structType: structType, irName: irName)
         try addToCurrentBlock(s)
@@ -65,7 +65,7 @@ extension Builder {
     // TODO: make stdlib struct messing in the compiler nicer
 
 //    func buildStdlibStructExtract(object: Operand, type: String, property: String, irName: String? = nil) throws -> StructExtractInst {
-//        guard case let alias as TypeAlias = object.type, case let structType as StructType = alias.targetType else { throw VHIRError.noType }
+//        guard case let alias as TypeAlias = object.type, case let structType as StructType = alias.targetType else { throw VHIRError.noType(#file) }
 //        let elType = try structType.propertyType(property)
 //        let s = StructExtractInst(object: object, property: property, propertyType: elType.usingTypesIn(module), structType: structType, irName: irName)
 //        try addToCurrentBlock(s)

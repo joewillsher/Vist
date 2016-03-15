@@ -1,4 +1,10 @@
 
-var a = 1
-a = 2
-print a
+
+var a = (1, false)
+
+print a.1
+
+if 1 < 2 do
+    print 1100
+
+
