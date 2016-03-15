@@ -28,8 +28,6 @@ final class FunctionCallInst: InstBase {
 extension Builder {
     
     func buildFunctionCall(function: Function, args: [Operand], irName: String? = nil) throws -> FunctionCallInst {
-        let s = FunctionCallInst(function: function, args: args, irName: irName)
-        try addToCurrentBlock(s)
-        return s
+        return try _add(FunctionCallInst(function: function, args: args, irName: irName))
     }
 }

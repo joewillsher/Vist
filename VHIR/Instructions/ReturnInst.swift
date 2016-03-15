@@ -30,8 +30,6 @@ extension Builder {
         return try buildReturn(Operand(createVoidLiteral()))
     }
     func buildReturn(value: Operand) throws -> ReturnInst {
-        let retInst = ReturnInst(value: value, parentBlock: insertPoint.block)
-        try addToCurrentBlock(retInst)
-        return retInst
+        return try _add(ReturnInst(value: value, parentBlock: insertPoint.block))
     }
 }

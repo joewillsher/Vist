@@ -207,6 +207,14 @@ extension TupleExtractInst: VHIRLower {
     }
 }
 
+extension TupleElementPtrInst: VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        let ptr = LLVMBuildStructGEP(irGen.builder, tuple.loweredAddress, UInt32(elementIndex), irName ?? "")
+        updateUsesWithLoweredAddress(ptr)
+        return ptr
+    }
+}
+
 extension StructExtractInst: VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         let index = try structType.indexOfMemberNamed(propertyName)
@@ -260,7 +268,7 @@ extension CondBreakInst: VHIRLower {
 
 extension AllocInst: VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        let addr = LLVMBuildAlloca(irGen.builder, memType.lowerType(module), irName ?? "")
+        let addr = LLVMBuildAlloca(irGen.builder, storedType.lowerType(module), irName ?? "")
         updateUsesWithLoweredAddress(addr)
         return addr
     }

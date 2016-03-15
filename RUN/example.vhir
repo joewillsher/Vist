@@ -5,23 +5,27 @@ type %Bool = { %Builtin.Bool }
 func @main : &thin () -> %Builtin.Void {
 $entry:
   %0 = int_literal 1  	// user: %1
-  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %4
-  %2 = int_literal 2  	// user: %3
-  %3 = struct %Int (%2: %Builtin.Int64)  	// user: %4
-  %4 = call @-L_Int_Int (%1: %Int, %3: %Int)  	// user: %5
-  %5 = struct_extract %4: %Bool, #Bool.value  	// user: 
-  break %5: %Builtin.Bool, $if.0, $exit
-
-$if.0:			// preds: entry
-  %7 = int_literal 1100  	// user: %8
-  %8 = struct %Int (%7: %Builtin.Int64)  	// user: %9
-  %9 = call @print_Int (%8: %Int) 
-  break $exit
-
-$exit:			// preds: entry, if.0
+  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %9
+  %2 = int_literal 1  	// user: %3
+  %3 = struct %Int (%2: %Builtin.Int64)  	// user: %8
+  %4 = int_literal 1  	// user: %5
+  %5 = struct %Int (%4: %Builtin.Int64)  	// user: %8
+  %6 = bool_literal false  	// user: %7
+  %7 = struct %Bool (%6: %Builtin.Bool)  	// user: %8
+  %8 = tuple (%3: %Int, %5: %Int, %7: %Bool)  	// user: %9
+  %9 = tuple (%1: %Int, %8: (%Int, %Int, %Bool))  	// user: %11
+  %10 = alloc (%Int, (%Int, %Int, %Bool))  	// user: %11
+  store %9 in %10: %*Int.Int.Int.Bool.tuple.tuple 
+  %12 = bool_literal true  	// user: %13
+  %13 = struct %Bool (%12: %Builtin.Bool)  	// user: %16
+  %14 = tuple_element %10: %*Int.Int.Int.Bool.tuple.tuple, 1  	// user: %15
+  %15 = tuple_element %14: %*Int.Int.Bool.tuple, 2  	// user: %16
+  store %13 in %15: %*Bool 
+  %17 = load %10: %*Int.Int.Int.Bool.tuple.tuple  	// user: %18
+  %18 = tuple_extract %17: (%Int, (%Int, %Int, %Bool)), 1  	// user: %19
+  %19 = tuple_extract %18: (%Int, %Int, %Bool), 2  	// user: %20
+  %20 = call @print_Bool (%19: %Bool) 
   return ()
 }
 
-func @-L_Int_Int : &thin (%Int, %Int) -> %Bool
-
-func @print_Int : &thin (%Int) -> %Builtin.Void
+func @print_Bool : &thin (%Bool) -> %Builtin.Void

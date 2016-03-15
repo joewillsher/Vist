@@ -21,8 +21,13 @@ struct Runtime {
         ("_print", FnType(params: [boolType], returns: voidType)),
         ("_print", FnType(params: [int32Type], returns: voidType)),
     ]
+    private static let unmangled: [(String, FnType)] = [
+        // runtime fns
+//        ("_alloc", FnType(params: [Builtin.pointer(to: intType)], returns: voidType)),
+    ]
     
     private static let functionContainer = FunctionContainer(functions: functions, types: [])
+    private static let unmangledContainer = FunctionContainer(functions: unmangled, types: [], mangleFunctionNames: false)
     
     /// Get a builtin function by name
     ///

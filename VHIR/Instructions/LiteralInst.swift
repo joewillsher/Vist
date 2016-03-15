@@ -73,9 +73,7 @@ final class VoidLiteralValue: RValue {
 extension Builder {
     /// Builds a builtin i64 object
     func buildBuiltinInt(val: Int, irName: String? = nil) throws -> IntLiteralInst {
-        let v = IntLiteralInst(val: val, irName: irName)
-        try addToCurrentBlock(v)
-        return v
+        return try _add(IntLiteralInst(val: val, irName: irName))
     }
     
     /// Builds an `Int` literal from a value
@@ -87,9 +85,7 @@ extension Builder {
     
     /// Builds a builtin i1 object
     func buildBuiltinBool(val: Bool, irName: String? = nil) throws -> BoolLiteralInst {
-        let v = BoolLiteralInst(val: val, irName: irName)
-        try addToCurrentBlock(v)
-        return v
+        return try _add(BoolLiteralInst(val: val, irName: irName))
     }
     
     /// Builds an `Bool` literal from a value

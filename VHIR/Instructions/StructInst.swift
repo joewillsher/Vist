@@ -44,21 +44,15 @@ final class StructExtractInst: InstBase {
 
 extension Builder {
     func buildStructInit(type: StructType, values: Operand..., irName: String? = nil) throws -> StructInitInst {
-        let s = StructInitInst(type: type, args: values, irName: irName)
-        try addToCurrentBlock(s)
-        return s
+        return try _add(StructInitInst(type: type, args: values, irName: irName))
     }
     func buildEmptyStruct(type: StructType, irName: String? = nil) throws -> StructInitInst {
-        let s = StructInitInst(type: type, args: [], irName: irName)
-        try addToCurrentBlock(s)
-        return s
+        return try _add(StructInitInst(type: type, args: [], irName: irName))
     }
     func buildStructExtract(object: Operand, property: String, irName: String? = nil) throws -> StructExtractInst {
         guard case let alias as TypeAlias = object.type, case let structType as StructType = alias.targetType else { throw VHIRError.noType(#file) }
         let elType = try structType.propertyType(property)
-        let s = StructExtractInst(object: object, property: property, propertyType: elType.usingTypesIn(module), structType: structType, irName: irName)
-        try addToCurrentBlock(s)
-        return s
+        return try _add(StructExtractInst(object: object, property: property, propertyType: elType.usingTypesIn(module), structType: structType, irName: irName))
     }
     
     // TODO: compound extracting

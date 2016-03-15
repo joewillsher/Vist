@@ -56,6 +56,18 @@ class Operand: RValue {
 
 final class PtrOperand: Operand, LValue {
     
+    private var _value: LValue
+    override var value: RValue? {
+        get { return _value }
+        set { if case let v as LValue = newValue { _value = v } else { fatalError() } }
+    }
+    var memType: Ty? { return _value.memType }
+    
+    init(_ value: LValue) {
+        _value = value
+        super.init(value)
+    }
+    
     private(set) var loweredAddress: LLVMValueRef = nil
     
     func setLoweredAddress(val: LLVMValueRef) {

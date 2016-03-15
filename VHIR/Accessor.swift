@@ -19,7 +19,7 @@ protocol Accessor {
 /// An Accessor which allows setting, as well as self lookup by ptr
 protocol GetSetAccessor: Accessor {
     func setter(val: Operand) throws
-    func accessor() -> Operand
+    func accessor() -> PtrOperand
 }
 
 /// Provides access to a value with backing memory. This value
@@ -37,7 +37,7 @@ final class RefAccessor: GetSetAccessor {
         try addr.module.builder.buildStore(val, in: addr)
     }
     
-    func accessor() -> Operand { return addr }
+    func accessor() -> PtrOperand { return addr }
 }
 
 /// Provides access to values by exposing a getter which returns the value

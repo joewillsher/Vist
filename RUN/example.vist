@@ -1,10 +1,7 @@
 
 
-var a = (1, false)
+var a = (1, (1, 1, false))
 
-print a.1
+a.1 .2 = true
 
-if 1 < 2 do
-    print 1100
-
-
+print a.1 .2

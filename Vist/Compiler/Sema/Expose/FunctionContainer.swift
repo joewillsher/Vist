@@ -20,12 +20,12 @@ struct FunctionContainer {
     /// Tuples are of the unmangled name and the type object
     ///
     /// Optionally takes an array of metadata to apply to all functions
-    init (functions: [(String, FnType)], types: [StructType], metadata: [String] = []) {
+    init (functions: [(String, FnType)], types: [StructType], metadata: [String] = [], mangleFunctionNames: Bool = true) {
         var t: [String: FnType] = [:]
         
         for (n, _ty) in functions {
             var ty = _ty
-            let mangled = n.mangle(ty.params)
+            let mangled = mangleFunctionNames ? n.mangle(ty.params) : n
             ty.metadata += metadata
             t[mangled] = ty
         }

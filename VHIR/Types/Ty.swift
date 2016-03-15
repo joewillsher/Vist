@@ -84,6 +84,10 @@ func == (lhs: FnType, rhs: FnType) -> Bool {
 func == (lhs: TupleType, rhs: TupleType) -> Bool {
     return lhs.members.elementsEqual(rhs.members, isEquivalent: ==)
 }
+@warn_unused_result
+func == (lhs: TypeAlias, rhs: TypeAlias) -> Bool {
+    return lhs.targetType == rhs.targetType
+}
 
 @warn_unused_result
 func != (lhs: Ty, rhs: Ty) -> Bool {
@@ -102,13 +106,15 @@ func == (lhs: Ty, rhs: Ty) -> Bool {
     case (let l as GenericType, let r as StorageType):
         return r.validSubstitutionFor(l)
         
-    case (let l as FnType, let r as FnType):
+    case let (l as FnType, r as FnType):
         return r == l
     case (let lhs as StorageType, let rhs as StorageType):
         return lhs.name == rhs.name && lhs.members.elementsEqual(rhs.members, isEquivalent: ==) && lhs.methods.elementsEqual(rhs.methods, isEquivalent: ==)
-    case (let l as BuiltinType, let r as BuiltinType):
+    case let (l as BuiltinType, r as BuiltinType):
         return l == r
-    case (let l as TupleType, let r as TupleType):
+    case let (l as TupleType, r as TupleType):
+        return l == r
+    case let (l as TypeAlias, r as TypeAlias):
         return l == r
     default:
         return false

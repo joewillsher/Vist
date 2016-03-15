@@ -6,10 +6,9 @@ _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	movl	$1100, %eax             ## imm = 0x44C
-	movl	%eax, %edi
+	movl	$1, %edi
 	popq	%rbp
-	jmp	"_-Uprint_i64"          ## TAILCALL
+	jmp	"_-Uprint_b"            ## TAILCALL
 
 
 .subsections_via_symbols

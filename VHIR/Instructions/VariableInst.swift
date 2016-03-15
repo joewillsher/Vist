@@ -28,8 +28,6 @@ final class VariableInst: InstBase {
 extension Builder {
     
     func buildVariableDecl(value: Operand, irName: String? = nil) throws -> VariableInst {
-        let v = VariableInst(value: value, irName: irName)
-        try addToCurrentBlock(v)
-        return v
+        return try _add(VariableInst(value: value, irName: irName))
     }
 }

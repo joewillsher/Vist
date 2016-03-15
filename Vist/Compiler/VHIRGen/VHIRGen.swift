@@ -438,11 +438,12 @@ extension MutationExpr: RValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         
-        let lvalAccessor = try object.emitRValue(module: module, scope: scope), rval = try value.emitRValue(module: module, scope: scope)
+        let rval = try value.emitRValue(module: module, scope: scope)
         
-        guard case let accessor as GetSetAccessor = lvalAccessor else { return VoidLiteralValue().accessor }
+        guard case let lhs as LValueEmitter = object else { fatalError() }
+        let lvalAccessor = try lhs.emitLValue(module: module, scope: scope)
         
-        try accessor.setter(Operand(try rval.getter()))
+        try lvalAccessor.setter(Operand(try rval.getter()))
         
         // TODO:
         //  - Each `emitRValue` function should return an accessor

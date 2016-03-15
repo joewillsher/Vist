@@ -71,7 +71,6 @@ extension Builder {
     
     func buildBuiltinInstruction(i: BuiltinInst, args: Operand..., irName: String? = nil) throws -> BuiltinInstCall {
         guard args.count == i.expectedNumOperands, let binInst = BuiltinInstCall(inst: i, args: args, irName: irName) else { throw VHIRError.builtinIncorrectOperands(inst: i, recieved: args.count) }
-        try addToCurrentBlock(binInst)
-        return binInst
+        return try _add(binInst)
     }
 }

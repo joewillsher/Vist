@@ -58,4 +58,11 @@ extension Builder {
         block.append(inst)
         try setInsertPoint(inst)
     }
+    
+    /// Handles adding the instruction to the block -- then returns it
+    func _add<I: Inst>(instruction: I) throws -> I {
+        try addToCurrentBlock(instruction)
+        return instruction
+    }
+    
 }

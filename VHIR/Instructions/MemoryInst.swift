@@ -7,16 +7,18 @@
 //
 
 final class AllocInst: InstBase, LValue {
-    override var type: Ty? { return memType }
-    var memType: Ty
+    var storedType: Ty
     
     private init(memType: Ty, irName: String?) {
-        self.memType = memType
+        self.storedType = memType
         super.init(args: [], irName: irName)
     }
     
+    override var type: Ty? { return BuiltinType.pointer(to: storedType) }
+    var memType: Ty? { return storedType }
+    
     override var instVHIR: String {
-        return "\(name) = alloc \(memType) \(useComment)"
+        return "\(name) = alloc \(storedType) \(useComment)"
     }
 }
 final class StoreInst: InstBase {
@@ -35,7 +37,7 @@ final class StoreInst: InstBase {
     }
 }
 final class LoadInst: InstBase {
-    override var type: Ty? { return address.type }
+    override var type: Ty? { return address.memType }
     private(set) var address: PtrOperand
     
     private init(address: PtrOperand, irName: String?) {
@@ -53,19 +55,14 @@ extension Builder {
     
     func buildAlloc(type: Ty, irName: String? = nil) throws -> AllocInst {
         let ty = type.usingTypesIn(module)
-        let alloc = AllocInst(memType: ty, irName: irName)
-        try addToCurrentBlock(alloc)
-        return alloc
+        return try _add(AllocInst(memType: ty, irName: irName))
     }
     func buildStore(val: Operand, in address: PtrOperand) throws -> StoreInst {
-        let store = StoreInst(address: address, value: val)
-        try addToCurrentBlock(store)
-        return store
+        guard val.type == address.memType else { fatalError() }
+        return try _add(StoreInst(address: address, value: val))
     }
     func buildLoad(from address: PtrOperand, irName: String? = nil) throws -> LoadInst {
-        let load = LoadInst(address: address, irName: irName)
-        try addToCurrentBlock(load)
-        return load
+        return try _add(LoadInst(address: address, irName: irName))
     }
     
 }

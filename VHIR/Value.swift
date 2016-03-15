@@ -26,7 +26,11 @@ protocol Value: class, VHIRElement {
 
 protocol RValue: Value {
 }
+/// Appears on the LHS of an expressions. `a = 1`, `a.b.c`
 protocol LValue: RValue {
+    /// LValues provide storage which is abstract -- `memType` provides
+    /// an interface to the underlying type, as `type` may return  type `*memType`
+    var memType: Ty? { get }
 }
 
 extension RValue {

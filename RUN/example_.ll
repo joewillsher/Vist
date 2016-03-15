@@ -2,25 +2,23 @@
 target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-macosx10.11.0"
 
-%Bool.st = type { i1 }
 %Int.st = type { i64 }
+%Bool.st = type { i1 }
 
 define void @main() {
 entry:
-  %0 = call %Bool.st @-L_Int_Int(%Int.st { i64 1 }, %Int.st { i64 2 }), !stdlib.call.optim !0
-  %1 = extractvalue %Bool.st %0, 0
-  br i1 %1, label %if.0, label %exit
-
-if.0:                                             ; preds = %entry
-  call void @print_Int(%Int.st { i64 1100 }), !stdlib.call.optim !0
-  br label %exit
-
-exit:                                             ; preds = %if.0, %entry
+  %0 = alloca { %Int.st, { %Int.st, %Int.st, %Bool.st } }
+  store { %Int.st, { %Int.st, %Int.st, %Bool.st } } { %Int.st { i64 1 }, { %Int.st, %Int.st, %Bool.st } { %Int.st { i64 1 }, %Int.st { i64 1 }, %Bool.st zeroinitializer } }, { %Int.st, { %Int.st, %Int.st, %Bool.st } }* %0
+  %1 = getelementptr inbounds { %Int.st, { %Int.st, %Int.st, %Bool.st } }* %0, i32 0, i32 1
+  %2 = getelementptr inbounds { %Int.st, %Int.st, %Bool.st }* %1, i32 0, i32 2
+  store %Bool.st { i1 true }, %Bool.st* %2
+  %3 = load { %Int.st, { %Int.st, %Int.st, %Bool.st } }* %0
+  %4 = extractvalue { %Int.st, { %Int.st, %Int.st, %Bool.st } } %3, 1
+  %5 = extractvalue { %Int.st, %Int.st, %Bool.st } %4, 2
+  call void @print_Bool(%Bool.st %5), !stdlib.call.optim !0
   ret void
 }
 
-declare %Bool.st @-L_Int_Int(%Int.st, %Int.st)
-
-declare void @print_Int(%Int.st)
+declare void @print_Bool(%Bool.st)
 
 !0 = !{!"stdlib.call.optim"}
