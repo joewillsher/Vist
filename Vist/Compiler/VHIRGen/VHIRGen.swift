@@ -58,18 +58,7 @@ extension AST {
     }
 }
 
-private extension RValue {
-    /// The accessor whose getter returns `self`
-    var accessor: ValAccessor { return ValAccessor(self) }
 
-    /// Builds a reference accessor which can store into & load from
-    /// the memory it allocates
-    func buildReferenceAccessor() throws -> GetSetAccessor {
-        let allocation = PtrOperand(try module.builder.buildAlloc(type!))
-        try module.builder.buildStore(Operand(self), in: allocation)
-        return RefAccessor(allocation)
-    }
-}
 
 // MARK: Lower AST nodes to instructions
 
@@ -94,7 +83,7 @@ extension VariableDecl: RValueEmitter {
         let val = try value.emitRValue(module: module, scope: scope).getter()
         
         if isMutable {
-            let variable = try val.buildReferenceAccessor()
+            let variable = try val.alloc()
             scope.add(variable, name: name)
             return variable
         }
@@ -151,7 +140,7 @@ extension FuncDecl: StmtEmitter {
         // make scope and occupy it with params
         let fnScope = Scope(parent: scope)
         for param in impl.params {
-            fnScope.add(ValAccessor(try function.paramNamed(param)), name: param)
+            fnScope.add(try function.paramNamed(param).accessor, name: param)
         }
         
         // vhir gen for body
@@ -201,12 +190,9 @@ extension TupleMemberLookupExpr: RValueEmitter, LValueEmitter {
     func emitLValue(module module: Module, scope: Scope) throws -> GetSetAccessor {
         guard case let o as LValueEmitter = object else { fatalError() }
         
-        let tuple = try o.emitLValue(module: module, scope: scope)
-        let addr = tuple.accessor()
+        let tuple = try o.emitLValue(module: module, scope: scope).accessor()
         
-        let el = try module.builder.buildTupleElementPtr(addr, index: index)
-        
-        return RefAccessor(PtrOperand(el))
+        return try module.builder.buildTupleElementPtr(tuple, index: index).accessor
     }
 }
 extension PropertyLookupExpr: RValueEmitter {
@@ -321,7 +307,7 @@ extension ForInLoopStmt: StmtEmitter {
         // make the loop's vhirgen scope and build the stdint count to put in it
         let loopScope = Scope(parent: scope)
         let loopVariable = try module.builder.buildStructInit(StdLib.intType, values: loopOperand)
-        loopScope.add(ValAccessor(loopVariable), name: binded.name)
+        loopScope.add(loopVariable.accessor, name: binded.name)
         
         // vhirgen the body of the loop
         try block.emitStmt(module: module, scope: loopScope)
@@ -415,7 +401,7 @@ extension InitialiserDecl: StmtEmitter {
         // make scope and occupy it with params
         let fnScope = Scope(parent: scope)
         
-        let selfVar = RefAccessor(PtrOperand(try module.builder.buildAlloc(selfType, irName: "self")))
+        let selfVar = try module.builder.buildAlloc(selfType, irName: "self").accessor
         fnScope.add(selfVar, name: "self")
         
         // add self elements into the scope, whose accessors are elements of selfvar
@@ -423,7 +409,7 @@ extension InitialiserDecl: StmtEmitter {
         
         
         for param in impl.params {
-            fnScope.add(ValAccessor(try function.paramNamed(param)), name: param)
+            fnScope.add(try function.paramNamed(param).accessor, name: param)
         }
         
         // vhir gen for body

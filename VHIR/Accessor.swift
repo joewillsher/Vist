@@ -25,31 +25,31 @@ protocol GetSetAccessor: Accessor {
 /// Provides access to a value with backing memory. This value
 final class RefAccessor: GetSetAccessor {
     
-    private var addr: PtrOperand
+    private var value: LValue
     
-    init(_ addr: PtrOperand) { self.addr = addr }
+    init(value: LValue) { self.value = value }
     
     func getter() throws -> RValue {
-        return try addr.module.builder.buildLoad(from: addr)
+        return try value.module.builder.buildLoad(from: accessor())
     }
     
     func setter(val: Operand) throws {
-        try addr.module.builder.buildStore(val, in: addr)
+        try value.module.builder.buildStore(val, in: accessor())
     }
     
-    func accessor() -> PtrOperand { return addr }
+    func accessor() -> PtrOperand { return PtrOperand(value) }
 }
 
 /// Provides access to values by exposing a getter which returns the value
 final class ValAccessor: Accessor {
     
     private var value: RValue
-    init(_ value: RValue) { self.value = value }
+    init(value: RValue) { self.value = value }
     
     func getter() -> RValue { return value }
 }
 
 
-
+// mutliple users share PtrOperand because this returns the same copy
 
 

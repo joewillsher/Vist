@@ -36,10 +36,7 @@ protocol LValue: RValue {
 extension RValue {
     
     /// Removes all `Operand` instances which point to `self`
-    func removeAllUses() {
-        for use in uses { use.value = nil }
-        uses.removeAll()
-    }
+    func removeAllUses() { uses.forEach(removeUse)  }
     
     /// Replaces all `Operand` instances which point to `self`
     /// with `val`
@@ -47,21 +44,30 @@ extension RValue {
         let u = uses
         removeAllUses()
         
+        // TODO: change this to, test first
+        /*
+         for use in u {
+            use.value = val
+         }
+        */
+        
         for use in u {
             use.value = val
             addUse(use)
         }
     }
     
-    /// Adds record of this use to self
+    /// Adds record of a user `use` to self’s users list
     func addUse(use: Operand) {
         uses.append(use)
     }
     
-    /// Removes `use` from self's uses record
-    func removeUse(use: Operand) throws {
-        guard let i = uses.indexOf({$0.value === self}) else { throw VHIRError.noUse }
+    /// Removes `use` from self’s uses record
+    func removeUse(use: Operand) {
+        guard let i = uses.indexOf({$0.value === self}) else { return }
         uses.removeAtIndex(i)
+        use.value = nil
+        use.user = nil
     }
     
     /// Adds the lowered val to all users
@@ -70,18 +76,23 @@ extension RValue {
             use.setLoweredValue(val)
         }
     }
-}
-
-extension LValue {
     
-    /// Adds the lowered val to all users
-    func updateUsesWithLoweredAddress(val: LLVMValueRef) {
-        for case let use as PtrOperand in uses {
-            use.setLoweredAddress(val)
-        }
+    
+    /// The accessor whose getter returns `self`
+    var accessor: ValAccessor { return ValAccessor(value: self) }
+    
+    /// Builds a reference accessor which can store into & load from
+    /// the memory it allocates
+    func alloc() throws -> GetSetAccessor {
+        let accessor = RefAccessor(value: try module.builder.buildAlloc(type!))
+        try accessor.setter(Operand(self))
+        return accessor
     }
-
 }
+extension LValue {
+    var accessor: GetSetAccessor { return RefAccessor(value: self) }
+}
+
 
 extension Value {
     
@@ -93,23 +104,18 @@ extension Value {
     /// If `self` doesn't have an `irName`, this provides the 
     /// number to use in the ir repr
     func getInstNumber() -> String? {
-        guard let blocks = parentBlock.parentFunction.blocks else { return nil }
         
         var count = 0
-        blockLoop: for block in blocks {
-            instLoop: for inst in block.instructions {
-                if case let o as Operand = self where o.value === inst { break blockLoop }
-                if inst === self { break blockLoop }
-                // we dont want to provide a name for void exprs
-                // remove iteration here, plus in instrs that could be void, remove the `%0 = `...
-                if inst.irName == nil /*&& inst.type != BuiltinType.void*/ { count += 1 }
-            }
+        for inst in parentFunction.instructions {
+            if case let o as Operand = self where o.value === inst { break }
+            else if inst === self { break }
+            // we dont want to provide a name for void exprs
+            // remove iteration here, plus in instrs that could be void, remove the `%0 = `...
+            if inst.irName == nil /*&& inst.type != BuiltinType.void*/ { count += 1 }
         }
         
         return String(count)
     }
-    
-    // MARK: implement protocol methods
     
     var name: String {
         get { return "%\(irName ?? getInstNumber() ?? "<null>")" }

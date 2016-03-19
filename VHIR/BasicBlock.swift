@@ -111,11 +111,11 @@ final class BasicBlock: VHIRElement {
         return i
     }
     
-    /// Returns the instruction using the operand
-    func userOf(use: Operand) -> Inst? {
-        let f = instructions.find { inst in inst.args.contains { arg in arg === use } }
-        return f
-    }
+//    /// Returns the instruction using the operand
+//    func userOf(use: Operand) -> Inst? {
+//        let f = instructions.find { inst in inst.args.contains { arg in arg === use } }
+//        return f
+//    }
     
     // instructions
     func set(inst: Inst, newValue: Inst) throws {
@@ -123,6 +123,7 @@ final class BasicBlock: VHIRElement {
     }
     func remove(inst: Inst) throws {
         instructions.removeAtIndex(try indexOfInst(inst))
+        inst.parentBlock = nil
     }
     
     var module: Module { return parentFunction.module }

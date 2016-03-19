@@ -1,0 +1,126 @@
+
+type %Int = { %Builtin.Int64 }
+type %Bool = { %Builtin.Bool }
+
+func @main : &thin () -> %Builtin.Void {
+$entry:
+  %0 = int_literal 1  	// user: %1
+  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %4
+  %2 = int_literal 3  	// user: %3
+  %3 = struct %Int (%2: %Builtin.Int64)  	// user: %4
+  %4 = call @-P_Int_Int (%1: %Int, %3: %Int)  	// user: %5
+  %5 = call @print_Int (%4: %Int) 
+  %6 = int_literal 2  	// user: %7
+  %7 = struct %Int (%6: %Builtin.Int64)  	// user: %10
+  %8 = int_literal 3  	// user: %9
+  %9 = struct %Int (%8: %Builtin.Int64)  	// user: %10
+  %10 = call @-A_Int_Int (%7: %Int, %9: %Int)  	// user: %11
+  %11 = call @print_Int (%10: %Int) 
+  %12 = int_literal 4  	// user: %13
+  %13 = struct %Int (%12: %Builtin.Int64)  	// user: %16
+  %14 = int_literal 5  	// user: %15
+  %15 = struct %Int (%14: %Builtin.Int64)  	// user: %16
+  %16 = call @-A_Int_Int (%13: %Int, %15: %Int)  	// user: %19
+  %17 = int_literal 2  	// user: %18
+  %18 = struct %Int (%17: %Builtin.Int64)  	// user: %19
+  %19 = call @-M_Int_Int (%16: %Int, %18: %Int)  	// user: %20
+  %20 = call @print_Int (%19: %Int) 
+  %21 = int_literal 13  	// user: %22
+  %22 = struct %Int (%21: %Builtin.Int64)  	// user: %25
+  %23 = int_literal 3  	// user: %24
+  %24 = struct %Int (%23: %Builtin.Int64)  	// user: %25
+  %25 = call @%_Int_Int (%22: %Int, %24: %Int)  	// user: %26
+  %26 = call @print_Int (%25: %Int) 
+  %27 = int_literal 100  	// user: %28
+  %28 = struct %Int (%27: %Builtin.Int64)  	// user: %34
+  %29 = int_literal 100  	// user: %30
+  %30 = struct %Int (%29: %Builtin.Int64)  	// user: %33
+  %31 = int_literal 100  	// user: %32
+  %32 = struct %Int (%31: %Builtin.Int64)  	// user: %33
+  %33 = call @-A_Int_Int (%30: %Int, %32: %Int)  	// user: %34
+  %34 = call @-A_Int_Int (%28: %Int, %33: %Int)  	// user: %35
+  %35 = call @print_Int (%34: %Int) 
+  %36 = int_literal 100  	// user: %37
+  %37 = struct %Int (%36: %Builtin.Int64)  	// user: %40
+  %38 = int_literal 100  	// user: %39
+  %39 = struct %Int (%38: %Builtin.Int64)  	// user: %40
+  %40 = call @-L_Int_Int (%37: %Int, %39: %Int)  	// user: %41
+  %41 = call @print_Bool (%40: %Bool) 
+  %42 = int_literal 100  	// user: %43
+  %43 = struct %Int (%42: %Builtin.Int64)  	// user: %46
+  %44 = int_literal 100  	// user: %45
+  %45 = struct %Int (%44: %Builtin.Int64)  	// user: %46
+  %46 = call @-G-E_Int_Int (%43: %Int, %45: %Int)  	// user: %47
+  %47 = call @print_Bool (%46: %Bool) 
+  %48 = int_literal 10  	// user: %49
+  %49 = struct %Int (%48: %Builtin.Int64)  	// user: %55
+  %50 = int_literal 2  	// user: %51
+  %51 = struct %Int (%50: %Builtin.Int64)  	// user: %54
+  %52 = int_literal 3  	// user: %53
+  %53 = struct %Int (%52: %Builtin.Int64)  	// user: %54
+  %54 = call @-A_Int_Int (%51: %Int, %53: %Int)  	// user: %55
+  %55 = call @-M_Int_Int (%49: %Int, %54: %Int)  	// user: %58
+  %56 = int_literal 4  	// user: %57
+  %57 = struct %Int (%56: %Builtin.Int64)  	// user: %58
+  %58 = call @-E-E_Int_Int (%55: %Int, %57: %Int)  	// user: %59
+  %59 = call @print_Bool (%58: %Bool) 
+  %60 = int_literal 1  	// user: %61
+  %61 = struct %Int (%60: %Builtin.Int64)  	// user: %64
+  %62 = int_literal 2  	// user: %63
+  %63 = struct %Int (%62: %Builtin.Int64)  	// user: %64
+  %64 = call @-L-L_Int_Int (%61: %Int, %63: %Int)  	// user: %65
+  %65 = call @print_Int (%64: %Int) 
+  %66 = int_literal 8  	// user: %67
+  %67 = struct %Int (%66: %Builtin.Int64)  	// user: %70
+  %68 = int_literal 3  	// user: %69
+  %69 = struct %Int (%68: %Builtin.Int64)  	// user: %70
+  %70 = call @-G-G_Int_Int (%67: %Int, %69: %Int)  	// user: %71
+  %71 = call @print_Int (%70: %Int) 
+  %72 = int_literal 6  	// user: %73
+  %73 = struct %Int (%72: %Builtin.Int64)  	// user: %76
+  %74 = int_literal 5  	// user: %75
+  %75 = struct %Int (%74: %Builtin.Int64)  	// user: %76
+  %76 = call @-T-N_Int_Int (%73: %Int, %75: %Int)  	// user: %77
+  %77 = call @print_Int (%76: %Int) 
+  %78 = int_literal 5  	// user: %79
+  %79 = struct %Int (%78: %Builtin.Int64)  	// user: %82
+  %80 = int_literal 3  	// user: %81
+  %81 = struct %Int (%80: %Builtin.Int64)  	// user: %82
+  %82 = call @-T-O_Int_Int (%79: %Int, %81: %Int)  	// user: %83
+  %83 = call @print_Int (%82: %Int) 
+  %84 = int_literal 5  	// user: %85
+  %85 = struct %Int (%84: %Builtin.Int64)  	// user: %88
+  %86 = int_literal 3  	// user: %87
+  %87 = struct %Int (%86: %Builtin.Int64)  	// user: %88
+  %88 = call @-T-R_Int_Int (%85: %Int, %87: %Int)  	// user: %89
+  %89 = call @print_Int (%88: %Int) 
+  return ()
+}
+
+func @-P_Int_Int : &thin (%Int, %Int) -> %Int
+
+func @print_Int : &thin (%Int) -> %Builtin.Void
+
+func @-A_Int_Int : &thin (%Int, %Int) -> %Int
+
+func @-M_Int_Int : &thin (%Int, %Int) -> %Int
+
+func @%_Int_Int : &thin (%Int, %Int) -> %Int
+
+func @-L_Int_Int : &thin (%Int, %Int) -> %Bool
+
+func @print_Bool : &thin (%Bool) -> %Builtin.Void
+
+func @-G-E_Int_Int : &thin (%Int, %Int) -> %Bool
+
+func @-E-E_Int_Int : &thin (%Int, %Int) -> %Bool
+
+func @-L-L_Int_Int : &thin (%Int, %Int) -> %Int
+
+func @-G-G_Int_Int : &thin (%Int, %Int) -> %Int
+
+func @-T-N_Int_Int : &thin (%Int, %Int) -> %Int
+
+func @-T-O_Int_Int : &thin (%Int, %Int) -> %Int
+
+func @-T-R_Int_Int : &thin (%Int, %Int) -> %Int

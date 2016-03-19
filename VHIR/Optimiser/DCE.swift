@@ -7,7 +7,7 @@
 //
 
 
-
+/// Dead code elimination pass
 final class DCEPass: FunctionPass {
     
     init(optLevel: OptLevel) {}
@@ -16,7 +16,7 @@ final class DCEPass: FunctionPass {
         
         for inst in function.instructions.reverse()
             where inst.uses.isEmpty && !inst.instHasSideEffects {
-            try inst.eraseFromParent()
+                try inst.eraseFromParent()
         }
         
     }
@@ -28,7 +28,7 @@ final class DeadFunctionPass: ModulePass {
     
     func runOn(module: Module) throws {
         for _ in module.functions {
-            // remove function if no users
+            // remove function if no users & private
             // need to implement function users if i want to do this
         }
     }

@@ -1,7 +1,9 @@
 
 
-var a = (1, (1, 1, false))
+func factorial :: Int -> Int = (a) do
+    if a <= 1 do
+        return 1
+    else do
+        return a * factorial a - 1
 
-a.1 .2 = true
-
-print a.1 .2
+print (factorial 4)

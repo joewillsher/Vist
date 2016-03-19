@@ -10,16 +10,19 @@
 class Operand: RValue {
     /// The underlying value
     var value: RValue?
+    weak var user: Inst?
     
     init(_ value: RValue) {
         self.value = value
         value.addUse(self)
     }
+    private init() {}
+    
     @available(*, unavailable, message="`Operand` initialisers should not take `Operand`s")
     init(_ operand: Operand) { fatalError() }
     
     deinit {
-        try! value?.removeUse(self)
+        value?.removeUse(self)
     }
     
     private(set) var loweredValue: LLVMValueRef = nil
@@ -39,15 +42,12 @@ class Operand: RValue {
         set { value?.uses = newValue }
     }
     var name: String {
-        get { return value!.name }
+        get { return value?.name ?? "<null>" }
         set { value?.name = newValue }
     }
     var operandName: String { return "<operand of \(name) by \(user?.name)>" }
     
-    var user: Inst? {
-        return parentBlock?.userOf(self)
-    }
-        
+    
     func setLoweredValue(val: LLVMValueRef) { loweredValue = val }
     
     func dumpIR() { if loweredValue != nil { LLVMDumpValue(loweredValue) } else { print("\(irName) <NULL>") } }
@@ -56,25 +56,23 @@ class Operand: RValue {
 
 final class PtrOperand: Operand, LValue {
     
-    private var _value: LValue
+    /// The stored lvalue
+    var _value: LValue?
     override var value: RValue? {
         get { return _value }
-        set { if case let v as LValue = newValue { _value = v } else { fatalError() } }
+        set { _value = newValue as? LValue }
     }
-    var memType: Ty? { return _value.memType }
+    var memType: Ty? { return _value?.memType }
     
     init(_ value: LValue) {
-        _value = value
-        super.init(value)
-    }
-    
-    private(set) var loweredAddress: LLVMValueRef = nil
-    
-    func setLoweredAddress(val: LLVMValueRef) {
-        loweredAddress = val
+        self._value = value
+        super.init()
+        value.addUse(self)
     }
     
 }
+
+
 
 /// An operand applied to a block, loweredValue is lazily evaluated
 /// so phi nodes can be created when theyre needed, allowing their values

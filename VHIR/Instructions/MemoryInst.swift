@@ -31,7 +31,9 @@ final class StoreInst: InstBase {
         super.init(args: [value, address], irName: nil)
     }
     
+    // TODO: rename 'can remove' or something
     override var hasSideEffects: Bool { return true }
+    
     override var instVHIR: String {
         return "store \(value.name) in \(address) \(useComment)"
     }
@@ -49,7 +51,6 @@ final class LoadInst: InstBase {
         return "\(name) = load \(address) \(useComment)"
     }
 }
-
 
 extension Builder {
     

@@ -7,7 +7,7 @@
 //
 
 protocol Inst: RValue {
-    var uses: [Operand] { get set }
+    var uses: [Operand] { get }
     var args: [Operand] { get set }
     var instHasSideEffects: Bool { get }
 }
@@ -17,7 +17,7 @@ protocol Inst: RValue {
 /// using just protocols
 class InstBase: Inst {
     
-    /// Self's type, override with a computed getter
+    /// Self’s type, override with a computed getter
     var type: Ty? { fatalError("Override me") }
     /// override with the IR description, called by base to print this inst
     var instVHIR: String { fatalError("Override me") }
@@ -38,6 +38,8 @@ class InstBase: Inst {
         self.args = args
         self.uses = []
         self.irName = irName
+        
+        for arg in self.args { arg.user = self }
     }
 }
 
@@ -50,16 +52,12 @@ extension Inst {
     /// drops all references to it
     func eraseFromParent() throws {
         
-        // tell self's operands that we're not using it any more
-        for arg in args {
-            try arg.value?.removeUse(arg)
-            arg.value = nil
-        }
-        // remove this from everthing
-        try parentBlock.remove(self)
-        removeAllUses()
+        // tell self’s operands that we’re not using it any more
+        for arg in args { arg.value?.removeUse(arg) }
         args.removeAll()
-        parentBlock = nil
+        // remove this from everthing
+        removeAllUses()
+        try removeFromParent()
     }
     
 }

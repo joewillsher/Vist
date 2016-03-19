@@ -57,6 +57,7 @@ extension Module {
 extension Function: VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         
+        let b = LLVMGetInsertBlock(irGen.builder)
         let fn = functionPointerInModule(irGen.module)
         
         // if no body, return
@@ -68,7 +69,8 @@ extension Function: VHIRLower {
             LLVMPositionBuilderAtEnd(irGen.builder, bb.loweredBlock)
             
             for param in bb.parameters ?? [] {
-                try param.vhirLower(module, irGen: irGen)
+                let v = try param.vhirLower(module, irGen: irGen)
+                param.updateUsesWithLoweredVal(v)
             }
         }
         
@@ -81,6 +83,7 @@ extension Function: VHIRLower {
             }
         }
         
+        if b != nil { LLVMPositionBuilderAtEnd(irGen.builder, b) }
         return fn
     }
     
@@ -209,9 +212,7 @@ extension TupleExtractInst: VHIRLower {
 
 extension TupleElementPtrInst: VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        let ptr = LLVMBuildStructGEP(irGen.builder, tuple.loweredAddress, UInt32(elementIndex), irName ?? "")
-        updateUsesWithLoweredAddress(ptr)
-        return ptr
+        return LLVMBuildStructGEP(irGen.builder, tuple.loweredValue, UInt32(elementIndex), irName ?? "")
     }
 }
 
@@ -247,10 +248,10 @@ extension BuiltinInstCall: VHIRLower {
         case .irem: return LLVMBuildSRem(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
         }
         
-        let ir = args.ptr()
-        defer { ir.destroy(args.count) }
+        let argsIR = args.ptr()
+        defer { argsIR.destroy(args.count) }
         
-        return LLVMBuildCall(irGen.builder, intrinsic, ir, UInt32(args.count), irName ?? "")
+        return LLVMBuildCall(irGen.builder, intrinsic, argsIR, UInt32(args.count), irName ?? "")
     }
 }
 
@@ -268,20 +269,18 @@ extension CondBreakInst: VHIRLower {
 
 extension AllocInst: VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        let addr = LLVMBuildAlloca(irGen.builder, storedType.lowerType(module), irName ?? "")
-        updateUsesWithLoweredAddress(addr)
-        return addr
+        return LLVMBuildAlloca(irGen.builder, storedType.lowerType(module), irName ?? "")
     }
 }
 
 extension StoreInst: VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        return LLVMBuildStore(irGen.builder, value.loweredValue, address.loweredAddress)
+        return LLVMBuildStore(irGen.builder, value.loweredValue, address.loweredValue)
     }
 }
 extension LoadInst: VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        return LLVMBuildLoad(irGen.builder, address.loweredAddress, irName ?? "")
+        return LLVMBuildLoad(irGen.builder, address.loweredValue, irName ?? "")
     }
 }
 

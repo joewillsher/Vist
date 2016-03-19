@@ -98,13 +98,15 @@ func compileDocuments(fileNames: [String],
             if verbose { print("\n----------------------------VHIR GEN-------------------------------\n") }
             
             try ast.emitAST(module: m)
-            try m.vhir.writeToFile("\(currentDirectory)/\(file).vhir", atomically: true, encoding: NSUTF8StringEncoding)
+            try m.vhir.writeToFile("\(currentDirectory)/\(file)_.vhir", atomically: true, encoding: NSUTF8StringEncoding)
             
             if verbose { print(m.vhir) }
             
             if verbose { print("\n----------------------------VHIR OPT-------------------------------\n") }
-
+            
             try m.runPasses(.high)
+            
+            try m.vhir.writeToFile("\(currentDirectory)/\(file).vhir", atomically: true, encoding: NSUTF8StringEncoding)
             if verbose { print(m.vhir) }
         }
         
