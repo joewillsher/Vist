@@ -36,6 +36,17 @@ extension Decl {
     }
 }
 
+extension CollectionType where Generator.Element == ASTNode {
+    
+    func emitBody(module module: Module, scope: Scope) throws {
+        for x in self {
+            if case let g as RValueEmitter = x { try g.emitRValue(module: module, scope: scope) }
+            else if case let g as StmtEmitter = x { try g.emitStmt(module: module, scope: scope) }
+        }
+    }
+    
+}
+
 
 extension AST {
     
@@ -47,10 +58,7 @@ extension AST {
         let mainTy = FnType(params: [], returns: BuiltinType.void)
         let main = try builder.buildFunction("main", type: mainTy, paramNames: [])
         
-        for x in exprs {
-            if case let g as RValueEmitter = x { try g.emitRValue(module: module, scope: scope) }
-            else if case let g as StmtEmitter = x { try g.emitStmt(module: module, scope: scope) }
-        }
+        try exprs.emitBody(module: module, scope: scope)
         
         try builder.setInsertPoint(main)
         try builder.buildReturnVoid()
@@ -146,6 +154,11 @@ extension FuncDecl: StmtEmitter {
         // vhir gen for body
         try impl.body.emitStmt(module: module, scope: fnScope)
         
+        // add implicit `return ()` for a void function without a return expression
+        if type.returns == BuiltinType.void && !function.instructions.contains({$0 is ReturnInst}) {
+            try module.builder.buildReturnVoid()
+        }
+        
         module.builder.insertPoint = originalInsertPoint
     }
 }
@@ -206,9 +219,7 @@ extension PropertyLookupExpr: RValueEmitter {
 extension BlockExpr: StmtEmitter {
     
     func emitStmt(module module: Module, scope: Scope) throws {
-        for case let x as RValueEmitter in exprs {
-            try x.emitRValue(module: module, scope: scope)
-        }
+        try exprs.emitBody(module: module, scope: scope)
     }
 }
 
@@ -260,8 +271,20 @@ extension ConditionalStmt: StmtEmitter {
             
             // once we're done in success, break to the exit and
             // move into the fail for the next round
-            try module.builder.buildBreak(to: exitBlock)
-            try module.builder.setInsertPoint(failBlock)
+            if !ifBlock.instructions.contains({$0.instIsTerminator}) {
+                try module.builder.buildBreak(to: exitBlock)
+                try module.builder.setInsertPoint(failBlock)
+            }
+                // if there is a return or break, we dont jump to exit
+                // if its the last block and the exit is not used, we can remove
+            else if index == statements.endIndex.predecessor() && exitBlock.predecessors.isEmpty {
+                try exitBlock.eraseFromParent()
+            }
+                // otherwise, if its not the end, we move to the exit
+            else {
+                try module.builder.setInsertPoint(failBlock)
+            }
+            
         }
         
     }
@@ -430,14 +453,6 @@ extension MutationExpr: RValueEmitter {
         let lvalAccessor = try lhs.emitLValue(module: module, scope: scope)
         
         try lvalAccessor.setter(Operand(try rval.getter()))
-        
-        // TODO:
-        //  - Each `emitRValue` function should return an accessor
-        //  - lval here can use the referencesaccessor setter to store
-        //    into the lhs if its a variable
-        
-        // the `%10` name for the address is because its reading beyond the instructions to get a name
-        // and its not finding it. We should be returning the name of the alloc inst and not the address
         
         return VoidLiteralValue().accessor
     }

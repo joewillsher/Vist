@@ -6,15 +6,23 @@ target triple = "x86_64-apple-macosx10.11.0"
 
 define void @main() {
 entry:
-  %0 = call %Int.st @factorial_Int(%Int.st { i64 4 })
+  call void @void_()
+  %0 = call %Int.st @two_()
   call void @print_Int(%Int.st %0), !stdlib.call.optim !0
   ret void
 }
 
-define %Int.st @factorial_Int(%Int.st) {
+define void @void_() {
 entry:
+  call void @print_Int(%Int.st { i64 41 }), !stdlib.call.optim !0
+  ret void
 }
 
 declare void @print_Int(%Int.st)
+
+define %Int.st @two_() {
+entry:
+  ret %Int.st { i64 2 }
+}
 
 !0 = !{!"stdlib.call.optim"}

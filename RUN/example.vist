@@ -1,9 +1,11 @@
 
 
-func factorial :: Int -> Int = (a) do
-    if a <= 1 do
-        return 1
-    else do
-        return a * factorial a - 1
+type Foo {
+    let a: Int
+}
 
-print (factorial 4)
+let a = Foo 1
+
+print a.a
+
+

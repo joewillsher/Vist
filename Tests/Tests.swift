@@ -311,7 +311,6 @@ extension ErrorTests {
             XCTAssert(e.description == (error as! ErrorCollection).description)
         }
         
-        
     }
     
     func testTypeError() {

@@ -1,5 +1,6 @@
 
 type %Int = { %Builtin.Int64 }
+type %Bool = { %Builtin.Bool }
 
 func @main : &thin () -> %Builtin.Void {
 $entry:
@@ -47,8 +48,34 @@ $entry(%a: %Int):
 
 func @factorial_Int : &thin (%Int) -> %Int {
 $entry(%a: %Int):
-  
+  %0 = int_literal 1  	// user: %1
+  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %2
+  %2 = call @-L-E_Int_Int (%a: %Int, %1: %Int)  	// user: %3
+  %3 = struct_extract %2: %Bool, #Bool.value  	// user: 
+  break %3: %Builtin.Bool, $if.0, $fail.0
+
+$if.0:			// preds: entry
+  %5 = int_literal 1  	// user: %6
+  %6 = struct %Int (%5: %Builtin.Int64)  	// user: %7
+  return %6
+
+$fail.0:			// preds: entry
+  break $else.1
+
+$else.1:			// preds: fail.0
+  %9 = int_literal 1  	// user: %10
+  %10 = struct %Int (%9: %Builtin.Int64)  	// user: %11
+  %11 = call @-M_Int_Int (%a: %Int, %10: %Int)  	// user: %12
+  %12 = call @factorial_Int (%11: %Int)  	// user: %13
+  %13 = call @-A_Int_Int (%a: %Int, %12: %Int)  	// user: %14
+  return %13
 }
+
+func @-L-E_Int_Int : &thin (%Int, %Int) -> %Bool
+
+func @-M_Int_Int : &thin (%Int, %Int) -> %Int
+
+func @-A_Int_Int : &thin (%Int, %Int) -> %Int
 
 func @print_Int : &thin (%Int) -> %Builtin.Void
 
@@ -59,6 +86,7 @@ $entry:
   %0 = int_literal 41  	// user: %1
   %1 = struct %Int (%0: %Builtin.Int64)  	// user: %2
   %2 = call @print_Int (%1: %Int) 
+  return ()
 }
 
 func @two_ : &thin () -> %Int {

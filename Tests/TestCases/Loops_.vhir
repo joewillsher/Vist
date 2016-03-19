@@ -11,8 +11,8 @@ $entry:
   %4 = call @..._Int_Int (%1: %Int, %3: %Int)  	// users: %5, %6
   %5 = struct_extract %4: %Range, #Range.start  	// user: %7
   %6 = struct_extract %4: %Range, #Range.end  	// user: %8
-  %7 = struct_extract %5: %Int, #Int.value  	// user: %9
-  %8 = struct_extract %6: %Int, #Int.value  	// user: 
+  %7 = struct_extract %5: %Int, #Int.value  	// user: %count.it
+  %8 = struct_extract %6: %Int, #Int.value  	// user: %13
   break $loop(%7: %Builtin.Int64)
 
 $loop(%loop.count: %Builtin.Int64):			// preds: entry, loop
@@ -26,7 +26,7 @@ $loop(%loop.count: %Builtin.Int64):			// preds: entry, loop
 $loop.exit:			// preds: loop
   %15 = int_literal 1  	// user: %16
   %16 = struct %Int (%15: %Builtin.Int64)  	// user: %18
-  %17 = alloc %Int  	// user: %18
+  %17 = alloc %Int  	// users: %18, %30, %33, %37
   store %16 in %17: %*Int 
   %19 = int_literal 2  	// user: %20
   %20 = struct %Int (%19: %Builtin.Int64)  	// user: %23
@@ -35,8 +35,8 @@ $loop.exit:			// preds: loop
   %23 = call @..-L_Int_Int (%20: %Int, %22: %Int)  	// users: %24, %25
   %24 = struct_extract %23: %Range, #Range.start  	// user: %26
   %25 = struct_extract %23: %Range, #Range.end  	// user: %27
-  %26 = struct_extract %24: %Int, #Int.value  	// user: %28
-  %27 = struct_extract %25: %Int, #Int.value  	// user: 
+  %26 = struct_extract %24: %Int, #Int.value  	// user: %count.it
+  %27 = struct_extract %25: %Int, #Int.value  	// user: %39
   break $loop(%26: %Builtin.Int64)
 
 $loop(%loop.count: %Builtin.Int64):			// preds: loop.exit, loop

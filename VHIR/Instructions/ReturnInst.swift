@@ -21,6 +21,7 @@ final class ReturnInst: InstBase {
     }
     
     override var hasSideEffects: Bool { return true }
+    override var isTerminator: Bool { return true }
 }
 
 

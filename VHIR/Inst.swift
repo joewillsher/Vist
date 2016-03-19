@@ -9,7 +9,9 @@
 protocol Inst: RValue {
     var uses: [Operand] { get }
     var args: [Operand] { get set }
+    
     var instHasSideEffects: Bool { get }
+    var instIsTerminator: Bool { get }
 }
 
 /// An instruction. Must be overriden but is used to remove
@@ -32,7 +34,9 @@ class InstBase: Inst {
     var vhir: String { return instVHIR }
     
     private(set) var hasSideEffects = false
+    private(set) var isTerminator = false
     var instHasSideEffects: Bool { return hasSideEffects }
+    var instIsTerminator: Bool { return isTerminator }
     
     init(args: [Operand], irName: String? = nil) {
         self.args = args

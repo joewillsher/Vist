@@ -23,6 +23,7 @@ final class BreakInst: InstBase {
     }
     
     override var hasSideEffects: Bool { return true }
+    override var isTerminator: Bool { return true }
 }
 
 final class CondBreakInst: InstBase {
@@ -44,6 +45,7 @@ final class CondBreakInst: InstBase {
     }
     
     override var hasSideEffects: Bool { return true }
+    override var isTerminator: Bool { return true }
 }
 
 extension Builder {

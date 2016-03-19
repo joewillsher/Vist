@@ -6,29 +6,33 @@ _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
+	movl	$41, %eax
+	movl	%eax, %edi
+	callq	"_-Uprint_i64"
 	movl	$2, %eax
 	movl	%eax, %edi
 	popq	%rbp
 	jmp	"_-Uprint_i64"          ## TAILCALL
 
-	.globl	_foo_Int
+	.globl	_void_
 	.align	4, 0x90
-_foo_Int:                               ## @foo_Int
+_void_:                                 ## @void_
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	movl	$41, %eax
+	movl	%eax, %edi
+	popq	%rbp
+	jmp	"_-Uprint_i64"          ## TAILCALL
+
+	.globl	_two_
+	.align	4, 0x90
+_two_:                                  ## @two_
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
 	movl	$2, %eax
-	movl	%eax, %ecx
-	imulq	%rcx, %rdi
-	seto	%dl
-	movq	%rdi, -8(%rbp)          ## 8-byte Spill
-	movb	%dl, -9(%rbp)           ## 1-byte Spill
-	jo	LBB1_1
-	jmp	LBB1_2
-LBB1_1:                                 ## %inlined.-A_Int_Int.then.0.i
-	ud2
-LBB1_2:                                 ## %inlined.-A_Int_Int.condFail_b.exit
-	movq	-8(%rbp), %rax          ## 8-byte Reload
+                                        ## kill: RAX<def> EAX<kill>
 	popq	%rbp
 	retq
 
