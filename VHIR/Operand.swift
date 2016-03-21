@@ -51,9 +51,11 @@ class Operand: RValue {
     func setLoweredValue(val: LLVMValueRef) { loweredValue = val }
     
     func dumpIR() { if loweredValue != nil { LLVMDumpValue(loweredValue) } else { print("\(irName) <NULL>") } }
+    func dumpIRType() { if loweredValue != nil { LLVMDumpTypeOf(loweredValue) } else { print("\(irName).type <NULL>") } }
 }
 
 
+/// An operand which stores a reference-backed lvalue
 final class PtrOperand: Operand, LValue {
     
     /// The stored lvalue

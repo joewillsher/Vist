@@ -50,7 +50,7 @@ struct StructType: StorageType {
         var newTy = StructType(members: mappedEls, methods: methods, name: name)
         newTy.genericTypes = genericTypes
         newTy.concepts = concepts
-        return module.getOrInsertAliasTo(newTy)
+        return module.getOrInsert(TypeAlias(name: name, targetType: newTy))
     }
 
     

@@ -9,7 +9,7 @@
 
 /// The module type, functions get put into this
 final class Module: VHIRElement {
-    private(set) var functions: [Function] = [], typeList: [TypeAlias] = [], builder: Builder!
+    private(set) var functions: [Function] = [], typeList: Set<TypeAlias> = [], builder: Builder!
     var loweredModule: LLVMModuleRef = nil
     var loweredBuilder: LLVMModuleRef = nil
     
@@ -24,17 +24,26 @@ extension Module {
     }
     
     func insert(name: String, targetType: StorageType) {
-        typeList.append(TypeAlias(name: name, targetType: targetType))
+        typeList.insert(TypeAlias(name: name, targetType: targetType))
+    }
+    func insert(alias: TypeAlias) {
+        typeList.insert(alias)
     }
     
     /// Returns the module's definition of `type`
-    func getOrInsertAliasTo(type: StorageType) -> TypeAlias {
-        if let definedType = typeList.find({$0.targetType.name == type.name}) {
-            return definedType
+    func getOrInsert(type: Ty) -> TypeAlias {
+        if case let t as StorageType = type, let found = typeList.find({$0.targetType.name == t.name}) {
+            return found
+        }
+        else if case let alias as TypeAlias = type, let found = typeList.find(alias) {
+            return found
+        }
+        else if case let t as TypeAlias = type.usingTypesIn(module) {
+            insert(t)
+            return t
         }
         else {
-            insert(type.name, targetType: type)
-            return getOrInsertAliasTo(type)
+            fatalError("Not storage type")
         }
     }
     

@@ -6,33 +6,18 @@ _main:                                  ## @main
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	movl	$41, %eax
-	movl	%eax, %edi
-	callq	"_-Uprint_i64"
-	movl	$2, %eax
+	movl	$1, %eax
 	movl	%eax, %edi
 	popq	%rbp
 	jmp	"_-Uprint_i64"          ## TAILCALL
 
-	.globl	_void_
+	.globl	_Foo_Int
 	.align	4, 0x90
-_void_:                                 ## @void_
+_Foo_Int:                               ## @Foo_Int
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	movl	$41, %eax
-	movl	%eax, %edi
-	popq	%rbp
-	jmp	"_-Uprint_i64"          ## TAILCALL
-
-	.globl	_two_
-	.align	4, 0x90
-_two_:                                  ## @two_
-## BB#0:                                ## %entry
-	pushq	%rbp
-	movq	%rsp, %rbp
-	movl	$2, %eax
-                                        ## kill: RAX<def> EAX<kill>
+	movq	%rdi, %rax
 	popq	%rbp
 	retq
 

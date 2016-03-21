@@ -83,7 +83,7 @@ extension RValue {
     
     /// Builds a reference accessor which can store into & load from
     /// the memory it allocates
-    func alloc() throws -> GetSetAccessor {
+    func allocAccessor() throws -> GetSetAccessor {
         let accessor = RefAccessor(value: try module.builder.buildAlloc(type!))
         try accessor.setter(Operand(self))
         return accessor

@@ -34,4 +34,11 @@ final class TypeAlias: Ty {
     var mangledName: String { return name }
 }
 
+extension TypeAlias: Hashable {
+    
+    var hashValue: Int {
+        return name.hashValue
+    }
+}
+
 

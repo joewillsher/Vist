@@ -223,6 +223,13 @@ extension StructExtractInst: VHIRLower {
     }
 }
 
+extension StructElementPtrInst: VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        let index = try structType.indexOfMemberNamed(propertyName)
+        return LLVMBuildStructGEP(irGen.builder, object.loweredValue, UInt32(index), irName ?? "")
+    }
+}
+
 extension BuiltinInstCall: VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         

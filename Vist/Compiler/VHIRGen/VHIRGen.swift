@@ -91,7 +91,7 @@ extension VariableDecl: RValueEmitter {
         let val = try value.emitRValue(module: module, scope: scope).getter()
         
         if isMutable {
-            let variable = try val.alloc()
+            let variable = try val.allocAccessor()
             scope.add(variable, name: name)
             return variable
         }
@@ -203,7 +203,7 @@ extension TupleMemberLookupExpr: RValueEmitter, LValueEmitter {
     func emitLValue(module module: Module, scope: Scope) throws -> GetSetAccessor {
         guard case let o as LValueEmitter = object else { fatalError() }
         
-        let tuple = try o.emitLValue(module: module, scope: scope).accessor()
+        let tuple = try o.emitLValue(module: module, scope: scope).reference()
         
         return try module.builder.buildTupleElementPtr(tuple, index: index).accessor
     }
@@ -386,7 +386,7 @@ extension StructExpr: RValueEmitter {
         
         guard let type = type else { throw irGenError(.notTyped) }
         
-        module.getOrInsertAliasTo(type)
+        module.getOrInsert(type)
         
         for i in initialisers {
             try i.emitStmt(module: module, scope: scope)
@@ -429,7 +429,11 @@ extension InitialiserDecl: StmtEmitter {
         
         // add self elements into the scope, whose accessors are elements of selfvar
         
-        
+        //
+        for member in selfType.members {
+            let accessor = try module.builder.buildStructElementPtr(selfVar.reference(), property: member.name, irName: member.name)
+            fnScope.add(accessor.accessor, name: member.name)
+        }
         
         for param in impl.params {
             fnScope.add(try function.paramNamed(param).accessor, name: param)
