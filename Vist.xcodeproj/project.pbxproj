@@ -13,6 +13,8 @@
 		D411C8991C8DD00000478988 /* DCE.swift in Sources */ = {isa = PBXBuildFile; fileRef = D411C8971C8DD00000478988 /* DCE.swift */; };
 		D41BF54D1C5CD797004A1962 /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41BF54C1C5CD797004A1962 /* Tests.swift */; };
 		D41BF5551C5CDC8C004A1962 /* TestCases in Resources */ = {isa = PBXBuildFile; fileRef = D41BF5541C5CDC8C004A1962 /* TestCases */; };
+		D427DA9C1CA05976000708E2 /* Param.swift in Sources */ = {isa = PBXBuildFile; fileRef = D427DA9B1CA05976000708E2 /* Param.swift */; };
+		D427DA9D1CA05976000708E2 /* Param.swift in Sources */ = {isa = PBXBuildFile; fileRef = D427DA9B1CA05976000708E2 /* Param.swift */; };
 		D43B39911C8A0EDF0039FB2E /* BasicBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39871C8A0EDF0039FB2E /* BasicBlock.swift */; };
 		D43B39921C8A0EDF0039FB2E /* BasicBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39871C8A0EDF0039FB2E /* BasicBlock.swift */; };
 		D43B39931C8A0EDF0039FB2E /* Builder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39881C8A0EDF0039FB2E /* Builder.swift */; };
@@ -227,6 +229,7 @@
 		D41BF54C1C5CD797004A1962 /* Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests.swift; sourceTree = "<group>"; };
 		D41BF54E1C5CD797004A1962 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D41BF5541C5CDC8C004A1962 /* TestCases */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TestCases; sourceTree = "<group>"; };
+		D427DA9B1CA05976000708E2 /* Param.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Param.swift; sourceTree = "<group>"; };
 		D43B39871C8A0EDF0039FB2E /* BasicBlock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BasicBlock.swift; sourceTree = "<group>"; };
 		D43B39881C8A0EDF0039FB2E /* Builder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Builder.swift; sourceTree = "<group>"; };
 		D43B39891C8A0EDF0039FB2E /* Function.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Function.swift; sourceTree = "<group>"; };
@@ -511,6 +514,7 @@
 				D43B398B1C8A0EDF0039FB2E /* Module.swift */,
 				D43B39891C8A0EDF0039FB2E /* Function.swift */,
 				D43B39871C8A0EDF0039FB2E /* BasicBlock.swift */,
+				D427DA9B1CA05976000708E2 /* Param.swift */,
 				D43B398F1C8A0EDF0039FB2E /* Value.swift */,
 				D4728BDC1C944397003294B0 /* Accessor.swift */,
 				D43B398A1C8A0EDF0039FB2E /* Inst.swift */,
@@ -863,6 +867,7 @@
 				D43B39BD1C8A0F140039FB2E /* Ty.swift in Sources */,
 				D43B3A541C8A11410039FB2E /* VHIRLower.swift in Sources */,
 				D43B39EA1C8A0FA60039FB2E /* Error.swift in Sources */,
+				D427DA9D1CA05976000708E2 /* Param.swift in Sources */,
 				D43B3A6E1C8A11600039FB2E /* FunctionAttribute.swift in Sources */,
 				D43B3A241C8A105B0039FB2E /* Stmt.swift in Sources */,
 				D43B39961C8A0EDF0039FB2E /* Function.swift in Sources */,
@@ -933,6 +938,7 @@
 				D43B3A651C8A11600039FB2E /* ArrayVariable.swift in Sources */,
 				D43B3A0C1C8A104F0039FB2E /* ParseError.swift in Sources */,
 				D43B39971C8A0EDF0039FB2E /* Inst.swift in Sources */,
+				D427DA9C1CA05976000708E2 /* Param.swift in Sources */,
 				D43B39B81C8A0F140039FB2E /* StructType.swift in Sources */,
 				D4728BE41C960D79003294B0 /* MemoryInst.swift in Sources */,
 				D43B39991C8A0EDF0039FB2E /* Module.swift in Sources */,

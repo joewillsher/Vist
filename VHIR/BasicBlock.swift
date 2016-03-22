@@ -10,7 +10,7 @@
 /// and entry block or a block you break to
 final class BlockApplication {
     
-    static func entry(params: [BBParam]?) -> BlockApplication { return BlockApplication(params: params?.map(Operand.init), predecessor: nil) }
+    static func entry(params: [Param]?) -> BlockApplication { return BlockApplication(params: params?.map(Operand.init), predecessor: nil) }
     static func body(predecessor: BasicBlock, params: [BlockOperand]?) -> BlockApplication { return BlockApplication(params: params, predecessor: predecessor) }
     
     var args: [Operand]?
@@ -26,23 +26,6 @@ final class BlockApplication {
     var isEntry: Bool { return predecessor == nil }
 }
 
-final class BBParam: RValue {
-    var paramName: String
-    var type: Ty?
-    weak var parentBlock: BasicBlock!
-    var uses: [Operand] = []
-    
-    var phi: LLVMValueRef = nil
-    
-    init(paramName: String, type: Ty) {
-        self.paramName = paramName
-        self.type = type
-    }
-    var irName: String? {
-        get { return paramName }
-        set { if let v = newValue { paramName = v } }
-    }
-}
 
 
 /// A collection of instructions
@@ -56,13 +39,13 @@ final class BasicBlock: VHIRElement {
     weak var parentFunction: Function!
     var loweredBlock: LLVMValueRef = nil
     
-    // block params are `BBParam`s
+    // block params are `Param`s
     // block args are `Operand`s
-    let parameters: [BBParam]?
+    let parameters: [Param]?
     private(set) var applications: [BlockApplication]
     var predecessors: [BasicBlock] { return applications.flatMap { $0.predecessor } }
     
-    init(name: String, parameters: [BBParam]?, parentFunction: Function) {
+    init(name: String, parameters: [Param]?, parentFunction: Function) {
         self.name = name
         self.parameters = parameters
         self.parentFunction = parentFunction
@@ -76,11 +59,11 @@ final class BasicBlock: VHIRElement {
         instructions.append(inst)
     }
     
-    func paramNamed(name: String) throws -> BBParam {
+    func paramNamed(name: String) throws -> Param {
         guard let param = parameters?.find({ $0.paramName == name }) else { throw VHIRError.noParamNamed(name) }
         return param
     }
-    func appliedArgsForParam(param: BBParam) throws -> [BlockOperand] {
+    func appliedArgsForParam(param: Param) throws -> [BlockOperand] {
         
         guard let i = parameters?.indexOf({$0 === param}),
             let args = applications.optionalMap({ $0.args?[i] as? BlockOperand })
@@ -90,7 +73,7 @@ final class BasicBlock: VHIRElement {
     }
     
     /// Adds the entry application to a block -- used by Function builder
-    func addEntryApplication(args: [BBParam]) throws {
+    func addEntryApplication(args: [Param]) throws {
         applications.insert(.entry(args), atIndex: 0)
     }
     
@@ -111,12 +94,6 @@ final class BasicBlock: VHIRElement {
         return i
     }
     
-//    /// Returns the instruction using the operand
-//    func userOf(use: Operand) -> Inst? {
-//        let f = instructions.find { inst in inst.args.contains { arg in arg === use } }
-//        return f
-//    }
-    
     // instructions
     func set(inst: Inst, newValue: Inst) throws {
         instructions[try indexOfInst(inst)] = newValue
@@ -133,7 +110,7 @@ extension Builder {
     
     /// Appends this block to the function. Thus does not modify the insert
     /// point, make any breaks to this block, or apply any params to it
-    func appendBasicBlock(name name: String, parameters: [BBParam]? = nil) throws -> BasicBlock {
+    func appendBasicBlock(name name: String, parameters: [Param]? = nil) throws -> BasicBlock {
         guard let function = insertPoint.function, let b = function.blocks where !b.isEmpty else { throw VHIRError.noFunctionBody }
         
         let bb = BasicBlock(name: name, parameters: parameters, parentFunction: function)

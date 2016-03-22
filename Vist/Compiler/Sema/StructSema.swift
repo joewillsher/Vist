@@ -36,6 +36,7 @@ extension StructExpr: ExprTypeProvider {
         }
         
         var ty = StructType(members: members, methods: [], name: name)
+        self.type = ty
         
         try errorCollector.run {
             ty.genericTypes = try genericParameters.map(GenericType.fromConstraint(inScope: scope))

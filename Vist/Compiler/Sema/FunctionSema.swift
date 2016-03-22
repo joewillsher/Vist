@@ -16,7 +16,14 @@ extension FuncDecl: DeclTypeProvider {
         declScope.genericParameters = genericParameters
         
         let paramTypes = try fnType.params(declScope), returnType = try fnType.returnType(declScope)
-        let ty = FnType(params: paramTypes, returns: returnType)
+        let ty: FnType
+        
+        if case let parentType as StorageType = parent?._type {
+            ty = FnType(params: paramTypes, returns: returnType, callingConvention: .method(selfType: parentType))
+        }
+        else {
+            ty = FnType(params: paramTypes, returns: returnType)
+        }
         
         mangledName = name.mangle(ty, parentTypeName: parent?.name)
         

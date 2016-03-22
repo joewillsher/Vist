@@ -1,6 +1,6 @@
 
-type %Int = { %Builtin.Int64 }
 type %Bool = { %Builtin.Bool }
+type %Int = { %Builtin.Int64 }
 
 func @main : &thin () -> %Builtin.Void {
 $entry:

@@ -147,8 +147,13 @@ extension FuncDecl: StmtEmitter {
         
         // make scope and occupy it with params
         let fnScope = Scope(parent: scope)
+        
         for param in impl.params {
             fnScope.add(try function.paramNamed(param).accessor, name: param)
+        }
+        if case .method(let selfType) = type.callingConvention {
+            let selfVar = RefAccessor(memory: function.params![0] as! RefParam)
+            fnScope.add(selfVar, name: "self")
         }
         
         // vhir gen for body
@@ -203,17 +208,25 @@ extension TupleMemberLookupExpr: RValueEmitter, LValueEmitter {
     func emitLValue(module module: Module, scope: Scope) throws -> GetSetAccessor {
         guard case let o as LValueEmitter = object else { fatalError() }
         
-        let tuple = try o.emitLValue(module: module, scope: scope).reference()
-        
-        return try module.builder.buildTupleElementPtr(tuple, index: index).accessor
+        let tuple = try o.emitLValue(module: module, scope: scope)
+        return try module.builder.buildTupleElementPtr(tuple.reference(), index: index).accessor
     }
 }
-extension PropertyLookupExpr: RValueEmitter {
+
+extension PropertyLookupExpr: LValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         let object = try self.object.emitRValue(module: module, scope: scope).getter()
         return try module.builder.buildStructExtract(Operand(object), property: propertyName).accessor
     }
+    
+    func emitLValue(module module: Module, scope: Scope) throws -> GetSetAccessor {
+        guard case let o as LValueEmitter = object else { fatalError() }
+        
+        let str = try o.emitLValue(module: module, scope: scope)
+        return try module.builder.buildStructElementPtr(str.reference(), property: propertyName).accessor
+    }
+    
 }
 
 extension BlockExpr: StmtEmitter {
@@ -318,7 +331,7 @@ extension ForInLoopStmt: StmtEmitter {
         let end = try module.builder.buildStructExtract(Operand(endInt), property: "value")
         
         // loop count, builtin int
-        let loopCountParam = BBParam(paramName: "loop.count", type: Builtin.intType)
+        let loopCountParam = Param(paramName: "loop.count", type: Builtin.intType)
         let loopBlock = try module.builder.appendBasicBlock(name: "loop", parameters: [loopCountParam])
         let exitBlock = try module.builder.appendBasicBlock(name: "loop.exit")
         
@@ -427,14 +440,13 @@ extension InitialiserDecl: StmtEmitter {
         let selfVar = try module.builder.buildAlloc(selfType, irName: "self").accessor
         fnScope.add(selfVar, name: "self")
         
-        // add self elements into the scope, whose accessors are elements of selfvar
-        
-        //
+        // add self’s elements into the scope, whose accessors are elements of selfvar
         for member in selfType.members {
             let accessor = try module.builder.buildStructElementPtr(selfVar.reference(), property: member.name, irName: member.name)
             fnScope.add(accessor.accessor, name: member.name)
         }
         
+        // add the initialiser’s params
         for param in impl.params {
             fnScope.add(try function.paramNamed(param).accessor, name: param)
         }
@@ -443,9 +455,11 @@ extension InitialiserDecl: StmtEmitter {
         try impl.body.emitStmt(module: module, scope: fnScope)
         try module.builder.buildReturn(Operand(try selfVar.getter()))
         
+        // move out of function
         module.builder.insertPoint = originalInsertPoint
     }
 }
+
 
 extension MutationExpr: RValueEmitter {
     

@@ -9,7 +9,8 @@
 
 /// The module type, functions get put into this
 final class Module: VHIRElement {
-    private(set) var functions: [Function] = [], typeList: Set<TypeAlias> = [], builder: Builder!
+    private(set) var functions: Set<Function> = [], typeList: Set<TypeAlias> = []
+    var builder: Builder!
     var loweredModule: LLVMModuleRef = nil
     var loweredBuilder: LLVMModuleRef = nil
     
@@ -20,10 +21,10 @@ final class Module: VHIRElement {
 extension Module {
     
     func insert(f: Function) {
-        functions.append(f)
+        functions.insert(f)
     }
     
-    func insert(name: String, targetType: StorageType) {
+    func insertType(name: String, targetType: StorageType) {
         typeList.insert(TypeAlias(name: name, targetType: targetType))
     }
     func insert(alias: TypeAlias) {

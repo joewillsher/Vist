@@ -102,7 +102,7 @@ extension BasicBlock {
 }
 
 
-extension BBParam: VHIRLower {
+extension Param: VHIRLower {
     
     private func buildPhi() -> LLVMValueRef {
         phi = LLVMBuildPhi(module.loweredBuilder, type!.lowerType(module), paramName)

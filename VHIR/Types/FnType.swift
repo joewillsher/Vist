@@ -17,6 +17,12 @@ enum CallingConvention {
         case .method: return "method"
         }
     }
+    func usingTypesIn(module: Module) -> CallingConvention {
+        switch self {
+        case .thin: return self
+        case .method(let selfType): return .method(selfType: selfType.usingTypesIn(module))
+        }
+    }
 }
 
 
@@ -59,7 +65,8 @@ struct FnType: Ty {
     func usingTypesIn(module: Module) -> Ty {
         let params = self.params.map { $0.usingTypesIn(module) }
         let returns = self.returns.usingTypesIn(module)
-        return FnType(params: params, returns: returns, metadata: metadata, callingConvention: callingConvention)
+        let convention = self.callingConvention.usingTypesIn(module)
+        return FnType(params: params, returns: returns, metadata: metadata, callingConvention: convention)
     }
     
     func lowerType(module: LLVMTypeRef) -> LLVMTypeRef {
@@ -84,6 +91,21 @@ struct FnType: Ty {
         defer { els.destroy(members.count) }
         
         return LLVMFunctionType(ret, els, UInt32(members.count), false)
+    }
+    
+    /// The type used by the IR -- it uses info from the calling convention
+    /// to construct the type which should be used in IR
+    var vhirType: FnType {
+        switch  callingConvention {
+        case .thin:
+            return self
+        case .method(let selfType):
+            let selfPtr = BuiltinType.pointer(to: selfType)
+            return FnType(params: [selfPtr] + params,
+                          returns: returns,
+                          metadata: metadata,
+                          callingConvention: .method(selfType: selfType))
+        }
     }
     
     static func taking(params: Ty..., ret: Ty = BuiltinType.void) -> FnType {

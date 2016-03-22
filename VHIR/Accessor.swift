@@ -28,19 +28,19 @@ protocol GetSetAccessor: Accessor {
 /// Provides access to a value with backing memory. This value
 final class RefAccessor: GetSetAccessor {
     
-    private var value: LValue
+    private var mem: LValue
     
-    init(value: LValue) { self.value = value }
+    init(memory: LValue) { self.mem = memory }
     
     func getter() throws -> RValue {
-        return try value.module.builder.buildLoad(from: reference())
+        return try mem.module.builder.buildLoad(from: reference())
     }
     
     func setter(val: Operand) throws {
-        try value.module.builder.buildStore(val, in: reference())
+        try mem.module.builder.buildStore(val, in: reference())
     }
     
-    func reference() -> PtrOperand { return PtrOperand(value) }
+    func reference() -> PtrOperand { return PtrOperand(mem) }
 }
 
 /// Provides access to values by exposing a getter which returns the value

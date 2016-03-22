@@ -6,8 +6,8 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-/// A value, instruction results, literals, etc
-protocol Value: class, VHIRElement {
+/// An RValue, instruction results, literals, etc
+protocol RValue: class, VHIRElement {
     /// An explicit name to give self in the ir repr
     var irName: String? { get set }
     
@@ -24,9 +24,10 @@ protocol Value: class, VHIRElement {
     var name: String { get set }
 }
 
-protocol RValue: Value {
-}
 /// Appears on the LHS of an expressions. `a = 1`, `a.b.c`
+///
+/// Often abstracts over memory -- this can be accessed by a pointer.
+/// This is needed for mutating the val or getting sub-elements by ref
 protocol LValue: RValue {
     /// LValues provide storage which is abstract -- `memType` provides
     /// an interface to the underlying type, as `type` may return  type `*memType`
@@ -41,20 +42,7 @@ extension RValue {
     /// Replaces all `Operand` instances which point to `self`
     /// with `val`
     func replaceAllUsesWith(val: RValue) {
-        let u = uses
-        removeAllUses()
-        
-        // TODO: change this to, test first
-        /*
-         for use in u {
-            use.value = val
-         }
-        */
-        
-        for use in u {
-            use.value = val
-            addUse(use)
-        }
+         for use in uses { use.value = val }
     }
     
     /// Adds record of a user `use` to self’s users list
@@ -84,26 +72,20 @@ extension RValue {
     /// Builds a reference accessor which can store into & load from
     /// the memory it allocates
     func allocAccessor() throws -> GetSetAccessor {
-        let accessor = RefAccessor(value: try module.builder.buildAlloc(type!))
+        let accessor = RefAccessor(memory: try module.builder.buildAlloc(type!))
         try accessor.setter(Operand(self))
         return accessor
     }
-}
-extension LValue {
-    var accessor: GetSetAccessor { return RefAccessor(value: self) }
-}
 
-
-extension Value {
-    
     func dump() { print(vhir) }
     
     var module: Module { return parentBlock.module }
     var parentFunction: Function { return parentBlock.parentFunction }
     
+    // TODO: fix this, its super inefficient -- cache nums and invalidate after function changes
     /// If `self` doesn't have an `irName`, this provides the 
     /// number to use in the ir repr
-    func getInstNumber() -> String? {
+    private func getInstNumber() -> String? {
         
         var count = 0
         for inst in parentFunction.instructions {
@@ -121,6 +103,10 @@ extension Value {
         get { return "%\(irName ?? getInstNumber() ?? "<null>")" }
         set { irName = newValue }
     }
+}
+
+extension LValue {
+    var accessor: GetSetAccessor { return RefAccessor(memory: self) }
 }
 
 

@@ -8,10 +8,10 @@
 
 private final class FunctionBody {
     var blocks: [BasicBlock]
-    var params: [BBParam]
+    var params: [Param]
     unowned var parentFunction: Function
     
-    private init(params: [BBParam], parentFunction: Function, blocks: [BasicBlock]) {
+    private init(params: [Param], parentFunction: Function, blocks: [BasicBlock]) {
         self.params = params
         self.parentFunction = parentFunction
         self.blocks = blocks
@@ -35,34 +35,42 @@ final class Function: VHIRElement {
         self.type = type
     }
     
-    var hasBody: Bool { return body != nil && body?.blocks.isEmpty ?? false }
+    var hasBody: Bool { return body != nil && (body?.blocks.isEmpty ?? false) }
     var blocks: [BasicBlock]? { return body?.blocks }
-    var params: [BBParam]? { return body?.params }
+    var params: [Param]? { return body?.params }
     
     /// Creates the function body, and applies `paramNames` as the 
     /// args to the entry block
     func defineBody(paramNames paramNames: [String]) throws {
         guard !hasBody else { throw VHIRError.hasBody }
-        let params = zip(paramNames, type.params.map{$0.usingTypesIn(module)}).map(BBParam.init)
+        
+        let params: [Param], appliedParams = zip(paramNames, type.params.map{$0.usingTypesIn(module)}).map(Param.init)
+        
+        switch type.callingConvention {
+        case .thin: params = appliedParams
+        case .method(let selfType):
+            params = [RefParam(paramName: "self", memType: selfType)] + appliedParams
+            params.forEach { $0.dump() }
+        }
+       
         body = FunctionBody(params: params, parentFunction: self, blocks: [])
+        
         let entry = try module.builder.buildFunctionEntryBlock(self)
         params.forEach { $0.parentBlock = entry }
     }
     
     var entryBlock: BasicBlock? {
-        guard let first = body?.blocks.first else { return nil }
-        return first
+        return body?.blocks.first
     }
     var lastBlock: BasicBlock? {
-        guard let last = body?.blocks.last else { return nil }
-        return last
+        return body?.blocks.last
     }
     private func indexOf(block: BasicBlock) throws -> Int {
         guard let index = blocks?.indexOf({$0 === block}) else { throw VHIRError.bbNotInFn }
         return index
     }
     
-    func paramNamed(name: String) throws -> BBParam {
+    func paramNamed(name: String) throws -> Param {
         guard let p = try body?.blocks.first?.paramNamed(name) else { throw VHIRError.noParamNamed(name) }
         return p
     }
@@ -113,12 +121,20 @@ extension Builder {
     
     /// Creates function prototype an adds to module
     func createFunctionPrototype(name: String, type: FnType) throws -> Function {
-        let function = Function(name: name, type: type.usingTypesIn(module) as! FnType, module: module)
+        let type = type.usingTypesIn(module) as! FnType
+        let function = Function(name: name, type: type.vhirType, module: module)
         module.insert(function)
         return function
     }
     
 }
+
+// implement hash and equality for functions
+extension Function: Hashable, Equatable {
+    var hashValue: Int { return name.hashValue }
+}
+@warn_unused_result
+func == (lhs: Function, rhs: Function) -> Bool { return lhs === rhs }
 
 extension Module {
     

@@ -46,9 +46,7 @@ extension StorageType {
         return members[try indexOfMemberNamed(name)].mutable
     }
     func getMethodType(methodName: String, argTypes types: [Ty]) -> FnType? {
-        return methods
-            .indexOf { $0.name == methodName && $0.type.params.elementsEqual(types, isEquivalent: ==) }
-            .map { methods[$0].type }
+        return methods.find { $0.name == methodName && $0.type.params.elementsEqual(types, isEquivalent: ==) }?.type
     }
     
     /// Returns whether a type models a concept

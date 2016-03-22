@@ -81,13 +81,13 @@ final class PtrOperand: Operand, LValue {
 /// to be calculated
 final class BlockOperand: Operand {
     
-    init(value: RValue, param: BBParam) {
+    init(value: RValue, param: Param) {
         self.param = param
         self.predBlock = value.parentBlock
         super.init(value)
     }
     
-    private let param: BBParam
+    private let param: Param
     private unowned let predBlock: BasicBlock
     
     /// Sets the phi's value for the incoming block `self.predBlock`
