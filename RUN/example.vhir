@@ -1,5 +1,6 @@
 
 type %Foo = { %Int }
+type %Foo = { %Int }
 type %Int = { %Builtin.Int64 }
 
 func @Foo_Int : &thin (%Int) -> %Foo {

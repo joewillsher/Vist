@@ -1,0 +1,15 @@
+#!/usr/bin/env python
+
+import subprocess
+import os
+
+subprocess.call(['svn', 'co', 'http://llvm.org/svn/llvm-project/llvm/branches/release_36', 'llvm/llvm'])
+subprocess.call(['svn', 'co', 'http://llvm.org/svn/llvm-project/cfe/branches/release_36', 'llvm/clang'])
+
+os.mkdir('llvm/build')
+os.chdir('llvm/build')
+
+subprocess.call(['cmake', '-G', 'Unix Makefiles', '-DCMAKE_BUILD_TYPE=Release', '../llvm'])
+subprocess.call(['make', 'install', '-j6'])
+
+print '\ndone\n\n'

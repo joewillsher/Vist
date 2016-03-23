@@ -1226,15 +1226,17 @@
 				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"PROJECT_DIR=@\\\"$(PROJECT_DIR)\\\"",
 					__STDC_CONSTANT_MACROS,
 					__STDC_LIMIT_MACROS,
 					__STDC_FORMAT_MACROS,
 				);
-				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/llvm/llvm/include",
+					"$(SRCROOT)/llvm/build/include",
+				);
 				"LD_MAP_FILE_PATH[arch=*]" = "$(TARGET_TEMP_DIR)/$(PRODUCT_NAME)-LinkMap-$(CURRENT_VARIANT)-$(CURRENT_ARCH).txt";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				LIBRARY_SEARCH_PATHS = /usr/local/opt/llvm/lib;
+				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/llvm/build/lib";
 				LLVM_LTO = YES;
 				MODULE_NAME = vist;
 				MODULE_VERSION = 1.0;
@@ -1254,7 +1256,7 @@
 					"-UNDEBUG",
 				);
 				OTHER_LDFLAGS = (
-					"-std=c++11",
+					"-std=c++14",
 					"-lcurses",
 					"-lLLVMLTO",
 					"-lLLVMObjCARCOpts",
@@ -1406,14 +1408,16 @@
 				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"PROJECT_DIR=@\\\"$(PROJECT_DIR)\\\"",
 					__STDC_CONSTANT_MACROS,
 					__STDC_LIMIT_MACROS,
 					__STDC_FORMAT_MACROS,
 				);
-				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/llvm/llvm/include",
+					"$(SRCROOT)/llvm/build/include",
+				);
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				LIBRARY_SEARCH_PATHS = /usr/local/opt/llvm/lib;
+				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/llvm/build/lib";
 				LLVM_LTO = YES;
 				MODULE_NAME = vist;
 				MODULE_VERSION = 1.0;
@@ -1433,7 +1437,7 @@
 					"-UNDEBUG",
 				);
 				OTHER_LDFLAGS = (
-					"-std=c++11",
+					"-std=c++14",
 					"-lcurses",
 					"-lLLVMLTO",
 					"-lLLVMObjCARCOpts",

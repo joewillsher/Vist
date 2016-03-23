@@ -58,7 +58,6 @@ void performLLVMOptimisations(Module *Module, int optLevel, bool isStdLib) {
         PMBuilder.DisableGVNLoadPRE = true;
         PMBuilder.VerifyInput = true;
         PMBuilder.VerifyOutput = true;
-        PMBuilder.StripDebug = true;
         PMBuilder.MergeFunctions = true;
     }
     else { // we want some optimisations, even at -O0
@@ -76,7 +75,6 @@ void performLLVMOptimisations(Module *Module, int optLevel, bool isStdLib) {
     FunctionPasses.add(createVerifierPass());
     
     if (optLevel == 0) { // we want some optimisations, even at -O0
-        FunctionPasses.add(createBasicAliasAnalysisPass());
         FunctionPasses.add(createInstructionCombiningPass());
         
         // needed as compiler produces a lot of redundant memory code assuming it will be optimied away

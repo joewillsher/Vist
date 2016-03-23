@@ -5,13 +5,13 @@ A functional, statically typed programming language using LLVM, inspired by Swif
 
 
 ##Installing
-To use, install the following with homebrew
-``` bash
-brew update
-brew install llvm --with-clang
-``` 
+To install, run
 
-Then clone this repo and run the Xcode project to build the compiler binary.
+``` bash
+git clone https://github.com/joewillsher/Vist.git
+cd vist
+./build
+``` 
 
 To develop in Xcode, go to ‘Edit Scheme’ (⌘<) and set the *arguments* to `-O -verbose -preserve example.vist` and under *Options* set the ‘Custom Working Directory’ to `$(SRCROOT)/RUN`.
 
