@@ -6,8 +6,9 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-import Foundation
-
+import class Foundation.NSPipe
+import class Foundation.NSNumberFormatter
+import CoreFoundation.CFDate
 
 public func compileWithOptions(flags: [String], inDirectory dir: String, out: NSPipe? = nil) throws {
     

@@ -87,13 +87,13 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Vist/Compiler/VHIRGen/VHIRGen.swift"
-            timestampString = "480265413.899935"
+            filePath = "Vist/Compiler/VHIRLower/VHIRLower.swift"
+            timestampString = "480439354.991337"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "149"
-            endingLineNumber = "149"
-            landmarkName = "emitStmt(module:scope:)"
+            startingLineNumber = "233"
+            endingLineNumber = "233"
+            landmarkName = "vhirLower(_:irGen:)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -103,13 +103,13 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "VHIR/Function.swift"
-            timestampString = "480271640.06498"
+            filePath = "Vist/Compiler/VHIRGen/VHIRGen.swift"
+            timestampString = "480450126.174325"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "56"
-            endingLineNumber = "56"
-            landmarkName = "defineBody(paramNames:)"
+            startingLineNumber = "170"
+            endingLineNumber = "170"
+            landmarkName = "emitStmt(module:scope:)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

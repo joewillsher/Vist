@@ -17,20 +17,30 @@ protocol Accessor {
     /// Gets the value from the stored object
     func getter() throws -> RValue
 }
+
+/// Provides access to values by exposing a getter which returns the value
+final class ValAccessor: Accessor {
+    
+    private var value: RValue
+    init(value: RValue) { self.value = value }
+    
+    func getter() -> RValue { return value }
+}
+
+
+
+
+
 /// An Accessor which allows setting, as well as self lookup by ptr
 protocol GetSetAccessor: Accessor {
+    var mem: LValue { get }
     /// Stores `val` in the stored object
     func setter(val: Operand) throws
     /// The pointer to the stored object
     func reference() -> PtrOperand
 }
 
-/// Provides access to a value with backing memory. This value
-final class RefAccessor: GetSetAccessor {
-    
-    private var mem: LValue
-    
-    init(memory: LValue) { self.mem = memory }
+extension GetSetAccessor {
     
     func getter() throws -> RValue {
         return try mem.module.builder.buildLoad(from: reference())
@@ -43,13 +53,32 @@ final class RefAccessor: GetSetAccessor {
     func reference() -> PtrOperand { return PtrOperand(mem) }
 }
 
-/// Provides access to values by exposing a getter which returns the value
-final class ValAccessor: Accessor {
+/// Provides access to a value with backing memory
+final class RefAccessor: GetSetAccessor {
+    var mem: LValue
+    init(memory: LValue) { self.mem = memory }
+}
+
+/// A Ref accessor whose accessor is evaluated on demand. Useful for values
+/// which might not be used
+final class LazyRefAccessor: GetSetAccessor {
     
-    private var value: RValue
-    init(value: RValue) { self.value = value }
+    private var build: () throws -> LValue
+    private var val: LValue?
     
-    func getter() -> RValue { return value }
+    var mem: LValue {
+        if let v = val { return v }
+        do {
+            let v = try build()
+            val = v
+            return v
+        }
+        catch {
+            fatalError("Error: \(error)")
+        }
+    }
+    
+    init(fn: () throws -> LValue) { build = fn }
 }
 
 

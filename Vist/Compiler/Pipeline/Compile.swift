@@ -6,7 +6,9 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-import Foundation
+import class Foundation.NSTask
+import class Foundation.NSPipe
+import Foundation.NSString
 
 // ugh, preprocessor macros broke in 2.2. to fix use `PROJECT_DIR`
 private let llvmDirectory = "/usr/local/Cellar/llvm/3.6.2/bin"

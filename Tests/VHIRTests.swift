@@ -6,7 +6,6 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-import Foundation
 import XCTest
 
 

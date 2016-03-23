@@ -6,7 +6,6 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-import Foundation
 
 private func t(n:Int) -> String {
     return Array(count: n, repeatedValue: "  ").reduce("", combine: +)

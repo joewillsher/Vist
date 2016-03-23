@@ -3,11 +3,9 @@
 type Foo {
     let a: Int
     
-    func foo :: Int -> Int = (u) do return u * a
+    func foo :: Int -> Int = (u) do
+        return u * a
 }
 
-let a = Foo 1
-
-print a.a
-
-
+let foo = Foo 1
+print foo.a

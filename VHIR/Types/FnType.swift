@@ -47,13 +47,7 @@ struct FnType: Ty {
             ret = returns.lowerType(module)
         }
         
-        var members: [LLVMValueRef] = []
-        
-        if case .method(let ty) = callingConvention {
-            members.append(BuiltinType.pointer(to: ty).lowerType(module))
-        }
-        
-        members += nonVoid.map {$0.lowerType(module)}
+        var members = nonVoid.map {$0.lowerType(module)}
         
         let els = members.ptr()
         defer { els.destroy(members.count) }

@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-import Foundation
+import class Foundation.NSString
 
 func expectedTestCaseOutput(path path: String) -> String? {
     guard let contents = try? String(contentsOfFile: path) else { return nil }

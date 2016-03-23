@@ -7,7 +7,7 @@
 //
 
 enum IRLowerError: VistError {
-    case notLowerable(Value)
+    case notLowerable(RValue)
     
     var description: String {
         switch self {
@@ -43,8 +43,11 @@ extension Module {
         loweredBuilder = irGen.builder
         
         for fn in functions {
-            let f = LLVMAddFunction(irGen.module, fn.name, fn.type.lowerType(self))
-            fn.loweredFunction = f
+            let function = LLVMAddFunction(irGen.module, fn.name, fn.type.lowerType(self))
+            fn.loweredFunction = function
+            for (i, p) in (fn.params ?? []).enumerate() where p.irName != nil {
+                LLVMSetValueName(LLVMGetParam(function, UInt32(i)), p.irName ?? "")
+            }
         }
         
         for fn in functions {
@@ -119,7 +122,7 @@ extension Param: VHIRLower {
         }
         else {
             let phi = buildPhi()
-
+            
             for operand in try parentBlock.appliedArgsForParam(self) {
                 operand.phi = phi
             }
@@ -128,6 +131,7 @@ extension Param: VHIRLower {
         }
     }
 }
+
 
 extension IntLiteralInst: VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
@@ -234,7 +238,6 @@ extension BuiltinInstCall: VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         
         let args = self.args.map { $0.loweredValue }
-        
         let intrinsic: LLVMValueRef
         
         switch inst {
@@ -246,19 +249,19 @@ extension BuiltinInstCall: VHIRLower {
             
             // handle calls which arent intrinsics, but builtin
             // instructions. Return these directly
-        case .lte: return LLVMBuildICmp(irGen.builder, LLVMIntSLE, l.loweredValue, r.loweredValue, irName ?? "")
-        case .lt: return LLVMBuildICmp(irGen.builder, LLVMIntSLT, l.loweredValue, r.loweredValue, irName ?? "")
-        case .gte: return LLVMBuildICmp(irGen.builder, LLVMIntSGE, l.loweredValue, r.loweredValue, irName ?? "")
-        case .gt: return LLVMBuildICmp(irGen.builder, LLVMIntSGT, l.loweredValue, r.loweredValue, irName ?? "")
+        case .lte:  return LLVMBuildICmp(irGen.builder, LLVMIntSLE, l.loweredValue, r.loweredValue, irName ?? "")
+        case .lt:   return LLVMBuildICmp(irGen.builder, LLVMIntSLT, l.loweredValue, r.loweredValue, irName ?? "")
+        case .gte:  return LLVMBuildICmp(irGen.builder, LLVMIntSGE, l.loweredValue, r.loweredValue, irName ?? "")
+        case .gt:   return LLVMBuildICmp(irGen.builder, LLVMIntSGT, l.loweredValue, r.loweredValue, irName ?? "")
         case .iaddoverflow: return LLVMBuildAdd(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
         case .idiv: return LLVMBuildSDiv(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
         case .irem: return LLVMBuildSRem(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
         }
         
-        let argsIR = args.ptr()
-        defer { argsIR.destroy(args.count) }
+        let argBuffer = args.ptr()
+        defer { argBuffer.destroy(args.count) }
         
-        return LLVMBuildCall(irGen.builder, intrinsic, argsIR, UInt32(args.count), irName ?? "")
+        return LLVMBuildCall(irGen.builder, intrinsic, argBuffer, UInt32(args.count), irName ?? "")
     }
 }
 

@@ -1,17 +1,7 @@
 
 type %Foo = { %Int }
+type %Foo = { %Int }
 type %Int = { %Builtin.Int64 }
-
-func @main : &thin () -> %Builtin.Void {
-$entry:
-  %0 = int_literal 1  	// user: %1
-  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %2
-  %2 = call @Foo_Int (%1: %Int)  	// user: %a
-  variable_decl %a = %2: %Foo  	// user: %3
-  %3 = struct_extract %a: %Foo, #Foo.a  	// user: %4
-  %4 = call @print_Int (%3: %Int) 
-  return ()
-}
 
 func @Foo_Int : &thin (%Int) -> %Foo {
 $entry(%$0: %Int):
@@ -21,5 +11,26 @@ $entry(%$0: %Int):
   %1 = load %self: %*Foo  	// user: %2
   return %1
 }
+
+func @Foo.foo_Int : &method (%*Foo, %Int) -> %Int {
+$entry(%self: %*Foo, %u: %Int):
+  %a = struct_element %self: %*Foo, #Foo.a  	// user: %0
+  %0 = load %a: %*Int  	// user: %1
+  %1 = call @-A_Int_Int (%u: %Int, %0: %Int)  	// user: %2
+  return %1
+}
+
+func @main : &thin () -> %Builtin.Void {
+$entry:
+  %0 = int_literal 1  	// user: %1
+  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %2
+  %2 = call @Foo_Int (%1: %Int)  	// user: %foo
+  variable_decl %foo = %2: %Foo  	// user: %3
+  %3 = struct_extract %foo: %Foo, #Foo.a  	// user: %4
+  %4 = call @print_Int (%3: %Int) 
+  return ()
+}
+
+func @-A_Int_Int : &thin (%Int, %Int) -> %Int
 
 func @print_Int : &thin (%Int) -> %Builtin.Void

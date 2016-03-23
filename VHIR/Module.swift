@@ -20,14 +20,18 @@ final class Module: VHIRElement {
 
 extension Module {
     
+    /// Insert function to the module
     func insert(f: Function) {
         functions.insert(f)
     }
     
+    /// Insert a type to the module
     func insertType(name: String, targetType: StorageType) {
         typeList.insert(TypeAlias(name: name, targetType: targetType))
     }
-    func insert(alias: TypeAlias) {
+    
+    /// Insert a defined typealias to the module
+    private func insert(alias: TypeAlias) {
         typeList.insert(alias)
     }
     

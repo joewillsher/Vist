@@ -6,20 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-private final class FunctionBody {
-    var blocks: [BasicBlock]
-    var params: [Param]
-    unowned var parentFunction: Function
-    
-    private init(params: [Param], parentFunction: Function, blocks: [BasicBlock]) {
-        self.params = params
-        self.parentFunction = parentFunction
-        self.blocks = blocks
-    }
-}
-
-
-/// A VHIR function, has a type and ismade of a series
+/// A VHIR function, has a type and is made of a series
 /// of basic blocks
 final class Function: VHIRElement {
     var name: String
@@ -34,6 +21,21 @@ final class Function: VHIRElement {
         self.parentModule = module
         self.type = type
     }
+}
+
+private final class FunctionBody {
+    private(set) var blocks: [BasicBlock]
+    private(set) var params: [Param]
+    unowned var parentFunction: Function
+    
+    private init(params: [Param], parentFunction: Function, blocks: [BasicBlock]) {
+        self.params = params
+        self.parentFunction = parentFunction
+        self.blocks = blocks
+    }
+}
+
+extension Function {
     
     var hasBody: Bool { return body != nil && (body?.blocks.isEmpty ?? false) }
     var blocks: [BasicBlock]? { return body?.blocks }
@@ -41,62 +43,79 @@ final class Function: VHIRElement {
     
     /// Creates the function body, and applies `paramNames` as the 
     /// args to the entry block
+    ///
+    /// - precondition: Body is undefined
     func defineBody(paramNames paramNames: [String]) throws {
         guard !hasBody else { throw VHIRError.hasBody }
         
-        let params: [Param], appliedParams = zip(paramNames, type.params.map{$0.usingTypesIn(module)}).map(Param.init)
+        let params: [Param]
         
         switch type.callingConvention {
-        case .thin: params = appliedParams
         case .method(let selfType):
-            params = [RefParam(paramName: "self", memType: selfType)] + appliedParams
-            params.forEach { $0.dump() }
+            let selfParam = RefParam(paramName: "self", memType: selfType)
+            let appliedParams = zip(paramNames, type.params.dropFirst().map{$0.usingTypesIn(module)}).map(Param.init)
+            params = [selfParam] + appliedParams
+            
+        case .thin:
+            params = zip(paramNames, type.params.map{$0.usingTypesIn(module)}).map(Param.init)
         }
-       
+        
         body = FunctionBody(params: params, parentFunction: self, blocks: [])
         
         let entry = try module.builder.buildFunctionEntryBlock(self)
-        params.forEach { $0.parentBlock = entry }
+        for p in params { p.parentBlock = entry }
     }
     
-    var entryBlock: BasicBlock? {
-        return body?.blocks.first
-    }
-    var lastBlock: BasicBlock? {
-        return body?.blocks.last
-    }
+    var entryBlock: BasicBlock? { return body?.blocks.first }
+    var lastBlock: BasicBlock? { return body?.blocks.last }
+    
+    /// The infex of `block` in `self`’s block list
     private func indexOf(block: BasicBlock) throws -> Int {
-        guard let index = blocks?.indexOf({$0 === block}) else { throw VHIRError.bbNotInFn }
-        return index
+        if let index = blocks?.indexOf({$0 === block}) { return index } else { throw VHIRError.bbNotInFn }
     }
     
+    /// Get the Param `name` for `self`
     func paramNamed(name: String) throws -> Param {
-        guard let p = try body?.blocks.first?.paramNamed(name) else { throw VHIRError.noParamNamed(name) }
-        return p
+        if let p = try body?.blocks.first?.paramNamed(name) { return p } else { throw VHIRError.noParamNamed(name) }
     }
     
-    func dumpIR() { if loweredFunction != nil { LLVMDumpValue(loweredFunction) } else { print("\(name) <NULL>") } }
+    func insert(block block: BasicBlock, atIndex index: Int) {
+        body?.blocks.insert(block, atIndex: index)
+    }
+    func append(block block: BasicBlock) {
+        body?.blocks.append(block)
+    }
+    
+    func dumpIR() {
+        if loweredFunction != nil { LLVMDumpValue(loweredFunction) } else { print("\(name) <NULL>") }
+    }
+    func dump() { print(vhir) }
     var module: Module { return parentModule }
 }
 
 extension BasicBlock {
+    /// Removes this block from the parent function
     func removeFromParent() throws {
         parentFunction.body?.blocks.removeAtIndex(try parentFunction.indexOf(self))
     }
+    /// Erases `self` from the parent function, cutting all references to
+    /// it and all child instructions
     func eraseFromParent() throws {
-        parentFunction.body?.blocks.removeAtIndex(try parentFunction.indexOf(self))
         parentFunction = nil
-    }
-    func moveAfter(after: BasicBlock) throws {
+        for inst in instructions {
+            try inst.eraseFromParent()
+        }
         try removeFromParent()
-        parentFunction.body?.blocks.insert(self, atIndex: try parentFunction.indexOf(after).successor())
     }
-    func moveBefore(before: BasicBlock) throws {
+    /// Moves `self` after the `after` block
+    func move(after after: BasicBlock) throws {
         try removeFromParent()
-        parentFunction.body?.blocks.insert(self, atIndex: try parentFunction.indexOf(before).predecessor())
+        parentFunction.insert(block: self, atIndex: try parentFunction.indexOf(after).successor())
     }
-    func appendToParent() {
-        parentFunction.body?.blocks.append(self)
+    /// Moves `self` before the `before` block
+    func move(before before: BasicBlock) throws {
+        try removeFromParent()
+        parentFunction.insert(block: self, atIndex: try parentFunction.indexOf(before).predecessor())
     }
 }
 
@@ -106,9 +125,17 @@ extension Builder {
     func buildFunction(name: String, type: FnType, paramNames: [String]) throws -> Function {
         let f = try createFunctionPrototype(name, type: type)
         try f.defineBody(paramNames: paramNames)
-        try setInsertPoint(f)
         return f
     }
+    /// Builds a function and adds it to the module. Declares a body and entry block
+    func getOrBuildFunction(name: String, type: FnType, paramNames: [String]) throws -> Function {
+        if let f = module.functionNamed(name) where !f.hasBody {
+            try f.defineBody(paramNames: paramNames)
+            return f
+        }
+        return try buildFunction(name, type: type, paramNames: paramNames)
+    }
+
     
     /// Builds an entry block for the function, passes the params of the function in
     func buildFunctionEntryBlock(function: Function) throws -> BasicBlock {
@@ -128,13 +155,6 @@ extension Builder {
     }
     
 }
-
-// implement hash and equality for functions
-extension Function: Hashable, Equatable {
-    var hashValue: Int { return name.hashValue }
-}
-@warn_unused_result
-func == (lhs: Function, rhs: Function) -> Bool { return lhs === rhs }
 
 extension Module {
     
@@ -162,4 +182,11 @@ extension Module {
     }
 }
 
+
+// implement hash and equality for functions
+extension Function: Hashable, Equatable {
+    var hashValue: Int { return name.hashValue }
+}
+@warn_unused_result
+func == (lhs: Function, rhs: Function) -> Bool { return lhs === rhs }
 

@@ -141,19 +141,36 @@ extension FuncDecl: StmtEmitter {
         
         let originalInsertPoint = module.builder.insertPoint
         
-        // make function and move into it
-        let function = try module.builder.buildFunction(mangledName, type: type, paramNames: impl.params)
+        // find proto/make function and move into it
+        let function = try module.builder.getOrBuildFunction(mangledName, type: type, paramNames: impl.params)
         try module.builder.setInsertPoint(function)
         
         // make scope and occupy it with params
         let fnScope = Scope(parent: scope)
         
+        // add the explicit method parameters
         for param in impl.params {
             fnScope.add(try function.paramNamed(param).accessor, name: param)
         }
+        // A method calling convention means we have to pass `self` in, and tell vars how
+        // to access it, and `self`’s properties
         if case .method(let selfType) = type.callingConvention {
-            let selfVar = RefAccessor(memory: function.params![0] as! RefParam)
-            fnScope.add(selfVar, name: "self")
+            // We need self to be passed by ref as a `RefParam`
+            // TODO: why? should this be changed?
+            let selfParam = function.params![0] as! RefParam
+            let selfVar = RefAccessor(memory: selfParam)
+            fnScope.add(selfVar, name: "self") // add `self`
+            
+            // add self's properties, their accessor is a lazily evaluated struct GEP
+            if case let type as StorageType = selfType {
+                for property in type.members {
+                    let pVar = LazyRefAccessor {
+                        try module.builder.buildStructElementPtr(selfVar.reference(), property: property.name, irName: property.name)
+                    }
+                    fnScope.add(pVar, name: property.name)
+                }
+            }
+            
         }
         
         // vhir gen for body
@@ -247,7 +264,7 @@ extension ConditionalStmt: StmtEmitter {
             
             // the success block, and the failure
             let ifBlock = try module.builder.appendBasicBlock(name: branch.condition == nil ? "else.\(index)" : "if.\(index)")
-            try exitBlock.moveAfter(ifBlock)
+            try exitBlock.move(after: ifBlock)
             let failBlock: BasicBlock
             
             if let c = branch.condition {
@@ -263,7 +280,7 @@ extension ConditionalStmt: StmtEmitter {
                     // condition to be evaluated
                 else {
                     failBlock = try module.builder.appendBasicBlock(name: "fail.\(index)")
-                    try exitBlock.moveAfter(failBlock)
+                    try exitBlock.move(after: failBlock)
                 }
                 
                 try module.builder.buildCondBreak(if: Operand(v),
@@ -407,7 +424,7 @@ extension StructExpr: RValueEmitter {
         
         for m in methods {
             guard let t = m.fnType.type else { fatalError() }
-            try module.getOrInsertFunctionNamed(m.name, type: t)
+            try module.getOrInsertFunctionNamed(m.mangledName, type: t)
         }
         for m in methods {
             try m.emitStmt(module: module, scope: scope)

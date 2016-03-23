@@ -5,9 +5,7 @@
 //  Created by Josef Willsher on 16/08/2015.
 //  Copyright © 2015 vistlang. All rights reserved.
 //
-import Foundation
-
-
+import class Foundation.NSTask
 
 do {
     let flags = Array(Process.arguments.dropFirst())

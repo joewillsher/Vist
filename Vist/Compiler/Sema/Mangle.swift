@@ -6,8 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-import Foundation
-
+import class Foundation.NSString
 
 extension String {
     

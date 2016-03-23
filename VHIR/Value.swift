@@ -41,14 +41,12 @@ extension RValue {
     
     /// Replaces all `Operand` instances which point to `self`
     /// with `val`
-    func replaceAllUsesWith(val: RValue) {
+    func replaceAllUses(with val: RValue) {
          for use in uses { use.value = val }
     }
     
     /// Adds record of a user `use` to self’s users list
-    func addUse(use: Operand) {
-        uses.append(use)
-    }
+    func addUse(use: Operand) { uses.append(use) }
     
     /// Removes `use` from self’s uses record
     func removeUse(use: Operand) {
@@ -60,11 +58,8 @@ extension RValue {
     
     /// Adds the lowered val to all users
     func updateUsesWithLoweredVal(val: LLVMValueRef) {
-        for use in uses {
-            use.setLoweredValue(val)
-        }
+        for use in uses { use.setLoweredValue(val) }
     }
-    
     
     /// The accessor whose getter returns `self`
     var accessor: ValAccessor { return ValAccessor(value: self) }

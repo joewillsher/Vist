@@ -114,7 +114,7 @@ extension Builder {
         guard let function = insertPoint.function, let b = function.blocks where !b.isEmpty else { throw VHIRError.noFunctionBody }
         
         let bb = BasicBlock(name: name, parameters: parameters, parentFunction: function)
-        bb.appendToParent()
+        function.append(block: bb)
         for p in parameters ?? [] { p.parentBlock = bb }
         return bb
     }
