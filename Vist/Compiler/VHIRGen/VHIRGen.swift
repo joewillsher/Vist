@@ -156,7 +156,7 @@ extension FuncDecl: StmtEmitter {
         // to access it, and `self`’s properties
         if case .method(let selfType) = type.callingConvention {
             // We need self to be passed by ref as a `RefParam`
-            // TODO: why? should this be changed?
+            // TODO: why ^ ? should this be changed?
             let selfParam = function.params![0] as! RefParam
             let selfVar = RefAccessor(memory: selfParam)
             fnScope.add(selfVar, name: "self") // add `self`

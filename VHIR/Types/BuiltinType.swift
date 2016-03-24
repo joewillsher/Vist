@@ -34,7 +34,7 @@ enum BuiltinType: Ty {
             }
         }
     }
-
+    
     init?(_ type: LLVMTypeRef) {
         switch type {
         case LLVMVoidType(): self = .void

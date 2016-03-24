@@ -22,7 +22,8 @@ private let runtimeDirectory = "\(SOURCE_ROOT)/Vist/Runtime"
 //      - Is this how a FnDecl behaves with nil impl already?
 //   - Also need a way to do this out-of-order so all functions (and types) are defined first
 
-func compileDocuments(fileNames: [String],
+func compileDocuments(
+    fileNames: [String],
     inDirectory: String,
     out: NSPipe? = nil,
     verbose: Bool = true,

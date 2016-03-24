@@ -1,15 +1,42 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import subprocess
 import os
 
-subprocess.call(['svn', 'co', 'http://llvm.org/svn/llvm-project/llvm/branches/release_36', 'llvm/llvm'])
-subprocess.call(['svn', 'co', 'http://llvm.org/svn/llvm-project/cfe/branches/release_36', 'llvm/clang'])
+# Source root definition in utils.h
+text_file = open("Vist/Compiler/Include/Utils.h", "w")
+text_file.write(
+"""//
+//  Utils.h
+//  Vist
+//
+//  Created by Josef Willsher on 03/02/2016.
+//  Copyright © 2016 vistlang. All rights reserved.
+//
 
-os.mkdir('llvm/build')
-os.chdir('llvm/build')
+#ifndef Utils_h
+#define Utils_h
 
-subprocess.call(['cmake', '-G', 'Unix Makefiles', '-DCMAKE_BUILD_TYPE=Release', '../llvm'])
-subprocess.call(['make', 'install', '-j6'])
+#define SOURCE_ROOT "%s"
 
-print '\ndone\n\n'
+#endif /* Utils_h */""" % os.getcwd())
+text_file.close()
+
+subprocess.call(['brew', 'install', 'llvm', '--with-clang'])
+
+# download
+#subprocess.call(['svn', 'co', 'http://llvm.org/svn/llvm-project/llvm/branches/release_36', 'llvm/llvm'])
+#subprocess.call(['svn', 'co', 'http://llvm.org/svn/llvm-project/cfe/branches/release_36', 'llvm/clang'])
+
+# make build dir
+#os.mkdir('llvm/build')
+#os.chdir('llvm/build')
+
+# build llvm
+#subprocess.call(['cmake', '-G', 'Unix Makefiles', '-DCMAKE_BUILD_TYPE=Release', '../llvm'])
+#subprocess.call(['cmake', '-G', 'Unix Makefiles', '-DCMAKE_BUILD_TYPE=Release', '../clang'])
+#subprocess.call(['make', 'install', '-j8'])
+
+# done
+print '\ndone\n'
