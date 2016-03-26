@@ -36,7 +36,7 @@ final class BlockApplication {
 final class BasicBlock: VHIRElement {
     var name: String
     private(set) var instructions: [Inst] = []
-    weak var parentFunction: Function!
+    weak var parentFunction: Function?
     var loweredBlock: LLVMValueRef = nil
     
     // block params are `Param`s
@@ -103,7 +103,7 @@ final class BasicBlock: VHIRElement {
         inst.parentBlock = nil
     }
     
-    var module: Module { return parentFunction.module }
+    var module: Module { return parentFunction!.module }
 }
 
 extension Builder {

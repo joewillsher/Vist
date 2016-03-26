@@ -2,6 +2,30 @@
 type %Bool = { %Builtin.Bool }
 type %Int = { %Builtin.Int64 }
 
+func @print_Bool : &thin (%Bool) -> %Builtin.Void
+
+func @-G-G_Int_Int : &thin (%Int, %Int) -> %Int
+
+func @-T-R_Int_Int : &thin (%Int, %Int) -> %Int
+
+func @-T-O_Int_Int : &thin (%Int, %Int) -> %Int
+
+func @-L_Int_Int : &thin (%Int, %Int) -> %Bool
+
+func @-P_Int_Int : &thin (%Int, %Int) -> %Int
+
+func @-T-N_Int_Int : &thin (%Int, %Int) -> %Int
+
+func @-M_Int_Int : &thin (%Int, %Int) -> %Int
+
+func @-G-E_Int_Int : &thin (%Int, %Int) -> %Bool
+
+func @%_Int_Int : &thin (%Int, %Int) -> %Int
+
+func @-A_Int_Int : &thin (%Int, %Int) -> %Int
+
+func @-L-L_Int_Int : &thin (%Int, %Int) -> %Int
+
 func @main : &thin () -> %Builtin.Void {
 $entry:
   %0 = int_literal 1  	// user: %1
@@ -97,30 +121,6 @@ $entry:
   return ()
 }
 
-func @-P_Int_Int : &thin (%Int, %Int) -> %Int
-
 func @print_Int : &thin (%Int) -> %Builtin.Void
 
-func @-A_Int_Int : &thin (%Int, %Int) -> %Int
-
-func @-M_Int_Int : &thin (%Int, %Int) -> %Int
-
-func @%_Int_Int : &thin (%Int, %Int) -> %Int
-
-func @-L_Int_Int : &thin (%Int, %Int) -> %Bool
-
-func @print_Bool : &thin (%Bool) -> %Builtin.Void
-
-func @-G-E_Int_Int : &thin (%Int, %Int) -> %Bool
-
 func @-E-E_Int_Int : &thin (%Int, %Int) -> %Bool
-
-func @-L-L_Int_Int : &thin (%Int, %Int) -> %Int
-
-func @-G-G_Int_Int : &thin (%Int, %Int) -> %Int
-
-func @-T-N_Int_Int : &thin (%Int, %Int) -> %Int
-
-func @-T-O_Int_Int : &thin (%Int, %Int) -> %Int
-
-func @-T-R_Int_Int : &thin (%Int, %Int) -> %Int

@@ -22,12 +22,16 @@ $entry(%self: %*Foo, %u: %Int):
 
 func @main : &thin () -> %Builtin.Void {
 $entry:
-  %0 = int_literal 1  	// user: %1
+  %0 = int_literal 3  	// user: %1
   %1 = struct %Int (%0: %Builtin.Int64)  	// user: %2
   %2 = call @Foo_Int (%1: %Int)  	// user: %foo
-  variable_decl %foo = %2: %Foo  	// user: %3
-  %3 = struct_extract %foo: %Foo, #Foo.a  	// user: %4
-  %4 = call @print_Int (%3: %Int) 
+  variable_decl %foo = %2: %Foo  	// user: %6
+  %3 = int_literal 2  	// user: %4
+  %4 = struct %Int (%3: %Builtin.Int64)  	// user: %7
+  %5 = alloc %Foo  	// users: %6, %7
+  store %foo in %5: %*Foo 
+  %7 = call @Foo.foo_Int (%5: %*Foo, %4: %Int)  	// user: %8
+  %8 = call @print_Int (%7: %Int) 
   return ()
 }
 

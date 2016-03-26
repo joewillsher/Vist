@@ -24,11 +24,13 @@ entry:
 
 define void @main() {
 entry:
-  %0 = call %Foo.st @Foo_Int(%Int.st { i64 1 })
+  %0 = call %Foo.st @Foo_Int(%Int.st { i64 3 })
   %foo = alloca %Foo.st
   store %Foo.st %0, %Foo.st* %foo
-  %1 = extractvalue %Foo.st %0, 0
-  call void @print_Int(%Int.st %1), !stdlib.call.optim !0
+  %1 = alloca %Foo.st
+  store %Foo.st %0, %Foo.st* %1
+  %2 = call %Int.st @Foo.foo_Int(%Foo.st* %1, %Int.st { i64 2 })
+  call void @print_Int(%Int.st %2), !stdlib.call.optim !0
   ret void
 }
 

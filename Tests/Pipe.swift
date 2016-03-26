@@ -7,6 +7,7 @@
 //
 
 import class Foundation.NSPipe
+import Foundation.NSString
 
 extension NSPipe {
     

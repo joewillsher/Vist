@@ -47,7 +47,7 @@ final class LiteralValue<Literal>: RValue {
         default: fatalError("Invalid literal")
         }
     }
-    weak var parentBlock: BasicBlock!
+    weak var parentBlock: BasicBlock?
     var uses: [Operand] = []
     
     private init(val: Literal, irName: String?) {
@@ -59,7 +59,7 @@ final class LiteralValue<Literal>: RValue {
 
 final class VoidLiteralValue: RValue {
     var type: Ty? { return BuiltinType.void }
-    weak var parentBlock: BasicBlock!
+    weak var parentBlock: BasicBlock?
     var uses: [Operand] = []
     var irName: String? = nil
     

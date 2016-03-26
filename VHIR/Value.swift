@@ -14,7 +14,7 @@ protocol RValue: class, VHIRElement {
     var type: Ty? { get }
     
     /// The block containing `self`
-    weak var parentBlock: BasicBlock! { get set }
+    weak var parentBlock: BasicBlock? { get set }
     
     /// The list of uses of `self`. A collection of `Operand`
     /// instances whose `value`s point to self, to 
@@ -74,8 +74,8 @@ extension RValue {
 
     func dump() { print(vhir) }
     
-    var module: Module { return parentBlock.module }
-    var parentFunction: Function { return parentBlock.parentFunction }
+    var module: Module { return parentBlock!.module }
+    var parentFunction: Function? { return parentBlock?.parentFunction }
     
     // TODO: fix this, its super inefficient -- cache nums and invalidate after function changes
     /// If `self` doesn't have an `irName`, this provides the 
@@ -83,7 +83,8 @@ extension RValue {
     private func getInstNumber() -> String? {
         
         var count = 0
-        for inst in parentFunction.instructions {
+        guard let instructions = parentFunction?.instructions else { return nil }
+        for inst in instructions {
             if case let o as Operand = self where o.value === inst { break }
             else if inst === self { break }
             // we dont want to provide a name for void exprs

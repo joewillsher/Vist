@@ -25,7 +25,7 @@ class InstBase: Inst {
     var instVHIR: String { fatalError("Override me") }
     
     var irName: String?
-    weak var parentBlock: BasicBlock!
+    weak var parentBlock: BasicBlock?
     
     var uses: [Operand] = []
     var args: [Operand] = []
@@ -50,7 +50,7 @@ class InstBase: Inst {
 extension Inst {
     /// Removes the function from its parent
     func removeFromParent() throws {
-        try parentBlock.remove(self)
+        try parentBlock?.remove(self)
     }
     /// Removes the function from its parent and
     /// drops all references to it

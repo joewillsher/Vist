@@ -10,7 +10,7 @@
 class Param: RValue {
     var paramName: String
     var type: Ty?
-    weak var parentBlock: BasicBlock!
+    weak var parentBlock: BasicBlock?
     var uses: [Operand] = []
     
     var phi: LLVMValueRef = nil

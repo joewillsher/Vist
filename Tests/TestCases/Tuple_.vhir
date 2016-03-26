@@ -4,6 +4,10 @@ type %Foo = { %Bar, %Bool }
 type %Bool = { %Builtin.Bool }
 type %Bar = { %Bool, %Int, %Int }
 
+func @print_Bool : &thin (%Bool) -> %Builtin.Void
+
+func @print_Int : &thin (%Int) -> %Builtin.Void
+
 func @main : &thin () -> %Builtin.Void {
 $entry:
   %0 = bool_literal false  	// user: %1
@@ -87,7 +91,3 @@ $entry(%$0: %Bar, %$1: %Bool):
   %2 = load %self: %*Foo  	// user: %3
   return %2
 }
-
-func @print_Bool : &thin (%Bool) -> %Builtin.Void
-
-func @print_Int : &thin (%Int) -> %Builtin.Void

@@ -195,7 +195,6 @@ func compileDocuments(
             if verbose { print(asm) }
         }
         
-        
         if isStdLib {
             // generate .o file to link against program
 //            ClangCommand(files: ["\(stdLibDirectory)/stdlib.o", "\(file).ll"],
@@ -211,11 +210,12 @@ func compileDocuments(
             
             assembleTask.launch()
             assembleTask.waitUntilExit()
-            
         }
         else {
             /// link file to stdlib and compile
-            ClangCommand(files: ["\(stdLibDirectory)/stdlib.o", "\(file).ll"], execName: file, cwd: currentDirectory).exectute()
+            ClangCommand(files: ["\(stdLibDirectory)/stdlib.o", "\(file).ll"],
+                         execName: file,
+                         cwd: currentDirectory).exectute()
             if buildOnly { return }
             
             if verbose { print("\n\n-----------------------------RUN-----------------------------\n") }

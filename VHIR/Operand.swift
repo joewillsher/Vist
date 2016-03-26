@@ -33,7 +33,7 @@ class Operand: RValue {
         get { return value?.irName }
         set { value?.irName = newValue }
     }
-    var parentBlock: BasicBlock! {
+    var parentBlock: BasicBlock? {
         get { return value?.parentBlock }
         set { value?.parentBlock = newValue }
     }
@@ -83,7 +83,7 @@ final class BlockOperand: Operand {
     
     init(value: RValue, param: Param) {
         self.param = param
-        self.predBlock = value.parentBlock
+        self.predBlock = value.parentBlock!
         super.init(value)
     }
     

@@ -2,6 +2,12 @@
 type %Int = { %Builtin.Int64 }
 type %Range = { %Int, %Int }
 
+func @..-L_Int_Int : &thin (%Int, %Int) -> %Range
+
+func @-A_Int_Int : &thin (%Int, %Int) -> %Int
+
+func @-P_Int_Int : &thin (%Int, %Int) -> %Int
+
 func @main : &thin () -> %Builtin.Void {
 $entry:
   %0 = int_literal 0  	// user: %1
@@ -61,9 +67,3 @@ $loop.exit:			// preds: loop
 func @..._Int_Int : &thin (%Int, %Int) -> %Range
 
 func @print_Int : &thin (%Int) -> %Builtin.Void
-
-func @..-L_Int_Int : &thin (%Int, %Int) -> %Range
-
-func @-A_Int_Int : &thin (%Int, %Int) -> %Int
-
-func @-P_Int_Int : &thin (%Int, %Int) -> %Int

@@ -2,6 +2,16 @@
 type %Bool = { %Builtin.Bool }
 type %Int = { %Builtin.Int64 }
 
+func @-A_Int_Int : &thin (%Int, %Int) -> %Int
+
+func @print_Bool : &thin (%Bool) -> %Builtin.Void
+
+func @-G_Int_Int : &thin (%Int, %Int) -> %Bool
+
+func @-L_Int_Int : &thin (%Int, %Int) -> %Bool
+
+func @print_Int : &thin (%Int) -> %Builtin.Void
+
 func @main : &thin () -> %Builtin.Void {
 $entry:
   %0 = int_literal 3  	// user: %1
@@ -85,14 +95,4 @@ $exit:			// preds: if.0, if.1, else.2
   return ()
 }
 
-func @-A_Int_Int : &thin (%Int, %Int) -> %Int
-
-func @-L_Int_Int : &thin (%Int, %Int) -> %Bool
-
-func @print_Int : &thin (%Int) -> %Builtin.Void
-
-func @-G_Int_Int : &thin (%Int, %Int) -> %Bool
-
 func @-E-E_Int_Int : &thin (%Int, %Int) -> %Bool
-
-func @print_Bool : &thin (%Bool) -> %Builtin.Void

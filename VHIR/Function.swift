@@ -96,7 +96,9 @@ extension Function {
 extension BasicBlock {
     /// Removes this block from the parent function
     func removeFromParent() throws {
-        parentFunction.body?.blocks.removeAtIndex(try parentFunction.indexOf(self))
+        if let p = parentFunction {
+            p.body?.blocks.removeAtIndex(try p.indexOf(self))
+        }
     }
     /// Erases `self` from the parent function, cutting all references to
     /// it and all child instructions
@@ -110,12 +112,16 @@ extension BasicBlock {
     /// Moves `self` after the `after` block
     func move(after after: BasicBlock) throws {
         try removeFromParent()
-        parentFunction.insert(block: self, atIndex: try parentFunction.indexOf(after).successor())
+        if let p = parentFunction {
+            p.insert(block: self, atIndex: try p.indexOf(after).successor())
+        }
     }
     /// Moves `self` before the `before` block
     func move(before before: BasicBlock) throws {
         try removeFromParent()
-        parentFunction.insert(block: self, atIndex: try parentFunction.indexOf(before).predecessor())
+        if let p = parentFunction {
+            p.insert(block: self, atIndex: try p.indexOf(before).predecessor())
+        }
     }
 }
 

@@ -36,7 +36,7 @@ inlined.-A_Int_Int.condFail_b.exit:               ; preds = %entry
 ; Function Attrs: nounwind
 define void @main() #1 {
 entry:
-  tail call void @-Uprint_i64(i64 1)
+  tail call void @-Uprint_i64(i64 6)
   ret void
 }
 

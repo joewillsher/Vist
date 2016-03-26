@@ -106,6 +106,7 @@ extension VariableDecl: RValueEmitter {
 extension FunctionCall/*: VHIRGenerator*/ {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
+        
         let args = try argArr.map { Operand(try $0.emitRValue(module: module, scope: scope).getter()) }
         guard let argTypes = argArr.optionalMap({ $0._type }) else { throw VHIRError.paramsNotTyped }
         
@@ -494,4 +495,26 @@ extension MutationExpr: RValueEmitter {
     
 }
 
+extension MethodCallExpr: RValueEmitter {
+    
+    func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
+        
+        // build self and args' values
+        let args = try self.args.elements.map { Operand(try $0.emitRValue(module: module, scope: scope).getter()) }
+        let selfVar = try object.emitRValue(module: module, scope: scope)
+        
+        // get ptr to self, if its not reference based we build
+        // memory and store it there to get a ptr.
+        let selfRef: PtrOperand
+        if case let obj as GetSetAccessor = selfVar {
+            selfRef = obj.reference()
+        }
+        else {
+            selfRef = try selfVar.getter().allocAccessor().reference()
+        }
+        
+        let function = module.functionNamed(mangledName)!
+        return try module.builder.buildFunctionCall(function, args: [selfRef] + args).accessor
+    }
+}
 

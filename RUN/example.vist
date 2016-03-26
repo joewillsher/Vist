@@ -7,5 +7,5 @@ type Foo {
         return u * a
 }
 
-let foo = Foo 1
-print foo.a
+let foo = Foo 3
+print (foo.foo 2)

@@ -113,9 +113,10 @@ extension Param: VHIRLower {
     }
     
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        guard let function = parentFunction, block = parentBlock else { throw VHIRError.noParentBlock }
         
-        if let functionParamIndex = parentFunction.params?.indexOf({$0.name == name}) {
-            return LLVMGetParam(parentFunction.loweredFunction, UInt32(functionParamIndex))
+        if let functionParamIndex = function.params?.indexOf({$0.name == name}) {
+            return LLVMGetParam(function.loweredFunction, UInt32(functionParamIndex))
         }
         else if phi != nil {
             return phi
@@ -123,7 +124,7 @@ extension Param: VHIRLower {
         else {
             let phi = buildPhi()
             
-            for operand in try parentBlock.appliedArgsForParam(self) {
+            for operand in try block.appliedArgsForParam(self) {
                 operand.phi = phi
             }
             
