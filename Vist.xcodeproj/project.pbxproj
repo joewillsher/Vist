@@ -15,6 +15,8 @@
 		D41BF5551C5CDC8C004A1962 /* TestCases in Resources */ = {isa = PBXBuildFile; fileRef = D41BF5541C5CDC8C004A1962 /* TestCases */; };
 		D427DA9C1CA05976000708E2 /* Param.swift in Sources */ = {isa = PBXBuildFile; fileRef = D427DA9B1CA05976000708E2 /* Param.swift */; };
 		D427DA9D1CA05976000708E2 /* Param.swift in Sources */ = {isa = PBXBuildFile; fileRef = D427DA9B1CA05976000708E2 /* Param.swift */; };
+		D4326E3B1CA5FB7E0016E595 /* Command.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4326E3A1CA5FB7E0016E595 /* Command.swift */; };
+		D4326E3C1CA5FB7E0016E595 /* Command.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4326E3A1CA5FB7E0016E595 /* Command.swift */; };
 		D43B39911C8A0EDF0039FB2E /* BasicBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39871C8A0EDF0039FB2E /* BasicBlock.swift */; };
 		D43B39921C8A0EDF0039FB2E /* BasicBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39871C8A0EDF0039FB2E /* BasicBlock.swift */; };
 		D43B39931C8A0EDF0039FB2E /* Builder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39881C8A0EDF0039FB2E /* Builder.swift */; };
@@ -65,8 +67,6 @@
 		D43B39E31C8A0F3A0039FB2E /* VariableInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39D71C8A0F3A0039FB2E /* VariableInst.swift */; };
 		D43B39E91C8A0FA60039FB2E /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39E81C8A0FA60039FB2E /* Error.swift */; };
 		D43B39EA1C8A0FA60039FB2E /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39E81C8A0FA60039FB2E /* Error.swift */; };
-		D43B39F61C8A100E0039FB2E /* Assemble.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D43B39ED1C8A100E0039FB2E /* Assemble.cpp */; };
-		D43B39F71C8A100E0039FB2E /* Assemble.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D43B39ED1C8A100E0039FB2E /* Assemble.cpp */; };
 		D43B39F81C8A100E0039FB2E /* CommandLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39EF1C8A100E0039FB2E /* CommandLine.swift */; };
 		D43B39F91C8A100E0039FB2E /* CommandLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39EF1C8A100E0039FB2E /* CommandLine.swift */; };
 		D43B39FA1C8A100E0039FB2E /* Compile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39F01C8A100E0039FB2E /* Compile.swift */; };
@@ -77,8 +77,6 @@
 		D43B39FF1C8A100E0039FB2E /* LinkRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39F21C8A100E0039FB2E /* LinkRuntime.swift */; };
 		D43B3A001C8A100E0039FB2E /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39F31C8A100E0039FB2E /* main.swift */; };
 		D43B3A011C8A100E0039FB2E /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39F31C8A100E0039FB2E /* main.swift */; };
-		D43B3A021C8A100E0039FB2E /* TargetMachine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D43B39F41C8A100E0039FB2E /* TargetMachine.cpp */; };
-		D43B3A031C8A100E0039FB2E /* TargetMachine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D43B39F41C8A100E0039FB2E /* TargetMachine.cpp */; };
 		D43B3A061C8A10390039FB2E /* Lexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A041C8A10390039FB2E /* Lexer.swift */; };
 		D43B3A071C8A10390039FB2E /* Lexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A041C8A10390039FB2E /* Lexer.swift */; };
 		D43B3A081C8A10390039FB2E /* Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A051C8A10390039FB2E /* Token.swift */; };
@@ -230,6 +228,7 @@
 		D41BF54E1C5CD797004A1962 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D41BF5541C5CDC8C004A1962 /* TestCases */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TestCases; sourceTree = "<group>"; };
 		D427DA9B1CA05976000708E2 /* Param.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Param.swift; sourceTree = "<group>"; };
+		D4326E3A1CA5FB7E0016E595 /* Command.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Command.swift; path = Compiler/Pipeline/Command.swift; sourceTree = "<group>"; };
 		D43B39871C8A0EDF0039FB2E /* BasicBlock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BasicBlock.swift; sourceTree = "<group>"; };
 		D43B39881C8A0EDF0039FB2E /* Builder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Builder.swift; sourceTree = "<group>"; };
 		D43B39891C8A0EDF0039FB2E /* Function.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Function.swift; sourceTree = "<group>"; };
@@ -259,15 +258,11 @@
 		D43B39E61C8A0F8B0039FB2E /* Vist-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Vist-Bridging-Header.h"; path = "Compiler/Include/Vist-Bridging-Header.h"; sourceTree = "<group>"; };
 		D43B39E81C8A0FA60039FB2E /* Error.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Error.swift; path = Vist/Compiler/Error.swift; sourceTree = "<group>"; };
 		D43B39EB1C8A0FAB0039FB2E /* Test.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; name = Test.playground; path = Vist/Compiler/Test.playground; sourceTree = "<group>"; };
-		D43B39ED1C8A100E0039FB2E /* Assemble.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Assemble.cpp; path = Compiler/Pipeline/Assemble.cpp; sourceTree = "<group>"; };
-		D43B39EE1C8A100E0039FB2E /* Assemble.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Assemble.hpp; path = Compiler/Pipeline/Assemble.hpp; sourceTree = "<group>"; };
 		D43B39EF1C8A100E0039FB2E /* CommandLine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CommandLine.swift; path = Compiler/Pipeline/CommandLine.swift; sourceTree = "<group>"; };
 		D43B39F01C8A100E0039FB2E /* Compile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Compile.swift; path = Compiler/Pipeline/Compile.swift; sourceTree = "<group>"; };
 		D43B39F11C8A100E0039FB2E /* Config.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Config.swift; path = Compiler/Pipeline/Config.swift; sourceTree = "<group>"; };
 		D43B39F21C8A100E0039FB2E /* LinkRuntime.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LinkRuntime.swift; path = Compiler/Pipeline/LinkRuntime.swift; sourceTree = "<group>"; };
 		D43B39F31C8A100E0039FB2E /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = main.swift; path = Compiler/Pipeline/main.swift; sourceTree = "<group>"; };
-		D43B39F41C8A100E0039FB2E /* TargetMachine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TargetMachine.cpp; path = Compiler/Pipeline/TargetMachine.cpp; sourceTree = "<group>"; };
-		D43B39F51C8A100E0039FB2E /* TargetMachine.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = TargetMachine.hpp; path = Compiler/Pipeline/TargetMachine.hpp; sourceTree = "<group>"; };
 		D43B3A041C8A10390039FB2E /* Lexer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Lexer.swift; path = Compiler/Lexer/Lexer.swift; sourceTree = "<group>"; };
 		D43B3A051C8A10390039FB2E /* Token.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Token.swift; path = Compiler/Lexer/Token.swift; sourceTree = "<group>"; };
 		D43B3A0A1C8A104F0039FB2E /* ParseError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParseError.swift; path = Compiler/Parser/ParseError.swift; sourceTree = "<group>"; };
@@ -660,10 +655,7 @@
 				D43B39F31C8A100E0039FB2E /* main.swift */,
 				D43B39EF1C8A100E0039FB2E /* CommandLine.swift */,
 				D43B39F01C8A100E0039FB2E /* Compile.swift */,
-				D43B39F41C8A100E0039FB2E /* TargetMachine.cpp */,
-				D43B39F51C8A100E0039FB2E /* TargetMachine.hpp */,
-				D43B39ED1C8A100E0039FB2E /* Assemble.cpp */,
-				D43B39EE1C8A100E0039FB2E /* Assemble.hpp */,
+				D4326E3A1CA5FB7E0016E595 /* Command.swift */,
 				D43B39F11C8A100E0039FB2E /* Config.swift */,
 				D43B39F21C8A100E0039FB2E /* LinkRuntime.swift */,
 			);
@@ -878,12 +870,10 @@
 				D43B39921C8A0EDF0039FB2E /* BasicBlock.swift in Sources */,
 				D43B3A431C8A10C80039FB2E /* SemaScope.swift in Sources */,
 				D43B3A6C1C8A11600039FB2E /* ExistentialVariable.swift in Sources */,
-				D43B3A031C8A100E0039FB2E /* TargetMachine.cpp in Sources */,
 				D43B3A391C8A10C80039FB2E /* ExprSema.swift in Sources */,
 				D43B3A721C8A11600039FB2E /* Intrinsic.cpp in Sources */,
 				D4728BDE1C944397003294B0 /* Accessor.swift in Sources */,
 				D43B39DB1C8A0F3A0039FB2E /* FunctionInst.swift in Sources */,
-				D43B39F71C8A100E0039FB2E /* Assemble.cpp in Sources */,
 				D43B3A741C8A11600039FB2E /* IRError.swift in Sources */,
 				D4728BE51C960D79003294B0 /* MemoryInst.swift in Sources */,
 				D43B3A681C8A11600039FB2E /* BuiltinFunction.swift in Sources */,
@@ -894,6 +884,7 @@
 				D43B39AF1C8A0F140039FB2E /* BuiltinType.swift in Sources */,
 				D43B39981C8A0EDF0039FB2E /* Inst.swift in Sources */,
 				D43B399A1C8A0EDF0039FB2E /* Module.swift in Sources */,
+				D4326E3C1CA5FB7E0016E595 /* Command.swift in Sources */,
 				D4E5E3301C8367D900457B73 /* VHIRTests.swift in Sources */,
 				D43B3A471C8A10C80039FB2E /* StmtSema.swift in Sources */,
 				D43B3A1C1C8A105B0039FB2E /* DefinedType.swift in Sources */,
@@ -942,7 +933,6 @@
 				D43B39B81C8A0F140039FB2E /* StructType.swift in Sources */,
 				D4728BE41C960D79003294B0 /* MemoryInst.swift in Sources */,
 				D43B39991C8A0EDF0039FB2E /* Module.swift in Sources */,
-				D43B39F61C8A100E0039FB2E /* Assemble.cpp in Sources */,
 				D43B39D81C8A0F3A0039FB2E /* BuiltinInst.swift in Sources */,
 				D43B3A6F1C8A11600039FB2E /* GenericVariable.swift in Sources */,
 				D43B39B21C8A0F140039FB2E /* FnType.swift in Sources */,
@@ -973,11 +963,11 @@
 				D43B39F81C8A100E0039FB2E /* CommandLine.swift in Sources */,
 				D43B3A671C8A11600039FB2E /* BuiltinFunction.swift in Sources */,
 				D43B39AE1C8A0F140039FB2E /* BuiltinType.swift in Sources */,
+				D4326E3B1CA5FB7E0016E595 /* Command.swift in Sources */,
 				D43B3A6D1C8A11600039FB2E /* FunctionAttribute.swift in Sources */,
 				D43B3A2A1C8A10A50039FB2E /* FunctionContainer.swift in Sources */,
 				D43B39DE1C8A0F3A0039FB2E /* ReturnInst.swift in Sources */,
 				D43B39FA1C8A100E0039FB2E /* Compile.swift in Sources */,
-				D43B3A021C8A100E0039FB2E /* TargetMachine.cpp in Sources */,
 				D43B39BA1C8A0F140039FB2E /* TupleType.swift in Sources */,
 				D43B39DA1C8A0F3A0039FB2E /* FunctionInst.swift in Sources */,
 				D43B3A231C8A105B0039FB2E /* Stmt.swift in Sources */,

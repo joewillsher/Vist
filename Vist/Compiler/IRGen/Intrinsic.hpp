@@ -11,8 +11,6 @@
 
 #include "LLVM.h"
 
-
-
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -28,7 +26,6 @@ LLVMValueRef getIntrinsic(const char *name,
                           bool removeOverload);
 
 
-
 #ifdef __cplusplus // only for c++
 #include "llvm/IR/Value.h"
 #import "llvm/ADT/StringRef.h"
@@ -39,7 +36,5 @@ Function *getIntrinsic(StringRef name,
                        Type *ty,
                        bool removeOverload);
 #endif
-
-
 
 #endif /* Intrinsic_h */
