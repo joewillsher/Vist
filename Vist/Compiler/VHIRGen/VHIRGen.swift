@@ -373,7 +373,7 @@ extension ForInLoopStmt: StmtEmitter {
         // iterate the loop count and check whether we are within range
         let one = try module.builder.buildBuiltinInt(1)
         let iterated = try module.builder.buildBuiltinInstructionCall(.iaddoverflow, args: loopOperand, Operand(one), irName: "count.it")
-        let condition = try module.builder.buildBuiltinInstructionCall(.lte, args: Operand(iterated), Operand(end))
+        let condition = try module.builder.buildBuiltinInstructionCall(.ilte, args: Operand(iterated), Operand(end))
         
         // cond break -- leave the loop or go again
         // call the loop block but with the iterated loop count

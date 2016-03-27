@@ -286,15 +286,32 @@ extension BuiltinInstCall: VHIRLower {
             
             // handle calls which arent intrinsics, but builtin
             // instructions. Return these directly
-        case .lte:  return LLVMBuildICmp(irGen.builder, LLVMIntSLE, l.loweredValue, r.loweredValue, irName ?? "")
-        case .lt:   return LLVMBuildICmp(irGen.builder, LLVMIntSLT, l.loweredValue, r.loweredValue, irName ?? "")
-        case .gte:  return LLVMBuildICmp(irGen.builder, LLVMIntSGE, l.loweredValue, r.loweredValue, irName ?? "")
-        case .gt:   return LLVMBuildICmp(irGen.builder, LLVMIntSGT, l.loweredValue, r.loweredValue, irName ?? "")
-        case .ieq: return LLVMBuildICmp(irGen.builder, LLVMIntEQ, l.loweredValue, r.loweredValue, irName ?? "")
-        case .ineq: return LLVMBuildICmp(irGen.builder, LLVMIntNE, l.loweredValue, r.loweredValue, irName ?? "")
         case .iaddoverflow: return LLVMBuildAdd(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
+        case .ieq:  return LLVMBuildICmp(irGen.builder, LLVMIntEQ, l.loweredValue, r.loweredValue, irName ?? "")
+        case .ineq: return LLVMBuildICmp(irGen.builder, LLVMIntNE, l.loweredValue, r.loweredValue, irName ?? "")
         case .idiv: return LLVMBuildSDiv(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
         case .irem: return LLVMBuildSRem(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
+        case .ilt:   return LLVMBuildICmp(irGen.builder, LLVMIntSLT, l.loweredValue, r.loweredValue, irName ?? "")
+        case .ilte:  return LLVMBuildICmp(irGen.builder, LLVMIntSLE, l.loweredValue, r.loweredValue, irName ?? "")
+        case .igte:  return LLVMBuildICmp(irGen.builder, LLVMIntSGE, l.loweredValue, r.loweredValue, irName ?? "")
+        case .igt:   return LLVMBuildICmp(irGen.builder, LLVMIntSGT, l.loweredValue, r.loweredValue, irName ?? "")
+        case .ishl: return LLVMBuildShl(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
+        case .ishr: return LLVMBuildAShr(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
+        case .iand: return LLVMBuildAnd(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
+        case .ior:  return LLVMBuildOr(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
+        case .ixor: return LLVMBuildXor(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
+            
+        case .fadd: return LLVMBuildAdd(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
+        case .fsub: return LLVMBuildAdd(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
+        case .fmul: return LLVMBuildMul(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
+        case .feq:  return LLVMBuildFCmp(irGen.builder, LLVMRealOEQ, l.loweredValue, r.loweredValue, irName ?? "")
+        case .fneq: return LLVMBuildFCmp(irGen.builder, LLVMRealONE, l.loweredValue, r.loweredValue, irName ?? "")
+        case .fdiv: return LLVMBuildFDiv(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
+        case .frem: return LLVMBuildFRem(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
+        case .flt:  return LLVMBuildFCmp(irGen.builder, LLVMRealOLT, l.loweredValue, r.loweredValue, irName ?? "")
+        case .flte: return LLVMBuildFCmp(irGen.builder, LLVMRealOLE, l.loweredValue, r.loweredValue, irName ?? "")
+        case .fgte: return LLVMBuildFCmp(irGen.builder, LLVMRealOGE, l.loweredValue, r.loweredValue, irName ?? "")
+        case .fgt:  return LLVMBuildFCmp(irGen.builder, LLVMRealOGT, l.loweredValue, r.loweredValue, irName ?? "")
         }
         
         let argBuffer = args.ptr()

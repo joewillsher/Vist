@@ -109,7 +109,7 @@ func compileDocuments(
             
             if verbose { print("\n----------------------------VHIR OPT-------------------------------\n") }
             
-            try vhirModule.runPasses(optLevel: .high)
+            try vhirModule.runPasses(optLevel:.high)
             
             try vhirModule.vhir.writeToFile("\(currentDirectory)/\(file).vhir", atomically: true, encoding: NSUTF8StringEncoding)
             if verbose { print(vhirModule.vhir) }
