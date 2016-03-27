@@ -8,6 +8,7 @@
 
 
 protocol RValueEmitter {
+    @warn_unused_result
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor
 }
 protocol StmtEmitter {
@@ -15,9 +16,12 @@ protocol StmtEmitter {
 }
 
 protocol LValueEmitter: RValueEmitter {
+    @warn_unused_result
     func emitLValue(module module: Module, scope: Scope) throws -> GetSetAccessor
 }
 
+/// A libaray without a main function can emit vhir for this
+protocol LibraryTopLevel: ASTNode {}
 
 
 extension Expr {
@@ -35,13 +39,22 @@ extension Decl {
         throw VHIRError.notGenerator
     }
 }
+extension ASTNode {
+    func emit(module module: Module, scope: Scope) throws {
+        if case let rval as RValueEmitter = self {
+            _ = try rval.emitRValue(module: module, scope: scope)
+        }
+        else if case let stmt as StmtEmitter = self {
+            try stmt.emitStmt(module: module, scope: scope)
+        }
+    }
+}
 
 extension CollectionType where Generator.Element == ASTNode {
     
     func emitBody(module module: Module, scope: Scope) throws {
         for x in self {
-            if case let g as RValueEmitter = x { try g.emitRValue(module: module, scope: scope) }
-            else if case let g as StmtEmitter = x { try g.emitStmt(module: module, scope: scope) }
+            try x.emit(module: module, scope: scope)
         }
     }
     
@@ -50,18 +63,26 @@ extension CollectionType where Generator.Element == ASTNode {
 
 extension AST {
     
-    func emitAST(module module: Module) throws {
+    func emitVHIR(module module: Module, isLibrary: Bool) throws {
         
         let builder = module.builder
         let scope = Scope()
         
-        let mainTy = FnType(params: [], returns: BuiltinType.void)
-        let main = try builder.buildFunction("main", type: mainTy, paramNames: [])
-        
-        try exprs.emitBody(module: module, scope: scope)
-        
-        try builder.setInsertPoint(main)
-        try builder.buildReturnVoid()
+        if isLibrary {
+            // if its a library we dont emit a main, and just vhirgen on any decls/statements
+            for case let g as LibraryTopLevel in exprs {
+                try g.emit(module: module, scope: scope)
+            }
+        }
+        else {
+            let mainTy = FnType(params: [], returns: BuiltinType.void)
+            let main = try builder.buildFunction("main", type: mainTy, paramNames: [])
+            
+            try exprs.emitBody(module: module, scope: scope)
+            
+            try builder.setInsertPoint(main)
+            try builder.buildReturnVoid()
+        }
         
     }
 }

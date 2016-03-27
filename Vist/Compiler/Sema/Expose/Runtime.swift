@@ -16,18 +16,18 @@ struct Runtime {
     
     private static let functions: [(String, FnType)] = [
         // runtime fns
-        ("_print", FnType(params: [intType], returns: voidType)),
-        ("_print", FnType(params: [doubleType], returns: voidType)),
-        ("_print", FnType(params: [boolType], returns: voidType)),
-        ("_print", FnType(params: [int32Type], returns: voidType)),
+        ("vist_print", FnType(params: [intType], returns: voidType)),
+        ("vist_print", FnType(params: [doubleType], returns: voidType)),
+        ("vist_print", FnType(params: [boolType], returns: voidType)),
+        ("vist_print", FnType(params: [int32Type], returns: voidType)),
     ]
-    private static let unmangled: [(String, FnType)] = [
+//    private static let unmangled: [(String, FnType)] = [
         // runtime fns
-//        ("_alloc", FnType(params: [Builtin.pointer(to: intType)], returns: voidType)),
-    ]
+//        ("vist_alloc", FnType(params: [Builtin.pointer(to: intType)], returns: voidType)),
+//    ]
     
     private static let functionContainer = FunctionContainer(functions: functions, types: [])
-    private static let unmangledContainer = FunctionContainer(functions: unmangled, types: [], mangleFunctionNames: false)
+//    private static let unmangledContainer = FunctionContainer(functions: unmangled, types: [], mangleFunctionNames: false)
     
     /// Get a builtin function by name
     ///

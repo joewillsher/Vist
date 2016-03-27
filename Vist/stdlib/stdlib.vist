@@ -7,7 +7,6 @@
 type Int {
     var value: Builtin.Int64
     
-    init Builtin.Int64 = (v) do value = v
     init () = {
         let v = 0
         value = v.value
@@ -15,14 +14,11 @@ type Int {
 }
 type Int32 {
     var value: Builtin.Int32
-    
-    init Builtin.Int32 = (v) do value = v
 }
 
 type Bool {
     var value: Builtin.Bool
-
-    init Builtin.Bool = (v) do value = v
+    
     init () = {
         let b = false
         value = b.value
@@ -31,19 +27,12 @@ type Bool {
 
 type Double {
     var value: Builtin.Double
-
-    init Builtin.Double = (v) do value = v
 }
 
 type Range {
-    let start: Int
-    let end: Int
-    
-    init Int Int = {
-        start = $0
-        end = $1
-    }
+    let start: Int, end: Int
 }
+
 
 
 //type Array {
@@ -59,10 +48,10 @@ type Range {
 // free functions
 // ----------------------------------------------------
 
-@public @inline func print :: Int = (a) do _print a.value
-@public @inline func print :: Int32 = (a) do _print a.value
-@public @inline func print :: Bool = (a) do _print a.value
-@public @inline func print :: Double = (a) do _print a.value
+@public @inline func print :: Int = (a) do vist_print a.value
+@public @inline func print :: Int32 = (a) do vist_print a.value
+@public @inline func print :: Bool = (a) do vist_print a.value
+@public @inline func print :: Double = (a) do vist_print a.value
 
 // TODO: print message
 

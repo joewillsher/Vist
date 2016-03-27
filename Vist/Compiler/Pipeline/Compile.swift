@@ -13,10 +13,6 @@ import Foundation.NSString
 // ugh, preprocessor macros broke in 2.2. to fix use `PROJECT_DIR`
 private let llvmDirectory = "/usr/local/Cellar/llvm/3.6.2/bin"
 private let stdLibDirectory = "\(SOURCE_ROOT)/Vist/stdlib"
-private let runtimeDirectory = "\(SOURCE_ROOT)/Vist/Runtime"
-
-private let localBinPath = "/usr/local/bin"
-private let localLibPath = "/usr/local/lib"
 
 // IDEA to have multiple file compilation:
 //   - A FunctionPrototype AST object which is added to ast of other files
@@ -38,8 +34,7 @@ func compileDocuments(
     preserve: Bool = false,
     generateLibrary: Bool = false,
     isStdLib: Bool = false,
-    parseStdLib: Bool = false,
-    oldIRGen: Bool = false)
+    parseStdLib: Bool = false)
     throws {
         
         let currentDirectory = isStdLib ? stdLibDirectory: inDirectory
@@ -98,56 +93,41 @@ func compileDocuments(
         
         
         let vhirModule = Module()
-
-        if !oldIRGen {
-            if verbose { print("\n----------------------------VHIR GEN-------------------------------\n") }
-            
-            try ast.emitAST(module: vhirModule)
-            try vhirModule.vhir.writeToFile("\(currentDirectory)/\(file)_.vhir", atomically: true, encoding: NSUTF8StringEncoding)
-            
-            if verbose { print(vhirModule.vhir) }
-            
-            if verbose { print("\n----------------------------VHIR OPT-------------------------------\n") }
-            
-            try vhirModule.runPasses(optLevel:.high)
-            
-            try vhirModule.vhir.writeToFile("\(currentDirectory)/\(file).vhir", atomically: true, encoding: NSUTF8StringEncoding)
-            if verbose { print(vhirModule.vhir) }
-        }
         
-
+        if verbose { print("\n----------------------------VHIR GEN-------------------------------\n") }
+        
+        try ast.emitVHIR(module: vhirModule, isLibrary: generateLibrary)
+        try vhirModule.vhir.writeToFile("\(currentDirectory)/\(file)_.vhir", atomically: true, encoding: NSUTF8StringEncoding)
+        
+        if verbose { print(vhirModule.vhir) }
+        
+        if verbose { print("\n----------------------------VHIR OPT-------------------------------\n") }
+        
+        try vhirModule.runPasses(optLevel:.high)
+        
+        try vhirModule.vhir.writeToFile("\(currentDirectory)/\(file).vhir", atomically: true, encoding: NSUTF8StringEncoding)
+        if verbose { print(vhirModule.vhir) }
+        
+        
         var llvmModule = LLVMModuleCreateWithName("vist_module")
         
         if isStdLib {
-            linkWithRuntime(&llvmModule, withFile: "\(runtimeDirectory)/runtime.bc")
+            linkWithRuntime(&llvmModule, withFile: "\(SOURCE_ROOT)/Vist/Runtime/runtime.bc")
         }
         configModule(llvmModule)
         
         defer {
             // remove files
             if !preserve {
-                for file in ["\(file).ll", "\(file)_.ll", "\(file).s", "\(file).vhir"] {
-                    
-                    let rmTask = NSTask()
-                    rmTask.currentDirectoryPath = currentDirectory
-                    rmTask.launchPath = "/bin/rm"
-                    rmTask.arguments = [file]
-                    
-                    rmTask.launch()
-                    rmTask.waitUntilExit()
-                }
+                Command(.rm,
+                        files: ["\(file).ll", "\(file)_.ll", "\(file).s", "\(file).vhir", "\(file)_.vhir"],
+                        cwd: currentDirectory).exectute()
             }
         }
         
         // Generate LLVM IR code for program
-        if oldIRGen {
-            if verbose { print("\n------------------------------LLVM IR------------------------------\n") }
-            try ast.irGen(module: llvmModule, isLibrary: generateLibrary, isStdLib: isStdLib || parseStdLib)
-        }
-        else {
-            if verbose { print("\n-----------------------------IR LOWER------------------------------\n") }
-            try vhirModule.vhirLower(llvmModule, isStdLib: isStdLib || parseStdLib)
-        }
+        if verbose { print("\n-----------------------------IR LOWER------------------------------\n") }
+        try vhirModule.vhirLower(llvmModule, isStdLib: isStdLib || parseStdLib)
         
         // print and write to file
         try String.fromCString(LLVMPrintModuleToString(llvmModule))?.writeToFile("\(currentDirectory)/\(file)_.ll", atomically: true, encoding: NSUTF8StringEncoding)
@@ -164,13 +144,11 @@ func compileDocuments(
             performLLVMOptimisations(llvmModule, 3, isStdLib)
             try String.fromCString(LLVMPrintModuleToString(llvmModule))?.writeToFile("\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
             
-            let optimTask = NSTask()
-            optimTask.currentDirectoryPath = currentDirectory
-            optimTask.launchPath = "\(llvmDirectory)/opt"
-            optimTask.arguments = ["-S", "-O3", "-o", "\(file).ll", "\(file).ll"]
-            
-            optimTask.launch()
-            optimTask.waitUntilExit()
+            Command(.opt,
+                    files: ["\(file).ll"],
+                    execName: "\(file).ll",
+                    cwd: currentDirectory,
+                    args: "-S", "-O3").exectute()
         }
         else {
             performLLVMOptimisations(llvmModule, 0, false)
@@ -184,38 +162,39 @@ func compileDocuments(
         
         if verbose { print("\n\n----------------------------LINK-----------------------------\n") }
         
-        
-        if !isStdLib {
+
+        if isStdLib {
+            // generate .o file to link against program
+            Command(.clang,
+                    files: ["\(file).ll"],
+                    cwd: currentDirectory,
+                    args: "-c").exectute()
+            
+            // generate .bc file for optimiser
+            Command(.assemble,
+                    files: ["\(file).ll"],
+                    cwd: currentDirectory).exectute()
+            // TODO: install the vistc exec as a lib in /usr/local/lib
+        }
+        else {
+            
             /// compiles the LLVM IR to assembly
-            ClangCommand(files: ["\(file).ll"], cwd: currentDirectory, args: "-S").exectute()
+            Command(.clang,
+                    files: ["\(file).ll"],
+                    cwd: currentDirectory,
+                    args: "-S").exectute()
             
             let asm = try String(contentsOfFile: "\(currentDirectory)/\(file).s", encoding: NSUTF8StringEncoding)
             
             if asmOnly { print(asm); return }
             if verbose { print(asm) }
-        }
-        
-        if isStdLib {
-            // generate .o file to link against program
-//            ClangCommand(files: ["\(stdLibDirectory)/stdlib.o", "\(file).ll"],
-//                         currentDirectory: currentDirectory,
-//                         args: []).exectute()
-
-            // generate .bc file for optimiser
-            let assembleTask = NSTask()
-            assembleTask.currentDirectoryPath = currentDirectory
-            assembleTask.launchPath = "\(llvmDirectory)/llvm-as"
-            assembleTask.arguments = ["\(file).ll"]
-            // TODO: install this as a lib in /usr/local/lib
             
-            assembleTask.launch()
-            assembleTask.waitUntilExit()
-        }
-        else {
+            
             /// link file to stdlib and compile
-            ClangCommand(files: ["\(stdLibDirectory)/stdlib.o", "\(file).ll"],
-                         execName: file,
-                         cwd: currentDirectory).exectute()
+            Command(.clang,
+                    files: ["\(stdLibDirectory)/stdlib.o", "\(file).ll"],
+                    execName: file,
+                    cwd: currentDirectory).exectute()
             if buildOnly { return }
             
             if verbose { print("\n\n-----------------------------RUN-----------------------------\n") }
@@ -256,17 +235,16 @@ func buildRuntime() {
     
     let runtimeDirectory = "\(SOURCE_ROOT)/Vist/Runtime"
     
-    /// Generate LLVM IR File for the helper c++ code    
-    ClangCommand(files: ["runtime.cpp"], cwd: runtimeDirectory, args: "-S", "-emit-llvm").exectute()
+    /// Generate LLVM IR File for the helper c++ code
+    Command(.clang,
+            files: ["runtime.cpp"],
+            cwd: runtimeDirectory,
+            args: "-S", "-emit-llvm").exectute()
     
     /// Turn that LLVM IR code into LLVM bytecode
-    let assembleTask = NSTask()
-    assembleTask.currentDirectoryPath = runtimeDirectory
-    assembleTask.launchPath = "\(llvmDirectory)/llvm-as"
-    assembleTask.arguments = ["runtime.ll"]
-    
-    assembleTask.launch()
-    assembleTask.waitUntilExit()
+    Command(.assemble,
+            files: ["runtime.ll"],
+            cwd: runtimeDirectory).exectute()
 }
 
 

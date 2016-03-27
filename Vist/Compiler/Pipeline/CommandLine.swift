@@ -26,7 +26,6 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
     let lib = flags.contains("-lib") // undocumented
     let buildStdLib = flags.contains("-build-stdlib")
     let parseStdLib = flags.contains("-parse-stdlib")
-    let oldIRGen = flags.contains("-irgen-old")
     let preserveIntermediate = flags.contains("-preserve")
     
     if flags.contains("-build-runtime") {
@@ -40,7 +39,6 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
                 "  -help -h\t\t- Print help\n" +
                 "  -verbose -v\t\t- Print all stages of the compile\n" +
                 "  -profile -p\t\t- Record time of program execution\n" +
-                "  -old-irgen\t\t- Use the old IRGen pass instead of VHIR\n" +
                 "  -dump-ast\t\t- Dump syntax tree\n" +
                 "  -emit-ir\t\t- Only generate LLVM IR file\n" +
                 "  -emit-asm\t\t- Only generate assembly code\n" +
@@ -69,8 +67,7 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
                                  preserve: true,
                                  generateLibrary: true,
                                  isStdLib: true,
-                                 parseStdLib: true,
-                                 oldIRGen: true)
+                                 parseStdLib: true)
         }
         if !files.isEmpty {
             try compileDocuments(files,
@@ -86,8 +83,7 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
                                  preserve: preserveIntermediate,
                                  generateLibrary: lib,
                                  isStdLib: false,
-                                 parseStdLib: parseStdLib,
-                                 oldIRGen: oldIRGen)
+                                 parseStdLib: parseStdLib)
         }
         
         #if DEBUG

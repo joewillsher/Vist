@@ -8,24 +8,26 @@
 
 import class Foundation.NSTask
 
-protocol Command {
-    var path: String { get }
-    var currentDirectory: String { get }
-    var args: [String] { get }
+enum Exec: String {
+    case clang = "/usr/local/Cellar/llvm/3.6.2/bin/clang-3.6"
+    case rm = "/bin/rm"
+    case opt = "/usr/local/Cellar/llvm/3.6.2/bin/opt"
+    case assemble = "/usr/local/Cellar/llvm/3.6.2/bin/llvm-as"
 }
 
-struct ClangCommand: Command {
-    let path = "/usr/local/Cellar/llvm/3.6.2/bin/clang-3.6"
+final class Command {
+    var path: String
     let files: [String]
-    let execName: String?
+    let outputName: String?
     let currentDirectory: String
     let args: [String]
     
     @warn_unused_result
-    init(files: [String], execName: String? = nil, cwd: String, args: String...) {
+    init(_ exec: Exec, files: [String], execName: String? = nil, cwd: String, args: String...) {
         self.files = files
+        self.path = exec.rawValue
         self.currentDirectory = cwd
-        self.execName = execName
+        self.outputName = execName
         self.args = args
     }
     
@@ -34,13 +36,13 @@ struct ClangCommand: Command {
         task.currentDirectoryPath = currentDirectory
         task.launchPath = path
         var a = args
-        if let n = execName { a.appendContentsOf(["-o", n]) }
+        if let n = outputName { a.appendContentsOf(["-o", n]) }
         a.appendContentsOf(files)
         task.arguments = a
         
         task.launch()
         task.waitUntilExit()
     }
-
 }
+
 

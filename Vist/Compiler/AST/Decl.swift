@@ -32,7 +32,7 @@ final class VariableDeclGroup: Decl, StructMemberExpr {
     }
 }
 
-final class FuncDecl: Decl, StructMemberExpr {
+final class FuncDecl: Decl, StructMemberExpr, LibraryTopLevel {
     let name: String
     let fnType: DefinedFunctionType
     let impl: FunctionImplementationExpr?

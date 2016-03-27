@@ -52,6 +52,7 @@ enum BuiltinInst: String {
     case condfail = "cond_fail"
     case ilte = "i_cmp_lte", igte = "i_cmp_gte", ilt = "i_cmp_lt", igt = "i_cmp_gt"
     case ishl = "i_shl", ishr = "i_shr", iand = "i_and", ior = "i_or", ixor = "i_xor"
+    case and = "b_and", or = "b_or"
     case expect, trap
     
     case fadd = "f_add", fsub = "f_sub", fmul = "f_mul", fdiv = "f_div", frem = "f_rem", feq = "f_eq", fneq = "f_neq"
@@ -59,8 +60,8 @@ enum BuiltinInst: String {
     
     var expectedNumOperands: Int {
         switch  self {
-        case .iadd, .isub, .imul, .idiv, .iaddoverflow, .irem, .ilte, .igte, .ilt,
-             .igt, .expect, .ieq, .ineq, .ishr, .ishl, .iand, .ior, .ixor, .fgt,
+        case .iadd, .isub, .imul, .idiv, .iaddoverflow, .irem, .ilte, .igte, .ilt, .igt,
+             .expect, .ieq, .ineq, .ishr, .ishl, .iand, .ior, .ixor, .fgt, .and, .or,
              .fgte, .flt, .flte, .fadd, .fsub, .fmul, .fdiv, .frem, .feq, .fneq: return 2
         case .condfail: return 1
         case .trap: return 0
@@ -71,11 +72,12 @@ enum BuiltinInst: String {
         case .iadd, .isub, .imul:
             return TupleType(members: [params.first!, Builtin.boolType]) // overflowing arithmetic
             
-        case .idiv, .iaddoverflow, .irem, .ishl, .ishr, .iand, .ior, .ixor,
-             .fadd, .fsub, .fmul, .fdiv, .frem, .feq, .fneq:
+        case .idiv, .iaddoverflow, .irem, .ishl, .ishr, .iand, .ior,
+             .ixor, .fadd, .fsub, .fmul, .fdiv, .frem, .feq, .fneq:
             return params.first // normal arithmetic
             
-        case .ilte, .igte, .ilt, .igt, .flte, .fgte, .flt, .fgt, .expect, .ieq, .ineq:
+        case .ilte, .igte, .ilt, .igt, .flte, .fgte, .flt,
+             .fgt, .expect, .ieq, .ineq, .and, .or:
             return Builtin.boolType // bool ops
             
         case .condfail, trap:

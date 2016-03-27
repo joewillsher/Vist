@@ -317,9 +317,11 @@ protocol TypeExpr: Expr {
 
 
 
+// TODO: These really shouldn't be Exprs
+
 typealias ConstrainedType = (name: String, constraints: [String], parentName: String)
 
-final class StructExpr: Typed, ScopeNode, TypeExpr {
+final class StructExpr: Typed, ScopeNode, TypeExpr, LibraryTopLevel {
     let name: String
     let properties: [VariableDecl]
     let methods: [FuncDecl]
@@ -344,7 +346,7 @@ final class StructExpr: Typed, ScopeNode, TypeExpr {
     }
 }
 
-final class ConceptExpr: TypedExpr, ScopeNode, TypeExpr {
+final class ConceptExpr: TypedExpr, ScopeNode, TypeExpr, LibraryTopLevel {
     let name: String
     let requiredProperties: [VariableDecl]
     let requiredMethods: [FuncDecl]
