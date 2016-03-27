@@ -6,12 +6,17 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-/// The application of a block -- can either be
-/// and entry block or a block you break to
+/// The application of a block, how you jump into the block
+///
+/// Can either be an entry block or a block you break to
 final class BlockApplication {
     
-    static func entry(params: [Param]?) -> BlockApplication { return BlockApplication(params: params?.map(Operand.init), predecessor: nil) }
-    static func body(predecessor: BasicBlock, params: [BlockOperand]?) -> BlockApplication { return BlockApplication(params: params, predecessor: predecessor) }
+    static func entry(params: [Param]?) -> BlockApplication {
+        return BlockApplication(params: params?.map(Operand.init), predecessor: nil)
+    }
+    static func body(predecessor: BasicBlock, params: [BlockOperand]?) -> BlockApplication {
+        return BlockApplication(params: params, predecessor: predecessor)
+    }
     
     var args: [Operand]?
     var predecessor: BasicBlock?
@@ -44,6 +49,7 @@ final class BasicBlock: VHIRElement {
     let parameters: [Param]?
     private(set) var applications: [BlockApplication]
     var predecessors: [BasicBlock] { return applications.flatMap { $0.predecessor } }
+//    private(set) var successors: [BasicBlock] = []
     
     init(name: String, parameters: [Param]?, parentFunction: Function) {
         self.name = name
@@ -88,6 +94,7 @@ final class BasicBlock: VHIRElement {
         else { guard args == nil else { throw VHIRError.paramsNotTyped }}
         
         applications.append(.body(block, params: args))
+//        block.successors.append(self)
     }
     private func indexOfInst(inst: Inst) throws -> Int {
         guard let i = instructions.indexOf({ $0 === inst }) else { throw VHIRError.instNotInBB }

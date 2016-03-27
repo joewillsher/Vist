@@ -113,14 +113,14 @@ extension FunctionCall/*: VHIRGenerator*/ {
         if let stdlib = try module.stdLibFunctionNamed(name, argTypes: argTypes) {
             return try module.builder.buildFunctionCall(stdlib, args: args).accessor
         }
-        else if let runtime = try module.runtimeFunctionNamed(name, argTypes: argTypes) {
+        else if let runtime = try module.runtimeFunctionNamed(name, argTypes: argTypes) /*where name.hasPrefix("vist_")*/ {
             return try module.builder.buildFunctionCall(runtime, args: args).accessor
         }
         else if
             let prefixRange = name.rangeOfString("Builtin."),
             let instruction = BuiltinInst(rawValue: name.stringByReplacingCharactersInRange(prefixRange, withString: "")) {
             
-            return try module.builder.buildBuiltinInstruction(instruction, args: args[0], args[1]).accessor
+            return try module.builder.buildBuiltinInstruction(instruction, args: args).accessor
         }
         else {
             let function = module.functionNamed(mangledName)!
@@ -132,6 +132,7 @@ extension FunctionCall/*: VHIRGenerator*/ {
 extension FuncDecl: StmtEmitter {
     
     func emitStmt(module module: Module, scope: Scope) throws {
+        
         guard let type = fnType.type else { throw VHIRError.noType(#file) }
         
         // if has body
@@ -210,7 +211,10 @@ extension ReturnStmt: RValueEmitter {
 extension TupleExpr: RValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
-        guard let type = type else { throw VHIRError.noType(#file) }
+        
+        if self.elements.isEmpty { return VoidLiteralValue().accessor }
+        
+        guard case let type as TupleType = _type else { throw VHIRError.noType(#file) }
         let elements = try self.elements.map { try $0.emitRValue(module: module, scope: scope).getter() }.map(Operand.init)
         return try module.builder.buildTupleCreate(type, elements: elements).accessor
     }
@@ -368,8 +372,8 @@ extension ForInLoopStmt: StmtEmitter {
         
         // iterate the loop count and check whether we are within range
         let one = try module.builder.buildBuiltinInt(1)
-        let iterated = try module.builder.buildBuiltinInstruction(.iaddoverflow, args: loopOperand, Operand(one), irName: "count.it")
-        let condition = try module.builder.buildBuiltinInstruction(.lte, args: Operand(iterated), Operand(end))
+        let iterated = try module.builder.buildBuiltinInstructionCall(.iaddoverflow, args: loopOperand, Operand(one), irName: "count.it")
+        let condition = try module.builder.buildBuiltinInstructionCall(.lte, args: Operand(iterated), Operand(end))
         
         // cond break -- leave the loop or go again
         // call the loop block but with the iterated loop count
@@ -513,6 +517,7 @@ extension MethodCallExpr: RValueEmitter {
             selfRef = try selfVar.getter().allocAccessor().reference()
         }
         
+        // construct function call
         let function = module.functionNamed(mangledName)!
         return try module.builder.buildFunctionCall(function, args: [selfRef] + args).accessor
     }

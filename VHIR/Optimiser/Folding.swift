@@ -8,9 +8,9 @@
 
 
 
-final class ConstantFoldingPass: FunctionPass {
+final class ConstantFoldingPass: OptimisationPass {
     
-    init(optLevel: OptLevel) {}
+    static var minOptLevel: OptLevel = .low
     
     func runOn(function: Function) throws {
         

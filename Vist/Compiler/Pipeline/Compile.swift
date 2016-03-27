@@ -109,7 +109,7 @@ func compileDocuments(
             
             if verbose { print("\n----------------------------VHIR OPT-------------------------------\n") }
             
-            try vhirModule.runPasses(.high)
+            try vhirModule.runPasses(optLevel: .high)
             
             try vhirModule.vhir.writeToFile("\(currentDirectory)/\(file).vhir", atomically: true, encoding: NSUTF8StringEncoding)
             if verbose { print(vhirModule.vhir) }
@@ -256,14 +256,8 @@ func buildRuntime() {
     
     let runtimeDirectory = "\(SOURCE_ROOT)/Vist/Runtime"
     
-    /// Generate LLVM IR File for the helper c++ code
-    let runtimeIRGenTask = NSTask()
-    runtimeIRGenTask.currentDirectoryPath = runtimeDirectory
-    runtimeIRGenTask.launchPath = "/usr/bin/llvm-gcc"
-    runtimeIRGenTask.arguments = ["runtime.cpp", "-S", "-emit-llvm"]
-    
-    runtimeIRGenTask.launch()
-    runtimeIRGenTask.waitUntilExit()
+    /// Generate LLVM IR File for the helper c++ code    
+    ClangCommand(files: ["runtime.cpp"], cwd: runtimeDirectory, args: "-S", "-emit-llvm").exectute()
     
     /// Turn that LLVM IR code into LLVM bytecode
     let assembleTask = NSTask()

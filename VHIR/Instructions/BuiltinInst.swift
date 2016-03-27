@@ -20,6 +20,8 @@ final class BuiltinInstCall: InstBase {
         super.init(args: args, irName: irName)
     }
     
+    static func trapInst() -> BuiltinInstCall { return BuiltinInstCall(inst: .trap, args: [], irName: nil)! }
+    
     // utils for bin instructions
     var l: Operand { return args[0] }
     var r: Operand { return args[1] }
@@ -45,23 +47,25 @@ final class BuiltinInstCall: InstBase {
 }
 
 enum BuiltinInst: String {
-    case iadd = "i_add", isub = "i_sub", imul = "i_mul", idiv = "i_div", irem = "i_rem"
+    case iadd = "i_add", isub = "i_sub", imul = "i_mul", idiv = "i_div", irem = "i_rem", ieq = "i_eq", ineq = "i_neq"
     case iaddoverflow = "i_add_overflow"
     case condfail = "cond_fail"
     case lte = "cmp_lte", gte = "cmp_gte", lt = "cmp_lt", gt = "cmp_gt"
+    case expect, trap
     
     var expectedNumOperands: Int {
         switch  self {
-        case .iadd, .isub, .imul, .idiv, .iaddoverflow, .irem, .lte, .gte, .lt, .gt: return 2
+        case .iadd, .isub, .imul, .idiv, .iaddoverflow, .irem, .lte, .gte, .lt, .gt, .expect, .ieq, .ineq: return 2
         case .condfail: return 1
+        case .trap: return 0
         }
     }
     func returnType(params params: [Ty]) -> Ty? {
         switch self {
-        case .iadd, .isub, .imul: return TupleType(members: [params.first!, Builtin.boolType])
-        case .idiv, .iaddoverflow, .irem: return params.first
-        case .lte, .gte, .lt, .gt: return Builtin.boolType
-        case .condfail: return Builtin.voidType
+        case .iadd, .isub, .imul: return TupleType(members: [params.first!, Builtin.boolType]) // overflowing arithmetic
+        case .idiv, .iaddoverflow, .irem: return params.first // normal arithmetic
+        case .lte, .gte, .lt, .gt, .expect, .ieq, .ineq: return Builtin.boolType // bool ops
+        case .condfail, trap: return Builtin.voidType // void return
         }
     }
 }
@@ -69,7 +73,13 @@ enum BuiltinInst: String {
 
 extension Builder {
     
-    func buildBuiltinInstruction(i: BuiltinInst, args: Operand..., irName: String? = nil) throws -> BuiltinInstCall {
+    // change name back when not crashing
+    // file bug
+    func buildBuiltinInstructionCall(i: BuiltinInst, args: Operand..., irName: String? = nil) throws -> BuiltinInstCall {
+        return try buildBuiltinInstruction(i, args: args, irName: irName)
+    }
+    
+    func buildBuiltinInstruction(i: BuiltinInst, args: [Operand], irName: String? = nil) throws -> BuiltinInstCall {
         guard args.count == i.expectedNumOperands, let binInst = BuiltinInstCall(inst: i, args: args, irName: irName) else { throw VHIRError.builtinIncorrectOperands(inst: i, recieved: args.count) }
         return try _add(binInst)
     }

@@ -82,6 +82,10 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "-parse-stdlib"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "-profile"
             isEnabled = "YES">
          </CommandLineArgument>

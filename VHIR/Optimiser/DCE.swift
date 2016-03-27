@@ -8,9 +8,9 @@
 
 
 /// Dead code elimination pass
-final class DCEPass: FunctionPass {
+final class DCEPass: OptimisationPass {
     
-    init(optLevel: OptLevel) {}
+    static var minOptLevel: OptLevel = .low
     
     func runOn(function: Function) throws {
         
@@ -22,9 +22,9 @@ final class DCEPass: FunctionPass {
     }
 }
 
-final class DeadFunctionPass: ModulePass {
+final class DeadFunctionPass: OptimisationPass {
     
-    init(optLevel: OptLevel) {}
+    static var minOptLevel: OptLevel = .low
     
     func runOn(module: Module) throws {
         for _ in module.functions {
@@ -34,5 +34,22 @@ final class DeadFunctionPass: ModulePass {
     }
 }
 
+final class CFGSimplificationPass: OptimisationPass {
+    static var minOptLevel: OptLevel = .high
+    
+    func runOn(function: Function) throws {
+        
+        for _ in function.blocks ?? [] {
+            
+//            guard bb.predecessors.count == 1 && bb.successors.count != 0 else { continue }
+//            guard let application = bb.applications.first else { continue }
+//            guard let args = application.args, pred = application.predecessor else { continue }
+//            
+//            
+            
+        }
+        
+    }
+}
 
 

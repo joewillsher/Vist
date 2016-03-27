@@ -1164,7 +1164,7 @@ extension TupleExpr: IRGenerator {
     func codeGen(stackFrame: StackFrame, irGen: IRGen) throws -> LLVMValueRef {
         
         if elements.count == 0 { return nil }
-        guard let type = self.type else { throw irGenError(.notTyped) }
+        guard case let type as TupleType = self._type else { throw irGenError(.notTyped) }
         
         let memeberIR = try elements.map(codeGenIn(stackFrame, irGen: irGen))
 

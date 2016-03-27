@@ -15,6 +15,7 @@ final class Function: VHIRElement {
     private unowned var parentModule: Module
     
     var loweredFunction: LLVMValueRef = nil
+    var _condFailBlock: LLVMBasicBlockRef = nil
     
     private init(name: String, type: FnType, module: Module) {
         self.name = name
@@ -103,23 +104,23 @@ extension BasicBlock {
     /// Erases `self` from the parent function, cutting all references to
     /// it and all child instructions
     func eraseFromParent() throws {
-        parentFunction = nil
         for inst in instructions {
             try inst.eraseFromParent()
         }
         try removeFromParent()
+        parentFunction = nil
     }
     /// Moves `self` after the `after` block
     func move(after after: BasicBlock) throws {
-        try removeFromParent()
         if let p = parentFunction {
+            p.body?.blocks.removeAtIndex(try p.indexOf(self))
             p.insert(block: self, atIndex: try p.indexOf(after).successor())
         }
     }
     /// Moves `self` before the `before` block
     func move(before before: BasicBlock) throws {
-        try removeFromParent()
         if let p = parentFunction {
+            p.body?.blocks.removeAtIndex(try p.indexOf(self))
             p.insert(block: self, atIndex: try p.indexOf(before).predecessor())
         }
     }

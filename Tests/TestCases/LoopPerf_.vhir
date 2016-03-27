@@ -1,7 +1,13 @@
 
+type %Bool = { %Builtin.Bool }
 type %Int = { %Builtin.Int64 }
 type %Range = { %Int, %Int }
-type %Bool = { %Builtin.Bool }
+
+func @-A_Int_Int : &thin (%Int, %Int) -> %Int
+
+func @print_Int : &thin (%Int) -> %Builtin.Void
+
+func @%_Int_Int : &thin (%Int, %Int) -> %Int
 
 func @main : &thin () -> %Builtin.Void {
 $entry:
@@ -69,10 +75,4 @@ $exit:			// preds: if.0, if.1, else.2
 
 func @..._Int_Int : &thin (%Int, %Int) -> %Range
 
-func @%_Int_Int : &thin (%Int, %Int) -> %Int
-
 func @-E-E_Int_Int : &thin (%Int, %Int) -> %Bool
-
-func @-A_Int_Int : &thin (%Int, %Int) -> %Int
-
-func @print_Int : &thin (%Int) -> %Builtin.Void

@@ -235,6 +235,31 @@ extension StructElementPtrInst: VHIRLower {
     }
 }
 
+extension Function {
+    
+    /// Constructs a function's faluire landing pad, or returns the one defined
+    func buildCondFailBlock(module: Module, irGen: IRGen) throws -> LLVMBasicBlockRef {
+        // if its there already, we can use it
+        guard _condFailBlock == nil else { return _condFailBlock }
+        
+        // make fail block & save current pos
+        let ins = LLVMGetInsertBlock(irGen.builder)
+        let block = LLVMAppendBasicBlock(loweredFunction, "\(name.demangleName()).trap")
+        LLVMPositionBuilderAtEnd(irGen.builder, block)
+        
+        // Build trap and unreachable
+        try BuiltinInstCall.trapInst().vhirLower(module, irGen: irGen)
+        LLVMBuildUnreachable(irGen.builder)
+        
+        // move back; save and return the fail block
+        LLVMPositionBuilderAtEnd(irGen.builder, ins)
+        _condFailBlock = block
+        return block
+    }
+    
+}
+
+
 extension BuiltinInstCall: VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         
@@ -242,11 +267,22 @@ extension BuiltinInstCall: VHIRLower {
         let intrinsic: LLVMValueRef
         
         switch inst {
+            // overflowing arithmetic
         case .iadd: intrinsic = getIntrinsic("llvm.sadd.with.overflow", irGen.module, LLVMTypeOf(l.loweredValue), false)
         case .imul: intrinsic = getIntrinsic("llvm.smul.with.overflow", irGen.module, LLVMTypeOf(l.loweredValue), false)
         case .isub: intrinsic = getIntrinsic("llvm.ssub.with.overflow", irGen.module, LLVMTypeOf(l.loweredValue), false)
             
-        case .condfail: return nil // logic to fail on false, make an if branch
+            // other intrinsics
+        case .expect: intrinsic = getIntrinsic("llvm.expect", irGen.module, LLVMTypeOf(l.loweredValue), false)
+        case .trap: intrinsic = getIntrinsic("llvm.trap", irGen.module, nil, false)
+        case .condfail:
+            guard let fn = parentFunction, current = parentBlock else { fatalError() }
+            let success = LLVMAppendBasicBlock(fn.loweredFunction, "\(current.name).cont"), fail = try fn.buildCondFailBlock(module, irGen: irGen)
+
+            LLVMMoveBasicBlockAfter(success, current.loweredBlock)
+            LLVMBuildCondBr(irGen.builder, l.loweredValue, fail, success)
+            LLVMPositionBuilderAtEnd(irGen.builder, success)
+            return nil
             
             // handle calls which arent intrinsics, but builtin
             // instructions. Return these directly
@@ -254,6 +290,8 @@ extension BuiltinInstCall: VHIRLower {
         case .lt:   return LLVMBuildICmp(irGen.builder, LLVMIntSLT, l.loweredValue, r.loweredValue, irName ?? "")
         case .gte:  return LLVMBuildICmp(irGen.builder, LLVMIntSGE, l.loweredValue, r.loweredValue, irName ?? "")
         case .gt:   return LLVMBuildICmp(irGen.builder, LLVMIntSGT, l.loweredValue, r.loweredValue, irName ?? "")
+        case .ieq: return LLVMBuildICmp(irGen.builder, LLVMIntEQ, l.loweredValue, r.loweredValue, irName ?? "")
+        case .ineq: return LLVMBuildICmp(irGen.builder, LLVMIntNE, l.loweredValue, r.loweredValue, irName ?? "")
         case .iaddoverflow: return LLVMBuildAdd(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
         case .idiv: return LLVMBuildSDiv(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
         case .irem: return LLVMBuildSRem(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")

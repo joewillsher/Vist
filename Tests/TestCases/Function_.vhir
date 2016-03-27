@@ -46,9 +46,6 @@ $else.1:			// preds: fail.0
   %12 = call @factorial_Int (%11: %Int)  	// user: %13
   %13 = call @-A_Int_Int (%a: %Int, %12: %Int)  	// user: %14
   return %13
-
-$exit:
-  
 }
 
 func @-M_Int_Int : &thin (%Int, %Int) -> %Int

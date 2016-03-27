@@ -19,34 +19,16 @@ func linkWithRuntime(inout module: LLVMModuleRef, withFile file: String) {
     
     LLVMGetBitcodeModule(buffer.memory, &runtimeModule, str)
     
-    
     // mangle names
-    var f = LLVMGetFirstFunction(runtimeModule)
+    var function = LLVMGetFirstFunction(runtimeModule)
     
-    while f != nil {
+    while function != nil {
+        defer { function = LLVMGetNextFunction(function) }
         
-        let name = String.fromCString(LLVMGetValueName(f))!
-        let n = Int(LLVMCountParams(f))
+        let name = String.fromCString(LLVMGetValueName(function))!
+        guard name.hasPrefix("vist$U") else { continue }
         
-        guard name.characters.contains("_") else {
-            f = LLVMGetNextFunction(f)
-            continue
-        }
-        
-        let types = UnsafeMutablePointer<LLVMTypeRef>.alloc(n)
-        LLVMGetParamTypes(LLVMGetElementType(LLVMTypeOf(f)), types)
-        
-        var vistTypes: [Ty] = []
-        
-        for i in 0..<n {
-            let b = BuiltinType(types.advancedBy(i).memory)!
-            vistTypes.append(b)
-        }
-        
-        LLVMSetValueName(f, name.demangleRuntimeName().mangle(vistTypes))
-        
-        f = LLVMGetNextFunction(f)
-        types.dealloc(n)
+        LLVMSetValueName(function, name.demangleRuntimeName())
     }
 
     

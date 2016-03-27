@@ -90,7 +90,7 @@ extension String {
     }
     
     func demangleRuntimeName() -> String {
-        return String(characters.prefixUpTo(characters.indexOf("_") ?? characters.startIndex)).stringByReplacingOccurrencesOfString("$", withString: "_")
+        return stringByReplacingOccurrencesOfString("$", withString: "-")
     }
     
 }

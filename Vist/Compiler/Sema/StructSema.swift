@@ -206,11 +206,15 @@ extension TupleExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
         
-        guard elements.count != 0 else { return BuiltinType.void }
+        guard elements.count != 0 else {
+            let t = BuiltinType.void
+            self._type = t
+            return t
+        }
         
         let tys = try elements.map { try $0.typeForNode(scope) }
         let t = TupleType(members: tys)
-        type = t
+        _type = t
         return t
     }
 }

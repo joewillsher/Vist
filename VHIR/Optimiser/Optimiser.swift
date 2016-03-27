@@ -6,43 +6,42 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-enum OptLevel {
+enum OptLevel: Int {
     case off, low, high
 }
 
 extension Module {
     
-    func runPasses(optLevel: OptLevel) throws {
+    func runPasses(optLevel optLevel: OptLevel) throws {
         
         for function in functions {
+            try ConstantFoldingPass.create(function, optLevel: optLevel)
             try DCEPass.create(function, optLevel: optLevel)
+            try CFGSimplificationPass.create(function, optLevel: optLevel)
         }
+        
+        try DeadFunctionPass.create(self, optLevel: optLevel)
         
     }
 }
 
 
-protocol FunctionPass {
-    func runOn(function: Function) throws
-    init(optLevel: OptLevel)
-}
-protocol ModulePass {
-    func runOn(module: Module) throws
-    init(optLevel: OptLevel)
+protocol OptimisationPass {
+    /// What the pass is run on, normally function or module
+    associatedtype Element
+    /// The minimum opt level this pass will be run
+    static var minOptLevel: OptLevel { get }
+    init()
+    /// Runs the pass
+    func runOn(element: Element) throws
 }
 
-extension ModulePass {
-    static func create(module: Module, optLevel: OptLevel) throws {
-        return try Self(optLevel: optLevel).runOn(module)
+extension OptimisationPass {
+    static func create(function: Element, optLevel: OptLevel) throws {
+        guard optLevel.rawValue >= minOptLevel.rawValue else { return }
+        return try Self().runOn(function)
     }
 }
-extension FunctionPass {
-    static func create(function: Function, optLevel: OptLevel) throws {
-        return try Self(optLevel: optLevel).runOn(function)
-    }
-}
-
-
 
 // utils
 

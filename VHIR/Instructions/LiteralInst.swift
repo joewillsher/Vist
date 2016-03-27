@@ -43,7 +43,7 @@ final class LiteralValue<Literal>: RValue {
         switch value {
         case is Int: return BuiltinType.int(size: 64)
         case is Bool: return BuiltinType.bool
-        case is Swift.Void: return BuiltinType.void
+        case is (): return BuiltinType.void
         default: fatalError("Invalid literal")
         }
     }

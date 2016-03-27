@@ -1,0 +1,96 @@
+
+type %StackOf2 = { %Int, %Int }
+type %StackOf2 = { %Int, %Int }
+type %Int = { %Builtin.Int64 }
+type %Bool = { %Builtin.Bool }
+
+func @-E-E_Int_Int : &thin (%Int, %Int) -> %Bool
+
+func @print_Bool : &thin (%Bool) -> %Builtin.Void
+
+func @StackOf2.sum_ : &method (%*StackOf2) -> %Int {
+$entry(%self: %*StackOf2):
+  %bottom = struct_element %self: %*StackOf2, #StackOf2.bottom  	// user: %0
+  %0 = load %bottom: %*Int  	// user: %2
+  %top = struct_element %self: %*StackOf2, #StackOf2.top  	// user: %1
+  %1 = load %top: %*Int  	// user: %2
+  %2 = call @-P_Int_Int (%0: %Int, %1: %Int)  	// user: %3
+  return %2
+}
+
+func @StackOf2.pop_ : &method (%*StackOf2) -> %Int {
+$entry(%self: %*StackOf2):
+  %top = struct_element %self: %*StackOf2, #StackOf2.top  	// users: %0, %2
+  %0 = load %top: %*Int  	// user: %v
+  variable_decl %v = %0: %Int  	// user: %3
+  %bottom = struct_element %self: %*StackOf2, #StackOf2.bottom  	// user: %1
+  %1 = load %bottom: %*Int  	// user: %2
+  store %1 in %top: %*Int 
+  return %v
+}
+
+func @-P_Int_Int : &thin (%Int, %Int) -> %Int
+
+func @StackOf2_Int_Int : &thin (%Int, %Int) -> %StackOf2 {
+$entry(%$0: %Int, %$1: %Int):
+  %self = alloc %StackOf2  	// users: %bottom, %top, %2
+  %bottom = struct_element %self: %*StackOf2, #StackOf2.bottom  	// user: %0
+  %top = struct_element %self: %*StackOf2, #StackOf2.top  	// user: %1
+  store %$0 in %bottom: %*Int 
+  store %$1 in %top: %*Int 
+  %2 = load %self: %*StackOf2  	// user: %3
+  return %2
+}
+
+func @main : &thin () -> %Builtin.Void {
+$entry:
+  %0 = int_literal 2  	// user: %1
+  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %4
+  %2 = int_literal 10  	// user: %3
+  %3 = struct %Int (%2: %Builtin.Int64)  	// user: %4
+  %4 = call @StackOf2_Int_Int (%1: %Int, %3: %Int)  	// user: %6
+  %5 = alloc %StackOf2  	// users: %6, %7, %11, %12, %15, %18, %20, %22, %29, %30, %32
+  store %4 in %5: %*StackOf2 
+  %7 = call @StackOf2.sum_ (%5: %*StackOf2)  	// user: %8
+  %8 = call @print_Int (%7: %Int) 
+  %9 = int_literal 3  	// user: %10
+  %10 = struct %Int (%9: %Builtin.Int64)  	// user: %11
+  %11 = call @StackOf2.push_Int (%5: %*StackOf2, %10: %Int) 
+  %12 = load %5: %*StackOf2  	// user: %13
+  %13 = struct_extract %12: %StackOf2, #StackOf2.bottom  	// user: %14
+  %14 = call @print_Int (%13: %Int) 
+  %15 = load %5: %*StackOf2  	// user: %16
+  %16 = struct_extract %15: %StackOf2, #StackOf2.top  	// user: %17
+  %17 = call @print_Int (%16: %Int) 
+  %18 = call @StackOf2.sum_ (%5: %*StackOf2)  	// user: %19
+  %19 = call @print_Int (%18: %Int) 
+  %20 = call @StackOf2.pop_ (%5: %*StackOf2)  	// user: %21
+  %21 = call @print_Int (%20: %Int) 
+  %22 = call @StackOf2.pop_ (%5: %*StackOf2)  	// user: %23
+  %23 = call @print_Int (%22: %Int) 
+  %24 = int_literal 2  	// user: %25
+  %25 = struct %Int (%24: %Builtin.Int64)  	// user: %28
+  %26 = int_literal 4  	// user: %27
+  %27 = struct %Int (%26: %Builtin.Int64)  	// user: %28
+  %28 = call @StackOf2_Int_Int (%25: %Int, %27: %Int)  	// user: %29
+  store %28 in %5: %*StackOf2 
+  %30 = load %5: %*StackOf2  	// user: %31
+  %31 = struct_extract %30: %StackOf2, #StackOf2.bottom  	// user: %34
+  %32 = load %5: %*StackOf2  	// user: %33
+  %33 = struct_extract %32: %StackOf2, #StackOf2.top  	// user: %34
+  %34 = call @-E-E_Int_Int (%31: %Int, %33: %Int)  	// user: %35
+  %35 = call @print_Bool (%34: %Bool) 
+  return ()
+}
+
+func @StackOf2.push_Int : &method (%*StackOf2, %Int) -> %Builtin.Void {
+$entry(%self: %*StackOf2, %val: %Int):
+  %top = struct_element %self: %*StackOf2, #StackOf2.top  	// users: %0, %2
+  %0 = load %top: %*Int  	// user: %1
+  %bottom = struct_element %self: %*StackOf2, #StackOf2.bottom  	// user: %1
+  store %0 in %bottom: %*Int 
+  store %val in %top: %*Int 
+  return ()
+}
+
+func @print_Int : &thin (%Int) -> %Builtin.Void

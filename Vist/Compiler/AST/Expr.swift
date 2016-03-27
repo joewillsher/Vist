@@ -428,7 +428,7 @@ struct NullExpr: Expr {
 //}
 
 
-final class TupleExpr: ChainableExpr, Typed {
+final class TupleExpr: ChainableExpr {
     let elements: [Expr]
     
     init(elements: [Expr]) {
@@ -444,7 +444,7 @@ final class TupleExpr: ChainableExpr, Typed {
         return elements.flatMap { $0 as? T }
     }
     
-    var type: TupleType? = nil
+    var _type: Ty? = nil
 }
 
 struct CommentExpr: Expr {
