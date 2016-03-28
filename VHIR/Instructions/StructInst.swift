@@ -38,7 +38,7 @@ final class StructExtractInst: InstBase {
     override var type: Ty? { return propertyType }
     
     override var instVHIR: String {
-        return "\(name) = struct_extract \(object.vhir), #\(structType.explicitName).\(propertyName) \(useComment)"
+        return "\(name) = struct_extract \(object.vhir), #\(propertyName) \(useComment)"
     }
 }
 
@@ -59,7 +59,7 @@ final class StructElementPtrInst: InstBase, LValue {
     var memType: Ty? { return propertyType }
     
     override var instVHIR: String {
-        return "\(name) = struct_element \(object.vhir), #\(structType.explicitName).\(propertyName) \(useComment)"
+        return "\(name) = struct_element \(object.vhir), #\(propertyName) \(useComment)"
     }
 }
 

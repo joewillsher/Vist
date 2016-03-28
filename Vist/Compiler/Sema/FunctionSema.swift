@@ -67,7 +67,9 @@ extension FuncDecl: DeclTypeProvider {
 extension BinaryExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
-        return try semaFunctionCall(scope)
+        let t = try semaFunctionCall(scope)
+        self.fnType = t
+        return t.returns
     }
 }
 
@@ -75,13 +77,15 @@ extension BinaryExpr: ExprTypeProvider {
 extension FunctionCallExpr: ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
-        return try semaFunctionCall(scope)
+        let t = try semaFunctionCall(scope)
+        self.fnType = t
+        return t.returns
     }
 }
 
 extension FunctionCall {
     
-    func semaFunctionCall(scope: SemaScope) throws -> Ty {
+    func semaFunctionCall(scope: SemaScope) throws -> FnType {
         
         // gen types for objects in call
         for arg in argArr {
@@ -95,9 +99,8 @@ extension FunctionCall {
         self.mangledName = mangledName
         
         // assign type to self and return
-        self.fnType = fnType
         self._type = fnType.returns
-        return fnType.returns
+        return fnType
     }
 }
 

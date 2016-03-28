@@ -185,7 +185,7 @@ extension Module {
     
     /// Returns a function from the module by name
     func functionNamed(name: String) -> Function? {
-        return functions.indexOf({$0.name == name}).map { functions[$0] }
+        return functions.find {$0.name == name}
     }
 }
 

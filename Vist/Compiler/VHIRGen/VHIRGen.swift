@@ -105,8 +105,9 @@ extension BooleanLiteral: RValueEmitter {
     }
 }
 
+
 extension VariableDecl: RValueEmitter {
-    
+        
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
 
         let val = try value.emitRValue(module: module, scope: scope).getter()
@@ -124,17 +125,37 @@ extension VariableDecl: RValueEmitter {
     }
 }
 
+
+private extension CollectionType where Generator.Element == Expr {
+    
+}
+
 extension FunctionCall/*: VHIRGenerator*/ {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         
-        let args = try argArr.map { Operand(try $0.emitRValue(module: module, scope: scope).getter()) }
-        guard let argTypes = argArr.optionalMap({ $0._type }) else { throw VHIRError.paramsNotTyped }
+        guard case let fnType as FnType = fnType?.usingTypesIn(module) else { throw VHIRError.paramsNotTyped }
         
-        if let stdlib = try module.stdLibFunctionNamed(name, argTypes: argTypes) {
+        let args = try zip(argArr, fnType.params).map { rawArg, paramType in
+            let arg = try rawArg.emitRValue(module: module, scope: scope)
+            
+            if case let alias as TypeAlias = paramType, case let existentialType as ConceptType = alias.targetType {
+                let existentialRef = try arg.asReferenceAccessor().reference()
+                return try module.builder.buildExistentialBox(existentialRef, existentialType: existentialType)
+            }
+            else {
+                return try arg.getter()
+            }
+        }.map(Operand.init)
+        
+        print(name, args, fnType.params, module)
+        
+        
+        
+        if let stdlib = try module.stdLibFunctionNamed(name, argTypes: fnType.params) {
             return try module.builder.buildFunctionCall(stdlib, args: args).accessor
         }
-        else if let runtime = try module.runtimeFunctionNamed(name, argTypes: argTypes) /*where name.hasPrefix("vist_")*/ {
+        else if let runtime = try module.runtimeFunctionNamed(name, argTypes: fnType.params) /*where name.hasPrefix("vist_")*/ {
             return try module.builder.buildFunctionCall(runtime, args: args).accessor
         }
         else if
@@ -143,10 +164,10 @@ extension FunctionCall/*: VHIRGenerator*/ {
             
             return try module.builder.buildBuiltinInstruction(instruction, args: args).accessor
         }
-        else {
-            let function = module.functionNamed(mangledName)!
+        else if let function = module.functionNamed(mangledName) {
             return try module.builder.buildFunctionCall(function, args: args).accessor
         }
+        else { fatalError("No function \(name)") }
     }
 }
 
@@ -172,14 +193,14 @@ extension FuncDecl: StmtEmitter {
         let fnScope = Scope(parent: scope)
         
         // add the explicit method parameters
-        for param in impl.params {
-            fnScope.add(try function.paramNamed(param).accessor, name: param)
+        for paramName in impl.params {
+            let paramAccessor = try function.paramNamed(paramName).accessor
+            fnScope.add(paramAccessor, name: paramName)
         }
         // A method calling convention means we have to pass `self` in, and tell vars how
         // to access it, and `self`’s properties
         if case .method(let selfType) = type.callingConvention {
             // We need self to be passed by ref as a `RefParam`
-            // TODO: why ^ ? should this be changed?
             let selfParam = function.params![0] as! RefParam
             let selfVar = RefAccessor(memory: selfParam)
             fnScope.add(selfVar, name: "self") // add `self`
@@ -259,8 +280,19 @@ extension TupleMemberLookupExpr: RValueEmitter, LValueEmitter {
 extension PropertyLookupExpr: LValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
-        let object = try self.object.emitRValue(module: module, scope: scope).getter()
-        return try module.builder.buildStructExtract(Operand(object), property: propertyName).accessor
+        
+        switch object._type {
+        case is StructType:
+            let object = try self.object.emitRValue(module: module, scope: scope).getter()
+            return try module.builder.buildStructExtract(Operand(object), property: propertyName).accessor
+            
+        case is ConceptType:
+            let object = try self.object.emitRValue(module: module, scope: scope).getter()
+            return try module.builder.buildOpenExistential(Operand(object), propertyName: propertyName).accessor
+            
+        default:
+            fatalError()
+        }
     }
     
     func emitLValue(module module: Module, scope: Scope) throws -> GetSetAccessor {
@@ -460,6 +492,23 @@ extension StructExpr: RValueEmitter {
     }
 }
 
+extension ConceptExpr: RValueEmitter {
+
+    func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
+        
+        guard let type = type else { throw irGenError(.notTyped) }
+        
+        module.getOrInsert(type)
+        
+        for m in requiredMethods {
+            try m.emitStmt(module: module, scope: scope)
+        }
+        
+        return VoidLiteralValue().accessor
+    }
+
+}
+
 extension InitialiserDecl: StmtEmitter {
     
     func emitStmt(module module: Module, scope: Scope) throws {
@@ -508,13 +557,12 @@ extension MutationExpr: RValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         
-        let rval = try value.emitRValue(module: module, scope: scope)
-        
+        let rval = try value.emitRValue(module: module, scope: scope).getter()
         guard case let lhs as LValueEmitter = object else { fatalError() }
-        let lvalAccessor = try lhs.emitLValue(module: module, scope: scope)
         
-        try lvalAccessor.setter(Operand(try rval.getter()))
-        
+        // set the lhs to rval
+        try lhs.emitLValue(module: module, scope: scope).setter(Operand(rval))
+
         return VoidLiteralValue().accessor
     }
     
@@ -524,23 +572,24 @@ extension MethodCallExpr: RValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         
+        // TODO: guarantees about mutating methods only being called on mutable
+        //       (and therefore reference-backed) objects. Maybe make non
+        //       mutating methods take `self` as a value parameter.
+        
         // build self and args' values
         let args = try self.args.elements.map { Operand(try $0.emitRValue(module: module, scope: scope).getter()) }
         let selfVar = try object.emitRValue(module: module, scope: scope)
         
         // get ptr to self, if its not reference based we build
         // memory and store it there to get a ptr.
-        let selfRef: PtrOperand
-        if case let obj as GetSetAccessor = selfVar {
-            selfRef = obj.reference()
-        }
-        else {
-            selfRef = try selfVar.getter().allocAccessor().reference()
-        }
+        let selfRef = try selfVar.asReferenceAccessor().reference()
         
         // construct function call
         let function = module.functionNamed(mangledName)!
         return try module.builder.buildFunctionCall(function, args: [selfRef] + args).accessor
     }
 }
+
+
+
 

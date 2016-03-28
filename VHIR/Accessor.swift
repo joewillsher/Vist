@@ -16,6 +16,11 @@
 protocol Accessor {
     /// Gets the value from the stored object
     func getter() throws -> RValue
+    /// Returns copy of this acccessor with reference semantics
+    /// - note: not guaranteed to be a reference to the original.
+    func asReferenceAccessor() throws -> GetSetAccessor
+    
+    var storedType: Ty? { get }
 }
 
 /// Provides access to values by exposing a getter which returns the value
@@ -25,11 +30,15 @@ final class ValAccessor: Accessor {
     init(value: RValue) { self.value = value }
     
     func getter() -> RValue { return value }
+    
+    /// Alloc a new accessor and store self into it.
+    /// - returns: a reference backed copy of `self`
+    func asReferenceAccessor() throws -> GetSetAccessor {
+        return try getter().allocAccessor()
+    }
+    
+    var storedType: Ty? { return value.type }
 }
-
-
-
-
 
 /// An Accessor which allows setting, as well as self lookup by ptr
 protocol GetSetAccessor: Accessor {
@@ -41,6 +50,10 @@ protocol GetSetAccessor: Accessor {
 }
 
 extension GetSetAccessor {
+    // if its already a red accessor we're done
+    func asReferenceAccessor() throws -> GetSetAccessor { return self }
+    
+    var storedType: Ty? { return mem.memType }
     
     func getter() throws -> RValue {
         return try mem.module.builder.buildLoad(from: reference())
@@ -68,14 +81,8 @@ final class LazyRefAccessor: GetSetAccessor {
     
     var mem: LValue {
         if let v = val { return v }
-        do {
-            let v = try build()
-            val = v
-            return v
-        }
-        catch {
-            fatalError("Error: \(error)")
-        }
+        val = try! build()
+        return val!
     }
     
     init(fn: () throws -> LValue) { build = fn }

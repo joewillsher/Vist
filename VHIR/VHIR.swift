@@ -47,6 +47,7 @@ extension CollectionType where Generator.Element == Ty {
 
 
 extension RValue {
+    /// `%1: %Int`
     var valueName: String {
         return "\(name)\(type.map { ": \($0.vhir)" } ?? "")"
     }
@@ -101,6 +102,12 @@ extension BuiltinType {
 extension StorageType {
     var vhir: String {
         return members.map { $0.type }.vhirTypeStruct()
+    }
+}
+extension ConceptType {
+    var vhir: String {
+        let a = requiredProperties.map { "\($0.type.vhir)" }
+        return "existential < \(a.joinWithSeparator(", ")) >"
     }
 }
 extension TupleType {

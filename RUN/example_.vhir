@@ -1,12 +1,40 @@
 
+type %Foo = existential < %Int >
 type %Int = { %Builtin.Int64 }
+type %Bar = { %Int, %Int }
+
+func @Bar_Int_Int : &thin (%Int, %Int) -> %Bar {
+$entry(%$0: %Int, %$1: %Int):
+  %self = alloc %Bar  	// users: %b, %a, %2
+  %b = struct_element %self: %*Bar, #b  	// user: %0
+  %a = struct_element %self: %*Bar, #a  	// user: %1
+  store %$0 in %b: %*Int 
+  store %$1 in %a: %*Int 
+  %2 = load %self: %*Bar  	// user: %3
+  return %2
+}
 
 func @main : &thin () -> %Builtin.Void {
 $entry:
   %0 = int_literal 1  	// user: %1
-  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %2
-  %2 = call @print_Int (%1: %Int) 
+  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %4
+  %2 = int_literal 2  	// user: %3
+  %3 = struct %Int (%2: %Builtin.Int64)  	// user: %4
+  %4 = call @Bar_Int_Int (%1: %Int, %3: %Int)  	// user: %b
+  variable_decl %b = %4: %Bar  	// user: %6
+  %5 = alloc %Bar  	// users: %6, %7
+  store %b in %5: %*Bar 
+  %7 = existential_box %5: %*Bar as %Foo  	// user: %8
+  %8 = call @unbox_Foo (%7: %Foo)  	// user: %a
+  variable_decl %a = %8: %Int  	// user: %9
+  %9 = call @print_Int (%a: %Int) 
   return ()
 }
 
 func @print_Int : &thin (%Int) -> %Builtin.Void
+
+func @unbox_Foo : &thin (%Foo) -> %Int {
+$entry(%box: %Foo):
+  %0 = existential_open %box: %Foo #a  	// user: %1
+  return %0
+}

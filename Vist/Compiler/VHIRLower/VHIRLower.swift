@@ -23,12 +23,15 @@ protocol VHIRLower {
 extension Operand: VHIRLower {
     
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        // if already lowered, we use that
         if loweredValue != nil {
             return loweredValue
         }
+            // otherwise we lower it to LLVM IR
         else if case let lowerable as VHIRLower = value {
             return try lowerable.vhirLower(module, irGen: irGen)
         }
+            // if it can't be lowered, throw an error
         else {
             throw error(IRLowerError.notLowerable(self))
         }
@@ -43,13 +46,17 @@ extension Module {
         loweredBuilder = irGen.builder
         
         for fn in functions {
+            // create function proto
             let function = LLVMAddFunction(irGen.module, fn.name, fn.type.lowerType(self))
             fn.loweredFunction = function
+            
+            // name the params
             for (i, p) in (fn.params ?? []).enumerate() where p.irName != nil {
                 LLVMSetValueName(LLVMGetParam(function, UInt32(i)), p.irName ?? "")
             }
         }
         
+        // lower the function bodies
         for fn in functions {
             try fn.vhirLower(self, irGen: irGen)
         }

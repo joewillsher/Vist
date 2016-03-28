@@ -1,2 +1,16 @@
 
-print 1
+concept Foo {
+    let a: Int
+}
+
+func unbox::Foo->Int = (box) do
+    return box.a
+
+type Bar {
+    let b: Int, a: Int
+}
+
+let b = Bar 1 2
+
+let a = unbox b
+print a
