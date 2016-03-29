@@ -7,18 +7,44 @@
 //
 
 
+enum FunctionCallRef {
+    case direct(Function)
+    case pointer(PtrOperand)
+    
+    var name: String {
+        switch self {
+        case .direct(let function): return "@\(function.name)"
+        case .pointer(let ptr): return ptr.name
+        }
+    }
+    var loweredValue: LLVMValueRef {
+        switch self {
+        case .direct(let function): return LLVMGetNamedFunction(function.module.loweredModule, name)
+        case .pointer(let ptr): return ptr.loweredValue
+        }
+    }
+    var type: FnType {
+        switch self {
+        case .direct(let function): return function.type
+        case .pointer(let ptr): return ptr.memType as! FnType
+        }
+    }
+}
+
 final class FunctionCallInst: InstBase {
-    var function: Function
+    var function: FunctionCallRef
+    var returnType: Ty
     
-    override var type: Ty? { return function.type.returns }
+    override var type: Ty? { return returnType }
     
-    private init(function: Function, args: [Operand], irName: String?) {
+    private init(function: FunctionCallRef, returnType: Ty, args: [Operand], irName: String?) {
         self.function = function
+        self.returnType = returnType
         super.init(args: args, irName: irName)
     }
     
     override var instVHIR: String {
-        return "\(name) = call @\(function.name) \(args.vhirValueTuple()) \(useComment)"
+        return "\(name) = call \(function.name) \(args.vhirValueTuple()) \(useComment)"
     }
     
     override var hasSideEffects: Bool { return true }
@@ -28,6 +54,10 @@ final class FunctionCallInst: InstBase {
 extension Builder {
     
     func buildFunctionCall(function: Function, args: [Operand], irName: String? = nil) throws -> FunctionCallInst {
-        return try _add(FunctionCallInst(function: function, args: args, irName: irName))
+        return try _add(FunctionCallInst(function: .direct(function), returnType: function.type.returns, args: args, irName: irName))
+    }
+
+    func buildFunctionCall(function: PtrOperand, returnType: Ty, args: [Operand], irName: String? = nil) throws -> FunctionCallInst {
+        return try _add(FunctionCallInst(function: .pointer(function), returnType: returnType, args: args, irName: irName))
     }
 }

@@ -1,5 +1,26 @@
 	.section	__TEXT,__text,regular,pure_instructions
 	.macosx_version_min 10, 11
+	.globl	_Bar.aye_
+	.align	4, 0x90
+_Bar.aye_:                              ## @Bar.aye_
+## BB#0:                                ## %entry
+	pushq	%rbp
+	movq	%rsp, %rbp
+	testb	$1, 16(%rdi)
+	movq	%rdi, -8(%rbp)          ## 8-byte Spill
+	jne	LBB0_1
+	jmp	LBB0_2
+LBB0_1:                                 ## %if.0
+	movq	-8(%rbp), %rax          ## 8-byte Reload
+	movq	8(%rax), %rax
+	popq	%rbp
+	retq
+LBB0_2:                                 ## %else.1
+	movq	-8(%rbp), %rax          ## 8-byte Reload
+	movq	(%rax), %rax
+	popq	%rbp
+	retq
+
 	.globl	_Bar_Int_Int_Bool
 	.align	4, 0x90
 _Bar_Int_Int_Bool:                      ## @Bar_Int_Int_Bool
@@ -21,8 +42,9 @@ _unbox2_Foo:                            ## @unbox2_Foo
 	pushq	%rbp
 	movq	%rsp, %rbp
 	movslq	%esi, %rax
-	movb	(%rdx,%rax), %al
+	movb	(%rcx,%rax), %al
 	movl	%edi, -4(%rbp)          ## 4-byte Spill
+	movq	%rdx, -16(%rbp)         ## 8-byte Spill
 	popq	%rbp
 	retq
 
@@ -46,8 +68,9 @@ _unbox_Foo:                             ## @unbox_Foo
 	pushq	%rbp
 	movq	%rsp, %rbp
 	movslq	%edi, %rax
-	movq	(%rdx,%rax), %rax
+	movq	(%rcx,%rax), %rax
 	movl	%esi, -4(%rbp)          ## 4-byte Spill
+	movq	%rdx, -16(%rbp)         ## 8-byte Spill
 	popq	%rbp
 	retq
 

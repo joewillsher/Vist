@@ -132,11 +132,10 @@ private extension CollectionType where Generator.Element == Expr {
 
 extension FunctionCall/*: VHIRGenerator*/ {
     
-    func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
-        
+    func argOperands(module module: Module, scope: Scope) throws -> [Operand] {
         guard case let fnType as FnType = fnType?.usingTypesIn(module) else { throw VHIRError.paramsNotTyped }
         
-        let args = try zip(argArr, fnType.params).map { rawArg, paramType in
+        return try zip(argArr, fnType.params).map { rawArg, paramType in
             let arg = try rawArg.emitRValue(module: module, scope: scope)
             
             if case let alias as TypeAlias = paramType, case let existentialType as ConceptType = alias.targetType {
@@ -146,12 +145,14 @@ extension FunctionCall/*: VHIRGenerator*/ {
             else {
                 return try arg.getter()
             }
-        }.map(Operand.init)
+            }.map(Operand.init)
+    }
+    
+    func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         
-        print(name, args, fnType.params, module)
-        
-        
-        
+        guard case let fnType as FnType = fnType?.usingTypesIn(module) else { throw VHIRError.paramsNotTyped }
+        let args = try argOperands(module: module, scope: scope)
+
         if let stdlib = try module.stdLibFunctionNamed(name, argTypes: fnType.params) {
             return try module.builder.buildFunctionCall(stdlib, args: args).accessor
         }
@@ -577,7 +578,7 @@ extension MethodCallExpr: RValueEmitter {
         //       mutating methods take `self` as a value parameter.
         
         // build self and args' values
-        let args = try self.args.elements.map { Operand(try $0.emitRValue(module: module, scope: scope).getter()) }
+        let args = try argOperands(module: module, scope: scope)
         let selfVar = try object.emitRValue(module: module, scope: scope)
         
         // get ptr to self, if its not reference based we build
@@ -585,8 +586,28 @@ extension MethodCallExpr: RValueEmitter {
         let selfRef = try selfVar.asReferenceAccessor().reference()
         
         // construct function call
-        let function = module.functionNamed(mangledName)!
-        return try module.builder.buildFunctionCall(function, args: [selfRef] + args).accessor
+        switch object._type {
+        case is StructType:
+            let function = module.functionNamed(mangledName)!
+            return try module.builder.buildFunctionCall(function, args: [selfRef] + args).accessor
+            
+        case let existentialType as ConceptType:
+            
+            guard let argTypes = args.optionalMap({$0.type}) else { fatalError() }
+            
+            let fn = try module.builder.buildExistentialWitnessMethod(selfRef,
+                                                                      methodName: name,
+                                                                      argTypes: argTypes,
+                                                                      existentialType: existentialType)
+            guard case let fnType as FnType = fn.memType else { fatalError() }
+            return try module.builder.buildFunctionCall(PtrOperand(fn),
+                                                        returnType: fnType.returns,
+                                                        args: args).accessor
+        default:
+            fatalError()
+        }
+
+        
     }
 }
 

@@ -9,20 +9,20 @@
 
 /// Opening an existential box to extract a member
 final class ExistentialPropertyInst: InstBase {
-    var value: PtrOperand
+    var existential: PtrOperand
     let propertyName: String, existentialType: ConceptType
     
     override var type: Ty? { return try? existentialType.propertyType(propertyName) }
     
-    private init(value: PtrOperand, propertyName: String, existentialType: ConceptType, irName: String?) {
-        self.value = value
+    private init(existential: PtrOperand, propertyName: String, existentialType: ConceptType, irName: String?) {
+        self.existential = existential
         self.propertyName = propertyName
         self.existentialType = existentialType
-        super.init(args: [value], irName: irName)
+        super.init(args: [existential], irName: irName)
     }
     
     override var instVHIR: String {
-        return "\(name) = existential_open \(value.valueName) #\(propertyName) \(useComment)"
+        return "\(name) = existential_open \(existential.valueName) #\(propertyName) \(useComment)"
     }
 }
 
@@ -42,36 +42,46 @@ final class ExistentialConstructInst: InstBase {
     }
     
     override var instVHIR: String {
-        return "\(name) = existential_box \(value.valueName) as %\(existentialType.name) \(useComment)"
+        return "\(name) = existential_box \(value.valueName) in %\(existentialType.name) \(useComment)"
     }
     
 }
 
-//final class ExistentialWitnessMethodInst: InstBase {
-//    var value: PtrOperand
-//    
-//    override var type: Ty? { return value.type }
-//    
-//    private init(value: Operand, irName: String?) {
-//        self.value = value
-//        super.init(args: [value], irName: irName)
-//    }
-//    
-//    override var instVHIR: String {
-//        return "\(name) = existential_witness \(value.valueName) #\(propertyName) \(useComment)"
-//    }
-//    
-//}
+final class ExistentialWitnessMethodInst: InstBase, LValue {
+    var existential: PtrOperand
+    let methodName: String, argTypes: [Ty], existentialType: ConceptType
+    
+    var methodType: FnType? { return existentialType.getMethodType(methodName, argTypes: argTypes) }
+    override var type: Ty? { return memType.map { BuiltinType.pointer(to: $0) } }
+    var memType: Ty? { return methodType }
+    
+    private init(existential: PtrOperand, methodName: String, argTypes: [Ty], existentialType: ConceptType, irName: String?) {
+        self.existential = existential
+        self.methodName = methodName
+        self.existentialType = existentialType
+        self.argTypes = argTypes
+        super.init(args: [existential], irName: irName)
+    }
+    
+    override var instVHIR: String {
+        return "\(name) = existential_witness \(existential.valueName) #\(methodName) \(useComment)"
+    }
+    
+}
 
 extension Builder {
     
     func buildOpenExistential(value: PtrOperand, propertyName: String, irName: String? = nil) throws -> ExistentialPropertyInst {
         guard case let alias as TypeAlias = value.memType, case let existentialType as ConceptType = alias.targetType else { fatalError() }
-        return try _add(ExistentialPropertyInst(value: value, propertyName: propertyName, existentialType: existentialType, irName: irName))
+        return try _add(ExistentialPropertyInst(existential: value, propertyName: propertyName, existentialType: existentialType, irName: irName))
     }
     /// Builds an existential from a definite object.
     func buildExistentialBox(value: PtrOperand, existentialType: ConceptType, irName: String? = nil) throws -> ExistentialConstructInst {
         return try _add(ExistentialConstructInst(value: value, existentialType: existentialType, irName: irName))
+    }
+    /// Builds an existential from a definite object.
+    func buildExistentialWitnessMethod(existential: PtrOperand, methodName: String, argTypes: [Ty], existentialType: ConceptType, irName: String? = nil) throws -> ExistentialWitnessMethodInst {
+        return try _add(ExistentialWitnessMethodInst(existential: existential, methodName: methodName, argTypes: argTypes, existentialType: existentialType, irName: irName))
     }
 }
 

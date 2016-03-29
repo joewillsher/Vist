@@ -3,11 +3,34 @@ target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-macosx10.11.0"
 
 %Bool.st = type { i1 }
-%Bar.st = type { %Int.st, %Int.st, %Bool.st }
 %Int.st = type { i64 }
-%Foo.ex = type { [2 x i32], [0 x i8*], i8* }
+%Bar.st = type { %Int.st, %Int.st, %Bool.st }
+%Foo.ex = type { [2 x i32], [1 x i8*], i8* }
 
 declare void @print_Bool(%Bool.st)
+
+declare %Int.st @Foo.aye_()
+
+define %Int.st @Bar.aye_(%Bar.st* %self) {
+entry:
+  %c = getelementptr inbounds %Bar.st* %self, i32 0, i32 2
+  %0 = load %Bool.st* %c
+  %1 = extractvalue %Bool.st %0, 0
+  br i1 %1, label %if.0, label %fail.0
+
+if.0:                                             ; preds = %entry
+  %a = getelementptr inbounds %Bar.st* %self, i32 0, i32 1
+  %2 = load %Int.st* %a
+  ret %Int.st %2
+
+fail.0:                                           ; preds = %entry
+  br label %else.1
+
+else.1:                                           ; preds = %fail.0
+  %b = getelementptr inbounds %Bar.st* %self, i32 0, i32 0
+  %3 = load %Int.st* %b
+  ret %Int.st %3
+}
 
 define %Bar.st @Bar_Int_Int_Bool(%Int.st %"$0", %Int.st %"$1", %Bool.st %"$2") {
 entry:

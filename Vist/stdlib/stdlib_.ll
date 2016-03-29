@@ -94,10 +94,16 @@ entry:
   %v = alloca { i64, i1 }
   store { i64, i1 } %2, { i64, i1 }* %v
   %3 = extractvalue { i64, i1 } %2, 1
-  call void @condFail_b(i1 %3)
+  br i1 %3, label %"+.trap", label %entry.cont
+
+entry.cont:                                       ; preds = %entry
   %4 = extractvalue { i64, i1 } %2, 0
   %5 = call %Int.st @Int_i64(i64 %4)
   ret %Int.st %5
+
+"+.trap":                                         ; preds = %entry
+  call void @llvm.trap()
+  unreachable
 }
 
 define %Int.st @-T-N_Int_Int(%Int.st %a, %Int.st %b) {
@@ -126,10 +132,16 @@ entry:
   %v = alloca { i64, i1 }
   store { i64, i1 } %2, { i64, i1 }* %v
   %3 = extractvalue { i64, i1 } %2, 1
-  call void @condFail_b(i1 %3)
+  br i1 %3, label %"*.trap", label %entry.cont
+
+entry.cont:                                       ; preds = %entry
   %4 = extractvalue { i64, i1 } %2, 0
   %5 = call %Int.st @Int_i64(i64 %4)
   ret %Int.st %5
+
+"*.trap":                                         ; preds = %entry
+  call void @llvm.trap()
+  unreachable
 }
 
 define %Bool.st @-L_Double_Double(%Double.st %a, %Double.st %b) {
@@ -150,18 +162,13 @@ entry:
   ret %Bool.st %3
 }
 
-define void @condFail_b(i1 %cond) {
+define %Bool.st @"!-E_Double_Double"(%Double.st %a, %Double.st %b) {
 entry:
-  %0 = call %Bool.st @Bool_b(i1 %cond)
-  %1 = call %Bool.st @-Uexpect_Bool_Bool(%Bool.st %0, %Bool.st zeroinitializer)
-  %2 = extractvalue %Bool.st %1, 0
-  br i1 %2, label %if.0, label %exit
-
-if.0:                                             ; preds = %entry
-  br label %exit
-
-exit:                                             ; preds = %if.0, %entry
-  ret void
+  %0 = extractvalue %Double.st %a, 0
+  %1 = extractvalue %Double.st %b, 0
+  %2 = fcmp one double %0, %1
+  %3 = call %Bool.st @Bool_b(i1 %2)
+  ret %Bool.st %3
 }
 
 define %Int.st @-L-L_Int_Int(%Int.st %a, %Int.st %b) {
@@ -171,15 +178,6 @@ entry:
   %2 = shl i64 %0, %1
   %3 = call %Int.st @Int_i64(i64 %2)
   ret %Int.st %3
-}
-
-define %Bool.st @"!-E_Double_Double"(%Double.st %a, %Double.st %b) {
-entry:
-  %0 = extractvalue %Double.st %a, 0
-  %1 = extractvalue %Double.st %b, 0
-  %2 = fcmp one double %0, %1
-  %3 = call %Bool.st @Bool_b(i1 %2)
-  ret %Bool.st %3
 }
 
 declare void @vist-Uprint_f641(double)
@@ -219,10 +217,16 @@ entry:
   %v = alloca { i64, i1 }
   store { i64, i1 } %2, { i64, i1 }* %v
   %3 = extractvalue { i64, i1 } %2, 1
-  call void @condFail_b(i1 %3)
+  br i1 %3, label %-.trap, label %entry.cont
+
+entry.cont:                                       ; preds = %entry
   %4 = extractvalue { i64, i1 } %2, 0
   %5 = call %Int.st @Int_i64(i64 %4)
   ret %Int.st %5
+
+-.trap:                                           ; preds = %entry
+  call void @llvm.trap()
+  unreachable
 }
 
 define %Int.st @"%_Int_Int"(%Int.st %a, %Int.st %b) {
@@ -516,6 +520,9 @@ entry:
 ; Function Attrs: nounwind readnone
 declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #2
 
+; Function Attrs: noreturn nounwind
+declare void @llvm.trap() #3
+
 ; Function Attrs: nounwind readnone
 declare { i64, i1 } @llvm.smul.with.overflow.i64(i64, i64) #2
 
@@ -528,6 +535,7 @@ declare i1 @llvm.expect.i1(i1, i1) #2
 attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #2 = { nounwind readnone }
+attributes #3 = { noreturn nounwind }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}

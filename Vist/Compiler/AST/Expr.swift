@@ -367,7 +367,7 @@ final class ConceptExpr: TypedExpr, ScopeNode, TypeExpr, LibraryTopLevel {
 
 
 
-final class MethodCallExpr: ChainableExpr {
+final class MethodCallExpr: ChainableExpr, FunctionCall {
     let name: String
     let object: ChainableExpr
     let args: TupleExpr
@@ -379,6 +379,8 @@ final class MethodCallExpr: ChainableExpr {
     }
     
     var mangledName: String = ""
+    
+    var argArr: [Expr] { return args.elements }
     
     var structType: StorageType? = nil
     var fnType: FnType? = nil
