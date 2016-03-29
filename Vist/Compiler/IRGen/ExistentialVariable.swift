@@ -100,8 +100,8 @@ final class ExistentialVariable: StorageVariable, MutableVariable {
         let methodArrayPtr = LLVMBuildStructGEP(irGen.builder, ptr, 1, "\(irName).method_metadata") // [n x i8*]*
         let structPtr = LLVMBuildStructGEP(irGen.builder, ptr, 2, "\(irName).opaque") // i8**
         
-        let propArr = try conceptType.existentialPropertyMetadataFor(structType, irGen: irGen)
-        LLVMBuildStore(irGen.builder, propArr, propArrayPtr)
+//        let propArr = try conceptType.existentialPropertyMetadataFor(structType, irGen: irGen)
+//        LLVMBuildStore(irGen.builder, propArr, propArrayPtr)
         
         let methodArr = try conceptType.existentialMethodMetadataFor(structType, irGen: irGen)
         LLVMBuildStore(irGen.builder, methodArr, methodArrayPtr)
@@ -187,7 +187,7 @@ final class ExistentialVariable: StorageVariable, MutableVariable {
         // use this to look up the index in self by getting the ixd from the runtime's array
         guard let i = indexOfPropertyNamed(name) else { throw irGenError(.noProperty(type: conceptType.name, property: name)) }
         
-        let indexValue = BuiltinType.intGen(i, size: 32) // i32
+        let indexValue = LLVMConstInt(LLVMInt32Type(), UInt64(i), false) // i32
         let index = [indexValue].ptr()
         defer { index.dealloc(1) }
         
@@ -208,7 +208,7 @@ final class ExistentialVariable: StorageVariable, MutableVariable {
         
         let a = ExistentialVariable.ptrToMethodNamed(_:fnType:)
         
-        let indexValue = BuiltinType.intGen(i, size: 32) // i32
+        let indexValue = LLVMConstInt(LLVMInt32Type(), UInt64(i), false) // i32
         let index = [indexValue].ptr()
         defer { index.dealloc(1) }
         

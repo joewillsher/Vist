@@ -29,7 +29,8 @@ extension Operand: VHIRLower {
         }
             // otherwise we lower it to LLVM IR
         else if case let lowerable as VHIRLower = value {
-            return try lowerable.vhirLower(module, irGen: irGen)
+            setLoweredValue(try lowerable.vhirLower(module, irGen: irGen))
+            return loweredValue
         }
             // if it can't be lowered, throw an error
         else {
@@ -359,5 +360,107 @@ extension LoadInst: VHIRLower {
         return LLVMBuildLoad(irGen.builder, address.loweredValue, irName ?? "")
     }
 }
+extension BitcastInst: VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        return LLVMBuildBitCast(irGen.builder, address.loweredValue, pointerType.lowerType(module), irName ?? "")
+    }
+}
+
+
+
+extension ExistentialConstructInst: VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        
+        guard case let aliasType as TypeAlias = value.memType, case let structType as StructType = aliasType.targetType else { fatalError() }
+        
+        let exType = existentialType.usingTypesIn(module).lowerType(module)
+        let valueMem = LLVMBuildAlloca(irGen.builder, aliasType.lowerType(module), "") // allocate the struct
+        let ptr = LLVMBuildAlloca(irGen.builder, exType, "")
+        
+        let propArrayPtr = LLVMBuildStructGEP(irGen.builder, ptr, 0, "\(irName).prop_metadata") // [n x i32]*
+        let methodArrayPtr = LLVMBuildStructGEP(irGen.builder, ptr, 1, "\(irName).method_metadata") // [n x i8*]*
+        let structPtr = LLVMBuildStructGEP(irGen.builder, ptr, 2, "\(irName).opaque") // i8**
+        
+        let propArr = try existentialType.existentialPropertyMetadataFor(structType, module: module, irGen: irGen)
+        LLVMBuildStore(irGen.builder, propArr, propArrayPtr)
+        
+//        let methodArr = try existentialType.existentialMethodMetadataFor(structType, irGen: irGen)
+//        LLVMBuildStore(irGen.builder, methodArr, methodArrayPtr)
+        
+        let v = LLVMBuildLoad(irGen.builder, value.loweredValue, "")
+        LLVMBuildStore(irGen.builder, v, valueMem)
+        let opaqueValueMem = LLVMBuildBitCast(irGen.builder, valueMem, BuiltinType.opaquePointer.lowerType(module), "")
+        LLVMBuildStore(irGen.builder, opaqueValueMem, structPtr)
+        
+        return LLVMBuildLoad(irGen.builder, ptr, irName ?? "")
+    }
+}
+
+extension ArrayInst: VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        let elementType = arrayType.mem.lowerType(module)
+        let elPtrType = LLVMPointerType(elementType, 0)
+        
+        let arrType = LLVMArrayType(elementType, UInt32(values.count))
+        let ptr = LLVMBuildAlloca(irGen.builder, arrType, irName ?? "") // [n x el]*
+        let basePtr = LLVMBuildBitCast(irGen.builder, ptr, elPtrType, "") // el*
+        
+        for (index, val) in values.enumerate() {
+            // Make the index to lookup
+            let mem = [LLVMConstInt(LLVMIntType(32), UInt64(index), false)].ptr()
+            defer { mem.dealloc(1) }
+            
+            // get the element ptr
+            let el = LLVMBuildGEP(irGen.builder, basePtr, mem, 1, "el.\(index)")
+            let bcElPtr = LLVMBuildBitCast(irGen.builder, el, elPtrType, "el.ptr.\(index)")
+            // store val into memory
+            LLVMBuildStore(irGen.builder, val.loweredValue, bcElPtr)
+        }
+        
+        return LLVMBuildLoad(irGen.builder, ptr, "")
+    }
+}
+
+extension ExistentialPropertyInst: VHIRLower {
+    
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+
+        guard case let aliasType as TypeAlias = value.memType, case let conceptType as ConceptType = aliasType.targetType, let propertyType = type?.lowerType(module) else { fatalError() }
+
+        // index of property in the concept's table
+        // use this to look up the index in self by getting the ixd from the runtime's array
+        let i = try conceptType.indexOfMemberNamed(propertyName)
+        
+        let indexValue = LLVMConstInt(LLVMInt32Type(), UInt64(i), false) // i32
+        let index = [indexValue].ptr()
+        defer { index.dealloc(1) }
+        
+        let i32PtrType = BuiltinType.pointer(to: BuiltinType.int(size: 32)).lowerType(irGen.module)
+        let arr = LLVMBuildStructGEP(irGen.builder, value.loweredValue, 0, "\(irName).metadata_ptr") // [n x i32]*
+        let propertyMetadataBasePtr = LLVMBuildBitCast(irGen.builder, arr, i32PtrType, "metadata_base_ptr") // i32*
+        
+        let pointerToArrayElement = LLVMBuildGEP(irGen.builder, propertyMetadataBasePtr, index, 1, "") // i32*
+        let offset = LLVMBuildLoad(irGen.builder, pointerToArrayElement, "") // i32
+        
+        let elementPtrType = LLVMPointerType(propertyType, 0) // ElTy.Type        
+        let o = [offset].ptr()
+        defer { o.destroy(1) }
+        let structElementPointer = LLVMBuildStructGEP(module.loweredBuilder, value.loweredValue, 2, "\(irName).element_pointer") // i8**
+        let opaqueInstancePointer = LLVMBuildLoad(module.loweredBuilder, structElementPointer, "\(irName).opaque_instance_pointer") // i8*
+        let instanceMemberPtr = LLVMBuildGEP(irGen.builder, opaqueInstancePointer, o, 1, "") // i8*
+        let elPtr = LLVMBuildBitCast(irGen.builder, instanceMemberPtr, elementPtrType, "\(irName).ptr") // ElTy*
+        return LLVMBuildLoad(irGen.builder, elPtr, irName ?? "")
+    }
+}
+
+
+
+
+
+
+
+
+
+
 
 

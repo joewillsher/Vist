@@ -51,6 +51,21 @@ final class LoadInst: InstBase {
         return "\(name) = load \(address) \(useComment)"
     }
 }
+final class BitcastInst: InstBase {
+    var pointerType: BuiltinType { return BuiltinType.pointer(to: newType) }
+    override var type: Ty? { return pointerType }
+    private(set) var address: PtrOperand, newType: Ty
+    
+    private init(address: PtrOperand, newType: Ty, irName: String?) {
+        self.address = address
+        self.newType = newType
+        super.init(args: [address], irName: irName)
+    }
+    
+    override var instVHIR: String {
+        return "\(name) = bitcast \(address) to %\(pointerType) \(useComment)"
+    }
+}
 
 extension Builder {
     
@@ -64,6 +79,9 @@ extension Builder {
     }
     func buildLoad(from address: PtrOperand, irName: String? = nil) throws -> LoadInst {
         return try _add(LoadInst(address: address, irName: irName))
+    }
+    func buildBitcast(from address: PtrOperand, newType: Ty, irName: String? = nil) throws -> BitcastInst {
+        return try _add(BitcastInst(address: address, newType: newType, irName: irName))
     }
     
 }

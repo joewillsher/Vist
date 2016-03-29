@@ -336,7 +336,7 @@
 		D4851F491C28A0820009233E /* example_.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = example_.ll; path = RUN/example_.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
 		D4851F4A1C28A08A0009233E /* example.s */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; name = example.s; path = RUN/example.s; sourceTree = "<group>"; };
 		D48739581C9D4E0B00D4D1C2 /* example_.vhir */ = {isa = PBXFileReference; lastKnownFileType = text; name = example_.vhir; path = RUN/example_.vhir; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
-		D489F3BD1C1E392D00254FFC /* example.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vist; path = RUN/example.vist; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
+		D489F3BD1C1E392D00254FFC /* example.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vist; path = RUN/example.vist; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		D489F3C01C1E396E00254FFC /* example */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = example; path = RUN/example; sourceTree = "<group>"; };
 		D4BBE4191C4157E7001B8934 /* runtime.bc */ = {isa = PBXFileReference; lastKnownFileType = file; name = runtime.bc; path = Runtime/runtime.bc; sourceTree = "<group>"; };
 		D4BBE41A1C4157E7001B8934 /* runtime.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = runtime.ll; path = Runtime/runtime.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
@@ -344,7 +344,7 @@
 		D4BCA8001C90ED470087A98D /* Editor.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Editor.xcodeproj; path = ../Editor/Editor.xcodeproj; sourceTree = "<group>"; };
 		D4CF76761C8CD4A70058A8EC /* TupleInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TupleInst.swift; path = Instructions/TupleInst.swift; sourceTree = "<group>"; };
 		D4CF767C1C8CF8490058A8EC /* Runtime.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Runtime.swift; path = Compiler/Sema/Expose/Runtime.swift; sourceTree = "<group>"; };
-		D4DB92771C866FF300718B78 /* example.vhir */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vhir; path = RUN/example.vhir; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
+		D4DB92771C866FF300718B78 /* example.vhir */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vhir; path = RUN/example.vhir; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
 		D4DE28181C5969830096E798 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		D4E35B7E1C5D216600683486 /* Pipe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pipe.swift; sourceTree = "<group>"; };

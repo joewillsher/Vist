@@ -7,12 +7,13 @@
 //
 
 final class IntLiteralInst: InstBase {
-    var value: LiteralValue<Int>
+    var value: LiteralValue<Int>, size: Int
     
-    override var type: Ty? { return value.type }
+    override var type: Ty? { return BuiltinType.int(size: UInt32(size)) }
     
-    private init(val: Int, irName: String?) {
+    private init(val: Int, size: Int, irName: String?) {
         self.value = LiteralValue(val: val, irName: nil)
+        self.size = size
         super.init(args: [Operand(value)], irName: irName)
     }
     
@@ -72,8 +73,8 @@ final class VoidLiteralValue: RValue {
 
 extension Builder {
     /// Builds a builtin i64 object
-    func buildBuiltinInt(val: Int, irName: String? = nil) throws -> IntLiteralInst {
-        return try _add(IntLiteralInst(val: val, irName: irName))
+    func buildBuiltinInt(val: Int, size: Int = 64, irName: String? = nil, addToModule: Bool = true) throws -> IntLiteralInst {
+        return try _add(IntLiteralInst(val: val, size: size, irName: irName), addToModule: addToModule)
     }
     
     /// Builds an `Int` literal from a value

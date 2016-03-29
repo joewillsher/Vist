@@ -1,33 +1,53 @@
 
-type %Foo = existential < %Int >
 type %Int = { %Builtin.Int64 }
-type %Bar = { %Int, %Int }
+type %Foo = existential < %Int, %Bool >
+type %Bool = { %Builtin.Bool }
+type %Bar = { %Int, %Int, %Bool }
 
-func @Bar_Int_Int : &thin (%Int, %Int) -> %Bar {
-$entry(%$0: %Int, %$1: %Int):
-  %self = alloc %Bar  	// users: %b, %a, %2
+func @print_Bool : &thin (%Bool) -> %Builtin.Void
+
+func @Bar_Int_Int_Bool : &thin (%Int, %Int, %Bool) -> %Bar {
+$entry(%$0: %Int, %$1: %Int, %$2: %Bool):
+  %self = alloc %Bar  	// users: %b, %a, %c, %3
   %b = struct_element %self: %*Bar, #b  	// user: %0
   %a = struct_element %self: %*Bar, #a  	// user: %1
+  %c = struct_element %self: %*Bar, #c  	// user: %2
   store %$0 in %b: %*Int 
   store %$1 in %a: %*Int 
-  %2 = load %self: %*Bar  	// user: %3
+  store %$2 in %c: %*Bool 
+  %3 = load %self: %*Bar  	// user: %4
+  return %3
+}
+
+func @unbox2_Foo : &thin (%Foo) -> %Bool {
+$entry(%box: %Foo):
+  %0 = alloc %Foo  	// users: %1, %2
+  store %box in %0: %*Foo 
+  %2 = existential_open %0: %*Foo #c  	// user: %3
   return %2
 }
 
 func @main : &thin () -> %Builtin.Void {
 $entry:
   %0 = int_literal 1  	// user: %1
-  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %4
+  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %6
   %2 = int_literal 2  	// user: %3
-  %3 = struct %Int (%2: %Builtin.Int64)  	// user: %4
-  %4 = call @Bar_Int_Int (%1: %Int, %3: %Int)  	// user: %b
-  variable_decl %b = %4: %Bar  	// user: %6
-  %5 = alloc %Bar  	// users: %6, %7
-  store %b in %5: %*Bar 
-  %7 = existential_box %5: %*Bar as %Foo  	// user: %8
-  %8 = call @unbox_Foo (%7: %Foo)  	// user: %a
-  variable_decl %a = %8: %Int  	// user: %9
-  %9 = call @print_Int (%a: %Int) 
+  %3 = struct %Int (%2: %Builtin.Int64)  	// user: %6
+  %4 = bool_literal false  	// user: %5
+  %5 = struct %Bool (%4: %Builtin.Bool)  	// user: %6
+  %6 = call @Bar_Int_Int_Bool (%1: %Int, %3: %Int, %5: %Bool)  	// user: %b
+  variable_decl %b = %6: %Bar  	// users: %8, %13
+  %7 = alloc %Bar  	// users: %8, %9
+  store %b in %7: %*Bar 
+  %9 = existential_box %7: %*Bar as %Foo  	// user: %10
+  %10 = call @unbox_Foo (%9: %Foo)  	// user: %a
+  variable_decl %a = %10: %Int  	// user: %11
+  %11 = call @print_Int (%a: %Int) 
+  %12 = alloc %Bar  	// users: %13, %14
+  store %b in %12: %*Bar 
+  %14 = existential_box %12: %*Bar as %Foo  	// user: %15
+  %15 = call @unbox2_Foo (%14: %Foo)  	// user: %16
+  %16 = call @print_Bool (%15: %Bool) 
   return ()
 }
 
@@ -35,6 +55,8 @@ func @print_Int : &thin (%Int) -> %Builtin.Void
 
 func @unbox_Foo : &thin (%Foo) -> %Int {
 $entry(%box: %Foo):
-  %0 = existential_open %box: %Foo #a  	// user: %1
-  return %0
+  %0 = alloc %Foo  	// users: %1, %2
+  store %box in %0: %*Foo 
+  %2 = existential_open %0: %*Foo #a  	// user: %3
+  return %2
 }

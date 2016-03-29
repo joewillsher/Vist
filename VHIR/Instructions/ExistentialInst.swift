@@ -9,35 +9,20 @@
 
 /// Opening an existential box to extract a member
 final class ExistentialPropertyInst: InstBase {
-    var value: Operand, propertyName: String
+    var value: PtrOperand
+    let propertyName: String, existentialType: ConceptType
     
-    override var type: Ty? { return value.type }
+    override var type: Ty? { return try? existentialType.propertyType(propertyName) }
     
-    private init(value: Operand, propertyName: String, irName: String?) {
+    private init(value: PtrOperand, propertyName: String, existentialType: ConceptType, irName: String?) {
         self.value = value
         self.propertyName = propertyName
+        self.existentialType = existentialType
         super.init(args: [value], irName: irName)
     }
     
     override var instVHIR: String {
         return "\(name) = existential_open \(value.valueName) #\(propertyName) \(useComment)"
-    }
-}
-
-/// Opening an existential box to extract a member from a ptr
-final class ExistentialPropertyRefInst: InstBase {
-    var value: PtrOperand, propertyName: String
-    
-    override var type: Ty? { return value.type }
-    
-    private init(value: PtrOperand, propertyName: String, irName: String?) {
-        self.value = value
-        self.propertyName = propertyName
-        super.init(args: [value], irName: irName)
-    }
-    
-    override var instVHIR: String {
-        return "\(name) = existential_open_ref \(value.valueName) #\(propertyName) \(useComment)"
     }
 }
 
@@ -80,11 +65,9 @@ final class ExistentialConstructInst: InstBase {
 
 extension Builder {
     
-    func buildOpenExistential(value: PtrOperand, propertyName: String, irName: String? = nil) throws -> ExistentialPropertyRefInst {
-        return try _add(ExistentialPropertyRefInst(value: value, propertyName: propertyName, irName: irName))
-    }
-    func buildOpenExistential(value: Operand, propertyName: String, irName: String? = nil) throws -> ExistentialPropertyInst {
-        return try _add(ExistentialPropertyInst(value: value, propertyName: propertyName, irName: irName))
+    func buildOpenExistential(value: PtrOperand, propertyName: String, irName: String? = nil) throws -> ExistentialPropertyInst {
+        guard case let alias as TypeAlias = value.memType, case let existentialType as ConceptType = alias.targetType else { fatalError() }
+        return try _add(ExistentialPropertyInst(value: value, propertyName: propertyName, existentialType: existentialType, irName: irName))
     }
     /// Builds an existential from a definite object.
     func buildExistentialBox(value: PtrOperand, existentialType: ConceptType, irName: String? = nil) throws -> ExistentialConstructInst {

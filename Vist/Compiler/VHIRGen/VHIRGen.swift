@@ -287,8 +287,8 @@ extension PropertyLookupExpr: LValueEmitter {
             return try module.builder.buildStructExtract(Operand(object), property: propertyName).accessor
             
         case is ConceptType:
-            let object = try self.object.emitRValue(module: module, scope: scope).getter()
-            return try module.builder.buildOpenExistential(Operand(object), propertyName: propertyName).accessor
+            let object = try self.object.emitRValue(module: module, scope: scope).asReferenceAccessor().reference()
+            return try module.builder.buildOpenExistential(object, propertyName: propertyName).accessor
             
         default:
             fatalError()

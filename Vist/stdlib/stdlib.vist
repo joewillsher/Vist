@@ -63,11 +63,6 @@ type Range {
     if _expect $0 true do () else do Builtin.trap ()
 
 
-// internal function to stdlib, takes a Builtin.Int and fails if true
-@inline func condFail :: Builtin.Bool = (cond) do
-    if _expect (Bool cond) false do Builtin.trap ()
-
-
 
 // ----------------------------------------------------
 // operators
@@ -77,21 +72,21 @@ type Range {
 @public @inline @operator(80)
 func + :: Int Int -> Int = (a b) {
     let v = Builtin.i_add a.value b.value
-    condFail v.1
+    Builtin.cond_fail v.1
     return Int v.0
 }
 
 @public @inline @operator(80)
 func - :: Int Int -> Int = (a b) {
     let v = Builtin.i_sub a.value b.value
-    condFail v.1
+    Builtin.cond_fail v.1
     return Int v.0
 }
 
 @public @inline @operator(100)
 func * :: Int Int -> Int = (a b) {
     let v = Builtin.i_mul a.value b.value
-    condFail v.1
+    Builtin.cond_fail v.1
     return Int v.0
 }
 

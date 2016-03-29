@@ -1,16 +1,22 @@
 
 concept Foo {
-    let a: Int
+    let a: Int, c: Bool
 }
 
 func unbox::Foo->Int = (box) do
     return box.a
 
+func unbox2::Foo->Bool = (box) do
+    return box.c
+
+
 type Bar {
-    let b: Int, a: Int
+    let b: Int, a: Int, c: Bool
 }
 
-let b = Bar 1 2
+let b = Bar 1 2 false
 
 let a = unbox b
 print a
+
+print (unbox2 b)
