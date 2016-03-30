@@ -6,9 +6,25 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-typealias BlockCall = (block: BasicBlock, args: [BlockOperand]?)
+struct BlockCall {
+    var block: BasicBlock, args: [BlockOperand]?
+    
+    mutating func removeArg(atIndex index: Int) throws {
+        if let arg = args?.removeAtIndex(index) {
+            try arg.value?.removeAllUses()
+        }
+        if args?.isEmpty ?? false {
+            args = nil
+            
+        }
+    }
+}
 
-final class BreakInst: InstBase {
+protocol BreakInstruction: Inst {
+    func removeArg(atIndex index: Int) throws
+}
+
+final class BreakInst: InstBase, BreakInstruction {
     var call: BlockCall
     
     override var type: Ty? { return nil }
@@ -22,11 +38,15 @@ final class BreakInst: InstBase {
         return "break $\(call.block.name)\(call.args?.vhirValueTuple() ?? "")"
     }
     
+    func removeArg(atIndex index: Int) throws {
+        try call.removeArg(atIndex: index)
+    }
+    
     override var hasSideEffects: Bool { return true }
     override var isTerminator: Bool { return true }
 }
 
-final class CondBreakInst: InstBase {
+final class CondBreakInst: InstBase, BreakInstruction {
     var thenCall: BlockCall, elseCall: BlockCall
     var condition: Operand
     
@@ -41,7 +61,13 @@ final class CondBreakInst: InstBase {
     }
     
     override var instVHIR: String {
+        // TODO: to print this we need to get the values from thenCall's args
         return "break \(condition.vhir), $\(thenCall.block.name)\(thenCall.args?.vhirValueTuple() ?? ""), $\(elseCall.block.name)\(elseCall.args?.vhirValueTuple() ?? "")"
+    }
+    
+    func removeArg(atIndex index: Int) throws {
+        try thenCall.removeArg(atIndex: index)
+        try elseCall.removeArg(atIndex: index)
     }
     
     override var hasSideEffects: Bool { return true }
@@ -56,11 +82,11 @@ extension Builder {
 //                where paramTypes.map({ $0.paramName }).elementsEqual(applied, isEquivalent: ==)
 //                else { throw VHIRError.wrongBlockParams }
 //        }
-        let s = BreakInst(call: (block: block, args: args))
+        let s = BreakInst(call: BlockCall(block: block, args: args))
         try addToCurrentBlock(s)
         
         guard let sourceBlock = insertPoint.block else { throw VHIRError.noParentBlock }
-        try block.addApplication(from: sourceBlock, args: args)
+        try block.addApplication(from: sourceBlock, args: args, breakInst: s)
         return s
     }
     
@@ -75,8 +101,8 @@ extension Builder {
         try addToCurrentBlock(s)
         
         guard let sourceBlock = insertPoint.block else { throw VHIRError.noParentBlock }
-        try then.block.addApplication(from: sourceBlock, args: then.args)
-        try elseTo.block.addApplication(from: sourceBlock, args: elseTo.args)
+        try then.block.addApplication(from: sourceBlock, args: then.args, breakInst: s)
+        try elseTo.block.addApplication(from: sourceBlock, args: elseTo.args, breakInst: s)
         return s
     }
 }

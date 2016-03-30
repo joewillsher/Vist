@@ -343,8 +343,8 @@ extension ConditionalStmt: StmtEmitter {
                 }
                 
                 try module.builder.buildCondBreak(if: Operand(v),
-                                                  to: (block: ifBlock, args: nil),
-                                                  elseTo: (block: failBlock, args: nil))
+                                                  to: BlockCall(block: ifBlock, args: nil),
+                                                  elseTo: BlockCall(block: failBlock, args: nil))
             }
                 // if its unconditional, we go to the exit afterwards
             else {
@@ -418,7 +418,7 @@ extension ForInLoopStmt: StmtEmitter {
         
         // make the loop's vhirgen scope and build the stdint count to put in it
         let loopScope = Scope(parent: scope)
-        let loopVariable = try module.builder.buildStructInit(StdLib.intType, values: loopOperand)
+        let loopVariable = try module.builder.buildStructInit(StdLib.intType, values: Operand(loopCountParam), irName: binded.name)
         loopScope.add(loopVariable.accessor, name: binded.name)
         
         // vhirgen the body of the loop
@@ -426,15 +426,15 @@ extension ForInLoopStmt: StmtEmitter {
         
         // iterate the loop count and check whether we are within range
         let one = try module.builder.buildBuiltinInt(1)
-        let iterated = try module.builder.buildBuiltinInstructionCall(.iaddoverflow, args: loopOperand, Operand(one), irName: "count.it")
+        let iterated = try module.builder.buildBuiltinInstructionCall(.iaddoverflow, args: Operand(loopCountParam), Operand(one), irName: "count.it")
         let condition = try module.builder.buildBuiltinInstructionCall(.ilte, args: Operand(iterated), Operand(end))
         
         // cond break -- leave the loop or go again
         // call the loop block but with the iterated loop count
         let iteratedLoopOperand = BlockOperand(value: iterated, param: loopCountParam)
         try module.builder.buildCondBreak(if: Operand(condition),
-                                          to: (block: loopBlock, args: [iteratedLoopOperand]),
-                                          elseTo: (block: exitBlock, args: nil))
+                                          to: BlockCall(block: loopBlock, args: [iteratedLoopOperand]),
+                                          elseTo: BlockCall(block: exitBlock, args: nil))
         
         try module.builder.setInsertPoint(exitBlock)
     }
@@ -458,8 +458,8 @@ extension WhileLoopStmt: StmtEmitter {
         
         // cond break into/past loop
         try module.builder.buildCondBreak(if: Operand(cond),
-                                          to: (block: loopBlock, args: nil),
-                                          elseTo: (block: exitBlock, args: nil))
+                                          to: BlockCall(block: loopBlock, args: nil),
+                                          elseTo: BlockCall(block: exitBlock, args: nil))
         
         // build loop block
         try module.builder.setInsertPoint(loopBlock) // move into

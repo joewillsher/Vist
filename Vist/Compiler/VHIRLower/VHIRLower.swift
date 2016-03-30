@@ -19,7 +19,7 @@ enum IRLowerError: VistError {
 extension CollectionType where
     Generator.Element == COpaquePointer,
     Index == Int,
-Index.Distance == Int {
+    Index.Distance == Int {
     
     /// get a ptr to the memory of the collection
     func ptr() -> UnsafeMutablePointer<Generator.Element> {
@@ -47,29 +47,6 @@ extension LLVMBool: BooleanType, BooleanLiteralConvertible {
         return self == 1
     }
 }
-
-
-private func validateModule(ref: LLVMModuleRef) throws {
-    var err = UnsafeMutablePointer<Int8>.alloc(1)
-    guard !LLVMVerifyModule(ref, LLVMReturnStatusAction, &err) else {
-        throw irGenError(.invalidModule(ref, String.fromCString(err)), userVisible: true)
-    }
-}
-
-
-private func validateFunction(ref: LLVMValueRef, name: String) throws {
-    guard !LLVMVerifyFunction(ref, LLVMReturnStatusAction) else {
-        throw irGenError(.invalidFunction(name), userVisible: true)
-    }
-}
-
-
-
-
-
-
-
-
 
 
 
@@ -134,6 +111,14 @@ extension Module {
             try fn.vhirLower(self, irGen: irGen)
         }
         
+        try validate()
+    }
+    
+    private func validate() throws {
+        var err = UnsafeMutablePointer<Int8>.alloc(1)
+        guard !LLVMVerifyModule(loweredModule, LLVMReturnStatusAction, &err) else {
+            throw irGenError(.invalidModule(loweredModule, String.fromCString(err)), userVisible: true)
+        }
     }
 }
 
@@ -144,7 +129,7 @@ extension Function: VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         
         let b = LLVMGetInsertBlock(irGen.builder)
-        let fn = functionPointerInModule(irGen.module)
+        let fn = LLVMGetNamedFunction(irGen.module, name)
         
         // if no body, return
         guard let blocks = blocks else { return fn }
@@ -170,11 +155,16 @@ extension Function: VHIRLower {
         }
         
         if b != nil { LLVMPositionBuilderAtEnd(irGen.builder, b) }
+        
+//        try validate()
+        
         return fn
     }
     
-    private func functionPointerInModule(module: LLVMModuleRef) -> LLVMValueRef {
-        return LLVMGetNamedFunction(module, name)
+    private func validate() throws {
+        guard !LLVMVerifyFunction(loweredFunction, LLVMReturnStatusAction) else {
+            throw irGenError(.invalidFunction(name), userVisible: true)
+        }
     }
 }
 
@@ -396,7 +386,7 @@ extension BuiltinInstCall: VHIRLower {
         case .iand: return LLVMBuildAnd(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
         case .ior:  return LLVMBuildOr(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
         case .ixor: return LLVMBuildXor(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
-            
+        
         case .and:  return LLVMBuildAnd(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
         case .or:   return LLVMBuildAnd(irGen.builder, l.loweredValue, r.loweredValue, irName ?? "")
             

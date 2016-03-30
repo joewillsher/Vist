@@ -19,7 +19,7 @@ final class BasicBlock: VHIRElement {
     
     // block params are `Param`s
     // block args are `Operand`s
-    let parameters: [Param]?
+    var parameters: [Param]?
     private(set) var applications: [BlockApplication]
     var predecessors: [BasicBlock] { return applications.flatMap { $0.predecessor } }
 //    private(set) var successors: [BasicBlock] = []
@@ -35,12 +35,13 @@ final class BasicBlock: VHIRElement {
     ///
     /// Can either be an entry block or a block you break to
     final class BlockApplication {
-        var args: [Operand]?, predecessor: BasicBlock?
+        var args: [Operand]?, predecessor: BasicBlock?, breakInst: BreakInstruction?
         var phi: LLVMValueRef?
         
-        init(params: [Operand]?, predecessor: BasicBlock?) {
+        init(params: [Operand]?, predecessor: BasicBlock?, breakInst: BreakInstruction?) {
             self.args = params
             self.predecessor = predecessor
+            self.breakInst = breakInst
         }
         
     }
@@ -76,7 +77,7 @@ extension BasicBlock {
     
     /// Applies the parameters to this block, `from` sepecifies the
     /// predecessor to associate these `params` with
-    func addApplication(from block: BasicBlock, args: [BlockOperand]?) throws {
+    func addApplication(from block: BasicBlock, args: [BlockOperand]?, breakInst: BreakInstruction) throws {
         // make sure application is correctly typed
         if let vals = parameters?.optionalMap({$0.type}) {
             guard let equal = args?.optionalMap({ $0.type })?.elementsEqual(vals, isEquivalent: ==)
@@ -84,7 +85,7 @@ extension BasicBlock {
         }
         else { guard args == nil else { throw VHIRError.paramsNotTyped }}
         
-        applications.append(.body(block, params: args))
+        applications.append(.body(block, params: args, breakInst: breakInst))
 //        block.successors.append(self)
     }
     private func indexOfInst(inst: Inst) throws -> Int {
@@ -102,15 +103,16 @@ extension BasicBlock {
     }
     
     var module: Module { return parentFunction!.module }
+    func dump() { print(vhir) }
 }
 
 
 extension BasicBlock.BlockApplication {
     static func entry(params: [Param]?) -> BasicBlock.BlockApplication {
-        return BasicBlock.BlockApplication(params: params?.map(Operand.init), predecessor: nil)
+        return BasicBlock.BlockApplication(params: params?.map(Operand.init), predecessor: nil, breakInst: nil)
     }
-    static func body(predecessor: BasicBlock, params: [BlockOperand]?) -> BasicBlock.BlockApplication {
-        return BasicBlock.BlockApplication(params: params, predecessor: predecessor)
+    static func body(predecessor: BasicBlock, params: [BlockOperand]?, breakInst: BreakInstruction) -> BasicBlock.BlockApplication {
+        return BasicBlock.BlockApplication(params: params, predecessor: predecessor, breakInst: breakInst)
     }
     var isEntry: Bool { return predecessor == nil }
 }

@@ -127,7 +127,7 @@ extension TypeAlias {
 
 extension Inst {
     var useComment: String {
-        let u = uses.map { $0.user?.name ?? "" }
+        let u = uses.map { $0.user?.name ?? "nil" }
         return uses.isEmpty ? "" : " \t// user\(uses.count == 1 ? "" : "s"): \(u.joinWithSeparator(", "))"
     }
 }

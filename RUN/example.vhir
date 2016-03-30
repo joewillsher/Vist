@@ -1,23 +1,33 @@
 
 type %Int = { %Builtin.Int64 }
-
-func @vist-Uprint_i64 : &thin (%Builtin.Int64) -> %Builtin.Void
+type %Range = { %Int, %Int }
 
 func @main : &thin () -> %Builtin.Void {
 $entry:
-  %0 = int_literal 1  	// user: %1
-  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %a
-  variable_decl %a = %1: %Int  	// users: %2, %4, %0
-  %2 = struct_extract %a: %Int, #value  	// user: %3
-  %3 = call @vist-Uprint_i64 (%2: %Builtin.Int64) 
-  %4 = struct_extract %a: %Int, #value  	// user: %5
-  %5 = call @vist-Uprint_i64 (%4: %Builtin.Int64) 
+  %0 = int_literal 0  	// user: %1
+  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %4
+  %2 = int_literal 1  	// user: %3
+  %3 = struct %Int (%2: %Builtin.Int64)  	// user: %4
+  %4 = call @..._Int_Int (%1: %Int, %3: %Int)  	// users: %5, %6
+  %5 = struct_extract %4: %Range, #start  	// user: %7
+  %6 = struct_extract %4: %Range, #end  	// user: %8
+  %7 = struct_extract %5: %Int, #value  	// user: %9
+  %8 = struct_extract %6: %Int, #value  	// user: %14
+  break $loop(%7: %Builtin.Int64)
+
+$loop(%loop.count: %Builtin.Int64):			// preds: entry, loop
+  %10 = int_literal 1  	// user: %11
+  %11 = struct %Int (%10: %Builtin.Int64)  	// user: %12
+  %12 = call @print_Int (%11: %Int) 
+  %13 = int_literal 1  	// user: %count.it
+  %count.it = builtin i_add_overflow %loop.count: %Builtin.Int64, %13: %Builtin.Int64  	// users: %14, %15
+  %14 = builtin i_cmp_lte %count.it: %Builtin.Int64, %8: %Builtin.Int64  	// user: nil
+  break %14: %Builtin.Bool, $loop(%count.it: %Builtin.Int64), $loop.exit
+
+$loop.exit:			// preds: loop
   return ()
 }
 
-func @foo_ : &thin () -> %Builtin.Void {
-$entry:
-  %0 = struct_extract %a: %Int, #value  	// user: %1
-  %1 = call @vist-Uprint_i64 (%0: %Builtin.Int64) 
-  return ()
-}
+func @..._Int_Int : &thin (%Int, %Int) -> %Range
+
+func @print_Int : &thin (%Int) -> %Builtin.Void

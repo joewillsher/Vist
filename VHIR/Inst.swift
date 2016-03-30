@@ -57,7 +57,9 @@ extension Inst {
     func eraseFromParent() throws {
         
         // tell self’s operands that we’re not using it any more
-        for arg in args { arg.value?.removeUse(arg) }
+        for arg in args {
+            arg.removeSelfAsUser()
+        }
         args.removeAll()
         // remove this from everthing
         removeAllUses()

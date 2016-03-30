@@ -16,19 +16,23 @@ class Operand: RValue {
         self.value = value
         value.addUse(self)
     }
-    private init() {}
-    
-    @available(*, unavailable, message="`Operand` initialisers should not take `Operand`s")
-    init(_ operand: Operand) { fatalError() }
+    private init() { }
     
     deinit {
         value?.removeUse(self)
     }
+
+    @available(*, unavailable, message="`Operand` initialisers should not take `Operand`s")
+    init(_ operand: Operand) { fatalError() }
     
     private(set) var loweredValue: LLVMValueRef = nil
-    
-    // forward all interface to `value`
+    func setLoweredValue(val: LLVMValueRef) { loweredValue = val }
+
     var type: Ty? { return value?.type }
+}
+
+extension Operand {
+    // forward all interface to `value`
     var irName: String? {
         get { return value?.irName }
         set { value?.irName = newValue }
@@ -47,11 +51,13 @@ class Operand: RValue {
     }
     var operandName: String { return "<operand of \(name) by \(user?.name)>" }
     
-    
-    func setLoweredValue(val: LLVMValueRef) { loweredValue = val }
-    
     func dumpIR() { if loweredValue != nil { LLVMDumpValue(loweredValue) } else { print("\(irName) <NULL>") } }
     func dumpIRType() { if loweredValue != nil { LLVMDumpTypeOf(loweredValue) } else { print("\(irName).type <NULL>") } }
+    
+    /// Removes this `Operand` as a user of `value`
+    func removeSelfAsUser() {
+        value?.removeUse(self)
+    }
 }
 
 
@@ -71,7 +77,6 @@ final class PtrOperand: Operand, LValue {
         super.init()
         value.addUse(self)
     }
-    
 }
 
 
@@ -87,8 +92,10 @@ final class BlockOperand: Operand {
         super.init(value)
     }
     
-    private let param: Param
+    let param: Param
     private unowned let predBlock: BasicBlock
+    
+    override var type: Ty? { return param.type }
     
     /// Sets the phi's value for the incoming block `self.predBlock`
     override func setLoweredValue(val: LLVMValueRef) {
@@ -101,6 +108,8 @@ final class BlockOperand: Operand {
         LLVMAddIncoming(param.phi, incoming, incomingBlocks, 1)
     }
     
+    /// access to the underlying phi switch. Normal `setLoweredValue` 
+    /// adds incomings to the phi
     var phi: LLVMValueRef {
         get { return loweredValue }
         set(phi) { loweredValue = phi }

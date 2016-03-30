@@ -13,32 +13,29 @@ Ltmp1:
 	movq	%rsp, %rbp
 Ltmp2:
 	.cfi_def_cfa_register %rbp
-	movl	$1, %eax
+	subq	$32, %rsp
+	xorl	%eax, %eax
 	movl	%eax, %edi
-	callq	"_vist-Uprint_i64"
 	movl	$1, %eax
-	movl	%eax, %edi
-	callq	"_vist-Uprint_i64"
-	popq	%rbp
-	retq
-	.cfi_endproc
-
-	.globl	_foo_
-	.align	4, 0x90
-_foo_:                                  ## @foo_
-	.cfi_startproc
-## BB#0:                                ## %entry
-	pushq	%rbp
-Ltmp3:
-	.cfi_def_cfa_offset 16
-Ltmp4:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-Ltmp5:
-	.cfi_def_cfa_register %rbp
-	movl	$1, %eax
-	movl	%eax, %edi
-	callq	"_vist-Uprint_i64"
+	movl	%eax, %esi
+	callq	_..._Int_Int
+	movq	%rdx, -8(%rbp)          ## 8-byte Spill
+	movq	%rax, -16(%rbp)         ## 8-byte Spill
+LBB0_1:                                 ## %loop
+                                        ## =>This Inner Loop Header: Depth=1
+	movq	-16(%rbp), %rax         ## 8-byte Reload
+	movl	$1, %ecx
+	movl	%ecx, %edi
+	movq	%rax, -24(%rbp)         ## 8-byte Spill
+	callq	_print_Int
+	movq	-24(%rbp), %rax         ## 8-byte Reload
+	addq	$1, %rax
+	movq	-8(%rbp), %rdi          ## 8-byte Reload
+	cmpq	%rdi, %rax
+	movq	%rax, -16(%rbp)         ## 8-byte Spill
+	jle	LBB0_1
+## BB#2:                                ## %loop.exit
+	addq	$32, %rsp
 	popq	%rbp
 	retq
 	.cfi_endproc
