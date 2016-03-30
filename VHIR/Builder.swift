@@ -7,17 +7,17 @@
 //
 
 
-/// The builder's insert point
-struct InsertPoint {
-    private(set) var inst: Inst?, block: BasicBlock?, function: Function?
-}
-
 /// Handles adding instructions to the module
 final class Builder {
     weak var module: Module!
     var insertPoint = InsertPoint()
     
     init(module: Module) { self.module = module }
+    
+    /// The builder's insert point
+    struct InsertPoint {
+        private(set) var inst: Inst?, block: BasicBlock?, function: Function?
+    }
 }
 
 extension Builder {

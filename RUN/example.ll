@@ -3,9 +3,21 @@ target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-macosx10.11.0"
 
 %Int.st = type { i64 }
+%Foo.ex = type { [2 x i32], [1 x i8*], i8* }
 %Bar.st = type { %Int.st, %Int.st, %Bool.st }
 %Bool.st = type { i1 }
-%Foo.ex = type { [2 x i32], [1 x i8*], i8* }
+
+; Function Attrs: nounwind readonly
+define %Int.st @unbox_Foo(%Foo.ex %box) #0 {
+entry:
+  %box.fca.0.0.extract = extractvalue %Foo.ex %box, 0, 0
+  %box.fca.2.extract = extractvalue %Foo.ex %box, 2
+  %0 = sext i32 %box.fca.0.0.extract to i64
+  %1 = getelementptr i8* %box.fca.2.extract, i64 %0
+  %ptr = bitcast i8* %1 to %Int.st*
+  %2 = load %Int.st* %ptr, align 8
+  ret %Int.st %2
+}
 
 ; Function Attrs: nounwind readonly
 define %Int.st @Bar.aye_(%Bar.st* nocapture readonly %self) #0 {
@@ -37,43 +49,25 @@ entry:
   ret %Bar.st %.fca.2.0.insert
 }
 
-; Function Attrs: nounwind readonly
-define %Bool.st @unbox2_Foo(%Foo.ex %box) #0 {
-entry:
-  %box.fca.0.1.extract = extractvalue %Foo.ex %box, 0, 1
-  %box.fca.2.extract = extractvalue %Foo.ex %box, 2
-  %0 = sext i32 %box.fca.0.1.extract to i64
-  %1 = getelementptr i8* %box.fca.2.extract, i64 %0
-  %nil.ptr = bitcast i8* %1 to %Bool.st*
-  %2 = load %Bool.st* %nil.ptr, align 1
-  ret %Bool.st %2
-}
-
 ; Function Attrs: nounwind
 define void @main() #2 {
-entry:
+Bar.aye_.exit:
   tail call void @vist-Uprint_i64(i64 2)
-  tail call void @vist-Uprint_b(i1 false)
+  tail call void @vist-Uprint_i64(i64 1)
   ret void
 }
 
-; Function Attrs: nounwind readonly
-define %Int.st @unbox_Foo(%Foo.ex %box) #0 {
+define %Int.st @callAye_Foo(%Foo.ex %box) {
 entry:
-  %box.fca.0.0.extract = extractvalue %Foo.ex %box, 0, 0
+  %box.fca.1.0.extract = extractvalue %Foo.ex %box, 1, 0
   %box.fca.2.extract = extractvalue %Foo.ex %box, 2
-  %0 = sext i32 %box.fca.0.0.extract to i64
-  %1 = getelementptr i8* %box.fca.2.extract, i64 %0
-  %nil.ptr = bitcast i8* %1 to %Int.st*
-  %2 = load %Int.st* %nil.ptr, align 8
-  ret %Int.st %2
+  %0 = bitcast i8* %box.fca.1.0.extract to %Int.st (i8*)*
+  %1 = tail call %Int.st %0(i8* %box.fca.2.extract)
+  ret %Int.st %1
 }
 
 ; Function Attrs: noinline nounwind ssp uwtable
 declare void @vist-Uprint_i64(i64) #3
-
-; Function Attrs: noinline nounwind ssp uwtable
-declare void @vist-Uprint_b(i1 zeroext) #3
 
 attributes #0 = { nounwind readonly }
 attributes #1 = { nounwind readnone }

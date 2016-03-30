@@ -100,6 +100,11 @@ enum BuiltinType: Ty {
         }
     }
     
-    func usingTypesIn(module: Module) -> Ty { return self }
+    func usingTypesIn(module: Module) -> Ty {
+        switch self {
+        case .pointer(let pointee): return BuiltinType.pointer(to: pointee.usingTypesIn(module))
+        default: return self
+        }
+    }
     
 }

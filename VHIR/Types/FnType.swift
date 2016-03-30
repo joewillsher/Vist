@@ -6,26 +6,6 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-enum CallingConvention {
-    case thin
-    case method(selfType: Ty)
-    //case thick(contextPtr: )
-    
-    var name: String {
-        switch self {
-        case .thin: return "thin"
-        case .method: return "method"
-        }
-    }
-    func usingTypesIn(module: Module) -> CallingConvention {
-        switch self {
-        case .thin: return self
-        case .method(let selfType): return .method(selfType: selfType.usingTypesIn(module))
-        }
-    }
-}
-
-
 struct FnType: Ty {
     let params: [Ty], returns: Ty
     var metadata: [String]
@@ -37,6 +17,30 @@ struct FnType: Ty {
         self.metadata = metadata
         self.callingConvention = callingConvention
     }
+    
+    enum CallingConvention {
+        case thin
+        case method(selfType: Ty)
+        //case thick(contextPtr: )
+        
+        var name: String {
+            switch self {
+            case .thin: return "thin"
+            case .method: return "method"
+            }
+        }
+        func usingTypesIn(module: Module) -> CallingConvention {
+            switch self {
+            case .thin: return self
+            case .method(let selfType): return .method(selfType: selfType.usingTypesIn(module))
+            }
+        }
+    }
+}
+
+
+extension FnType {
+    
     func lowerType(module: Module) -> LLVMTypeRef {
         
         let ret: LLVMTypeRef

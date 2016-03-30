@@ -6,33 +6,6 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-/// The application of a block, how you jump into the block
-///
-/// Can either be an entry block or a block you break to
-final class BlockApplication {
-    
-    static func entry(params: [Param]?) -> BlockApplication {
-        return BlockApplication(params: params?.map(Operand.init), predecessor: nil)
-    }
-    static func body(predecessor: BasicBlock, params: [BlockOperand]?) -> BlockApplication {
-        return BlockApplication(params: params, predecessor: predecessor)
-    }
-    
-    var args: [Operand]?
-    var predecessor: BasicBlock?
-    
-    var phi: LLVMValueRef?
-    
-    init(params: [Operand]?, predecessor: BasicBlock?) {
-        self.args = params
-        self.predecessor = predecessor
-    }
-    
-    var isEntry: Bool { return predecessor == nil }
-}
-
-
-
 /// A collection of instructions
 ///
 /// Params are passed between blocks in parameters, blocks can
@@ -57,6 +30,24 @@ final class BasicBlock: VHIRElement {
         self.parentFunction = parentFunction
         applications = []
     }
+    
+    /// The application of a block, how you jump into the block
+    ///
+    /// Can either be an entry block or a block you break to
+    final class BlockApplication {
+        var args: [Operand]?, predecessor: BasicBlock?
+        var phi: LLVMValueRef?
+        
+        init(params: [Operand]?, predecessor: BasicBlock?) {
+            self.args = params
+            self.predecessor = predecessor
+        }
+        
+    }
+}
+
+
+extension BasicBlock {
     
     func insert(inst: Inst, after: Inst) throws {
         instructions.insert(inst, atIndex: try indexOfInst(after).successor())
@@ -111,6 +102,17 @@ final class BasicBlock: VHIRElement {
     }
     
     var module: Module { return parentFunction!.module }
+}
+
+
+extension BasicBlock.BlockApplication {
+    static func entry(params: [Param]?) -> BasicBlock.BlockApplication {
+        return BasicBlock.BlockApplication(params: params?.map(Operand.init), predecessor: nil)
+    }
+    static func body(predecessor: BasicBlock, params: [BlockOperand]?) -> BasicBlock.BlockApplication {
+        return BasicBlock.BlockApplication(params: params, predecessor: predecessor)
+    }
+    var isEntry: Bool { return predecessor == nil }
 }
 
 extension Builder {

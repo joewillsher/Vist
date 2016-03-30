@@ -77,9 +77,10 @@ func @print_Int : &thin (%Int) -> %Builtin.Void
 
 func @callAye_Foo : &thin (%Foo) -> %Int {
 $entry(%box: %Foo):
-  %0 = alloc %Foo  	// users: %1, %2
+  %0 = alloc %Foo  	// users: %1, %unboxed
   store %box in %0: %*Foo 
-  %2 = existential_witness %0: %*Foo #aye  	// user: 
-  %3 = call %2 ()  	// user: %4
-  return %3
+  %witness = existential_witness %0: %*Foo #aye  	// user: 
+  %unboxed = existential_unbox %0: %*Foo  	// user: %2
+  %2 = call %witness: %* (%unboxed: %*Builtin.Int8)  	// user: %3
+  return %2
 }

@@ -49,43 +49,6 @@ struct ConceptType: StorageType {
         return module.getOrInsert(TypeAlias(name: name, targetType: c))
     }
 
-    
-    /// Returns the metadata array map, which transforms the protocol's properties
-    /// to an element in the `type`. Type `[n * i32]`
-    func existentialPropertyMetadataFor(structType: StructType, module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        
-        let dataLayout = LLVMCreateTargetData(LLVMGetDataLayout(irGen.module))
-        let conformingType = structType.lowerType(irGen.module)
-        
-        // a table of offsets
-        let offsets = try requiredProperties
-            .map { propName, _, _ in try structType.indexOfMemberNamed(propName) }
-            .map { index in LLVMOffsetOfElement(dataLayout, conformingType, UInt32(index)) }
-            .map { try module.builder.buildBuiltinInt(Int($0), size: 32, addToModule: false) }
-            .map (Operand.init)
-        
-        try offsets.forEach { try $0.vhirLower(module, irGen: irGen) }
-        
-        let arr = try module.builder.buildArray(offsets,
-                                                memType: BuiltinType.int(size: 32),
-                                                irName: "metadata",
-                                                addToModule: false)
-        
-        return try arr.vhirLower(module, irGen: irGen)
-    }
-    
-    /// Returns the metadata array of function pointers. Type `[n * i8*]`
-    func existentialMethodMetadataFor(structType: StructType, irGen: IRGen) throws -> LLVMValueRef {
-        
-        let opaquePtrType = BuiltinType.opaquePointer.lowerType(irGen.module)
-        
-        let ptrs = requiredFunctions
-            .map { methodName, type in structType.ptrToMethodNamed(methodName, type: type, module: irGen.module) }
-            .map { ptr in LLVMBuildBitCast(irGen.builder, ptr, opaquePtrType, LLVMGetValueName(ptr)) }
-        
-//        return LLVMBuilder(irGen.builder).buildArrayOf(opaquePtrType, values: ptrs)
-        return nil
-    }
 }
 
 

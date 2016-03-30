@@ -110,15 +110,15 @@ extension VariableDecl: RValueEmitter {
         
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
 
-        let val = try value.emitRValue(module: module, scope: scope).getter()
+        let val = try value.emitRValue(module: module, scope: scope)
         
         if isMutable {
-            let variable = try val.allocAccessor()
+            let variable = try val.asReferenceAccessor()
             scope.add(variable, name: name)
             return variable
         }
         else {
-            let variable = try module.builder.buildVariableDecl(Operand(val), irName: name).accessor
+            let variable = try module.builder.buildVariableDecl(Operand(val.getter()), irName: name).accessor
             scope.add(variable, name: name)
             return variable
         }
@@ -595,14 +595,20 @@ extension MethodCallExpr: RValueEmitter {
             
             guard let argTypes = args.optionalMap({$0.type}) else { fatalError() }
             
+            // get the witness from the existential
             let fn = try module.builder.buildExistentialWitnessMethod(selfRef,
                                                                       methodName: name,
                                                                       argTypes: argTypes,
-                                                                      existentialType: existentialType)
+                                                                      existentialType: existentialType,
+                                                                      irName: "witness")
             guard case let fnType as FnType = fn.memType else { fatalError() }
+            
+            // get the instance from the existential
+            let unboxedSelf = try module.builder.buildExistentialUnbox(selfRef, irName: "unboxed")
+            // call the method by applying the opaque ptr to self as the first param
             return try module.builder.buildFunctionCall(PtrOperand(fn),
                                                         returnType: fnType.returns,
-                                                        args: args).accessor
+                                                        args: [PtrOperand(unboxedSelf)] + args).accessor
         default:
             fatalError()
         }

@@ -29,13 +29,14 @@ extension StorageType {
         return i
     }
     
-    func indexOfMethodNamed(name: String, argTypes: [Ty]) throws -> Int {
+    func indexOf(methodNamed name: String, argTypes: [Ty]) throws -> Int {
         guard let i = methods.indexOf({ $0.name == name && $0.type.params.elementsEqual(argTypes, isEquivalent: ==)})
             else { throw semaError(.noPropertyNamed(type: self.name, property: name)) }
         return i
     }
     
     func ptrToMethodNamed(name: String, type: FnType, module: LLVMModuleRef) -> LLVMValueRef {
+//        return try! module.getOrInsertFunctionNamed(name, type: type).loweredFunction
         return ptrToFunction(name.mangle(type.params, parentTypeName: self.name), type: type, module: module)
     }
     
@@ -45,8 +46,8 @@ extension StorageType {
     func propertyMutable(name: String) throws -> Bool {
         return members[try indexOfMemberNamed(name)].mutable
     }
-    func getMethodType(methodName: String, argTypes types: [Ty]) -> FnType? {
-        return methods.find { $0.name == methodName && $0.type.params.elementsEqual(types, isEquivalent: ==) }?.type
+    func methodType(methodNamed name: String, argTypes types: [Ty]) throws -> FnType {
+        return methods[try indexOf(methodNamed: name, argTypes: types)].type
     }
     
     /// Returns whether a type models a concept

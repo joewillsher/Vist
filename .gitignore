@@ -2,3 +2,7 @@
 llvm/*
 
 Vist/Compiler/Include/Utils.h
+
+*.xcuserstate
+
+Vist.xcodeproj/project.xcworkspace/xcuserdata/JoeWillsher.xcuserdatad/UserInterfaceState.xcuserstate

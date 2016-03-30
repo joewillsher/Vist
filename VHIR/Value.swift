@@ -64,14 +64,6 @@ extension RValue {
     /// The accessor whose getter returns `self`
     var accessor: ValAccessor { return ValAccessor(value: self) }
     
-    /// Builds a reference accessor which can store into & load from
-    /// the memory it allocates
-    func allocAccessor() throws -> GetSetAccessor {
-        let accessor = RefAccessor(memory: try module.builder.buildAlloc(type!))
-        try accessor.setter(Operand(self))
-        return accessor
-    }
-
     func dump() { print(vhir) }
     
     var module: Module { return parentBlock!.module }

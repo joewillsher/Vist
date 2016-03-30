@@ -22,7 +22,7 @@ final class ExistentialPropertyInst: InstBase {
     }
     
     override var instVHIR: String {
-        return "\(name) = existential_open \(existential.valueName) #\(propertyName) \(useComment)"
+        return "\(name) = existential_open \(existential) #\(propertyName) \(useComment)"
     }
 }
 
@@ -42,7 +42,7 @@ final class ExistentialConstructInst: InstBase {
     }
     
     override var instVHIR: String {
-        return "\(name) = existential_box \(value.valueName) in %\(existentialType.name) \(useComment)"
+        return "\(name) = existential_box \(value) in %\(existentialType.name) \(useComment)"
     }
     
 }
@@ -51,7 +51,7 @@ final class ExistentialWitnessMethodInst: InstBase, LValue {
     var existential: PtrOperand
     let methodName: String, argTypes: [Ty], existentialType: ConceptType
     
-    var methodType: FnType? { return existentialType.getMethodType(methodName, argTypes: argTypes) }
+    var methodType: FnType? { return try? existentialType.methodType(methodNamed: methodName, argTypes: argTypes) }
     override var type: Ty? { return memType.map { BuiltinType.pointer(to: $0) } }
     var memType: Ty? { return methodType }
     
@@ -64,10 +64,29 @@ final class ExistentialWitnessMethodInst: InstBase, LValue {
     }
     
     override var instVHIR: String {
-        return "\(name) = existential_witness \(existential.valueName) #\(methodName) \(useComment)"
+        return "\(name) = existential_witness \(existential) #\(methodName) \(useComment)"
     }
     
 }
+
+/// Get the instance from the existential box, an i8*
+final class ExistentialUnboxInst: InstBase, LValue {
+    var existential: PtrOperand
+    
+    override var type: Ty? { return BuiltinType.opaquePointer }
+    var memType: Ty? { return BuiltinType.int(size: 8) }
+    
+    private init(existential: PtrOperand, irName: String?) {
+        self.existential = existential
+        super.init(args: [existential], irName: irName)
+    }
+    
+    override var instVHIR: String {
+        return "\(name) = existential_unbox \(existential) \(useComment)"
+    }
+    
+}
+
 
 extension Builder {
     
@@ -83,5 +102,9 @@ extension Builder {
     func buildExistentialWitnessMethod(existential: PtrOperand, methodName: String, argTypes: [Ty], existentialType: ConceptType, irName: String? = nil) throws -> ExistentialWitnessMethodInst {
         return try _add(ExistentialWitnessMethodInst(existential: existential, methodName: methodName, argTypes: argTypes, existentialType: existentialType, irName: irName))
     }
+    func buildExistentialUnbox(value: PtrOperand, irName: String? = nil) throws -> ExistentialUnboxInst {
+        return try _add(ExistentialUnboxInst(existential: value, irName: irName))
+    }
+
 }
 

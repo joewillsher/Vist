@@ -103,8 +103,8 @@ final class ExistentialVariable: StorageVariable, MutableVariable {
 //        let propArr = try conceptType.existentialPropertyMetadataFor(structType, irGen: irGen)
 //        LLVMBuildStore(irGen.builder, propArr, propArrayPtr)
         
-        let methodArr = try conceptType.existentialMethodMetadataFor(structType, irGen: irGen)
-        LLVMBuildStore(irGen.builder, methodArr, methodArrayPtr)
+//        let methodArr = try conceptType.existentialMethodMetadataFor(structType, irGen: irGen)
+//        LLVMBuildStore(irGen.builder, methodArr, methodArrayPtr)
         
         LLVMBuildStore(irGen.builder, value, initFromPtr)
         let opaqueValueMem = LLVMBuildBitCast(irGen.builder, initFromPtr, opaquePtrType, "")

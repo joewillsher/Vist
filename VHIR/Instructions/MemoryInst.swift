@@ -51,10 +51,14 @@ final class LoadInst: InstBase {
         return "\(name) = load \(address) \(useComment)"
     }
 }
-final class BitcastInst: InstBase {
+final class BitcastInst: InstBase, LValue {
     var pointerType: BuiltinType { return BuiltinType.pointer(to: newType) }
     override var type: Ty? { return pointerType }
-    private(set) var address: PtrOperand, newType: Ty
+    var memType: Ty? { return newType }
+    /// The operand of the cast
+    private(set) var address: PtrOperand
+    /// The new memory type of the cast
+    private(set) var newType: Ty
     
     private init(address: PtrOperand, newType: Ty, irName: String?) {
         self.address = address
@@ -63,7 +67,7 @@ final class BitcastInst: InstBase {
     }
     
     override var instVHIR: String {
-        return "\(name) = bitcast \(address) to %\(pointerType) \(useComment)"
+        return "\(name) = bitcast \(address) to \(pointerType) \(useComment)"
     }
 }
 
@@ -80,6 +84,8 @@ extension Builder {
     func buildLoad(from address: PtrOperand, irName: String? = nil) throws -> LoadInst {
         return try _add(LoadInst(address: address, irName: irName))
     }
+    /// Builds a bitcast instruction
+    /// - parameter newType: The memory type to be cast to -- the ptr will have type newType*
     func buildBitcast(from address: PtrOperand, newType: Ty, irName: String? = nil) throws -> BitcastInst {
         return try _add(BitcastInst(address: address, newType: newType, irName: irName))
     }

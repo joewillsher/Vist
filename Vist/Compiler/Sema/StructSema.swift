@@ -182,7 +182,7 @@ extension MethodCallExpr: ExprTypeProvider {
         
         let args = try self.args.elements.map { try $0.typeForNode(scope) }
         
-        guard let fnType = parentType.getMethodType(name, argTypes: args) else { throw semaError(.noFunction(name, args)) }
+        let fnType = try parentType.methodType(methodNamed: name, argTypes: args)
         mangledName = name.mangle(fnType, parentTypeName: parentType.name)
         
         // gen types for objects in call

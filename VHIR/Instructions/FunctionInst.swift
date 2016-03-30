@@ -14,12 +14,12 @@ enum FunctionCallRef {
     var name: String {
         switch self {
         case .direct(let function): return "@\(function.name)"
-        case .pointer(let ptr): return ptr.name
+        case .pointer(let ptr): return ptr.vhir
         }
     }
     var loweredValue: LLVMValueRef {
         switch self {
-        case .direct(let function): return LLVMGetNamedFunction(function.module.loweredModule, name)
+        case .direct(let function): return function.loweredFunction
         case .pointer(let ptr): return ptr.loweredValue
         }
     }

@@ -22,19 +22,20 @@ final class Function: VHIRElement {
         self.parentModule = module
         self.type = type
     }
-}
-
-private final class FunctionBody {
-    private(set) var blocks: [BasicBlock]
-    private(set) var params: [Param]
-    unowned var parentFunction: Function
     
-    private init(params: [Param], parentFunction: Function, blocks: [BasicBlock]) {
-        self.params = params
-        self.parentFunction = parentFunction
-        self.blocks = blocks
+    private final class FunctionBody {
+        private(set) var blocks: [BasicBlock]
+        private(set) var params: [Param]
+        unowned var parentFunction: Function
+        
+        private init(params: [Param], parentFunction: Function, blocks: [BasicBlock]) {
+            self.params = params
+            self.parentFunction = parentFunction
+            self.blocks = blocks
+        }
     }
 }
+
 
 extension Function {
     

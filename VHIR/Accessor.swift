@@ -6,10 +6,6 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-
-
-
-
 /// Provides means of reading a value from memory
 ///
 /// A `getter` allows loading of a value, and conformants may also provide a ``setter
@@ -23,22 +19,6 @@ protocol Accessor {
     var storedType: Ty? { get }
 }
 
-/// Provides access to values by exposing a getter which returns the value
-final class ValAccessor: Accessor {
-    
-    private var value: RValue
-    init(value: RValue) { self.value = value }
-    
-    func getter() -> RValue { return value }
-    
-    /// Alloc a new accessor and store self into it.
-    /// - returns: a reference backed copy of `self`
-    func asReferenceAccessor() throws -> GetSetAccessor {
-        return try getter().allocAccessor()
-    }
-    
-    var storedType: Ty? { return value.type }
-}
 
 /// An Accessor which allows setting, as well as self lookup by ptr
 protocol GetSetAccessor: Accessor {
@@ -66,6 +46,41 @@ extension GetSetAccessor {
     func reference() -> PtrOperand { return PtrOperand(mem) }
 }
 
+// TODO: this
+// should getter return an operand/ptroperand
+// make `try getter().allocGetSetAccessor()` try `value.allocGetSetAccessor()`
+
+// MARK: Implementations
+
+/// Provides access to values by exposing a getter which returns the value
+final class ValAccessor: Accessor {
+    
+    private var value: RValue
+    init(value: RValue) { self.value = value }
+    
+    func getter() -> RValue { return value }
+    
+    /// Alloc a new accessor and store self into it.
+    /// - returns: a reference backed *copy* of `self`
+    func asReferenceAccessor() throws -> GetSetAccessor {
+        return try getter().allocGetSetAccessor()
+    }
+    
+    var storedType: Ty? { return value.type }
+}
+
+// Helper function for constructing a reference copy
+private extension RValue {
+    /// Builds a reference accessor which can store into & load from
+    /// the memory it allocates
+    func allocGetSetAccessor() throws -> GetSetAccessor {
+        let accessor = RefAccessor(memory: try module.builder.buildAlloc(type!))
+        try accessor.setter(Operand(self))
+        return accessor
+    }
+}
+
+
 /// Provides access to a value with backing memory
 final class RefAccessor: GetSetAccessor {
     var mem: LValue
@@ -75,7 +90,6 @@ final class RefAccessor: GetSetAccessor {
 /// A Ref accessor whose accessor is evaluated on demand. Useful for values
 /// which might not be used
 final class LazyRefAccessor: GetSetAccessor {
-    
     private var build: () throws -> LValue
     private var val: LValue?
     

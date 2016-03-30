@@ -5,10 +5,10 @@ concept Foo {
 }
 
 func unbox::Foo->Int = (box) do
-    return box.a
+return box.a
 
 func callAye::Foo->Int = (box) do
-    return box.aye ()
+return box.aye ()
 
 
 type Bar {
@@ -24,3 +24,4 @@ let a = unbox b
 print a
 
 print (callAye b)
+
