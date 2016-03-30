@@ -14,7 +14,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 @.str3 = private unnamed_addr constant [6 x i8] c"true\0A\00", align 1
 @.str4 = private unnamed_addr constant [7 x i8] c"false\0A\00", align 1
 
-; Function Attrs: noinline nounwind ssp uwtable
+; Function Attrs: alwaysinline nounwind ssp uwtable
 define void @vist-Uprint_i64(i64 %i) #0 {
 entry:
   %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str, i64 0, i64 0), i64 %i)
@@ -24,21 +24,21 @@ entry:
 ; Function Attrs: nounwind
 declare i32 @printf(i8* nocapture readonly, ...) #1
 
-; Function Attrs: noinline nounwind ssp uwtable
+; Function Attrs: alwaysinline nounwind ssp uwtable
 define void @vist-Uprint_i32(i32 %i) #0 {
 entry:
   %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str1, i64 0, i64 0), i32 %i)
   ret void
 }
 
-; Function Attrs: noinline nounwind ssp uwtable
+; Function Attrs: alwaysinline nounwind ssp uwtable
 define void @vist-Uprint_f64(double %d) #0 {
 entry:
   %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str2, i64 0, i64 0), double %d)
   ret void
 }
 
-; Function Attrs: noinline nounwind ssp uwtable
+; Function Attrs: alwaysinline nounwind ssp uwtable
 define void @vist-Uprint_f32(float %d) #0 {
 entry:
   %conv = fpext float %d to double
@@ -46,7 +46,7 @@ entry:
   ret void
 }
 
-; Function Attrs: noinline nounwind ssp uwtable
+; Function Attrs: alwaysinline nounwind ssp uwtable
 define void @vist-Uprint_b(i1 zeroext %b) #0 {
 entry:
   %cond = select i1 %b, i8* getelementptr inbounds ([6 x i8]* @.str3, i64 0, i64 0), i8* getelementptr inbounds ([7 x i8]* @.str4, i64 0, i64 0)
@@ -183,6 +183,16 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
+define %Int.st @-C_Int_Int(%Int.st %a, %Int.st %b) #3 {
+entry:
+  %0 = extractvalue %Int.st %a, 0
+  %1 = extractvalue %Int.st %b, 0
+  %2 = srem i64 %0, %1
+  %.fca.0.insert = insertvalue %Int.st undef, i64 %2, 0
+  ret %Int.st %.fca.0.insert
+}
+
+; Function Attrs: nounwind readnone
 define %Bool.st @-G_Int_Int(%Int.st %a, %Int.st %b) #3 {
 entry:
   %0 = extractvalue %Int.st %a, 0
@@ -190,6 +200,16 @@ entry:
   %2 = icmp sgt i64 %0, %1
   %.fca.0.insert = insertvalue %Bool.st undef, i1 %2, 0
   ret %Bool.st %.fca.0.insert
+}
+
+; Function Attrs: nounwind readnone
+define %Double.st @-C_Double_Double(%Double.st %a, %Double.st %b) #3 {
+entry:
+  %0 = extractvalue %Double.st %a, 0
+  %1 = extractvalue %Double.st %b, 0
+  %2 = frem double %0, %1
+  %.fca.0.insert = insertvalue %Double.st undef, double %2, 0
+  ret %Double.st %.fca.0.insert
 }
 
 ; Function Attrs: nounwind readnone
@@ -232,16 +252,6 @@ entry.cont:                                       ; preds = %entry
 }
 
 ; Function Attrs: nounwind readnone
-define %Int.st @"%_Int_Int"(%Int.st %a, %Int.st %b) #3 {
-entry:
-  %0 = extractvalue %Int.st %a, 0
-  %1 = extractvalue %Int.st %b, 0
-  %2 = srem i64 %0, %1
-  %.fca.0.insert = insertvalue %Int.st undef, i64 %2, 0
-  ret %Int.st %.fca.0.insert
-}
-
-; Function Attrs: nounwind readnone
 define %Bool.st @-E-E_Double_Double(%Double.st %a, %Double.st %b) #3 {
 entry:
   %0 = extractvalue %Double.st %a, 0
@@ -251,11 +261,11 @@ entry:
   ret %Bool.st %.fca.0.insert
 }
 
-; Function Attrs: nounwind
-define void @print_Double(%Double.st %a) #2 {
+; Function Attrs: nounwind ssp
+define void @print_Double(%Double.st %a) #4 {
 entry:
   %0 = extractvalue %Double.st %a, 0
-  tail call void @vist-Uprint_f64(double %0)
+  %call.i = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str2, i64 0, i64 0), double %0) #2
   ret void
 }
 
@@ -287,11 +297,12 @@ entry:
   ret %Bool.st zeroinitializer
 }
 
-; Function Attrs: nounwind
-define void @print_Bool(%Bool.st %a) #2 {
+; Function Attrs: nounwind ssp
+define void @print_Bool(%Bool.st %a) #4 {
 entry:
   %0 = extractvalue %Bool.st %a, 0
-  tail call void @vist-Uprint_b(i1 %0)
+  %cond.i = select i1 %0, i8* getelementptr inbounds ([6 x i8]* @.str3, i64 0, i64 0), i8* getelementptr inbounds ([7 x i8]* @.str4, i64 0, i64 0)
+  %call.i = tail call i32 (i8*, ...)* @printf(i8* %cond.i) #2
   ret void
 }
 
@@ -378,11 +389,11 @@ entry:
   ret void
 }
 
-; Function Attrs: nounwind
-define void @print_Int(%Int.st %a) #2 {
+; Function Attrs: nounwind ssp
+define void @print_Int(%Int.st %a) #4 {
 entry:
   %0 = extractvalue %Int.st %a, 0
-  tail call void @vist-Uprint_i64(i64 %0)
+  %call.i = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str, i64 0, i64 0), i64 %0) #2
   ret void
 }
 
@@ -416,11 +427,11 @@ entry:
   ret %Bool.st %.fca.0.insert
 }
 
-; Function Attrs: nounwind
-define void @print_Int32(%Int32.st %a) #2 {
+; Function Attrs: nounwind ssp
+define void @print_Int32(%Int32.st %a) #4 {
 entry:
   %0 = extractvalue %Int32.st %a, 0
-  tail call void @vist-Uprint_i32(i32 %0)
+  %call.i = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str1, i64 0, i64 0), i32 %0) #2
   ret void
 }
 
@@ -462,16 +473,6 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Double.st @"%_Double_Double"(%Double.st %a, %Double.st %b) #3 {
-entry:
-  %0 = extractvalue %Double.st %a, 0
-  %1 = extractvalue %Double.st %b, 0
-  %2 = frem double %0, %1
-  %.fca.0.insert = insertvalue %Double.st undef, double %2, 0
-  ret %Double.st %.fca.0.insert
-}
-
-; Function Attrs: nounwind readnone
 define %Bool.st @-E-E_Int_Int(%Int.st %a, %Int.st %b) #3 {
 entry:
   %0 = extractvalue %Int.st %a, 0
@@ -485,7 +486,7 @@ entry:
 declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #3
 
 ; Function Attrs: noreturn nounwind
-declare void @llvm.trap() #4
+declare void @llvm.trap() #5
 
 ; Function Attrs: nounwind readnone
 declare { i64, i1 } @llvm.smul.with.overflow.i64(i64, i64) #3
@@ -511,11 +512,12 @@ define %Double.st @-P_Double_Double(%Double.st, %Double.st) #3 {
   ret %Double.st %.fca.0.insert.i
 }
 
-attributes #0 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #0 = { alwaysinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { nounwind "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #2 = { nounwind }
 attributes #3 = { nounwind readnone }
-attributes #4 = { noreturn nounwind }
+attributes #4 = { nounwind ssp }
+attributes #5 = { noreturn nounwind }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}

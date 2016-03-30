@@ -100,6 +100,18 @@ extension Operand: VHIRLower {
 }
 
 extension Module {
+    
+    /// Creates or gets a function pointer
+    private func getOrAddFunction(named name: String, type: FnType, irGen: IRGen) -> LLVMValueRef {
+        // if already defined, we return it
+        let f = LLVMGetNamedFunction(irGen.module, name)
+        if f != nil { return f }
+        
+        // otherwise we create a new prototype
+        let newPointer = LLVMAddFunction(irGen.module, name, type.lowerType(module))
+        return newPointer
+    }
+
     func vhirLower(module: LLVMModuleRef, isStdLib: Bool) throws {
         
         let irGen = (LLVMCreateBuilder(), module, isStdLib) as IRGen
@@ -108,7 +120,7 @@ extension Module {
         
         for fn in functions {
             // create function proto
-            let function = LLVMAddFunction(irGen.module, fn.name, fn.type.lowerType(self))
+            let function = getOrAddFunction(named: fn.name, type: fn.type, irGen: irGen)
             fn.loweredFunction = function
             
             // name the params
@@ -124,6 +136,9 @@ extension Module {
         
     }
 }
+
+
+
 
 extension Function: VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {

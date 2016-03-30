@@ -8,7 +8,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 @.str3 = private unnamed_addr constant [6 x i8] c"true\0A\00", align 1
 @.str4 = private unnamed_addr constant [7 x i8] c"false\0A\00", align 1
 
-; Function Attrs: noinline ssp uwtable
+; Function Attrs: alwaysinline ssp uwtable
 define void @"vist$Uprint_i64"(i64 %i) #0 {
 entry:
   %i.addr = alloca i64, align 8
@@ -20,7 +20,7 @@ entry:
 
 declare i32 @printf(i8*, ...) #1
 
-; Function Attrs: noinline ssp uwtable
+; Function Attrs: alwaysinline ssp uwtable
 define void @"vist$Uprint_i32"(i32 %i) #0 {
 entry:
   %i.addr = alloca i32, align 4
@@ -30,7 +30,7 @@ entry:
   ret void
 }
 
-; Function Attrs: noinline ssp uwtable
+; Function Attrs: alwaysinline ssp uwtable
 define void @"vist$Uprint_f64"(double %d) #0 {
 entry:
   %d.addr = alloca double, align 8
@@ -40,7 +40,7 @@ entry:
   ret void
 }
 
-; Function Attrs: noinline ssp uwtable
+; Function Attrs: alwaysinline ssp uwtable
 define void @"vist$Uprint_f32"(float %d) #0 {
 entry:
   %d.addr = alloca float, align 4
@@ -51,7 +51,7 @@ entry:
   ret void
 }
 
-; Function Attrs: noinline ssp uwtable
+; Function Attrs: alwaysinline ssp uwtable
 define void @"vist$Uprint_b"(i1 zeroext %b) #0 {
 entry:
   %b.addr = alloca i8, align 1
@@ -64,7 +64,7 @@ entry:
   ret void
 }
 
-attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #0 = { alwaysinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
 
 !llvm.module.flags = !{!0}

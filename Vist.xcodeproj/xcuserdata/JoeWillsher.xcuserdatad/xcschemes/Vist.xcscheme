@@ -75,7 +75,7 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "-O"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-verbose"
@@ -83,7 +83,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-parse-stdlib"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-profile"
@@ -99,7 +99,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-build-stdlib"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "example.vist"

@@ -30,7 +30,6 @@ func linkWithRuntime(inout module: LLVMModuleRef, withFile file: String) {
         
         LLVMSetValueName(function, name.demangleRuntimeName())
     }
-
     
     LLVMLinkModules(module, runtimeModule, LLVMLinkerDestroySource, str)
 }

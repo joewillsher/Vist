@@ -31,7 +31,8 @@ extension String {
         ("=", "E"),
         ("/", "D"),
         ("~", "T"),
-        ("^", "R")
+        ("^", "R"),
+        ("%", "C"),
     ]
     
     private func mappedChars() -> String {

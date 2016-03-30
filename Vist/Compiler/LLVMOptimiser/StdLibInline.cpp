@@ -170,9 +170,9 @@ bool StdLibInline::runOnFunction(Function &function) {
                 returnValueStorage = builder.CreateAlloca(returnType);
             
             // split the current bb, and do all temp work in `inlinedBlock`
-            BasicBlock *rest = basicBlock.splitBasicBlock(call, Twine("inlined." + calledFunction->getName() + "." + calledFunction->getEntryBlock().getName()));
+            BasicBlock *rest = basicBlock.splitBasicBlock(call, Twine("i." + calledFunction->getName() + "." + calledFunction->getEntryBlock().getName()));
             BasicBlock *inlinedBlock = BasicBlock::Create(context,
-                                                          Twine("rest." + calledFunction->getName() + "." + calledFunction->getEntryBlock().getName()),
+                                                          Twine("r." + calledFunction->getName() + "." + calledFunction->getEntryBlock().getName()),
                                                           &function,
                                                           rest);
             
@@ -213,7 +213,7 @@ bool StdLibInline::runOnFunction(Function &function) {
                     currentBlock = inlinedBlock;
                 else
                     currentBlock = BasicBlock::Create(context,
-                                                      Twine("inlined." + calledFunction->getName() + "." + fnBlock.getName()),
+                                                      Twine("i." + calledFunction->getName() + "." + fnBlock.getName()),
                                                       &function,
                                                       rest);
                 ++fnBBcount;

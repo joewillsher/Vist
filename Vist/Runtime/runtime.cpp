@@ -27,28 +27,28 @@
 // make a stdlib private `writeString` function which writes a String hcar by char to stdout
 // print function takes a Printable, and calls writeString on it (plus "\n")
 
-NOMANGLE NOINLINE void
+NOMANGLE ALWAYSINLINE void
 vist$Uprint_i64(int64_t i) {
     printf("%lli\n", i);
 };
 
-NOMANGLE NOINLINE void
+NOMANGLE ALWAYSINLINE void
 vist$Uprint_i32(int i) {
     printf("%i\n", i);
 };
 
-NOMANGLE NOINLINE void
+NOMANGLE ALWAYSINLINE void
 vist$Uprint_f64(double d)
 {
     printf("%f\n", d);
 };
 
-NOMANGLE NOINLINE void
+NOMANGLE ALWAYSINLINE void
 vist$Uprint_f32(float d) {
     printf("%f\n", d);
 };
 
-NOMANGLE NOINLINE void
+NOMANGLE ALWAYSINLINE void
 vist$Uprint_b(bool b) {
     printf(b ? "true\n" : "false\n");
 };
