@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-struct FnType: Ty {
+struct FnType : Ty {
     let params: [Ty], returns: Ty
     var metadata: [String]
     let callingConvention: CallingConvention
@@ -36,6 +36,7 @@ struct FnType: Ty {
             }
         }
     }
+    
 }
 
 
@@ -67,30 +68,7 @@ extension FnType {
         return FnType(params: params, returns: returns, metadata: metadata, callingConvention: convention)
     }
     
-    func lowerType(module: LLVMTypeRef) -> LLVMTypeRef {
-        
-        let ret: LLVMTypeRef
-        if case _ as FnType = returns {
-            ret = BuiltinType.pointer(to: returns).lowerType(module)
-        }
-        else {
-            ret = returns.lowerType(module)
-        }
-        
-        var members: [LLVMValueRef] = []
-        
-        if case .method(let ty) = callingConvention {
-            members.append(BuiltinType.pointer(to: ty).lowerType(module))
-        }
-        
-        members += nonVoid.map {$0.lowerType(module)}
-        
-        let els = members.ptr()
-        defer { els.destroy(members.count) }
-        
-        return LLVMFunctionType(ret, els, UInt32(members.count), false)
-    }
-    
+
     /// The type used by the IR -- it uses info from the calling convention
     /// to construct the type which should be used in IR
     var vhirType: FnType {
@@ -149,6 +127,14 @@ extension FnType {
         return FnType(params: params, returns: returns, metadata: metadata, callingConvention: .method(selfType: BuiltinType.int(size: 8)))
     }
 }
+
+extension FnType : Equatable { }
+
+@warn_unused_result
+func == (lhs: FnType, rhs: FnType) -> Bool {
+    return lhs.params.elementsEqual(rhs.params, isEquivalent: ==) && lhs.returns == rhs.returns
+}
+
 
 
 

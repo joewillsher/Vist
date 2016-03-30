@@ -28,9 +28,9 @@ final class ArrayInst: InstBase {
 
 extension Builder {
     
-    func buildArray(values: [Operand], memType: Ty, irName: String? = nil, addToModule: Bool = false) throws -> ArrayInst {
+    func buildArray(values: [Operand], memType: Ty, irName: String? = nil) throws -> ArrayInst {
         guard values.indexOf({$0.type != memType}) == nil else { fatalError("Not homogenous array") }
-        return try _add(ArrayInst(values: values, memType: memType, irName: irName), addToModule: addToModule)
+        return try _add(ArrayInst(values: values, memType: memType, irName: irName))
     }
 }
 

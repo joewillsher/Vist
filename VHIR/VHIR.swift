@@ -133,3 +133,8 @@ extension Inst {
 }
 
 
+func LLVMDumpTypeOf(val: LLVMValueRef) {
+    LLVMDumpType(LLVMTypeOf(val))
+}
+
+

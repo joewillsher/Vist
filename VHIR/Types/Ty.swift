@@ -6,7 +6,7 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-protocol Ty: Printable, VHIRElement {
+protocol Ty : Printable, VHIRElement {
     
     /// Name used in mangling function signatures
     var mangledName: String { get }
@@ -14,10 +14,6 @@ protocol Ty: Printable, VHIRElement {
     func lowerType(module: Module) -> LLVMTypeRef
     /// Replaces the function's memeber types with the module's typealias
     func usingTypesIn(module: Module) -> Ty
-    
-    
-    /// Old type lowering function, dont call this outside of irgen
-    func lowerType(m: LLVMModuleRef) -> LLVMValueRef
     
     /// The explicit name of this type. The same as the
     /// mangled name, unless the mangled name uses a different
@@ -30,25 +26,8 @@ extension Ty {
     var explicitName: String {
         return mangledName
     }
-    
-    func lowerType(m: LLVMModuleRef) -> LLVMValueRef {
-        return lowerType(Module())
-    }
 }
 
-extension BuiltinType: Equatable {}
-extension FnType: Equatable {}
-
-@warn_unused_result
-func == (lhs: StructType, rhs: StructType) -> Bool {
-    return lhs.name == rhs.name
-}
-
-func lowerType(module: LLVMModuleRef) -> Ty throws -> LLVMValueRef {
-    return { val in
-        return val.lowerType(module)
-    }
-}
 
 // MARK: Cannonical equality functions, compares their module-agnostic type info
 
@@ -63,35 +42,6 @@ func == (lhs: Ty?, rhs: Ty?) -> Bool {
 @warn_unused_result
 func != (lhs: Ty?, rhs: Ty) -> Bool {
     if let l = lhs { return l != rhs } else { return false }
-}
-@warn_unused_result
-func == (lhs: StructMember, rhs: StructMember) -> Bool {
-    return lhs.name == rhs.name && lhs.type == rhs.type
-}
-@warn_unused_result
-func == (lhs: StructMethod, rhs: StructMethod) -> Bool {
-    return lhs.name == rhs.name && lhs.type == rhs.type
-}
-@warn_unused_result
-func == (lhs: BuiltinType, rhs: BuiltinType) -> Bool {
-    return lhs.explicitName == rhs.explicitName
-}
-@warn_unused_result
-func == (lhs: FnType, rhs: FnType) -> Bool {
-    return lhs.params.elementsEqual(rhs.params, isEquivalent: ==) && lhs.returns == rhs.returns
-}
-@warn_unused_result
-func == (lhs: TupleType, rhs: TupleType) -> Bool {
-    return lhs.members.elementsEqual(rhs.members, isEquivalent: ==)
-}
-@warn_unused_result
-func == (lhs: TypeAlias, rhs: TypeAlias) -> Bool {
-    return lhs.targetType == rhs.targetType
-}
-
-@warn_unused_result
-func != (lhs: Ty, rhs: Ty) -> Bool {
-    return !(lhs == rhs)
 }
 
 @warn_unused_result
@@ -119,5 +69,10 @@ func == (lhs: Ty, rhs: Ty) -> Bool {
     default:
         return false
     }
+}
+
+@warn_unused_result
+func != (lhs: Ty, rhs: Ty) -> Bool {
+    return !(lhs == rhs)
 }
 

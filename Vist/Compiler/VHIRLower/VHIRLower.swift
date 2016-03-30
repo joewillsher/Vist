@@ -16,6 +16,66 @@ enum IRLowerError: VistError {
     }
 }
 
+extension CollectionType where
+    Generator.Element == COpaquePointer,
+    Index == Int,
+Index.Distance == Int {
+    
+    /// get a ptr to the memory of the collection
+    func ptr() -> UnsafeMutablePointer<Generator.Element> {
+        
+        let p = UnsafeMutablePointer<Generator.Element>.alloc(count)
+        
+        for i in self.startIndex..<self.endIndex {
+            p.advancedBy(i).initialize(self[i])
+        }
+        
+        return p
+    }
+    
+}
+
+// Extends LLVM bool to be initialisable from bool literal, and usable
+// as condition
+extension LLVMBool: BooleanType, BooleanLiteralConvertible {
+    
+    public init(booleanLiteral value: Bool) {
+        self.init(value ? 1: 0)
+    }
+    
+    public var boolValue: Bool {
+        return self == 1
+    }
+}
+
+
+private func validateModule(ref: LLVMModuleRef) throws {
+    var err = UnsafeMutablePointer<Int8>.alloc(1)
+    guard !LLVMVerifyModule(ref, LLVMReturnStatusAction, &err) else {
+        throw irGenError(.invalidModule(ref, String.fromCString(err)), userVisible: true)
+    }
+}
+
+
+private func validateFunction(ref: LLVMValueRef, name: String) throws {
+    guard !LLVMVerifyFunction(ref, LLVMReturnStatusAction) else {
+        throw irGenError(.invalidFunction(name), userVisible: true)
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+typealias IRGen = (builder: LLVMBuilderRef, module: LLVMModuleRef, isStdLib: Bool)
+
+
 protocol VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef
 }
@@ -201,6 +261,19 @@ extension FunctionCallInst: VHIRLower {
         function.type.addMetadataTo(call)
         
         return call
+    }
+}
+
+private extension FunctionAttributeExpr {
+    func addAttrTo(function: LLVMValueRef) {
+        switch self {
+        case .inline: LLVMAddFunctionAttr(function, LLVMAlwaysInlineAttribute)
+        case .noreturn: LLVMAddFunctionAttr(function, LLVMNoReturnAttribute)
+        case .noinline: LLVMAddFunctionAttr(function, LLVMNoInlineAttribute)
+        case .`private`: LLVMSetLinkage(function, LLVMPrivateLinkage)
+        case .`public`: LLVMSetLinkage(function, LLVMExternalLinkage)
+        default: break
+        }
     }
 }
 
@@ -395,13 +468,14 @@ extension ExistentialConstructInst: VHIRLower {
         return LLVMBuildLoad(irGen.builder, ptr, irName ?? "")
     }
 }
+
 private extension ConceptType {
     /// Returns the metadata array map, which transforms the protocol's properties
     /// to an element in the `type`. Type `[n * i32]`
     func existentialPropertyMetadataFor(structType: StructType, module: Module, irGen: IRGen) throws -> LLVMValueRef {
         
         let dataLayout = LLVMCreateTargetData(LLVMGetDataLayout(irGen.module))
-        let conformingType = structType.lowerType(irGen.module)
+        let conformingType = structType.lowerType(module)
         
         // a table of offsets
         let offsets = try requiredProperties
@@ -421,9 +495,9 @@ private extension ConceptType {
         
         let opaquePtrType = BuiltinType.opaquePointer
         
-        let ptrs = requiredFunctions
-            .map { methodName, type in structType.ptrToMethodNamed(methodName, type: type, module: irGen.module) }
-            .map { ptr in LLVMBuildBitCast(irGen.builder, ptr, opaquePtrType.lowerType(irGen.module), LLVMGetValueName(ptr)) }
+        let ptrs = try requiredFunctions
+            .map { methodName, type in try structType.ptrToMethodNamed(methodName, type: type, module: module) }
+            .map { ptr in LLVMBuildBitCast(irGen.builder, ptr, opaquePtrType.lowerType(module), LLVMGetValueName(ptr)) }
         
         return try ArrayInst.lowerBuffer(ptrs,
                                          elType: opaquePtrType,
@@ -444,7 +518,7 @@ extension ArrayInst: VHIRLower {
                                          irGen: irGen)
     }
     
-    static func lowerBuffer(buffer: [LLVMValueRef], elType: Ty, irName: String?, module: Module, irGen: IRGen) throws -> LLVMValueRef {
+    private static func lowerBuffer(buffer: [LLVMValueRef], elType: Ty, irName: String?, module: Module, irGen: IRGen) throws -> LLVMValueRef {
         let elementType = elType.lowerType(module)
         let elPtrType = LLVMPointerType(elementType, 0)
         
@@ -484,7 +558,7 @@ extension ExistentialPropertyInst: VHIRLower {
         
         let llvmName = irName.map { "\($0)." } ?? ""
         
-        let i32PtrType = BuiltinType.pointer(to: BuiltinType.int(size: 32)).lowerType(irGen.module)
+        let i32PtrType = BuiltinType.pointer(to: BuiltinType.int(size: 32)).lowerType(module)
         let arr = LLVMBuildStructGEP(irGen.builder, existential.loweredValue, 0, "\(llvmName)metadata_ptr") // [n x i32]*
         let propertyMetadataBasePtr = LLVMBuildBitCast(irGen.builder, arr, i32PtrType, "\(llvmName)metadata_base_ptr") // i32*
         
@@ -531,7 +605,7 @@ extension ExistentialWitnessMethodInst: VHIRLower {
         let functionPointer = LLVMBuildLoad(irGen.builder, pointerToArrayElement, "") // i8*
 
         let functionType = BuiltinType.pointer(to: fnType).lowerType(module)
-        return LLVMBuildBitCast(irGen.builder, functionPointer, functionType, name) // fntype*
+        return LLVMBuildBitCast(irGen.builder, functionPointer, functionType, irName ?? "") // fntype*
     }
 }
 

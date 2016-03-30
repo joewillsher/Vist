@@ -8,7 +8,7 @@
 
 
 
-enum BuiltinType: Ty {
+enum BuiltinType : Ty {
     case null, void
     case int(size: UInt32), float(size: UInt32), bool
     indirect case array(el: Ty, size: UInt32?)
@@ -35,18 +35,6 @@ enum BuiltinType: Ty {
         }
     }
     
-    init?(_ type: LLVMTypeRef) {
-        switch type {
-        case LLVMVoidType(): self = .void
-        case LLVMInt32Type(): self = .int(size: 32)
-        case LLVMInt64Type(): self = .int(size: 64)
-        case LLVMInt1Type(): self = .bool
-        case LLVMDoubleType(): self = .float(size: 64)
-        case LLVMFloatType(): self = .float(size: 32)
-        default: return nil
-        }
-    }
-
     init?(_ str: String) {
         switch str {
         case "Builtin.Int", "Builtin.Int64":  self = .int(size: 64)
@@ -106,5 +94,12 @@ enum BuiltinType: Ty {
         default: return self
         }
     }
-    
 }
+
+extension BuiltinType : Equatable { }
+
+@warn_unused_result
+func == (lhs: BuiltinType, rhs: BuiltinType) -> Bool {
+    return lhs.explicitName == rhs.explicitName
+}
+

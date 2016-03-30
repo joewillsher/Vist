@@ -1,86 +1,90 @@
 	.section	__TEXT,__text,regular,pure_instructions
 	.macosx_version_min 10, 11
-	.globl	_unbox_Foo
+	.globl	_fib_Int
 	.align	4, 0x90
-_unbox_Foo:                             ## @unbox_Foo
+_fib_Int:                               ## @fib_Int
 ## BB#0:                                ## %entry
 	pushq	%rbp
 	movq	%rsp, %rbp
-	movslq	%edi, %rax
-	movq	(%rcx,%rax), %rax
-	movl	%esi, -4(%rbp)          ## 4-byte Spill
-	movq	%rdx, -16(%rbp)         ## 8-byte Spill
-	popq	%rbp
-	retq
-
-	.globl	_Bar.aye_
-	.align	4, 0x90
-_Bar.aye_:                              ## @Bar.aye_
-## BB#0:                                ## %entry
-	pushq	%rbp
-	movq	%rsp, %rbp
-	testb	$1, 16(%rdi)
+	subq	$64, %rsp
+	cmpq	$2, %rdi
 	movq	%rdi, -8(%rbp)          ## 8-byte Spill
-	jne	LBB1_1
-	jmp	LBB1_2
-LBB1_1:                                 ## %if.0
+	jge	LBB0_2
+## BB#1:                                ## %if.01
+	movl	$1, %eax
+                                        ## kill: RAX<def> EAX<kill>
+	addq	$64, %rsp
+	popq	%rbp
+	retq
+LBB0_2:                                 ## %else.1
 	movq	-8(%rbp), %rax          ## 8-byte Reload
-	movq	8(%rax), %rax
+	decq	%rax
+	seto	%cl
+	movq	%rax, -16(%rbp)         ## 8-byte Spill
+	movb	%cl, -17(%rbp)          ## 1-byte Spill
+	jo	LBB0_8
+## BB#3:                                ## %inlined.-M_Int_Int.entry.cont
+	movq	-16(%rbp), %rax         ## 8-byte Reload
+	movq	%rax, %rdi
+	callq	_fib_Int
+	movq	-8(%rbp), %rdi          ## 8-byte Reload
+	subq	$2, %rdi
+	seto	%cl
+	movq	%rax, -32(%rbp)         ## 8-byte Spill
+	movq	%rdi, -40(%rbp)         ## 8-byte Spill
+	movb	%cl, -41(%rbp)          ## 1-byte Spill
+	jo	LBB0_7
+## BB#4:                                ## %inlined.-M_Int_Int.entry.cont7
+	movq	-40(%rbp), %rax         ## 8-byte Reload
+	movq	%rax, %rdi
+	callq	_fib_Int
+	movq	-32(%rbp), %rdi         ## 8-byte Reload
+	addq	%rax, %rdi
+	seto	%cl
+	movq	%rdi, -56(%rbp)         ## 8-byte Spill
+	movb	%cl, -57(%rbp)          ## 1-byte Spill
+	jo	LBB0_6
+## BB#5:                                ## %inlined.-P_Int_Int.entry.cont
+	movq	-56(%rbp), %rax         ## 8-byte Reload
+	addq	$64, %rsp
 	popq	%rbp
 	retq
-LBB1_2:                                 ## %else.1
-	movq	-8(%rbp), %rax          ## 8-byte Reload
-	movq	(%rax), %rax
-	popq	%rbp
-	retq
-
-	.globl	_Bar_Int_Int_Bool
-	.align	4, 0x90
-_Bar_Int_Int_Bool:                      ## @Bar_Int_Int_Bool
-## BB#0:                                ## %entry
-	pushq	%rbp
-	movq	%rsp, %rbp
-	movb	%dl, %al
-	movb	%al, -1(%rbp)           ## 1-byte Spill
-	movq	%rdi, %rax
-	movq	%rsi, %rdx
-	movb	-1(%rbp), %cl           ## 1-byte Reload
-	popq	%rbp
-	retq
+LBB0_6:                                 ## %inlined.-P_Int_Int.+.trap
+	ud2
+LBB0_7:                                 ## %inlined.-M_Int_Int.-.trap10
+	ud2
+LBB0_8:                                 ## %inlined.-M_Int_Int.-.trap
+	ud2
 
 	.globl	_main
 	.align	4, 0x90
 _main:                                  ## @main
-## BB#0:                                ## %Bar.aye_.exit
-	pushq	%rbp
-	movq	%rsp, %rbp
-	movl	$2, %eax
-	movl	%eax, %edi
-	callq	"_vist-Uprint_i64"
-	movl	$1, %eax
-	movl	%eax, %edi
-	popq	%rbp
-	jmp	"_vist-Uprint_i64"      ## TAILCALL
-
-	.globl	_callAye_Foo
-	.align	4, 0x90
-_callAye_Foo:                           ## @callAye_Foo
-	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
-Ltmp0:
-	.cfi_def_cfa_offset 16
-Ltmp1:
-	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Ltmp2:
-	.cfi_def_cfa_register %rbp
-	movl	%edi, -4(%rbp)          ## 4-byte Spill
+	subq	$16, %rsp
+	xorl	%eax, %eax
+	movl	%eax, %ecx
+	movq	%rcx, -8(%rbp)          ## 8-byte Spill
+	jmp	LBB1_1
+LBB1_1:                                 ## %loop
+                                        ## =>This Inner Loop Header: Depth=1
+	movq	-8(%rbp), %rax          ## 8-byte Reload
+	movq	%rax, %rcx
 	movq	%rcx, %rdi
-	movl	%esi, -8(%rbp)          ## 4-byte Spill
+	movq	%rax, -16(%rbp)         ## 8-byte Spill
+	callq	_fib_Int
+	movq	%rax, %rdi
+	callq	"_vist-Uprint_i64"
+	movq	-16(%rbp), %rax         ## 8-byte Reload
+	addq	$1, %rax
+	cmpq	$37, %rax
+	movq	%rax, -8(%rbp)          ## 8-byte Spill
+	jne	LBB1_1
+## BB#2:                                ## %loop.exit
+	addq	$16, %rsp
 	popq	%rbp
-	jmpq	*%rdx  # TAILCALL
-	.cfi_endproc
+	retq
 
 
 .subsections_via_symbols

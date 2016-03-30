@@ -60,8 +60,8 @@ extension Builder {
     }
     
     /// Handles adding the instruction to the block -- then returns it
-    func _add<I: Inst>(instruction: I, addToModule: Bool = true) throws -> I {
-        if addToModule { try addToCurrentBlock(instruction) }
+    func _add<I: Inst>(instruction: I) throws -> I {
+        try addToCurrentBlock(instruction)
         return instruction
     }
     

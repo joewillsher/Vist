@@ -11,7 +11,7 @@ typealias StructMethod = (name: String, type: FnType)
 
 /// A type which can have elements looked up by name,
 /// for example structs and existential protocols
-protocol StorageType: Ty {
+protocol StorageType : Ty {
     /// User visible type name
     var name: String { get }
     
@@ -35,9 +35,9 @@ extension StorageType {
         return i
     }
     
-    func ptrToMethodNamed(name: String, type: FnType, module: LLVMModuleRef) -> LLVMValueRef {
-//        return try! module.getOrInsertFunctionNamed(name, type: type).loweredFunction
-        return ptrToFunction(name.mangle(type.params, parentTypeName: self.name), type: type, module: module)
+    func ptrToMethodNamed(name: String, type: FnType, module: Module) throws -> LLVMValueRef {
+        let mangled = name.mangle(type.params, parentTypeName: self.name)
+        return try module.getOrInsertFunctionNamed(mangled, type: type).loweredFunction
     }
     
     func propertyType(name: String) throws -> Ty {
@@ -63,21 +63,11 @@ extension StorageType {
 }
 
 
-extension CollectionType where Generator.Element == StructMethod {
-    
-    /// Lowers `StructMethod`s to `StorageVariableMethod`s
-    func lower(selfType selfType: StorageType, module: LLVMModuleRef) -> [StorageVariableMethod] {
-        return map { (mangledName: $0.name.mangle($0.type.params, parentTypeName: selfType.name), type: $0.type.withParent(selfType).lowerType(module)) }
-    }
+@warn_unused_result
+func == (lhs: StructMember, rhs: StructMember) -> Bool {
+    return lhs.name == rhs.name && lhs.type == rhs.type
 }
-
-extension CollectionType where Generator.Element == StructMember {
-    
-    /// Lowers `StructMember`s to `StorageVariableProperty`s
-    func lower(module module: LLVMModuleRef) -> [StorageVariableProperty] {
-        return map { (name: $0.name, irType: $0.type.lowerType(module)) }
-    }
-
+@warn_unused_result
+func == (lhs: StructMethod, rhs: StructMethod) -> Bool {
+    return lhs.name == rhs.name && lhs.type == rhs.type
 }
-
-

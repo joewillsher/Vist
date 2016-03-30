@@ -14,7 +14,7 @@ enum FunctionCallRef {
     var name: String {
         switch self {
         case .direct(let function): return "@\(function.name)"
-        case .pointer(let ptr): return ptr.vhir
+        case .pointer(let ptr): return ptr.name
         }
     }
     var loweredValue: LLVMValueRef {

@@ -7,7 +7,7 @@
 //
 
 
-final class TupleType: Ty {
+final class TupleType : Ty {
     var members: [Ty]
     
     init(members: [Ty]) {
@@ -20,21 +20,9 @@ final class TupleType: Ty {
             .ptr()
         defer { arr.destroy(members.count) }
         
-        return LLVMStructType(
-            arr,
-            UInt32(members.count),
-            false)
-    }
-    func lowerType(module: LLVMModuleRef) -> LLVMTypeRef {
-        let arr = members
-            .map { $0.lowerType(module) }
-            .ptr()
-        defer { arr.destroy(members.count) }
-        
-        return LLVMStructType(
-            arr,
-            UInt32(members.count),
-            false)
+        return LLVMStructType(arr,
+                              UInt32(members.count),
+                              false)
     }
     
     func usingTypesIn(module: Module) -> Ty {
@@ -54,4 +42,10 @@ final class TupleType: Ty {
 
 }
 
+extension TupleType : Equatable { }
+
+@warn_unused_result
+func == (lhs: TupleType, rhs: TupleType) -> Bool {
+    return lhs.members.elementsEqual(rhs.members, isEquivalent: ==)
+}
 

@@ -7,7 +7,7 @@
 //
 
 
-struct StructType: StorageType {
+struct StructType : StorageType {
     let name: String
     let members: [StructMember]
     var methods: [StructMethod]
@@ -19,6 +19,9 @@ struct StructType: StorageType {
         self.members = members
         self.methods = methods
     }
+}
+
+extension StructType {
     
     func lowerType(module: Module) -> LLVMTypeRef {
         let arr = members
@@ -26,33 +29,21 @@ struct StructType: StorageType {
             .ptr()
         defer { arr.destroy(members.count) }
         
-        return LLVMStructType(
-            arr,
-            UInt32(members.count),
-            false)
-    }
-    func lowerType(module: LLVMModuleRef) -> LLVMTypeRef {
-        
-        // if no module is defined, we can only return the raw type
-        if module == nil { return lowerType(module) }
-        
-        let found = getNamedType(irName, module)
-        if found != nil { return found }
-        
-        let type = lowerType(Module())
-        let namedType = createNamedType(type, irName)
-        
-        return namedType
+        return LLVMStructType(arr,
+                              UInt32(members.count),
+                              false)
     }
     
     func usingTypesIn(module: Module) -> Ty {
-        let mappedEls = members.map { ($0.name, $0.type.usingTypesIn(module), $0.mutable) as StructMember }
+        let mappedEls = members.map {
+            ($0.name, $0.type.usingTypesIn(module), $0.mutable) as StructMember
+        }
         var newTy = StructType(members: mappedEls, methods: methods, name: name)
         newTy.genericTypes = genericTypes
         newTy.concepts = concepts
         return module.getOrInsert(TypeAlias(name: name, targetType: newTy))
     }
-
+    
     
     static func named(n: String) -> StructType {
         return StructType(members: [], methods: [], name: n)
@@ -69,7 +60,15 @@ struct StructType: StorageType {
     var mangledName: String {
         return name
     }
-    
+}
+
+
+extension StructType : Equatable { }
+
+
+@warn_unused_result
+func == (lhs: StructType, rhs: StructType) -> Bool {
+    return lhs.name == rhs.name
 }
 
 

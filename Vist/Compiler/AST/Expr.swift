@@ -137,7 +137,7 @@ final class VariableExpr: ChainableExpr {
     var _type: Ty? = nil
 }
 
-protocol ChainableExpr: Expr, RuntimeVariableProvider, IRGenerator {
+protocol ChainableExpr: Expr {
 }
 protocol LookupExpr: ChainableExpr {
     var object: ChainableExpr { get }

@@ -73,8 +73,8 @@ final class VoidLiteralValue: RValue {
 
 extension Builder {
     /// Builds a builtin i64 object
-    func buildBuiltinInt(val: Int, size: Int = 64, irName: String? = nil, addToModule: Bool = true) throws -> IntLiteralInst {
-        return try _add(IntLiteralInst(val: val, size: size, irName: irName), addToModule: addToModule)
+    func buildBuiltinInt(val: Int, size: Int = 64, irName: String? = nil) throws -> IntLiteralInst {
+        return try _add(IntLiteralInst(val: val, size: size, irName: irName))
     }
     
     /// Builds an `Int` literal from a value
