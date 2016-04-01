@@ -482,9 +482,11 @@ extension ExistentialConstructInst : VHIRLower {
         let valueMem = LLVMBuildAlloca(irGen.builder, aliasType.lowerType(module), "") // allocate the struct
         let ptr = LLVMBuildAlloca(irGen.builder, exType, "")
         
-        let propArrayPtr = LLVMBuildStructGEP(irGen.builder, ptr, 0, "\(irName.map { "\($0)." })prop_metadata") // [n x i32]*
-        let methodArrayPtr = LLVMBuildStructGEP(irGen.builder, ptr, 1, "\(irName.map { "\($0)." })method_metadata") // [n x i8*]*
-        let structPtr = LLVMBuildStructGEP(irGen.builder, ptr, 2, "\(irName.map { "\($0)." })opaque") // i8**
+        let llvmName = irName.map { "\($0)." }
+        
+        let propArrayPtr = LLVMBuildStructGEP(irGen.builder, ptr, 0, "\(llvmName)prop_metadata") // [n x i32]*
+        let methodArrayPtr = LLVMBuildStructGEP(irGen.builder, ptr, 1, "\(llvmName)method_metadata") // [n x i8*]*
+        let structPtr = LLVMBuildStructGEP(irGen.builder, ptr, 2, "\(llvmName)opaque") // i8**
         
         let propArr = try existentialType.existentialPropertyMetadataFor(structType, module: module, irGen: irGen)
         LLVMBuildStore(irGen.builder, propArr, propArrayPtr)
@@ -528,7 +530,7 @@ private extension ConceptType {
         let opaquePtrType = BuiltinType.opaquePointer
         
         let ptrs = try requiredFunctions
-            .map { methodName, type in try structType.ptrToMethodNamed(methodName, type: type, module: module) }
+            .map { methodName, type in try structType.ptrToMethodNamed(methodName, type: type.withParent(structType), module: module) }
             .map { ptr in LLVMBuildBitCast(irGen.builder, ptr, opaquePtrType.lowerType(module), LLVMGetValueName(ptr)) }
         
         return try ArrayInst.lowerBuffer(ptrs,
