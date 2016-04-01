@@ -1,0 +1,84 @@
+
+type %Bool = { %Builtin.Bool }
+type %Int = { %Builtin.Int64 }
+type %Range = { %Int, %Int }
+
+func @-L_tIntInt : &thin (%Int, %Int) -> %Bool
+
+func @-M_tIntInt : &thin (%Int, %Int) -> %Int
+
+func @print_tInt : &thin (%Int) -> %Builtin.Void
+
+func @fatalError_t : &thin () -> %Builtin.Void
+
+func @fib_tInt : &thin (%Int) -> %Int {
+$entry(%a: %Int):
+  %0 = int_literal 0  	// user: %1
+  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %2
+  %2 = call @-L_tIntInt (%a: %Int, %1: %Int)  	// user: %3
+  %3 = struct_extract %2: %Bool, #value  	// user: nil
+  break %3: %Builtin.Bool, $if.0, $exit
+
+$if.0:			// preds: entry
+  %5 = call @fatalError_t () 
+  break $exit
+
+$exit:			// preds: entry, if.0
+  %7 = int_literal 1  	// user: %8
+  %8 = struct %Int (%7: %Builtin.Int64)  	// user: %9
+  %9 = call @-L-E_tIntInt (%a: %Int, %8: %Int)  	// user: %10
+  %10 = struct_extract %9: %Bool, #value  	// user: nil
+  break %10: %Builtin.Bool, $if.0, $fail.0
+
+$if.0:			// preds: exit
+  %12 = int_literal 1  	// user: %13
+  %13 = struct %Int (%12: %Builtin.Int64)  	// user: %14
+  return %13
+
+$fail.0:			// preds: exit
+  break $else.1
+
+$else.1:			// preds: fail.0
+  %16 = int_literal 1  	// user: %17
+  %17 = struct %Int (%16: %Builtin.Int64)  	// user: %18
+  %18 = call @-M_tIntInt (%a: %Int, %17: %Int)  	// user: %19
+  %19 = call @fib_tInt (%18: %Int)  	// user: %24
+  %20 = int_literal 2  	// user: %21
+  %21 = struct %Int (%20: %Builtin.Int64)  	// user: %22
+  %22 = call @-M_tIntInt (%a: %Int, %21: %Int)  	// user: %23
+  %23 = call @fib_tInt (%22: %Int)  	// user: %24
+  %24 = call @-P_tIntInt (%19: %Int, %23: %Int)  	// user: %25
+  return %24
+}
+
+func @-L-E_tIntInt : &thin (%Int, %Int) -> %Bool
+
+func @-P_tIntInt : &thin (%Int, %Int) -> %Int
+
+func @-D-D-D_tIntInt : &thin (%Int, %Int) -> %Range
+
+func @main : &thin () -> %Builtin.Void {
+$entry:
+  %0 = int_literal 0  	// user: %1
+  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %4
+  %2 = int_literal 36  	// user: %3
+  %3 = struct %Int (%2: %Builtin.Int64)  	// user: %4
+  %4 = call @-D-D-D_tIntInt (%1: %Int, %3: %Int)  	// users: %5, %6
+  %5 = struct_extract %4: %Range, #start  	// user: %7
+  %6 = struct_extract %4: %Range, #end  	// user: %8
+  %7 = struct_extract %5: %Int, #value  	// user: %9
+  %8 = struct_extract %6: %Int, #value  	// user: %13
+  break $loop(%7: %Builtin.Int64)
+
+$loop(%loop.count: %Builtin.Int64):			// preds: entry, loop
+  %i = struct %Int (%loop.count: %Builtin.Int64)  	// user: %10
+  %10 = call @fib_tInt (%i: %Int)  	// user: %11
+  %11 = call @print_tInt (%10: %Int) 
+  %12 = int_literal 1  	// user: %count.it
+  %count.it = builtin i_add_overflow %loop.count: %Builtin.Int64, %12: %Builtin.Int64  	// users: %13, %14
+  %13 = builtin i_cmp_lte %count.it: %Builtin.Int64, %8: %Builtin.Int64  	// user: nil
+  break %13: %Builtin.Bool, $loop(%count.it: %Builtin.Int64), $loop.exit
+
+$loop.exit:			// preds: loop
+  return ()
+}

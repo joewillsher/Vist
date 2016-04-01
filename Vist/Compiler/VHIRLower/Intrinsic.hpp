@@ -19,14 +19,12 @@ extern "C" {
     LLVMValueRef getOverloadedIntrinsic(const char *name,
                                         LLVMModuleRef mod,
                                         LLVMTypeRef *ty,
-                                        int overloadTypes,
-                                        bool removeOverload);
+                                        int overloadTypes);
     
     /// Intrinsic with a single overload type
     LLVMValueRef getSinglyOverloadedIntrinsic(const char *name,
                                               LLVMModuleRef mod,
-                                              LLVMTypeRef ty,
-                                              bool removeOverload);
+                                              LLVMTypeRef ty);
     
     /// Non overloaded intrinsic
     LLVMValueRef getRawIntrinsic(const char *name,
@@ -42,8 +40,7 @@ extern "C" {
 using namespace llvm;
 Function *getIntrinsic(StringRef name,
                        Module *mod,
-                       std::vector<Type *> types,
-                       bool removeOverload);
+                       std::vector<Type *> types);
 #endif
 
 #endif /* Intrinsic_h */

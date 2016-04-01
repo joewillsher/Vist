@@ -1,4 +1,7 @@
 
-print "memes"
-let m = "same"
-print m
+
+let a = 1+1
+
+let u = "meme"
+
+print u

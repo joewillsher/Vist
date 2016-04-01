@@ -22,7 +22,6 @@ static const char *const intrinsicNames[] = {
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/Value.h"
 #include "llvm/IR/Module.h"
-#include "llvm/IR/Intrinsics.h"
 #include "llvm/Target/TargetIntrinsicInfo.h"
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Target/TargetOptions.h"
@@ -54,18 +53,8 @@ bool GetLLVMIntrinsicIDFromString(const char* str,
 
 Function *getIntrinsic(StringRef name,
                        Module *mod,
-                       std::vector<Type *> types,
-                       bool removeOverload) {
+                       std::vector<Type *> types) {
     auto found = mod->getFunction(name);
-    
-    // horrible hack
-    // if overloaded (foo.i64), drop the .i64
-    // TODO: an impl using the target machine
-    if (types.size() != 0 && types.front() != nullptr && removeOverload) {
-        auto u = name.str();
-        u.erase(u.length()-4, u.length());
-        name = StringRef(u);
-    }
     
     // if intrinsic is already declared, return that
     if (found)
@@ -86,8 +75,7 @@ Function *getIntrinsic(StringRef name,
 LLVMValueRef getOverloadedIntrinsic(const char *name,
                                     LLVMModuleRef mod,
                                     LLVMTypeRef *ty,
-                                    int numArgs,
-                                    bool removeOverload) {
+                                    int numArgs) {
     auto t = ty;
     std::vector<Type *> arg_types;
     if (ty != nullptr)
@@ -96,20 +84,19 @@ LLVMValueRef getOverloadedIntrinsic(const char *name,
             ++t;
         }
     
-    return wrap(getIntrinsic(StringRef(name), unwrap(mod), arg_types, removeOverload));
+    return wrap(getIntrinsic(StringRef(name), unwrap(mod), arg_types));
 }
 LLVMValueRef getSinglyOverloadedIntrinsic(const char *name,
                                           LLVMModuleRef mod,
-                                          LLVMTypeRef ty,
-                                          bool removeOverload) {
+                                          LLVMTypeRef ty) {
     std::vector<Type *> arg_types;
     arg_types.push_back(unwrap(ty));
-    return wrap(getIntrinsic(StringRef(name), unwrap(mod), arg_types, removeOverload));
+    return wrap(getIntrinsic(StringRef(name), unwrap(mod), arg_types));
 };
 LLVMValueRef getRawIntrinsic(const char *name,
                              LLVMModuleRef mod) {
     std::vector<Type *> arg_types;
-    return wrap(getIntrinsic(StringRef(name), unwrap(mod), arg_types, false));
+    return wrap(getIntrinsic(StringRef(name), unwrap(mod), arg_types));
 };
 
 

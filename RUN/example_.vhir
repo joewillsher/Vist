@@ -1,20 +1,25 @@
 
 type %String = { %Builtin.OpaquePointer, %Builtin.Int64 }
+type %Int = { %Builtin.Int64 }
 
-func @print_tString : &thin (%String) -> %Builtin.Void
+func @String_topi64 : &thin (%Builtin.OpaquePointer, %Builtin.Int64) -> %String
+
+func @-P_tIntInt : &thin (%Int, %Int) -> %Int
 
 func @main : &thin () -> %Builtin.Void {
 $entry:
-  %0 = string_literal "memes"  	// user: %2
-  %1 = int_literal 6  	// user: %2
-  %2 = call @String_topi64 (%0: %Builtin.OpaquePointer, %1: %Builtin.Int64)  	// user: %3
-  %3 = call @print_tString (%2: %String) 
-  %4 = string_literal "same"  	// user: %6
-  %5 = int_literal 5  	// user: %6
-  %6 = call @String_topi64 (%4: %Builtin.OpaquePointer, %5: %Builtin.Int64)  	// user: %m
-  variable_decl %m = %6: %String  	// user: %7
-  %7 = call @print_tString (%m: %String) 
+  %0 = int_literal 1  	// user: %1
+  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %4
+  %2 = int_literal 1  	// user: %3
+  %3 = struct %Int (%2: %Builtin.Int64)  	// user: %4
+  %4 = call @-P_tIntInt (%1: %Int, %3: %Int)  	// user: %a
+  variable_decl %a = %4: %Int 
+  %5 = string_literal "meme"  	// user: %7
+  %6 = int_literal 5  	// user: %7
+  %7 = call @String_topi64 (%5: %Builtin.OpaquePointer, %6: %Builtin.Int64)  	// user: %u
+  variable_decl %u = %7: %String  	// user: %8
+  %8 = call @print_tString (%u: %String) 
   return ()
 }
 
-func @String_topi64 : &thin (%Builtin.OpaquePointer, %Builtin.Int64) -> %String
+func @print_tString : &thin (%String) -> %Builtin.Void

@@ -185,6 +185,18 @@ extension OutputTests {
         }
     }
 
+    /// String.vist
+    func testString() {
+        let file = "String.vist"
+        do {
+            try compileWithOptions(["-O", file], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
+        }
+        catch {
+            XCTFail("Compilation failed with error:\n\(error)\n\n")
+        }
+    }
+    
 
 }
 

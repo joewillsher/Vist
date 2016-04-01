@@ -50,6 +50,15 @@ type String {
         base = buffer
         length = count
     }
+    
+    @mutating
+    func append :: String = (str) {
+        //if length + str.length > capacity { ... }
+        let newLegth = Builtin.i_add length str.length
+        let newBuffer = Builtin.heap_alloc newLength
+        //Builtin.heap_dealloc base
+        
+    }
 }
 
 //type Array {

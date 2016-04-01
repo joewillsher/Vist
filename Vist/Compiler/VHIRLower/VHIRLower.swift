@@ -361,19 +361,19 @@ extension BuiltinInstCall: VHIRLower {
         
         switch inst {
             // overflowing arithmetic
-        case .iadd: intrinsic = getSinglyOverloadedIntrinsic("llvm.sadd.with.overflow", irGen.module, LLVMTypeOf(l.loweredValue), false)
-        case .imul: intrinsic = getSinglyOverloadedIntrinsic("llvm.smul.with.overflow", irGen.module, LLVMTypeOf(l.loweredValue), false)
-        case .isub: intrinsic = getSinglyOverloadedIntrinsic("llvm.ssub.with.overflow", irGen.module, LLVMTypeOf(l.loweredValue), false)
+        case .iadd: intrinsic = getSinglyOverloadedIntrinsic("llvm.sadd.with.overflow", irGen.module, LLVMTypeOf(l.loweredValue))
+        case .imul: intrinsic = getSinglyOverloadedIntrinsic("llvm.smul.with.overflow", irGen.module, LLVMTypeOf(l.loweredValue))
+        case .isub: intrinsic = getSinglyOverloadedIntrinsic("llvm.ssub.with.overflow", irGen.module, LLVMTypeOf(l.loweredValue))
             
             // other intrinsics
-        case .expect: intrinsic = getSinglyOverloadedIntrinsic("llvm.expect", irGen.module, LLVMTypeOf(l.loweredValue), false)
+        case .expect: intrinsic = getSinglyOverloadedIntrinsic("llvm.expect", irGen.module, LLVMTypeOf(l.loweredValue))
         case .trap: intrinsic = getRawIntrinsic("llvm.trap", irGen.module)
         case .memcpy:
             // overload types -- we want `@llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1)`
             let overloadTypes = [LLVMTypeOf(l.loweredValue), LLVMTypeOf(l.loweredValue), BuiltinType.int(size: 64).lowerType(module)].ptr()
             defer { overloadTypes.destroy(3) }
             // construct intrinsic
-            intrinsic = getOverloadedIntrinsic("llvm.memcpy", irGen.module, overloadTypes, 3, false)
+            intrinsic = getOverloadedIntrinsic("llvm.memcpy", irGen.module, overloadTypes, 3)
             // add extra memcpy args
             args.append(LLVMConstInt(LLVMInt32Type(), 1, false)) // i32 align
             args.append(LLVMConstInt(LLVMInt1Type(), 0, false)) // i1 isVolatile

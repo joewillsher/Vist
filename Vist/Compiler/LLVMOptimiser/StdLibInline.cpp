@@ -19,6 +19,7 @@
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/Utils/Cloning.h"
+#include "llvm/IR/Intrinsics.h"
 
 #include <iostream>
 #include <iterator>
@@ -266,14 +267,34 @@ bool StdLibInline::runOnFunction(Function &function) {
                         // if its an intrinsic we need to make sure its in this module
                         if (call->getCalledFunction()->isIntrinsic()) {
                             
-                            std::vector<Type *> overloadTypes;
-                            if (call->getNumOperands() == 1)
-                                overloadTypes.push_back(call->getOperand(0)->getType());
+                            auto baseName = call->getCalledFunction()->getName();
+
+                            auto trimmedName = baseName.str();
+                            auto llvmIndex = trimmedName.find(".");
+                            trimmedName.erase(0, llvmIndex+1);
+                            baseName = StringRef(trimmedName);
+                            trimmedName = baseName.str();
+                            auto baseEndIndex = trimmedName.find(".");
+                            if (baseEndIndex != std::string::npos) {
+                                trimmedName.erase(baseEndIndex, baseName.size());
+                                baseName = StringRef(trimmedName);
+                            }
                             
-                            Function *intrinsic = getIntrinsic(call->getCalledFunction()->getName(),
-                                                               module,
-                                                               overloadTypes,
-                                                               true);
+                            std::vector<Type *> overloadTypes;
+                            auto numOperands = call->getNumOperands()-1; // last *operand* has type function-type
+                            
+                            // if its a binop we just use onetype as overload type
+                            if (numOperands == 2 && call->getOperand(0)->getType() == call->getOperand(1)->getType())
+                                overloadTypes.push_back(call->getOperand(0)->getType());
+                            // else if mem copy we want 3
+                            else if (baseName == "memcpy")
+                                for (int i = 0; i < 3; ++i)
+                                    overloadTypes.push_back(call->getOperand(i)->getType());
+                            
+                            auto id = (Intrinsic::ID)(call->getCalledFunction()->getIntrinsicID());
+
+                            Function *intrinsic = Intrinsic::getDeclaration(module, id, overloadTypes);
+                            
                             call->setCalledFunction(intrinsic);
                         }
                         // otherwise, if user function, we copy in the body
