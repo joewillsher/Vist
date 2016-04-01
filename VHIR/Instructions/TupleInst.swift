@@ -7,7 +7,7 @@
 //
 
 
-final class TupleCreateInst: InstBase {
+final class TupleCreateInst : InstBase {
     var tupleType: TupleType, elements: [Operand]
     
     private init(type: TupleType, elements: [Operand], irName: String?) {
@@ -23,7 +23,7 @@ final class TupleCreateInst: InstBase {
     }
 }
 
-final class TupleExtractInst: InstBase {
+final class TupleExtractInst : InstBase {
     var tuple: Operand, elementIndex: Int
     var elementType: Ty
     
@@ -42,7 +42,7 @@ final class TupleExtractInst: InstBase {
 }
 
 
-final class TupleElementPtrInst: InstBase, LValue {
+final class TupleElementPtrInst : InstBase, Value {
     var tuple: PtrOperand, elementIndex: Int
     var elementType: Ty
     

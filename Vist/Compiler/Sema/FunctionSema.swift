@@ -25,7 +25,7 @@ extension FuncDecl: DeclTypeProvider {
             ty = FnType(params: paramTypes, returns: returnType)
         }
         
-        mangledName = name.mangle(ty, parentTypeName: parent?.name)
+        mangledName = name.mangle(ty)
         
         let fnScope = SemaScope(parent: declScope, returnType: ty.returns)
         // TODO: non capturing scope, but only for variables

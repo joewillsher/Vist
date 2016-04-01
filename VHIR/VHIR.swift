@@ -8,7 +8,7 @@
 
 
 /// Able to be printed as a VHIR instruction
-protocol VHIRElement: CustomDebugStringConvertible {
+protocol VHIRElement : CustomDebugStringConvertible {
     /// VHIR code to print
     var vhir: String { get }
 }

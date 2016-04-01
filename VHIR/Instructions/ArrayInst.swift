@@ -7,7 +7,7 @@
 //
 
 
-final class ArrayInst: InstBase {
+final class ArrayInst : InstBase {
     var values: [Operand]
     let arrayType: (mem: Ty, size: Int)
     

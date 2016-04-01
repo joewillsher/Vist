@@ -7,7 +7,7 @@
 //
 
 
-final class BuiltinInstCall: InstBase {
+final class BuiltinInstCall : InstBase {
     override var type: Ty? { return returnType }
     let inst: BuiltinInst
     var instName: String { return inst.rawValue }
@@ -39,31 +39,34 @@ final class BuiltinInstCall: InstBase {
     
     override var hasSideEffects: Bool {
         switch inst {
-        case .condfail: return true
+        case .condfail, .memcpy, .trap: return true
         default: return false
         }
     }
     
 }
 
-enum BuiltinInst: String {
+enum BuiltinInst : String {
     case iadd = "i_add", isub = "i_sub", imul = "i_mul", idiv = "i_div", irem = "i_rem", ieq = "i_eq", ineq = "i_neq"
     case iaddoverflow = "i_add_overflow"
     case condfail = "cond_fail"
     case ilte = "i_cmp_lte", igte = "i_cmp_gte", ilt = "i_cmp_lt", igt = "i_cmp_gt"
     case ishl = "i_shl", ishr = "i_shr", iand = "i_and", ior = "i_or", ixor = "i_xor"
     case and = "b_and", or = "b_or"
+    
     case expect, trap
+    case allocstack = "stack_alloc", allocheap = "heap_alloc", memcpy = "mem_copy"
     
     case fadd = "f_add", fsub = "f_sub", fmul = "f_mul", fdiv = "f_div", frem = "f_rem", feq = "f_eq", fneq = "f_neq"
     case flte = "f_cmp_lte", fgte = "f_cmp_gte", flt = "f_cmp_lt", fgt = "f_cmp_gt"
     
     var expectedNumOperands: Int {
         switch  self {
+        case .memcpy: return 3
         case .iadd, .isub, .imul, .idiv, .iaddoverflow, .irem, .ilte, .igte, .ilt, .igt,
              .expect, .ieq, .ineq, .ishr, .ishl, .iand, .ior, .ixor, .fgt, .and, .or,
              .fgte, .flt, .flte, .fadd, .fsub, .fmul, .fdiv, .frem, .feq, .fneq: return 2
-        case .condfail: return 1
+        case .condfail, .allocstack, .allocheap: return 1
         case .trap: return 0
         }
     }
@@ -79,8 +82,11 @@ enum BuiltinInst: String {
         case .ilte, .igte, .ilt, .igt, .flte, .fgte, .flt,
              .fgt, .expect, .ieq, .ineq, .and, .or:
             return Builtin.boolType // bool ops
+           
+        case .allocstack, .allocheap:
+            return Builtin.opaquePointerType
             
-        case .condfail, trap:
+        case .condfail, .trap, .memcpy:
             return Builtin.voidType // void return
         }
     }

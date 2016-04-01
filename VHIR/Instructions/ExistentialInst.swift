@@ -30,7 +30,7 @@ final class ExistentialPropertyInst: InstBase {
 ///
 /// When lowered it calculates the metadata for offsets and constructs
 /// the struct's witness table
-final class ExistentialConstructInst: InstBase {
+final class ExistentialConstructInst : InstBase {
     var value: PtrOperand, existentialType: ConceptType
     
     override var type: Ty? { return existentialType.usingTypesIn(module) }
@@ -47,7 +47,7 @@ final class ExistentialConstructInst: InstBase {
     
 }
 
-final class ExistentialWitnessMethodInst: InstBase, LValue {
+final class ExistentialWitnessMethodInst : InstBase, Value {
     var existential: PtrOperand
     let methodName: String, argTypes: [Ty], existentialType: ConceptType
     
@@ -70,7 +70,7 @@ final class ExistentialWitnessMethodInst: InstBase, LValue {
 }
 
 /// Get the instance from the existential box, an i8*
-final class ExistentialUnboxInst: InstBase, LValue {
+final class ExistentialUnboxInst : InstBase, Value {
     var existential: PtrOperand
     
     override var type: Ty? { return BuiltinType.opaquePointer }

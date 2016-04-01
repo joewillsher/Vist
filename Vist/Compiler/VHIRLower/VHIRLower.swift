@@ -207,18 +207,26 @@ extension Param: VHIRLower {
 }
 
 
-extension IntLiteralInst: VHIRLower {
+extension IntLiteralInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         return LLVMConstInt(type!.lowerType(module), UInt64(value.value), false)
     }
 }
-extension BoolLiteralInst: VHIRLower {
+extension BoolLiteralInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         return LLVMConstInt(type!.lowerType(module), value.value ? 1 : 0, false)
     }
 }
+extension StringLiteralInst : VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        let str = LLVMBuildGlobalString(irGen.builder, value.value, "")
+        let opaque = LLVMBuildBitCast(irGen.builder, str, BuiltinType.opaquePointer.lowerType(module), irName ?? "")
+        return opaque
+    }
+}
 
-extension StructInitInst: VHIRLower {
+
+extension StructInitInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         guard case let t as TypeAlias = type else { throw irGenError(.notStructType) }
         var val = LLVMGetUndef(t.lowerType(module))
@@ -231,7 +239,7 @@ extension StructInitInst: VHIRLower {
     }
 }
 
-extension ReturnInst: VHIRLower {
+extension ReturnInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         
         if case _ as VoidLiteralValue = value.value {
@@ -244,7 +252,7 @@ extension ReturnInst: VHIRLower {
     }
 }
 
-extension VariableInst: VHIRLower {
+extension VariableInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         guard let type = type else { throw irGenError(.notTyped) }
         
@@ -254,16 +262,15 @@ extension VariableInst: VHIRLower {
     }
 }
 
-extension FunctionCallInst: VHIRLower {
+
+extension VHIRFunctionCall {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        
         let args = self.args.map { $0.loweredValue }.ptr()
         let argCount = self.args.count
         defer { args.dealloc(argCount) }
         
-        let fn = function.loweredValue
-        let call = LLVMBuildCall(irGen.builder, fn, args, UInt32(argCount), irName ?? "")
-        function.type.addMetadataTo(call)
+        let call = LLVMBuildCall(irGen.builder, functionRef, args, UInt32(argCount), irName ?? "")
+        functionType.addMetadataTo(call)
         
         return call
     }
@@ -282,7 +289,7 @@ private extension FunctionAttributeExpr {
     }
 }
 
-extension TupleCreateInst: VHIRLower {
+extension TupleCreateInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         guard let t = type else { throw irGenError(.notStructType) }
         var val = LLVMGetUndef(t.lowerType(module))
@@ -295,26 +302,26 @@ extension TupleCreateInst: VHIRLower {
     }
 }
 
-extension TupleExtractInst: VHIRLower {
+extension TupleExtractInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         return LLVMBuildExtractValue(irGen.builder, tuple.loweredValue, UInt32(elementIndex), irName ?? "")
     }
 }
 
-extension TupleElementPtrInst: VHIRLower {
+extension TupleElementPtrInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         return LLVMBuildStructGEP(irGen.builder, tuple.loweredValue, UInt32(elementIndex), irName ?? "")
     }
 }
 
-extension StructExtractInst: VHIRLower {
+extension StructExtractInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         let index = try structType.indexOfMemberNamed(propertyName)
         return LLVMBuildExtractValue(irGen.builder, object.loweredValue, UInt32(index), irName ?? "")
     }
 }
 
-extension StructElementPtrInst: VHIRLower {
+extension StructElementPtrInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         let index = try structType.indexOfMemberNamed(propertyName)
         return LLVMBuildStructGEP(irGen.builder, object.loweredValue, UInt32(index), irName ?? "")
@@ -349,18 +356,38 @@ extension Function {
 extension BuiltinInstCall: VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         
-        let args = self.args.map { $0.loweredValue }
+        var args = self.args.map { $0.loweredValue }
         let intrinsic: LLVMValueRef
         
         switch inst {
             // overflowing arithmetic
-        case .iadd: intrinsic = getIntrinsic("llvm.sadd.with.overflow", irGen.module, LLVMTypeOf(l.loweredValue), false)
-        case .imul: intrinsic = getIntrinsic("llvm.smul.with.overflow", irGen.module, LLVMTypeOf(l.loweredValue), false)
-        case .isub: intrinsic = getIntrinsic("llvm.ssub.with.overflow", irGen.module, LLVMTypeOf(l.loweredValue), false)
+        case .iadd: intrinsic = getSinglyOverloadedIntrinsic("llvm.sadd.with.overflow", irGen.module, LLVMTypeOf(l.loweredValue), false)
+        case .imul: intrinsic = getSinglyOverloadedIntrinsic("llvm.smul.with.overflow", irGen.module, LLVMTypeOf(l.loweredValue), false)
+        case .isub: intrinsic = getSinglyOverloadedIntrinsic("llvm.ssub.with.overflow", irGen.module, LLVMTypeOf(l.loweredValue), false)
             
             // other intrinsics
-        case .expect: intrinsic = getIntrinsic("llvm.expect", irGen.module, LLVMTypeOf(l.loweredValue), false)
-        case .trap: intrinsic = getIntrinsic("llvm.trap", irGen.module, nil, false)
+        case .expect: intrinsic = getSinglyOverloadedIntrinsic("llvm.expect", irGen.module, LLVMTypeOf(l.loweredValue), false)
+        case .trap: intrinsic = getRawIntrinsic("llvm.trap", irGen.module)
+        case .memcpy:
+            // overload types -- we want `@llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1)`
+            let overloadTypes = [LLVMTypeOf(l.loweredValue), LLVMTypeOf(l.loweredValue), BuiltinType.int(size: 64).lowerType(module)].ptr()
+            defer { overloadTypes.destroy(3) }
+            // construct intrinsic
+            intrinsic = getOverloadedIntrinsic("llvm.memcpy", irGen.module, overloadTypes, 3, false)
+            // add extra memcpy args
+            args.append(LLVMConstInt(LLVMInt32Type(), 1, false)) // i32 align
+            args.append(LLVMConstInt(LLVMInt1Type(), 0, false)) // i1 isVolatile
+            
+        case .allocstack:
+            let ptrTy = BuiltinType.int(size: 8).lowerType(module)
+            let ptr = LLVMBuildArrayAlloca(irGen.builder, ptrTy, args[0], irName ?? "")
+            return ptr
+        case .allocheap:
+            let ptrTy = BuiltinType.int(size: 8).lowerType(module)
+            let ptr = LLVMBuildArrayMalloc(irGen.builder, ptrTy, args[0], irName ?? "")
+            return ptr
+            
+            
         case .condfail:
             guard let fn = parentFunction, current = parentBlock else { fatalError() }
             let success = LLVMAppendBasicBlock(fn.loweredFunction, "\(current.name).cont"), fail = try fn.buildCondFailBlock(module, irGen: irGen)
@@ -410,35 +437,35 @@ extension BuiltinInstCall: VHIRLower {
     }
 }
 
-extension BreakInst: VHIRLower {
+extension BreakInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         return LLVMBuildBr(irGen.builder, call.block.loweredBlock)
     }
 }
 
-extension CondBreakInst: VHIRLower {
+extension CondBreakInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         return LLVMBuildCondBr(irGen.builder, condition.loweredValue, thenCall.block.loweredBlock, elseCall.block.loweredBlock)
     }
 }
 
-extension AllocInst: VHIRLower {
+extension AllocInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         return LLVMBuildAlloca(irGen.builder, storedType.lowerType(module), irName ?? "")
     }
 }
 
-extension StoreInst: VHIRLower {
+extension StoreInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         return LLVMBuildStore(irGen.builder, value.loweredValue, address.loweredValue)
     }
 }
-extension LoadInst: VHIRLower {
+extension LoadInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         return LLVMBuildLoad(irGen.builder, address.loweredValue, irName ?? "")
     }
 }
-extension BitcastInst: VHIRLower {
+extension BitcastInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         return LLVMBuildBitCast(irGen.builder, address.loweredValue, pointerType.lowerType(module), irName ?? "")
     }
@@ -446,7 +473,7 @@ extension BitcastInst: VHIRLower {
 
 
 
-extension ExistentialConstructInst: VHIRLower {
+extension ExistentialConstructInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         
         guard case let aliasType as TypeAlias = value.memType, case let structType as StructType = aliasType.targetType else { fatalError() }
@@ -513,7 +540,7 @@ private extension ConceptType {
 }
 
 
-extension ArrayInst: VHIRLower {
+extension ArrayInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         
         return try ArrayInst.lowerBuffer(values.map { $0.loweredValue },
@@ -547,7 +574,7 @@ extension ArrayInst: VHIRLower {
     }
 }
 
-extension ExistentialPropertyInst: VHIRLower {
+extension ExistentialPropertyInst : VHIRLower {
     
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
 
@@ -581,14 +608,14 @@ extension ExistentialPropertyInst: VHIRLower {
     }
 }
 
-extension ExistentialUnboxInst: VHIRLower {
+extension ExistentialUnboxInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         let p = LLVMBuildStructGEP(irGen.builder, existential.loweredValue, 2, "")
         return LLVMBuildLoad(irGen.builder, p, irName ?? "")
     }
 }
 
-extension ExistentialWitnessMethodInst: VHIRLower {
+extension ExistentialWitnessMethodInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         
         let llvmName = irName.map { "\($0)." } ?? ""

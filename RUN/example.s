@@ -13,32 +13,30 @@ Ltmp1:
 	movq	%rsp, %rbp
 Ltmp2:
 	.cfi_def_cfa_register %rbp
-	subq	$32, %rsp
-	xorl	%eax, %eax
-	movl	%eax, %edi
-	movl	$1, %eax
+	leaq	L___unnamed_1(%rip), %rdi
+	movl	$6, %eax
 	movl	%eax, %esi
-	callq	_..._Int_Int
-	movq	%rdx, -8(%rbp)          ## 8-byte Spill
-	movq	%rax, -16(%rbp)         ## 8-byte Spill
-LBB0_1:                                 ## %loop
-                                        ## =>This Inner Loop Header: Depth=1
-	movq	-16(%rbp), %rax         ## 8-byte Reload
-	movl	$1, %ecx
-	movl	%ecx, %edi
-	movq	%rax, -24(%rbp)         ## 8-byte Spill
-	callq	_print_Int
-	movq	-24(%rbp), %rax         ## 8-byte Reload
-	addq	$1, %rax
-	movq	-8(%rbp), %rdi          ## 8-byte Reload
-	cmpq	%rdi, %rax
-	movq	%rax, -16(%rbp)         ## 8-byte Spill
-	jle	LBB0_1
-## BB#2:                                ## %loop.exit
-	addq	$32, %rsp
+	callq	_String_topi64
+	movq	%rax, %rdi
+	movq	%rdx, %rsi
+	callq	_print_tString
+	leaq	L___unnamed_2(%rip), %rdi
+	movl	$5, %ecx
+	movl	%ecx, %esi
+	callq	_String_topi64
+	movq	%rax, %rdi
+	movq	%rdx, %rsi
+	callq	_print_tString
 	popq	%rbp
 	retq
 	.cfi_endproc
+
+	.section	__TEXT,__cstring,cstring_literals
+L___unnamed_1:                          ## @0
+	.asciz	"memes"
+
+L___unnamed_2:                          ## @1
+	.asciz	"same"
 
 
 .subsections_via_symbols

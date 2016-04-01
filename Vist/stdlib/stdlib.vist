@@ -11,9 +11,11 @@ type Int {
         let v = 0
         value = v.value
     }
+    init Int = (val) do value = val.value
 }
 type Int32 {
     var value: Builtin.Int32
+    init Int32 = (val) do value = val.value
 }
 
 type Bool {
@@ -23,17 +25,32 @@ type Bool {
         let b = false
         value = b.value
     }
+    init Bool = (val) do value = val.value
 }
 
 type Double {
     var value: Builtin.Double
+    init Double = (val) do value = val.value
 }
 
 type Range {
-    let start: Int, end: Int
+    var start: Int, end: Int
+    init Range = (val) {
+        start = val.start
+        end = val.end
+    }
 }
 
-
+type String {
+    var base: Builtin.OpaquePointer, length: Builtin.Int
+    
+    init Builtin.OpaquePointer Builtin.Int = (ptr count) {
+        let buffer = Builtin.heap_alloc count
+        Builtin.mem_copy buffer ptr count
+        base = buffer
+        length = count
+    }
+}
 
 //type Array {
 //
@@ -52,6 +69,7 @@ type Range {
 @public @inline func print :: Int32 = (a) do vist_print a.value
 @public @inline func print :: Bool = (a) do vist_print a.value
 @public @inline func print :: Double = (a) do vist_print a.value
+@public @inline func print :: String = (a) do vist_print a.base
 
 // TODO: print message
 

@@ -12,6 +12,7 @@ struct StdLib {
     static let int32Type =  StructType(members:   [("value", BuiltinType.int(size: 32), true)],       methods: [], name: "Int32")
     static let boolType =   StructType(members:   [("value", BuiltinType.bool, true)],                methods: [], name: "Bool")
     static let doubleType = StructType(members:   [("value", BuiltinType.float(size: 64), true)],     methods: [], name: "Double")
+    static let stringType = StructType(members:   [("base", BuiltinType.opaquePointer, true), ("length", BuiltinType.int(size: 64), true)], methods: [], name: "String")
     static let rangeType =  StructType(members:   [("start", intType, true), ("end", intType, true)], methods: [], name: "Range")
     private static let voidType = BuiltinType.void
     
@@ -67,6 +68,7 @@ struct StdLib {
         ("print",      FnType(params: [int32Type], returns: voidType)),
         ("print",      FnType(params: [boolType],   returns: voidType)),
         ("print",      FnType(params: [doubleType], returns: voidType)),
+        ("print",      FnType(params: [stringType], returns: voidType)),
         ("assert",     FnType(params: [boolType],   returns: voidType)),
         ("fatalError", FnType(params: [],           returns: voidType)),
         
@@ -82,7 +84,8 @@ struct StdLib {
         ("Float",   FnType(params: [BuiltinType.float(size: 64)], returns: doubleType)),
         ("Float",   FnType(params: [doubleType],                  returns: intType)),
         ("Range",   FnType(params: [intType, intType],            returns: rangeType)),
-        ("Range",   FnType(params: [rangeType],                   returns: rangeType))
+        ("Range",   FnType(params: [rangeType],                   returns: rangeType)),
+        ("String",  FnType(params: [BuiltinType.opaquePointer, BuiltinType.int(size: 64)], returns: stringType)),
     ]
     
     /// Container initialised with functions, provides subscript to look up functions by name and type

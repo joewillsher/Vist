@@ -46,7 +46,7 @@ extension TypeAlias {
         return self
     }
     var mangledName: String {
-        return name
+        return targetType.mangledName
     }
 }
 

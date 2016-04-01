@@ -110,7 +110,7 @@ func compileDocuments(
         
         var llvmModule = LLVMModuleCreateWithName("vist_module")
         
-        if isStdLib {
+        if isStdLib || parseStdLib {
             linkWithRuntime(&llvmModule, withFile: "\(runtimeDirectory)/runtime.bc")
         }
         configModule(llvmModule)
@@ -192,9 +192,10 @@ func compileDocuments(
             if verbose { print(asm) }
             
             
+            let inputFiles = parseStdLib ? ["\(file).ll"] : ["\(stdLibDirectory)/stdlib.o", "\(file).ll"]
             // .o -> exec
             NSTask.execute(.clang,
-                           files: ["\(stdLibDirectory)/stdlib.o", "\(file).ll"],
+                           files: inputFiles,
                            outputName: file,
                            cwd: currentDirectory)
             

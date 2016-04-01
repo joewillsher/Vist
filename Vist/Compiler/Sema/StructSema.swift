@@ -59,15 +59,19 @@ extension StructExpr: ExprTypeProvider {
             initialisers.append(implicit)
         }
         
-        try errorCollector.run {
-            let memberwise = try memberwiseInitialiser()
-            initialisers.append(memberwise)
+        let definesOwnMemberwiseInit = try initialisers.contains({ try $0.ty.params(scope).elementsEqual(ty.members.map { $0.type }, isEquivalent: ==) })
+        
+        if !definesOwnMemberwiseInit {
+            try errorCollector.run {
+                let memberwise = try memberwiseInitialiser()
+                initialisers.append(memberwise)
+            }
         }
         try initialisers.walkChildren(errorCollector) { node in
             try node.typeForNode(structScope)
         }
         
-        for  i in initialisers {
+        for i in initialisers {
             if let initialiserType = i.ty.type {
                 scope.addFunction(name, type: initialiserType)
             }
@@ -183,7 +187,7 @@ extension MethodCallExpr: ExprTypeProvider {
         let args = try self.args.elements.map { try $0.typeForNode(scope) }
         
         let fnType = try parentType.methodType(methodNamed: name, argTypes: args)
-        mangledName = name.mangle(fnType, parentTypeName: parentType.name)
+        mangledName = name.mangle(fnType)
         
         // gen types for objects in call
         for arg in self.args.elements {

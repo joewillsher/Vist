@@ -11,7 +11,7 @@
 /// Params are passed between blocks in parameters, blocks can
 /// reference insts in other blocks. The entry block of a function
 /// is called with params of the function
-final class BasicBlock: VHIRElement {
+final class BasicBlock : VHIRElement {
     var name: String
     private(set) var instructions: [Inst] = []
     weak var parentFunction: Function?

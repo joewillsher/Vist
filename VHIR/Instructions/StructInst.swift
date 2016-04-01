@@ -7,7 +7,7 @@
 //
 
 
-final class StructInitInst: InstBase {
+final class StructInitInst : InstBase {
     
     override var type: Ty? { return module.getOrInsert(structType) }
     var structType: StructType
@@ -22,7 +22,7 @@ final class StructInitInst: InstBase {
     }
 }
 
-final class StructExtractInst: InstBase {
+final class StructExtractInst : InstBase {
     
     var object: Operand, propertyName: String
     var propertyType: Ty, structType: StructType
@@ -43,7 +43,7 @@ final class StructExtractInst: InstBase {
 }
 
 
-final class StructElementPtrInst: InstBase, LValue {
+final class StructElementPtrInst : InstBase, Value {
     var object: PtrOperand, propertyName: String
     var propertyType: Ty, structType: StructType
     

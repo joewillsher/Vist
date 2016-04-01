@@ -7,7 +7,7 @@
 //
 
 
-class Operand: RValue {
+class Operand : RValue {
     /// The underlying value
     var value: RValue?
     weak var user: Inst?
@@ -62,17 +62,17 @@ extension Operand {
 
 
 /// An operand which stores a reference-backed lvalue
-final class PtrOperand: Operand, LValue {
+final class PtrOperand : Operand, Value {
     
     /// The stored lvalue
-    var _value: LValue?
+    var _value: Value?
     override var value: RValue? {
         get { return _value }
-        set { _value = newValue as? LValue }
+        set { _value = newValue as? Value }
     }
     var memType: Ty? { return _value?.memType }
     
-    init(_ value: LValue) {
+    init(_ value: Value) {
         self._value = value
         super.init()
         value.addUse(self)
@@ -84,7 +84,7 @@ final class PtrOperand: Operand, LValue {
 /// An operand applied to a block, loweredValue is lazily evaluated
 /// so phi nodes can be created when theyre needed, allowing their values
 /// to be calculated
-final class BlockOperand: Operand {
+final class BlockOperand : Operand {
     
     init(value: RValue, param: Param) {
         self.param = param

@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-final class AllocInst: InstBase, LValue {
+final class AllocInst : InstBase, Value {
     var storedType: Ty
     
     private init(memType: Ty, irName: String?) {
@@ -21,7 +21,7 @@ final class AllocInst: InstBase, LValue {
         return "\(name) = alloc \(storedType) \(useComment)"
     }
 }
-final class StoreInst: InstBase {
+final class StoreInst : InstBase {
     override var type: Ty? { return address.type }
     private(set) var address: PtrOperand, value: Operand
     
@@ -38,7 +38,7 @@ final class StoreInst: InstBase {
         return "store \(value.name) in \(address) \(useComment)"
     }
 }
-final class LoadInst: InstBase {
+final class LoadInst : InstBase {
     override var type: Ty? { return address.memType }
     private(set) var address: PtrOperand
     
@@ -51,7 +51,7 @@ final class LoadInst: InstBase {
         return "\(name) = load \(address) \(useComment)"
     }
 }
-final class BitcastInst: InstBase, LValue {
+final class BitcastInst : InstBase, Value {
     var pointerType: BuiltinType { return BuiltinType.pointer(to: newType) }
     override var type: Ty? { return pointerType }
     var memType: Ty? { return newType }

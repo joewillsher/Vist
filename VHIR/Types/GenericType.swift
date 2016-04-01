@@ -46,7 +46,7 @@ struct GenericType: StorageType {
     }
     
     var irName: String {
-        return "\(parentName).\(name).gen"
+        return "\(parentName)\(name)"
     }
     
     var mangledName: String {

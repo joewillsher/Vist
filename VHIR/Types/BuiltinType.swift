@@ -46,6 +46,7 @@ enum BuiltinType : Ty {
         case "Builtin.Double":             self = .float(size: 64)
         case "Builtin.Float":              self = .float(size: 32)
         case "Void":                       self = .void
+        case "Builtin.OpaquePointer":      self = .opaquePointer
         case "Builtin.String":             self = .array(el: BuiltinType.int(size: 8), size: nil)
         case _ where str.characters.first == "[" && str.characters.last == "]":
             guard let el = BuiltinType(String(str.characters.dropFirst().dropLast())) else { return nil }
@@ -61,9 +62,9 @@ enum BuiltinType : Ty {
         case .void:                     return "Builtin.Void"
         case .int(let s):               return "Builtin.Int\(s)"
         case .bool:                     return "Builtin.Bool"
-        case .array(let el, let size):  return "[\(size) x \(el.mangledName)]" // not implemented
-        case .pointer(let to):          return "*\(to.mangledName)"
-        case .opaquePointer:            return "*Builtin.Int8"
+        case .array(let el, let size):  return "[\(size) x \(el.explicitName)]" // not implemented
+        case .pointer(let to):          return "*\(to.explicitName)"
+        case .opaquePointer:            return "Builtin.OpaquePointer"
         case .float(let s):
             switch s {
             case 16:                    return "Builtin.Half"

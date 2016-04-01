@@ -8,7 +8,7 @@
 
 
 
-final class ConstantFoldingPass: OptimisationPass {
+final class ConstantFoldingPass : OptimisationPass {
     
     static var minOptLevel: OptLevel = .low
     

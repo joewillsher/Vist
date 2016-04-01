@@ -12,27 +12,37 @@
 #include "LLVM.h"
 
 #ifdef __cplusplus
-extern "C"
+extern "C" {
 #endif
-/// Returns a LLVM intrinsic funtion from a name
-///
-/// If its an overloaded intrinsic, the overloaded type is needed too
-///
-///  http://llvm.org/docs/LangRef.html#intrinsic-functions
-LLVMValueRef getIntrinsic(const char *name,
-                          LLVMModuleRef mod,
-                          LLVMTypeRef ty,
-                          bool removeOverload);
-
-
+    
+    /// Intrinsic with a buffer of overload types
+    LLVMValueRef getOverloadedIntrinsic(const char *name,
+                                        LLVMModuleRef mod,
+                                        LLVMTypeRef *ty,
+                                        int overloadTypes,
+                                        bool removeOverload);
+    
+    /// Intrinsic with a single overload type
+    LLVMValueRef getSinglyOverloadedIntrinsic(const char *name,
+                                              LLVMModuleRef mod,
+                                              LLVMTypeRef ty,
+                                              bool removeOverload);
+    
+    /// Non overloaded intrinsic
+    LLVMValueRef getRawIntrinsic(const char *name,
+                                 LLVMModuleRef mod);
+    
+    
 #ifdef __cplusplus // only for c++
+}
 #include "llvm/IR/Value.h"
-#import "llvm/ADT/StringRef.h"
+#include "llvm/ADT/StringRef.h"
+#include <vector>
 
 using namespace llvm;
 Function *getIntrinsic(StringRef name,
                        Module *mod,
-                       Type *ty,
+                       std::vector<Type *> types,
                        bool removeOverload);
 #endif
 

@@ -10,12 +10,11 @@ import class Foundation.NSString
 
 extension String {
     
-    func mangle(type: FnType, parentTypeName: String? = nil) -> String {
-        let n = parentTypeName == nil ? "" : "\(parentTypeName!)."
-        return "\(n)\(mappedChars())_\(type.mangledName)"
+    func mangle(type: FnType) -> String {
+        return "\(mappedChars())_\(type.mangledName)"
     }
-    func mangle(type: [Ty], parentTypeName: String? = nil) -> String {
-        return mangle(FnType(params: type, returns: BuiltinType.void/*Doesnt matter*/), parentTypeName: parentTypeName)
+    func mangle(type: [Ty]) -> String {
+        return mangle(FnType(params: type, returns: BuiltinType.void/*Doesnt matter*/))
     }
     
     private static var mangleMap: [(Character, Character)] = [
@@ -33,6 +32,7 @@ extension String {
         ("~", "T"),
         ("^", "R"),
         ("%", "C"),
+        (".", "D"),
     ]
     
     private func mappedChars() -> String {
@@ -53,29 +53,12 @@ extension String {
     /// returns the raw name, getting rid of type info at end, 
     /// (and type prefix for methods)
     func demangleName() -> String {
-        let end = characters.indexOf("_")! // index of end of name
-        
-        let d = characters.indexOf(".") // index of initial name dot
-        let start: CharacterView.Index
-        
-        if let d = d {
-            if String(characters[startIndex..<d]) == "LLVM" {
-                start = startIndex
-            }
-            else {
-                start = d.successor()
-            }
-        }
-        else {
-            start = startIndex
-        }
-        
-        let name = String(characters[start..<end])
+        let nameString = String(characters[startIndex..<characters.indexOf("_")!])
         
         var resStr: [Character] = []
         var pred: Character? = nil
         
-        for c in name.characters {
+        for c in nameString.characters {
             if c != "-" {
                 if let original = String.mangleMap.indexOf({$0.1 == c}) where pred == "-" {
                     resStr.append(String.mangleMap[original].0)

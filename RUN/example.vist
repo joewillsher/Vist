@@ -1,3 +1,4 @@
 
-
-for i in 0 ... 1 do print 1
+print "memes"
+let m = "same"
+print m

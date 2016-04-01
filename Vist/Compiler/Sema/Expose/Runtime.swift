@@ -13,6 +13,7 @@ struct Runtime {
     private static let doubleType = BuiltinType.float(size: 64)
     private static let boolType = BuiltinType.bool
     private static let voidType = BuiltinType.void
+    private static let opaquePointerType = BuiltinType.opaquePointer
     
     private static let functions: [(String, FnType)] = [
         // runtime fns
@@ -20,6 +21,7 @@ struct Runtime {
         ("vist_print", FnType(params: [doubleType], returns: voidType)),
         ("vist_print", FnType(params: [boolType], returns: voidType)),
         ("vist_print", FnType(params: [int32Type], returns: voidType)),
+        ("vist_print", FnType(params: [opaquePointerType], returns: voidType)),
     ]
 //    private static let unmangled: [(String, FnType)] = [
         // runtime fns
@@ -30,13 +32,9 @@ struct Runtime {
 //    private static let unmangledContainer = FunctionContainer(functions: unmangled, types: [], mangleFunctionNames: false)
     
     /// Get a builtin function by name
-    ///
     /// - parameter name: Unmangled name
-    ///
     /// - parameter args: Applied arg types
-    ///
     /// - returns: An optional tuple of `(mangledName, type)`
-    ///
     static func functionNamed(name: String, argTypes args: [Ty]) -> (mangledName: String, type: FnType)? {
         return functionContainer[fn: name, types: args]
     }

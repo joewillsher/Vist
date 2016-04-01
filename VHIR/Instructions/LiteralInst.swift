@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-final class IntLiteralInst: InstBase {
+final class IntLiteralInst : InstBase {
     var value: LiteralValue<Int>, size: Int
     
     override var type: Ty? { return BuiltinType.int(size: UInt32(size)) }
@@ -21,7 +21,7 @@ final class IntLiteralInst: InstBase {
         return "\(name) = int_literal \(value.value) \(useComment)"
     }
 }
-final class BoolLiteralInst: InstBase {
+final class BoolLiteralInst : InstBase {
     var value: LiteralValue<Bool>
     
     override var type: Ty? { return value.type }
@@ -35,8 +35,22 @@ final class BoolLiteralInst: InstBase {
         return "\(name) = bool_literal \(value.value) \(useComment)"
     }
 }
+final class StringLiteralInst : InstBase {
+    var value: LiteralValue<String>
+    
+    override var type: Ty? { return value.type }
+    
+    private init(val: String, irName: String?) {
+        self.value = LiteralValue(val: val, irName: nil)
+        super.init(args: [Operand(value)], irName: irName)
+    }
+    
+    override var instVHIR: String {
+        return "\(name) = string_literal \"\(value.value)\" \(useComment)"
+    }
+}
 
-final class LiteralValue<Literal>: RValue {
+final class LiteralValue<Literal> : RValue {
     var value: Literal
     
     var irName: String?
@@ -44,6 +58,7 @@ final class LiteralValue<Literal>: RValue {
         switch value {
         case is Int: return BuiltinType.int(size: 64)
         case is Bool: return BuiltinType.bool
+        case is String: return BuiltinType.opaquePointer
         case is (): return BuiltinType.void
         default: fatalError("Invalid literal")
         }
@@ -58,7 +73,7 @@ final class LiteralValue<Literal>: RValue {
 }
 
 
-final class VoidLiteralValue: RValue {
+final class VoidLiteralValue : RValue {
     var type: Ty? { return BuiltinType.void }
     weak var parentBlock: BasicBlock?
     var uses: [Operand] = []
@@ -73,28 +88,21 @@ final class VoidLiteralValue: RValue {
 
 extension Builder {
     /// Builds a builtin i64 object
-    func buildBuiltinInt(val: Int, size: Int = 64, irName: String? = nil) throws -> IntLiteralInst {
+    func buildIntLiteral(val: Int, size: Int = 64, irName: String? = nil) throws -> IntLiteralInst {
         return try _add(IntLiteralInst(val: val, size: size, irName: irName))
-    }
-    
-    /// Builds an `Int` literal from a value
-    func buildIntLiteral(val: Int, irName: String? = nil) throws -> StructInitInst {
-        let v = try buildBuiltinInt(val, irName: irName.map { "\($0).value" })
-        return try buildStructInit(StdLib.intType, values: Operand(v), irName: irName)
     }
     
     
     /// Builds a builtin i1 object
-    func buildBuiltinBool(val: Bool, irName: String? = nil) throws -> BoolLiteralInst {
+    func buildBoolLiteral(val: Bool, irName: String? = nil) throws -> BoolLiteralInst {
         return try _add(BoolLiteralInst(val: val, irName: irName))
     }
-    
-    /// Builds an `Bool` literal from a value
-    func buildBoolLiteral(val: Bool, irName: String? = nil) throws -> StructInitInst {
-        let v = try buildBuiltinBool(val, irName: irName.map { "\($0).value" })
-        return try buildStructInit(StdLib.boolType, values: Operand(v), irName: irName)
+
+    /// Builds a builtin i1 object
+    func buildStringLiteral(val: String, irName: String? = nil) throws -> StringLiteralInst {
+        return try _add(StringLiteralInst(val: val, irName: irName))
     }
-    
+
     func createVoidLiteral() -> VoidLiteralValue {
         return VoidLiteralValue()
     }

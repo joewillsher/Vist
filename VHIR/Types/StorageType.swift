@@ -36,8 +36,8 @@ extension StorageType {
     }
     
     func ptrToMethodNamed(name: String, type: FnType, module: Module) throws -> LLVMValueRef {
-        let mangled = name.mangle(type.params, parentTypeName: self.name)
-        return try module.getOrInsertFunctionNamed(mangled, type: type).loweredFunction
+        let mangled = name.mangle(type.params)
+        return try module.getOrInsertFunction(named: mangled, type: type).loweredFunction
     }
     
     func propertyType(name: String) throws -> Ty {

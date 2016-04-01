@@ -37,7 +37,7 @@ final class TupleType : Ty {
     var mangledName: String {
         return members
             .map { $0.mangledName }
-            .joinWithSeparator(".") + ".tuple"
+            .joinWithSeparator("") + "_"
     }
 
 }

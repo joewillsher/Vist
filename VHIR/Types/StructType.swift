@@ -54,7 +54,7 @@ extension StructType {
     }
     
     var irName: String {
-        return "\(name).st"
+        return "\(name)"
     }
     
     var mangledName: String {

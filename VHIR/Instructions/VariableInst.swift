@@ -7,7 +7,7 @@
 //
 
 
-final class VariableInst: InstBase {
+final class VariableInst : InstBase {
     var value: Operand
     //var attrs: [OwnershipAttrs] // specify ref/val semantics
     // also memory management info stored

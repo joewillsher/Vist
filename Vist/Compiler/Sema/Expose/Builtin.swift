@@ -13,6 +13,7 @@ struct Builtin {
     static let doubleType = BuiltinType.float(size: 64)
     static let boolType = BuiltinType.bool
     static let voidType = BuiltinType.void
+    static let opaquePointerType = BuiltinType.opaquePointer
     
     static let intBoolTupleType = TupleType(members: [intType, boolType])
     
@@ -59,19 +60,19 @@ struct Builtin {
         // intrinsic fns
         ("Builtin.trap", FnType(params: [], returns: voidType)),
         ("Builtin.cond_fail", FnType(params: [boolType], returns: voidType)),
-        ("Builtin.expect", FnType(params: [boolType, boolType], returns: boolType))
+        ("Builtin.expect", FnType(params: [boolType, boolType], returns: boolType)),
+        
+        ("Builtin.stack_alloc", FnType(params: [intType], returns: opaquePointerType)),
+        ("Builtin.heap_alloc", FnType(params: [intType], returns: opaquePointerType)),
+        ("Builtin.mem_copy", FnType(params: [opaquePointerType, opaquePointerType, intType], returns: voidType)),
     ]
     
     private static let functionContainer = FunctionContainer(functions: functions, types: [])
 
     /// Get a builtin function by name
-    ///
     /// - parameter name: Unmangled name
-    ///
     /// - parameter args: Applied arg types
-    ///
     /// - returns: An optional tuple of `(mangledName, type)`
-    ///
     static func functionNamed(name: String, argTypes args: [Ty]) -> (mangledName: String, type: FnType)? {
         return functionContainer[fn: name, types: args]
     }

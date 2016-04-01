@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-protocol Inst: RValue {
+protocol Inst : RValue {
     var uses: [Operand] { get }
     var args: [Operand] { get set }
     
@@ -17,7 +17,7 @@ protocol Inst: RValue {
 /// An instruction. Must be overriden but is used to remove
 /// a lot of the state boilerplate that cant be defaulted
 /// using just protocols
-class InstBase: Inst {
+class InstBase : Inst {
     
     /// Self’s type, override with a computed getter
     var type: Ty? { fatalError("Override me") }

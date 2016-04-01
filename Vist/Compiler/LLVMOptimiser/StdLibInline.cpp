@@ -266,20 +266,20 @@ bool StdLibInline::runOnFunction(Function &function) {
                         // if its an intrinsic we need to make sure its in this module
                         if (call->getCalledFunction()->isIntrinsic()) {
                             
-                            Type *optionalFirstArgument = call->getNumOperands() == 1
-                                ? nullptr // if no arguments, we are not overloading
-                                : call->getOperand(0)->getType();
+                            std::vector<Type *> overloadTypes;
+                            if (call->getNumOperands() == 1)
+                                overloadTypes.push_back(call->getOperand(0)->getType());
                             
                             Function *intrinsic = getIntrinsic(call->getCalledFunction()->getName(),
                                                                module,
-                                                               optionalFirstArgument,
+                                                               overloadTypes,
                                                                true);
                             call->setCalledFunction(intrinsic);
                         }
                         // otherwise, if user function, we copy in the body
                         else {
                             ValueToValueMapTy VMap;
-                            Function *fnThisModule = CloneFunction(call->getCalledFunction(), VMap, false);
+                            Function *fnThisModule = call->getCalledFunction();
                             
                             module->getOrInsertFunction(fnThisModule->getName(),
                                                         fnThisModule->getFunctionType(),

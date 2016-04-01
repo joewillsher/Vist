@@ -113,9 +113,16 @@ extension FnType {
     }
     
     var mangledName: String {
-        return params
+        let conventionPrefix: String
+        switch callingConvention {
+        case .method(let selfType):
+            conventionPrefix = "m" + selfType.mangledName
+        case .thin:
+            conventionPrefix = "t"
+        }
+        return conventionPrefix + params
             .map { $0.mangledName }
-            .joinWithSeparator("_")
+            .joinWithSeparator("")
     }
     
     /// Returns a version of this type, but with a defined parent

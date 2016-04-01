@@ -42,7 +42,7 @@ extension BooleanLiteral : ExprTypeProvider {
 extension StringLiteral : ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Ty {
-        let t = BuiltinType.array(el: BuiltinType.int(size: 8), size: UInt32(count))
+        let t = StdLib.stringType
         self.type = t
         return t
     }

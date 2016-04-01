@@ -8,7 +8,7 @@
 
 
 /// The module type, functions get put into this
-final class Module: VHIRElement {
+final class Module : VHIRElement {
     private(set) var functions: Set<Function> = [], typeList: Set<TypeAlias> = []
     var builder: Builder!
     var loweredModule: LLVMModuleRef = nil
@@ -26,7 +26,7 @@ extension Module {
     }
     
     /// Insert a type to the module
-    func insertType(name: String, targetType: StorageType) {
+    func insert(targetType: StorageType, name: String) {
         typeList.insert(TypeAlias(name: name, targetType: targetType))
     }
     
@@ -56,8 +56,6 @@ extension Module {
         return typeList.find {$0.name == name}
     }
     
-    func dumpIR() { if loweredModule != nil {
-        
-        LLVMDumpModule(loweredModule) } else { print("module <NULL>") } }
+    func dumpIR() { if loweredModule != nil { LLVMDumpModule(loweredModule) } else { print("module <NULL>") } }
     func dump() { print(vhir) }
 }

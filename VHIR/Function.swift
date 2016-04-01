@@ -8,11 +8,12 @@
 
 /// A VHIR function, has a type and is made of a series
 /// of basic blocks
-final class Function: VHIRElement {
+final class Function : VHIRElement {
     var name: String
     var type: FnType
     private var body: FunctionBody?
     private unowned var parentModule: Module
+    var visibility: Visibility
     
     var loweredFunction: LLVMValueRef = nil
     var _condFailBlock: LLVMBasicBlockRef = nil
@@ -21,6 +22,7 @@ final class Function: VHIRElement {
         self.name = name
         self.parentModule = module
         self.type = type
+        self.visibility = .`internal`
     }
     
     private final class FunctionBody {
@@ -33,6 +35,10 @@ final class Function: VHIRElement {
             self.parentFunction = parentFunction
             self.blocks = blocks
         }
+    }
+    
+    enum Visibility {
+        case `private`, `internal`, `public`
     }
 }
 
@@ -167,21 +173,21 @@ extension Builder {
 extension Module {
     
     /// Returns the function from the module. Adds prototype it if not already there
-    func getOrInsertFunctionNamed(name: String, type: FnType) throws -> Function {
+    func getOrInsertFunction(named name: String, type: FnType) throws -> Function {
         if let f = functionNamed(name) { return f }
         return try builder.createFunctionPrototype(name, type: type)
     }
     
     /// Returns a stdlib function, updating the module fn list if needed
-    func stdLibFunctionNamed(name: String, argTypes: [Ty]) throws -> Function? {
+    func getOrInsertStdLibFunction(named name: String, argTypes: [Ty]) throws -> Function? {
         guard let (mangledName, fnTy) = StdLib.functionNamed(name, args: argTypes) else { return nil }
-        return try getOrInsertFunctionNamed(mangledName, type: fnTy)
+        return try getOrInsertFunction(named: mangledName, type: fnTy)
     }
     
     /// Returns a stdlib function, updating the module fn list if needed
-    func runtimeFunctionNamed(name: String, argTypes: [Ty]) throws -> Function? {
+    func getOrInsertRuntimeFunction(named name: String, argTypes: [Ty]) throws -> Function? {
         guard let (mangledName, fnTy) = Runtime.functionNamed(name, argTypes: argTypes) else { return nil }
-        return try getOrInsertFunctionNamed(mangledName, type: fnTy)
+        return try getOrInsertFunction(named: mangledName, type: fnTy)
     }
     
     /// Returns a function from the module by name

@@ -103,7 +103,7 @@ final class StringLiteral: TypedExpr {
     
 //    var arr: ArrayExpr? = nil
     
-    var type: BuiltinType? = nil
+    var type: StructType? = nil
 }
 //final class CharacterExpr: Expr {
 //    let val: Character

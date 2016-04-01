@@ -8,14 +8,17 @@
 
 
 protocol RValueEmitter {
+    /// Emit the get-accessor for a VHIR rvalue
     @warn_unused_result
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor
 }
 protocol StmtEmitter {
+    /// Emit the VHIR for an AST statement
     func emitStmt(module module: Module, scope: Scope) throws
 }
 
 protocol LValueEmitter: RValueEmitter {
+    /// Emit the get/set-accessor for a VHIR lvalue
     @warn_unused_result
     func emitLValue(module module: Module, scope: Scope) throws -> GetSetAccessor
 }
@@ -40,6 +43,7 @@ extension Decl {
     }
 }
 extension ASTNode {
+    @warn_unused_result
     func emit(module module: Module, scope: Scope) throws {
         if case let rval as RValueEmitter = self {
             _ = try rval.emitRValue(module: module, scope: scope)
@@ -91,22 +95,69 @@ extension AST {
 
 // MARK: Lower AST nodes to instructions
 
-extension IntegerLiteral: RValueEmitter {
+extension IntegerLiteral : RValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
-        return try module.builder.buildIntLiteral(val).accessor
+        let int = try module.builder.buildIntLiteral(val)
+        let std = try module.builder.buildStructInit(StdLib.intType, values: Operand(int))
+        return std.accessor
     }
 }
 
-extension BooleanLiteral: RValueEmitter {
+extension BooleanLiteral : RValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
-        return try module.builder.buildBoolLiteral(val).accessor
+        let bool = try module.builder.buildBoolLiteral(val)
+        let std = try module.builder.buildStructInit(StdLib.boolType, values: Operand(bool))
+        return std.accessor
+    }
+}
+
+extension StringLiteral : RValueEmitter {
+    
+    func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
+       
+        // %0 = string_literal "meme"   // utf8 literal
+        // %1 = int_literal 4           // size, calculated statically
+        // %2 = call @String_topi64 (%0: %Builtin.OpaquePointer, %1: Builtin.Int)    // call to string initialiser
+        
+        // string_literal lowered to:
+        //  - make global string constant
+        //  - GEP from it to get the first element
+        //
+        // String initialiser allocates %1 bytes of memory and stores %0 into it
+        //
+        // String exposes methods to move buffer and change size
+        //
+        // String `print` passes `base` into a runtime vist_print which takes i8*
+        
+        // Misc todos:
+        //  - Initialiser(allocating) calling convention?
+        //  - Shorthand for stdlib types in manging -- Int->I, Bool->B, Double->D
+        //  - Mangling operators by using a prefix then not using - to seperate tokens. In operators all chars are
+        //    going to not be letters, so using a prefix for them (and a different prefix for functions) we can
+        //    tell the demangler how to parse these chars
+        //  - Make sure mangler can differentiate Int, Int and IntInt param types. Swift uses a number prefix.
+        //  - Lower function visibility attributes
+        
+        // Bigger todos:
+        //  - Type checking in all builder factory methods and...
+        //  - Full error handling model in VHIR
+        //  - Pointer type in stdlib
+        
+        
+        let string = try module.builder.buildStringLiteral(str)
+        let length = try module.builder.buildIntLiteral(str.characters.count + 1)
+        
+        let initialiser = try module.getOrInsertStdLibFunction(named: "String", argTypes: [BuiltinType.opaquePointer, BuiltinType.int(size: 64)])!
+        let std = try module.builder.buildFunctionCall(initialiser, args: [Operand(string), Operand(length)])
+        
+        return std.accessor
     }
 }
 
 
-extension VariableDecl: RValueEmitter {
+extension VariableDecl : RValueEmitter {
         
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
 
@@ -153,10 +204,10 @@ extension FunctionCall/*: VHIRGenerator*/ {
         guard case let fnType as FnType = fnType?.usingTypesIn(module) else { throw VHIRError.paramsNotTyped }
         let args = try argOperands(module: module, scope: scope)
 
-        if let stdlib = try module.stdLibFunctionNamed(name, argTypes: fnType.params) {
+        if let stdlib = try module.getOrInsertStdLibFunction(named: name, argTypes: fnType.params) {
             return try module.builder.buildFunctionCall(stdlib, args: args).accessor
         }
-        else if let runtime = try module.runtimeFunctionNamed(name, argTypes: fnType.params) /*where name.hasPrefix("vist_")*/ {
+        else if let runtime = try module.getOrInsertRuntimeFunction(named: name, argTypes: fnType.params) /*where name.hasPrefix("vist_")*/ {
             return try module.builder.buildFunctionCall(runtime, args: args).accessor
         }
         else if
@@ -172,7 +223,15 @@ extension FunctionCall/*: VHIRGenerator*/ {
     }
 }
 
-extension FuncDecl: StmtEmitter {
+private extension CollectionType where Generator.Element == FunctionAttributeExpr {
+    var visibility: Function.Visibility {
+        if contains(.`private`) { return .`private` }
+        else if contains(.`public`) { return .`public` }
+        else { return .`internal` } // default case is internal
+    }
+}
+
+extension FuncDecl : StmtEmitter {
     
     func emitStmt(module module: Module, scope: Scope) throws {
         
@@ -189,6 +248,8 @@ extension FuncDecl: StmtEmitter {
         // find proto/make function and move into it
         let function = try module.builder.getOrBuildFunction(mangledName, type: type, paramNames: impl.params)
         try module.builder.setInsertPoint(function)
+        
+        function.visibility = attrs.visibility
         
         // make scope and occupy it with params
         let fnScope = Scope(parent: scope)
@@ -343,8 +404,8 @@ extension ConditionalStmt: StmtEmitter {
                 }
                 
                 try module.builder.buildCondBreak(if: Operand(v),
-                                                  to: BlockCall(block: ifBlock, args: nil),
-                                                  elseTo: BlockCall(block: failBlock, args: nil))
+                                                  to: (block: ifBlock, args: nil),
+                                                  elseTo: (block: failBlock, args: nil))
             }
                 // if its unconditional, we go to the exit afterwards
             else {
@@ -425,7 +486,7 @@ extension ForInLoopStmt: StmtEmitter {
         try block.emitStmt(module: module, scope: loopScope)
         
         // iterate the loop count and check whether we are within range
-        let one = try module.builder.buildBuiltinInt(1)
+        let one = try module.builder.buildIntLiteral(1)
         let iterated = try module.builder.buildBuiltinInstructionCall(.iaddoverflow, args: Operand(loopCountParam), Operand(one), irName: "count.it")
         let condition = try module.builder.buildBuiltinInstructionCall(.ilte, args: Operand(iterated), Operand(end))
         
@@ -433,8 +494,8 @@ extension ForInLoopStmt: StmtEmitter {
         // call the loop block but with the iterated loop count
         let iteratedLoopOperand = BlockOperand(value: iterated, param: loopCountParam)
         try module.builder.buildCondBreak(if: Operand(condition),
-                                          to: BlockCall(block: loopBlock, args: [iteratedLoopOperand]),
-                                          elseTo: BlockCall(block: exitBlock, args: nil))
+                                          to: (block: loopBlock, args: [iteratedLoopOperand]),
+                                          elseTo: (block: exitBlock, args: nil))
         
         try module.builder.setInsertPoint(exitBlock)
     }
@@ -458,8 +519,8 @@ extension WhileLoopStmt: StmtEmitter {
         
         // cond break into/past loop
         try module.builder.buildCondBreak(if: Operand(cond),
-                                          to: BlockCall(block: loopBlock, args: nil),
-                                          elseTo: BlockCall(block: exitBlock, args: nil))
+                                          to: (block: loopBlock, args: nil),
+                                          elseTo: (block: exitBlock, args: nil))
         
         // build loop block
         try module.builder.setInsertPoint(loopBlock) // move into
@@ -483,7 +544,7 @@ extension StructExpr: RValueEmitter {
         
         for m in methods {
             guard let t = m.fnType.type else { fatalError() }
-            try module.getOrInsertFunctionNamed(m.mangledName, type: t)
+            try module.getOrInsertFunction(named: m.name, type: t)
         }
         for m in methods {
             try m.emitStmt(module: module, scope: scope)
@@ -606,7 +667,7 @@ extension MethodCallExpr: RValueEmitter {
             // get the instance from the existential
             let unboxedSelf = try module.builder.buildExistentialUnbox(selfRef, irName: "unboxed")
             // call the method by applying the opaque ptr to self as the first param
-            return try module.builder.buildFunctionCall(PtrOperand(fn),
+            return try module.builder.buildFunctionApply(PtrOperand(fn),
                                                         returnType: fnType.returns,
                                                         args: [PtrOperand(unboxedSelf)] + args).accessor
         default:

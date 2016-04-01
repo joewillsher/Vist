@@ -21,8 +21,8 @@ protocol Accessor {
 
 
 /// An Accessor which allows setting, as well as self lookup by ptr
-protocol GetSetAccessor: Accessor {
-    var mem: LValue { get }
+protocol GetSetAccessor : Accessor {
+    var mem: Value { get }
     /// Stores `val` in the stored object
     func setter(val: Operand) throws
     /// The pointer to the stored object
@@ -53,7 +53,7 @@ extension GetSetAccessor {
 // MARK: Implementations
 
 /// Provides access to values by exposing a getter which returns the value
-final class ValAccessor: Accessor {
+final class ValAccessor : Accessor {
     
     private var value: RValue
     init(value: RValue) { self.value = value }
@@ -82,24 +82,24 @@ private extension RValue {
 
 
 /// Provides access to a value with backing memory
-final class RefAccessor: GetSetAccessor {
-    var mem: LValue
-    init(memory: LValue) { self.mem = memory }
+final class RefAccessor : GetSetAccessor {
+    var mem: Value
+    init(memory: Value) { self.mem = memory }
 }
 
 /// A Ref accessor whose accessor is evaluated on demand. Useful for values
 /// which might not be used
-final class LazyRefAccessor: GetSetAccessor {
-    private var build: () throws -> LValue
-    private var val: LValue?
+final class LazyRefAccessor : GetSetAccessor {
+    private var build: () throws -> Value
+    private var val: Value?
     
-    var mem: LValue {
+    var mem: Value {
         if let v = val { return v }
         val = try! build()
         return val!
     }
     
-    init(fn: () throws -> LValue) { build = fn }
+    init(fn: () throws -> Value) { build = fn }
 }
 
 

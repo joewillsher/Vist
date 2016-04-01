@@ -1,156 +1,176 @@
 
+type %String = { %Builtin.OpaquePointer, %Builtin.Int64 }
 type %Int = { %Builtin.Int64 }
 type %Int32 = { %Builtin.Int32 }
 type %Double = { %Builtin.Double }
 type %Bool = { %Builtin.Bool }
 type %Range = { %Int, %Int }
 
-func @..-L_Int_Int : &thin (%Int, %Int) -> %Range {
-$entry(%a: %Int, %b: %Int):
-  %0 = int_literal 1  	// user: %1
-  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %2
-  %2 = call @-M_Int_Int (%b: %Int, %1: %Int)  	// user: %3
-  %3 = call @Range_Int_Int (%a: %Int, %2: %Int)  	// user: %4
-  return %3
-}
+func @vist-Uprint_tb : &thin (%Builtin.Bool) -> %Builtin.Void
 
-func @-L-E_Int_Int : &thin (%Int, %Int) -> %Bool {
-$entry(%a: %Int, %b: %Int):
-  %0 = struct_extract %a: %Int, #value  	// user: %2
-  %1 = struct_extract %b: %Int, #value  	// user: %2
-  %2 = builtin i_cmp_lte %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
-  %3 = call @Bool_b (%2: %Builtin.Bool)  	// user: %4
-  return %3
-}
-
-func @-P_Int_Int : &thin (%Int, %Int) -> %Int {
-$entry(%a: %Int, %b: %Int):
-  %0 = struct_extract %a: %Int, #value  	// user: %2
-  %1 = struct_extract %b: %Int, #value  	// user: %2
-  %2 = builtin i_add %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %v
-  variable_decl %v = %2: (%Builtin.Int64, %Builtin.Bool)  	// users: %3, %5
-  %3 = tuple_extract %v: (%Builtin.Int64, %Builtin.Bool), 1  	// user: %4
-  cond_fail %3: %Builtin.Bool
-  %5 = tuple_extract %v: (%Builtin.Int64, %Builtin.Bool), 0  	// user: %6
-  %6 = call @Int_i64 (%5: %Builtin.Int64)  	// user: %7
-  return %6
-}
-
-func @-T-N_Int_Int : &thin (%Int, %Int) -> %Int {
-$entry(%a: %Int, %b: %Int):
-  %0 = struct_extract %a: %Int, #value  	// user: %2
-  %1 = struct_extract %b: %Int, #value  	// user: %2
-  %2 = builtin i_and %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
-  %3 = call @Int_i64 (%2: %Builtin.Int64)  	// user: %4
-  return %3
-}
-
-func @-G-E_Int_Int : &thin (%Int, %Int) -> %Bool {
-$entry(%a: %Int, %b: %Int):
-  %0 = struct_extract %a: %Int, #value  	// user: %2
-  %1 = struct_extract %b: %Int, #value  	// user: %2
-  %2 = builtin i_cmp_gte %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
-  %3 = call @Bool_b (%2: %Builtin.Bool)  	// user: %4
-  return %3
-}
-
-func @-A_Int_Int : &thin (%Int, %Int) -> %Int {
-$entry(%a: %Int, %b: %Int):
-  %0 = struct_extract %a: %Int, #value  	// user: %2
-  %1 = struct_extract %b: %Int, #value  	// user: %2
-  %2 = builtin i_mul %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %v
-  variable_decl %v = %2: (%Builtin.Int64, %Builtin.Bool)  	// users: %3, %5
-  %3 = tuple_extract %v: (%Builtin.Int64, %Builtin.Bool), 1  	// user: %4
-  cond_fail %3: %Builtin.Bool
-  %5 = tuple_extract %v: (%Builtin.Int64, %Builtin.Bool), 0  	// user: %6
-  %6 = call @Int_i64 (%5: %Builtin.Int64)  	// user: %7
-  return %6
-}
-
-func @-L_Double_Double : &thin (%Double, %Double) -> %Bool {
-$entry(%a: %Double, %b: %Double):
-  %0 = struct_extract %a: %Double, #value  	// user: %2
-  %1 = struct_extract %b: %Double, #value  	// user: %2
-  %2 = builtin f_cmp_lt %0: %Builtin.Double, %1: %Builtin.Double  	// user: %3
-  %3 = call @Bool_b (%2: %Builtin.Bool)  	// user: %4
-  return %3
-}
-
-func @-G_Double_Double : &thin (%Double, %Double) -> %Bool {
-$entry(%a: %Double, %b: %Double):
-  %0 = struct_extract %a: %Double, #value  	// user: %2
-  %1 = struct_extract %b: %Double, #value  	// user: %2
-  %2 = builtin f_cmp_gt %0: %Builtin.Double, %1: %Builtin.Double  	// user: %3
-  %3 = call @Bool_b (%2: %Builtin.Bool)  	// user: %4
-  return %3
-}
-
-func @!-E_Double_Double : &thin (%Double, %Double) -> %Bool {
-$entry(%a: %Double, %b: %Double):
-  %0 = struct_extract %a: %Double, #value  	// user: %2
-  %1 = struct_extract %b: %Double, #value  	// user: %2
-  %2 = builtin f_neq %0: %Builtin.Double, %1: %Builtin.Double  	// user: %3
-  %3 = call @Bool_b (%2: %Builtin.Double)  	// user: %4
-  return %3
-}
-
-func @-L-L_Int_Int : &thin (%Int, %Int) -> %Int {
-$entry(%a: %Int, %b: %Int):
-  %0 = struct_extract %a: %Int, #value  	// user: %2
-  %1 = struct_extract %b: %Int, #value  	// user: %2
-  %2 = builtin i_shl %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
-  %3 = call @Int_i64 (%2: %Builtin.Int64)  	// user: %4
-  return %3
-}
-
-func @-C_Int_Int : &thin (%Int, %Int) -> %Int {
-$entry(%a: %Int, %b: %Int):
-  %0 = struct_extract %a: %Int, #value  	// user: %2
-  %1 = struct_extract %b: %Int, #value  	// user: %2
-  %2 = builtin i_rem %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
-  %3 = call @Int_i64 (%2: %Builtin.Int64)  	// user: %4
-  return %3
-}
-
-func @vist-Uprint_f64 : &thin (%Builtin.Double) -> %Builtin.Void
-
-func @-G_Int_Int : &thin (%Int, %Int) -> %Bool {
-$entry(%a: %Int, %b: %Int):
-  %0 = struct_extract %a: %Int, #value  	// user: %2
-  %1 = struct_extract %b: %Int, #value  	// user: %2
-  %2 = builtin i_cmp_gt %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
-  %3 = call @Bool_b (%2: %Builtin.Bool)  	// user: %4
-  return %3
-}
-
-func @-C_Double_Double : &thin (%Double, %Double) -> %Double {
-$entry(%a: %Double, %b: %Double):
-  %0 = struct_extract %a: %Double, #value  	// user: %2
-  %1 = struct_extract %b: %Double, #value  	// user: %2
-  %2 = builtin f_rem %0: %Builtin.Double, %1: %Builtin.Double  	// user: %3
-  %3 = call @Double_f64 (%2: %Builtin.Double)  	// user: %4
-  return %3
-}
-
-func @-L_Int_Int : &thin (%Int, %Int) -> %Bool {
+func @-L_tIntInt : &thin (%Int, %Int) -> %Bool {
 $entry(%a: %Int, %b: %Int):
   %0 = struct_extract %a: %Int, #value  	// user: %2
   %1 = struct_extract %b: %Int, #value  	// user: %2
   %2 = builtin i_cmp_lt %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
-  %3 = call @Bool_b (%2: %Builtin.Bool)  	// user: %4
+  %3 = call @Bool_tb (%2: %Builtin.Bool)  	// user: %4
   return %3
 }
 
-func @-D_Double_Double : &thin (%Double, %Double) -> %Double {
+func @-E-E_tIntInt : &thin (%Int, %Int) -> %Bool {
+$entry(%a: %Int, %b: %Int):
+  %0 = struct_extract %a: %Int, #value  	// user: %2
+  %1 = struct_extract %b: %Int, #value  	// user: %2
+  %2 = builtin i_eq %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
+  %3 = call @Bool_tb (%2: %Builtin.Bool)  	// user: %4
+  return %3
+}
+
+func @-Uexpect_tBoolBool : &thin (%Bool, %Bool) -> %Bool {
+$entry(%val: %Bool, %assume: %Bool):
+  %0 = struct_extract %val: %Bool, #value  	// user: %2
+  %1 = struct_extract %assume: %Bool, #value  	// user: %2
+  %2 = builtin expect %0: %Builtin.Bool, %1: %Builtin.Bool  	// user: %3
+  %3 = call @Bool_tb (%2: %Builtin.Bool)  	// user: %4
+  return %3
+}
+
+func @Int_ti64 : &thin (%Builtin.Int64) -> %Int {
+$entry(%$0: %Builtin.Int64):
+  %self = alloc %Int  	// users: %value, %1
+  %value = struct_element %self: %*Int, #value  	// user: %0
+  store %$0 in %value: %*Builtin.Int64 
+  %1 = load %self: %*Int  	// user: %2
+  return %1
+}
+
+func @-P_tDoubleDouble : &thin (%Double, %Double) -> %Double {
 $entry(%a: %Double, %b: %Double):
   %0 = struct_extract %a: %Double, #value  	// user: %2
   %1 = struct_extract %b: %Double, #value  	// user: %2
-  %2 = builtin f_div %0: %Builtin.Double, %1: %Builtin.Double  	// user: %3
-  %3 = call @Double_f64 (%2: %Builtin.Double)  	// user: %4
+  %2 = builtin f_add %0: %Builtin.Double, %1: %Builtin.Double  	// user: %3
+  %3 = call @Double_tf64 (%2: %Builtin.Double)  	// user: %4
   return %3
 }
 
-func @-M_Int_Int : &thin (%Int, %Int) -> %Int {
+func @-G-G_tIntInt : &thin (%Int, %Int) -> %Int {
+$entry(%a: %Int, %b: %Int):
+  %0 = struct_extract %a: %Int, #value  	// user: %2
+  %1 = struct_extract %b: %Int, #value  	// user: %2
+  %2 = builtin i_shr %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
+  %3 = call @Int_ti64 (%2: %Builtin.Int64)  	// user: %4
+  return %3
+}
+
+func @Double_tf64 : &thin (%Builtin.Double) -> %Double {
+$entry(%$0: %Builtin.Double):
+  %self = alloc %Double  	// users: %value, %1
+  %value = struct_element %self: %*Double, #value  	// user: %0
+  store %$0 in %value: %*Builtin.Double 
+  %1 = load %self: %*Double  	// user: %2
+  return %1
+}
+
+func @Double_tDouble : &thin (%Double) -> %Double {
+$entry(%val: %Double):
+  %self = alloc %Double  	// users: %value, %2
+  %value = struct_element %self: %*Double, #value  	// user: %1
+  %0 = struct_extract %val: %Double, #value  	// user: %1
+  store %0 in %value: %*Builtin.Double 
+  %2 = load %self: %*Double  	// user: %3
+  return %2
+}
+
+func @-N-N_tBoolBool : &thin (%Bool, %Bool) -> %Bool {
+$entry(%a: %Bool, %b: %Bool):
+  %0 = struct_extract %a: %Bool, #value  	// user: %2
+  %1 = struct_extract %b: %Bool, #value  	// user: %2
+  %2 = builtin b_and %0: %Builtin.Bool, %1: %Builtin.Bool  	// user: %3
+  %3 = call @Bool_tb (%2: %Builtin.Bool)  	// user: %4
+  return %3
+}
+
+func @-T-O_tIntInt : &thin (%Int, %Int) -> %Int {
+$entry(%a: %Int, %b: %Int):
+  %0 = struct_extract %a: %Int, #value  	// user: %2
+  %1 = struct_extract %b: %Int, #value  	// user: %2
+  %2 = builtin i_or %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
+  %3 = call @Int_ti64 (%2: %Builtin.Int64)  	// user: %4
+  return %3
+}
+
+func @-C_tIntInt : &thin (%Int, %Int) -> %Int {
+$entry(%a: %Int, %b: %Int):
+  %0 = struct_extract %a: %Int, #value  	// user: %2
+  %1 = struct_extract %b: %Int, #value  	// user: %2
+  %2 = builtin i_rem %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
+  %3 = call @Int_ti64 (%2: %Builtin.Int64)  	// user: %4
+  return %3
+}
+
+func @Range_tRange : &thin (%Range) -> %Range {
+$entry(%val: %Range):
+  %self = alloc %Range  	// users: %start, %end, %4
+  %start = struct_element %self: %*Range, #start  	// user: %1
+  %end = struct_element %self: %*Range, #end  	// user: %3
+  %0 = struct_extract %val: %Range, #start  	// user: %1
+  store %0 in %start: %*Int 
+  %2 = struct_extract %val: %Range, #end  	// user: %3
+  store %2 in %end: %*Int 
+  %4 = load %self: %*Range  	// user: %5
+  return %4
+}
+
+func @Bool_tBool : &thin (%Bool) -> %Bool {
+$entry(%val: %Bool):
+  %self = alloc %Bool  	// users: %value, %2
+  %value = struct_element %self: %*Bool, #value  	// user: %1
+  %0 = struct_extract %val: %Bool, #value  	// user: %1
+  store %0 in %value: %*Builtin.Bool 
+  %2 = load %self: %*Bool  	// user: %3
+  return %2
+}
+
+func @print_tDouble : &thin (%Double) -> %Builtin.Void {
+$entry(%a: %Double):
+  %0 = struct_extract %a: %Double, #value  	// user: %1
+  %1 = call @vist-Uprint_tf64 (%0: %Builtin.Double) 
+  return ()
+}
+
+func @-E-E_tDoubleDouble : &thin (%Double, %Double) -> %Bool {
+$entry(%a: %Double, %b: %Double):
+  %0 = struct_extract %a: %Double, #value  	// user: %2
+  %1 = struct_extract %b: %Double, #value  	// user: %2
+  %2 = builtin f_eq %0: %Builtin.Double, %1: %Builtin.Double  	// user: %3
+  %3 = call @Bool_tb (%2: %Builtin.Double)  	// user: %4
+  return %3
+}
+
+func @fatalError_t : &thin () -> %Builtin.Void {
+$entry:
+  %0 = builtin trap  
+  return ()
+}
+
+func @-D-D-D_tIntInt : &thin (%Int, %Int) -> %Range {
+$entry(%a: %Int, %b: %Int):
+  %0 = call @Range_tIntInt (%a: %Int, %b: %Int)  	// user: %1
+  return %0
+}
+
+func @Int32_ti32 : &thin (%Builtin.Int32) -> %Int32 {
+$entry(%$0: %Builtin.Int32):
+  %self = alloc %Int32  	// users: %value, %1
+  %value = struct_element %self: %*Int32, #value  	// user: %0
+  store %$0 in %value: %*Builtin.Int32 
+  %1 = load %self: %*Int32  	// user: %2
+  return %1
+}
+
+func @vist-Uprint_ti64 : &thin (%Builtin.Int64) -> %Builtin.Void
+
+func @-M_tIntInt : &thin (%Int, %Int) -> %Int {
 $entry(%a: %Int, %b: %Int):
   %0 = struct_extract %a: %Int, #value  	// user: %2
   %1 = struct_extract %b: %Int, #value  	// user: %2
@@ -159,43 +179,200 @@ $entry(%a: %Int, %b: %Int):
   %3 = tuple_extract %v: (%Builtin.Int64, %Builtin.Bool), 1  	// user: %4
   cond_fail %3: %Builtin.Bool
   %5 = tuple_extract %v: (%Builtin.Int64, %Builtin.Bool), 0  	// user: %6
-  %6 = call @Int_i64 (%5: %Builtin.Int64)  	// user: %7
+  %6 = call @Int_ti64 (%5: %Builtin.Int64)  	// user: %7
   return %6
 }
 
-func @vist-Uprint_b : &thin (%Builtin.Bool) -> %Builtin.Void
+func @vist-Uprint_ti32 : &thin (%Builtin.Int32) -> %Builtin.Void
 
-func @-E-E_Double_Double : &thin (%Double, %Double) -> %Bool {
+func @vist-Uprint_tf64 : &thin (%Builtin.Double) -> %Builtin.Void
+
+func @!-E_tDoubleDouble : &thin (%Double, %Double) -> %Bool {
 $entry(%a: %Double, %b: %Double):
   %0 = struct_extract %a: %Double, #value  	// user: %2
   %1 = struct_extract %b: %Double, #value  	// user: %2
-  %2 = builtin f_eq %0: %Builtin.Double, %1: %Builtin.Double  	// user: %3
-  %3 = call @Bool_b (%2: %Builtin.Double)  	// user: %4
+  %2 = builtin f_neq %0: %Builtin.Double, %1: %Builtin.Double  	// user: %3
+  %3 = call @Bool_tb (%2: %Builtin.Double)  	// user: %4
   return %3
 }
 
-func @print_Double : &thin (%Double) -> %Builtin.Void {
-$entry(%a: %Double):
-  %0 = struct_extract %a: %Double, #value  	// user: %1
-  %1 = call @vist-Uprint_f64 (%0: %Builtin.Double) 
-  return ()
-}
+func @vist-Uprint_top : &thin (%Builtin.OpaquePointer) -> %Builtin.Void
 
-func @-M_Double_Double : &thin (%Double, %Double) -> %Double {
+func @-M_tDoubleDouble : &thin (%Double, %Double) -> %Double {
 $entry(%a: %Double, %b: %Double):
   %0 = struct_extract %a: %Double, #value  	// user: %2
   %1 = struct_extract %b: %Double, #value  	// user: %2
   %2 = builtin f_sub %0: %Builtin.Double, %1: %Builtin.Double  	// user: %3
-  %3 = call @Double_f64 (%2: %Builtin.Double)  	// user: %4
+  %3 = call @Double_tf64 (%2: %Builtin.Double)  	// user: %4
   return %3
 }
 
-func @assert_Bool : &thin (%Bool) -> %Builtin.Void {
+func @-C_tDoubleDouble : &thin (%Double, %Double) -> %Double {
+$entry(%a: %Double, %b: %Double):
+  %0 = struct_extract %a: %Double, #value  	// user: %2
+  %1 = struct_extract %b: %Double, #value  	// user: %2
+  %2 = builtin f_rem %0: %Builtin.Double, %1: %Builtin.Double  	// user: %3
+  %3 = call @Double_tf64 (%2: %Builtin.Double)  	// user: %4
+  return %3
+}
+
+func @-T-N_tIntInt : &thin (%Int, %Int) -> %Int {
+$entry(%a: %Int, %b: %Int):
+  %0 = struct_extract %a: %Int, #value  	// user: %2
+  %1 = struct_extract %b: %Int, #value  	// user: %2
+  %2 = builtin i_and %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
+  %3 = call @Int_ti64 (%2: %Builtin.Int64)  	// user: %4
+  return %3
+}
+
+func @-L-E_tDoubleDouble : &thin (%Double, %Double) -> %Bool {
+$entry(%a: %Double, %b: %Double):
+  %0 = struct_extract %a: %Double, #value  	// user: %2
+  %1 = struct_extract %b: %Double, #value  	// user: %2
+  %2 = builtin f_cmp_lte %0: %Builtin.Double, %1: %Builtin.Double  	// user: %3
+  %3 = call @Bool_tb (%2: %Builtin.Bool)  	// user: %4
+  return %3
+}
+
+func @-O-O_tBoolBool : &thin (%Bool, %Bool) -> %Bool {
+$entry(%a: %Bool, %b: %Bool):
+  %0 = struct_extract %a: %Bool, #value  	// user: %2
+  %1 = struct_extract %b: %Bool, #value  	// user: %2
+  %2 = builtin b_or %0: %Builtin.Bool, %1: %Builtin.Bool  	// user: %3
+  %3 = call @Bool_tb (%2: %Builtin.Bool)  	// user: %4
+  return %3
+}
+
+func @-D_tDoubleDouble : &thin (%Double, %Double) -> %Double {
+$entry(%a: %Double, %b: %Double):
+  %0 = struct_extract %a: %Double, #value  	// user: %2
+  %1 = struct_extract %b: %Double, #value  	// user: %2
+  %2 = builtin f_div %0: %Builtin.Double, %1: %Builtin.Double  	// user: %3
+  %3 = call @Double_tf64 (%2: %Builtin.Double)  	// user: %4
+  return %3
+}
+
+func @Bool_tb : &thin (%Builtin.Bool) -> %Bool {
+$entry(%$0: %Builtin.Bool):
+  %self = alloc %Bool  	// users: %value, %1
+  %value = struct_element %self: %*Bool, #value  	// user: %0
+  store %$0 in %value: %*Builtin.Bool 
+  %1 = load %self: %*Bool  	// user: %2
+  return %1
+}
+
+func @-L-E_tIntInt : &thin (%Int, %Int) -> %Bool {
+$entry(%a: %Int, %b: %Int):
+  %0 = struct_extract %a: %Int, #value  	// user: %2
+  %1 = struct_extract %b: %Int, #value  	// user: %2
+  %2 = builtin i_cmp_lte %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
+  %3 = call @Bool_tb (%2: %Builtin.Bool)  	// user: %4
+  return %3
+}
+
+func @-D-D-L_tIntInt : &thin (%Int, %Int) -> %Range {
+$entry(%a: %Int, %b: %Int):
+  %0 = int_literal 1  	// user: %1
+  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %2
+  %2 = call @-M_tIntInt (%b: %Int, %1: %Int)  	// user: %3
+  %3 = call @Range_tIntInt (%a: %Int, %2: %Int)  	// user: %4
+  return %3
+}
+
+func @Bool_t : &thin () -> %Bool {
+$entry:
+  %self = alloc %Bool  	// users: %value, %4
+  %value = struct_element %self: %*Bool, #value  	// user: %3
+  %0 = bool_literal false  	// user: %1
+  %1 = struct %Bool (%0: %Builtin.Bool)  	// user: %b
+  variable_decl %b = %1: %Bool  	// user: %2
+  %2 = struct_extract %b: %Bool, #value  	// user: %3
+  store %2 in %value: %*Builtin.Bool 
+  %4 = load %self: %*Bool  	// user: %5
+  return %4
+}
+
+func @print_tBool : &thin (%Bool) -> %Builtin.Void {
+$entry(%a: %Bool):
+  %0 = struct_extract %a: %Bool, #value  	// user: %1
+  %1 = call @vist-Uprint_tb (%0: %Builtin.Bool) 
+  return ()
+}
+
+func @-A_tDoubleDouble : &thin (%Double, %Double) -> %Double {
+$entry(%a: %Double, %b: %Double):
+  %0 = struct_extract %a: %Double, #value  	// user: %2
+  %1 = struct_extract %b: %Double, #value  	// user: %2
+  %2 = builtin f_mul %0: %Builtin.Double, %1: %Builtin.Double  	// user: %3
+  %3 = call @Double_tf64 (%2: %Builtin.Double)  	// user: %4
+  return %3
+}
+
+func @print_tString : &thin (%String) -> %Builtin.Void {
+$entry(%a: %String):
+  %0 = struct_extract %a: %String, #base  	// user: %1
+  %1 = call @vist-Uprint_top (%0: %Builtin.OpaquePointer) 
+  return ()
+}
+
+func @print_tInt : &thin (%Int) -> %Builtin.Void {
+$entry(%a: %Int):
+  %0 = struct_extract %a: %Int, #value  	// user: %1
+  %1 = call @vist-Uprint_ti64 (%0: %Builtin.Int64) 
+  return ()
+}
+
+func @-A_tIntInt : &thin (%Int, %Int) -> %Int {
+$entry(%a: %Int, %b: %Int):
+  %0 = struct_extract %a: %Int, #value  	// user: %2
+  %1 = struct_extract %b: %Int, #value  	// user: %2
+  %2 = builtin i_mul %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %v
+  variable_decl %v = %2: (%Builtin.Int64, %Builtin.Bool)  	// users: %3, %5
+  %3 = tuple_extract %v: (%Builtin.Int64, %Builtin.Bool), 1  	// user: %4
+  cond_fail %3: %Builtin.Bool
+  %5 = tuple_extract %v: (%Builtin.Int64, %Builtin.Bool), 0  	// user: %6
+  %6 = call @Int_ti64 (%5: %Builtin.Int64)  	// user: %7
+  return %6
+}
+
+func @-G-E_tIntInt : &thin (%Int, %Int) -> %Bool {
+$entry(%a: %Int, %b: %Int):
+  %0 = struct_extract %a: %Int, #value  	// user: %2
+  %1 = struct_extract %b: %Int, #value  	// user: %2
+  %2 = builtin i_cmp_gte %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
+  %3 = call @Bool_tb (%2: %Builtin.Bool)  	// user: %4
+  return %3
+}
+
+func @-L-L_tIntInt : &thin (%Int, %Int) -> %Int {
+$entry(%a: %Int, %b: %Int):
+  %0 = struct_extract %a: %Int, #value  	// user: %2
+  %1 = struct_extract %b: %Int, #value  	// user: %2
+  %2 = builtin i_shl %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
+  %3 = call @Int_ti64 (%2: %Builtin.Int64)  	// user: %4
+  return %3
+}
+
+func @String_topi64 : &thin (%Builtin.OpaquePointer, %Builtin.Int64) -> %String {
+$entry(%ptr: %Builtin.OpaquePointer, %count: %Builtin.Int64):
+  %self = alloc %String  	// users: %base, %length, %4
+  %base = struct_element %self: %*String, #base  	// user: %2
+  %length = struct_element %self: %*String, #length  	// user: %3
+  %0 = builtin heap_alloc %count: %Builtin.Int64  	// user: %buffer
+  variable_decl %buffer = %0: %Builtin.OpaquePointer  	// users: %1, %2
+  %1 = builtin mem_copy %buffer: %Builtin.OpaquePointer, %ptr: %Builtin.OpaquePointer, %count: %Builtin.Int64 
+  store %buffer in %base: %*Builtin.OpaquePointer 
+  store %count in %length: %*Builtin.Int64 
+  %4 = load %self: %*String  	// user: %5
+  return %4
+}
+
+func @assert_tBool : &thin (%Bool) -> %Builtin.Void {
 $entry(%$0: %Bool):
   %0 = bool_literal true  	// user: %1
   %1 = struct %Bool (%0: %Builtin.Bool)  	// user: %2
-  %2 = call @-Uexpect_Bool_Bool (%$0: %Bool, %1: %Bool)  	// user: %3
-  %3 = struct_extract %2: %Bool, #value  	// user: 
+  %2 = call @-Uexpect_tBoolBool (%$0: %Bool, %1: %Bool)  	// user: %3
+  %3 = struct_extract %2: %Bool, #value  	// user: nil
   break %3: %Builtin.Bool, $if.0, $fail.0
 
 $if.0:			// preds: entry
@@ -212,110 +389,52 @@ $exit:			// preds: if.0, else.1
   return ()
 }
 
-func @-Uexpect_Bool_Bool : &thin (%Bool, %Bool) -> %Bool {
-$entry(%val: %Bool, %assume: %Bool):
-  %0 = struct_extract %val: %Bool, #value  	// user: %2
-  %1 = struct_extract %assume: %Bool, #value  	// user: %2
-  %2 = builtin expect %0: %Builtin.Bool, %1: %Builtin.Bool  	// user: %3
-  %3 = call @Bool_b (%2: %Builtin.Bool)  	// user: %4
-  return %3
-}
-
-func @vist-Uprint_i32 : &thin (%Builtin.Int32) -> %Builtin.Void
-
-func @Bool_ : &thin () -> %Bool {
-$entry:
-  %self = alloc %Bool  	// users: %value, %4
-  %value = struct_element %self: %*Bool, #value  	// user: %3
-  %0 = bool_literal false  	// user: %1
-  %1 = struct %Bool (%0: %Builtin.Bool)  	// user: %b
-  variable_decl %b = %1: %Bool  	// user: %2
-  %2 = struct_extract %b: %Bool, #value  	// user: %3
-  store %2 in %value: %*b 
-  %4 = load %self: %*Bool  	// user: %5
-  return %4
-}
-
-func @print_Bool : &thin (%Bool) -> %Builtin.Void {
-$entry(%a: %Bool):
-  %0 = struct_extract %a: %Bool, #value  	// user: %1
-  %1 = call @vist-Uprint_b (%0: %Builtin.Bool) 
-  return ()
-}
-
-func @-T-R_Int_Int : &thin (%Int, %Int) -> %Int {
+func @-T-R_tIntInt : &thin (%Int, %Int) -> %Int {
 $entry(%a: %Int, %b: %Int):
   %0 = struct_extract %a: %Int, #value  	// user: %2
   %1 = struct_extract %b: %Int, #value  	// user: %2
   %2 = builtin i_xor %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
-  %3 = call @Int_i64 (%2: %Builtin.Int64)  	// user: %4
+  %3 = call @Int_ti64 (%2: %Builtin.Int64)  	// user: %4
   return %3
 }
 
-func @-T-O_Int_Int : &thin (%Int, %Int) -> %Int {
-$entry(%a: %Int, %b: %Int):
-  %0 = struct_extract %a: %Int, #value  	// user: %2
-  %1 = struct_extract %b: %Int, #value  	// user: %2
-  %2 = builtin i_or %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
-  %3 = call @Int_i64 (%2: %Builtin.Int64)  	// user: %4
-  return %3
+func @Int_tInt : &thin (%Int) -> %Int {
+$entry(%val: %Int):
+  %self = alloc %Int  	// users: %value, %2
+  %value = struct_element %self: %*Int, #value  	// user: %1
+  %0 = struct_extract %val: %Int, #value  	// user: %1
+  store %0 in %value: %*Builtin.Int64 
+  %2 = load %self: %*Int  	// user: %3
+  return %2
 }
 
-func @Bool_b : &thin (%Builtin.Bool) -> %Bool {
-$entry(%$0: %Builtin.Bool):
-  %self = alloc %Bool  	// users: %value, %1
-  %value = struct_element %self: %*Bool, #value  	// user: %0
-  store %$0 in %value: %*b 
-  %1 = load %self: %*Bool  	// user: %2
-  return %1
-}
-
-func @-G-E_Double_Double : &thin (%Double, %Double) -> %Bool {
+func @-G_tDoubleDouble : &thin (%Double, %Double) -> %Bool {
 $entry(%a: %Double, %b: %Double):
   %0 = struct_extract %a: %Double, #value  	// user: %2
   %1 = struct_extract %b: %Double, #value  	// user: %2
-  %2 = builtin f_cmp_gte %0: %Builtin.Double, %1: %Builtin.Double  	// user: %3
-  %3 = call @Bool_b (%2: %Builtin.Bool)  	// user: %4
+  %2 = builtin f_cmp_gt %0: %Builtin.Double, %1: %Builtin.Double  	// user: %3
+  %3 = call @Bool_tb (%2: %Builtin.Bool)  	// user: %4
   return %3
 }
 
-func @-A_Double_Double : &thin (%Double, %Double) -> %Double {
-$entry(%a: %Double, %b: %Double):
-  %0 = struct_extract %a: %Double, #value  	// user: %2
-  %1 = struct_extract %b: %Double, #value  	// user: %2
-  %2 = builtin f_mul %0: %Builtin.Double, %1: %Builtin.Double  	// user: %3
-  %3 = call @Double_f64 (%2: %Builtin.Double)  	// user: %4
-  return %3
+func @Int32_tInt32 : &thin (%Int32) -> %Int32 {
+$entry(%val: %Int32):
+  %self = alloc %Int32  	// users: %value, %2
+  %value = struct_element %self: %*Int32, #value  	// user: %1
+  %0 = struct_extract %val: %Int32, #value  	// user: %1
+  store %0 in %value: %*Builtin.Int32 
+  %2 = load %self: %*Int32  	// user: %3
+  return %2
 }
 
-func @Int_i64 : &thin (%Builtin.Int64) -> %Int {
-$entry(%$0: %Builtin.Int64):
-  %self = alloc %Int  	// users: %value, %1
-  %value = struct_element %self: %*Int, #value  	// user: %0
-  store %$0 in %value: %*i64 
-  %1 = load %self: %*Int  	// user: %2
-  return %1
+func @print_tInt32 : &thin (%Int32) -> %Builtin.Void {
+$entry(%a: %Int32):
+  %0 = struct_extract %a: %Int32, #value  	// user: %1
+  %1 = call @vist-Uprint_ti32 (%0: %Builtin.Int32) 
+  return ()
 }
 
-func @!-E_Int_Int : &thin (%Int, %Int) -> %Bool {
-$entry(%a: %Int, %b: %Int):
-  %0 = struct_extract %a: %Int, #value  	// user: %2
-  %1 = struct_extract %b: %Int, #value  	// user: %2
-  %2 = builtin i_neq %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
-  %3 = call @Bool_b (%2: %Builtin.Bool)  	// user: %4
-  return %3
-}
-
-func @Int32_i32 : &thin (%Builtin.Int32) -> %Int32 {
-$entry(%$0: %Builtin.Int32):
-  %self = alloc %Int32  	// users: %value, %1
-  %value = struct_element %self: %*Int32, #value  	// user: %0
-  store %$0 in %value: %*i32 
-  %1 = load %self: %*Int32  	// user: %2
-  return %1
-}
-
-func @Int_ : &thin () -> %Int {
+func @Int_t : &thin () -> %Int {
 $entry:
   %self = alloc %Int  	// users: %value, %4
   %value = struct_element %self: %*Int, #value  	// user: %3
@@ -323,59 +442,21 @@ $entry:
   %1 = struct %Int (%0: %Builtin.Int64)  	// user: %v
   variable_decl %v = %1: %Int  	// user: %2
   %2 = struct_extract %v: %Int, #value  	// user: %3
-  store %2 in %value: %*i64 
+  store %2 in %value: %*Builtin.Int64 
   %4 = load %self: %*Int  	// user: %5
   return %4
 }
 
-func @fatalError_ : &thin () -> %Builtin.Void {
-$entry:
-  %0 = builtin trap  
-  return ()
-}
-
-func @print_Int : &thin (%Int) -> %Builtin.Void {
-$entry(%a: %Int):
-  %0 = struct_extract %a: %Int, #value  	// user: %1
-  %1 = call @vist-Uprint_i64 (%0: %Builtin.Int64) 
-  return ()
-}
-
-func @-N-N_Bool_Bool : &thin (%Bool, %Bool) -> %Bool {
-$entry(%a: %Bool, %b: %Bool):
-  %0 = struct_extract %a: %Bool, #value  	// user: %2
-  %1 = struct_extract %b: %Bool, #value  	// user: %2
-  %2 = builtin b_and %0: %Builtin.Bool, %1: %Builtin.Bool  	// user: %3
-  %3 = call @Bool_b (%2: %Builtin.Bool)  	// user: %4
-  return %3
-}
-
-func @-G-G_Int_Int : &thin (%Int, %Int) -> %Int {
+func @-G_tIntInt : &thin (%Int, %Int) -> %Bool {
 $entry(%a: %Int, %b: %Int):
   %0 = struct_extract %a: %Int, #value  	// user: %2
   %1 = struct_extract %b: %Int, #value  	// user: %2
-  %2 = builtin i_shr %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
-  %3 = call @Int_i64 (%2: %Builtin.Int64)  	// user: %4
+  %2 = builtin i_cmp_gt %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
+  %3 = call @Bool_tb (%2: %Builtin.Bool)  	// user: %4
   return %3
 }
 
-func @-L-E_Double_Double : &thin (%Double, %Double) -> %Bool {
-$entry(%a: %Double, %b: %Double):
-  %0 = struct_extract %a: %Double, #value  	// user: %2
-  %1 = struct_extract %b: %Double, #value  	// user: %2
-  %2 = builtin f_cmp_lte %0: %Builtin.Double, %1: %Builtin.Double  	// user: %3
-  %3 = call @Bool_b (%2: %Builtin.Bool)  	// user: %4
-  return %3
-}
-
-func @print_Int32 : &thin (%Int32) -> %Builtin.Void {
-$entry(%a: %Int32):
-  %0 = struct_extract %a: %Int32, #value  	// user: %1
-  %1 = call @vist-Uprint_i32 (%0: %Builtin.Int32) 
-  return ()
-}
-
-func @Range_Int_Int : &thin (%Int, %Int) -> %Range {
+func @Range_tIntInt : &thin (%Int, %Int) -> %Range {
 $entry(%$0: %Int, %$1: %Int):
   %self = alloc %Range  	// users: %start, %end, %2
   %start = struct_element %self: %*Range, #start  	// user: %0
@@ -386,59 +467,55 @@ $entry(%$0: %Int, %$1: %Int):
   return %2
 }
 
-func @..._Int_Int : &thin (%Int, %Int) -> %Range {
-$entry(%a: %Int, %b: %Int):
-  %0 = call @Range_Int_Int (%a: %Int, %b: %Int)  	// user: %1
-  return %0
-}
-
-func @-O-O_Bool_Bool : &thin (%Bool, %Bool) -> %Bool {
-$entry(%a: %Bool, %b: %Bool):
-  %0 = struct_extract %a: %Bool, #value  	// user: %2
-  %1 = struct_extract %b: %Bool, #value  	// user: %2
-  %2 = builtin b_or %0: %Builtin.Bool, %1: %Builtin.Bool  	// user: %3
-  %3 = call @Bool_b (%2: %Builtin.Bool)  	// user: %4
-  return %3
-}
-
-func @-D_Int_Int : &thin (%Int, %Int) -> %Int {
-$entry(%a: %Int, %b: %Int):
-  %0 = int_literal 0  	// user: %1
-  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %2
-  %2 = call @!-E_Int_Int (%b: %Int, %1: %Int)  	// user: %3
-  %3 = call @assert_Bool (%2: %Bool) 
-  %4 = struct_extract %a: %Int, #value  	// user: %6
-  %5 = struct_extract %b: %Int, #value  	// user: %6
-  %6 = builtin i_div %4: %Builtin.Int64, %5: %Builtin.Int64  	// user: %7
-  %7 = call @Int_i64 (%6: %Builtin.Int64)  	// user: %8
-  return %7
-}
-
-func @-P_Double_Double : &thin (%Double, %Double) -> %Double {
-$entry(%a: %Double, %b: %Double):
-  %0 = struct_extract %a: %Double, #value  	// user: %2
-  %1 = struct_extract %b: %Double, #value  	// user: %2
-  %2 = builtin f_add %0: %Builtin.Double, %1: %Builtin.Double  	// user: %3
-  %3 = call @Double_f64 (%2: %Builtin.Double)  	// user: %4
-  return %3
-}
-
-func @Double_f64 : &thin (%Builtin.Double) -> %Double {
-$entry(%$0: %Builtin.Double):
-  %self = alloc %Double  	// users: %value, %1
-  %value = struct_element %self: %*Double, #value  	// user: %0
-  store %$0 in %value: %*f64 
-  %1 = load %self: %*Double  	// user: %2
-  return %1
-}
-
-func @vist-Uprint_i64 : &thin (%Builtin.Int64) -> %Builtin.Void
-
-func @-E-E_Int_Int : &thin (%Int, %Int) -> %Bool {
+func @!-E_tIntInt : &thin (%Int, %Int) -> %Bool {
 $entry(%a: %Int, %b: %Int):
   %0 = struct_extract %a: %Int, #value  	// user: %2
   %1 = struct_extract %b: %Int, #value  	// user: %2
-  %2 = builtin i_eq %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
-  %3 = call @Bool_b (%2: %Builtin.Bool)  	// user: %4
+  %2 = builtin i_neq %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
+  %3 = call @Bool_tb (%2: %Builtin.Bool)  	// user: %4
+  return %3
+}
+
+func @-D_tIntInt : &thin (%Int, %Int) -> %Int {
+$entry(%a: %Int, %b: %Int):
+  %0 = int_literal 0  	// user: %1
+  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %2
+  %2 = call @!-E_tIntInt (%b: %Int, %1: %Int)  	// user: %3
+  %3 = call @assert_tBool (%2: %Bool) 
+  %4 = struct_extract %a: %Int, #value  	// user: %6
+  %5 = struct_extract %b: %Int, #value  	// user: %6
+  %6 = builtin i_div %4: %Builtin.Int64, %5: %Builtin.Int64  	// user: %7
+  %7 = call @Int_ti64 (%6: %Builtin.Int64)  	// user: %8
+  return %7
+}
+
+func @-G-E_tDoubleDouble : &thin (%Double, %Double) -> %Bool {
+$entry(%a: %Double, %b: %Double):
+  %0 = struct_extract %a: %Double, #value  	// user: %2
+  %1 = struct_extract %b: %Double, #value  	// user: %2
+  %2 = builtin f_cmp_gte %0: %Builtin.Double, %1: %Builtin.Double  	// user: %3
+  %3 = call @Bool_tb (%2: %Builtin.Bool)  	// user: %4
+  return %3
+}
+
+func @-P_tIntInt : &thin (%Int, %Int) -> %Int {
+$entry(%a: %Int, %b: %Int):
+  %0 = struct_extract %a: %Int, #value  	// user: %2
+  %1 = struct_extract %b: %Int, #value  	// user: %2
+  %2 = builtin i_add %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %v
+  variable_decl %v = %2: (%Builtin.Int64, %Builtin.Bool)  	// users: %3, %5
+  %3 = tuple_extract %v: (%Builtin.Int64, %Builtin.Bool), 1  	// user: %4
+  cond_fail %3: %Builtin.Bool
+  %5 = tuple_extract %v: (%Builtin.Int64, %Builtin.Bool), 0  	// user: %6
+  %6 = call @Int_ti64 (%5: %Builtin.Int64)  	// user: %7
+  return %6
+}
+
+func @-L_tDoubleDouble : &thin (%Double, %Double) -> %Bool {
+$entry(%a: %Double, %b: %Double):
+  %0 = struct_extract %a: %Double, #value  	// user: %2
+  %1 = struct_extract %b: %Double, #value  	// user: %2
+  %2 = builtin f_cmp_lt %0: %Builtin.Double, %1: %Builtin.Double  	// user: %3
+  %3 = call @Bool_tb (%2: %Builtin.Bool)  	// user: %4
   return %3
 }

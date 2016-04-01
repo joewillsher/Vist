@@ -7,7 +7,7 @@
 //
 
 /// An RValue, instruction results, literals, etc
-protocol RValue: class, VHIRElement {
+protocol RValue : class, VHIRElement {
     /// An explicit name to give self in the ir repr
     var irName: String? { get set }
     
@@ -28,8 +28,8 @@ protocol RValue: class, VHIRElement {
 ///
 /// Often abstracts over memory -- this can be accessed by a pointer.
 /// This is needed for mutating the val or getting sub-elements by ref
-protocol LValue: RValue {
-    /// LValues provide storage which is abstract -- `memType` provides
+protocol Value : RValue {
+    /// Values provide storage which is abstract -- `memType` provides
     /// an interface to the underlying type, as `type` may return  type `*memType`
     var memType: Ty? { get }
 }
@@ -93,7 +93,7 @@ extension RValue {
     }
 }
 
-extension LValue {
+extension Value {
     var accessor: GetSetAccessor { return RefAccessor(memory: self) }
 }
 
