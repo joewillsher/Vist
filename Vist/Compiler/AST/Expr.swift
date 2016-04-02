@@ -11,7 +11,7 @@
 ///      - literals, tuples, parens, array, closure
 ///      - Call expression, operator, methods, casts
 ///      - Sub expressions of syntax structures, like `type name generic params`
-protocol Expr: ASTNode, _Typed, ExprTypeProvider, RValueEmitter {}
+protocol Expr: ASTNode, _Typed, ExprTypeProvider, ValueEmitter {}
 protocol TypedExpr: Expr, Typed {}
 
 final class BlockExpr: TypedExpr, ScopeNode {
@@ -419,25 +419,6 @@ final class PropertyLookupExpr: LookupExpr {
 struct NullExpr: Expr {
     var _type: Ty? = BuiltinType.null
 }
-
-//struct PlaceholderExpr: Expr {
-//    var _type: Ty? = BuiltinType.null
-//    var defined: DefinedType
-//}
-
-
-
-//// FIXME: find another way to do this
-///// used to lowe type name information
-//final class ValueType: Expr {
-//    var name: String
-//    
-//    init(name: String) {
-//        self.name = name
-//    }
-//    
-//    var _type: Ty? = nil
-//}
 
 
 final class TupleExpr: ChainableExpr {

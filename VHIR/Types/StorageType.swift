@@ -20,6 +20,8 @@ protocol StorageType : Ty {
         
     /// Name this type is given at the global scope of IR
     var irName: String { get }
+    
+    var heapAllocated: Bool { get }
 }
 
 extension StorageType {

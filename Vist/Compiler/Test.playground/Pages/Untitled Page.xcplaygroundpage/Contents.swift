@@ -74,30 +74,6 @@ extension String {
     }
 }
 
-//extension DictionaryLiteralConvertible
-//    where
-//    Key == String,
-//    Self: SequenceType,
-//    Self.Generator.Element == (Key, Value)
-//{
-//    
-//    /// Subscript for unmangled names
-//    ///
-//    /// Function name is required to be between underscores at the start _foo_...
-//    subscript(raw raw: String) -> Value? {
-//        get {
-//            
-//            for (k, v) in self {
-//                
-//                if k.demangleName() == raw { return v }
-//            }
-//            return nil
-//        }
-//    }
-//    
-//    
-//}
-
 
 let d = ["_$fatalError_": 5]
 

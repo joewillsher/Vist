@@ -1,9 +1,19 @@
 
-print 1
-
-let a = 1
 
 ref type Foo {
-    let a: Int
+    var a: Int
 }
+
+var a = Foo 1
+print a.a
+
+var b = a
+b.a = 2
+
+print b.a
+print a.a
+
+//a.a = 2
+//print a.a // 2
+//print b.a // 1
 

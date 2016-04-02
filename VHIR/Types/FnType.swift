@@ -7,7 +7,7 @@
 //
 
 struct FnType : Ty {
-    let params: [Ty], returns: Ty
+    var params: [Ty], returns: Ty
     var metadata: [String]
     let callingConvention: CallingConvention
     
@@ -71,10 +71,22 @@ extension FnType {
 
     /// The type used by the IR -- it uses info from the calling convention
     /// to construct the type which should be used in IR
-    var vhirType: FnType {
-        switch  callingConvention {
+    func vhirType(module: Module) -> FnType {
+        
+        let ret: Ty
+        if case let s as StructType = returns where s.heapAllocated {
+            ret = s.refCountedBox(module)
+        }
+        else {
+            ret = returns
+        }
+        
+        switch callingConvention {
         case .thin:
-            return self
+            return FnType(params: params,
+                          returns: ret,
+                          metadata: metadata,
+                          callingConvention: .thin)
         case .method(let selfType):
             let selfPtr = BuiltinType.pointer(to: selfType)
             return FnType(params: [selfPtr] + params,

@@ -42,7 +42,7 @@ final class TupleExtractInst : InstBase {
 }
 
 
-final class TupleElementPtrInst : InstBase, Value {
+final class TupleElementPtrInst : InstBase, LValue {
     var tuple: PtrOperand, elementIndex: Int
     var elementType: Ty
     

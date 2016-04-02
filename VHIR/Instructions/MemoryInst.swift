@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-final class AllocInst : InstBase, Value {
+final class AllocInst : InstBase, LValue {
     var storedType: Ty
     
     private init(memType: Ty, irName: String?) {
@@ -51,7 +51,7 @@ final class LoadInst : InstBase {
         return "\(name) = load \(address) \(useComment)"
     }
 }
-final class BitcastInst : InstBase, Value {
+final class BitcastInst : InstBase, LValue {
     var pointerType: BuiltinType { return BuiltinType.pointer(to: newType) }
     override var type: Ty? { return pointerType }
     var memType: Ty? { return newType }

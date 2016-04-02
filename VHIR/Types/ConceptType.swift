@@ -9,6 +9,7 @@
 struct ConceptType : StorageType {
     let name: String
     let requiredFunctions: [StructMethod], requiredProperties: [StructMember]
+    let heapAllocated = false
 }
 
 extension ConceptType {

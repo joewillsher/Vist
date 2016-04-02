@@ -15,7 +15,7 @@ struct Runtime {
     private static let voidType = BuiltinType.void
     private static let opaquePointerType = BuiltinType.opaquePointer
     
-    static let refcountedObjectType = StructType.withTypes([BuiltinType.opaquePointer, BuiltinType.uint(size: 32)], name: "RefcountedObject")
+    static let refcountedObjectType = StructType.withTypes([BuiltinType.opaquePointer, BuiltinType.int(size: 32)], name: "RefcountedObject")
     
     private static let functions: [(String, FnType)] = [
         // runtime fns
@@ -24,19 +24,16 @@ struct Runtime {
         ("vist_print", FnType(params: [boolType], returns: voidType)),
         ("vist_print", FnType(params: [int32Type], returns: voidType)),
         ("vist_print", FnType(params: [opaquePointerType], returns: voidType)),
-
+    ]
+    private static let unmangled: [(String, FnType)] = [
+        ("vist_allocObject", FnType(params: [int32Type], returns: refcountedObjectType)),
+        ("vist_deallocObject", FnType(params: [refcountedObjectType], returns: voidType)),
         ("vist_retainObject", FnType(params: [refcountedObjectType], returns: voidType)),
         ("vist_releaseObject", FnType(params: [refcountedObjectType], returns: voidType)),
-        ("vist_allocObject", FnType(params: [refcountedObjectType], returns: voidType)),
-        ("vist_deallocObject", FnType(params: [refcountedObjectType], returns: voidType)),
     ]
-//    private static let unmangled: [(String, FnType)] = [
-        // runtime fns
-//        ("vist_alloc", FnType(params: [Builtin.pointer(to: intType)], returns: voidType)),
-//    ]
     
     private static let functionContainer = FunctionContainer(functions: functions, types: [])
-//    private static let unmangledContainer = FunctionContainer(functions: unmangled, types: [], mangleFunctionNames: false)
+    private static let unmangledContainer = FunctionContainer(functions: unmangled, types: [], mangleFunctionNames: false)
     
     /// Get a builtin function by name
     /// - parameter name: Unmangled name
@@ -45,5 +42,14 @@ struct Runtime {
     static func functionNamed(name: String, argTypes args: [Ty]) -> (mangledName: String, type: FnType)? {
         return functionContainer[fn: name, types: args]
     }
+
+    /// Get a builtin function by name
+    /// - parameter name: Unmangled name
+    /// - parameter args: Applied arg types
+    /// - returns: An optional tuple of `(mangledName, type)`
+    static func unmangledFunctionNamed(name: String) -> (mangledName: String, type: FnType)? {
+        return unmangledContainer[mangledName: name]
+    }
+    
 }
 

@@ -43,7 +43,7 @@ final class StructExtractInst : InstBase {
 }
 
 
-final class StructElementPtrInst : InstBase, Value {
+final class StructElementPtrInst : InstBase, LValue {
     var object: PtrOperand, propertyName: String
     var propertyType: Ty, structType: StructType
     
@@ -82,8 +82,8 @@ extension Builder {
     /// Builds a Struct element ptr instruction, which gets a ptr to the element of a struct
     func buildStructElementPtr(object: PtrOperand, property: String, irName: String? = nil) throws -> StructElementPtrInst {
         guard case let alias as TypeAlias = object.memType, case let structType as StructType = alias.targetType else { throw VHIRError.noType(#file) }
-        let elType = try structType.propertyType(property)
-        return try _add(StructElementPtrInst(object: object, property: property, propertyType: elType.usingTypesIn(module), structType: structType, irName: irName))
+        let elType = try structType.propertyType(property).usingTypesIn(module)
+        return try _add(StructElementPtrInst(object: object, property: property, propertyType: elType, structType: structType, irName: irName))
     }
     
     // TODO: compound extracting

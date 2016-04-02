@@ -1,11 +1,54 @@
 
 type %Int = { %Builtin.Int64 }
+type %Foo.refcounted = { %*Foo, %Builtin.Int32 }
+type %Foo = { %Int }
+type %RefcountedObject = { %Builtin.OpaquePointer, %Builtin.Int32 }
+
+func @Foo_tInt : &thin (%Int) -> %Foo.refcounted {
+$entry(%$0: %Int):
+  %size = int_literal 8  	// user: %refcounted
+  %refcounted = call @vist_allocObject (%size: %Builtin.Int32)  	// user: %1
+  %0 = alloc %RefcountedObject  	// users: %1, nil, %storage
+  store %refcounted in %0: %*RefcountedObject 
+  %storage = bitcast %0: %*RefcountedObject to %*Foo.refcounted  	// users: %2, %4
+  %2 = struct_element %storage: %*Foo.refcounted, #object  	// user: %storage.instance
+  %storage.instance = load %2: %**Foo  	// user: %a
+  %a = struct_element %storage.instance: %*Foo, #a  	// user: %3
+  store %$0 in %a: %*Int 
+  %4 = load %storage: %*Foo.refcounted  	// user: %5
+  return %4
+}
+
+func @vist_allocObject : &thin (%Builtin.Int32) -> %RefcountedObject
 
 func @main : &thin () -> %Builtin.Void {
 $entry:
   %0 = int_literal 1  	// user: %1
   %1 = struct %Int (%0: %Builtin.Int64)  	// user: %2
-  %2 = call @print_tInt (%1: %Int) 
+  %2 = call @Foo_tInt (%1: %Int)  	// user: %4
+  %3 = alloc %Foo.refcounted  	// users: %4, nil, %5, %12, %16, %21
+  store %2 in %3: %*Foo.refcounted 
+  %5 = struct_element %3: %*Foo.refcounted, #object  	// user: %6
+  %6 = load %5: %**Foo  	// user: %7
+  %7 = load %6: %*Foo  	// user: %8
+  %8 = struct_extract %7: %Foo, #a  	// user: %9
+  %9 = call @print_tInt (%8: %Int) 
+  %10 = int_literal 2  	// user: %11
+  %11 = struct %Int (%10: %Builtin.Int64)  	// user: %15
+  %12 = struct_element %3: %*Foo.refcounted, #object  	// user: %13
+  %13 = load %12: %**Foo  	// user: %14
+  %14 = struct_element %13: %*Foo, #a  	// user: %15
+  store %11 in %14: %*Int 
+  %16 = struct_element %3: %*Foo.refcounted, #object  	// user: %17
+  %17 = load %16: %**Foo  	// user: %18
+  %18 = load %17: %*Foo  	// user: %19
+  %19 = struct_extract %18: %Foo, #a  	// user: %20
+  %20 = call @print_tInt (%19: %Int) 
+  %21 = struct_element %3: %*Foo.refcounted, #object  	// user: %22
+  %22 = load %21: %**Foo  	// user: %23
+  %23 = load %22: %*Foo  	// user: %24
+  %24 = struct_extract %23: %Foo, #a  	// user: %25
+  %25 = call @print_tInt (%24: %Int) 
   return ()
 }
 

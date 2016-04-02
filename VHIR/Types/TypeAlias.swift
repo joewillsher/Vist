@@ -11,13 +11,20 @@
 /// and allow the types to be named.
 ///
 /// `TypeAlias` simply wraps `targetType` and
-final class TypeAlias: Ty {
+final class TypeAlias : Ty {
     let name: String, targetType: StorageType
     
     init(name: String, targetType: StorageType) {
         self.name = name
         self.targetType = targetType
     }
+}
+
+extension TypeAlias : StorageType {
+    var members: [StructMember] { return targetType.members }
+    var methods: [StructMethod] { return targetType.methods }
+    var irName: String { return targetType.irName }
+    var heapAllocated: Bool { return targetType.heapAllocated }
 }
 
 extension TypeAlias {

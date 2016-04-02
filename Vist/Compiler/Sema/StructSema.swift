@@ -35,7 +35,7 @@ extension StructExpr: ExprTypeProvider {
             }
         }
         
-        var ty = StructType(members: members, methods: [], name: name)
+        var ty = StructType(members: members, methods: [], name: name, heapAllocated: byRef)
         self.type = ty
         
         try errorCollector.run {

@@ -2,6 +2,7 @@
 target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-macosx10.11.0"
 
+%struct.RefcountedObject = type { i8*, i32 }
 %Bool = type { i1 }
 %Int = type { i64 }
 %Double = type { double }
@@ -16,8 +17,145 @@ target triple = "x86_64-apple-macosx10.11.0"
 @.str4 = private unnamed_addr constant [7 x i8] c"false\0A\00", align 1
 @.str5 = private unnamed_addr constant [4 x i8] c"%s\0A\00", align 1
 
+; Function Attrs: nounwind ssp uwtable
+define void @_Z17incrementRefCountP16RefcountedObject(%struct.RefcountedObject* %object) #0 {
+entry:
+  %object.addr = alloca %struct.RefcountedObject*, align 8
+  %.atomictmp = alloca i32, align 4
+  %.atomicdst = alloca i32, align 4
+  store %struct.RefcountedObject* %object, %struct.RefcountedObject** %object.addr, align 8
+  %0 = load %struct.RefcountedObject** %object.addr, align 8
+  %refCount = getelementptr inbounds %struct.RefcountedObject* %0, i32 0, i32 1
+  store i32 1, i32* %.atomictmp
+  %1 = load i32* %.atomictmp, align 4
+  %2 = atomicrmw add i32* %refCount, i32 %1 monotonic
+  store i32 %2, i32* %.atomicdst, align 4
+  %3 = load i32* %.atomicdst, align 4
+  ret void
+}
+
+; Function Attrs: nounwind ssp uwtable
+define void @_Z17decrementRefCountP16RefcountedObject(%struct.RefcountedObject* %object) #0 {
+entry:
+  %object.addr = alloca %struct.RefcountedObject*, align 8
+  %.atomictmp = alloca i32, align 4
+  %.atomicdst = alloca i32, align 4
+  store %struct.RefcountedObject* %object, %struct.RefcountedObject** %object.addr, align 8
+  %0 = load %struct.RefcountedObject** %object.addr, align 8
+  %refCount = getelementptr inbounds %struct.RefcountedObject* %0, i32 0, i32 1
+  store i32 1, i32* %.atomictmp
+  %1 = load i32* %.atomictmp, align 4
+  %2 = atomicrmw sub i32* %refCount, i32 %1 monotonic
+  store i32 %2, i32* %.atomicdst, align 4
+  %3 = load i32* %.atomicdst, align 4
+  ret void
+}
+
 ; Function Attrs: noinline ssp uwtable
-define void @vist-Uprint_ti64(i64 %i) #0 {
+define { i8*, i32 } @vist_allocObject(i32 %size) #1 {
+entry:
+  %retval = alloca %struct.RefcountedObject, align 8
+  %size.addr = alloca i32, align 4
+  %object = alloca i8*, align 8
+  %refCount = alloca i32, align 4
+  store i32 %size, i32* %size.addr, align 4
+  %0 = load i32* %size.addr, align 4
+  %conv = zext i32 %0 to i64
+  %call = call i8* @malloc(i64 %conv)
+  store i8* %call, i8** %object, align 8
+  store i32 1, i32* %refCount, align 4
+  %object1 = getelementptr inbounds %struct.RefcountedObject* %retval, i32 0, i32 0
+  %1 = load i8** %object, align 8
+  store i8* %1, i8** %object1, align 8
+  %refCount2 = getelementptr inbounds %struct.RefcountedObject* %retval, i32 0, i32 1
+  %2 = load i32* %refCount, align 4
+  store i32 %2, i32* %refCount2, align 4
+  %3 = bitcast %struct.RefcountedObject* %retval to { i8*, i32 }*
+  %4 = load { i8*, i32 }* %3, align 1
+  ret { i8*, i32 } %4
+}
+
+declare i8* @malloc(i64) #2
+
+; Function Attrs: noinline ssp uwtable
+define void @vist_deallocObject(%struct.RefcountedObject* %object) #1 {
+entry:
+  %object.addr = alloca %struct.RefcountedObject*, align 8
+  store %struct.RefcountedObject* %object, %struct.RefcountedObject** %object.addr, align 8
+  %0 = load %struct.RefcountedObject** %object.addr, align 8
+  %object1 = getelementptr inbounds %struct.RefcountedObject* %0, i32 0, i32 0
+  %1 = load i8** %object1, align 8
+  call void @free(i8* %1)
+  %2 = load %struct.RefcountedObject** %object.addr, align 8
+  %3 = bitcast %struct.RefcountedObject* %2 to i8*
+  call void @free(i8* %3)
+  ret void
+}
+
+declare void @free(i8*) #2
+
+; Function Attrs: noinline ssp uwtable
+define void @vist_releaseObject(%struct.RefcountedObject* %object, i32 %size) #1 {
+entry:
+  %object.addr = alloca %struct.RefcountedObject*, align 8
+  %size.addr = alloca i32, align 4
+  store %struct.RefcountedObject* %object, %struct.RefcountedObject** %object.addr, align 8
+  store i32 %size, i32* %size.addr, align 4
+  %0 = load %struct.RefcountedObject** %object.addr, align 8
+  %refCount = getelementptr inbounds %struct.RefcountedObject* %0, i32 0, i32 1
+  %1 = load i32* %refCount, align 4
+  %cmp = icmp eq i32 %1, 1
+  br i1 %cmp, label %if.then, label %if.else
+
+if.then:                                          ; preds = %entry
+  %2 = load %struct.RefcountedObject** %object.addr, align 8
+  call void @vist_deallocObject(%struct.RefcountedObject* %2)
+  br label %if.end
+
+if.else:                                          ; preds = %entry
+  %3 = load %struct.RefcountedObject** %object.addr, align 8
+  call void @_Z17decrementRefCountP16RefcountedObject(%struct.RefcountedObject* %3)
+  br label %if.end
+
+if.end:                                           ; preds = %if.else, %if.then
+  ret void
+}
+
+; Function Attrs: noinline nounwind ssp uwtable
+define void @vist_retainObject(%struct.RefcountedObject* %object) #3 {
+entry:
+  %object.addr = alloca %struct.RefcountedObject*, align 8
+  store %struct.RefcountedObject* %object, %struct.RefcountedObject** %object.addr, align 8
+  %0 = load %struct.RefcountedObject** %object.addr, align 8
+  call void @_Z17incrementRefCountP16RefcountedObject(%struct.RefcountedObject* %0)
+  ret void
+}
+
+; Function Attrs: noinline nounwind ssp uwtable
+define i32 @vist_getObjectRefcount(%struct.RefcountedObject* %object) #3 {
+entry:
+  %object.addr = alloca %struct.RefcountedObject*, align 8
+  store %struct.RefcountedObject* %object, %struct.RefcountedObject** %object.addr, align 8
+  %0 = load %struct.RefcountedObject** %object.addr, align 8
+  %refCount = getelementptr inbounds %struct.RefcountedObject* %0, i32 0, i32 1
+  %1 = load i32* %refCount, align 4
+  ret i32 %1
+}
+
+; Function Attrs: noinline nounwind ssp uwtable
+define zeroext i1 @vist_objectHasUniqueReference(%struct.RefcountedObject* %object) #3 {
+entry:
+  %object.addr = alloca %struct.RefcountedObject*, align 8
+  store %struct.RefcountedObject* %object, %struct.RefcountedObject** %object.addr, align 8
+  %0 = load %struct.RefcountedObject** %object.addr, align 8
+  %refCount = getelementptr inbounds %struct.RefcountedObject* %0, i32 0, i32 1
+  %1 = load i32* %refCount, align 4
+  %cmp = icmp eq i32 %1, 1
+  ret i1 %cmp
+}
+
+; Function Attrs: noinline ssp uwtable
+define void @vist-Uprint_ti64(i64 %i) #1 {
 entry:
   %i.addr = alloca i64, align 8
   store i64 %i, i64* %i.addr, align 8
@@ -26,10 +164,10 @@ entry:
   ret void
 }
 
-declare i32 @printf(i8*, ...) #1
+declare i32 @printf(i8*, ...) #2
 
 ; Function Attrs: noinline ssp uwtable
-define void @vist-Uprint_ti32(i32 %i) #0 {
+define void @vist-Uprint_ti32(i32 %i) #1 {
 entry:
   %i.addr = alloca i32, align 4
   store i32 %i, i32* %i.addr, align 4
@@ -39,7 +177,7 @@ entry:
 }
 
 ; Function Attrs: noinline ssp uwtable
-define void @vist-Uprint_tf64(double %d) #0 {
+define void @vist-Uprint_tf64(double %d) #1 {
 entry:
   %d.addr = alloca double, align 8
   store double %d, double* %d.addr, align 8
@@ -49,7 +187,7 @@ entry:
 }
 
 ; Function Attrs: noinline ssp uwtable
-define void @vist-Uprint_tf32(float %d) #0 {
+define void @vist-Uprint_tf32(float %d) #1 {
 entry:
   %d.addr = alloca float, align 4
   store float %d, float* %d.addr, align 4
@@ -60,7 +198,7 @@ entry:
 }
 
 ; Function Attrs: noinline ssp uwtable
-define void @vist-Uprint_tb(i1 zeroext %b) #0 {
+define void @vist-Uprint_tb(i1 zeroext %b) #1 {
 entry:
   %b.addr = alloca i8, align 1
   %frombool = zext i1 %b to i8
@@ -73,7 +211,7 @@ entry:
 }
 
 ; Function Attrs: noinline ssp uwtable
-define void @vist-Uprint_top(i8* %str) #0 {
+define void @vist-Uprint_top(i8* %str) #1 {
 entry:
   %str.addr = alloca i8*, align 8
   store i8* %str, i8** %str.addr, align 8
@@ -436,7 +574,7 @@ entry:
   %length = getelementptr inbounds %String* %self, i32 0, i32 1
   %0 = trunc i64 %count to i32
   %mallocsize = mul i32 %0, ptrtoint (i8* getelementptr (i8* null, i32 1) to i32)
-  %1 = tail call i8* @malloc(i32 %mallocsize)
+  %1 = tail call i8* bitcast (i8* (i64)* @malloc to i8* (i32)*)(i32 %mallocsize)
   %buffer = alloca i8*
   store i8* %1, i8** %buffer
   call void @llvm.memcpy.p0i8.p0i8.i64(i8* %1, i8* %ptr, i64 %count, i32 1, i1 false)
@@ -601,30 +739,30 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-declare i1 @llvm.expect.i1(i1, i1) #2
+declare i1 @llvm.expect.i1(i1, i1) #4
 
 ; Function Attrs: noreturn nounwind
-declare void @llvm.trap() #3
+declare void @llvm.trap() #5
 
 ; Function Attrs: nounwind readnone
-declare { i64, i1 } @llvm.ssub.with.overflow.i64(i64, i64) #2
+declare { i64, i1 } @llvm.ssub.with.overflow.i64(i64, i64) #4
 
 ; Function Attrs: nounwind readnone
-declare { i64, i1 } @llvm.smul.with.overflow.i64(i64, i64) #2
-
-declare noalias i8* @malloc(i32)
+declare { i64, i1 } @llvm.smul.with.overflow.i64(i64, i64) #4
 
 ; Function Attrs: nounwind
-declare void @llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1) #4
+declare void @llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1) #6
 
 ; Function Attrs: nounwind readnone
-declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #2
+declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #4
 
-attributes #0 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #1 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #2 = { nounwind readnone }
-attributes #3 = { noreturn nounwind }
-attributes #4 = { nounwind }
+attributes #0 = { nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #3 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #4 = { nounwind readnone }
+attributes #5 = { noreturn nounwind }
+attributes #6 = { nounwind }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}

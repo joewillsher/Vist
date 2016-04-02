@@ -163,7 +163,7 @@ extension Builder {
     /// Creates function prototype an adds to module
     func createFunctionPrototype(name: String, type: FnType) throws -> Function {
         let type = type.usingTypesIn(module) as! FnType
-        let function = Function(name: name, type: type.vhirType, module: module)
+        let function = Function(name: name, type: type.vhirType(module), module: module)
         module.insert(function)
         return function
     }
@@ -184,9 +184,14 @@ extension Module {
         return try getOrInsertFunction(named: mangledName, type: fnTy)
     }
     
-    /// Returns a stdlib function, updating the module fn list if needed
+    /// Returns a runtime function, updating the module fn list if needed
     func getOrInsertRuntimeFunction(named name: String, argTypes: [Ty]) throws -> Function? {
         guard let (mangledName, fnTy) = Runtime.functionNamed(name, argTypes: argTypes) else { return nil }
+        return try getOrInsertFunction(named: mangledName, type: fnTy)
+    }
+    /// Returns a raw, unmangled runtime function, updating the module fn list if needed
+    func getOrInsertRawRuntimeFunction(named name: String) throws -> Function? {
+        guard let (mangledName, fnTy) = Runtime.unmangledFunctionNamed(name) else { return nil }
         return try getOrInsertFunction(named: mangledName, type: fnTy)
     }
     

@@ -7,7 +7,7 @@
 //
 
 enum IRLowerError: VistError {
-    case notLowerable(RValue)
+    case notLowerable( Value)
     
     var description: String {
         switch self {
@@ -624,7 +624,7 @@ extension ExistentialWitnessMethodInst : VHIRLower {
         let i = try existentialType.indexOf(methodNamed: methodName, argTypes: argTypes)
         let fnType = try existentialType
             .methodType(methodNamed: methodName, argTypes: argTypes)
-            .withOpaqueParent().vhirType
+            .withOpaqueParent().vhirType(module)
             .usingTypesIn(module)
         
         let indexValue = LLVMConstInt(LLVMInt32Type(), UInt64(i), false) // i32

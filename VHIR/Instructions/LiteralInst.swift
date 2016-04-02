@@ -50,7 +50,7 @@ final class StringLiteralInst : InstBase {
     }
 }
 
-final class LiteralValue<Literal> : RValue {
+final class LiteralValue<Literal> : Value {
     var value: Literal
     
     var irName: String?
@@ -73,7 +73,7 @@ final class LiteralValue<Literal> : RValue {
 }
 
 
-final class VoidLiteralValue : RValue {
+final class VoidLiteralValue : Value {
     var type: Ty? { return BuiltinType.void }
     weak var parentBlock: BasicBlock?
     var uses: [Operand] = []

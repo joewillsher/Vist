@@ -7,7 +7,7 @@
 //
 
 /// A parameter passed between blocks and functions
-class Param : RValue {
+class Param : Value {
     var paramName: String
     var type: Ty?
     weak var parentBlock: BasicBlock?
@@ -26,7 +26,7 @@ class Param : RValue {
 }
 
 /// A param backed by a pointer
-final class RefParam : Param, Value {
+final class RefParam : Param, LValue {
     
     var memType: Ty?
     

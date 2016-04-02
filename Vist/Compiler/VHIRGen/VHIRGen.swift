@@ -7,7 +7,7 @@
 //
 
 
-protocol RValueEmitter {
+protocol ValueEmitter {
     /// Emit the get-accessor for a VHIR rvalue
     @warn_unused_result
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor
@@ -17,7 +17,7 @@ protocol StmtEmitter {
     func emitStmt(module module: Module, scope: Scope) throws
 }
 
-protocol LValueEmitter: RValueEmitter {
+protocol LValueEmitter: ValueEmitter {
     /// Emit the get/set-accessor for a VHIR lvalue
     @warn_unused_result
     func emitLValue(module module: Module, scope: Scope) throws -> GetSetAccessor
@@ -45,7 +45,7 @@ extension Decl {
 extension ASTNode {
     @warn_unused_result
     func emit(module module: Module, scope: Scope) throws {
-        if case let rval as RValueEmitter = self {
+        if case let rval as ValueEmitter = self {
             _ = try rval.emitRValue(module: module, scope: scope)
         }
         else if case let stmt as StmtEmitter = self {
@@ -95,25 +95,25 @@ extension AST {
 
 // MARK: Lower AST nodes to instructions
 
-extension IntegerLiteral : RValueEmitter {
+extension IntegerLiteral : ValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         let int = try module.builder.buildIntLiteral(val)
         let std = try module.builder.buildStructInit(StdLib.intType, values: Operand(int))
-        return std.accessor
+        return try std.accessor()
     }
 }
 
-extension BooleanLiteral : RValueEmitter {
+extension BooleanLiteral : ValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         let bool = try module.builder.buildBoolLiteral(val)
         let std = try module.builder.buildStructInit(StdLib.boolType, values: Operand(bool))
-        return std.accessor
+        return try std.accessor()
     }
 }
 
-extension StringLiteral : RValueEmitter {
+extension StringLiteral : ValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
        
@@ -165,15 +165,15 @@ extension StringLiteral : RValueEmitter {
         let initialiser = try module.getOrInsertStdLibFunction(named: "String", argTypes: [BuiltinType.opaquePointer, BuiltinType.int(size: 64)])!
         let std = try module.builder.buildFunctionCall(initialiser, args: [Operand(string), Operand(length)])
         
-        return std.accessor
+        return try std.accessor()
     }
 }
 
 
-extension VariableDecl : RValueEmitter {
+extension VariableDecl : ValueEmitter {
         
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
-
+        
         let val = try value.emitRValue(module: module, scope: scope)
         
         if isMutable {
@@ -182,17 +182,13 @@ extension VariableDecl : RValueEmitter {
             return variable
         }
         else {
-            let variable = try module.builder.buildVariableDecl(Operand(val.getter()), irName: name).accessor
+            let variable = try module.builder.buildVariableDecl(Operand(val.getter()), irName: name).accessor()
             scope.add(variable, name: name)
             return variable
         }
     }
 }
 
-
-private extension CollectionType where Generator.Element == Expr {
-    
-}
 
 extension FunctionCall/*: VHIRGenerator*/ {
     
@@ -218,19 +214,19 @@ extension FunctionCall/*: VHIRGenerator*/ {
         let args = try argOperands(module: module, scope: scope)
 
         if let stdlib = try module.getOrInsertStdLibFunction(named: name, argTypes: fnType.params) {
-            return try module.builder.buildFunctionCall(stdlib, args: args).accessor
+            return try module.builder.buildFunctionCall(stdlib, args: args).accessor()
         }
         else if let runtime = try module.getOrInsertRuntimeFunction(named: name, argTypes: fnType.params) /*where name.hasPrefix("vist_")*/ {
-            return try module.builder.buildFunctionCall(runtime, args: args).accessor
+            return try module.builder.buildFunctionCall(runtime, args: args).accessor()
         }
         else if
             let prefixRange = name.rangeOfString("Builtin."),
             let instruction = BuiltinInst(rawValue: name.stringByReplacingCharactersInRange(prefixRange, withString: "")) {
             
-            return try module.builder.buildBuiltinInstruction(instruction, args: args).accessor
+            return try module.builder.buildBuiltinInstruction(instruction, args: args).accessor()
         }
         else if let function = module.functionNamed(mangledName) {
-            return try module.builder.buildFunctionCall(function, args: args).accessor
+            return try module.builder.buildFunctionCall(function, args: args).accessor()
         }
         else { fatalError("No function \(name)") }
     }
@@ -269,7 +265,7 @@ extension FuncDecl : StmtEmitter {
         
         // add the explicit method parameters
         for paramName in impl.params {
-            let paramAccessor = try function.paramNamed(paramName).accessor
+            let paramAccessor = try function.paramNamed(paramName).accessor()
             fnScope.add(paramAccessor, name: paramName)
         }
         // A method calling convention means we have to pass `self` in, and tell vars how
@@ -317,31 +313,31 @@ extension VariableExpr: LValueEmitter {
     }
 }
 
-extension ReturnStmt: RValueEmitter {
+extension ReturnStmt: ValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         let retVal = try expr.emitRValue(module: module, scope: scope).getter()
-        return try module.builder.buildReturn(Operand(retVal)).accessor
+        return try module.builder.buildReturn(Operand(retVal)).accessor()
     }
 }
 
-extension TupleExpr: RValueEmitter {
+extension TupleExpr: ValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         
-        if self.elements.isEmpty { return VoidLiteralValue().accessor }
+        if self.elements.isEmpty { return try VoidLiteralValue().accessor() }
         
         guard case let type as TupleType = _type else { throw VHIRError.noType(#file) }
         let elements = try self.elements.map { try $0.emitRValue(module: module, scope: scope).getter() }.map(Operand.init)
-        return try module.builder.buildTupleCreate(type, elements: elements).accessor
+        return try module.builder.buildTupleCreate(type, elements: elements).accessor()
     }
 }
 
-extension TupleMemberLookupExpr: RValueEmitter, LValueEmitter {
+extension TupleMemberLookupExpr: ValueEmitter, LValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         let tuple = try object.emitRValue(module: module, scope: scope).getter()
-        return try module.builder.buildTupleExtract(Operand(tuple), index: index).accessor
+        return try module.builder.buildTupleExtract(Operand(tuple), index: index).accessor()
     }
     
     func emitLValue(module module: Module, scope: Scope) throws -> GetSetAccessor {
@@ -358,12 +354,12 @@ extension PropertyLookupExpr: LValueEmitter {
         
         switch object._type {
         case is StructType:
-            let object = try self.object.emitRValue(module: module, scope: scope).getter()
-            return try module.builder.buildStructExtract(Operand(object), property: propertyName).accessor
+            let object = try self.object.emitRValue(module: module, scope: scope)
+            return try module.builder.buildStructExtract(Operand(try object.getter()), property: propertyName).accessor()
             
         case is ConceptType:
             let object = try self.object.emitRValue(module: module, scope: scope).asReferenceAccessor().reference()
-            return try module.builder.buildOpenExistential(object, propertyName: propertyName).accessor
+            return try module.builder.buildOpenExistential(object, propertyName: propertyName).accessor()
             
         default:
             fatalError()
@@ -492,8 +488,8 @@ extension ForInLoopStmt: StmtEmitter {
         
         // make the loop's vhirgen scope and build the stdint count to put in it
         let loopScope = Scope(parent: scope)
-        let loopVariable = try module.builder.buildStructInit(StdLib.intType, values: Operand(loopCountParam), irName: binded.name)
-        loopScope.add(loopVariable.accessor, name: binded.name)
+        let loopVariable = try module.builder.buildStructInit(StdLib.intType, values: Operand(loopCountParam), irName: binded.name).accessor()
+        loopScope.add(loopVariable, name: binded.name)
         
         // vhirgen the body of the loop
         try block.emitStmt(module: module, scope: loopScope)
@@ -543,7 +539,7 @@ extension WhileLoopStmt: StmtEmitter {
     }
 }
 
-extension StructExpr: RValueEmitter {
+extension StructExpr: ValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         
@@ -563,11 +559,11 @@ extension StructExpr: RValueEmitter {
             try m.emitStmt(module: module, scope: scope)
         }
         
-        return VoidLiteralValue().accessor
+        return try VoidLiteralValue().accessor()
     }
 }
 
-extension ConceptExpr: RValueEmitter {
+extension ConceptExpr: ValueEmitter {
 
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         
@@ -579,7 +575,7 @@ extension ConceptExpr: RValueEmitter {
             try m.emitStmt(module: module, scope: scope)
         }
         
-        return VoidLiteralValue().accessor
+        return try VoidLiteralValue().accessor()
     }
 
 }
@@ -587,40 +583,57 @@ extension ConceptExpr: RValueEmitter {
 extension InitialiserDecl: StmtEmitter {
     
     func emitStmt(module module: Module, scope: Scope) throws {
-        guard let type = ty.type, selfType = parent?.type else { throw VHIRError.noType(#file) }
+        guard let initialiserType = ty.type, selfType = parent?.type else { throw VHIRError.noType(#file) }
         
         // if has body
         guard let impl = impl else {
-            try module.builder.createFunctionPrototype(mangledName, type: type)
+            try module.builder.createFunctionPrototype(mangledName, type: initialiserType.vhirType(module))
             return
         }
         
         let originalInsertPoint = module.builder.insertPoint
         
         // make function and move into it
-        let function = try module.builder.buildFunction(mangledName, type: type, paramNames: impl.params)
+        let function = try module.builder.buildFunction(mangledName, type: initialiserType.vhirType(module), paramNames: impl.params)
         try module.builder.setInsertPoint(function)
         
         // make scope and occupy it with params
         let fnScope = Scope(parent: scope)
         
-        let selfVar = try module.builder.buildAlloc(selfType, irName: "self").accessor
+        let selfVar: GetSetAccessor
+        
+        if selfType.heapAllocated {
+            let size = try module.builder.buildIntLiteral(selfType.size(module), size: 32, irName: "size")
+            
+            let allocator = try module.getOrInsertRawRuntimeFunction(named: "vist_allocObject")!
+            let refCounted = try module.builder.buildFunctionCall(allocator, args: [Operand(size)], irName: "refcounted")
+            
+            let memory = try refCounted.allocGetSetAccessor().reference()
+            let bitcast = try module.builder.buildBitcast(from: PtrOperand(memory), newType: selfType.refCountedBox(module), irName: "storage")
+            selfVar = RefCountedAccessor(refcountedBox: bitcast)
+        }
+        else {
+             selfVar = try module.builder.buildAlloc(selfType, irName: "self").accessor
+        }
+        
         fnScope.add(selfVar, name: "self")
         
         // add self’s elements into the scope, whose accessors are elements of selfvar
         for member in selfType.members {
-            let accessor = try module.builder.buildStructElementPtr(selfVar.reference(), property: member.name, irName: member.name)
-            fnScope.add(accessor.accessor, name: member.name)
+            let structElement = try module.builder.buildStructElementPtr(try selfVar.reference(),
+                                                                         property: member.name,
+                                                                         irName: member.name)
+            fnScope.add(structElement.accessor, name: member.name)
         }
         
         // add the initialiser’s params
         for param in impl.params {
-            fnScope.add(try function.paramNamed(param).accessor, name: param)
+            fnScope.add(try function.paramNamed(param).accessor(), name: param)
         }
         
         // vhir gen for body
         try impl.body.emitStmt(module: module, scope: fnScope)
-        try module.builder.buildReturn(Operand(try selfVar.getter()))
+        try module.builder.buildReturn(Operand(try selfVar.aggregateGetter()))
         
         // move out of function
         module.builder.insertPoint = originalInsertPoint
@@ -628,7 +641,7 @@ extension InitialiserDecl: StmtEmitter {
 }
 
 
-extension MutationExpr: RValueEmitter {
+extension MutationExpr: ValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         
@@ -638,12 +651,12 @@ extension MutationExpr: RValueEmitter {
         // set the lhs to rval
         try lhs.emitLValue(module: module, scope: scope).setter(Operand(rval))
 
-        return VoidLiteralValue().accessor
+        return try VoidLiteralValue().accessor()
     }
     
 }
 
-extension MethodCallExpr: RValueEmitter {
+extension MethodCallExpr: ValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         
@@ -663,7 +676,7 @@ extension MethodCallExpr: RValueEmitter {
         switch object._type {
         case is StructType:
             let function = module.functionNamed(mangledName)!
-            return try module.builder.buildFunctionCall(function, args: [selfRef] + args).accessor
+            return try module.builder.buildFunctionCall(function, args: [selfRef] + args).accessor()
             
         case let existentialType as ConceptType:
             
@@ -682,7 +695,7 @@ extension MethodCallExpr: RValueEmitter {
             // call the method by applying the opaque ptr to self as the first param
             return try module.builder.buildFunctionApply(PtrOperand(fn),
                                                         returnType: fnType.returns,
-                                                        args: [PtrOperand(unboxedSelf)] + args).accessor
+                                                        args: [PtrOperand(unboxedSelf)] + args).accessor()
         default:
             fatalError()
         }

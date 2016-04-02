@@ -1,13 +1,13 @@
 //
-//  Value.swift
+//  LValue.swift
 //  Vist
 //
 //  Created by Josef Willsher on 29/02/2016.
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-/// An RValue, instruction results, literals, etc
-protocol RValue : class, VHIRElement {
+/// An Value, instruction results, literals, etc
+protocol Value : class, VHIRElement {
     /// An explicit name to give self in the ir repr
     var irName: String? { get set }
     
@@ -28,20 +28,20 @@ protocol RValue : class, VHIRElement {
 ///
 /// Often abstracts over memory -- this can be accessed by a pointer.
 /// This is needed for mutating the val or getting sub-elements by ref
-protocol Value : RValue {
-    /// Values provide storage which is abstract -- `memType` provides
+protocol LValue : Value {
+    /// LValues provide storage which is abstract -- `memType` provides
     /// an interface to the underlying type, as `type` may return  type `*memType`
     var memType: Ty? { get }
 }
 
-extension RValue {
+extension Value {
     
     /// Removes all `Operand` instances which point to `self`
     func removeAllUses() { uses.forEach(removeUse)  }
     
     /// Replaces all `Operand` instances which point to `self`
     /// with `val`
-    func replaceAllUses(with val: RValue) {
+    func replaceAllUses(with val: Value) {
          for use in uses { use.value = val }
     }
     
@@ -61,8 +61,20 @@ extension RValue {
         for use in uses { use.setLoweredValue(val) }
     }
     
-    /// The accessor whose getter returns `self`
-    var accessor: ValAccessor { return ValAccessor(value: self) }
+    /// The accessor whose getter returns `self`. If self is abstracts a refcounted
+    /// box then the accessor accesses the stored value.
+    func accessor() throws -> Accessor {
+        
+        let returnAccessor = ValAccessor(value: self)
+        
+        if case let s as TypeAlias = returnAccessor.storedType where s.heapAllocated {
+            let ref = try returnAccessor.asReferenceAccessor().reference()
+            return RefCountedAccessor(refcountedBox: ref)
+        }
+        else {
+            return returnAccessor
+        }
+    }
     
     func dump() { print(vhir) }
     
@@ -93,7 +105,7 @@ extension RValue {
     }
 }
 
-extension Value {
+extension LValue {
     var accessor: GetSetAccessor { return RefAccessor(memory: self) }
 }
 

@@ -13,11 +13,13 @@ struct StructType : StorageType {
     var methods: [StructMethod]
     var genericTypes: [GenericType] = []
     var concepts: [ConceptType] = []
+    let heapAllocated: Bool
         
-    init(members: [StructMember], methods: [StructMethod], name: String) {
+    init(members: [StructMember], methods: [StructMethod], name: String, heapAllocated: Bool = false) {
         self.name = name
         self.members = members
         self.methods = methods
+        self.heapAllocated = heapAllocated
     }
 }
 
@@ -28,17 +30,21 @@ extension StructType {
             .map { $0.type.lowerType(module) }
             .ptr()
         defer { arr.destroy(members.count) }
-        
         return LLVMStructType(arr,
                               UInt32(members.count),
                               false)
+    }
+    func refCountedBox(module: Module) -> TypeAlias {
+        let t = StructType(members: [("object", BuiltinType.pointer(to: self), true), ("refCount", BuiltinType.int(size: 32), false)],
+                           methods: [], name: "\(name).refcounted", heapAllocated: true)
+        return module.getOrInsert(t)
     }
     
     func usingTypesIn(module: Module) -> Ty {
         let mappedEls = members.map {
             ($0.name, $0.type.usingTypesIn(module), $0.mutable) as StructMember
         }
-        var newTy = StructType(members: mappedEls, methods: methods, name: name)
+        var newTy = StructType(members: mappedEls, methods: methods, name: name, heapAllocated: heapAllocated)
         newTy.genericTypes = genericTypes
         newTy.concepts = concepts
         return module.getOrInsert(TypeAlias(name: name, targetType: newTy))
@@ -50,7 +56,7 @@ extension StructType {
     }
     
     static func withTypes(tys: [Ty], name: String = "") -> StructType {
-        return StructType(members: tys.map { (name: name, type: $0, mutable: true) }, methods: [], name: "")
+        return StructType(members: tys.map { (name: name, type: $0, mutable: true) }, methods: [], name: name)
     }
     
     var irName: String {

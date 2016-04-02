@@ -35,11 +35,8 @@ struct FunctionContainer {
     }
     
     /// Get a named function
-    ///
     /// - parameter id: Unmangled name
-    ///
     /// - parameter types: Applied arg types
-    ///
     /// - returns: An optional tuple of `(mangledName, type)`
     subscript(fn fn: String, types types: [Ty]) -> (mangledName: String, type: FnType)? {
         get {

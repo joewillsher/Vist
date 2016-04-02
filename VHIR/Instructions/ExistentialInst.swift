@@ -47,7 +47,7 @@ final class ExistentialConstructInst : InstBase {
     
 }
 
-final class ExistentialWitnessMethodInst : InstBase, Value {
+final class ExistentialWitnessMethodInst : InstBase, LValue {
     var existential: PtrOperand
     let methodName: String, argTypes: [Ty], existentialType: ConceptType
     
@@ -70,7 +70,7 @@ final class ExistentialWitnessMethodInst : InstBase, Value {
 }
 
 /// Get the instance from the existential box, an i8*
-final class ExistentialUnboxInst : InstBase, Value {
+final class ExistentialUnboxInst : InstBase, LValue {
     var existential: PtrOperand
     
     override var type: Ty? { return BuiltinType.opaquePointer }

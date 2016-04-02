@@ -10,7 +10,7 @@
 
 enum BuiltinType : Ty {
     case null, void
-    case int(size: UInt32), uint(size: UInt32), float(size: UInt32), bool
+    case int(size: UInt32), float(size: UInt32), bool
     indirect case array(el: Ty, size: UInt32?)
     indirect case pointer(to: Ty)
     case opaquePointer
@@ -20,8 +20,7 @@ enum BuiltinType : Ty {
         case .null:                     return nil
         case .void:                     return LLVMVoidType()
         case .int(let s):               return LLVMIntType(s)
-        case .uint(let s):               return LLVMIntType(s)
-        case .bool:                      return LLVMInt1Type()
+        case .bool:                     return LLVMInt1Type()
         case .array(let el, let size):  return LLVMArrayType(el.lowerType(module), size ?? 0)
         case .pointer(let to):          return LLVMPointerType(to.lowerType(module), 0)
         case .opaquePointer:            return BuiltinType.pointer(to: BuiltinType.int(size: 8)).lowerType(module)
@@ -41,7 +40,6 @@ enum BuiltinType : Ty {
         case "Builtin.Int", "Builtin.Int64":  self = .int(size: 64)
         case "Builtin.Null":               self = .null
         case "Builtin.Int32":              self = .int(size: 32)
-        case "Builtin.UInt32":              self = .uint(size: 32)
         case "Builtin.Int16":              self = .int(size: 16)
         case "Builtin.Int8":               self = .int(size: 8)
         case "Builtin.Bool":               self = .bool
@@ -63,7 +61,6 @@ enum BuiltinType : Ty {
         case .null:                     return "Builtin.Null"
         case .void:                     return "Builtin.Void"
         case .int(let s):               return "Builtin.Int\(s)"
-        case .uint(let s):               return "Builtin.UInt\(s)"
         case .bool:                     return "Builtin.Bool"
         case .array(let el, let size):  return "[\(size) x \(el.explicitName)]" // not implemented
         case .pointer(let to):          return "*\(to.explicitName)"
@@ -84,7 +81,6 @@ enum BuiltinType : Ty {
         case .null:                     return "N"
         case .void:                     return "V"
         case .int(let s):               return "i\(s)"
-        case .uint(let s):              return "ui\(s)"
         case .bool:                     return "b"
         case .array(let el, _):         return "A\(el.mangledName)"
         case .pointer(let to):          return "P\(to.mangledName)"

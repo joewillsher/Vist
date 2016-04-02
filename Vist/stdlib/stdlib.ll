@@ -2,6 +2,7 @@
 target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-macosx10.11.0"
 
+%struct.RefcountedObject = type { i8*, i32 }
 %Bool = type { i1 }
 %Int = type { i64 }
 %Double = type { double }
@@ -15,32 +16,120 @@ target triple = "x86_64-apple-macosx10.11.0"
 @.str3 = private unnamed_addr constant [6 x i8] c"true\0A\00", align 1
 @.str4 = private unnamed_addr constant [7 x i8] c"false\0A\00", align 1
 
+; Function Attrs: nounwind ssp uwtable
+define void @_Z17incrementRefCountP16RefcountedObject(%struct.RefcountedObject* %object) #0 {
+entry:
+  %refCount = getelementptr inbounds %struct.RefcountedObject* %object, i64 0, i32 1
+  %0 = atomicrmw add i32* %refCount, i32 1 monotonic
+  ret void
+}
+
+; Function Attrs: nounwind ssp uwtable
+define void @_Z17decrementRefCountP16RefcountedObject(%struct.RefcountedObject* %object) #0 {
+entry:
+  %refCount = getelementptr inbounds %struct.RefcountedObject* %object, i64 0, i32 1
+  %0 = atomicrmw sub i32* %refCount, i32 1 monotonic
+  ret void
+}
+
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @vist-Uprint_ti64(i64 %i) #0 {
+define { i8*, i32 } @vist_allocObject(i32 %size) #1 {
+entry:
+  %conv = zext i32 %size to i64
+  %call = tail call i8* @malloc(i64 %conv)
+  %.fca.0.insert = insertvalue { i8*, i32 } undef, i8* %call, 0
+  %.fca.1.insert = insertvalue { i8*, i32 } %.fca.0.insert, i32 1, 1
+  ret { i8*, i32 } %.fca.1.insert
+}
+
+; Function Attrs: nounwind
+declare noalias i8* @malloc(i64) #2
+
+; Function Attrs: noinline nounwind ssp uwtable
+define void @vist_deallocObject(%struct.RefcountedObject* nocapture %object) #1 {
+entry:
+  %object1 = getelementptr inbounds %struct.RefcountedObject* %object, i64 0, i32 0
+  %0 = load i8** %object1, align 8
+  tail call void @free(i8* %0)
+  %1 = bitcast %struct.RefcountedObject* %object to i8*
+  tail call void @free(i8* %1)
+  ret void
+}
+
+; Function Attrs: nounwind
+declare void @free(i8* nocapture) #2
+
+; Function Attrs: noinline nounwind ssp uwtable
+define void @vist_releaseObject(%struct.RefcountedObject* %object, i32 %size) #1 {
+entry:
+  %refCount = getelementptr inbounds %struct.RefcountedObject* %object, i64 0, i32 1
+  %0 = load i32* %refCount, align 4
+  %cmp = icmp eq i32 %0, 1
+  br i1 %cmp, label %if.then, label %if.else
+
+if.then:                                          ; preds = %entry
+  tail call void @vist_deallocObject(%struct.RefcountedObject* %object)
+  br label %if.end
+
+if.else:                                          ; preds = %entry
+  %1 = atomicrmw sub i32* %refCount, i32 1 monotonic
+  br label %if.end
+
+if.end:                                           ; preds = %if.else, %if.then
+  ret void
+}
+
+; Function Attrs: noinline nounwind ssp uwtable
+define void @vist_retainObject(%struct.RefcountedObject* %object) #1 {
+entry:
+  %refCount.i = getelementptr inbounds %struct.RefcountedObject* %object, i64 0, i32 1
+  %0 = atomicrmw add i32* %refCount.i, i32 1 monotonic
+  ret void
+}
+
+; Function Attrs: noinline nounwind readonly ssp uwtable
+define i32 @vist_getObjectRefcount(%struct.RefcountedObject* nocapture readonly %object) #3 {
+entry:
+  %refCount = getelementptr inbounds %struct.RefcountedObject* %object, i64 0, i32 1
+  %0 = load i32* %refCount, align 4
+  ret i32 %0
+}
+
+; Function Attrs: noinline nounwind readonly ssp uwtable
+define zeroext i1 @vist_objectHasUniqueReference(%struct.RefcountedObject* nocapture readonly %object) #3 {
+entry:
+  %refCount = getelementptr inbounds %struct.RefcountedObject* %object, i64 0, i32 1
+  %0 = load i32* %refCount, align 4
+  %cmp = icmp eq i32 %0, 1
+  ret i1 %cmp
+}
+
+; Function Attrs: noinline nounwind ssp uwtable
+define void @vist-Uprint_ti64(i64 %i) #1 {
 entry:
   %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str, i64 0, i64 0), i64 %i)
   ret void
 }
 
 ; Function Attrs: nounwind
-declare i32 @printf(i8* nocapture readonly, ...) #1
+declare i32 @printf(i8* nocapture readonly, ...) #2
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @vist-Uprint_ti32(i32 %i) #0 {
+define void @vist-Uprint_ti32(i32 %i) #1 {
 entry:
   %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str1, i64 0, i64 0), i32 %i)
   ret void
 }
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @vist-Uprint_tf64(double %d) #0 {
+define void @vist-Uprint_tf64(double %d) #1 {
 entry:
   %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str2, i64 0, i64 0), double %d)
   ret void
 }
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @vist-Uprint_tf32(float %d) #0 {
+define void @vist-Uprint_tf32(float %d) #1 {
 entry:
   %conv = fpext float %d to double
   %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str2, i64 0, i64 0), double %conv)
@@ -48,7 +137,7 @@ entry:
 }
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @vist-Uprint_tb(i1 zeroext %b) #0 {
+define void @vist-Uprint_tb(i1 zeroext %b) #1 {
 entry:
   %cond = select i1 %b, i8* getelementptr inbounds ([6 x i8]* @.str3, i64 0, i64 0), i8* getelementptr inbounds ([7 x i8]* @.str4, i64 0, i64 0)
   %call = tail call i32 (i8*, ...)* @printf(i8* %cond)
@@ -56,14 +145,14 @@ entry:
 }
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @vist-Uprint_top(i8* nocapture readonly %str) #0 {
+define void @vist-Uprint_top(i8* nocapture readonly %str) #1 {
 entry:
   %puts = tail call i32 @puts(i8* %str)
   ret void
 }
 
 ; Function Attrs: nounwind readnone
-define %Bool @-L_tIntInt(%Int %a, %Int %b) #2 {
+define %Bool @-L_tIntInt(%Int %a, %Int %b) #4 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -73,7 +162,7 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Bool @-E-E_tIntInt(%Int %a, %Int %b) #2 {
+define %Bool @-E-E_tIntInt(%Int %a, %Int %b) #4 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -83,20 +172,20 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Bool @-Uexpect_tBoolBool(%Bool %val, %Bool %assume) #2 {
+define %Bool @-Uexpect_tBoolBool(%Bool %val, %Bool %assume) #4 {
 entry:
   ret %Bool %val
 }
 
 ; Function Attrs: nounwind readnone
-define %Int @Int_ti64(i64 %"$0") #2 {
+define %Int @Int_ti64(i64 %"$0") #4 {
 entry:
   %.fca.0.insert = insertvalue %Int undef, i64 %"$0", 0
   ret %Int %.fca.0.insert
 }
 
 ; Function Attrs: nounwind readnone
-define %Double @-P_tDoubleDouble(%Double %a, %Double %b) #2 {
+define %Double @-P_tDoubleDouble(%Double %a, %Double %b) #4 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
@@ -106,7 +195,7 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Int @-G-G_tIntInt(%Int %a, %Int %b) #2 {
+define %Int @-G-G_tIntInt(%Int %a, %Int %b) #4 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -116,20 +205,20 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Double @Double_tf64(double %"$0") #2 {
+define %Double @Double_tf64(double %"$0") #4 {
 entry:
   %.fca.0.insert = insertvalue %Double undef, double %"$0", 0
   ret %Double %.fca.0.insert
 }
 
 ; Function Attrs: nounwind readnone
-define %Double @Double_tDouble(%Double %val) #2 {
+define %Double @Double_tDouble(%Double %val) #4 {
 entry:
   ret %Double %val
 }
 
 ; Function Attrs: nounwind readnone
-define %Bool @-N-N_tBoolBool(%Bool %a, %Bool %b) #2 {
+define %Bool @-N-N_tBoolBool(%Bool %a, %Bool %b) #4 {
 entry:
   %0 = extractvalue %Bool %a, 0
   %1 = extractvalue %Bool %b, 0
@@ -139,7 +228,7 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Int @-T-O_tIntInt(%Int %a, %Int %b) #2 {
+define %Int @-T-O_tIntInt(%Int %a, %Int %b) #4 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -149,7 +238,7 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Int @-C_tIntInt(%Int %a, %Int %b) #2 {
+define %Int @-C_tIntInt(%Int %a, %Int %b) #4 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -159,7 +248,7 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Range @Range_tRange(%Range %val) #2 {
+define %Range @Range_tRange(%Range %val) #4 {
 entry:
   %0 = extractvalue %Range %val, 0
   %.fca.0.extract = extractvalue %Int %0, 0
@@ -171,13 +260,13 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Bool @Bool_tBool(%Bool %val) #2 {
+define %Bool @Bool_tBool(%Bool %val) #4 {
 entry:
   ret %Bool %val
 }
 
 ; Function Attrs: nounwind
-define void @print_tDouble(%Double %a) #3 {
+define void @print_tDouble(%Double %a) #5 {
 entry:
   %0 = extractvalue %Double %a, 0
   tail call void @vist-Uprint_tf64(double %0)
@@ -185,7 +274,7 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Bool @-E-E_tDoubleDouble(%Double %a, %Double %b) #2 {
+define %Bool @-E-E_tDoubleDouble(%Double %a, %Double %b) #4 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
@@ -195,14 +284,14 @@ entry:
 }
 
 ; Function Attrs: noreturn nounwind
-define void @fatalError_t() #4 {
+define void @fatalError_t() #6 {
 entry:
   tail call void @llvm.trap()
   unreachable
 }
 
 ; Function Attrs: nounwind readnone
-define %Range @-D-D-D_tIntInt(%Int %a, %Int %b) #2 {
+define %Range @-D-D-D_tIntInt(%Int %a, %Int %b) #4 {
 entry:
   %a.fca.0.extract = extractvalue %Int %a, 0
   %b.fca.0.extract = extractvalue %Int %b, 0
@@ -212,14 +301,14 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Int32 @Int32_ti32(i32 %"$0") #2 {
+define %Int32 @Int32_ti32(i32 %"$0") #4 {
 entry:
   %.fca.0.insert = insertvalue %Int32 undef, i32 %"$0", 0
   ret %Int32 %.fca.0.insert
 }
 
 ; Function Attrs: nounwind
-define %Int @-M_tIntInt(%Int %a, %Int %b) #3 {
+define %Int @-M_tIntInt(%Int %a, %Int %b) #5 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -238,7 +327,7 @@ entry.cont:                                       ; preds = %entry
 }
 
 ; Function Attrs: nounwind readnone
-define %Bool @"!-E_tDoubleDouble"(%Double %a, %Double %b) #2 {
+define %Bool @"!-E_tDoubleDouble"(%Double %a, %Double %b) #4 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
@@ -248,7 +337,7 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Double @-C_tDoubleDouble(%Double %a, %Double %b) #2 {
+define %Double @-C_tDoubleDouble(%Double %a, %Double %b) #4 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
@@ -258,7 +347,7 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Int @-T-N_tIntInt(%Int %a, %Int %b) #2 {
+define %Int @-T-N_tIntInt(%Int %a, %Int %b) #4 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -268,7 +357,7 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Bool @-L-E_tDoubleDouble(%Double %a, %Double %b) #2 {
+define %Bool @-L-E_tDoubleDouble(%Double %a, %Double %b) #4 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
@@ -278,7 +367,7 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Double @-D_tDoubleDouble(%Double %a, %Double %b) #2 {
+define %Double @-D_tDoubleDouble(%Double %a, %Double %b) #4 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
@@ -288,14 +377,14 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Bool @Bool_tb(i1 %"$0") #2 {
+define %Bool @Bool_tb(i1 %"$0") #4 {
 entry:
   %.fca.0.insert = insertvalue %Bool undef, i1 %"$0", 0
   ret %Bool %.fca.0.insert
 }
 
 ; Function Attrs: nounwind readnone
-define %Bool @-L-E_tIntInt(%Int %a, %Int %b) #2 {
+define %Bool @-L-E_tIntInt(%Int %a, %Int %b) #4 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -305,15 +394,15 @@ entry:
 }
 
 ; Function Attrs: nounwind
-define %Range @-D-D-L_tIntInt(%Int %a, %Int %b) #3 {
+define %Range @-D-D-L_tIntInt(%Int %a, %Int %b) #5 {
 entry:
   %0 = extractvalue %Int %b, 0
-  %1 = tail call { i64, i1 } @llvm.ssub.with.overflow.i64(i64 %0, i64 1) #3
+  %1 = tail call { i64, i1 } @llvm.ssub.with.overflow.i64(i64 %0, i64 1) #5
   %2 = extractvalue { i64, i1 } %1, 1
   br i1 %2, label %-.trap.i, label %-M_tIntInt.exit
 
 -.trap.i:                                         ; preds = %entry
-  tail call void @llvm.trap() #3
+  tail call void @llvm.trap() #5
   unreachable
 
 -M_tIntInt.exit:                                  ; preds = %entry
@@ -325,13 +414,13 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Bool @Bool_t() #2 {
+define %Bool @Bool_t() #4 {
 entry:
   ret %Bool zeroinitializer
 }
 
 ; Function Attrs: nounwind
-define void @print_tBool(%Bool %a) #3 {
+define void @print_tBool(%Bool %a) #5 {
 entry:
   %0 = extractvalue %Bool %a, 0
   tail call void @vist-Uprint_tb(i1 %0)
@@ -339,7 +428,7 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Double @-A_tDoubleDouble(%Double %a, %Double %b) #2 {
+define %Double @-A_tDoubleDouble(%Double %a, %Double %b) #4 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
@@ -349,7 +438,7 @@ entry:
 }
 
 ; Function Attrs: nounwind
-define void @print_tString(%String %a) #3 {
+define void @print_tString(%String %a) #5 {
 entry:
   %0 = extractvalue %String %a, 0
   tail call void @vist-Uprint_top(i8* %0)
@@ -357,7 +446,7 @@ entry:
 }
 
 ; Function Attrs: nounwind
-define void @print_tInt(%Int %a) #3 {
+define void @print_tInt(%Int %a) #5 {
 entry:
   %0 = extractvalue %Int %a, 0
   tail call void @vist-Uprint_ti64(i64 %0)
@@ -365,7 +454,7 @@ entry:
 }
 
 ; Function Attrs: nounwind
-define %Int @-A_tIntInt(%Int %a, %Int %b) #3 {
+define %Int @-A_tIntInt(%Int %a, %Int %b) #5 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -384,7 +473,7 @@ entry.cont:                                       ; preds = %entry
 }
 
 ; Function Attrs: nounwind readnone
-define %Bool @-G-E_tIntInt(%Int %a, %Int %b) #2 {
+define %Bool @-G-E_tIntInt(%Int %a, %Int %b) #4 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -394,7 +483,7 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Int @-L-L_tIntInt(%Int %a, %Int %b) #2 {
+define %Int @-L-L_tIntInt(%Int %a, %Int %b) #4 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -403,11 +492,10 @@ entry:
   ret %Int %.fca.0.insert
 }
 
-; Function Attrs: nounwind
-define %String @String_topi64(i8* nocapture readonly %ptr, i64 %count) #3 {
+define %String @String_topi64(i8* nocapture readonly %ptr, i64 %count) {
 entry:
   %0 = trunc i64 %count to i32
-  %1 = tail call i8* @malloc(i32 %0)
+  %1 = tail call i8* bitcast (i8* (i64)* @malloc to i8* (i32)*)(i32 %0)
   tail call void @llvm.memcpy.p0i8.p0i8.i64(i8* %1, i8* %ptr, i64 %count, i32 1, i1 false)
   %.fca.0.insert = insertvalue %String undef, i8* %1, 0
   %.fca.1.insert = insertvalue %String %.fca.0.insert, i64 %count, 1
@@ -415,7 +503,7 @@ entry:
 }
 
 ; Function Attrs: nounwind
-define void @assert_tBool(%Bool %"$0") #3 {
+define void @assert_tBool(%Bool %"$0") #5 {
 entry:
   %0 = extractvalue %Bool %"$0", 0
   br i1 %0, label %exit, label %else.1
@@ -429,7 +517,7 @@ exit:                                             ; preds = %entry
 }
 
 ; Function Attrs: nounwind readnone
-define %Int @-T-R_tIntInt(%Int %a, %Int %b) #2 {
+define %Int @-T-R_tIntInt(%Int %a, %Int %b) #4 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -439,13 +527,13 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Int @Int_tInt(%Int %val) #2 {
+define %Int @Int_tInt(%Int %val) #4 {
 entry:
   ret %Int %val
 }
 
 ; Function Attrs: nounwind readnone
-define %Bool @-G_tDoubleDouble(%Double %a, %Double %b) #2 {
+define %Bool @-G_tDoubleDouble(%Double %a, %Double %b) #4 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
@@ -455,13 +543,13 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Int32 @Int32_tInt32(%Int32 %val) #2 {
+define %Int32 @Int32_tInt32(%Int32 %val) #4 {
 entry:
   ret %Int32 %val
 }
 
 ; Function Attrs: nounwind
-define void @print_tInt32(%Int32 %a) #3 {
+define void @print_tInt32(%Int32 %a) #5 {
 entry:
   %0 = extractvalue %Int32 %a, 0
   tail call void @vist-Uprint_ti32(i32 %0)
@@ -469,13 +557,13 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Int @Int_t() #2 {
+define %Int @Int_t() #4 {
 entry:
   ret %Int zeroinitializer
 }
 
 ; Function Attrs: nounwind readnone
-define %Bool @-G_tIntInt(%Int %a, %Int %b) #2 {
+define %Bool @-G_tIntInt(%Int %a, %Int %b) #4 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -485,7 +573,7 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Range @Range_tIntInt(%Int %"$0", %Int %"$1") #2 {
+define %Range @Range_tIntInt(%Int %"$0", %Int %"$1") #4 {
 entry:
   %"$0.fca.0.extract" = extractvalue %Int %"$0", 0
   %"$1.fca.0.extract" = extractvalue %Int %"$1", 0
@@ -495,7 +583,7 @@ entry:
 }
 
 ; Function Attrs: nounwind readnone
-define %Bool @"!-E_tIntInt"(%Int %a, %Int %b) #2 {
+define %Bool @"!-E_tIntInt"(%Int %a, %Int %b) #4 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -505,14 +593,14 @@ entry:
 }
 
 ; Function Attrs: nounwind
-define %Int @-D_tIntInt(%Int %a, %Int %b) #3 {
+define %Int @-D_tIntInt(%Int %a, %Int %b) #5 {
 entry:
   %0 = extractvalue %Int %b, 0
   %1 = icmp eq i64 %0, 0
   br i1 %1, label %else.1.i, label %assert_tBool.exit
 
 else.1.i:                                         ; preds = %entry
-  tail call void @llvm.trap() #3
+  tail call void @llvm.trap() #5
   unreachable
 
 assert_tBool.exit:                                ; preds = %entry
@@ -523,7 +611,7 @@ assert_tBool.exit:                                ; preds = %entry
 }
 
 ; Function Attrs: nounwind readnone
-define %Bool @-G-E_tDoubleDouble(%Double %a, %Double %b) #2 {
+define %Bool @-G-E_tDoubleDouble(%Double %a, %Double %b) #4 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
@@ -533,7 +621,7 @@ entry:
 }
 
 ; Function Attrs: nounwind
-define %Int @-P_tIntInt(%Int %a, %Int %b) #3 {
+define %Int @-P_tIntInt(%Int %a, %Int %b) #5 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -552,7 +640,7 @@ entry.cont:                                       ; preds = %entry
 }
 
 ; Function Attrs: nounwind readnone
-define %Bool @-L_tDoubleDouble(%Double %a, %Double %b) #2 {
+define %Bool @-L_tDoubleDouble(%Double %a, %Double %b) #4 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
@@ -562,28 +650,25 @@ entry:
 }
 
 ; Function Attrs: noreturn nounwind
-declare void @llvm.trap() #4
+declare void @llvm.trap() #6
 
 ; Function Attrs: nounwind readnone
-declare { i64, i1 } @llvm.ssub.with.overflow.i64(i64, i64) #2
+declare { i64, i1 } @llvm.ssub.with.overflow.i64(i64, i64) #4
 
 ; Function Attrs: nounwind readnone
-declare { i64, i1 } @llvm.smul.with.overflow.i64(i64, i64) #2
+declare { i64, i1 } @llvm.smul.with.overflow.i64(i64, i64) #4
 
 ; Function Attrs: nounwind
-declare noalias i8* @malloc(i32) #3
-
-; Function Attrs: nounwind
-declare void @llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1) #3
+declare void @llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1) #5
 
 ; Function Attrs: nounwind readnone
-declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #2
+declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #4
 
 ; Function Attrs: nounwind
-declare i32 @puts(i8* nocapture readonly) #3
+declare i32 @puts(i8* nocapture readonly) #5
 
 ; Function Attrs: nounwind readnone
-define %Double @-M_tDoubleDouble(%Double, %Double) #2 {
+define %Double @-M_tDoubleDouble(%Double, %Double) #4 {
   %3 = extractvalue %Double %0, 0
   %4 = extractvalue %Double %1, 0
   %5 = fadd double %3, %4
@@ -592,7 +677,7 @@ define %Double @-M_tDoubleDouble(%Double, %Double) #2 {
 }
 
 ; Function Attrs: nounwind readnone
-define %Bool @-O-O_tBoolBool(%Bool, %Bool) #2 {
+define %Bool @-O-O_tBoolBool(%Bool, %Bool) #4 {
   %3 = extractvalue %Bool %0, 0
   %4 = extractvalue %Bool %1, 0
   %5 = and i1 %3, %4
@@ -600,11 +685,13 @@ define %Bool @-O-O_tBoolBool(%Bool, %Bool) #2 {
   ret %Bool %.fca.0.insert.i
 }
 
-attributes #0 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #1 = { nounwind "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #2 = { nounwind readnone }
-attributes #3 = { nounwind }
-attributes #4 = { noreturn nounwind }
+attributes #0 = { nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { nounwind "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #3 = { noinline nounwind readonly ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #4 = { nounwind readnone }
+attributes #5 = { nounwind }
+attributes #6 = { noreturn nounwind }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}

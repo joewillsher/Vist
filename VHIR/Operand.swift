@@ -7,16 +7,15 @@
 //
 
 
-class Operand : RValue {
+class Operand : Value {
     /// The underlying value
-    var value: RValue?
+    var value: Value?
     weak var user: Inst?
     
-    init(_ value: RValue) {
+    init(_ value: Value) {
         self.value = value
         value.addUse(self)
     }
-    private init() { }
     
     deinit {
         value?.removeUse(self)
@@ -62,20 +61,25 @@ extension Operand {
 
 
 /// An operand which stores a reference-backed lvalue
-final class PtrOperand : Operand, Value {
+final class PtrOperand : Operand, LValue {
     
     /// The stored lvalue
-    var _value: Value?
-    override var value: RValue? {
-        get { return _value }
-        set { _value = newValue as? Value }
-    }
-    var memType: Ty? { return _value?.memType }
+    var memType: Ty?
     
-    init(_ value: Value) {
-        self._value = value
-        super.init()
-        value.addUse(self)
+    init(_ value: LValue) {
+        self.memType = value.memType
+        super.init(value)
+    }
+    
+    private init(rvalue: Value, memType: Ty) {
+        self.memType = memType
+        super.init(rvalue)
+    }
+    
+    /// - precondition: `rval` is guaranteed to be an lvalue
+    static func fromReferenceRValue(rval: Value) throws -> PtrOperand {
+        guard case let type as BuiltinType = rval.type, case .pointer(let to) = type else { fatalError() }
+        return PtrOperand(rvalue: rval, memType: to)
     }
 }
 
@@ -86,7 +90,7 @@ final class PtrOperand : Operand, Value {
 /// to be calculated
 final class BlockOperand : Operand {
     
-    init(value: RValue, param: Param) {
+    init(value: Value, param: Param) {
         self.param = param
         self.predBlock = value.parentBlock!
         super.init(value)

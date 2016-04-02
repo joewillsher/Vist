@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-protocol Inst : RValue {
+protocol Inst : Value {
     var uses: [Operand] { get }
     var args: [Operand] { get set }
     
@@ -20,9 +20,9 @@ protocol Inst : RValue {
 class InstBase : Inst {
     
     /// Self’s type, override with a computed getter
-    var type: Ty? { fatalError("Override me") }
+    var type: Ty? { fatalError("Override function '\(#function)' in '\(self.dynamicType)'") }
     /// override with the IR description, called by base to print this inst
-    var instVHIR: String { fatalError("Override me") }
+    var instVHIR: String { fatalError("Override me '\(#function)' in '\(self.dynamicType)'") }
     
     var irName: String?
     weak var parentBlock: BasicBlock?

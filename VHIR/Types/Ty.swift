@@ -6,6 +6,8 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
+private var emptyModule = LLVMModuleCreateWithName("___null___")
+
 protocol Ty : Printable, VHIRElement {
     
     /// Name used in mangling function signatures
@@ -25,6 +27,12 @@ extension Ty {
     // implement default behaviour
     var explicitName: String {
         return mangledName
+    }
+    
+    /// the size in bytes of this lowered type
+    func size(module: Module) -> Int {
+        let dataLayout = LLVMCreateTargetData(LLVMGetDataLayout(emptyModule))
+        return Int(LLVMSizeOfTypeInBits(dataLayout, lowerType(module))) / 8
     }
 }
 

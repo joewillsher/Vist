@@ -53,15 +53,18 @@ void decrementRefCount(RefcountedObject *object) {
 
 
 NOMANGLE NOINLINE
-void *
+RefcountedObject
 vist_allocObject(uint32_t size) {
-    return malloc(size);
+    void *object = malloc(size);
+    uint32_t refCount = 1;
+    return {object, refCount};
 };
 
 
 NOMANGLE NOINLINE
 void
 vist_deallocObject(RefcountedObject *object) {
+    free(object->object);
     free(object);
 };
 
@@ -82,6 +85,18 @@ NOMANGLE NOINLINE
 void
 vist_retainObject(RefcountedObject *object) {
     incrementRefCount(object);
+};
+
+NOMANGLE NOINLINE
+uint32_t
+vist_getObjectRefcount(RefcountedObject *object) {
+    return object->refCount;
+};
+
+NOMANGLE NOINLINE
+bool
+vist_objectHasUniqueReference(RefcountedObject *object) {
+    return object->refCount == 1;
 };
 
 

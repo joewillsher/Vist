@@ -46,7 +46,7 @@ extension CollectionType where Generator.Element == Ty {
 }
 
 
-extension RValue {
+extension Value {
     /// `%1: %Int`
     var valueName: String {
         return "\(name)\(type.map { ": \($0.vhir)" } ?? "")"
