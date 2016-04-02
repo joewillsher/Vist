@@ -966,12 +966,22 @@ extension Parser {
     /// Parse the declaration of a type
     ///
     /// - returns: The AST for a struct’s members, methods, & initialisers
-    private func parseTypeDeclarationExpr(byRef byRef: Bool) throws -> StructExpr {
+    private func parseTypeDeclarationExpr() throws -> StructExpr {
         
         let a = attrs
         attrs = []
         
-        getNextToken() // eat 'type'
+        let refType: Bool
+        switch currentToken {
+        case .ref:
+            getNextToken(2)
+            refType = true
+        case .type:
+            getNextToken()
+            refType = false
+        default:
+            throw parseError(.noToken(.type), loc: SourceRange.at(currentPos))
+        }
         
         guard case .identifier(let typeName) = currentToken else { throw parseError(.noTypeName, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat name
@@ -1009,8 +1019,13 @@ extension Parser {
             
         }
         
-        let s = StructExpr(name: typeName, properties: properties, methods: methods, initialisers: initialisers, attrs: a, genericParameters: genericParameters)
-        
+        let s = StructExpr(name: typeName,
+                           properties: properties,
+                           methods: methods,
+                           initialisers: initialisers,
+                           attrs: a,
+                           genericParameters: genericParameters,
+                           byRef: refType)
         // associate functions with the struct
         for i in s.initialisers {
             i.parent = s
@@ -1157,9 +1172,8 @@ extension Parser {
         case .`do`:                 return [try parseBracelessDoExpr()]
         case .`while`:              return [try parseWhileLoopStmt()]
         case .sqbrOpen:             return [try parseArrayExpr()]
-        case .type:                 return [try parseTypeDeclarationExpr(byRef: false)]
+        case .type, .ref:           return [try parseTypeDeclarationExpr()]
         case .concept:              return [try parseConceptExpr()]
-        case .reference:            getNextToken(); return [try parseTypeDeclarationExpr(byRef: true)]
         case .integerLiteral(let i):        return  [try parseIntExpr(i)]
         case .floatingPointLiteral(let x):  return [parseFloatingPointExpr(x)]
         case .stringLiteral(let str):       return [parseStringExpr(str)]

@@ -1,32 +1,9 @@
 
+print 1
 
-concept Eq {
-    var a: Int, b: Int
-    
-    func sum :: -> Int
+let a = 1
+
+ref type Foo {
+    let a: Int
 }
 
-
-type Bar {
-    var x: Bool, b: Int, a: Int
-    
-    func sum :: -> Int = do return a + b
-}
-    
-type Baz {
-    var a: Int, b: Int
-        
-    func sum :: -> Int = do return 1
-}
-    
-func foo :: Eq Int -> Int = (a b) do
-    return a.sum () + b
-func foo2 :: Eq Int -> Int = (a b) do
-    return a.a + (a.b * 2) + b
-    
-let bar = Bar true 11 4
-let baz = Baz 2 3
-
-print (foo bar 2) // test: 17
-print (foo2 bar 2) // test: 28
-print (foo baz 2) // test: 3

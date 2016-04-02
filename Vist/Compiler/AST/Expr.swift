@@ -327,16 +327,24 @@ final class StructExpr: Typed, ScopeNode, TypeExpr, LibraryTopLevel {
     let methods: [FuncDecl]
     var initialisers: [InitialiserDecl]
     let attrs: [AttributeExpr]
+    let byRef: Bool
     
     let genericParameters: [ConstrainedType]
     
-    init(name: String, properties: [VariableDecl], methods: [FuncDecl], initialisers: [InitialiserDecl], attrs: [AttributeExpr], genericParameters: [ConstrainedType]) {
+    init(name: String,
+         properties: [VariableDecl],
+         methods: [FuncDecl],
+         initialisers: [InitialiserDecl],
+         attrs: [AttributeExpr],
+         genericParameters: [ConstrainedType],
+         byRef: Bool) {
         self.name = name
         self.properties = properties
         self.methods = methods
         self.initialisers = initialisers
         self.attrs = attrs
         self.genericParameters = genericParameters
+        self.byRef = byRef
     }
     
     var type: StructType? = nil

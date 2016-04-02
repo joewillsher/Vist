@@ -49,8 +49,8 @@ extension StructType {
         return StructType(members: [], methods: [], name: n)
     }
     
-    static func withTypes(tys: [Ty]) -> StructType {
-        return StructType(members: tys.map { (name: "", type: $0, mutable: true) }, methods: [], name: "")
+    static func withTypes(tys: [Ty], name: String = "") -> StructType {
+        return StructType(members: tys.map { (name: name, type: $0, mutable: true) }, methods: [], name: "")
     }
     
     var irName: String {

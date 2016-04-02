@@ -54,7 +54,8 @@ func compileDocuments(
             
             if verbose { tokens
                 .map {"\($0.0): \t\t\t\t\t\($0.1.range.start)--\($0.1.range.end)"}
-                .forEach { print($0) } }
+                .forEach { print($0) }
+            }
             
             
             if verbose { print("\n\n------------------------------AST-------------------------------\n") }
@@ -64,7 +65,6 @@ func compileDocuments(
             
             if dumpAST { print(ast.astString); return }
             if verbose { print(ast.astString) }
-            
             
             if let h = head {
                 head = try astLink(h, other: [ast])

@@ -2,7 +2,7 @@
 
 printf "//\n//  Utils.h\n//  Vist\n//\n//  Created by Josef Willsher on 03/02/2016.\n//  Copyright © 2016 vistlang. All rights reserved.\n//\n\n#ifndef Utils_h\n#define Utils_h\n\n#define SOURCE_ROOT \"$(pwd)\"\n\n#endif /* Utils_h */\n" > Vist/Compiler/Include/Utils.h
 
-brew install llvm --with-clang
+brew install llvm --with-clang #--with-lldb
 
 # download
 # svn co http://llvm.org/svn/llvm-project/llvm/branches/release_36 llvm/llvm

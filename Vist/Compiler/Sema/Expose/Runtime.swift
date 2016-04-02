@@ -15,6 +15,8 @@ struct Runtime {
     private static let voidType = BuiltinType.void
     private static let opaquePointerType = BuiltinType.opaquePointer
     
+    static let refcountedObjectType = StructType.withTypes([BuiltinType.opaquePointer, BuiltinType.uint(size: 32)], name: "RefcountedObject")
+    
     private static let functions: [(String, FnType)] = [
         // runtime fns
         ("vist_print", FnType(params: [intType], returns: voidType)),
@@ -22,6 +24,11 @@ struct Runtime {
         ("vist_print", FnType(params: [boolType], returns: voidType)),
         ("vist_print", FnType(params: [int32Type], returns: voidType)),
         ("vist_print", FnType(params: [opaquePointerType], returns: voidType)),
+
+        ("vist_retainObject", FnType(params: [refcountedObjectType], returns: voidType)),
+        ("vist_releaseObject", FnType(params: [refcountedObjectType], returns: voidType)),
+        ("vist_allocObject", FnType(params: [refcountedObjectType], returns: voidType)),
+        ("vist_deallocObject", FnType(params: [refcountedObjectType], returns: voidType)),
     ]
 //    private static let unmangled: [(String, FnType)] = [
         // runtime fns

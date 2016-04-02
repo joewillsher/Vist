@@ -146,6 +146,19 @@ extension StringLiteral : RValueEmitter {
         //  - Pointer type in stdlib
         
         
+        
+        /*
+         %refcounted.type = type { i8*, i32 }
+         $myFoo.rt = type { refcounted.type }
+         
+         
+         
+         vist_deallocRefType
+         
+         
+         
+         */
+        
         let string = try module.builder.buildStringLiteral(str)
         let length = try module.builder.buildIntLiteral(str.characters.count + 1)
         

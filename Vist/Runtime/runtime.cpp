@@ -36,13 +36,66 @@
 ///     - All functions in this namespace should be prefixed with vist_
 ///     - If the function is just for the compiler to call, dont mangle it, eg. `vist_getAccessor`
 
+struct RefcountedObject {
+    void *object;
+    uint32_t refCount;
+};
+
+// Private
+
+void incrementRefCount(RefcountedObject *object) {
+    __atomic_fetch_add(&object->refCount, 1, __ATOMIC_RELAXED);
+}
+
+void decrementRefCount(RefcountedObject *object) {
+    __atomic_fetch_sub(&object->refCount, 1, __ATOMIC_RELAXED);
+}
+
+
+NOMANGLE NOINLINE
+void *
+vist_allocObject(uint32_t size) {
+    return malloc(size);
+};
+
+
+NOMANGLE NOINLINE
+void
+vist_deallocObject(RefcountedObject *object) {
+    free(object);
+};
+
+NOMANGLE NOINLINE
+void
+vist_releaseObject(RefcountedObject *object,
+                   uint32_t size) {
+    
+    // if no more references, we dealloc it
+    if (object->refCount == 1)
+        vist_deallocObject(object);
+    // otherwise we decrement
+    else
+        decrementRefCount(object);
+};
+
+NOMANGLE NOINLINE
+void
+vist_retainObject(RefcountedObject *object) {
+    incrementRefCount(object);
+};
+
+
+
+
+
+
 NOMANGLE NOINLINE void
 vist$Uprint_ti64(int64_t i) {
     printf("%lli\n", i);
 };
 
 NOMANGLE NOINLINE void
-vist$Uprint_ti32(int i) {
+vist$Uprint_ti32(int32_t i) {
     printf("%i\n", i);
 };
 

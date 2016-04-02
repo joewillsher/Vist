@@ -1,126 +1,15 @@
 
-type %Baz = { %Int, %Int }
-type %Eq = existential < %Int, %Int >
-type %Bool = { %Builtin.Bool }
-type %Bar = { %Bool, %Int, %Int }
-type %Bar = { %Bool, %Int, %Int }
-type %Baz = { %Int, %Int }
 type %Int = { %Builtin.Int64 }
-
-func @foo_tEqInt : &thin (%Eq, %Int) -> %Int {
-$entry(%a: %Eq, %b: %Int):
-  %0 = alloc %Eq  	// users: %1, %unboxed
-  store %a in %0: %*Eq 
-  %witness = existential_witness %0: %*Eq #sum  	// user: nil
-  %unboxed = existential_unbox %0: %*Eq  	// user: %2
-  %2 = apply %witness (%unboxed: %Builtin.OpaquePointer)  	// user: %3
-  %3 = call @-P_tIntInt (%2: { %Builtin.Int64 }, %b: %Int)  	// user: %4
-  return %3
-}
-
-func @foo2_tEqInt : &thin (%Eq, %Int) -> %Int {
-$entry(%a: %Eq, %b: %Int):
-  %0 = alloc %Eq  	// users: %1, %2
-  store %a in %0: %*Eq 
-  %2 = existential_open %0: %*Eq #a  	// user: %10
-  %3 = alloc %Eq  	// users: %4, %5
-  store %a in %3: %*Eq 
-  %5 = existential_open %3: %*Eq #b  	// user: %8
-  %6 = int_literal 2  	// user: %7
-  %7 = struct %Int (%6: %Builtin.Int64)  	// user: %8
-  %8 = call @-A_tIntInt (%5: %Int, %7: %Int)  	// user: %9
-  %9 = call @-P_tIntInt (%8: %Int, %b: %Int)  	// user: %10
-  %10 = call @-P_tIntInt (%2: %Int, %9: %Int)  	// user: %11
-  return %10
-}
-
-func @Bar_tBoolIntInt : &thin (%Bool, %Int, %Int) -> %Bar {
-$entry(%$0: %Bool, %$1: %Int, %$2: %Int):
-  %self = alloc %Bar  	// users: %x, %b, %a, %3
-  %x = struct_element %self: %*Bar, #x  	// user: %0
-  %b = struct_element %self: %*Bar, #b  	// user: %1
-  %a = struct_element %self: %*Bar, #a  	// user: %2
-  store %$0 in %x: %*Bool 
-  store %$1 in %b: %*Int 
-  store %$2 in %a: %*Int 
-  %3 = load %self: %*Bar  	// user: %4
-  return %3
-}
-
-func @sum_t : &thin () -> %Int
-
-func @Baz_tIntInt : &thin (%Int, %Int) -> %Baz {
-$entry(%$0: %Int, %$1: %Int):
-  %self = alloc %Baz  	// users: %a, %b, %2
-  %a = struct_element %self: %*Baz, #a  	// user: %0
-  %b = struct_element %self: %*Baz, #b  	// user: %1
-  store %$0 in %a: %*Int 
-  store %$1 in %b: %*Int 
-  %2 = load %self: %*Baz  	// user: %3
-  return %2
-}
-
-func @print_tInt : &thin (%Int) -> %Builtin.Void
-
-func @sum_mBar : &method (%*Bar) -> %Int {
-$entry(%self: %*Bar):
-  %a = struct_element %self: %*Bar, #a  	// user: %0
-  %0 = load %a: %*Int  	// user: %2
-  %b = struct_element %self: %*Bar, #b  	// user: %1
-  %1 = load %b: %*Int  	// user: %2
-  %2 = call @-P_tIntInt (%0: %Int, %1: %Int)  	// user: %3
-  return %2
-}
-
-func @-P_tIntInt : &thin (%Int, %Int) -> %Int
-
-func @sum : &method (%*Bar) -> %Int
 
 func @main : &thin () -> %Builtin.Void {
 $entry:
-  %0 = bool_literal true  	// user: %1
-  %1 = struct %Bool (%0: %Builtin.Bool)  	// user: %6
-  %2 = int_literal 11  	// user: %3
-  %3 = struct %Int (%2: %Builtin.Int64)  	// user: %6
-  %4 = int_literal 4  	// user: %5
-  %5 = struct %Int (%4: %Builtin.Int64)  	// user: %6
-  %6 = call @Bar_tBoolIntInt (%1: %Bool, %3: %Int, %5: %Int)  	// user: %bar
-  variable_decl %bar = %6: %Bar  	// users: %13, %20
-  %7 = int_literal 2  	// user: %8
-  %8 = struct %Int (%7: %Builtin.Int64)  	// user: %11
-  %9 = int_literal 3  	// user: %10
-  %10 = struct %Int (%9: %Builtin.Int64)  	// user: %11
-  %11 = call @Baz_tIntInt (%8: %Int, %10: %Int)  	// user: %baz
-  variable_decl %baz = %11: %Baz  	// user: %27
-  %12 = alloc %Bar  	// users: %13, %14
-  store %bar in %12: %*Bar 
-  %14 = existential_box %12: %*Bar in %Eq  	// user: %17
-  %15 = int_literal 2  	// user: %16
-  %16 = struct %Int (%15: %Builtin.Int64)  	// user: %17
-  %17 = call @foo_tEqInt (%14: %Eq, %16: %Int)  	// user: %18
-  %18 = call @print_tInt (%17: %Int) 
-  %19 = alloc %Bar  	// users: %20, %21
-  store %bar in %19: %*Bar 
-  %21 = existential_box %19: %*Bar in %Eq  	// user: %24
-  %22 = int_literal 2  	// user: %23
-  %23 = struct %Int (%22: %Builtin.Int64)  	// user: %24
-  %24 = call @foo2_tEqInt (%21: %Eq, %23: %Int)  	// user: %25
-  %25 = call @print_tInt (%24: %Int) 
-  %26 = alloc %Baz  	// users: %27, %28
-  store %baz in %26: %*Baz 
-  %28 = existential_box %26: %*Baz in %Eq  	// user: %31
-  %29 = int_literal 2  	// user: %30
-  %30 = struct %Int (%29: %Builtin.Int64)  	// user: %31
-  %31 = call @foo_tEqInt (%28: %Eq, %30: %Int)  	// user: %32
-  %32 = call @print_tInt (%31: %Int) 
+  %0 = int_literal 1  	// user: %1
+  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %2
+  %2 = call @print_tInt (%1: %Int) 
+  %3 = int_literal 1  	// user: %4
+  %4 = struct %Int (%3: %Builtin.Int64)  	// user: %a
+  variable_decl %a = %4: %Int 
   return ()
 }
 
-func @sum_mBaz : &method (%*Baz) -> %Int {
-$entry(%self: %*Baz):
-  %0 = int_literal 1  	// user: %1
-  %1 = struct %Int (%0: %Builtin.Int64)  	// user: %2
-  return %1
-}
-
-func @-A_tIntInt : &thin (%Int, %Int) -> %Int
+func @print_tInt : &thin (%Int) -> %Builtin.Void
