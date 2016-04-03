@@ -70,7 +70,7 @@ extension AST {
     func emitVHIR(module module: Module, isLibrary: Bool) throws {
         
         let builder = module.builder
-        let scope = Scope()
+        let scope = Scope(module: module)
         
         if isLibrary {
             // if its a library we dont emit a main, and just vhirgen on any decls/statements
@@ -85,6 +85,7 @@ extension AST {
             try exprs.emitBody(module: module, scope: scope)
             
             try builder.setInsertPoint(main)
+            try scope.releaseVariables()
             try builder.buildReturnVoid()
         }
         
@@ -177,7 +178,7 @@ extension VariableDecl : ValueEmitter {
         let val = try value.emitRValue(module: module, scope: scope)
         
         if isMutable {
-            let variable = try val.asReferenceAccessor()
+            let variable = try val.getMemCopy()
             scope.add(variable, name: name)
             return variable
         }
@@ -273,7 +274,8 @@ extension FuncDecl : StmtEmitter {
         if case .method(let selfType) = type.callingConvention {
             // We need self to be passed by ref as a `RefParam`
             let selfParam = function.params![0] as! RefParam
-            let selfVar = RefAccessor(memory: selfParam)
+            let selfVar = selfParam.accessor
+            try selfVar.retainIfRefcounted()
             fnScope.add(selfVar, name: "self") // add `self`
             
             // add self's properties, their accessor is a lazily evaluated struct GEP
@@ -290,7 +292,8 @@ extension FuncDecl : StmtEmitter {
         
         // vhir gen for body
         try impl.body.emitStmt(module: module, scope: fnScope)
-        
+        try fnScope.releaseVariables()
+
         // add implicit `return ()` for a void function without a return expression
         if type.returns == BuiltinType.void && !function.instructions.contains({$0 is ReturnInst}) {
             try module.builder.buildReturnVoid()
@@ -493,6 +496,7 @@ extension ForInLoopStmt: StmtEmitter {
         
         // vhirgen the body of the loop
         try block.emitStmt(module: module, scope: loopScope)
+        try loopScope.releaseVariables()
         
         // iterate the loop count and check whether we are within range
         let one = try module.builder.buildIntLiteral(1)
@@ -531,9 +535,11 @@ extension WhileLoopStmt: StmtEmitter {
                                           to: (block: loopBlock, args: nil),
                                           elseTo: (block: exitBlock, args: nil))
         
+        let loopScope = Scope(parent: scope)
         // build loop block
         try module.builder.setInsertPoint(loopBlock) // move into
-        try block.emitStmt(module: module, scope: scope) // gen stmts
+        try block.emitStmt(module: module, scope: loopScope) // gen stmts
+        try loopScope.releaseVariables()
         try module.builder.buildBreak(to: condBlock) // break back to condition check
         try module.builder.setInsertPoint(exitBlock)  // move past -- we're done
     }
@@ -610,7 +616,9 @@ extension InitialiserDecl: StmtEmitter {
             
             let memory = try refCounted.allocGetSetAccessor().reference()
             let bitcast = try module.builder.buildBitcast(from: PtrOperand(memory), newType: selfType.refCountedBox(module), irName: "storage")
-            selfVar = RefCountedAccessor(refcountedBox: bitcast)
+            let accessor = RefCountedAccessor(refcountedBox: bitcast)
+            try accessor.retain()
+            selfVar = accessor
         }
         else {
              selfVar = try module.builder.buildAlloc(selfType, irName: "self").accessor
@@ -633,6 +641,10 @@ extension InitialiserDecl: StmtEmitter {
         
         // vhir gen for body
         try impl.body.emitStmt(module: module, scope: fnScope)
+        
+        try fnScope.removeVariableNamed("self")?.releaseUnretainedIfRefcounted()
+        try fnScope.releaseVariables()
+        
         try module.builder.buildReturn(Operand(try selfVar.aggregateGetter()))
         
         // move out of function

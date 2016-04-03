@@ -269,6 +269,8 @@ extension VHIRFunctionCall {
         let argCount = self.args.count
         defer { args.dealloc(argCount) }
         
+        LLVMDumpValue(functionRef)
+        LLVMDumpValue(self.args[0].loweredValue)
         let call = LLVMBuildCall(irGen.builder, functionRef, args, UInt32(argCount), irName ?? "")
         functionType.addMetadataTo(call)
         

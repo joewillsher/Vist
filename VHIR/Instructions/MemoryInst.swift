@@ -87,7 +87,7 @@ extension Builder {
     /// Builds a bitcast instruction
     /// - parameter newType: The memory type to be cast to -- the ptr will have type newType*
     func buildBitcast(from address: PtrOperand, newType: Ty, irName: String? = nil) throws -> BitcastInst {
-        return try _add(BitcastInst(address: address, newType: newType, irName: irName))
+        return try _add(BitcastInst(address: address, newType: newType.usingTypesIn(module), irName: irName))
     }
     
 }

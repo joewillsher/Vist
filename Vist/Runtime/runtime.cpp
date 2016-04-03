@@ -8,8 +8,6 @@
 
 //  This file implements the Vist runtime. It exposes functions to Vist code
 //  by calling to C APIs
-//
-//  All functions here are declared using their mangled names
 
 
 #include <stdio.h>
@@ -20,12 +18,6 @@
 #define NORETURN __attribute__((noreturn))
 #define NOINLINE __attribute__((noinline))
 #define ALWAYSINLINE __attribute__((always_inline))
-
-// SwiftShims defines putchar function https://github.com/apple/swift/blob/master/stdlib/public/stubs/LibcShims.cpp#L31
-// When I have strings working, use this implementation to write all of a string to stdout https://github.com/apple/swift/blob/master/stdlib/public/core/OutputStream.swift#L258
-// Make a Printable protocol which returns a string of self
-// make a stdlib private `writeString` function which writes a String hcar by char to stdout
-// print function takes a Printable, and calls writeString on it (plus "\n")
 
 // Currently all NOINLINE because optimiser cant copy over the string data across modules
 
@@ -43,56 +35,79 @@ struct RefcountedObject {
 
 // Private
 
+ALWAYSINLINE
 void incrementRefCount(RefcountedObject *object) {
     __atomic_fetch_add(&object->refCount, 1, __ATOMIC_RELAXED);
 }
 
+ALWAYSINLINE
 void decrementRefCount(RefcountedObject *object) {
     __atomic_fetch_sub(&object->refCount, 1, __ATOMIC_RELAXED);
 }
 
 
+// Ref counting
+
+/// allocates a new heap object and returns the refcounted box
 NOMANGLE NOINLINE
 RefcountedObject
 vist_allocObject(uint32_t size) {
     void *object = malloc(size);
-    uint32_t refCount = 1;
+    uint32_t refCount = 0;
+    printf("alloc %i\n", refCount);
     return {object, refCount};
 };
 
-
+/// Deallocs a heap object
 NOMANGLE NOINLINE
 void
 vist_deallocObject(RefcountedObject *object) {
     free(object->object);
-    free(object);
+    decrementRefCount(object);
+    if (object->refCount != 0) abort();
+    printf("dealloc %i\n", object->refCount);
 };
 
+/// Releases this capture. If its now unowned we dealloc
 NOMANGLE NOINLINE
 void
-vist_releaseObject(RefcountedObject *object,
-                   uint32_t size) {
-    
+vist_releaseObject(RefcountedObject *object) {
+
     // if no more references, we dealloc it
     if (object->refCount == 1)
         vist_deallocObject(object);
     // otherwise we decrement
     else
         decrementRefCount(object);
+    
+    printf("release %i\n", object->refCount);
 };
 
+/// Retain an object
 NOMANGLE NOINLINE
 void
 vist_retainObject(RefcountedObject *object) {
     incrementRefCount(object);
+    printf("retain %i\n", object->refCount);
 };
 
+/// Release an object without deallocating if ref count == 0
+NOMANGLE NOINLINE
+void
+vist_releaseUnretainedObject(RefcountedObject *object) {
+    decrementRefCount(object);
+    if (object->refCount < 0) abort();
+    printf("release unretained %i\n", object->refCount);
+};
+
+/// Get the ref count
 NOMANGLE NOINLINE
 uint32_t
 vist_getObjectRefcount(RefcountedObject *object) {
     return object->refCount;
 };
 
+/// Check if the object is singly referenced
 NOMANGLE NOINLINE
 bool
 vist_objectHasUniqueReference(RefcountedObject *object) {
@@ -102,35 +117,41 @@ vist_objectHasUniqueReference(RefcountedObject *object) {
 
 
 
+// Printing
 
-
-NOMANGLE NOINLINE void
+NOMANGLE NOINLINE
+void
 vist$Uprint_ti64(int64_t i) {
     printf("%lli\n", i);
 };
 
-NOMANGLE NOINLINE void
+NOMANGLE NOINLINE
+void
 vist$Uprint_ti32(int32_t i) {
     printf("%i\n", i);
 };
 
-NOMANGLE NOINLINE void
+NOMANGLE NOINLINE
+void
 vist$Uprint_tf64(double d)
 {
     printf("%f\n", d);
 };
 
-NOMANGLE NOINLINE void
+NOMANGLE NOINLINE
+void
 vist$Uprint_tf32(float d) {
     printf("%f\n", d);
 };
 
-NOMANGLE NOINLINE void
+NOMANGLE NOINLINE
+void
 vist$Uprint_tb(bool b) {
     printf(b ? "true\n" : "false\n");
 };
 
-NOMANGLE NOINLINE void
+NOMANGLE NOINLINE
+void
 vist$Uprint_top(void *str) {
     printf("%s\n", str);
 };

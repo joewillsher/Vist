@@ -1,45 +1,85 @@
-; ModuleID = 'example.ll'
+; ModuleID = 'vist_module'
 target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-macosx10.11.0"
 
+%RefcountedObject = type { i8*, i32 }
 %Foo.refcounted = type { %Foo*, i32 }
 %Foo = type { %Int }
 %Int = type { i64 }
-%RefcountedObject = type { i8*, i32 }
+%String = type { i8*, i64 }
 
-define %Foo.refcounted @Foo_tInt(%Int %"$0") {
+@0 = private unnamed_addr constant [9 x i8] c"init end\00"
+@1 = private unnamed_addr constant [2 x i8] c"a\00"
+@2 = private unnamed_addr constant [4 x i8] c"end\00"
+
+declare void @vist_releaseUnretainedObject(%RefcountedObject*)
+
+define %Foo.refcounted @Foo_tInt(%Int %q) {
 entry:
-  %refcounted = tail call %RefcountedObject @vist_allocObject(i32 8)
-  %refcounted.fca.0.extract = extractvalue %RefcountedObject %refcounted, 0
-  %refcounted.fca.1.extract = extractvalue %RefcountedObject %refcounted, 1
-  %0 = bitcast i8* %refcounted.fca.0.extract to %Foo*
-  %a = bitcast i8* %refcounted.fca.0.extract to %Int*
-  store %Int %"$0", %Int* %a, align 8
-  %.fca.0.insert = insertvalue %Foo.refcounted undef, %Foo* %0, 0
-  %.fca.1.insert = insertvalue %Foo.refcounted %.fca.0.insert, i32 %refcounted.fca.1.extract, 1
-  ret %Foo.refcounted %.fca.1.insert
+  %refcounted = call %RefcountedObject @vist_allocObject(i32 8)
+  %0 = alloca %RefcountedObject
+  store %RefcountedObject %refcounted, %RefcountedObject* %0
+  %storage = bitcast %RefcountedObject* %0 to %Foo.refcounted*
+  call void @vist_retainObject(%RefcountedObject* %0)
+  %1 = getelementptr inbounds %Foo.refcounted* %storage, i32 0, i32 0
+  %storage.instance = load %Foo** %1
+  %a = getelementptr inbounds %Foo* %storage.instance, i32 0, i32 0
+  store %Int %q, %Int* %a
+  %2 = call %String @String_topi64(i8* getelementptr inbounds ([9 x i8]* @0, i32 0, i32 0), i64 9), !stdlib.call.optim !0
+  call void @print_tString(%String %2), !stdlib.call.optim !0
+  call void @vist_releaseUnretainedObject(%RefcountedObject* %0)
+  %3 = load %Foo.refcounted* %storage
+  ret %Foo.refcounted %3
 }
+
+declare %String @String_topi64(i8*, i64)
 
 declare %RefcountedObject @vist_allocObject(i32)
 
+declare void @print_tString(%String)
+
+declare void @vist_releaseObject(%RefcountedObject*)
+
+declare void @vist_retainObject(%RefcountedObject*)
+
 define void @main() {
 entry:
-  %refcounted.i = tail call %RefcountedObject @vist_allocObject(i32 8)
-  %refcounted.i.fca.0.extract = extractvalue %RefcountedObject %refcounted.i, 0
-  %a.i = bitcast i8* %refcounted.i.fca.0.extract to %Int*
-  store %Int { i64 1 }, %Int* %a.i, align 8
-  %0 = bitcast i8* %refcounted.i.fca.0.extract to i64*
-  %1 = load i64* %0, align 8
-  tail call void @vist-Uprint_ti64(i64 %1)
-  store %Int { i64 2 }, %Int* %a.i, align 8
-  %2 = load i64* %0, align 8
-  tail call void @vist-Uprint_ti64(i64 %2)
-  %3 = load i64* %0, align 8
-  tail call void @vist-Uprint_ti64(i64 %3)
+  %0 = call %Foo.refcounted @Foo_tInt(%Int { i64 1 })
+  %1 = alloca %Foo.refcounted
+  store %Foo.refcounted %0, %Foo.refcounted* %1
+  %2 = bitcast %Foo.refcounted* %1 to %RefcountedObject*
+  call void @vist_retainObject(%RefcountedObject* %2)
+  %3 = load %Foo.refcounted* %1
+  %4 = alloca %Foo.refcounted
+  store %Foo.refcounted %3, %Foo.refcounted* %4
+  %5 = call %String @String_topi64(i8* getelementptr inbounds ([2 x i8]* @1, i32 0, i32 0), i64 2), !stdlib.call.optim !0
+  call void @print_tString(%String %5), !stdlib.call.optim !0
+  %6 = bitcast %Foo.refcounted* %4 to %RefcountedObject*
+  call void @vist_retainObject(%RefcountedObject* %6)
+  %7 = load %Foo.refcounted* %4
+  %8 = alloca %Foo.refcounted
+  store %Foo.refcounted %7, %Foo.refcounted* %8
+  %9 = bitcast %Foo.refcounted* %4 to %RefcountedObject*
+  call void @vist_retainObject(%RefcountedObject* %9)
+  %10 = load %Foo.refcounted* %4
+  %11 = alloca %Foo.refcounted
+  store %Foo.refcounted %10, %Foo.refcounted* %11
+  %12 = bitcast %Foo.refcounted* %4 to %RefcountedObject*
+  call void @vist_retainObject(%RefcountedObject* %12)
+  %13 = load %Foo.refcounted* %4
+  %14 = alloca %Foo.refcounted
+  store %Foo.refcounted %13, %Foo.refcounted* %14
+  %15 = call %String @String_topi64(i8* getelementptr inbounds ([4 x i8]* @2, i32 0, i32 0), i64 4), !stdlib.call.optim !0
+  call void @print_tString(%String %15), !stdlib.call.optim !0
+  %16 = bitcast %Foo.refcounted* %14 to %RefcountedObject*
+  call void @vist_releaseObject(%RefcountedObject* %16)
+  %17 = bitcast %Foo.refcounted* %11 to %RefcountedObject*
+  call void @vist_releaseObject(%RefcountedObject* %17)
+  %18 = bitcast %Foo.refcounted* %8 to %RefcountedObject*
+  call void @vist_releaseObject(%RefcountedObject* %18)
+  %19 = bitcast %Foo.refcounted* %4 to %RefcountedObject*
+  call void @vist_releaseObject(%RefcountedObject* %19)
   ret void
 }
 
-; Function Attrs: noinline nounwind ssp uwtable
-declare void @vist-Uprint_ti64(i64) #0
-
-attributes #0 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+!0 = !{!"stdlib.call.optim"}

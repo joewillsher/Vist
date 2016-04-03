@@ -17,6 +17,12 @@ protocol Accessor {
     func asReferenceAccessor() throws -> GetSetAccessor
     
     var storedType: Ty? { get }
+    
+    func getMemCopy() throws -> GetSetAccessor
+    
+    func releaseIfRefcounted() throws
+    func retainIfRefcounted() throws
+    func releaseUnretainedIfRefcounted() throws
 }
 
 
@@ -31,6 +37,19 @@ protocol GetSetAccessor : Accessor {
     /// Return the aggregate reference -- not guaranteed to be the same
     /// as the location `reference` uses to access elements
     func aggregateReference() -> PtrOperand
+}
+
+
+
+extension Accessor {
+    
+    func getMemCopy() throws -> GetSetAccessor {
+        return try getter().accessor().asReferenceAccessor()
+    }
+    
+    func releaseIfRefcounted() { }
+    func retainIfRefcounted() { }
+    func releaseUnretainedIfRefcounted() { }
 }
 
 extension GetSetAccessor {
@@ -104,7 +123,10 @@ final class RefAccessor : GetSetAccessor {
 final class RefCountedAccessor : GetSetAccessor {
     var mem: LValue
     
-    init(refcountedBox: LValue) { self.mem = refcountedBox }
+    init(refcountedBox: LValue, _reference: Value? = nil) {
+        self.mem = refcountedBox
+        self._reference = _reference
+    }
     
     var _reference: Value? // lazy member reference
     func reference() throws -> PtrOperand {
@@ -119,6 +141,34 @@ final class RefCountedAccessor : GetSetAccessor {
     func aggregateReference() -> PtrOperand {
         return PtrOperand(mem)
     }
+    
+    func retain() throws {
+        let function = try mem.module.getOrInsertRawRuntimeFunction(named: "vist_retainObject")!
+        let bc = try mem.module.builder.buildBitcast(from: PtrOperand(mem), newType: Runtime.refcountedObjectType)
+        try mem.module.builder.buildFunctionCall(function, args: [Operand(bc)])
+    }
+    
+    func releaseUnretained() throws {
+        let function = try mem.module.getOrInsertRawRuntimeFunction(named: "vist_releaseUnretainedObject")!
+        let bc = try mem.module.builder.buildBitcast(from: PtrOperand(mem), newType: Runtime.refcountedObjectType)
+        try mem.module.builder.buildFunctionCall(function, args: [Operand(bc)])
+    }
+    
+    func release() throws {
+        let function = try mem.module.getOrInsertRawRuntimeFunction(named: "vist_releaseObject")!
+        let bc = try mem.module.builder.buildBitcast(from: PtrOperand(mem), newType: Runtime.refcountedObjectType)
+        try mem.module.builder.buildFunctionCall(function, args: [Operand(bc)])
+    }
+    
+    func getMemCopy() throws -> GetSetAccessor {
+        try retain()
+        let val = try mem.module.builder.buildLoad(from: PtrOperand(mem)).allocGetSetAccessor()
+        return RefCountedAccessor(refcountedBox: PtrOperand(try val.reference()), _reference: _reference)
+    }
+    
+    func releaseIfRefcounted() throws { try release() }
+    func retainIfRefcounted() throws { try retain() }
+    func releaseUnretainedIfRefcounted() throws { try releaseUnretained() }
 }
 
 // TODO: make a LazyRefAccessor wrap a GetSetAccessor

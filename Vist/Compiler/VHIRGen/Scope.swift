@@ -11,10 +11,16 @@
 final class Scope {
     private var variables: [String: Accessor]
     private weak var parent: Scope?
+    private unowned var module: Module
     
-    init(parent: Scope? = nil) {
+    init(module: Module) {
+        self.module = module
+        self.variables = [:]
+    }
+    init(parent: Scope) {
         self.parent = parent
         self.variables = [:]
+        self.module = parent.module
     }
     
     func add(variable: Accessor, name: String) {
@@ -24,6 +30,22 @@ final class Scope {
     func variableNamed(name: String) -> Accessor? {
         if let v = variables[name] { return v }
         return parent?.variableNamed(name)
+    }
+
+    func removeVariableNamed(name: String) -> Accessor? {
+        if let v = variables.removeValueForKey(name) { return v }
+        return parent?.removeVariableNamed(name)
+    }
+
+    func releaseVariables() throws {
+        for variable in variables.values {
+            try variable.releaseIfRefcounted()
+        }
+        variables.removeAll()
+    }
+    
+    deinit {
+        if !variables.isEmpty { try! releaseVariables() }
     }
 }
 
