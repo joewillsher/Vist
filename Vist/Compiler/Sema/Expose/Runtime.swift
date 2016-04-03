@@ -16,7 +16,7 @@ struct Runtime {
     private static let opaquePointerType = BuiltinType.opaquePointer
     
     static let refcountedObjectType = StructType.withTypes([BuiltinType.opaquePointer, BuiltinType.int(size: 32)], name: "RefcountedObject")
-    private static let refcountedObjectPointerType = BuiltinType.pointer(to: refcountedObjectType)
+    static let refcountedObjectPointerType = BuiltinType.pointer(to: refcountedObjectType)
     
     private static let functions: [(String, FnType)] = [
         // runtime fns

@@ -149,23 +149,17 @@ final class RefCountedAccessor : GetSetAccessor {
     
     /// Retain a reference, increment the ref count
     func retain() throws {
-        let function = try module.getOrInsertRawRuntimeFunction(named: "vist_retainObject")!
-        let bc = try module.builder.buildBitcast(from: PtrOperand(mem), newType: Runtime.refcountedObjectType)
-        try module.builder.buildFunctionCall(function, args: [Operand(bc)])
+        try module.builder.buildRetain(aggregateReference())
     }
     
     /// Release a reference, decrement the ref count but don’t deallocate
     func releaseUnretained() throws {
-        let function = try module.getOrInsertRawRuntimeFunction(named: "vist_releaseUnretainedObject")!
-        let bc = try module.builder.buildBitcast(from: PtrOperand(mem), newType: Runtime.refcountedObjectType)
-        try module.builder.buildFunctionCall(function, args: [Operand(bc)])
+        try module.builder.buildReleaseUnretained(aggregateReference())
     }
     
     /// Release a reference, decrement the ref count
     func release() throws {
-        let function = try module.getOrInsertRawRuntimeFunction(named: "vist_releaseObject")!
-        let bc = try module.builder.buildBitcast(from: PtrOperand(mem), newType: Runtime.refcountedObjectType)
-        try module.builder.buildFunctionCall(function, args: [Operand(bc)])
+        try module.builder.buildRelease(aggregateReference())
     }
     
     /// Capture another reference to the object and retain it
@@ -181,19 +175,11 @@ final class RefCountedAccessor : GetSetAccessor {
     /// Allocate a heap object and retain it
     /// - returns: the object's accessor
     static func allocObject(type type: StructType, module: Module) throws -> RefCountedAccessor {
-        let size = try module.builder.buildIntLiteral(type.size(module), 
-                                                      size: 32,
-                                                      irName: "size")
         
-        let allocator = try module.getOrInsertRawRuntimeFunction(named: "vist_allocObject")!
-        let refCounted = try module.builder.buildFunctionCall(allocator,
-                                                              args: [Operand(size)],
-                                                              irName: "refcounted")
-        let bitcast = try module.builder.buildBitcast(from: PtrOperand.fromReferenceRValue(refCounted),
-                                                      newType: type.refCountedBox(module),
-                                                      irName: "storage")
+        let val = try module.builder.buildAllocObject(type, irName: "storage")
+        let bc = try module.builder.buildBitcast(from: PtrOperand(val), newType: type.refCountedBox(module))
         
-        let accessor = RefCountedAccessor(refcountedBox: bitcast)
+        let accessor = RefCountedAccessor(refcountedBox: bc)
         try accessor.retain()
         return accessor
     }

@@ -88,7 +88,12 @@ extension Module {
         let newPointer = LLVMAddFunction(irGen.module, name, type.lowerType(module))
         return newPointer
     }
-
+    
+    private func getOrAddRuntimeFunction(named name: String, irGen: IRGen) -> LLVMValueRef {
+        let (_, fnType) = Runtime.unmangledFunctionNamed(name)!
+        return module.getOrAddFunction(named: name, type: fnType, irGen: irGen)
+    }
+    
     func vhirLower(module: LLVMModuleRef, isStdLib: Bool) throws {
         
         let irGen = (LLVMCreateBuilder(), module, isStdLib) as IRGen
@@ -265,14 +270,23 @@ extension VariableInst : VHIRLower {
 
 extension VHIRFunctionCall {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        let args = self.args.map { $0.loweredValue }.ptr()
-        let argCount = self.args.count
-        defer { args.dealloc(argCount) }
+        return try FunctionCallInst.callFunction(functionRef,
+                                                 type: functionType,
+                                                 args: args.map { $0.loweredValue },
+                                                 irGen: irGen,
+                                                 irName: irName)
+    }
+    
+}
+
+private extension FunctionCallInst {
+    private static func callFunction(ref: LLVMValueRef, type: FnType? = nil, args: [LLVMValueRef], irGen: IRGen, irName: String?) throws -> LLVMValueRef {
+        let a = args.ptr()
+        let argCount = args.count
+        defer { a.dealloc(argCount) }
         
-        LLVMDumpValue(functionRef)
-        LLVMDumpValue(self.args[0].loweredValue)
-        let call = LLVMBuildCall(irGen.builder, functionRef, args, UInt32(argCount), irName ?? "")
-        functionType.addMetadataTo(call)
+        let call = LLVMBuildCall(irGen.builder, ref, a, UInt32(argCount), irName ?? "")
+        type?.addMetadataTo(call)
         
         return call
     }
@@ -632,24 +646,69 @@ extension ExistentialWitnessMethodInst : VHIRLower {
         let indexValue = LLVMConstInt(LLVMInt32Type(), UInt64(i), false) // i32
         let index = [indexValue].ptr()
         defer { index.dealloc(1) }
-
+        
         let opaquePtrType = BuiltinType.pointer(to: BuiltinType.opaquePointer).lowerType(module)
         let arr = LLVMBuildStructGEP(irGen.builder, existential.loweredValue, 1, "\(llvmName)witness_table_ptr") // [n x i8*]*
         let methodMetadataBasePtr = LLVMBuildBitCast(irGen.builder, arr, opaquePtrType, "\(llvmName)witness_table_base_ptr") // i8**
-
+        
         let pointerToArrayElement = LLVMBuildGEP(irGen.builder, methodMetadataBasePtr, index, 1, "") // i8**
         let functionPointer = LLVMBuildLoad(irGen.builder, pointerToArrayElement, "") // i8*
-
+        
         let functionType = BuiltinType.pointer(to: fnType).lowerType(module)
         return LLVMBuildBitCast(irGen.builder, functionPointer, functionType, irName ?? "") // fntype*
     }
 }
 
 
+private extension PtrOperand {
+    func bitcastToRefCountedType(irGen: IRGen) throws -> LLVMValueRef {
+        let refcounted = Runtime.refcountedObjectPointerType.lowerType(module)
+        return LLVMBuildBitCast(irGen.builder, loweredValue, refcounted, "")
+    }
+}
 
+extension AllocObjectInst : VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        let size = LLVMConstInt(LLVMInt32Type(), UInt64(storedType.size(module)), false)
+        
+        let ref = module.getOrAddRuntimeFunction(named: "vist_allocObject", irGen: irGen)
+        let allocated = try FunctionCallInst.callFunction(ref,
+                                                          args: [size],
+                                                          irGen: irGen,
+                                                          irName: irName)
+        return allocated
+    }
+}
 
+extension RetainInst : VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        let ref = module.getOrAddRuntimeFunction(named: "vist_retainObject", irGen: irGen)
+        return try FunctionCallInst.callFunction(ref,
+                                                 args: [try object.bitcastToRefCountedType(irGen)],
+                                                 irGen: irGen,
+                                                 irName: irName)
+    }
+}
 
+extension ReleaseInst : VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        let ref = module.getOrAddRuntimeFunction(named: "vist_releaseObject", irGen: irGen)
+        return try FunctionCallInst.callFunction(ref,
+                                                 args: [try object.bitcastToRefCountedType(irGen)],
+                                                 irGen: irGen,
+                                                 irName: irName)
+    }
+}
 
+extension ReleaseUnretainedInst : VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        let ref = module.getOrAddRuntimeFunction(named: "vist_releaseUnretainedObject", irGen: irGen)
+        return try FunctionCallInst.callFunction(ref,
+                                                 args: [try object.bitcastToRefCountedType(irGen)],
+                                                 irGen: irGen,
+                                                 irName: irName)
+    }
+}
 
 
 

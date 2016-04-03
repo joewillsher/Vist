@@ -1,35 +1,21 @@
 
+type %Foo = { %Int }
 type %Int = { %Builtin.Int64 }
 type %Foo.refcounted = { %*Foo, %Builtin.Int32 }
-type %Foo = { %Int }
-type %RefcountedObject = { %Builtin.OpaquePointer, %Builtin.Int32 }
-
-func @vist_releaseUnretainedObject : &thin (%*RefcountedObject) -> %Builtin.Void
 
 func @Foo_tInt : &thin (%Int) -> %Foo.refcounted {
 $entry(%q: %Int):
-  %size = int_literal 8  	// user: %refcounted
-  %refcounted = call @vist_allocObject (%size: %Builtin.Int32)  	// user: %storage
-  %storage = bitcast %refcounted: %*RefcountedObject to %*Foo.refcounted  	// users: %0, %2, %4, %6
-  %0 = bitcast %storage: %*Foo.refcounted to %*RefcountedObject  	// user: %1
-  %1 = call @vist_retainObject (%0: %*RefcountedObject) 
-  %2 = struct_element %storage: %*Foo.refcounted, #object  	// user: %storage.instance
-  %storage.instance = load %2: %**Foo  	// user: %a
-  %a = struct_element %storage.instance: %*Foo, #a  	// user: %3
+  %storage = alloc_object { { %Builtin.Int64 } }  	// user: %0
+  %0 = bitcast %storage: %*RefcountedObject to %*Foo.refcounted  	// users: %1, %2, %5, %6
+  %1 = retain_object %0: %*Foo.refcounted 
+  %2 = struct_element %0: %*Foo.refcounted, #object  	// user: %3
+  %3 = load %2: %**Foo  	// user: %a
+  %a = struct_element %3: %*Foo, #a  	// user: %4
   store %q in %a: %*Int 
-  %4 = bitcast %storage: %*Foo.refcounted to %*RefcountedObject  	// user: %5
-  %5 = call @vist_releaseUnretainedObject (%4: %*RefcountedObject) 
-  %6 = load %storage: %*Foo.refcounted  	// user: %7
+  %5 = release_unretained_object %0: %*Foo.refcounted 
+  %6 = load %0: %*Foo.refcounted  	// user: %7
   return %6
 }
-
-func @vist_allocObject : &thin (%Builtin.Int32) -> %*RefcountedObject
-
-func @print_tInt : &thin (%Int) -> %Builtin.Void
-
-func @vist_releaseObject : &thin (%*RefcountedObject) -> %Builtin.Void
-
-func @vist_retainObject : &thin (%*RefcountedObject) -> %Builtin.Void
 
 func @fooGen_tInt : &thin (%Int) -> %Foo.refcounted {
 $entry(%$0: %Int):
@@ -49,24 +35,22 @@ $entry:
   store %2 in %3: %*Foo.refcounted 
   %5 = load %3: %*Foo.refcounted  	// user: %a
   variable_decl %a = %5: %Foo.refcounted  	// user: %7
-  %6 = alloc %Foo.refcounted  	// users: %7, nil, %8, %10, %15, %20
+  %6 = alloc %Foo.refcounted  	// users: %7, nil, %8, %9, %14, %18
   store %a in %6: %*Foo.refcounted 
-  %8 = bitcast %6: %*Foo.refcounted to %*RefcountedObject  	// user: %9
-  %9 = call @vist_retainObject (%8: %*RefcountedObject) 
-  %10 = struct_element %6: %*Foo.refcounted, #object  	// user: %11
-  %11 = load %10: %**Foo  	// user: %12
-  %12 = load %11: %*Foo  	// user: %13
-  %13 = struct_extract %12: %Foo, #a  	// user: %14
-  %14 = call @print_tInt (%13: %Int) 
-  %15 = load %6: %*Foo.refcounted  	// user: %c
-  variable_decl %c = %15: %Foo.refcounted  	// user: %17
-  %16 = alloc %Foo.refcounted  	// users: %17, nil, %18, %22
-  store %c in %16: %*Foo.refcounted 
-  %18 = bitcast %16: %*Foo.refcounted to %*RefcountedObject  	// user: %19
-  %19 = call @vist_retainObject (%18: %*RefcountedObject) 
-  %20 = bitcast %6: %*Foo.refcounted to %*RefcountedObject  	// user: %21
-  %21 = call @vist_releaseObject (%20: %*RefcountedObject) 
-  %22 = bitcast %16: %*Foo.refcounted to %*RefcountedObject  	// user: %23
-  %23 = call @vist_releaseObject (%22: %*RefcountedObject) 
+  %8 = retain_object %6: %*Foo.refcounted 
+  %9 = struct_element %6: %*Foo.refcounted, #object  	// user: %10
+  %10 = load %9: %**Foo  	// user: %11
+  %11 = load %10: %*Foo  	// user: %12
+  %12 = struct_extract %11: %Foo, #a  	// user: %13
+  %13 = call @print_tInt (%12: %Int) 
+  %14 = load %6: %*Foo.refcounted  	// user: %c
+  variable_decl %c = %14: %Foo.refcounted  	// user: %16
+  %15 = alloc %Foo.refcounted  	// users: %16, nil, %17, %19
+  store %c in %15: %*Foo.refcounted 
+  %17 = retain_object %15: %*Foo.refcounted 
+  %18 = release_object %6: %*Foo.refcounted 
+  %19 = release_object %15: %*Foo.refcounted 
   return ()
 }
+
+func @print_tInt : &thin (%Int) -> %Builtin.Void
