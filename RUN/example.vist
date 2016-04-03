@@ -3,20 +3,16 @@
 ref type Foo {
     var a: Int
     
-    init Int = (q) {
+    init Int = (q) do
         a = q
-        print "init end"
-    }
 }
 
-var foo1 = Foo 1
-print "a"
-var foo2 = foo1
-print "end"
+func fooGen :: Int -> Foo = do
+    return Foo $0
 
-// var a =
-    
-//foo2.a = 2
+let a = fooGen 1
+print a.a
 
-//print foo1.a
-//print foo2.a
+let c = a
+
+

@@ -1,5 +1,5 @@
 //
-//  helper.cpp
+//  runtime.cpp
 //  Vist
 //
 //  Created by Josef Willsher on 13/12/2015.
@@ -18,6 +18,8 @@
 #define NORETURN __attribute__((noreturn))
 #define NOINLINE __attribute__((noinline))
 #define ALWAYSINLINE __attribute__((always_inline))
+
+//#define REFCOUNT_DEBUG
 
 // Currently all NOINLINE because optimiser cant copy over the string data across modules
 
@@ -55,14 +57,14 @@ vist_allocObject(uint32_t size) {
     // malloc the object storage
     void *object = malloc(size);
     // calloc the box storage -- need calloc so it is initialised
-    auto refCountedObject = static_cast<RefcountedObject *>(calloc(sizeof(RefcountedObject)));
+    auto refCountedObject = static_cast<RefcountedObject *>(malloc(sizeof(RefcountedObject)));
     
     // store the object and initial ref count in the box
     refCountedObject->object = object;
     refCountedObject->refCount = 0;
-    
-    printf("alloc\n");
-    
+#ifdef REFCOUNT_DEBUG
+    printf(">alloc\n");
+#endif
     // return heap pointer to ref counted box
     return refCountedObject;
 };
@@ -71,18 +73,20 @@ vist_allocObject(uint32_t size) {
 NOMANGLE NOINLINE
 void
 vist_deallocObject(RefcountedObject *object) {
-    printf("dealloc\n");
+#ifdef REFCOUNT_DEBUG
+    printf(">dealloc\n");
+#endif
     free(object->object);
-    free(object);
+    // this is probably leaking -- `object` is on the heap and we can't dispose of it
 };
 
 /// Releases this capture. If its now unowned we dealloc
 NOMANGLE NOINLINE
 void
 vist_releaseObject(RefcountedObject *object) {
-
-    printf("release %i\n", object->refCount-1);
-    
+#ifdef REFCOUNT_DEBUG
+    printf(">release %i\n", object->refCount-1);
+#endif
     // if no more references, we dealloc it
     if (object->refCount == 1)
         vist_deallocObject(object);
@@ -96,15 +100,19 @@ NOMANGLE NOINLINE
 void
 vist_retainObject(RefcountedObject *object) {
     incrementRefCount(object);
-    printf("retain %i\n", object->refCount);
+#ifdef REFCOUNT_DEBUG
+    printf(">retain %i\n", object->refCount);
+#endif
 };
 
-/// Release an object without deallocating if ref count == 0
+/// Release an object without deallocating
 NOMANGLE NOINLINE
 void
 vist_releaseUnretainedObject(RefcountedObject *object) {
     decrementRefCount(object);
-    printf("release unretained %i\n", object->refCount);
+#ifdef REFCOUNT_DEBUG
+    printf(">release-unretained %i\n", object->refCount);
+#endif
 };
 
 /// Get the ref count

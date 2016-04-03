@@ -25,14 +25,7 @@ Ltmp2:
 	movq	(%rax), %rdi
 	movq	-8(%rbp), %rcx          ## 8-byte Reload
 	movq	%rcx, (%rdi)
-	leaq	L___unnamed_1(%rip), %rdi
-	movl	$9, %edx
-	movl	%edx, %esi
-	callq	_String_topi64
 	movq	%rax, %rdi
-	movq	%rdx, %rsi
-	callq	_print_tString
-	movq	-16(%rbp), %rdi         ## 8-byte Reload
 	callq	_vist_releaseUnretainedObject
 	movq	-16(%rbp), %rax         ## 8-byte Reload
 	movq	(%rax), %rax
@@ -43,9 +36,9 @@ Ltmp2:
 	retq
 	.cfi_endproc
 
-	.globl	_main
+	.globl	_fooGen_tInt
 	.align	4, 0x90
-_main:                                  ## @main
+_fooGen_tInt:                           ## @fooGen_tInt
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
@@ -56,54 +49,54 @@ Ltmp4:
 	movq	%rsp, %rbp
 Ltmp5:
 	.cfi_def_cfa_register %rbp
-	subq	$32, %rsp
-	leaq	-16(%rbp), %rax
-	movl	$1, %ecx
-	movl	%ecx, %edi
-	movq	%rax, -24(%rbp)         ## 8-byte Spill
 	callq	_Foo_tInt
-	movl	%edx, -8(%rbp)
-	movq	%rax, -16(%rbp)
-	movq	-24(%rbp), %rax         ## 8-byte Reload
-	movq	%rax, %rdi
-	callq	_vist_retainObject
-	leaq	L___unnamed_2(%rip), %rdi
-	movl	$2, %ecx
-	movl	%ecx, %esi
-	callq	_String_topi64
-	movq	%rax, %rdi
-	movq	%rdx, %rsi
-	callq	_print_tString
-	leaq	-16(%rbp), %rax
-	movq	%rax, %rdi
-	callq	_vist_retainObject
-	leaq	L___unnamed_3(%rip), %rdi
-	movl	$4, %ecx
-	movl	%ecx, %esi
-	callq	_String_topi64
-	movq	%rax, %rdi
-	movq	%rdx, %rsi
-	callq	_print_tString
-	leaq	-16(%rbp), %rax
-	movq	%rax, %rdi
-	callq	_vist_releaseObject
-	leaq	-16(%rbp), %rax
-	movq	%rax, %rdi
-	callq	_vist_releaseObject
-	addq	$32, %rsp
 	popq	%rbp
 	retq
 	.cfi_endproc
 
-	.section	__TEXT,__cstring,cstring_literals
-L___unnamed_1:                          ## @0
-	.asciz	"init end"
-
-L___unnamed_2:                          ## @1
-	.asciz	"a"
-
-L___unnamed_3:                          ## @2
-	.asciz	"end"
+	.globl	_main
+	.align	4, 0x90
+_main:                                  ## @main
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp6:
+	.cfi_def_cfa_offset 16
+Ltmp7:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp8:
+	.cfi_def_cfa_register %rbp
+	subq	$48, %rsp
+	leaq	-32(%rbp), %rax
+	movl	$1, %ecx
+	movl	%ecx, %edi
+	movq	%rax, -40(%rbp)         ## 8-byte Spill
+	callq	_fooGen_tInt
+	movl	%edx, -8(%rbp)
+	movq	%rax, -16(%rbp)
+	leaq	-16(%rbp), %rdi
+	callq	_vist_retainObject
+	movq	-16(%rbp), %rax
+	movq	(%rax), %rdi
+	callq	_print_tInt
+	movq	-16(%rbp), %rax
+	movl	-8(%rbp), %ecx
+	movl	%ecx, -24(%rbp)
+	movq	%rax, -32(%rbp)
+	movq	-40(%rbp), %rax         ## 8-byte Reload
+	movq	%rax, %rdi
+	callq	_vist_retainObject
+	leaq	-16(%rbp), %rax
+	movq	%rax, %rdi
+	callq	_vist_releaseObject
+	leaq	-32(%rbp), %rax
+	movq	%rax, %rdi
+	callq	_vist_releaseObject
+	addq	$48, %rsp
+	popq	%rbp
+	retq
+	.cfi_endproc
 
 
 .subsections_via_symbols

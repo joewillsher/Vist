@@ -58,30 +58,22 @@ define %struct.RefcountedObject* @vist_allocObject(i32 %size) #1 {
   %3 = zext i32 %2 to i64
   %4 = call i8* @malloc(i64 %3)
   store i8* %4, i8** %object, align 8
-  %5 = call noalias i8* @_Znwm(i64 16) #5
+  %5 = call i8* @malloc(i64 16)
   %6 = bitcast i8* %5 to %struct.RefcountedObject*
-  %7 = getelementptr inbounds %struct.RefcountedObject, %struct.RefcountedObject* %6, i32 0, i32 0
-  %8 = load i8*, i8** %object, align 8
-  store i8* %8, i8** %7, align 8
-  %9 = getelementptr inbounds %struct.RefcountedObject, %struct.RefcountedObject* %6, i32 0, i32 1
-  store i32 0, i32* %9, align 8
   store %struct.RefcountedObject* %6, %struct.RefcountedObject** %refCountedObject, align 8
-  %10 = load i8*, i8** %object, align 8
-  %11 = load %struct.RefcountedObject*, %struct.RefcountedObject** %refCountedObject, align 8
-  %12 = getelementptr inbounds %struct.RefcountedObject, %struct.RefcountedObject* %11, i32 0, i32 0
-  store i8* %10, i8** %12, align 8
+  %7 = load i8*, i8** %object, align 8
+  %8 = load %struct.RefcountedObject*, %struct.RefcountedObject** %refCountedObject, align 8
+  %9 = getelementptr inbounds %struct.RefcountedObject, %struct.RefcountedObject* %8, i32 0, i32 0
+  store i8* %7, i8** %9, align 8
+  %10 = load %struct.RefcountedObject*, %struct.RefcountedObject** %refCountedObject, align 8
+  %11 = getelementptr inbounds %struct.RefcountedObject, %struct.RefcountedObject* %10, i32 0, i32 1
+  store i32 0, i32* %11, align 8
+  %12 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str, i32 0, i32 0))
   %13 = load %struct.RefcountedObject*, %struct.RefcountedObject** %refCountedObject, align 8
-  %14 = getelementptr inbounds %struct.RefcountedObject, %struct.RefcountedObject* %13, i32 0, i32 1
-  store i32 0, i32* %14, align 8
-  %15 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str, i32 0, i32 0))
-  %16 = load %struct.RefcountedObject*, %struct.RefcountedObject** %refCountedObject, align 8
-  ret %struct.RefcountedObject* %16
+  ret %struct.RefcountedObject* %13
 }
 
 declare i8* @malloc(i64) #2
-
-; Function Attrs: nobuiltin
-declare noalias i8* @_Znwm(i64) #3
 
 declare i32 @printf(i8*, ...) #2
 
@@ -185,7 +177,7 @@ define void @vist_releaseUnretainedObject(%struct.RefcountedObject* %object) #1 
 }
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define i32 @vist_getObjectRefcount(%struct.RefcountedObject* %object) #4 {
+define i32 @vist_getObjectRefcount(%struct.RefcountedObject* %object) #3 {
   %1 = alloca %struct.RefcountedObject*, align 8
   store %struct.RefcountedObject* %object, %struct.RefcountedObject** %1, align 8
   %2 = load %struct.RefcountedObject*, %struct.RefcountedObject** %1, align 8
@@ -195,7 +187,7 @@ define i32 @vist_getObjectRefcount(%struct.RefcountedObject* %object) #4 {
 }
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define zeroext i1 @vist_objectHasUniqueReference(%struct.RefcountedObject* %object) #4 {
+define zeroext i1 @vist_objectHasUniqueReference(%struct.RefcountedObject* %object) #3 {
   %1 = alloca %struct.RefcountedObject*, align 8
   store %struct.RefcountedObject* %object, %struct.RefcountedObject** %1, align 8
   %2 = load %struct.RefcountedObject*, %struct.RefcountedObject** %1, align 8
@@ -266,9 +258,7 @@ define void @"vist$Uprint_top"(i8* %str) #1 {
 attributes #0 = { alwaysinline nounwind ssp uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+cx16,+fxsr,+mmx,+sse,+sse2,+sse3,+ssse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { noinline ssp uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+cx16,+fxsr,+mmx,+sse,+sse2,+sse3,+ssse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #2 = { "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+cx16,+fxsr,+mmx,+sse,+sse2,+sse3,+ssse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #3 = { nobuiltin "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+cx16,+fxsr,+mmx,+sse,+sse2,+sse3,+ssse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #4 = { noinline nounwind ssp uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+cx16,+fxsr,+mmx,+sse,+sse2,+sse3,+ssse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #5 = { builtin }
+attributes #3 = { noinline nounwind ssp uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="core2" "target-features"="+cx16,+fxsr,+mmx,+sse,+sse2,+sse3,+ssse3" "unsafe-fp-math"="false" "use-soft-float"="false" }
 
 !llvm.module.flags = !{!0}
 !llvm.ident = !{!1}

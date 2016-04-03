@@ -10,16 +10,16 @@ target triple = "x86_64-apple-macosx10.11.0"
 %Int32 = type { i32 }
 %String = type { i8*, i64 }
 
-@.str2 = private unnamed_addr constant [12 x i8] c"release %i\0A\00", align 1
-@.str3 = private unnamed_addr constant [11 x i8] c"retain %i\0A\00", align 1
-@.str4 = private unnamed_addr constant [23 x i8] c"release unretained %i\0A\00", align 1
+@.str2 = private unnamed_addr constant [13 x i8] c">release %i\0A\00", align 1
+@.str3 = private unnamed_addr constant [12 x i8] c">retain %i\0A\00", align 1
+@.str4 = private unnamed_addr constant [24 x i8] c">release-unretained %i\0A\00", align 1
 @.str5 = private unnamed_addr constant [6 x i8] c"%lli\0A\00", align 1
 @.str6 = private unnamed_addr constant [4 x i8] c"%i\0A\00", align 1
 @.str7 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
 @.str8 = private unnamed_addr constant [6 x i8] c"true\0A\00", align 1
 @.str9 = private unnamed_addr constant [7 x i8] c"false\0A\00", align 1
-@str = private unnamed_addr constant [6 x i8] c"alloc\00"
-@str1 = private unnamed_addr constant [8 x i8] c"dealloc\00"
+@str = private unnamed_addr constant [7 x i8] c">alloc\00"
+@str1 = private unnamed_addr constant [9 x i8] c">dealloc\00"
 
 ; Function Attrs: alwaysinline nounwind ssp uwtable
 define void @_Z17incrementRefCountP16RefcountedObject(%struct.RefcountedObject* %object) #0 {
@@ -49,7 +49,7 @@ entry:
   %refCount = getelementptr inbounds i8* %call1, i64 8
   %1 = bitcast i8* %refCount to i32*
   store i32 0, i32* %1, align 4
-  %puts = tail call i32 @puts(i8* getelementptr inbounds ([6 x i8]* @str, i64 0, i64 0))
+  %puts = tail call i32 @puts(i8* getelementptr inbounds ([7 x i8]* @str, i64 0, i64 0))
   ret %struct.RefcountedObject* %0
 }
 
@@ -62,7 +62,7 @@ declare i32 @printf(i8* nocapture readonly, ...) #2
 ; Function Attrs: noinline nounwind ssp uwtable
 define void @vist_deallocObject(%struct.RefcountedObject* nocapture readonly %object) #1 {
 entry:
-  %puts = tail call i32 @puts(i8* getelementptr inbounds ([8 x i8]* @str1, i64 0, i64 0))
+  %puts = tail call i32 @puts(i8* getelementptr inbounds ([9 x i8]* @str1, i64 0, i64 0))
   %object1 = getelementptr inbounds %struct.RefcountedObject* %object, i64 0, i32 0
   %0 = load i8** %object1, align 8
   tail call void @free(i8* %0)
@@ -78,7 +78,7 @@ entry:
   %refCount = getelementptr inbounds %struct.RefcountedObject* %object, i64 0, i32 1
   %0 = load i32* %refCount, align 4
   %sub = add i32 %0, -1
-  %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([12 x i8]* @.str2, i64 0, i64 0), i32 %sub)
+  %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([13 x i8]* @.str2, i64 0, i64 0), i32 %sub)
   %1 = load i32* %refCount, align 4
   %cmp = icmp eq i32 %1, 1
   br i1 %cmp, label %if.then, label %if.else
@@ -101,7 +101,7 @@ entry:
   %refCount.i = getelementptr inbounds %struct.RefcountedObject* %object, i64 0, i32 1
   %0 = atomicrmw add i32* %refCount.i, i32 1 monotonic
   %1 = load i32* %refCount.i, align 4
-  %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([11 x i8]* @.str3, i64 0, i64 0), i32 %1)
+  %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([12 x i8]* @.str3, i64 0, i64 0), i32 %1)
   ret void
 }
 
@@ -111,7 +111,7 @@ entry:
   %refCount.i = getelementptr inbounds %struct.RefcountedObject* %object, i64 0, i32 1
   %0 = atomicrmw sub i32* %refCount.i, i32 1 monotonic
   %1 = load i32* %refCount.i, align 4
-  %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([23 x i8]* @.str4, i64 0, i64 0), i32 %1)
+  %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([24 x i8]* @.str4, i64 0, i64 0), i32 %1)
   ret void
 }
 

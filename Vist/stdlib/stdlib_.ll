@@ -10,11 +10,11 @@ target triple = "x86_64-apple-macosx10.11.0"
 %Int32 = type { i32 }
 %String = type { i8*, i64 }
 
-@.str = private unnamed_addr constant [7 x i8] c"alloc\0A\00", align 1
-@.str1 = private unnamed_addr constant [9 x i8] c"dealloc\0A\00", align 1
-@.str2 = private unnamed_addr constant [12 x i8] c"release %i\0A\00", align 1
-@.str3 = private unnamed_addr constant [11 x i8] c"retain %i\0A\00", align 1
-@.str4 = private unnamed_addr constant [23 x i8] c"release unretained %i\0A\00", align 1
+@.str = private unnamed_addr constant [8 x i8] c">alloc\0A\00", align 1
+@.str1 = private unnamed_addr constant [10 x i8] c">dealloc\0A\00", align 1
+@.str2 = private unnamed_addr constant [13 x i8] c">release %i\0A\00", align 1
+@.str3 = private unnamed_addr constant [12 x i8] c">retain %i\0A\00", align 1
+@.str4 = private unnamed_addr constant [24 x i8] c">release-unretained %i\0A\00", align 1
 @.str5 = private unnamed_addr constant [6 x i8] c"%lli\0A\00", align 1
 @.str6 = private unnamed_addr constant [4 x i8] c"%i\0A\00", align 1
 @.str7 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
@@ -77,7 +77,7 @@ entry:
   %4 = load %struct.RefcountedObject** %refCountedObject, align 8
   %refCount = getelementptr inbounds %struct.RefcountedObject* %4, i32 0, i32 1
   store i32 0, i32* %refCount, align 4
-  %call3 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([7 x i8]* @.str, i32 0, i32 0))
+  %call3 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([8 x i8]* @.str, i32 0, i32 0))
   %5 = load %struct.RefcountedObject** %refCountedObject, align 8
   ret %struct.RefcountedObject* %5
 }
@@ -91,7 +91,7 @@ define void @vist_deallocObject(%struct.RefcountedObject* %object) #1 {
 entry:
   %object.addr = alloca %struct.RefcountedObject*, align 8
   store %struct.RefcountedObject* %object, %struct.RefcountedObject** %object.addr, align 8
-  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([9 x i8]* @.str1, i32 0, i32 0))
+  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([10 x i8]* @.str1, i32 0, i32 0))
   %0 = load %struct.RefcountedObject** %object.addr, align 8
   %object1 = getelementptr inbounds %struct.RefcountedObject* %0, i32 0, i32 0
   %1 = load i8** %object1, align 8
@@ -113,7 +113,7 @@ entry:
   %refCount = getelementptr inbounds %struct.RefcountedObject* %0, i32 0, i32 1
   %1 = load i32* %refCount, align 4
   %sub = sub i32 %1, 1
-  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([12 x i8]* @.str2, i32 0, i32 0), i32 %sub)
+  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([13 x i8]* @.str2, i32 0, i32 0), i32 %sub)
   %2 = load %struct.RefcountedObject** %object.addr, align 8
   %refCount1 = getelementptr inbounds %struct.RefcountedObject* %2, i32 0, i32 1
   %3 = load i32* %refCount1, align 4
@@ -161,7 +161,7 @@ entry:
   %5 = load %struct.RefcountedObject** %object.addr, align 8
   %refCount = getelementptr inbounds %struct.RefcountedObject* %5, i32 0, i32 1
   %6 = load i32* %refCount, align 4
-  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([11 x i8]* @.str3, i32 0, i32 0), i32 %6)
+  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([12 x i8]* @.str3, i32 0, i32 0), i32 %6)
   ret void
 }
 
@@ -185,7 +185,7 @@ entry:
   %5 = load %struct.RefcountedObject** %object.addr, align 8
   %refCount = getelementptr inbounds %struct.RefcountedObject* %5, i32 0, i32 1
   %6 = load i32* %refCount, align 4
-  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([23 x i8]* @.str4, i32 0, i32 0), i32 %6)
+  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([24 x i8]* @.str4, i32 0, i32 0), i32 %6)
   ret void
 }
 

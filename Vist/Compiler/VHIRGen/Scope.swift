@@ -45,7 +45,9 @@ final class Scope {
     }
     
     deinit {
-        if !variables.isEmpty { try! releaseVariables() }
+        if !variables.isEmpty { 
+            try! releaseVariables()
+        }
     }
 }
 

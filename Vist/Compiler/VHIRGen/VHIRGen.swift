@@ -183,7 +183,8 @@ extension VariableDecl : ValueEmitter {
             return variable
         }
         else {
-            let variable = try module.builder.buildVariableDecl(Operand(val.getter()), irName: name).accessor()
+            let variable = try module.builder.buildVariableDecl(Operand(val.aggregateGetter()), irName: name).accessor()
+            try variable.retainIfRefcounted()
             scope.add(variable, name: name)
             return variable
         }
@@ -204,7 +205,7 @@ extension FunctionCall/*: VHIRGenerator*/ {
                 return try module.builder.buildExistentialBox(existentialRef, existentialType: existentialType)
             }
             else {
-                return try arg.getter()
+                return try arg.aggregateGetter()
             }
             }.map(Operand.init)
     }
@@ -249,14 +250,14 @@ extension FuncDecl : StmtEmitter {
         
         // if has body
         guard let impl = impl else {
-            try module.builder.createFunctionPrototype(mangledName, type: type)
+            try module.builder.createFunctionPrototype(mangledName, type: type.vhirType(module))
             return
         }
         
         let originalInsertPoint = module.builder.insertPoint
         
         // find proto/make function and move into it
-        let function = try module.builder.getOrBuildFunction(mangledName, type: type, paramNames: impl.params)
+        let function = try module.builder.getOrBuildFunction(mangledName, type: type.vhirType(module), paramNames: impl.params)
         try module.builder.setInsertPoint(function)
         
         function.visibility = attrs.visibility
@@ -319,7 +320,7 @@ extension VariableExpr: LValueEmitter {
 extension ReturnStmt: ValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
-        let retVal = try expr.emitRValue(module: module, scope: scope).getter()
+        let retVal = try expr.emitRValue(module: module, scope: scope).aggregateGetter()
         return try module.builder.buildReturn(Operand(retVal)).accessor()
     }
 }
@@ -331,7 +332,7 @@ extension TupleExpr: ValueEmitter {
         if self.elements.isEmpty { return try VoidLiteralValue().accessor() }
         
         guard case let type as TupleType = _type else { throw VHIRError.noType(#file) }
-        let elements = try self.elements.map { try $0.emitRValue(module: module, scope: scope).getter() }.map(Operand.init)
+        let elements = try self.elements.map { try $0.emitRValue(module: module, scope: scope).aggregateGetter() }.map(Operand.init)
         return try module.builder.buildTupleCreate(type, elements: elements).accessor()
     }
 }
