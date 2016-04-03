@@ -162,13 +162,36 @@ final class RefCountedAccessor : GetSetAccessor {
     
     func getMemCopy() throws -> GetSetAccessor {
         try retain()
-        let val = try mem.module.builder.buildLoad(from: PtrOperand(mem)).allocGetSetAccessor()
-        return RefCountedAccessor(refcountedBox: PtrOperand(try val.reference()), _reference: _reference)
+        return RefCountedAccessor(refcountedBox: aggregateReference(), _reference: _reference)
     }
     
     func releaseIfRefcounted() throws { try release() }
     func retainIfRefcounted() throws { try retain() }
     func releaseUnretainedIfRefcounted() throws { try releaseUnretained() }
+    
+    /// Allocate a heap object and retain it
+    /// - returns: the object's accessor
+    static func allocObject(type type: StructType, module: Module) throws -> RefCountedAccessor {
+        let size = try module.builder.buildIntLiteral(type.size(module), 
+                                                      size: 32,
+                                                      irName: "size")
+        
+        let allocator = try module.getOrInsertRawRuntimeFunction(named: "vist_allocObject")!
+        let refCounted = try module.builder.buildFunctionCall(allocator,
+                                                              args: [Operand(size)],
+                                                              irName: "refcounted")
+        let bitcast = try module.builder.buildBitcast(from: PtrOperand.fromReferenceRValue(refCounted),
+                                                      newType: type.refCountedBox(module),
+                                                      irName: "storage")
+        
+        let accessor = RefCountedAccessor(refcountedBox: bitcast)
+        try accessor.retain()
+        return accessor
+    }
+    
+    deinit {
+        
+    }
 }
 
 // TODO: make a LazyRefAccessor wrap a GetSetAccessor

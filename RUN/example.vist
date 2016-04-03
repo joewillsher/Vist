@@ -12,8 +12,6 @@ ref type Foo {
 var foo1 = Foo 1
 print "a"
 var foo2 = foo1
-var a = foo1
-var b = foo1
 print "end"
 
 // var a =

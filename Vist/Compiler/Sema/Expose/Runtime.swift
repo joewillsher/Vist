@@ -27,7 +27,7 @@ struct Runtime {
         ("vist_print", FnType(params: [opaquePointerType], returns: voidType)),
     ]
     private static let unmangled: [(String, FnType)] = [
-        ("vist_allocObject", FnType(params: [int32Type], returns: refcountedObjectType)),
+        ("vist_allocObject", FnType(params: [int32Type], returns: refcountedObjectPointerType)),
         ("vist_deallocObject", FnType(params: [refcountedObjectPointerType], returns: voidType)),
         ("vist_retainObject", FnType(params: [refcountedObjectPointerType], returns: voidType)),
         ("vist_releaseObject", FnType(params: [refcountedObjectPointerType], returns: voidType)),

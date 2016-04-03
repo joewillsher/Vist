@@ -243,7 +243,7 @@ func buildRuntime() {
     NSTask.execute(.clang,
                    files: ["runtime.cpp"],
                    cwd: runtimeDirectory,
-                   args: "-S", "-emit-llvm")
+                   args: "-S", "-emit-llvm", "-std=c++14")
     
     // .ll -> .bc
     NSTask.execute(.assemble,

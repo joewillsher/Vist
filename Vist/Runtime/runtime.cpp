@@ -50,22 +50,30 @@ void decrementRefCount(RefcountedObject *object) {
 
 /// allocates a new heap object and returns the refcounted box
 NOMANGLE NOINLINE
-RefcountedObject
+RefcountedObject *
 vist_allocObject(uint32_t size) {
+    // malloc the object storage
     void *object = malloc(size);
-    uint32_t refCount = 0;
-    printf("alloc %i\n", refCount);
-    return {object, refCount};
+    // calloc the box storage -- need calloc so it is initialised
+    auto refCountedObject = static_cast<RefcountedObject *>(calloc(sizeof(RefcountedObject)));
+    
+    // store the object and initial ref count in the box
+    refCountedObject->object = object;
+    refCountedObject->refCount = 0;
+    
+    printf("alloc\n");
+    
+    // return heap pointer to ref counted box
+    return refCountedObject;
 };
 
 /// Deallocs a heap object
 NOMANGLE NOINLINE
 void
 vist_deallocObject(RefcountedObject *object) {
+    printf("dealloc\n");
     free(object->object);
-    decrementRefCount(object);
-    if (object->refCount != 0) abort();
-    printf("dealloc %i\n", object->refCount);
+    free(object);
 };
 
 /// Releases this capture. If its now unowned we dealloc
@@ -73,14 +81,14 @@ NOMANGLE NOINLINE
 void
 vist_releaseObject(RefcountedObject *object) {
 
+    printf("release %i\n", object->refCount-1);
+    
     // if no more references, we dealloc it
     if (object->refCount == 1)
         vist_deallocObject(object);
     // otherwise we decrement
     else
         decrementRefCount(object);
-    
-    printf("release %i\n", object->refCount);
 };
 
 /// Retain an object
@@ -96,7 +104,6 @@ NOMANGLE NOINLINE
 void
 vist_releaseUnretainedObject(RefcountedObject *object) {
     decrementRefCount(object);
-    if (object->refCount < 0) abort();
     printf("release unretained %i\n", object->refCount);
 };
 

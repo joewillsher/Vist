@@ -609,16 +609,7 @@ extension InitialiserDecl: StmtEmitter {
         let selfVar: GetSetAccessor
         
         if selfType.heapAllocated {
-            let size = try module.builder.buildIntLiteral(selfType.size(module), size: 32, irName: "size")
-            
-            let allocator = try module.getOrInsertRawRuntimeFunction(named: "vist_allocObject")!
-            let refCounted = try module.builder.buildFunctionCall(allocator, args: [Operand(size)], irName: "refcounted")
-            
-            let memory = try refCounted.allocGetSetAccessor().reference()
-            let bitcast = try module.builder.buildBitcast(from: PtrOperand(memory), newType: selfType.refCountedBox(module), irName: "storage")
-            let accessor = RefCountedAccessor(refcountedBox: bitcast)
-            try accessor.retain()
-            selfVar = accessor
+            selfVar = try RefCountedAccessor.allocObject(type: selfType, module: module)
         }
         else {
              selfVar = try module.builder.buildAlloc(selfType, irName: "self").accessor
