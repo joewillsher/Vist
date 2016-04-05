@@ -28,6 +28,9 @@ func error(err: VistError, loc: SourceRange? = nil, userVisible: Bool = true, fi
         if !userVisible {
             fatalError("Compiler assertion failed \(err)", file: file, line: line)
         }
+        else {
+            error = err
+        }
     #endif
     
     if let loc = loc { // if a source is provided, put the error in a PositionedError

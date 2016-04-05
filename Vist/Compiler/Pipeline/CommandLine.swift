@@ -51,8 +51,8 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
                 "  -run -r\t\t- Run the program after compilation\n" +
                 "  -build-stdlib\t\t- Build the standard library too\n" +
                 "  -parse-stdlib\t\t- Compile the module as if it were the stdlib. This exposes Builtin functions and links the runtime directly\n" +
-                "  -build-runtime\t\t- Build the runtime too\n" +
-                "  -preserve\t\t- Keep intermediate LLVM IR and ASM files")
+                "  -build-runtime\t- Build the runtime too\n" +
+                "  -preserve\t\t- Keep intermediate IR and ASM files")
     }
     else if !files.isEmpty {
         #if DEBUG

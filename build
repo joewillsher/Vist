@@ -4,11 +4,11 @@ printf "//\n//  Utils.h\n//  Vist\n//\n//  Created by Josef Willsher on 03/02/20
 
 brew install llvm --with-clang #--with-lldb
 
-
-# install
+# install stdlib
 /usr/local/Cellar/llvm/3.6.2/bin/clang-3.6 -o /usr/local/lib/libvist.dylib -dynamiclib stdlib.bc
 
-
+# install vistc
+xcodebuild -scheme Vist -configuration "Release" DEPLOYMENT_LOCATION=YES DSTROOT="" -project Vist.xcodeproj
 
 
 ######## MOVE TO THIS -- LLVM in this dir ########
