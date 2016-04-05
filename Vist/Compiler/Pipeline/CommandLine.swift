@@ -15,25 +15,30 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
     guard !flags.isEmpty else { fatalError("No input files") }
     
     let files = flags.filter { $0.containsString(".vist") }
+    var compileOptions = CompileOptions(rawValue: 0)
     
-    let verbose = flags.contains("-verbose") || flags.contains("-v")
-    let ast = flags.contains("-dump-ast")
-    let ir = flags.contains("-emit-ir")
-    let asm = flags.contains("-emit-asm")
-    let b = flags.contains("-build-only") || flags.contains("-b")
-    let profile = flags.contains("-profile") || flags.contains("-p")
-    let o = flags.contains("-O")
-    let lib = flags.contains("-lib") // undocumented
-    let buildStdLib = flags.contains("-build-stdlib")
-    let parseStdLib = flags.contains("-parse-stdlib")
-    let preserveIntermediate = flags.contains("-preserve")
+    let map: [String: CompileOptions] = [
+        "-verbose": .verbose,
+        "-preserve": .preserveTempFiles,
+        "-dump-ast": .dumpAST,
+        "-emit-ir": .dumpLLVMIR,
+        "-emit-vhir": .dumpVHIR,
+        "-run": .buildAndRun,
+        "-r": .buildAndRun,
+        "-O0": .O0,
+        "-O": .O,
+        "-Ohigh": .Ohigh,
+        "-disable-stdlib-inline": .disableStdLibInlinePass,
+        "-lib": .produceLib,
+        "-parse-stdlib": .doNotLinkStdLib,
+        "-build-runtime": .buildRuntime,
+    ]
     
-    if flags.contains("-build-runtime") {
-        buildRuntime()
+    for flag in flags.flatMap({map[$0]}) {
+        compileOptions.insert(flag)
     }
-    
-    if flags.contains("-h") || flags.contains("-help") {
         
+    if flags.contains("-h") || flags.contains("-help") {
         print(
             "USAGE:  vist [options] <input.vist>\n\nOPTIONS:\n" +
                 "  -help -h\t\t- Print help\n" +
@@ -48,49 +53,28 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
                 "  -build-runtime\t\t- Build the runtime too\n" +
                 "  -preserve\t\t- Keep intermediate LLVM IR and ASM files")
     }
-    else if !files.isEmpty || buildStdLib {
+    else if !files.isEmpty {
         #if DEBUG
             let s = CFAbsoluteTimeGetCurrent()
         #endif
         
-        if buildStdLib {
+        if flags.contains("-build-stdlib") {
             try compileDocuments(["stdlib.vist"],
-                                 inDirectory: "",
-                                 out: out,
-                                 verbose: verbose,
-                                 dumpAST: ast,
-                                 irOnly: ir,
-                                 asmOnly: asm,
-                                 buildOnly: true,
-                                 profile: false,
-                                 optim: true,
-                                 preserve: true,
-                                 generateLibrary: true,
-                                 isStdLib: true,
-                                 parseStdLib: true)
+                                 inDirectory: "\(SOURCE_ROOT)/Vist/Stdlib",
+                                 options: .buildStdLib)
         }
         if !files.isEmpty {
             try compileDocuments(files,
                                  inDirectory: dir,
                                  out: out,
-                                 verbose: verbose,
-                                 dumpAST: ast,
-                                 irOnly: ir,
-                                 asmOnly: asm,
-                                 buildOnly: b,
-                                 profile: profile,
-                                 optim: o,
-                                 preserve: preserveIntermediate,
-                                 generateLibrary: lib,
-                                 isStdLib: false,
-                                 parseStdLib: parseStdLib)
+                                 options: compileOptions)
         }
         
         #if DEBUG
             let f = NSNumberFormatter()
             f.maximumFractionDigits = 2
             f.minimumFractionDigits = 2
-            print("Compile took: \(f.stringFromNumber(CFAbsoluteTimeGetCurrent() - s)!)s")
+            print("\nCompile took: \(f.stringFromNumber(CFAbsoluteTimeGetCurrent() - s)!)s")
         #endif
     }
     

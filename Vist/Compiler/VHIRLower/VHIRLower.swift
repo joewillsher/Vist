@@ -700,9 +700,9 @@ extension ReleaseInst : VHIRLower {
     }
 }
 
-extension ReleaseUnretainedInst : VHIRLower {
+extension ReleaseUnownedInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        let ref = module.getOrAddRuntimeFunction(named: "vist_releaseUnretainedObject", irGen: irGen)
+        let ref = module.getOrAddRuntimeFunction(named: "vist_releaseUnownedObject", irGen: irGen)
         return try FunctionCallInst.callFunction(ref,
                                                  args: [try object.bitcastToRefCountedType(irGen)],
                                                  irGen: irGen,

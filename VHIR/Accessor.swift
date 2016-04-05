@@ -23,7 +23,7 @@ protocol Accessor {
     
     func releaseIfRefcounted() throws
     func retainIfRefcounted() throws
-    func releaseUnretainedIfRefcounted() throws
+    func releaseUnownedIfRefcounted() throws
 }
 
 
@@ -50,7 +50,7 @@ extension Accessor {
     
     func releaseIfRefcounted() { }
     func retainIfRefcounted() { }
-    func releaseUnretainedIfRefcounted() { }
+    func releaseUnownedIfRefcounted() { }
     
     func aggregateGetter() throws -> Value { return try getter() }
 }
@@ -101,7 +101,7 @@ final class ValAccessor : Accessor {
     /// Alloc a new accessor and store self into it.
     /// - returns: a reference backed *copy* of `self`
     func asReferenceAccessor() throws -> GetSetAccessor {
-        return try getter().allocGetSetAccessor()
+        return try value.allocGetSetAccessor()
     }
     
     var storedType: Ty? { return value.type }
@@ -153,8 +153,8 @@ final class RefCountedAccessor : GetSetAccessor {
     }
     
     /// Release a reference, decrement the ref count but don’t deallocate
-    func releaseUnretained() throws {
-        try module.builder.buildReleaseUnretained(aggregateReference())
+    func releaseUnowned() throws {
+        try module.builder.buildReleaseUnowned(aggregateReference())
     }
     
     /// Release a reference, decrement the ref count
@@ -186,7 +186,7 @@ final class RefCountedAccessor : GetSetAccessor {
     
     func releaseIfRefcounted() throws { try release() }
     func retainIfRefcounted() throws { try retain() }
-    func releaseUnretainedIfRefcounted() throws { try releaseUnretained() }
+    func releaseUnownedIfRefcounted() throws { try releaseUnowned() }
 }
 
 // TODO: make a LazyRefAccessor wrap a GetSetAccessor

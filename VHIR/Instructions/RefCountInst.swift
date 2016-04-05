@@ -16,12 +16,12 @@ final class AllocObjectInst : InstBase, LValue {
         super.init(args: [], irName: irName)
     }
     
-    var refType: Ty { return storedType.refCountedBox(module) }
+    var refType: Ty { return storedType.refCountedBox(module).usingTypesIn(module) }
     override var type: Ty? { return memType.map { BuiltinType.pointer(to: $0) } }
-    var memType: Ty? { return Runtime.refcountedObjectType }
+    var memType: Ty? { return Runtime.refcountedObjectType.usingTypesIn(module) }
     
     override var instVHIR: String {
-        return "\(name) = alloc_object \(storedType) \(useComment)"
+        return "\(name) = alloc_object \(refType) \(useComment)"
     }
 }
 
@@ -61,7 +61,7 @@ final class ReleaseInst : InstBase {
     }
 }
 
-final class ReleaseUnretainedInst : InstBase {
+final class ReleaseUnownedInst : InstBase {
     var object: PtrOperand
     
     private init(object: PtrOperand, irName: String?) {
@@ -91,8 +91,8 @@ extension Builder {
     func buildRelease(object: PtrOperand, irName: String? = nil) throws -> ReleaseInst {
         return try _add(ReleaseInst(object: object, irName: irName))
     }
-    func buildReleaseUnretained(object: PtrOperand, irName: String? = nil) throws -> ReleaseUnretainedInst {
-        return try _add(ReleaseUnretainedInst(object: object, irName: irName))
+    func buildReleaseUnowned(object: PtrOperand, irName: String? = nil) throws -> ReleaseUnownedInst {
+        return try _add(ReleaseUnownedInst(object: object, irName: irName))
     }
     
 }

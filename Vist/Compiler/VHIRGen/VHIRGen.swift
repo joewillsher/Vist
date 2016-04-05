@@ -147,19 +147,6 @@ extension StringLiteral : ValueEmitter {
         //  - Pointer type in stdlib
         
         
-        
-        /*
-         %refcounted.type = type { i8*, i32 }
-         $myFoo.rt = type { refcounted.type }
-         
-         
-         
-         vist_deallocRefType
-         
-         
-         
-         */
-        
         let string = try module.builder.buildStringLiteral(str)
         let length = try module.builder.buildIntLiteral(str.characters.count + 1)
         
@@ -268,6 +255,7 @@ extension FuncDecl : StmtEmitter {
         // add the explicit method parameters
         for paramName in impl.params {
             let paramAccessor = try function.paramNamed(paramName).accessor()
+            try paramAccessor.retainIfRefcounted()
             fnScope.add(paramAccessor, name: paramName)
         }
         // A method calling convention means we have to pass `self` in, and tell vars how
@@ -293,12 +281,21 @@ extension FuncDecl : StmtEmitter {
         
         // vhir gen for body
         try impl.body.emitStmt(module: module, scope: fnScope)
-        try fnScope.releaseVariables()
-
+        
+        // TODO: look at exit nodes of block, not just place we're left off
         // add implicit `return ()` for a void function without a return expression
         if type.returns == BuiltinType.void && !function.instructions.contains({$0 is ReturnInst}) {
             try module.builder.buildReturnVoid()
         }
+        
+        for case let returnInst as ReturnInst in function.instructions {
+            if let i = try returnInst.predecessor() {
+                try module.builder.setInsertPoint(i)
+                try fnScope.releaseVariables(deleting: false)
+                // release all here
+            }
+        }
+        fnScope.removeVariables()
         
         module.builder.insertPoint = originalInsertPoint
     }
@@ -634,7 +631,7 @@ extension InitialiserDecl: StmtEmitter {
         // vhir gen for body
         try impl.body.emitStmt(module: module, scope: fnScope)
         
-        try fnScope.removeVariableNamed("self")?.releaseUnretainedIfRefcounted()
+        try fnScope.removeVariableNamed("self")?.releaseUnownedIfRefcounted()
         try fnScope.releaseVariables()
         
         try module.builder.buildReturn(Operand(try selfVar.aggregateGetter()))

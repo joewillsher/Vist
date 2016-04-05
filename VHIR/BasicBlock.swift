@@ -132,3 +132,14 @@ extension Builder {
 }
 
 
+extension Inst {
+    
+    func successor() throws -> Inst? {
+        return try parentBlock.map { $0.instructions[try $0.indexOfInst(self).successor()] }
+    }
+    func predecessor() throws -> Inst? {
+        return try parentBlock.map { $0.instructions[try $0.indexOfInst(self).predecessor()] }
+    }
+    
+}
+

@@ -7,7 +7,15 @@
 //
 
 enum OptLevel: Int {
-    case off, low, high
+    case off = 0, low = 1, high = 3
+}
+
+extension CompileOptions {
+    func optLevel() -> OptLevel {
+        if contains(.O) { return .low }
+        else if contains(.Ohigh) { return .high }
+        else { return .off }
+    }
 }
 
 extension Module {

@@ -4,12 +4,17 @@ target triple = "x86_64-apple-macosx10.11.0"
 
 %struct.RefcountedObject = type { i8*, i32 }
 
-@.str = private unnamed_addr constant [6 x i8] c"%lli\0A\00", align 1
-@.str1 = private unnamed_addr constant [4 x i8] c"%i\0A\00", align 1
-@.str2 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
-@.str3 = private unnamed_addr constant [6 x i8] c"true\0A\00", align 1
-@.str4 = private unnamed_addr constant [7 x i8] c"false\0A\00", align 1
-@.str5 = private unnamed_addr constant [4 x i8] c"%s\0A\00", align 1
+@.str = private unnamed_addr constant [17 x i8] c">alloc %i bytes\0A\00", align 1
+@.str1 = private unnamed_addr constant [10 x i8] c">dealloc\0A\00", align 1
+@.str2 = private unnamed_addr constant [13 x i8] c">release %i\0A\00", align 1
+@.str3 = private unnamed_addr constant [12 x i8] c">retain %i\0A\00", align 1
+@.str4 = private unnamed_addr constant [24 x i8] c">release-unretained %i\0A\00", align 1
+@.str5 = private unnamed_addr constant [6 x i8] c"%lli\0A\00", align 1
+@.str6 = private unnamed_addr constant [4 x i8] c"%i\0A\00", align 1
+@.str7 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
+@.str8 = private unnamed_addr constant [6 x i8] c"true\0A\00", align 1
+@.str9 = private unnamed_addr constant [7 x i8] c"false\0A\00", align 1
+@.str10 = private unnamed_addr constant [4 x i8] c"%s\0A\00", align 1
 
 ; Function Attrs: alwaysinline nounwind ssp uwtable
 define void @_Z17incrementRefCountP16RefcountedObject(%struct.RefcountedObject* %object) #0 {
@@ -66,17 +71,22 @@ entry:
   %4 = load %struct.RefcountedObject** %refCountedObject, align 8
   %refCount = getelementptr inbounds %struct.RefcountedObject* %4, i32 0, i32 1
   store i32 0, i32* %refCount, align 4
-  %5 = load %struct.RefcountedObject** %refCountedObject, align 8
-  ret %struct.RefcountedObject* %5
+  %5 = load i32* %size.addr, align 4
+  %call3 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([17 x i8]* @.str, i32 0, i32 0), i32 %5)
+  %6 = load %struct.RefcountedObject** %refCountedObject, align 8
+  ret %struct.RefcountedObject* %6
 }
 
 declare i8* @malloc(i64) #2
+
+declare i32 @printf(i8*, ...) #2
 
 ; Function Attrs: noinline ssp uwtable
 define void @vist_deallocObject(%struct.RefcountedObject* %object) #1 {
 entry:
   %object.addr = alloca %struct.RefcountedObject*, align 8
   store %struct.RefcountedObject* %object, %struct.RefcountedObject** %object.addr, align 8
+  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([10 x i8]* @.str1, i32 0, i32 0))
   %0 = load %struct.RefcountedObject** %object.addr, align 8
   %object1 = getelementptr inbounds %struct.RefcountedObject* %0, i32 0, i32 0
   %1 = load i8** %object1, align 8
@@ -97,32 +107,37 @@ entry:
   %0 = load %struct.RefcountedObject** %object.addr, align 8
   %refCount = getelementptr inbounds %struct.RefcountedObject* %0, i32 0, i32 1
   %1 = load i32* %refCount, align 4
-  %cmp = icmp eq i32 %1, 1
+  %sub = sub i32 %1, 1
+  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([13 x i8]* @.str2, i32 0, i32 0), i32 %sub)
+  %2 = load %struct.RefcountedObject** %object.addr, align 8
+  %refCount1 = getelementptr inbounds %struct.RefcountedObject* %2, i32 0, i32 1
+  %3 = load i32* %refCount1, align 4
+  %cmp = icmp eq i32 %3, 1
   br i1 %cmp, label %if.then, label %if.else
 
 if.then:                                          ; preds = %entry
-  %2 = load %struct.RefcountedObject** %object.addr, align 8
-  call void @vist_deallocObject(%struct.RefcountedObject* %2)
+  %4 = load %struct.RefcountedObject** %object.addr, align 8
+  call void @vist_deallocObject(%struct.RefcountedObject* %4)
   br label %if.end
 
 if.else:                                          ; preds = %entry
-  %3 = load %struct.RefcountedObject** %object.addr, align 8
-  store %struct.RefcountedObject* %3, %struct.RefcountedObject** %object.addr.i, align 8
-  %4 = load %struct.RefcountedObject** %object.addr.i, align 8
-  %refCount.i = getelementptr inbounds %struct.RefcountedObject* %4, i32 0, i32 1
+  %5 = load %struct.RefcountedObject** %object.addr, align 8
+  store %struct.RefcountedObject* %5, %struct.RefcountedObject** %object.addr.i, align 8
+  %6 = load %struct.RefcountedObject** %object.addr.i, align 8
+  %refCount.i = getelementptr inbounds %struct.RefcountedObject* %6, i32 0, i32 1
   store i32 1, i32* %.atomictmp.i
-  %5 = load i32* %.atomictmp.i, align 4
-  %6 = atomicrmw sub i32* %refCount.i, i32 %5 monotonic
-  store i32 %6, i32* %.atomicdst.i, align 4
-  %7 = load i32* %.atomicdst.i, align 4
+  %7 = load i32* %.atomictmp.i, align 4
+  %8 = atomicrmw sub i32* %refCount.i, i32 %7 monotonic
+  store i32 %8, i32* %.atomicdst.i, align 4
+  %9 = load i32* %.atomicdst.i, align 4
   br label %if.end
 
 if.end:                                           ; preds = %if.else, %if.then
   ret void
 }
 
-; Function Attrs: noinline nounwind ssp uwtable
-define void @vist_retainObject(%struct.RefcountedObject* %object) #3 {
+; Function Attrs: noinline ssp uwtable
+define void @vist_retainObject(%struct.RefcountedObject* %object) #1 {
 entry:
   %object.addr.i = alloca %struct.RefcountedObject*, align 8
   %.atomictmp.i = alloca i32, align 4
@@ -138,11 +153,15 @@ entry:
   %3 = atomicrmw add i32* %refCount.i, i32 %2 monotonic
   store i32 %3, i32* %.atomicdst.i, align 4
   %4 = load i32* %.atomicdst.i, align 4
+  %5 = load %struct.RefcountedObject** %object.addr, align 8
+  %refCount = getelementptr inbounds %struct.RefcountedObject* %5, i32 0, i32 1
+  %6 = load i32* %refCount, align 4
+  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([12 x i8]* @.str3, i32 0, i32 0), i32 %6)
   ret void
 }
 
-; Function Attrs: noinline nounwind ssp uwtable
-define void @vist_releaseUnretainedObject(%struct.RefcountedObject* %object) #3 {
+; Function Attrs: noinline ssp uwtable
+define void @vist_releaseUnownedObject(%struct.RefcountedObject* %object) #1 {
 entry:
   %object.addr.i = alloca %struct.RefcountedObject*, align 8
   %.atomictmp.i = alloca i32, align 4
@@ -158,6 +177,10 @@ entry:
   %3 = atomicrmw sub i32* %refCount.i, i32 %2 monotonic
   store i32 %3, i32* %.atomicdst.i, align 4
   %4 = load i32* %.atomicdst.i, align 4
+  %5 = load %struct.RefcountedObject** %object.addr, align 8
+  %refCount = getelementptr inbounds %struct.RefcountedObject* %5, i32 0, i32 1
+  %6 = load i32* %refCount, align 4
+  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([24 x i8]* @.str4, i32 0, i32 0), i32 %6)
   ret void
 }
 
@@ -190,11 +213,9 @@ entry:
   %i.addr = alloca i64, align 8
   store i64 %i, i64* %i.addr, align 8
   %0 = load i64* %i.addr, align 8
-  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str, i32 0, i32 0), i64 %0)
+  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str5, i32 0, i32 0), i64 %0)
   ret void
 }
-
-declare i32 @printf(i8*, ...) #2
 
 ; Function Attrs: noinline ssp uwtable
 define void @"vist$Uprint_ti32"(i32 %i) #1 {
@@ -202,7 +223,7 @@ entry:
   %i.addr = alloca i32, align 4
   store i32 %i, i32* %i.addr, align 4
   %0 = load i32* %i.addr, align 4
-  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str1, i32 0, i32 0), i32 %0)
+  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str6, i32 0, i32 0), i32 %0)
   ret void
 }
 
@@ -212,7 +233,7 @@ entry:
   %d.addr = alloca double, align 8
   store double %d, double* %d.addr, align 8
   %0 = load double* %d.addr, align 8
-  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str2, i32 0, i32 0), double %0)
+  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str7, i32 0, i32 0), double %0)
   ret void
 }
 
@@ -223,7 +244,7 @@ entry:
   store float %d, float* %d.addr, align 4
   %0 = load float* %d.addr, align 4
   %conv = fpext float %0 to double
-  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str2, i32 0, i32 0), double %conv)
+  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str7, i32 0, i32 0), double %conv)
   ret void
 }
 
@@ -235,7 +256,7 @@ entry:
   store i8 %frombool, i8* %b.addr, align 1
   %0 = load i8* %b.addr, align 1
   %tobool = trunc i8 %0 to i1
-  %cond = select i1 %tobool, i8* getelementptr inbounds ([6 x i8]* @.str3, i32 0, i32 0), i8* getelementptr inbounds ([7 x i8]* @.str4, i32 0, i32 0)
+  %cond = select i1 %tobool, i8* getelementptr inbounds ([6 x i8]* @.str8, i32 0, i32 0), i8* getelementptr inbounds ([7 x i8]* @.str9, i32 0, i32 0)
   %call = call i32 (i8*, ...)* @printf(i8* %cond)
   ret void
 }
@@ -246,7 +267,7 @@ entry:
   %str.addr = alloca i8*, align 8
   store i8* %str, i8** %str.addr, align 8
   %0 = load i8** %str.addr, align 8
-  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str5, i32 0, i32 0), i8* %0)
+  %call = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str10, i32 0, i32 0), i8* %0)
   ret void
 }
 

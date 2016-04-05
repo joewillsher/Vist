@@ -37,10 +37,13 @@ final class Scope {
         return parent?.removeVariableNamed(name)
     }
 
-    func releaseVariables() throws {
+    func releaseVariables(deleting deleting: Bool = true) throws {
         for variable in variables.values {
             try variable.releaseIfRefcounted()
         }
+        if deleting { variables.removeAll() }
+    }
+    func removeVariables() {
         variables.removeAll()
     }
     

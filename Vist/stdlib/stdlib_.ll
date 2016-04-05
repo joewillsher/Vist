@@ -10,7 +10,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 %Int32 = type { i32 }
 %String = type { i8*, i64 }
 
-@.str = private unnamed_addr constant [8 x i8] c">alloc\0A\00", align 1
+@.str = private unnamed_addr constant [17 x i8] c">alloc %i bytes\0A\00", align 1
 @.str1 = private unnamed_addr constant [10 x i8] c">dealloc\0A\00", align 1
 @.str2 = private unnamed_addr constant [13 x i8] c">release %i\0A\00", align 1
 @.str3 = private unnamed_addr constant [12 x i8] c">retain %i\0A\00", align 1
@@ -77,9 +77,10 @@ entry:
   %4 = load %struct.RefcountedObject** %refCountedObject, align 8
   %refCount = getelementptr inbounds %struct.RefcountedObject* %4, i32 0, i32 1
   store i32 0, i32* %refCount, align 4
-  %call3 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([8 x i8]* @.str, i32 0, i32 0))
-  %5 = load %struct.RefcountedObject** %refCountedObject, align 8
-  ret %struct.RefcountedObject* %5
+  %5 = load i32* %size.addr, align 4
+  %call3 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([17 x i8]* @.str, i32 0, i32 0), i32 %5)
+  %6 = load %struct.RefcountedObject** %refCountedObject, align 8
+  ret %struct.RefcountedObject* %6
 }
 
 declare i8* @malloc(i64) #2
@@ -166,7 +167,7 @@ entry:
 }
 
 ; Function Attrs: noinline ssp uwtable
-define void @vist_releaseUnretainedObject(%struct.RefcountedObject* %object) #1 {
+define void @vist_releaseUnownedObject(%struct.RefcountedObject* %object) #1 {
 entry:
   %object.addr.i = alloca %struct.RefcountedObject*, align 8
   %.atomictmp.i = alloca i32, align 4

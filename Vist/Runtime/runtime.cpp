@@ -19,9 +19,7 @@
 #define NOINLINE __attribute__((noinline))
 #define ALWAYSINLINE __attribute__((always_inline))
 
-//#define REFCOUNT_DEBUG
-
-// Currently all NOINLINE because optimiser cant copy over the string data across modules
+// Currently all exposed functions NOINLINE because optimiser cant copy over the string data across modules
 
 /// Name Mangling:
 ///     - If you want the function to be called by vist users, write the full, mangled name
@@ -29,6 +27,8 @@
 ///     - Note that any `-` has to be replaced with a `$`. The importer will switch it back
 ///     - All functions in this namespace should be prefixed with vist_
 ///     - If the function is just for the compiler to call, dont mangle it, eg. `vist_getAccessor`
+
+#define REFCOUNT_DEBUG
 
 struct RefcountedObject {
     void *object;
@@ -63,7 +63,7 @@ vist_allocObject(uint32_t size) {
     refCountedObject->object = object;
     refCountedObject->refCount = 0;
 #ifdef REFCOUNT_DEBUG
-    printf(">alloc\n");
+    printf(">alloc %i bytes\n", size);
 #endif
     // return heap pointer to ref counted box
     return refCountedObject;
@@ -108,7 +108,7 @@ vist_retainObject(RefcountedObject *object) {
 /// Release an object without deallocating
 NOMANGLE NOINLINE
 void
-vist_releaseUnretainedObject(RefcountedObject *object) {
+vist_releaseUnownedObject(RefcountedObject *object) {
     decrementRefCount(object);
 #ifdef REFCOUNT_DEBUG
     printf(">release-unretained %i\n", object->refCount);

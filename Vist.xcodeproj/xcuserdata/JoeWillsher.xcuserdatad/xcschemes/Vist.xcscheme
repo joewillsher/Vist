@@ -74,16 +74,16 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "-O"
-            isEnabled = "NO">
+            argument = "-Ohigh"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-disable-stdlib-inline"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-verbose"
             isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "-parse-stdlib"
-            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-profile"
@@ -91,15 +91,19 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-preserve"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "-build-runtime"
-            isEnabled = "YES">
+            argument = "-parse-stdlib"
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-build-stdlib"
             isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-run"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "example.vist"
