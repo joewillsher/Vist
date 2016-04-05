@@ -28,7 +28,7 @@
 ///     - All functions in this namespace should be prefixed with vist_
 ///     - If the function is just for the compiler to call, dont mangle it, eg. `vist_getAccessor`
 
-#define REFCOUNT_DEBUG
+//#define REFCOUNT_DEBUG
 
 struct RefcountedObject {
     void *object;
@@ -51,7 +51,7 @@ void decrementRefCount(RefcountedObject *object) {
 // Ref counting
 
 /// allocates a new heap object and returns the refcounted box
-NOMANGLE NOINLINE
+NOMANGLE ALWAYSINLINE
 RefcountedObject *
 vist_allocObject(uint32_t size) {
     // malloc the object storage
@@ -70,7 +70,7 @@ vist_allocObject(uint32_t size) {
 };
 
 /// Deallocs a heap object
-NOMANGLE NOINLINE
+NOMANGLE ALWAYSINLINE
 void
 vist_deallocObject(RefcountedObject *object) {
 #ifdef REFCOUNT_DEBUG
@@ -81,7 +81,7 @@ vist_deallocObject(RefcountedObject *object) {
 };
 
 /// Releases this capture. If its now unowned we dealloc
-NOMANGLE NOINLINE
+NOMANGLE ALWAYSINLINE
 void
 vist_releaseObject(RefcountedObject *object) {
 #ifdef REFCOUNT_DEBUG
@@ -96,7 +96,7 @@ vist_releaseObject(RefcountedObject *object) {
 };
 
 /// Retain an object
-NOMANGLE NOINLINE
+NOMANGLE ALWAYSINLINE
 void
 vist_retainObject(RefcountedObject *object) {
     incrementRefCount(object);
@@ -106,7 +106,7 @@ vist_retainObject(RefcountedObject *object) {
 };
 
 /// Release an object without deallocating
-NOMANGLE NOINLINE
+NOMANGLE ALWAYSINLINE
 void
 vist_releaseUnownedObject(RefcountedObject *object) {
     decrementRefCount(object);
@@ -116,14 +116,14 @@ vist_releaseUnownedObject(RefcountedObject *object) {
 };
 
 /// Get the ref count
-NOMANGLE NOINLINE
+NOMANGLE ALWAYSINLINE
 uint32_t
 vist_getObjectRefcount(RefcountedObject *object) {
     return object->refCount;
 };
 
 /// Check if the object is singly referenced
-NOMANGLE NOINLINE
+NOMANGLE ALWAYSINLINE
 bool
 vist_objectHasUniqueReference(RefcountedObject *object) {
     return object->refCount == 1;

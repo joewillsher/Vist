@@ -91,14 +91,14 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-preserve"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-build-stdlib"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-parse-stdlib"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "-build-stdlib"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument

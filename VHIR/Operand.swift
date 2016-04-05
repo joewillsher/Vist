@@ -107,9 +107,8 @@ final class BlockOperand : Operand {
             loweredValue = nil
             return
         }
-        let incoming = [val].ptr(), incomingBlocks = [predBlock.loweredBlock].ptr()
-        defer { incoming.destroy(); incomingBlocks.destroy() }
-        LLVMAddIncoming(param.phi, incoming, incomingBlocks, 1)
+        var incoming = [val], incomingBlocks = [predBlock.loweredBlock]
+        LLVMAddIncoming(param.phi, &incoming, &incomingBlocks, 1)
     }
     
     /// access to the underlying phi switch. Normal `setLoweredValue` 

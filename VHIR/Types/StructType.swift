@@ -26,13 +26,8 @@ struct StructType : StorageType {
 extension StructType {
     
     func lowerType(module: Module) -> LLVMTypeRef {
-        let arr = members
-            .map { $0.type.lowerType(module) }
-            .ptr()
-        defer { arr.destroy(members.count) }
-        return LLVMStructType(arr,
-                              UInt32(members.count),
-                              false)
+        var arr = members.map { $0.type.lowerType(module) }
+        return LLVMStructType(&arr, UInt32(members.count), false)
     }
     func refCountedBox(module: Module) -> TypeAlias {
         let t = StructType(members: [("object", BuiltinType.pointer(to: self), true), ("refCount", BuiltinType.int(size: 32), false)],
@@ -64,8 +59,16 @@ extension StructType {
     }
     
     var mangledName: String {
-        return name
+        switch name {
+        case "Int": return "I"
+        case "Int32": return "I32"
+        case "Bool": return "B"
+        case "Double": return "D"
+        case "Range": return "R"
+        default: return name
+        }
     }
+    var explicitName: String { return name }
 }
 
 

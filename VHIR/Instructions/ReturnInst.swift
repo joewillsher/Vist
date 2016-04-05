@@ -7,7 +7,7 @@
 //
 
 
-final class ReturnInst: InstBase {
+final class ReturnInst : InstBase {
     var value: Operand
     
     private init(value: Operand, parentBlock: BasicBlock?) {

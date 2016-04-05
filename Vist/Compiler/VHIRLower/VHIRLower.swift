@@ -16,24 +16,6 @@ enum IRLowerError: VistError {
     }
 }
 
-extension CollectionType where
-    Generator.Element == COpaquePointer,
-    Index == Int,
-    Index.Distance == Int {
-    
-    /// get a ptr to the memory of the collection
-    func ptr() -> UnsafeMutablePointer<Generator.Element> {
-        
-        let p = UnsafeMutablePointer<Generator.Element>.alloc(count)
-        
-        for i in self.startIndex..<self.endIndex {
-            p.advancedBy(i).initialize(self[i])
-        }
-        
-        return p
-    }
-    
-}
 
 // Extends LLVM bool to be initialisable from bool literal, and usable
 // as condition
@@ -161,7 +143,7 @@ extension Function: VHIRLower {
         
         if b != nil { LLVMPositionBuilderAtEnd(irGen.builder, b) }
         
-//        try validate()
+        try validate()
         
         return fn
     }
@@ -281,11 +263,8 @@ extension VHIRFunctionCall {
 
 private extension FunctionCallInst {
     private static func callFunction(ref: LLVMValueRef, type: FnType? = nil, args: [LLVMValueRef], irGen: IRGen, irName: String?) throws -> LLVMValueRef {
-        let a = args.ptr()
-        let argCount = args.count
-        defer { a.dealloc(argCount) }
-        
-        let call = LLVMBuildCall(irGen.builder, ref, a, UInt32(argCount), irName ?? "")
+        var a = args
+        let call = LLVMBuildCall(irGen.builder, ref, &a, UInt32(args.count), irName ?? "")
         type?.addMetadataTo(call)
         
         return call
@@ -383,26 +362,18 @@ extension BuiltinInstCall: VHIRLower {
             
             // other intrinsics
         case .expect: intrinsic = getSinglyOverloadedIntrinsic("llvm.expect", irGen.module, LLVMTypeOf(l.loweredValue))
-        case .trap: intrinsic = getRawIntrinsic("llvm.trap", irGen.module)
+        case .trap:   intrinsic = getRawIntrinsic("llvm.trap", irGen.module)
         case .memcpy:
             // overload types -- we want `@llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1)`
-            let overloadTypes = [LLVMTypeOf(l.loweredValue), LLVMTypeOf(l.loweredValue), BuiltinType.int(size: 64).lowerType(module)].ptr()
-            defer { overloadTypes.destroy(3) }
+            var overloadTypes = [LLVMTypeOf(args[0]), LLVMTypeOf(args[1]), LLVMInt64Type()]
             // construct intrinsic
-            intrinsic = getOverloadedIntrinsic("llvm.memcpy", irGen.module, overloadTypes, 3)
+            intrinsic = getOverloadedIntrinsic("llvm.memcpy", irGen.module, &overloadTypes, 3)
             // add extra memcpy args
             args.append(LLVMConstInt(LLVMInt32Type(), 1, false)) // i32 align
             args.append(LLVMConstInt(LLVMInt1Type(), 0, false)) // i1 isVolatile
             
-        case .allocstack:
-            let ptrTy = BuiltinType.int(size: 8).lowerType(module)
-            let ptr = LLVMBuildArrayAlloca(irGen.builder, ptrTy, args[0], irName ?? "")
-            return ptr
-        case .allocheap:
-            let ptrTy = BuiltinType.int(size: 8).lowerType(module)
-            let ptr = LLVMBuildArrayMalloc(irGen.builder, ptrTy, args[0], irName ?? "")
-            return ptr
-            
+        case .allocstack: return LLVMBuildArrayAlloca(irGen.builder, LLVMInt8Type(), args[0], irName ?? "")
+        case .allocheap:  return LLVMBuildArrayMalloc(irGen.builder, LLVMInt8Type(), args[0], irName ?? "")
             
         case .condfail:
             guard let fn = parentFunction, current = parentBlock else { fatalError() }
@@ -446,10 +417,7 @@ extension BuiltinInstCall: VHIRLower {
         case .fgt:  return LLVMBuildFCmp(irGen.builder, LLVMRealOGT, l.loweredValue, r.loweredValue, irName ?? "")
         }
         
-        let argBuffer = args.ptr()
-        defer { argBuffer.destroy(args.count) }
-        
-        return LLVMBuildCall(irGen.builder, intrinsic, argBuffer, UInt32(args.count), irName ?? "")
+        return LLVMBuildCall(irGen.builder, intrinsic, &args, UInt32(args.count), irName ?? "")
     }
 }
 
@@ -578,11 +546,9 @@ extension ArrayInst : VHIRLower {
         
         for (index, val) in buffer.enumerate() {
             // Make the index to lookup
-            let mem = [LLVMConstInt(LLVMIntType(32), UInt64(index), false)].ptr()
-            defer { mem.dealloc(1) }
-            
+            var mem = [LLVMConstInt(LLVMInt32Type(), UInt64(index), false)]
             // get the element ptr
-            let el = LLVMBuildGEP(irGen.builder, basePtr, mem, 1, "el.\(index)")
+            let el = LLVMBuildGEP(irGen.builder, basePtr, &mem, 1, "el.\(index)")
             let bcElPtr = LLVMBuildBitCast(irGen.builder, el, elPtrType, "el.ptr.\(index)")
             // store val into memory
             LLVMBuildStore(irGen.builder, val, bcElPtr)
@@ -602,9 +568,7 @@ extension ExistentialPropertyInst : VHIRLower {
         // use this to look up the index in self by getting the ixd from the runtime's array
         let i = try conceptType.indexOfMemberNamed(propertyName)
         
-        let indexValue = LLVMConstInt(LLVMInt32Type(), UInt64(i), false) // i32
-        let index = [indexValue].ptr()
-        defer { index.dealloc(1) }
+        var index = [LLVMConstInt(LLVMInt32Type(), UInt64(i), false)] // i32
         
         let llvmName = irName.map { "\($0)." } ?? ""
         
@@ -612,15 +576,13 @@ extension ExistentialPropertyInst : VHIRLower {
         let arr = LLVMBuildStructGEP(irGen.builder, existential.loweredValue, 0, "\(llvmName)metadata_ptr") // [n x i32]*
         let propertyMetadataBasePtr = LLVMBuildBitCast(irGen.builder, arr, i32PtrType, "\(llvmName)metadata_base_ptr") // i32*
         
-        let pointerToArrayElement = LLVMBuildGEP(irGen.builder, propertyMetadataBasePtr, index, 1, "") // i32*
-        let offset = LLVMBuildLoad(irGen.builder, pointerToArrayElement, "") // i32
+        let pointerToArrayElement = LLVMBuildGEP(irGen.builder, propertyMetadataBasePtr, &index, 1, "") // i32*
+        var offset = [LLVMBuildLoad(irGen.builder, pointerToArrayElement, "")] // i32
         
         let elementPtrType = LLVMPointerType(propertyType, 0) // ElTy.Type        
-        let o = [offset].ptr()
-        defer { o.destroy(1) }
         let structElementPointer = LLVMBuildStructGEP(module.loweredBuilder, existential.loweredValue, 2, "\(llvmName)element_pointer") // i8**
         let opaqueInstancePointer = LLVMBuildLoad(module.loweredBuilder, structElementPointer, "\(llvmName)opaque_instance_pointer") // i8*
-        let instanceMemberPtr = LLVMBuildGEP(irGen.builder, opaqueInstancePointer, o, 1, "") // i8*
+        let instanceMemberPtr = LLVMBuildGEP(irGen.builder, opaqueInstancePointer, &offset, 1, "") // i8*
         let elPtr = LLVMBuildBitCast(irGen.builder, instanceMemberPtr, elementPtrType, "\(llvmName)ptr") // ElTy*
         return LLVMBuildLoad(irGen.builder, elPtr, irName ?? "")
     }
@@ -643,15 +605,13 @@ extension ExistentialWitnessMethodInst : VHIRLower {
             .withOpaqueParent().vhirType(module)
             .usingTypesIn(module)
         
-        let indexValue = LLVMConstInt(LLVMInt32Type(), UInt64(i), false) // i32
-        let index = [indexValue].ptr()
-        defer { index.dealloc(1) }
+        var index = LLVMConstInt(LLVMInt32Type(), UInt64(i), false) // i32
         
         let opaquePtrType = BuiltinType.pointer(to: BuiltinType.opaquePointer).lowerType(module)
         let arr = LLVMBuildStructGEP(irGen.builder, existential.loweredValue, 1, "\(llvmName)witness_table_ptr") // [n x i8*]*
         let methodMetadataBasePtr = LLVMBuildBitCast(irGen.builder, arr, opaquePtrType, "\(llvmName)witness_table_base_ptr") // i8**
         
-        let pointerToArrayElement = LLVMBuildGEP(irGen.builder, methodMetadataBasePtr, index, 1, "") // i8**
+        let pointerToArrayElement = LLVMBuildGEP(irGen.builder, methodMetadataBasePtr, &index, 1, "") // i8**
         let functionPointer = LLVMBuildLoad(irGen.builder, pointerToArrayElement, "") // i8*
         
         let functionType = BuiltinType.pointer(to: fnType).lowerType(module)

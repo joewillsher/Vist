@@ -43,7 +43,12 @@ final class BuiltinInstCall : InstBase {
         default: return false
         }
     }
-    
+    override var isTerminator: Bool {
+        switch inst {
+        case .trap: return true
+        default: return false
+        }
+    }
 }
 
 enum BuiltinInst : String {

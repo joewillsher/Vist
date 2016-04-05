@@ -54,10 +54,7 @@ extension FnType {
         
         var members = nonVoid.map {$0.lowerType(module)}
         
-        let els = members.ptr()
-        defer { els.destroy(members.count) }
-        
-        return LLVMFunctionType(ret, els, UInt32(members.count), false)
+        return LLVMFunctionType(ret, &members, UInt32(members.count), false)
     }
     
     /// Replaces the function's memeber types with the module's typealias
@@ -112,11 +109,8 @@ extension FnType {
         for metadata in self.metadata {
             
             let attrLength = UInt32(metadata.characters.count)
-            let mdString = LLVMMDString(metadata, attrLength)
-            
-            let attrs = [mdString].ptr()
-            defer { attrs.destroy(1) }
-            let mdNode = LLVMMDNode(attrs, 1)
+            var mdString = [LLVMMDString(metadata, attrLength)]
+            let mdNode = LLVMMDNode(&mdString, 1)
             
             let kindID = LLVMGetMDKindID(metadata, attrLength)
             

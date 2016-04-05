@@ -4,6 +4,15 @@ printf "//\n//  Utils.h\n//  Vist\n//\n//  Created by Josef Willsher on 03/02/20
 
 brew install llvm --with-clang #--with-lldb
 
+
+# install
+/usr/local/Cellar/llvm/3.6.2/bin/clang-3.6 -o /usr/local/lib/libvist.dylib -dynamiclib stdlib.bc
+
+
+
+
+######## MOVE TO THIS -- LLVM in this dir ########
+
 # download
 # svn co http://llvm.org/svn/llvm-project/llvm/branches/release_36 llvm/llvm
 # svn co http://llvm.org/svn/llvm-project/cfe/branches/release_36 llvm/clang

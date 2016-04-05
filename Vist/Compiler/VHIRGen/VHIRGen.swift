@@ -281,21 +281,22 @@ extension FuncDecl : StmtEmitter {
         
         // vhir gen for body
         try impl.body.emitStmt(module: module, scope: fnScope)
-        
+
+        fnScope.removeVariables()
+
         // TODO: look at exit nodes of block, not just place we're left off
         // add implicit `return ()` for a void function without a return expression
         if type.returns == BuiltinType.void && !function.instructions.contains({$0 is ReturnInst}) {
             try module.builder.buildReturnVoid()
         }
         
-        for case let returnInst as ReturnInst in function.instructions {
-            if let i = try returnInst.predecessor() {
-                try module.builder.setInsertPoint(i)
-                try fnScope.releaseVariables(deleting: false)
-                // release all here
-            }
-        }
-        fnScope.removeVariables()
+//        for terminator in function.instructions where terminator.instIsTerminator {
+//            if let i = try terminator.predecessor() {
+//                try module.builder.setInsertPoint(i)
+//                try fnScope.releaseVariables(deleting: false)
+//                // release all here
+//            }
+//        }
         
         module.builder.insertPoint = originalInsertPoint
     }

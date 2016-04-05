@@ -77,8 +77,8 @@ type String {
     return Bool (Builtin.expect val.value assume.value)
 
 @public @inline @noreturn func fatalError :: () = do Builtin.trap ()
-@public @inline func assert :: Bool = do
-    if _expect $0 true do () else do Builtin.trap ()
+//@public @inline func assert :: Bool = do
+//    if _expect $0 true do () else do Builtin.trap ()
 
 
 
@@ -118,7 +118,7 @@ func != :: Int Int -> Bool = (a b) do
 
 @public @inline @operator(100)
 func / :: Int Int -> Int = (a b) {
-    assert b != 0
+    //assert b != 0
     return Int (Builtin.i_div a.value b.value)
 }
 @public @inline @operator(90)

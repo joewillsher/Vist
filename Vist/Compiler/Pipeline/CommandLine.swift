@@ -45,11 +45,12 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
                 "  -verbose -v\t\t- Print all stages of the compile\n" +
                 "  -profile -p\t\t- Record time of program execution\n" +
                 "  -dump-ast\t\t- Dump syntax tree\n" +
-                "  -emit-ir\t\t- Only generate LLVM IR file\n" +
-                "  -emit-asm\t\t- Only generate assembly code\n" +
-                "  -build-only -b\t- Do not run the program\n" +
+                "  -emit-ir\t\t- Print the LLVM IR file\n" +
+                "  -emit-vhir\t\t- Print the VHIR file\n" +
+                "  -emit-asm\t\t- print the assembly code\n" +
+                "  -run -r\t\t- Run the program after compilation\n" +
                 "  -build-stdlib\t\t- Build the standard library too\n" +
-                "  -parse-stdlib\t\t- Compile the module as if it were the stdlib. This exposes Builtin functions\n" +
+                "  -parse-stdlib\t\t- Compile the module as if it were the stdlib. This exposes Builtin functions and links the runtime directly\n" +
                 "  -build-runtime\t\t- Build the runtime too\n" +
                 "  -preserve\t\t- Keep intermediate LLVM IR and ASM files")
     }

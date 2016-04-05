@@ -203,7 +203,7 @@ extension Module {
 
 
 // implement hash and equality for functions
-extension Function: Hashable, Equatable {
+extension Function : Hashable, Equatable {
     var hashValue: Int { return name.hashValue }
 }
 @warn_unused_result

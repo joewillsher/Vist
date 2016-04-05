@@ -184,13 +184,16 @@ func compileDocuments(
         buildRuntime()
     }
     
+    let libVistPath = "/usr/local/lib/libvist.dylib"
+    
     if options.contains(.compileStdLib) {
-        // .ll -> .o
+        // .ll -> .dylib
         // to link against program
         NSTask.execute(.clang,
                        files: ["\(file).ll"],
+                       outputName: libVistPath,
                        cwd: currentDirectory,
-                       args: "-c")
+                       args: "-dynamiclib")
         
         // .ll -> .bc
         // for optimiser
@@ -214,7 +217,7 @@ func compileDocuments(
         if options.contains(.verbose) { print(asm) }
         
         
-        let inputFiles = options.contains(.doNotLinkStdLib) ? ["\(file).ll"] : ["\(stdLibDirectory)/stdlib.o", "\(file).ll"]
+        let inputFiles = options.contains(.doNotLinkStdLib) ? ["\(file).ll"] : [libVistPath, "\(file).ll"]
         // .ll -> exec
         NSTask.execute(.clang,
                        files: inputFiles,
@@ -253,7 +256,7 @@ func runExecutable(
 
 func buildRuntime() {
     
-    let runtimeDirectory = "\(SOURCE_ROOT)/Vist/Runtime"
+    let runtimeDirectory = "\(SOURCE_ROOT)/Vist/runtime"
     
     // .cpp -> .ll
     NSTask.execute(.clang,
