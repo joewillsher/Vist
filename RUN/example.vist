@@ -1,20 +1,100 @@
 
 
-ref type Foo {
-    var a: Int
+//ref type Foo {
+//    var a: Int
+//    
+//    init Int = (q) do
+//        a = q
+//}
+//
+//func fooGen :: Int -> Foo = do
+//    return Foo $0
+//
+//let a = fooGen 1
+//print a.a
+//
+//let c = a
+
+//print "aaaaaaaaa🤔aaaaaaa"
+type Int {
+    var value: Builtin.Int64
     
-    init Int = (q) do
-        a = q
+    init () = {
+        let v = 0
+        value = v.value
+    }
+    init Int = (val) do value = val.value
+}
+type Bool {
+        var value: Builtin.Bool
+        
+        init () = {
+            let b = false
+            value = b.value
+        }
+        init Bool = (val) do value = val.value
+    }
+
+    
+    @public @inline @operator(100)
+    func * :: Int Int -> Int = (a b) {
+        let v = Builtin.i_mul a.value b.value
+        Builtin.cond_fail v.1
+        return Int v.0
+    }
+    
+    @public @inline @operator(20)
+    func == :: Int Int -> Bool = (a b) do
+    return Bool (Builtin.i_eq a.value b.value)
+    @public @inline @operator(50)
+    func << :: Int Int -> Int = (a b) do
+    return Int (Builtin.i_shl a.value b.value)
+    @public @inline @operator(90)
+    func ~| :: Int Int -> Int = (a b) do
+    return Int (Builtin.i_or a.value b.value)
+    @public @inline @operator(50)
+    func >> :: Int Int -> Int = (a b) do
+    return Int (Builtin.i_shr a.value b.value)
+    @public @inline @operator(95)
+    func ~& :: Int Int -> Int = (a b) do
+    return Int (Builtin.i_and a.value b.value)
+
+    @public @inline func print :: Int = (a) do vist_print a.value
+    @public @inline func print :: Bool = (a) do vist_print a.value
+
+    
+    
+type String {
+    var base: Builtin.OpaquePointer, length: Int, capacityAndEncoding: Int
+    
+    init Builtin.OpaquePointer Builtin.Int Builtin.Bool = (ptr count isUTF8Encoded) {
+        let buffer = Builtin.heap_alloc count
+        Builtin.mem_copy buffer ptr count
+        base = buffer
+        length = Int count
+        
+        if (Bool isUTF8Encoded) {
+            let capacity = (Int count) << 1
+            capacityAndEncoding = capacity ~| 1
+        }
+        else {
+            capacityAndEncoding = (Int count) * 2 << 1
+        }
+    }
+    
+    func isUTF8Encoded:: -> Bool = do
+        return capacityAndEncoding ~& 1 == 1
+    
+    func bufferCapacity:: -> Int = do
+        return capacityAndEncoding >> 1
+    
 }
 
-func fooGen :: Int -> Foo = do
-    return Foo $0
+let a = "meme"
+print a.capacityAndEncoding
+print (a.bufferCapacity ())
+print (a.isUTF8Encoded ())
 
-let a = fooGen 1
-print a.a
-
-let c = a
-
-print "memes"
-
-
+    
+    
+    

@@ -27,7 +27,9 @@ protocol StorageType : Ty {
 extension StorageType {
         
     func indexOfMemberNamed(name: String) throws -> Int {
-        guard let i = members.indexOf({ $0.name == name }) else { throw semaError(.noPropertyNamed(type: self.name, property: name)) }
+        guard let i = members.indexOf({ $0.name == name }) else {
+            throw semaError(.noPropertyNamed(type: self.name, property: name))
+        }
         return i
     }
     
@@ -49,7 +51,8 @@ extension StorageType {
         return members[try indexOfMemberNamed(name)].mutable
     }
     func methodType(methodNamed name: String, argTypes types: [Ty]) throws -> FnType {
-        return methods[try indexOf(methodNamed: name, argTypes: types)].type
+        let t =  methods[try indexOf(methodNamed: name, argTypes: types)].type
+        return t.withParent(self)
     }
     
     /// Returns whether a type models a concept

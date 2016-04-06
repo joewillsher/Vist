@@ -21,8 +21,9 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
         "-verbose": .verbose,
         "-preserve": .preserveTempFiles,
         "-dump-ast": .dumpAST,
-        "-emit-ir": .dumpLLVMIR,
+        "-emit-llvm": .dumpLLVMIR,
         "-emit-vhir": .dumpVHIR,
+        "-emit-asm": .dumpASM,
         "-run": .buildAndRun,
         "-r": .buildAndRun,
         "-O0": .O0,
@@ -40,12 +41,11 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
         
     if flags.contains("-h") || flags.contains("-help") {
         print(
-            "USAGE:  vist [options] <input.vist>\n\nOPTIONS:\n" +
+            "\nUSAGE:  vist [options] <input.vist>\n\nOPTIONS:\n" +
                 "  -help -h\t\t- Print help\n" +
                 "  -verbose -v\t\t- Print all stages of the compile\n" +
-                "  -profile -p\t\t- Record time of program execution\n" +
                 "  -dump-ast\t\t- Dump syntax tree\n" +
-                "  -emit-ir\t\t- Print the LLVM IR file\n" +
+                "  -emit-llvm\t\t- Print the LLVM IR file\n" +
                 "  -emit-vhir\t\t- Print the VHIR file\n" +
                 "  -emit-asm\t\t- print the assembly code\n" +
                 "  -run -r\t\t- Run the program after compilation\n" +

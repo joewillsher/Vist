@@ -44,7 +44,8 @@ struct CompileOptions : OptionSetType {
     /// Parses the document as if it were the stdlib, exposing Builtin types and functions
     private static let parseStdLib = CompileOptions(rawValue: 1 << 13)
     /// Compiles the standard libary before the input files
-    static let buildStdLib: CompileOptions = [compileStdLib, parseStdLib, produceLib, buildRuntime, linkWithRuntime, Ohigh]
+    static let buildStdLib: CompileOptions = [compileStdLib, parseStdLib, produceLib, buildRuntime, linkWithRuntime, Ohigh, disableStdLibInlinePass,
+                                              verbose, preserveTempFiles]
     
     /// Compiles the runtime
     static let buildRuntime = CompileOptions(rawValue: 1 << 14)
@@ -132,6 +133,9 @@ func compileDocuments(
     if options.contains(.dumpVHIR) { print(vhirModule.vhir); return }
     if options.contains(.verbose) { print(vhirModule.vhir) }
     
+    if options.contains(.buildRuntime) {
+        buildRuntime()
+    }
     
     var llvmModule = LLVMModuleCreateWithName(file)
     
@@ -179,10 +183,6 @@ func compileDocuments(
     let llvmIR = try String(contentsOfFile: "\(currentDirectory)/\(file).ll", encoding: NSUTF8StringEncoding) ?? ""
     if options.contains(.dumpLLVMIR) { print(llvmIR); return }
     if options.contains(.verbose) { print(llvmIR, "\n\n----------------------------LINK-----------------------------\n") }
-    
-    if options.contains(.buildRuntime) {
-        buildRuntime()
-    }
     
     let libVistPath = "/usr/local/lib/libvist.dylib"
     

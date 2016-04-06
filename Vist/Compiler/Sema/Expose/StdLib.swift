@@ -12,11 +12,19 @@ struct StdLib {
     static let int32Type =  StructType(members:   [("value", BuiltinType.int(size: 32), true)],       methods: [], name: "Int32")
     static let boolType =   StructType(members:   [("value", BuiltinType.bool, true)],                methods: [], name: "Bool")
     static let doubleType = StructType(members:   [("value", BuiltinType.float(size: 64), true)],     methods: [], name: "Double")
-    static let stringType = StructType(members:   [("base", BuiltinType.opaquePointer, true), ("length", BuiltinType.int(size: 64), true)], methods: [], name: "String")
     static let rangeType =  StructType(members:   [("start", intType, true), ("end", intType, true)], methods: [], name: "Range")
+    static let stringType = StructType(
+        members:   [
+            ("base", BuiltinType.opaquePointer, true),
+            ("length", BuiltinType.int(size: 64), true),
+            ("capacityAndEncoding", intType, true)],
+        methods: [
+            (name: "isUTF8Encoded", type: FnType(params: [], returns: boolType)),
+            (name: "bufferCapacity", type: FnType(params: [], returns: intType)),
+        ], name: "String")
     private static let voidType = BuiltinType.void
     
-    private static let types: [StructType] = [intType, boolType, doubleType, rangeType]
+    private static let types: [StructType] = [intType, boolType, doubleType, rangeType, stringType]
     
     private static let functions: [(String, FnType)] = [
         // int
@@ -85,7 +93,7 @@ struct StdLib {
         ("Float",   FnType(params: [doubleType],                  returns: intType)),
         ("Range",   FnType(params: [intType, intType],            returns: rangeType)),
         ("Range",   FnType(params: [rangeType],                   returns: rangeType)),
-        ("String",  FnType(params: [BuiltinType.opaquePointer, BuiltinType.int(size: 64)], returns: stringType)),
+        ("String",  FnType(params: [BuiltinType.opaquePointer, BuiltinType.int(size: 64), BuiltinType.bool], returns: stringType)),
     ]
     
     /// Container initialised with functions, provides subscript to look up functions by name and type

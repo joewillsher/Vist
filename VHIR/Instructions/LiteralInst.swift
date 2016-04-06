@@ -38,6 +38,7 @@ final class BoolLiteralInst : InstBase {
 final class StringLiteralInst : InstBase {
     var value: LiteralValue<String>
     
+    var encoding: String.Encoding { return value.value.encoding }
     override var type: Ty? { return value.type }
     
     private init(val: String, irName: String?) {
@@ -46,10 +47,18 @@ final class StringLiteralInst : InstBase {
     }
     
     override var instVHIR: String {
-        return "\(name) = string_literal \"\(value.value)\" \(useComment)"
+        return "\(name) = string_literal \(encoding) \"\(value.value)\" \(useComment)"
     }
 }
 
+extension String.Encoding : CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .utf8: return "utf8"
+        case .utf16: return "utf16"
+        }
+    }
+}
 final class LiteralValue<Literal> : Value {
     var value: Literal
     

@@ -1,14 +1,24 @@
 #!/bin/bash
 
+printf 'Configure\n'
+
 printf "//\n//  Utils.h\n//  Vist\n//\n//  Created by Josef Willsher on 03/02/2016.\n//  Copyright © 2016 vistlang. All rights reserved.\n//\n\n#ifndef Utils_h\n#define Utils_h\n\n#define SOURCE_ROOT \"$(pwd)\"\n\n#endif /* Utils_h */\n" > Vist/Compiler/Include/Utils.h
+
+printf 'Download LLVM & Clang\n'
 
 brew install llvm --with-clang #--with-lldb
 
+printf 'Install vistlib standard library & runtime\n'
+
 # install stdlib
-/usr/local/Cellar/llvm/3.6.2/bin/clang-3.6 -o /usr/local/lib/libvist.dylib -dynamiclib stdlib.bc
+/usr/local/Cellar/llvm/3.6.2/bin/clang-3.6 -o /usr/local/lib/libvist.dylib -dynamiclib Vist/stdlib/stdlib.bc
+
+printf 'Build vist compiler\n'
 
 # install vistc
 xcodebuild -scheme Vist -configuration "Release" DEPLOYMENT_LOCATION=YES DSTROOT="" -project Vist.xcodeproj
+
+printf 'Done\n'
 
 
 ######## MOVE TO THIS -- LLVM in this dir ########
@@ -27,5 +37,4 @@ xcodebuild -scheme Vist -configuration "Release" DEPLOYMENT_LOCATION=YES DSTROOT
 # make install -j8
 
 # done
-printf '\ndone\n'
 

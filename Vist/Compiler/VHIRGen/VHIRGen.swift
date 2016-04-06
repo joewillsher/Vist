@@ -148,10 +148,11 @@ extension StringLiteral : ValueEmitter {
         
         
         let string = try module.builder.buildStringLiteral(str)
-        let length = try module.builder.buildIntLiteral(str.characters.count + 1)
-        
-        let initialiser = try module.getOrInsertStdLibFunction(named: "String", argTypes: [BuiltinType.opaquePointer, BuiltinType.int(size: 64)])!
-        let std = try module.builder.buildFunctionCall(initialiser, args: [Operand(string), Operand(length)])
+        let length = try module.builder.buildIntLiteral((str.numberOfCodeUnits+1)*str.encoding.rawValue, irName: "size")
+        let isUTFU = try module.builder.buildBoolLiteral(str.encoding.rawValue == 1, irName: "isUTF8")
+
+        let initialiser = try module.getOrInsertStdLibFunction(named: "String", argTypes: [BuiltinType.opaquePointer, BuiltinType.int(size: 64), BuiltinType.bool])!
+        let std = try module.builder.buildFunctionCall(initialiser, args: [Operand(string), Operand(length), Operand(isUTFU)])
         
         return try std.accessor()
     }
@@ -244,7 +245,7 @@ extension FuncDecl : StmtEmitter {
         let originalInsertPoint = module.builder.insertPoint
         
         // find proto/make function and move into it
-        let function = try module.builder.getOrBuildFunction(mangledName, type: type.vhirType(module), paramNames: impl.params)
+        let function = try module.builder.getOrBuildFunction(mangledName, type: type, paramNames: impl.params)
         try module.builder.setInsertPoint(function)
         
         function.visibility = attrs.visibility

@@ -30,8 +30,14 @@ struct FunctionContainer {
             t[mangled] = ty
         }
         
+        let typesWithMethods = types.map { t -> StructType in
+            var type = t
+            type.methods = type.methods.map { m in (m.name,  m.type.withParent(t)) }
+            return type
+        }
+        
         self.functions = t
-        self.types = types
+        self.types = typesWithMethods
     }
     
     /// Get a named function

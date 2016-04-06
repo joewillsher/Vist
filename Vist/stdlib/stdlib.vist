@@ -42,7 +42,7 @@ type Range {
 }
 
 type String {
-    var base: Builtin.OpaquePointer, length: Builtin.Int
+    var base: Builtin.OpaquePointer, length: Builtin.Int, codeUnitSize: Int
     
     init Builtin.OpaquePointer Builtin.Int = (ptr count) {
         let buffer = Builtin.heap_alloc count
@@ -51,6 +51,10 @@ type String {
         length = count
     }
 }
+
+//concept Streamble {
+//    func writeOut::()
+//}
 
 //type Array {
 //
@@ -141,23 +145,23 @@ func >= :: Int Int -> Bool = (a b) do
 func > :: Int Int -> Bool = (a b) do
     return Bool (Builtin.i_cmp_gt a.value b.value)
 
-@public @inline @operator(10)
+@public @inline @operator(50)
 func << :: Int Int -> Int = (a b) do
     return Int (Builtin.i_shl a.value b.value)
 
-@public @inline @operator(10)
+@public @inline @operator(50)
 func >> :: Int Int -> Int = (a b) do
     return Int (Builtin.i_shr a.value b.value)
 
-@public @inline @operator(15)
+@public @inline @operator(95)
 func ~& :: Int Int -> Int = (a b) do
     return Int (Builtin.i_and a.value b.value)
 
-@public @inline @operator(10)
+@public @inline @operator(90)
 func ~| :: Int Int -> Int = (a b) do
     return Int (Builtin.i_or a.value b.value)
 
-@public @inline @operator(10)
+@public @inline @operator(90)
 func ~^ :: Int Int -> Int = (a b) do
     return Int (Builtin.i_xor a.value b.value)
 
