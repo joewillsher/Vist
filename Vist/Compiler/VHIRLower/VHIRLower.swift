@@ -224,23 +224,30 @@ extension String {
         }
     }
 }
-
+extension String.Encoding : CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .utf8: return "utf8"
+        case .utf16: return "utf16"
+        }
+    }
+}
 
 extension StringLiteralInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         
         let string = value.value
+        let str = LLVMBuildGlobalString(irGen.builder, string, "")
+        return LLVMBuildBitCast(irGen.builder, str, BuiltinType.opaquePointer.lowerType(module), irName ?? "")
         
-        switch string.encoding {
-        case .utf8:
-            let str = LLVMBuildGlobalString(irGen.builder, string, "")
-            return LLVMBuildBitCast(irGen.builder, str, BuiltinType.opaquePointer.lowerType(module), irName ?? "")
-            
-        case .utf16:
-            
-            let global = convertToUTF16(string, irGen.module)
-            return LLVMBuildBitCast(irGen.builder, global, BuiltinType.opaquePointer.lowerType(module), irName ?? "")
-        }
+//        switch string.encoding {
+//        case .utf8:
+// 
+//        case .utf16:
+//            
+//            let global = convertToUTF16(string, irGen.module)
+//            return LLVMBuildBitCast(irGen.builder, global, BuiltinType.opaquePointer.lowerType(module), irName ?? "")
+//        }
     }
 }
 
@@ -406,11 +413,17 @@ extension BuiltinInstCall: VHIRLower {
             
         case .allocstack: return LLVMBuildArrayAlloca(irGen.builder, LLVMInt8Type(), args[0], irName ?? "")
         case .allocheap:  return LLVMBuildArrayMalloc(irGen.builder, LLVMInt8Type(), args[0], irName ?? "")
+        
+        case .advancepointer:
+            var index = [r.loweredValue]
+            return LLVMBuildGEP(irGen.builder, l.loweredValue, &index, 1, irName ?? "")
+        case .opaqueload:
+            return LLVMBuildLoad(irGen.builder, l.loweredValue, irName ?? "")
             
         case .condfail:
             guard let fn = parentFunction, current = parentBlock else { fatalError() }
             let success = LLVMAppendBasicBlock(fn.loweredFunction, "\(current.name).cont"), fail = try fn.buildCondFailBlock(module, irGen: irGen)
-
+            
             LLVMMoveBasicBlockAfter(success, current.loweredBlock)
             LLVMBuildCondBr(irGen.builder, l.loweredValue, fail, success)
             LLVMPositionBuilderAtEnd(irGen.builder, success)

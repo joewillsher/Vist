@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <wchar.h>
 
 #define NOMANGLE extern "C"
 #define NORETURN __attribute__((noreturn))
@@ -168,15 +167,13 @@ vist$Uprint_tb(bool b) {
 
 NOMANGLE NOINLINE
 void
-vist$Uprint_top(void *str) {
-    printf("%s\n", str);
+vist$Ucshim$Uwrite_topi64(const void *str, int64_t size) {
+    fwrite(str, size, 1, stdout);
 };
 
 NOMANGLE NOINLINE
 void
-vist$Uprint$U_top(uint16_t *str) {
-    setlocale(LC_ALL, "");
-    printf("%s\n", str);
+vist$Ucshim$Uputchar_ti8(char c) {
+    putchar_unlocked(c);
 };
-
 

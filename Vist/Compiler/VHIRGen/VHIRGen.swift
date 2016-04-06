@@ -148,9 +148,9 @@ extension StringLiteral : ValueEmitter {
         
         
         let string = try module.builder.buildStringLiteral(str)
-        let length = try module.builder.buildIntLiteral((str.numberOfCodeUnits+1)*str.encoding.rawValue, irName: "size")
+        let length = try module.builder.buildIntLiteral(str.utf8.count + 1, irName: "size")
         let isUTFU = try module.builder.buildBoolLiteral(str.encoding.rawValue == 1, irName: "isUTF8")
-
+        
         let initialiser = try module.getOrInsertStdLibFunction(named: "String", argTypes: [BuiltinType.opaquePointer, BuiltinType.int(size: 64), BuiltinType.bool])!
         let std = try module.builder.buildFunctionCall(initialiser, args: [Operand(string), Operand(length), Operand(isUTFU)])
         
@@ -306,7 +306,7 @@ extension FuncDecl : StmtEmitter {
 
 
 
-extension VariableExpr: LValueEmitter {
+extension VariableExpr : LValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         return scope.variableNamed(name)!
@@ -324,7 +324,7 @@ extension ReturnStmt: ValueEmitter {
     }
 }
 
-extension TupleExpr: ValueEmitter {
+extension TupleExpr : ValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         
@@ -336,7 +336,7 @@ extension TupleExpr: ValueEmitter {
     }
 }
 
-extension TupleMemberLookupExpr: ValueEmitter, LValueEmitter {
+extension TupleMemberLookupExpr : ValueEmitter, LValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         let tuple = try object.emitRValue(module: module, scope: scope).getter()
@@ -351,7 +351,7 @@ extension TupleMemberLookupExpr: ValueEmitter, LValueEmitter {
     }
 }
 
-extension PropertyLookupExpr: LValueEmitter {
+extension PropertyLookupExpr : LValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         
@@ -378,7 +378,7 @@ extension PropertyLookupExpr: LValueEmitter {
     
 }
 
-extension BlockExpr: StmtEmitter {
+extension BlockExpr : StmtEmitter {
     
     func emitStmt(module module: Module, scope: Scope) throws {
         try exprs.emitBody(module: module, scope: scope)
@@ -545,7 +545,7 @@ extension WhileLoopStmt: StmtEmitter {
     }
 }
 
-extension StructExpr: ValueEmitter {
+extension StructExpr : ValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         
@@ -569,7 +569,7 @@ extension StructExpr: ValueEmitter {
     }
 }
 
-extension ConceptExpr: ValueEmitter {
+extension ConceptExpr : ValueEmitter {
 
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         
@@ -644,7 +644,7 @@ extension InitialiserDecl: StmtEmitter {
 }
 
 
-extension MutationExpr: ValueEmitter {
+extension MutationExpr : ValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         
@@ -659,7 +659,7 @@ extension MutationExpr: ValueEmitter {
     
 }
 
-extension MethodCallExpr: ValueEmitter {
+extension MethodCallExpr : ValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         
@@ -675,10 +675,12 @@ extension MethodCallExpr: ValueEmitter {
         // memory and store it there to get a ptr.
         let selfRef = try selfVar.asReferenceAccessor().reference()
         
+        guard let fnType = fnType else { fatalError() }
+        
         // construct function call
         switch object._type {
         case is StructType:
-            let function = module.functionNamed(mangledName)!
+            let function = try module.getOrInsertFunction(named: mangledName, type: fnType)
             return try module.builder.buildFunctionCall(function, args: [selfRef] + args).accessor()
             
         case let existentialType as ConceptType:

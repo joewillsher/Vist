@@ -1,26 +1,31 @@
-#include <iostream>
-#include <locale>
-#include <codecvt>
-#include <string>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <wchar.h>
+
+#include <random>
+#include <type_traits>
+#include <unistd.h>
+#include <string.h>
+
 
 using namespace std;
 
-void vist_printUTF16_top(const void *str, size_t size) {
-    auto base = reinterpret_cast<const char*> (str);
-    
-    wstring_convert<codecvt_utf16<wchar_t, 0x10ffff, little_endian>, wchar_t> conv;
-    wstring ws = conv.from_bytes(base,
-                                 base + size);
-    
-    setlocale(LC_ALL, "");
-    wprintf(L"%ls", ws.data());
-};
+extern "C"
+size_t stdlib_fwrite_stdout(const void *ptr,
+                            size_t size) {
+    return fwrite(ptr, size, 1, stdout);
+}
+
 
 int main() {
     
-    std::u16string s = u"aaaγaaaaaa🤔aa🙃🤗aaaaa";
+    std::u16string s = u"aa🤔aa";
     auto data = reinterpret_cast<const void*>(s.data());
-    vist_print_top(data, s.size()*2);
+    auto u = s.size();
+    printf("%li\n", u);
+    stdlib_fwrite_stdout(data, u);
+    printf("\n");
     
     return 0;
 }

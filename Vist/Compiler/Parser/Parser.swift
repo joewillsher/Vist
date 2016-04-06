@@ -610,7 +610,9 @@ extension Parser {
         guard case .`in` = getNextToken() else { throw parseError(.expectedIn, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat 'in'
         
+        inTuple = true
         let loop = try parseOperatorExpr()
+        revertInTupleState()
         let block = try parseBlockExpr()
         
         return ForInLoopStmt(identifier: itentifier, iterator: loop, block: block)

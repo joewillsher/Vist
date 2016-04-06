@@ -41,16 +41,8 @@ type Range {
     }
 }
 
-type String {
-    var base: Builtin.OpaquePointer, length: Builtin.Int, codeUnitSize: Int
-    
-    init Builtin.OpaquePointer Builtin.Int = (ptr count) {
-        let buffer = Builtin.heap_alloc count
-        Builtin.mem_copy buffer ptr count
-        base = buffer
-        length = count
-    }
-}
+
+
 
 //concept Streamble {
 //    func writeOut::()
@@ -73,7 +65,7 @@ type String {
 @public @inline func print :: Int32 = (a) do vist_print a.value
 @public @inline func print :: Bool = (a) do vist_print a.value
 @public @inline func print :: Double = (a) do vist_print a.value
-@public @inline func print :: String = (a) do vist_print a.base
+
 
 // TODO: print message
 
@@ -89,6 +81,11 @@ type String {
 // ----------------------------------------------------
 // operators
 // ----------------------------------------------------
+
+
+@public @inline @operator(80)
+func + :: Builtin.OpaquePointer Int -> Builtin.OpaquePointer = (pointer offset) do
+    return Builtin.advance_pointer pointer offset.value
 
 // int
 @public @inline @operator(80)
@@ -236,10 +233,48 @@ func ..< :: Int Int -> Range = (a b) do
 
 
 
+type String {
+    var base: Builtin.OpaquePointer, length: Int, _capacityAndEncoding: Int
+    
+    init Builtin.OpaquePointer Builtin.Int Builtin.Bool = (ptr count isUTF8Encoded) {
+        let buffer = Builtin.heap_alloc count
+        Builtin.mem_copy buffer ptr count
+        base = buffer
+        
+        let c = (Int count)
+        length = c - 1
+        if (Bool isUTF8Encoded) {
+            _capacityAndEncoding = (c << 1) ~| 1
+        }
+        else {
+            _capacityAndEncoding = c << 1
+        }
+    }
+    
+    func isUTF8Encoded:: -> Bool = do
+    return _capacityAndEncoding ~& 1 == 1
+    
+    func bufferCapacity:: -> Int = do
+    return _capacityAndEncoding >> 1
+    
+    func charAtIndex::Int->Builtin.OpaquePointer = (index) do
+    return base + index
+}
 
 
-
-
+@public @inline func print :: String = (str) {
+    if str.isUTF8Encoded () {
+        vist_cshim_write str.base str.length.value
+//        let terminator = "\n"
+    } else {
+        for i in 0 ..< (str.bufferCapacity ()) {
+            let char = Builtin.opaque_load (str.charAtIndex i)
+            vist_cshim_putchar char
+        }
+        return ()
+    }
+    return ()
+}
 
 
 

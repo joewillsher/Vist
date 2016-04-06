@@ -16,11 +16,12 @@ struct StdLib {
     static let stringType = StructType(
         members:   [
             ("base", BuiltinType.opaquePointer, true),
-            ("length", BuiltinType.int(size: 64), true),
-            ("capacityAndEncoding", intType, true)],
+            ("length", intType, true),
+            ("_capacityAndEncoding", intType, true)],
         methods: [
             (name: "isUTF8Encoded", type: FnType(params: [], returns: boolType)),
             (name: "bufferCapacity", type: FnType(params: [], returns: intType)),
+            (name: "charAtIndex", type: FnType(params: [StdLib.intType], returns: BuiltinType.opaquePointer)),
         ], name: "String")
     private static let voidType = BuiltinType.void
     
@@ -69,7 +70,8 @@ struct StdLib {
         ("...", FnType(params: [intType, intType], returns: rangeType)),
         ("..<", FnType(params: [intType, intType], returns: rangeType)),
         
-        
+        // pointer
+        ("+", FnType(params: [BuiltinType.opaquePointer, intType], returns: BuiltinType.opaquePointer)),
         
         // fns
         ("print",      FnType(params: [intType],    returns: voidType)),

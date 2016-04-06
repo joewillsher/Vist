@@ -51,14 +51,7 @@ final class StringLiteralInst : InstBase {
     }
 }
 
-extension String.Encoding : CustomStringConvertible {
-    var description: String {
-        switch self {
-        case .utf8: return "utf8"
-        case .utf16: return "utf16"
-        }
-    }
-}
+
 final class LiteralValue<Literal> : Value {
     var value: Literal
     

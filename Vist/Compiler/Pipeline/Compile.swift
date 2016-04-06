@@ -52,7 +52,7 @@ struct CompileOptions : OptionSetType {
     /// Links the input files with the runtime
     private static let linkWithRuntime = CompileOptions(rawValue: 1 << 15)
     /// Parse this file as stdlib code and link manually with runtime
-    static let doNotLinkStdLib: CompileOptions = [linkWithRuntime, parseStdLib]
+    static let doNotLinkStdLib: CompileOptions = [buildRuntime, linkWithRuntime, parseStdLib]
 }
 
 /// Compiles series of files
@@ -262,12 +262,13 @@ func buildRuntime() {
     NSTask.execute(.clang,
                    files: ["runtime.cpp"],
                    cwd: runtimeDirectory,
-                   args: "-S", "-emit-llvm", "-std=c++14")
+                   args: "-O3", "-S", "-emit-llvm", "-std=c++14")
     
     // .ll -> .bc
     NSTask.execute(.assemble,
                    files: ["runtime.ll"],
                    cwd: runtimeDirectory)
+    
 }
 
 

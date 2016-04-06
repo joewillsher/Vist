@@ -61,6 +61,7 @@ enum BuiltinInst : String {
     
     case expect, trap
     case allocstack = "stack_alloc", allocheap = "heap_alloc", memcpy = "mem_copy"
+    case advancepointer = "advance_pointer", opaqueload = "opaque_load"
     
     case fadd = "f_add", fsub = "f_sub", fmul = "f_mul", fdiv = "f_div", frem = "f_rem", feq = "f_eq", fneq = "f_neq"
     case flte = "f_cmp_lte", fgte = "f_cmp_gte", flt = "f_cmp_lt", fgt = "f_cmp_gt"
@@ -70,8 +71,8 @@ enum BuiltinInst : String {
         case .memcpy: return 3
         case .iadd, .isub, .imul, .idiv, .iaddoverflow, .irem, .ilte, .igte, .ilt, .igt,
              .expect, .ieq, .ineq, .ishr, .ishl, .iand, .ior, .ixor, .fgt, .and, .or,
-             .fgte, .flt, .flte, .fadd, .fsub, .fmul, .fdiv, .frem, .feq, .fneq: return 2
-        case .condfail, .allocstack, .allocheap: return 1
+             .fgte, .flt, .flte, .fadd, .fsub, .fmul, .fdiv, .frem, .feq, .fneq, .advancepointer: return 2
+        case .condfail, .allocstack, .allocheap, .opaqueload: return 1
         case .trap: return 0
         }
     }
@@ -88,8 +89,11 @@ enum BuiltinInst : String {
              .fgt, .expect, .ieq, .ineq, .and, .or:
             return Builtin.boolType // bool ops
            
-        case .allocstack, .allocheap:
+        case .allocstack, .allocheap, .advancepointer:
             return Builtin.opaquePointerType
+            
+        case .opaqueload:
+            return BuiltinType.int(size: 8)
             
         case .condfail, .trap, .memcpy:
             return Builtin.voidType // void return

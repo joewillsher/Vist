@@ -24,7 +24,8 @@ struct Runtime {
         ("vist_print", FnType(params: [doubleType], returns: voidType)),
         ("vist_print", FnType(params: [boolType], returns: voidType)),
         ("vist_print", FnType(params: [int32Type], returns: voidType)),
-        ("vist_print", FnType(params: [opaquePointerType], returns: voidType)),
+        ("vist_cshim_putchar", FnType(params: [BuiltinType.int(size: 8)], returns: voidType)),
+        ("vist_cshim_write", FnType(params: [opaquePointerType, intType], returns: voidType)),
     ]
     private static let unmangled: [(String, FnType)] = [
         ("vist_allocObject", FnType(params: [int32Type], returns: refcountedObjectPointerType)),
@@ -44,7 +45,7 @@ struct Runtime {
     static func functionNamed(name: String, argTypes args: [Ty]) -> (mangledName: String, type: FnType)? {
         return functionContainer[fn: name, types: args]
     }
-
+    
     /// Get a builtin function by name
     /// - parameter name: Unmangled name
     /// - parameter args: Applied arg types

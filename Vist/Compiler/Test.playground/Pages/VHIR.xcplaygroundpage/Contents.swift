@@ -1,7 +1,7 @@
 
 import Foundation.NSString
 
-let a = "🤔"
+let a = "aa🤔aa"
 
 
 extension String {
@@ -36,12 +36,9 @@ a.nulTerminatedUTF8.withUnsafeBufferPointer { buffer in
 
 print("\n")
 
-for c in a.utf16 {
-    print(c)
+
+for c in a.utf8 {
+    print(Int32(c))
 }
 
-let a1 = 0b1111000010011111
-let a2 = 0b1010010010010100
-
-print(a1, a2)
 

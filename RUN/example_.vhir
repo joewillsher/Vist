@@ -3,249 +3,35 @@ type %String = { %Builtin.OpaquePointer, %Int, %Int }
 type %Bool = { %Builtin.Bool }
 type %Int = { %Builtin.Int64 }
 
-func @vist-Uprint_tb : &thin (%Builtin.Bool) -> %Builtin.Void
+func @print_tI : &thin (%Int) -> %Builtin.Void
 
-func @-T-O_tII : &thin (%Int, %Int) -> %Int {
-$entry(%a: %Int, %b: %Int):
-  %0 = struct_extract %a: %Int, #value  	// user: %2
-  %1 = struct_extract %b: %Int, #value  	// user: %2
-  %2 = builtin i_or %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
-  %3 = call @Int_ti64 (%2: %Builtin.Int64)  	// user: %4
-  return %3
-}
+func @print_tString : &thin (%String) -> %Builtin.Void
 
-func @Int_ti64 : &thin (%Builtin.Int64) -> %Int {
-$entry(%$0: %Builtin.Int64):
-  %self = alloc %Int  	// users: %value, %1
-  %value = struct_element %self: %*I, #value  	// user: %0
-  store %$0 in %value: %*Builtin.Int64 
-  %1 = load %self: %*I  	// user: %2
-  return %1
-}
+func @String_topi64b : &thin (%Builtin.OpaquePointer, %Builtin.Int64, %Builtin.Bool) -> %String
 
-func @String_topi64b : &thin (%Builtin.OpaquePointer, %Builtin.Int64, %Builtin.Bool) -> %String {
-$entry(%ptr: %Builtin.OpaquePointer, %count: %Builtin.Int64, %isUTF8Encoded: %Builtin.Bool):
-  %self = alloc %String  	// users: %base, %length, %capacityAndEncoding, %27
-  %base = struct_element %self: %*String, #base  	// user: %2
-  %length = struct_element %self: %*String, #length  	// user: %4
-  %capacityAndEncoding = struct_element %self: %*String, #capacityAndEncoding  	// users: %15, %25
-  %0 = builtin heap_alloc %count: %Builtin.Int64  	// user: %buffer
-  variable_decl %buffer = %0: %Builtin.OpaquePointer  	// users: %1, %2
-  %1 = builtin mem_copy %buffer: %Builtin.OpaquePointer, %ptr: %Builtin.OpaquePointer, %count: %Builtin.Int64 
-  store %buffer in %base: %*Builtin.OpaquePointer 
-  %3 = call @Int_ti64 (%count: %Builtin.Int64)  	// user: %4
-  store %3 in %length: %*I 
-  %5 = call @Bool_tb (%isUTF8Encoded: %Builtin.Bool)  	// user: %6
-  %6 = struct_extract %5: %Bool, #value  	// user: nil
-  break %6: %Builtin.Bool, $if.0, $fail.0
+func @print_tB : &thin (%Bool) -> %Builtin.Void
 
-$if.0:			// preds: entry
-  %8 = call @Int_ti64 (%count: %Builtin.Int64)  	// user: %11
-  %9 = int_literal 1  	// user: %10
-  %10 = struct %I (%9: %Builtin.Int64)  	// user: %11
-  %11 = call @-L-L_tII (%8: %Int, %10: %Int)  	// user: %capacity
-  variable_decl %capacity = %11: %Int  	// user: %14
-  %12 = int_literal 1  	// user: %13
-  %13 = struct %I (%12: %Builtin.Int64)  	// user: %14
-  %14 = call @-T-O_tII (%capacity: %Int, %13: %Int)  	// user: %15
-  store %14 in %capacityAndEncoding: %*I 
-  break $exit
-
-$fail.0:			// preds: entry
-  break $else.1
-
-$else.1:			// preds: fail.0
-  %18 = call @Int_ti64 (%count: %Builtin.Int64)  	// user: %21
-  %19 = int_literal 2  	// user: %20
-  %20 = struct %I (%19: %Builtin.Int64)  	// user: %21
-  %21 = call @-A_tII (%18: %Int, %20: %Int)  	// user: %24
-  %22 = int_literal 1  	// user: %23
-  %23 = struct %I (%22: %Builtin.Int64)  	// user: %24
-  %24 = call @-L-L_tII (%21: %Int, %23: %Int)  	// user: %25
-  store %24 in %capacityAndEncoding: %*I 
-  break $exit
-
-$exit:			// preds: if.0, else.1
-  %27 = load %self: %*String  	// user: %28
-  return %27
-}
-
-func @Bool_tB : &thin (%Bool) -> %Bool {
-$entry(%val: %Bool):
-  %self = alloc %Bool  	// users: %value, %2
-  %value = struct_element %self: %*B, #value  	// user: %1
-  %0 = struct_extract %val: %Bool, #value  	// user: %1
-  store %0 in %value: %*Builtin.Bool 
-  %2 = load %self: %*B  	// user: %3
-  return %2
-}
-
-func @Bool_tb : &thin (%Builtin.Bool) -> %Bool {
-$entry(%$0: %Builtin.Bool):
-  %self = alloc %Bool  	// users: %value, %1
-  %value = struct_element %self: %*B, #value  	// user: %0
-  store %$0 in %value: %*Builtin.Bool 
-  %1 = load %self: %*B  	// user: %2
-  return %1
-}
-
-func @isUTF8Encoded_mString : &method (%*String) -> %Bool {
-$entry(%self: %*String):
-  %capacityAndEncoding = struct_element %self: %*String, #capacityAndEncoding  	// user: %0
-  %0 = load %capacityAndEncoding: %*I  	// user: %3
-  %1 = int_literal 1  	// user: %2
-  %2 = struct %I (%1: %Builtin.Int64)  	// user: %3
-  %3 = call @-T-N_tII (%0: %Int, %2: %Int)  	// user: %6
-  %4 = int_literal 1  	// user: %5
-  %5 = struct %I (%4: %Builtin.Int64)  	// user: %6
-  %6 = call @-E-E_tII (%3: %Int, %5: %Int)  	// user: %7
-  return %6
-}
-
-func @Bool_t : &thin () -> %Bool {
-$entry:
-  %self = alloc %Bool  	// users: %value, %4
-  %value = struct_element %self: %*B, #value  	// user: %3
-  %0 = bool_literal false  	// user: %1
-  %1 = struct %B (%0: %Builtin.Bool)  	// user: %b
-  variable_decl %b = %1: %Bool  	// user: %2
-  %2 = struct_extract %b: %Bool, #value  	// user: %3
-  store %2 in %value: %*Builtin.Bool 
-  %4 = load %self: %*B  	// user: %5
-  return %4
-}
-
-func @-A_tII : &thin (%Int, %Int) -> %Int {
-$entry(%a: %Int, %b: %Int):
-  %0 = struct_extract %a: %Int, #value  	// user: %2
-  %1 = struct_extract %b: %Int, #value  	// user: %2
-  %2 = builtin i_mul %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %v
-  variable_decl %v = %2: (%Builtin.Int64, %Builtin.Bool)  	// users: %3, %5
-  %3 = tuple_extract %v: (%Builtin.Int64, %Builtin.Bool), 1  	// user: %4
-  cond_fail %3: %Builtin.Bool
-  %5 = tuple_extract %v: (%Builtin.Int64, %Builtin.Bool), 0  	// user: %6
-  %6 = call @Int_ti64 (%5: %Builtin.Int64)  	// user: %7
-  return %6
-}
-
-func @isUTF8Encoded : &method (%*String) -> %Bool
-
-func @Int_t : &thin () -> %Int {
-$entry:
-  %self = alloc %Int  	// users: %value, %4
-  %value = struct_element %self: %*I, #value  	// user: %3
-  %0 = int_literal 0  	// user: %1
-  %1 = struct %I (%0: %Builtin.Int64)  	// user: %v
-  variable_decl %v = %1: %Int  	// user: %2
-  %2 = struct_extract %v: %Int, #value  	// user: %3
-  store %2 in %value: %*Builtin.Int64 
-  %4 = load %self: %*I  	// user: %5
-  return %4
-}
-
-func @-E-E_tII : &thin (%Int, %Int) -> %Bool {
-$entry(%a: %Int, %b: %Int):
-  %0 = struct_extract %a: %Int, #value  	// user: %2
-  %1 = struct_extract %b: %Int, #value  	// user: %2
-  %2 = builtin i_eq %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
-  %3 = call @Bool_tb (%2: %Builtin.Bool)  	// user: %4
-  return %3
-}
-
-func @print_tI : &thin (%Int) -> %Builtin.Void {
-$entry(%a: %Int):
-  %0 = struct_extract %a: %Int, #value  	// user: %1
-  %1 = call @vist-Uprint_ti64 (%0: %Builtin.Int64) 
-  return ()
-}
-
-func @vist-Uprint_ti64 : &thin (%Builtin.Int64) -> %Builtin.Void
-
-func @String_topII : &thin (%Builtin.OpaquePointer, %Int, %Int) -> %String {
-$entry(%$0: %Builtin.OpaquePointer, %$1: %Int, %$2: %Int):
-  %self = alloc %String  	// users: %base, %length, %capacityAndEncoding, %3
-  %base = struct_element %self: %*String, #base  	// user: %0
-  %length = struct_element %self: %*String, #length  	// user: %1
-  %capacityAndEncoding = struct_element %self: %*String, #capacityAndEncoding  	// user: %2
-  store %$0 in %base: %*Builtin.OpaquePointer 
-  store %$1 in %length: %*I 
-  store %$2 in %capacityAndEncoding: %*I 
-  %3 = load %self: %*String  	// user: %4
-  return %3
-}
-
-func @bufferCapacity : &method (%*String) -> %Int
-
-func @-L-L_tII : &thin (%Int, %Int) -> %Int {
-$entry(%a: %Int, %b: %Int):
-  %0 = struct_extract %a: %Int, #value  	// user: %2
-  %1 = struct_extract %b: %Int, #value  	// user: %2
-  %2 = builtin i_shl %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
-  %3 = call @Int_ti64 (%2: %Builtin.Int64)  	// user: %4
-  return %3
-}
-
-func @Int_tI : &thin (%Int) -> %Int {
-$entry(%val: %Int):
-  %self = alloc %Int  	// users: %value, %2
-  %value = struct_element %self: %*I, #value  	// user: %1
-  %0 = struct_extract %val: %Int, #value  	// user: %1
-  store %0 in %value: %*Builtin.Int64 
-  %2 = load %self: %*I  	// user: %3
-  return %2
-}
-
-func @-G-G_tII : &thin (%Int, %Int) -> %Int {
-$entry(%a: %Int, %b: %Int):
-  %0 = struct_extract %a: %Int, #value  	// user: %2
-  %1 = struct_extract %b: %Int, #value  	// user: %2
-  %2 = builtin i_shr %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
-  %3 = call @Int_ti64 (%2: %Builtin.Int64)  	// user: %4
-  return %3
-}
-
-func @print_tB : &thin (%Bool) -> %Builtin.Void {
-$entry(%a: %Bool):
-  %0 = struct_extract %a: %Bool, #value  	// user: %1
-  %1 = call @vist-Uprint_tb (%0: %Builtin.Bool) 
-  return ()
-}
+func @isUTF8Encoded_mString : &method (%*String) -> %Bool
 
 func @main : &thin () -> %Builtin.Void {
 $entry:
-  %0 = string_literal utf8 "meme"  	// user: %1
-  %size = int_literal 5  	// user: %1
-  %isUTF8 = bool_literal true  	// user: %1
-  %1 = call @String_topi64b (%0: %Builtin.OpaquePointer, %size: %Builtin.Int64, %isUTF8: %Builtin.Bool)  	// user: %a
-  variable_decl %a = %1: %String  	// users: %2, %5, %9
-  %2 = struct_extract %a: %String, #capacityAndEncoding  	// user: %3
+  %0 = string_literal utf16 "aaaa🤔"  	// user: %1
+  %size = int_literal 9  	// user: %1
+  %isUTF8 = bool_literal false  	// user: %1
+  %1 = call @String_topi64b (%0: %Builtin.OpaquePointer, %size: %Builtin.Int64, %isUTF8: %Builtin.Bool)  	// user: %b
+  variable_decl %b = %1: %String  	// users: %2, %5, %9, %12
+  %2 = struct_extract %b: %String, #length  	// user: %3
   %3 = call @print_tI (%2: %Int) 
   %4 = alloc %String  	// users: %5, %6
-  store %a in %4: %*String 
+  store %b in %4: %*String 
   %6 = call @bufferCapacity_mString (%4: %*String)  	// user: %7
   %7 = call @print_tI (%6: %Int) 
   %8 = alloc %String  	// users: %9, %10
-  store %a in %8: %*String 
+  store %b in %8: %*String 
   %10 = call @isUTF8Encoded_mString (%8: %*String)  	// user: %11
   %11 = call @print_tB (%10: %Bool) 
+  %12 = call @print_tString (%b: %String) 
   return ()
 }
 
-func @-T-N_tII : &thin (%Int, %Int) -> %Int {
-$entry(%a: %Int, %b: %Int):
-  %0 = struct_extract %a: %Int, #value  	// user: %2
-  %1 = struct_extract %b: %Int, #value  	// user: %2
-  %2 = builtin i_and %0: %Builtin.Int64, %1: %Builtin.Int64  	// user: %3
-  %3 = call @Int_ti64 (%2: %Builtin.Int64)  	// user: %4
-  return %3
-}
-
-func @bufferCapacity_mString : &method (%*String) -> %Int {
-$entry(%self: %*String):
-  %capacityAndEncoding = struct_element %self: %*String, #capacityAndEncoding  	// user: %0
-  %0 = load %capacityAndEncoding: %*I  	// user: %3
-  %1 = int_literal 1  	// user: %2
-  %2 = struct %I (%1: %Builtin.Int64)  	// user: %3
-  %3 = call @-G-G_tII (%0: %Int, %2: %Int)  	// user: %4
-  return %3
-}
+func @bufferCapacity_mString : &method (%*String) -> %Int

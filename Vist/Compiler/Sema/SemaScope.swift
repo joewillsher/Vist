@@ -52,7 +52,7 @@ final class SemaScope {
         
         // if not stdlib, lookup from the stdlib defs
         // if stdlib lookup from builtin fns
-        if let stdLibFunction = StdLib.functionNamed(name, args: argTypes) where !isStdLib {
+        if let stdLibFunction = StdLib.functionNamed(name, args: argTypes) {
             return stdLibFunction
         }
         else if let builtinFunction = Builtin.functionNamed(name, argTypes: argTypes) where isStdLib {

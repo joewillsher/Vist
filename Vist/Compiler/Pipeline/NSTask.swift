@@ -10,6 +10,7 @@ import class Foundation.NSTask
 
 enum Exec: String {
     case clang = "/usr/local/Cellar/llvm/3.6.2/bin/clang-3.6"
+    case sysclang = "/usr/bin/clang"
     case rm = "/bin/rm"
     case opt = "/usr/local/Cellar/llvm/3.6.2/bin/opt"
     case assemble = "/usr/local/Cellar/llvm/3.6.2/bin/llvm-as"

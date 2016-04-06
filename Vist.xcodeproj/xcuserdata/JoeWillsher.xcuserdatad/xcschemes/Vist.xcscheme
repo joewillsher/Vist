@@ -95,11 +95,11 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-build-stdlib"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-parse-stdlib"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-run"

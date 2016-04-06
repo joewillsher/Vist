@@ -65,6 +65,8 @@ struct Builtin {
         ("Builtin.stack_alloc", FnType(params: [intType], returns: opaquePointerType)),
         ("Builtin.heap_alloc", FnType(params: [intType], returns: opaquePointerType)),
         ("Builtin.mem_copy", FnType(params: [opaquePointerType, opaquePointerType, intType], returns: voidType)),
+        ("Builtin.advance_pointer", FnType(params: [opaquePointerType, intType], returns: opaquePointerType)),
+        ("Builtin.opaque_load", FnType(params: [opaquePointerType], returns: BuiltinType.int(size: 8))),
     ]
     
     private static let functionContainer = FunctionContainer(functions: functions, types: [])
