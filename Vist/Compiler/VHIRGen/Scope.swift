@@ -36,9 +36,13 @@ final class Scope {
         if let v = variables.removeValueForKey(name) { return v }
         return parent?.removeVariableNamed(name)
     }
-
-    func releaseVariables(deleting deleting: Bool = true) throws {
-        for variable in variables.values {
+    
+    /// Release all refcounted variables in this scope
+    /// - parameter deleting: Whether to delete the scope's variables after releasing
+    /// - parameter except: Do not release this variable
+    func releaseVariables(deleting deleting: Bool, except: Accessor? = nil) throws {
+        for variable in variables.values
+            where (except.map { $0 !== variable }) ?? true {
             try variable.releaseIfRefcounted()
         }
         if deleting { variables.removeAll() }
@@ -49,7 +53,7 @@ final class Scope {
     
     deinit {
         if !variables.isEmpty { 
-            try! releaseVariables()
+            try! releaseVariables(deleting: true)
         }
     }
 }

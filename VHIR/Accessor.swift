@@ -9,7 +9,7 @@
 /// Provides means of reading a value from memory
 ///
 /// A `getter` allows loading of a value, and conformants may also provide a ``setter
-protocol Accessor {
+protocol Accessor : class {
     /// Gets the value from the stored object
     func getter() throws -> Value
     /// Returns copy of this acccessor with reference semantics
@@ -24,6 +24,8 @@ protocol Accessor {
     func releaseIfRefcounted() throws
     func retainIfRefcounted() throws
     func releaseUnownedIfRefcounted() throws
+    func deallocIfRefcounted() throws
+    func deallocUnownedIfRefcounted() throws
 }
 
 
@@ -51,6 +53,8 @@ extension Accessor {
     func releaseIfRefcounted() { }
     func retainIfRefcounted() { }
     func releaseUnownedIfRefcounted() { }
+    func deallocIfRefcounted() { }
+    func deallocUnownedIfRefcounted() { }
     
     func aggregateGetter() throws -> Value { return try getter() }
 }
@@ -162,10 +166,22 @@ final class RefCountedAccessor : GetSetAccessor {
         try module.builder.buildRelease(aggregateReference())
     }
     
+    func dealloc() throws {
+        try module.builder.buildDeallocObject(aggregateReference())
+    }
+    
+    func deallocUnowned() throws {
+        try module.builder.buildDeallocUnownedObject(aggregateReference())
+    }
+    
     /// Capture another reference to the object and retain it
     func getMemCopy() throws -> GetSetAccessor {
         try retain()
         return RefCountedAccessor(refcountedBox: aggregateReference(), _reference: _reference)
+    }
+    
+    deinit {
+        
     }
     
 //    func getRefCount() throws -> Value {
@@ -187,6 +203,8 @@ final class RefCountedAccessor : GetSetAccessor {
     func releaseIfRefcounted() throws { try release() }
     func retainIfRefcounted() throws { try retain() }
     func releaseUnownedIfRefcounted() throws { try releaseUnowned() }
+    func deallocIfRefcounted() throws { try dealloc() }
+    func deallocUnownedIfRefcounted() throws { try deallocUnowned() }
 }
 
 // TODO: make a LazyRefAccessor wrap a GetSetAccessor

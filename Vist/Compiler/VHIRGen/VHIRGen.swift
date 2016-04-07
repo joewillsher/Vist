@@ -46,7 +46,13 @@ extension ASTNode {
     @warn_unused_result
     func emit(module module: Module, scope: Scope) throws {
         if case let rval as ValueEmitter = self {
-            _ = try rval.emitRValue(module: module, scope: scope)
+            let unusedAccessor = try rval.emitRValue(module: module, scope: scope)
+            // function calls return values at -1
+            // unused values could have a ref count of 0 and not be deallocated
+            // any unused function calls should have dealloc_unowned_object called on them
+            if rval is FunctionCallExpr {
+                try unusedAccessor.deallocUnownedIfRefcounted()
+            }
         }
         else if case let stmt as StmtEmitter = self {
             try stmt.emitStmt(module: module, scope: scope)
@@ -85,7 +91,7 @@ extension AST {
             try exprs.emitBody(module: module, scope: scope)
             
             try builder.setInsertPoint(main)
-            try scope.releaseVariables()
+            try scope.releaseVariables(deleting: true)
             try builder.buildReturnVoid()
         }
         
@@ -118,34 +124,15 @@ extension StringLiteral : ValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
        
-        // %0 = string_literal "meme"   // utf8 literal
-        // %1 = int_literal 4           // size, calculated statically
-        // %2 = call @String_topi64 (%0: %Builtin.OpaquePointer, %1: Builtin.Int)    // call to string initialiser
-        
         // string_literal lowered to:
         //  - make global string constant
         //  - GEP from it to get the first element
         //
         // String initialiser allocates %1 bytes of memory and stores %0 into it
-        //
         // String exposes methods to move buffer and change size
-        //
-        // String `print` passes `base` into a runtime vist_print which takes i8*
-        
-        // Misc todos:
-        //  - Initialiser(allocating) calling convention?
-        //  - Shorthand for stdlib types in manging -- Int->I, Bool->B, Double->D
-        //  - Mangling operators by using a prefix then not using - to seperate tokens. In operators all chars are
-        //    going to not be letters, so using a prefix for them (and a different prefix for functions) we can
-        //    tell the demangler how to parse these chars
-        //  - Make sure mangler can differentiate Int, Int and IntInt param types. Swift uses a number prefix.
-        //  - Lower function visibility attributes
-        
-        // Bigger todos:
-        //  - Type checking in all builder factory methods and...
-        //  - Full error handling model in VHIR
-        //  - Pointer type in stdlib
-        
+        // String `print` passes `base` into a cshim functions which print the buffer
+        //    - wholly if its contiguous UTF8
+        //    - char by char if it contains UTF16 ocde units
         
         let string = try module.builder.buildStringLiteral(str)
         let length = try module.builder.buildIntLiteral(str.utf8.count + 1, irName: "size")
@@ -188,10 +175,15 @@ extension FunctionCall/*: VHIRGenerator*/ {
         return try zip(argArr, fnType.params).map { rawArg, paramType in
             let arg = try rawArg.emitRValue(module: module, scope: scope)
             
+            // retain the parameters -- pass them in at +1 so the function can release them at its end
+            try arg.retainIfRefcounted()
+            
+            // if the function expects an existential, we construct one
             if case let alias as TypeAlias = paramType, case let existentialType as ConceptType = alias.targetType {
                 let existentialRef = try arg.asReferenceAccessor().reference()
                 return try module.builder.buildExistentialBox(existentialRef, existentialType: existentialType)
             }
+                // if its a nominal type we get the object and pass it in
             else {
                 return try arg.aggregateGetter()
             }
@@ -283,14 +275,15 @@ extension FuncDecl : StmtEmitter {
         // vhir gen for body
         try impl.body.emitStmt(module: module, scope: fnScope)
 
-        fnScope.removeVariables()
-
         // TODO: look at exit nodes of block, not just place we're left off
         // add implicit `return ()` for a void function without a return expression
         if type.returns == BuiltinType.void && !function.instructions.contains({$0 is ReturnInst}) {
+            try fnScope.releaseVariables(deleting: true)
             try module.builder.buildReturnVoid()
         }
-        
+        else {
+            fnScope.removeVariables()
+        }
 //        for terminator in function.instructions where terminator.instIsTerminator {
 //            if let i = try terminator.predecessor() {
 //                try module.builder.setInsertPoint(i)
@@ -319,8 +312,16 @@ extension VariableExpr : LValueEmitter {
 extension ReturnStmt: ValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
-        let retVal = try expr.emitRValue(module: module, scope: scope).aggregateGetter()
-        return try module.builder.buildReturn(Operand(retVal)).accessor()
+        let retVal = try expr.emitRValue(module: module, scope: scope)
+        
+        // before returning, we release all variables in the scope...
+        try scope.releaseVariables(deleting: false, except: retVal)
+        // ...and release-unowned the return value
+        //    - we exepct the caller of the function to retain the value
+        //      or dealloc it, if it is unused
+        try retVal.releaseUnownedIfRefcounted()
+        
+        return try module.builder.buildReturn(Operand(retVal.aggregateGetter())).accessor()
     }
 }
 
@@ -496,7 +497,7 @@ extension ForInLoopStmt: StmtEmitter {
         
         // vhirgen the body of the loop
         try block.emitStmt(module: module, scope: loopScope)
-        try loopScope.releaseVariables()
+        try loopScope.releaseVariables(deleting: true)
         
         // iterate the loop count and check whether we are within range
         let one = try module.builder.buildIntLiteral(1)
@@ -539,7 +540,7 @@ extension WhileLoopStmt: StmtEmitter {
         // build loop block
         try module.builder.setInsertPoint(loopBlock) // move into
         try block.emitStmt(module: module, scope: loopScope) // gen stmts
-        try loopScope.releaseVariables()
+        try loopScope.releaseVariables(deleting: true)
         try module.builder.buildBreak(to: condBlock) // break back to condition check
         try module.builder.setInsertPoint(exitBlock)  // move past -- we're done
     }
@@ -634,7 +635,7 @@ extension InitialiserDecl: StmtEmitter {
         try impl.body.emitStmt(module: module, scope: fnScope)
         
         try fnScope.removeVariableNamed("self")?.releaseUnownedIfRefcounted()
-        try fnScope.releaseVariables()
+        try fnScope.releaseVariables(deleting: true)
         
         try module.builder.buildReturn(Operand(try selfVar.aggregateGetter()))
         

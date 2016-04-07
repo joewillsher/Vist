@@ -28,7 +28,7 @@
 ///     - All functions in this namespace should be prefixed with vist_
 ///     - If the function is just for the compiler to call, dont mangle it, eg. `vist_getAccessor`
 
-//#define REFCOUNT_DEBUG
+#define REFCOUNT_DEBUG
 
 struct RefcountedObject {
     void *object;
@@ -111,8 +111,19 @@ void
 vist_releaseUnownedObject(RefcountedObject *object) {
     decrementRefCount(object);
 #ifdef REFCOUNT_DEBUG
-    printf(">release-unretained %i\n", object->refCount);
+    printf(">release-unowned %i\n", object->refCount);
 #endif
+};
+
+/// Deallocate a -1 object if it is unowned
+NOMANGLE ALWAYSINLINE
+void
+vist_deallocUnownedObject(RefcountedObject *object) {
+#ifdef REFCOUNT_DEBUG
+    printf(">dealloc-unowned %i\n", object->refCount);
+#endif
+    if (object->refCount == 0)
+        vist_deallocObject(object);
 };
 
 /// Get the ref count

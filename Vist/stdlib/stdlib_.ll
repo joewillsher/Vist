@@ -13,11 +13,17 @@ target triple = "x86_64-apple-macosx10.11.0"
 %Int32 = type { i32 }
 
 @__stdoutp = external global %struct.__sFILE*
-@.str = private unnamed_addr constant [6 x i8] c"%lli\0A\00", align 1
-@.str1 = private unnamed_addr constant [4 x i8] c"%i\0A\00", align 1
-@.str2 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
-@.str3 = private unnamed_addr constant [6 x i8] c"true\0A\00", align 1
-@.str4 = private unnamed_addr constant [7 x i8] c"false\0A\00", align 1
+@.str = private unnamed_addr constant [17 x i8] c">alloc %i bytes\0A\00", align 1
+@str = private unnamed_addr constant [9 x i8] c">dealloc\00"
+@.str2 = private unnamed_addr constant [13 x i8] c">release %i\0A\00", align 1
+@.str3 = private unnamed_addr constant [12 x i8] c">retain %i\0A\00", align 1
+@.str4 = private unnamed_addr constant [21 x i8] c">release-unowned %i\0A\00", align 1
+@.str5 = private unnamed_addr constant [21 x i8] c">dealloc-unowned %i\0A\00", align 1
+@.str6 = private unnamed_addr constant [6 x i8] c"%lli\0A\00", align 1
+@.str7 = private unnamed_addr constant [4 x i8] c"%i\0A\00", align 1
+@.str8 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
+@.str9 = private unnamed_addr constant [6 x i8] c"true\0A\00", align 1
+@.str10 = private unnamed_addr constant [7 x i8] c"false\0A\00", align 1
 
 ; Function Attrs: alwaysinline nounwind ssp uwtable
 define void @_Z17incrementRefCountP16RefcountedObject(%struct.__sbuf* %object) #0 {
@@ -47,15 +53,20 @@ entry:
   %refCount = getelementptr inbounds i8* %call1, i64 8
   %1 = bitcast i8* %refCount to i32*
   store i32 0, i32* %1, align 4, !tbaa !8
+  %call3 = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([17 x i8]* @.str, i64 0, i64 0), i32 %size)
   ret %struct.__sbuf* %0
 }
 
 ; Function Attrs: nounwind
 declare noalias i8* @malloc(i64) #1
 
+; Function Attrs: nounwind
+declare i32 @printf(i8* nocapture readonly, ...) #1
+
 ; Function Attrs: alwaysinline nounwind ssp uwtable
 define void @vist_deallocObject(%struct.__sbuf* nocapture readonly %object) #0 {
 entry:
+  %puts = tail call i32 @puts(i8* getelementptr inbounds ([9 x i8]* @str, i64 0, i64 0))
   %object1 = getelementptr inbounds %struct.__sbuf* %object, i64 0, i32 0
   %0 = load i8** %object1, align 8, !tbaa !2
   tail call void @free(i8* %0)
@@ -70,17 +81,21 @@ define void @vist_releaseObject(%struct.__sbuf* %object) #0 {
 entry:
   %refCount = getelementptr inbounds %struct.__sbuf* %object, i64 0, i32 1
   %0 = load i32* %refCount, align 4, !tbaa !8
-  %cmp = icmp eq i32 %0, 1
+  %sub = add i32 %0, -1
+  %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([13 x i8]* @.str2, i64 0, i64 0), i32 %sub)
+  %1 = load i32* %refCount, align 4, !tbaa !8
+  %cmp = icmp eq i32 %1, 1
   br i1 %cmp, label %if.then, label %if.else
 
 if.then:                                          ; preds = %entry
+  %puts.i = tail call i32 @puts(i8* getelementptr inbounds ([9 x i8]* @str, i64 0, i64 0)) #7
   %object1.i = getelementptr inbounds %struct.__sbuf* %object, i64 0, i32 0
-  %1 = load i8** %object1.i, align 8, !tbaa !2
-  tail call void @free(i8* %1) #7
+  %2 = load i8** %object1.i, align 8, !tbaa !2
+  tail call void @free(i8* %2) #7
   br label %if.end
 
 if.else:                                          ; preds = %entry
-  %2 = atomicrmw sub i32* %refCount, i32 1 monotonic
+  %3 = atomicrmw sub i32* %refCount, i32 1 monotonic
   br label %if.end
 
 if.end:                                           ; preds = %if.else, %if.then
@@ -92,6 +107,8 @@ define void @vist_retainObject(%struct.__sbuf* %object) #0 {
 entry:
   %refCount.i = getelementptr inbounds %struct.__sbuf* %object, i64 0, i32 1
   %0 = atomicrmw add i32* %refCount.i, i32 1 monotonic
+  %1 = load i32* %refCount.i, align 4, !tbaa !8
+  %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([12 x i8]* @.str3, i64 0, i64 0), i32 %1)
   ret void
 }
 
@@ -100,6 +117,29 @@ define void @vist_releaseUnownedObject(%struct.__sbuf* %object) #0 {
 entry:
   %refCount.i = getelementptr inbounds %struct.__sbuf* %object, i64 0, i32 1
   %0 = atomicrmw sub i32* %refCount.i, i32 1 monotonic
+  %1 = load i32* %refCount.i, align 4, !tbaa !8
+  %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([21 x i8]* @.str4, i64 0, i64 0), i32 %1)
+  ret void
+}
+
+; Function Attrs: alwaysinline nounwind ssp uwtable
+define void @vist_deallocUnownedObject(%struct.__sbuf* nocapture readonly %object) #0 {
+entry:
+  %refCount = getelementptr inbounds %struct.__sbuf* %object, i64 0, i32 1
+  %0 = load i32* %refCount, align 4, !tbaa !8
+  %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([21 x i8]* @.str5, i64 0, i64 0), i32 %0)
+  %1 = load i32* %refCount, align 4, !tbaa !8
+  %cmp = icmp eq i32 %1, 0
+  br i1 %cmp, label %if.then, label %if.end
+
+if.then:                                          ; preds = %entry
+  %puts.i = tail call i32 @puts(i8* getelementptr inbounds ([9 x i8]* @str, i64 0, i64 0)) #7
+  %object1.i = getelementptr inbounds %struct.__sbuf* %object, i64 0, i32 0
+  %2 = load i8** %object1.i, align 8, !tbaa !2
+  tail call void @free(i8* %2) #7
+  br label %if.end
+
+if.end:                                           ; preds = %if.then, %entry
   ret void
 }
 
@@ -123,24 +163,21 @@ entry:
 ; Function Attrs: noinline nounwind ssp uwtable
 define void @vist-Uprint_ti64(i64 %i) #3 {
 entry:
-  %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str, i64 0, i64 0), i64 %i)
+  %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str6, i64 0, i64 0), i64 %i)
   ret void
 }
-
-; Function Attrs: nounwind
-declare i32 @printf(i8* nocapture readonly, ...) #1
 
 ; Function Attrs: noinline nounwind ssp uwtable
 define void @vist-Uprint_ti32(i32 %i) #3 {
 entry:
-  %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str1, i64 0, i64 0), i32 %i)
+  %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str7, i64 0, i64 0), i32 %i)
   ret void
 }
 
 ; Function Attrs: noinline nounwind ssp uwtable
 define void @vist-Uprint_tf64(double %d) #3 {
 entry:
-  %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str2, i64 0, i64 0), double %d)
+  %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str8, i64 0, i64 0), double %d)
   ret void
 }
 
@@ -148,14 +185,14 @@ entry:
 define void @vist-Uprint_tf32(float %d) #3 {
 entry:
   %conv = fpext float %d to double
-  %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str2, i64 0, i64 0), double %conv)
+  %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str8, i64 0, i64 0), double %conv)
   ret void
 }
 
 ; Function Attrs: noinline nounwind ssp uwtable
 define void @vist-Uprint_tb(i1 zeroext %b) #3 {
 entry:
-  %cond = select i1 %b, i8* getelementptr inbounds ([6 x i8]* @.str3, i64 0, i64 0), i8* getelementptr inbounds ([7 x i8]* @.str4, i64 0, i64 0)
+  %cond = select i1 %b, i8* getelementptr inbounds ([6 x i8]* @.str9, i64 0, i64 0), i8* getelementptr inbounds ([7 x i8]* @.str10, i64 0, i64 0)
   %call = tail call i32 (i8*, ...)* @printf(i8* %cond)
   ret void
 }
@@ -208,6 +245,9 @@ _Z7__sputciP7__sFILE.exit:                        ; preds = %if.else.i, %if.then
 }
 
 declare i32 @__swbuf(i32, %struct.__sFILE*) #5
+
+; Function Attrs: nounwind
+declare i32 @puts(i8* nocapture readonly) #7
 
 define %Double @Double_tD(%Double %val) {
 entry:

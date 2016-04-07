@@ -1,10 +1,22 @@
 
-    
 
-let b = "🔥 test 🔥"
-print b.length
-print (b.bufferCapacity ())
-print (b.isUTF8Encoded ())
+ref type Foo {
+    var a: Int
+}
 
-print b
+func fooer::Int->Foo = {
+    let f = Foo $0
+    return f
+}
 
+fooer 4
+
+
+// Misc todos:
+//  - Initialiser(allocating) calling convention?
+//  - Shorthand for stdlib types in manging -- Int->I, Bool->B, Double->D
+//  - Mangling operators by using a prefix then not using - to seperate tokens. In operators all chars are
+//    going to not be letters, so using a prefix for them (and a different prefix for functions) we can
+//    tell the demangler how to parse these chars
+//  - Make sure mangler can differentiate Int, Int and IntInt param types. Swift uses a number prefix.
+//  - Lower function visibility attributes

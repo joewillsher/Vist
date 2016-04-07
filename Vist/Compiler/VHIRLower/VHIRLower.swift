@@ -152,6 +152,7 @@ extension Function: VHIRLower {
     
     private func validate() throws {
         guard !LLVMVerifyFunction(loweredFunction, LLVMReturnStatusAction) else {
+            LLVMDumpModule(module.loweredModule)
             throw irGenError(.invalidFunction(name), userVisible: true)
         }
     }
@@ -235,19 +236,8 @@ extension String.Encoding : CustomStringConvertible {
 
 extension StringLiteralInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        
-        let string = value.value
-        let str = LLVMBuildGlobalString(irGen.builder, string, "")
+        let str = LLVMBuildGlobalString(irGen.builder, value.value, "")
         return LLVMBuildBitCast(irGen.builder, str, BuiltinType.opaquePointer.lowerType(module), irName ?? "")
-        
-//        switch string.encoding {
-//        case .utf8:
-// 
-//        case .utf16:
-//            
-//            let global = convertToUTF16(string, irGen.module)
-//            return LLVMBuildBitCast(irGen.builder, global, BuiltinType.opaquePointer.lowerType(module), irName ?? "")
-//        }
     }
 }
 
@@ -677,11 +667,10 @@ extension AllocObjectInst : VHIRLower {
         let size = LLVMConstInt(LLVMInt32Type(), UInt64(storedType.size(module)), false)
         
         let ref = module.getOrAddRuntimeFunction(named: "vist_allocObject", irGen: irGen)
-        let allocated = try FunctionCallInst.callFunction(ref,
-                                                          args: [size],
-                                                          irGen: irGen,
-                                                          irName: irName)
-        return allocated
+        return try FunctionCallInst.callFunction(ref,
+                                                 args: [size],
+                                                 irGen: irGen,
+                                                 irName: irName)
     }
 }
 
@@ -697,7 +686,9 @@ extension RetainInst : VHIRLower {
 
 extension ReleaseInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        let ref = module.getOrAddRuntimeFunction(named: "vist_releaseObject", irGen: irGen)
+        let functionName = unowned ? "vist_releaseUnownedObject" : "vist_releaseObject"
+        let ref = module.getOrAddRuntimeFunction(named: functionName, irGen: irGen)
+        
         return try FunctionCallInst.callFunction(ref,
                                                  args: [try object.bitcastToRefCountedType(irGen)],
                                                  irGen: irGen,
@@ -705,15 +696,19 @@ extension ReleaseInst : VHIRLower {
     }
 }
 
-extension ReleaseUnownedInst : VHIRLower {
+
+extension DeallocObjectInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        let ref = module.getOrAddRuntimeFunction(named: "vist_releaseUnownedObject", irGen: irGen)
+        let functionName = unowned ? "vist_deallocUnownedObject" : "vist_deallocObject"
+        let ref = module.getOrAddRuntimeFunction(named: functionName, irGen: irGen)
+        
         return try FunctionCallInst.callFunction(ref,
                                                  args: [try object.bitcastToRefCountedType(irGen)],
                                                  irGen: irGen,
                                                  irName: irName)
     }
 }
+
 
 
 

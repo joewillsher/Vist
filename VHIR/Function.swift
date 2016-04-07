@@ -162,8 +162,8 @@ extension Builder {
     
     /// Creates function prototype an adds to module
     func createFunctionPrototype(name: String, type: FnType) throws -> Function {
-        let type = type.usingTypesIn(module) as! FnType
-        let function = Function(name: name, type: type.vhirType(module), module: module)
+        let type = type.vhirType(module).usingTypesIn(module) as! FnType
+        let function = Function(name: name, type: type, module: module)
         module.insert(function)
         return function
     }

@@ -1,0 +1,11 @@
+
+let b = "🔥 test 🔥"
+print b.length // test
+print (b.bufferCapacity ())
+print (b.isUTF8Encoded ())
+
+print b // test: 🔥 test 🔥
+
+
+// TODO: String printing, buffer size, UTF16&8, length,
+// later: ref semantics, mutation/appending

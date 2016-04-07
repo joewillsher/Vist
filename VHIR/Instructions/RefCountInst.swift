@@ -44,10 +44,11 @@ final class RetainInst : InstBase {
 }
 
 final class ReleaseInst : InstBase {
-    var object: PtrOperand
+    var object: PtrOperand, unowned: Bool
     
-    private init(object: PtrOperand, irName: String?) {
+    private init(object: PtrOperand, unowned: Bool, irName: String?) {
         self.object = object
+        self.unowned = unowned
         super.init(args: [object], irName: irName)
     }
     
@@ -57,15 +58,16 @@ final class ReleaseInst : InstBase {
     override var instHasSideEffects: Bool { return true }
     
     override var instVHIR: String {
-        return "\(name) = release_object \(object) \(useComment)"
+        return "\(name) = \(unowned ? "release_unowned_object" : "release_object") \(object) \(useComment)"
     }
 }
 
-final class ReleaseUnownedInst : InstBase {
-    var object: PtrOperand
+final class DeallocObjectInst : InstBase {
+    var object: PtrOperand, unowned: Bool
     
-    private init(object: PtrOperand, irName: String?) {
+    private init(object: PtrOperand, unowned: Bool, irName: String?) {
         self.object = object
+        self.unowned = unowned
         super.init(args: [object], irName: irName)
     }
     
@@ -75,10 +77,9 @@ final class ReleaseUnownedInst : InstBase {
     override var instHasSideEffects: Bool { return true }
     
     override var instVHIR: String {
-        return "\(name) = release_unretained_object \(object) \(useComment)"
+        return "\(name) = \(unowned ? "dealloc_unowned_object" : "dealloc_object") \(object) \(useComment)"
     }
 }
-
 
 extension Builder {
     
@@ -89,12 +90,17 @@ extension Builder {
         return try _add(RetainInst(object: object, irName: irName))
     }
     func buildRelease(object: PtrOperand, irName: String? = nil) throws -> ReleaseInst {
-        return try _add(ReleaseInst(object: object, irName: irName))
+        return try _add(ReleaseInst(object: object, unowned: false, irName: irName))
     }
-    func buildReleaseUnowned(object: PtrOperand, irName: String? = nil) throws -> ReleaseUnownedInst {
-        return try _add(ReleaseUnownedInst(object: object, irName: irName))
+    func buildReleaseUnowned(object: PtrOperand, irName: String? = nil) throws -> ReleaseInst {
+        return try _add(ReleaseInst(object: object, unowned: true, irName: irName))
     }
-    
+    func buildDeallocObject(object: PtrOperand, irName: String? = nil) throws -> DeallocObjectInst {
+        return try _add(DeallocObjectInst(object: object, unowned: false, irName: irName))
+    }
+    func buildDeallocUnownedObject(object: PtrOperand, irName: String? = nil) throws -> DeallocObjectInst {
+        return try _add(DeallocObjectInst(object: object, unowned: true, irName: irName))
+    }
 }
 
 
