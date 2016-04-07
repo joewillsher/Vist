@@ -19,11 +19,11 @@ To develop in Xcode, go to ‘Edit Scheme’ (⌘<) and set the *arguments* to `
 
 
 ##Architecture overview
-Vist is a strongly typed language which compiles to [LLVM’s](https://en.wikipedia.org/wiki/LLVM#LLVM_Intermediate_Representation) [IR](http://llvm.org/docs/LangRef.html)—a high level (so mostly architecture agnostic), typed, [SSA](https://en.wikipedia.org/wiki/Static_single_assignment_form) assembly language. Vist’s compiler structure was inspired by the implementation of other languages such as [Rust](https://github.com/rust-lang/rust) and particularly [Swift](https://github.com/apple/swift).
+Vist is a high level strongly typed language aimed at being concise and flexible yet safe. The Vist code compiles to VHIR, a high level intermediary representation which will eventually allow optimisations specific to Vist’s semantics and its type system’s guarantees. 
 
-The compile process involves transforming the source code from one representation to another—the text is [lexed](https://en.wikipedia.org/wiki/Lexical_analysis) into a series of tokens, which is [parsed](https://en.wikipedia.org/wiki/Parsing#Computer_languages) to form the [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree). The [semantic analysis](https://en.wikibooks.org/wiki/Compiler_Construction/Semantic_Analysis) pass then walks the tree, adding type information, and then to generate the IR code.
+The VHIR is generated from the parsed and type checked AST; the VHIR is lowered to LLVM IR which is used to generate the program.  
 
-The [lexing](Vist/Lexer/Lexer.swift) separates Vist’s keywords and characters into a stream of tokens. [Parsing](Vist/AST/Parser.swift) extracts the program’s meaning, and constructs the [AST](Vist/AST/Expr.swift). The [sema](Vist/Sema/TypeProvider.swift) pass type checks the source and does other static checks, like making sure variables are declared before they’re used. The [IRGen](Vist/IRGen/IRGen.swift) phase then creates the LLVM IR code, which is optimised and compiled.
+The Vist compiler is mainly implemented in Swift but much of the functionality is written in vist. All standard types—like ints, floats, bools, and ranges—are implemented in the standard library. The code is still lowered to performant machine code however, as the standard library is able to access native CPU instructions and types and be optimised heavily.
 
 
 ##The Language
@@ -54,13 +54,7 @@ var variable = 10
 variable = 3
 ```
 
-Functions are called by writing the argument list after the function name. To disambiguate other function calls as parameters, wrap them in parentheses. Operators also take precedence over functions in parameter lists
-```swift
-print constant * variable		// > 300
-print (add 10 (factorial 10))	// > 3628810
-```
-
-Vist supports declaring types with *stored properties* and *methods*
+Vist supports declaring types with *stored properties*, *methods*, and *initialisers*. Types have value semantics by default, promoting safety and speed, but they can be marked as being a `ref type` where the memory is managed using automatic reference counting.
 ```swift
 type Foo {
     var a: Int
@@ -71,38 +65,19 @@ type Foo {
 }
 ```
 
-Vist automatically constructs a *memberwise initialiser* for a type. This is a constructor function which takes a list of parameters in the order of the type’s stored properties
-```swift
-let fooInstance = Foo 1 4
-let sum = fooInstance.sumAndTimesBy 2
-print sum // > 10
-```
-
-Vist’s type system is based around *concepts* and *generics*. Concepts describe what a type can do—its properties and methods.
+Vist’s type system is based around *concepts* and *generics*. Concepts describe what a type can do—its properties and methods. Concepts can be used as constraints or existentially as types.
 ```swift
 concept TwoInts {
     var a: Int, b: Int
 }
-```
 
-A function can now take any `TwoInts` object as a parameter—here the concept is being used *existentially* [(i.e. it isn’t used as a constraint, but a type)](../Posts/Concepts_and_runtime.md).
-```swift
 func sum :: TwoInts Int -> Int = (x y) do
     return x.a + y + x.b
-```
 
-Generics could be used instead, allowing us to statically dispatch the property lookups and enforcing both arguments are the same type. We can also use concepts as constraints
-```swift
 func sum (T | TwoInts) :: T T -> Int = (u v) do
 	return u.a + v.b
 ```
 
-This `sum` function is generic over any type that models `TwoInts`, called `T`.
 
-
-##Writing
-I am writing about compilers and the development of Vist.
-
-- [Abstraction & Optimisation](Posts/Abstraction_and_Optimisation.md)
 
 
