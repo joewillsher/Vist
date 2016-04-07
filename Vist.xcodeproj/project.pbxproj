@@ -157,8 +157,6 @@
 		D4728BE81C960E22003294B0 /* Folding.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BE61C960E22003294B0 /* Folding.swift */; };
 		D4728BEA1C960E31003294B0 /* Variable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BE91C960E31003294B0 /* Variable.swift */; };
 		D4728BEB1C960E31003294B0 /* Variable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BE91C960E31003294B0 /* Variable.swift */; };
-		D4C193C51CB47850009FBBC7 /* StringEncoding.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D4C193C31CB47850009FBBC7 /* StringEncoding.cpp */; };
-		D4C193C61CB47850009FBBC7 /* StringEncoding.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D4C193C31CB47850009FBBC7 /* StringEncoding.cpp */; };
 		D4CB751D1CB4612100FA2D8C /* vist in Copy Files */ = {isa = PBXBuildFile; fileRef = D47FF07A1B812052003F9920 /* vist */; };
 		D4CF76771C8CD4A70058A8EC /* TupleInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF76761C8CD4A70058A8EC /* TupleInst.swift */; };
 		D4CF76781C8CD4A70058A8EC /* TupleInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF76761C8CD4A70058A8EC /* TupleInst.swift */; };
@@ -313,8 +311,6 @@
 		D4BBE41A1C4157E7001B8934 /* runtime.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = runtime.ll; path = Runtime/runtime.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
 		D4BBE41E1C41584C001B8934 /* stdlib.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = stdlib.o; path = stdlib/stdlib.o; sourceTree = "<group>"; };
 		D4BCA8001C90ED470087A98D /* Editor.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Editor.xcodeproj; path = ../Editor/Editor.xcodeproj; sourceTree = "<group>"; };
-		D4C193C31CB47850009FBBC7 /* StringEncoding.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StringEncoding.cpp; path = Compiler/VHIRLower/StringEncoding.cpp; sourceTree = "<group>"; };
-		D4C193C41CB47850009FBBC7 /* StringEncoding.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = StringEncoding.hpp; path = Compiler/VHIRLower/StringEncoding.hpp; sourceTree = "<group>"; };
 		D4CF76761C8CD4A70058A8EC /* TupleInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TupleInst.swift; path = Instructions/TupleInst.swift; sourceTree = "<group>"; };
 		D4CF767C1C8CF8490058A8EC /* Runtime.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Runtime.swift; path = Compiler/Sema/Expose/Runtime.swift; sourceTree = "<group>"; };
 		D4DB92771C866FF300718B78 /* example.vhir */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vhir; path = RUN/example.vhir; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
@@ -376,8 +372,6 @@
 				D43B3A521C8A11410039FB2E /* VHIRLower.swift */,
 				D4F3D8001CAC41EB005A3B07 /* Intrinsic.cpp */,
 				D4F3D8011CAC41EB005A3B07 /* Intrinsic.hpp */,
-				D4C193C31CB47850009FBBC7 /* StringEncoding.cpp */,
-				D4C193C41CB47850009FBBC7 /* StringEncoding.hpp */,
 				D4F3D8041CAC4243005A3B07 /* LowerError.swift */,
 			);
 			name = VHIRLower;
@@ -821,7 +815,6 @@
 				D43B3A291C8A10A50039FB2E /* Builtin.swift in Sources */,
 				D43B3A0D1C8A104F0039FB2E /* ParseError.swift in Sources */,
 				D4326E3F1CA6F0140016E595 /* ExistentialInst.swift in Sources */,
-				D4C193C61CB47850009FBBC7 /* StringEncoding.cpp in Sources */,
 				D43B39DF1C8A0F3A0039FB2E /* ReturnInst.swift in Sources */,
 				D43B3A221C8A105B0039FB2E /* ScopeNode.swift in Sources */,
 				D4728BE21C9475A5003294B0 /* Optimiser.swift in Sources */,
@@ -910,7 +903,6 @@
 				D43B39FE1C8A100E0039FB2E /* LinkRuntime.swift in Sources */,
 				D411C8981C8DD00000478988 /* DCE.swift in Sources */,
 				D43B3A2C1C8A10A50039FB2E /* StdLib.swift in Sources */,
-				D4C193C51CB47850009FBBC7 /* StringEncoding.cpp in Sources */,
 				D43B3A531C8A11410039FB2E /* VHIRLower.swift in Sources */,
 				D4728BEA1C960E31003294B0 /* Variable.swift in Sources */,
 				D43B3A461C8A10C80039FB2E /* StmtSema.swift in Sources */,

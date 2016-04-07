@@ -235,9 +235,9 @@ type String {
         base = Builtin.heap_alloc count
         Builtin.mem_copy base ptr count
         
-        let c = (Int count)
+        let c = Int count
         length = c - 1
-        // store the capacity in the most significant 63 bits
+        // store the capacity in the most significant 63 bits of _capacityAndEncoding
         _capacityAndEncoding = c << 1
         
         // if it is UTF-8 we store true in the least significant bit of _capacityAndEncoding
@@ -245,9 +245,7 @@ type String {
              _capacityAndEncoding = _capacityAndEncoding ~| 1
     }
     
-    /// Whether the string has UTF-8 encoding. These strings can
-    /// be passed verbatim into vist_cshim_write to print as
-    /// they are a contiguous block of char*
+    /// Whether the string has UTF-8 encoding. if true it is a contiguous block of char*
     func isUTF8Encoded:: -> Bool = do
         return _capacityAndEncoding ~& 1 == 1
     
@@ -264,9 +262,11 @@ type String {
 
 @public @inline func print :: String = (str) {
     if str.isUTF8Encoded () {
+        /// if its all UTF-8 we can just fwrite the buffer
         vist_cshim_write str.base str.length.value
         return ()
     } else {
+        // otherwise we step through, char by char, and putchar it
         for i in 0 ..< str.bufferCapacity () do
             vist_cshim_putchar (Builtin.opaque_load (str.codeUnitAtIndex i))
         return ()
