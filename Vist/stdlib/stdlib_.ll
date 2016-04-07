@@ -76,7 +76,7 @@ entry:
 if.then:                                          ; preds = %entry
   %object1.i = getelementptr inbounds %struct.__sbuf* %object, i64 0, i32 0
   %1 = load i8** %object1.i, align 8, !tbaa !2
-  tail call void @free(i8* %1) #6
+  tail call void @free(i8* %1) #7
   br label %if.end
 
 if.else:                                          ; preds = %entry
@@ -160,7 +160,7 @@ entry:
   ret void
 }
 
-; Function Attrs: noinline ssp uwtable
+; Function Attrs: alwaysinline ssp uwtable
 define void @vist-Ucshim-Uwrite_topi64(i8* %str, i64 %size) #4 {
 entry:
   %0 = load %struct.__sFILE** @__stdoutp, align 8, !tbaa !9
@@ -171,7 +171,7 @@ entry:
 declare i64 @"\01_fwrite"(i8*, i64, i64, %struct.__sFILE*) #5
 
 ; Function Attrs: noinline ssp uwtable
-define void @vist-Ucshim-Uputchar_ti8(i8 signext %c) #4 {
+define void @vist-Ucshim-Uputchar_ti8(i8 signext %c) #6 {
 entry:
   %conv = sext i8 %c to i32
   %0 = load %struct.__sFILE** @__stdoutp, align 8, !tbaa !9
@@ -264,36 +264,29 @@ entry:
   %0 = trunc i64 %count to i32
   %mallocsize = mul i32 %0, ptrtoint (i8* getelementptr (i8* null, i32 1) to i32)
   %1 = tail call i8* bitcast (i8* (i64)* @malloc to i8* (i32)*)(i32 %mallocsize)
-  %buffer = alloca i8*
-  store i8* %1, i8** %buffer
-  call void @llvm.memcpy.p0i8.p0i8.i64(i8* %1, i8* %ptr, i64 %count, i32 1, i1 false)
   store i8* %1, i8** %base
-  %2 = call %Int @Int_ti64(i64 %count)
+  %2 = load i8** %base
+  call void @llvm.memcpy.p0i8.p0i8.i64(i8* %2, i8* %ptr, i64 %count, i32 1, i1 false)
+  %3 = call %Int @Int_ti64(i64 %count)
   %c = alloca %Int
-  store %Int %2, %Int* %c
-  %3 = call %Int @-M_tII(%Int %2, %Int { i64 1 })
-  store %Int %3, %Int* %length
-  %4 = call %Bool @Bool_tb(i1 %isUTF8Encoded)
-  %5 = extractvalue %Bool %4, 0
-  br i1 %5, label %if.0, label %fail.0
+  store %Int %3, %Int* %c
+  %4 = call %Int @-M_tII(%Int %3, %Int { i64 1 })
+  store %Int %4, %Int* %length
+  %5 = call %Int @-L-L_tII(%Int %3, %Int { i64 1 })
+  store %Int %5, %Int* %_capacityAndEncoding
+  %6 = call %Bool @Bool_tb(i1 %isUTF8Encoded)
+  %7 = extractvalue %Bool %6, 0
+  br i1 %7, label %if.0, label %exit
 
 if.0:                                             ; preds = %entry
-  %6 = call %Int @-L-L_tII(%Int %2, %Int { i64 1 })
-  %7 = call %Int @-T-O_tII(%Int %6, %Int { i64 1 })
-  store %Int %7, %Int* %_capacityAndEncoding
+  %8 = load %Int* %_capacityAndEncoding
+  %9 = call %Int @-T-O_tII(%Int %8, %Int { i64 1 })
+  store %Int %9, %Int* %_capacityAndEncoding
   br label %exit
 
-fail.0:                                           ; preds = %entry
-  br label %else.1
-
-else.1:                                           ; preds = %fail.0
-  %8 = call %Int @-L-L_tII(%Int %2, %Int { i64 1 })
-  store %Int %8, %Int* %_capacityAndEncoding
-  br label %exit
-
-exit:                                             ; preds = %else.1, %if.0
-  %9 = load %String* %self
-  ret %String %9
+exit:                                             ; preds = %if.0, %entry
+  %10 = load %String* %self
+  ret %String %10
 }
 
 define %Bool @-L-E_tII(%Int %a, %Int %b) {
@@ -360,6 +353,8 @@ entry:
   %3 = call %Int @Int_ti64(i64 %2)
   ret %Int %3
 }
+
+declare i8* @codeUnitAtIndex(%String*, %Int)
 
 define %Int @-T-N_tII(%Int %a, %Int %b) {
 entry:
@@ -587,8 +582,6 @@ entry:
   ret %String %0
 }
 
-declare i8* @charAtIndex(%String*, %Int)
-
 define void @print_tString(%String %str) {
 entry:
   %0 = alloca %String
@@ -602,7 +595,7 @@ if.0:                                             ; preds = %entry
   %4 = extractvalue %String %str, 1
   %5 = extractvalue %Int %4, 0
   call void @vist-Ucshim-Uwrite_topi64(i8* %3, i64 %5)
-  br label %exit
+  ret void
 
 fail.0:                                           ; preds = %entry
   br label %else.1
@@ -618,18 +611,13 @@ else.1:                                           ; preds = %fail.0
   %12 = extractvalue %Int %10, 0
   br label %loop
 
-exit:                                             ; preds = %if.0
-  ret void
-
 loop:                                             ; preds = %loop, %else.1
   %loop.count = phi i64 [ %11, %else.1 ], [ %count.it, %loop ]
   %i = insertvalue %Int undef, i64 %loop.count, 0
   %13 = alloca %String
   store %String %str, %String* %13
-  %14 = call i8* @charAtIndex_mStringI(%String* %13, %Int %i)
+  %14 = call i8* @codeUnitAtIndex_mStringI(%String* %13, %Int %i)
   %15 = load i8* %14
-  %char = alloca i8
-  store i8 %15, i8* %char
   call void @vist-Ucshim-Uputchar_ti8(i8 %15)
   %count.it = add i64 %loop.count, 1
   %16 = icmp sle i64 %count.it, %12
@@ -704,6 +692,14 @@ entry:
   ret %Bool %3
 }
 
+define i8* @codeUnitAtIndex_mStringI(%String* %self, %Int %index) {
+entry:
+  %base = getelementptr inbounds %String* %self, i32 0, i32 0
+  %0 = load i8** %base
+  %1 = call i8* @-P_topI(i8* %0, %Int %index)
+  ret i8* %1
+}
+
 define %Bool @isUTF8Encoded_mString(%String* %self) {
 entry:
   %_capacityAndEncoding = getelementptr inbounds %String* %self, i32 0, i32 2
@@ -764,14 +760,6 @@ entry:
   ret %Int %0
 }
 
-define i8* @charAtIndex_mStringI(%String* %self, %Int %index) {
-entry:
-  %base = getelementptr inbounds %String* %self, i32 0, i32 0
-  %0 = load i8** %base
-  %1 = call i8* @-P_topI(i8* %0, %Int %index)
-  ret i8* %1
-}
-
 define %Bool @-B-E_tDD(%Double %a, %Double %b) {
 entry:
   %0 = extractvalue %Double %a, 0
@@ -824,32 +812,33 @@ entry:
 }
 
 ; Function Attrs: nounwind
-declare void @llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1) #6
+declare void @llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1) #7
 
 ; Function Attrs: noreturn nounwind
-declare void @llvm.trap() #7
+declare void @llvm.trap() #8
 
 ; Function Attrs: nounwind readnone
-declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #8
+declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #9
 
 ; Function Attrs: nounwind readnone
-declare { i64, i1 } @llvm.ssub.with.overflow.i64(i64, i64) #8
+declare { i64, i1 } @llvm.ssub.with.overflow.i64(i64, i64) #9
 
 ; Function Attrs: nounwind readnone
-declare { i64, i1 } @llvm.smul.with.overflow.i64(i64, i64) #8
+declare { i64, i1 } @llvm.smul.with.overflow.i64(i64, i64) #9
 
 ; Function Attrs: nounwind readnone
-declare i1 @llvm.expect.i1(i1, i1) #8
+declare i1 @llvm.expect.i1(i1, i1) #9
 
 attributes #0 = { alwaysinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { nounwind "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #2 = { alwaysinline nounwind readonly ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #3 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #4 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #4 = { alwaysinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #5 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #6 = { nounwind }
-attributes #7 = { noreturn nounwind }
-attributes #8 = { nounwind readnone }
+attributes #6 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #7 = { nounwind }
+attributes #8 = { noreturn nounwind }
+attributes #9 = { nounwind readnone }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}

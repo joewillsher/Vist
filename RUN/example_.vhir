@@ -15,8 +15,8 @@ func @isUTF8Encoded_mString : &method (%*String) -> %Bool
 
 func @main : &thin () -> %Builtin.Void {
 $entry:
-  %0 = string_literal utf16 "aaaa🤔"  	// user: %1
-  %size = int_literal 9  	// user: %1
+  %0 = string_literal utf16 "🔥 test 🔥"  	// user: %1
+  %size = int_literal 15  	// user: %1
   %isUTF8 = bool_literal false  	// user: %1
   %1 = call @String_topi64b (%0: %Builtin.OpaquePointer, %size: %Builtin.Int64, %isUTF8: %Builtin.Bool)  	// user: %b
   variable_decl %b = %1: %String  	// users: %2, %5, %9, %12

@@ -21,7 +21,7 @@ struct StdLib {
         methods: [
             (name: "isUTF8Encoded", type: FnType(params: [], returns: boolType)),
             (name: "bufferCapacity", type: FnType(params: [], returns: intType)),
-            (name: "charAtIndex", type: FnType(params: [StdLib.intType], returns: BuiltinType.opaquePointer)),
+            (name: "codeUnitAtIndex", type: FnType(params: [StdLib.intType], returns: BuiltinType.opaquePointer)),
         ], name: "String")
     private static let voidType = BuiltinType.void
     

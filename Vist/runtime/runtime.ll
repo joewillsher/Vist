@@ -71,7 +71,7 @@ entry:
 if.then:                                          ; preds = %entry
   %object1.i = getelementptr inbounds %struct.RefcountedObject* %object, i64 0, i32 0
   %1 = load i8** %object1.i, align 8, !tbaa !2
-  tail call void @free(i8* %1) #6
+  tail call void @free(i8* %1) #7
   br label %if.end
 
 if.else:                                          ; preds = %entry
@@ -155,7 +155,7 @@ entry:
   ret void
 }
 
-; Function Attrs: noinline ssp uwtable
+; Function Attrs: alwaysinline ssp uwtable
 define void @"vist$Ucshim$Uwrite_topi64"(i8* %str, i64 %size) #4 {
 entry:
   %0 = load %struct.__sFILE** @__stdoutp, align 8, !tbaa !9
@@ -166,7 +166,7 @@ entry:
 declare i64 @"\01_fwrite"(i8*, i64, i64, %struct.__sFILE*) #5
 
 ; Function Attrs: noinline ssp uwtable
-define void @"vist$Ucshim$Uputchar_ti8"(i8 signext %c) #4 {
+define void @"vist$Ucshim$Uputchar_ti8"(i8 signext %c) #6 {
 entry:
   %conv = sext i8 %c to i32
   %0 = load %struct.__sFILE** @__stdoutp, align 8, !tbaa !9
@@ -208,9 +208,10 @@ attributes #0 = { alwaysinline nounwind ssp uwtable "less-precise-fpmad"="false"
 attributes #1 = { nounwind "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #2 = { alwaysinline nounwind readonly ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #3 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #4 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #4 = { alwaysinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #5 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #6 = { nounwind }
+attributes #6 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #7 = { nounwind }
 
 !llvm.module.flags = !{!0}
 !llvm.ident = !{!1}

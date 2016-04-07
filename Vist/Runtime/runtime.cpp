@@ -165,7 +165,10 @@ vist$Uprint_tb(bool b) {
     printf(b ? "true\n" : "false\n");
 };
 
-NOMANGLE NOINLINE
+
+// MARK: vist c-shim functions
+
+NOMANGLE ALWAYSINLINE
 void
 vist$Ucshim$Uwrite_topi64(const void *str, int64_t size) {
     fwrite(str, size, 1, stdout);

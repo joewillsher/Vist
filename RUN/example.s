@@ -15,7 +15,7 @@ Ltmp2:
 	.cfi_def_cfa_register %rbp
 	subq	$80, %rsp
 	leaq	L___unnamed_1(%rip), %rdi
-	movl	$9, %eax
+	movl	$15, %eax
 	movl	%eax, %esi
 	xorl	%edx, %edx
 	callq	_String_topi64b
@@ -56,7 +56,7 @@ Ltmp2:
 
 	.section	__TEXT,__cstring,cstring_literals
 L___unnamed_1:                          ## @0
-	.asciz	"aaaa\360\237\244\224"
+	.asciz	"\360\237\224\245 test \360\237\224\245"
 
 
 .subsections_via_symbols

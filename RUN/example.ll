@@ -6,7 +6,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 %String = type { i8*, %Int, %Int }
 %Bool = type { i1 }
 
-@0 = private unnamed_addr constant [9 x i8] c"aaaa\F0\9F\A4\94\00"
+@0 = private unnamed_addr constant [15 x i8] c"\F0\9F\94\A5 test \F0\9F\94\A5\00"
 
 declare void @print_tI(%Int)
 
@@ -20,7 +20,7 @@ declare %Bool @isUTF8Encoded_mString(%String*)
 
 define void @main() {
 entry:
-  %0 = tail call %String @String_topi64b(i8* getelementptr inbounds ([9 x i8]* @0, i64 0, i64 0), i64 9, i1 false), !stdlib.call.optim !0
+  %0 = tail call %String @String_topi64b(i8* getelementptr inbounds ([15 x i8]* @0, i64 0, i64 0), i64 15, i1 false), !stdlib.call.optim !0
   %1 = extractvalue %String %0, 1
   tail call void @print_tI(%Int %1), !stdlib.call.optim !0
   %2 = alloca %String, align 8

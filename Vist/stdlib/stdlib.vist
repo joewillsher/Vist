@@ -42,12 +42,6 @@ type Range {
 }
 
 
-
-
-//concept Streamble {
-//    func writeOut::()
-//}
-
 //type Array {
 //
 //    var count: Int
@@ -237,46 +231,57 @@ type String {
     var base: Builtin.OpaquePointer, length: Int, _capacityAndEncoding: Int
     
     init Builtin.OpaquePointer Builtin.Int Builtin.Bool = (ptr count isUTF8Encoded) {
-        let buffer = Builtin.heap_alloc count
-        Builtin.mem_copy buffer ptr count
-        base = buffer
+        // allocate the string buffer and copy in from the string ptr we are given
+        base = Builtin.heap_alloc count
+        Builtin.mem_copy base ptr count
         
         let c = (Int count)
         length = c - 1
-        if (Bool isUTF8Encoded) {
-            _capacityAndEncoding = (c << 1) ~| 1
-        }
-        else {
-            _capacityAndEncoding = c << 1
-        }
+        // store the capacity in the most significant 63 bits
+        _capacityAndEncoding = c << 1
+        
+        // if it is UTF-8 we store true in the least significant bit of _capacityAndEncoding
+        if (Bool isUTF8Encoded) do
+             _capacityAndEncoding = _capacityAndEncoding ~| 1
     }
     
+    /// Whether the string has UTF-8 encoding. These strings can
+    /// be passed verbatim into vist_cshim_write to print as
+    /// they are a contiguous block of char*
     func isUTF8Encoded:: -> Bool = do
-    return _capacityAndEncoding ~& 1 == 1
+        return _capacityAndEncoding ~& 1 == 1
     
+    /// The size of the allocated string buffer
     func bufferCapacity:: -> Int = do
-    return _capacityAndEncoding >> 1
+        return _capacityAndEncoding >> 1
     
-    func charAtIndex::Int->Builtin.OpaquePointer = (index) do
-    return base + index
+    /// Return a pointer to the code unit `index` from `base`
+    /// temporary substitute until I have StringCore subscripting
+    func codeUnitAtIndex::Int->Builtin.OpaquePointer = (index) do
+        return base + index
 }
 
 
 @public @inline func print :: String = (str) {
     if str.isUTF8Encoded () {
         vist_cshim_write str.base str.length.value
-//        let terminator = "\n"
+        return ()
     } else {
-        for i in 0 ..< (str.bufferCapacity ()) {
-            let char = Builtin.opaque_load (str.charAtIndex i)
-            vist_cshim_putchar char
-        }
+        for i in 0 ..< str.bufferCapacity () do
+            vist_cshim_putchar (Builtin.opaque_load (str.codeUnitAtIndex i))
         return ()
     }
-    return ()
+    // there's a CFG bug where implict `return ()` are only added to the exit point
 }
 
+// TODO: a printing protocol which allows any type to generate its string repr
+//       then the print function steps through that string and prints it,
+//       appending terminators and doing any formatting
 
-
+//concept Printable {
+//    func description::->String
+//}
+//
+//func print::Printable = (thing) do
 
 
