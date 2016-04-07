@@ -34,6 +34,8 @@ struct Runtime {
         ("vist_releaseObject", FnType(params: [refcountedObjectPointerType], returns: voidType)),
         ("vist_releaseUnownedObject", FnType(params: [refcountedObjectPointerType], returns: voidType)),
         ("vist_deallocUnownedObject", FnType(params: [refcountedObjectPointerType], returns: voidType)),
+        ("vist_setYieldTarget", FnType(params: [], returns: boolType)),
+        ("vist_yieldUnwind", FnType(params: [], returns: voidType)),
     ]
     
     private static let functionContainer = FunctionContainer(functions: functions, types: [])

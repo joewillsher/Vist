@@ -27,7 +27,7 @@ extension FuncDecl: DeclTypeProvider {
         
         mangledName = name.mangle(ty)
         
-        let fnScope = SemaScope(parent: declScope, returnType: ty.returns)
+        let fnScope = SemaScope(parent: declScope, returnType: ty.returns, isYield: isGeneratorFunction)
         // TODO: non capturing scope, but only for variables
         
         scope.addFunction(name, type: ty)  // update function table

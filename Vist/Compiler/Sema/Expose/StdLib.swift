@@ -27,6 +27,8 @@ struct StdLib {
     
     private static let types: [StructType] = [intType, boolType, doubleType, rangeType, stringType]
     
+//    private static let concepts: [ConceptType] = [ConceptType(name: "Generator", requiredFunctions: [("generate", FnType(params: [], returns: intType))], requiredProperties: [])]
+    
     private static let functions: [(String, FnType)] = [
         // int
         ("+", FnType(params: [intType, intType], returns: intType)),

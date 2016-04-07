@@ -243,7 +243,7 @@ extension FuncDecl : StmtEmitter {
         function.visibility = attrs.visibility
         
         // make scope and occupy it with params
-        let fnScope = Scope(parent: scope)
+        let fnScope = Scope(parent: scope, function: function)
         
         // add the explicit method parameters
         for paramName in impl.params {
@@ -430,7 +430,7 @@ extension ConditionalStmt: StmtEmitter {
             
             // move into the if block, and evaluate its expressions
             // in a new scope
-            let ifScope = Scope(parent: scope)
+            let ifScope = Scope(parent: scope, function: scope.function)
             try module.builder.setInsertPoint(ifBlock)
             try branch.block.emitStmt(module: module, scope: ifScope)
             
@@ -457,7 +457,7 @@ extension ConditionalStmt: StmtEmitter {
 }
 
 
-extension ForInLoopStmt: StmtEmitter {
+extension ForInLoopStmt : StmtEmitter {
     
 //        break $loop(%6: %Builtin.Int64)
 //    
@@ -476,46 +476,68 @@ extension ForInLoopStmt: StmtEmitter {
     func emitStmt(module module: Module, scope: Scope) throws {
         
         // extract loop start and ends as builtin ints
-        let range = try iterator.emitRValue(module: module, scope: scope).getter()
-        let startInt = try module.builder.buildStructExtract(Operand(range), property: "start")
-        let endInt = try module.builder.buildStructExtract(Operand(range), property: "end")
-        let start = try module.builder.buildStructExtract(Operand(startInt), property: "value")
-        let end = try module.builder.buildStructExtract(Operand(endInt), property: "value")
+        let generator = try iterator.emitRValue(module: module, scope: scope).asReferenceAccessor().reference()
         
-        // loop count, builtin int
-        let loopCountParam = Param(paramName: "loop.count", type: Builtin.intType)
-        let loopBlock = try module.builder.appendBasicBlock(name: "loop", parameters: [loopCountParam])
-        let exitBlock = try module.builder.appendBasicBlock(name: "loop.exit")
+        guard let functionName = generatorFunctionName, let generatorFunction = module.functionNamed(functionName) else { fatalError() }
         
-        // break into the loop block
-        let loopOperand = BlockOperand(value: start, param: loopCountParam)
-        try module.builder.buildBreak(to: loopBlock, args: [loopOperand])
-        try module.builder.setInsertPoint(loopBlock)
+        let entryInsertPoint = module.builder.insertPoint
         
-        // make the loop's vhirgen scope and build the stdint count to put in it
-        let loopScope = Scope(parent: scope)
-        let loopVariable = try module.builder.buildStructInit(StdLib.intType, values: Operand(loopCountParam), irName: binded.name).accessor()
-        loopScope.add(loopVariable, name: binded.name)
+        let loopThunk = try module.builder.getOrBuildFunction("loop_thunk", type: FnType(params: [generatorFunction.type.returns]), paramNames: [binded.name])
+        try module.builder.setInsertPoint(loopThunk)
         
-        // vhirgen the body of the loop
+        let loopScope = Scope(parent: scope, function: loopThunk)
+        loopScope.add(try loopThunk.paramNamed(binded.name).accessor(), name: binded.name)
+        
         try block.emitStmt(module: module, scope: loopScope)
-        try loopScope.releaseVariables(deleting: true)
+        try module.builder.buildYieldUnwind()
         
-        // iterate the loop count and check whether we are within range
-        let one = try module.builder.buildIntLiteral(1)
-        let iterated = try module.builder.buildBuiltinInstructionCall(.iaddoverflow, args: Operand(loopCountParam), Operand(one), irName: "count.it")
-        let condition = try module.builder.buildBuiltinInstructionCall(.ilte, args: Operand(iterated), Operand(end))
+//        generatorFunction.iniline = .alaways
         
-        // cond break -- leave the loop or go again
-        // call the loop block but with the iterated loop count
-        let iteratedLoopOperand = BlockOperand(value: iterated, param: loopCountParam)
-        try module.builder.buildCondBreak(if: Operand(condition),
-                                          to: (block: loopBlock, args: [iteratedLoopOperand]),
-                                          elseTo: (block: exitBlock, args: nil))
+        module.builder.insertPoint = entryInsertPoint
         
-        try module.builder.setInsertPoint(exitBlock)
+        try module.builder.buildFunctionCall(generatorFunction, args: [generator])
+        
+        for case let inst as YieldInst in generatorFunction.instructions {
+            inst.targetThunk = loopThunk
+        }
+        
+//        module.dump()
+        
+        
     }
 }
+
+//extension BlockExpr {
+//    
+//    /// Emit a thunk
+//    func emitThunk(module module: Module, scope: Scope) throws -> Accessor {
+//        
+//    }
+//    
+//}
+
+
+extension YieldStmt : StmtEmitter {
+    func emitStmt(module module: Module, scope: Scope) throws {
+        let val = try expr.emitRValue(module: module, scope: scope)
+        let thunk = module.functionNamed("main")!
+        try module.builder.buildYield(Operand(val.aggregateGetter()), to: thunk)
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 extension WhileLoopStmt: StmtEmitter {
     
@@ -538,7 +560,7 @@ extension WhileLoopStmt: StmtEmitter {
                                           to: (block: loopBlock, args: nil),
                                           elseTo: (block: exitBlock, args: nil))
         
-        let loopScope = Scope(parent: scope)
+        let loopScope = Scope(parent: scope, function: scope.function)
         // build loop block
         try module.builder.setInsertPoint(loopBlock) // move into
         try block.emitStmt(module: module, scope: loopScope) // gen stmts
@@ -607,7 +629,7 @@ extension InitialiserDecl: StmtEmitter {
         try module.builder.setInsertPoint(function)
         
         // make scope and occupy it with params
-        let fnScope = Scope(parent: scope)
+        let fnScope = Scope(parent: scope, function: function)
         
         let selfVar: GetSetAccessor
         

@@ -14,13 +14,14 @@ struct FunctionContainer {
     
     private let functions: [String: FnType]
     private let types: [StructType]
+    private let concepts: [ConceptType]
     
     /// Initialiser takes a collection of tuples.
     ///
     /// Tuples are of the unmangled name and the type object
     ///
     /// Optionally takes an array of metadata to apply to all functions
-    init (functions: [(String, FnType)], types: [StructType], metadata: [String] = [], mangleFunctionNames: Bool = true) {
+    init (functions: [(String, FnType)], types: [StructType], concepts: [ConceptType] = [], metadata: [String] = [], mangleFunctionNames: Bool = true) {
         var t: [String: FnType] = [:]
         
         for (n, _ty) in functions {
@@ -38,6 +39,7 @@ struct FunctionContainer {
         
         self.functions = t
         self.types = typesWithMethods
+        self.concepts = concepts
     }
     
     /// Get a named function

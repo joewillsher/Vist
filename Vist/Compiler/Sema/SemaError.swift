@@ -29,6 +29,8 @@ enum SemaError: VistError {
     case typeNotFound, paramsNotTyped, integerNotTyped, boolNotTyped
     case noMemberwiseInit
     
+    case invalidYield, invalidReturn, notGenerator(Ty?)
+    
     case genericSubstitutionInvalid, notValidLookup, unreachable(String), todo(String)
     
     var description: String {
@@ -89,7 +91,12 @@ enum SemaError: VistError {
             return "'\(t?.explicitName ?? "")' is not a struct type"
         case .notTupleType(let t):
             return "'\(t?.explicitName ?? "")' is not a tuple type"
-            
+        case .invalidYield:
+            return "Can only yield from a generator function"
+        case .invalidReturn:
+            return "Cannot return from a generator function"
+        case .notGenerator(let ty):
+            return "\(ty.map { "'\($0)' is not a generator type. "  })You can only loop over generator types"
             
             // not user visible
         case .noStdBoolType: return "Stdlib did not provide a Bool type"

@@ -7,12 +7,8 @@
 //
 
 
-
-
-extension ReturnStmt: StmtTypeProvider {
-    
-    func typeForNode(scope: SemaScope) throws {
-        
+private extension ScopeEscapeStmt {
+    func checkScopeEscapeStmt(scope: SemaScope) throws {
         // set the AST context to `scope.returnType`
         let retScope = SemaScope(parent: scope, semaContext: scope.returnType)
         let returnType = try expr.typeForNode(retScope)
@@ -23,11 +19,29 @@ extension ReturnStmt: StmtTypeProvider {
     }
 }
 
+extension ReturnStmt : StmtTypeProvider {
+    
+    func typeForNode(scope: SemaScope) throws {
+        guard !scope.isYield else { throw semaError(.invalidReturn) }
+        try checkScopeEscapeStmt(scope)
+    }
+}
+
+
+extension YieldStmt : StmtTypeProvider {
+    
+    func typeForNode(scope: SemaScope) throws {
+        guard scope.isYield else { throw semaError(.invalidYield) }
+        try checkScopeEscapeStmt(scope)
+    }
+}
+
+
 //-------------------------------------------------------------------------------------------------------------------------
 //  MARK:                                                 Control flow
 //-------------------------------------------------------------------------------------------------------------------------
 
-extension ConditionalStmt: StmtTypeProvider {
+extension ConditionalStmt : StmtTypeProvider {
     
     func typeForNode(scope: SemaScope) throws {
         
@@ -74,12 +88,15 @@ extension ForInLoopStmt: StmtTypeProvider {
         
         // scopes for inner loop
         let loopScope = SemaScope(parent: scope, returnType: scope.returnType)
+        let generator = try iterator.typeForNode(scope)
+        
+        // check its a generator, and the return type is the loop variable type
+        guard case let storage as StorageType = generator, let generatorFunctionType = storage.generatorFunction() else { throw semaError(.notGenerator(generator)) }
         
         // add bound name to scopes
-        loopScope[variable: binded.name] = (type: StdLib.intType, mutable: false)
+        loopScope[variable: binded.name] = (type: generatorFunctionType.returns, mutable: false)
         
-        // gen types for iterator
-        guard try iterator.typeForNode(scope) == StdLib.rangeType else { throw semaError(.notRangeType) }
+        self.generatorFunctionName = "generate".mangle(generatorFunctionType)
         
         // parse inside of loop in loop scope
         try block.exprs.walkChildren { exp in

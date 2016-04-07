@@ -9,11 +9,11 @@
 
 ///  - Statement / Stmt
 ///      - brace, return, conditional, if, while, for in, switch, break, fallthrough, continue
-protocol Stmt: ASTNode, StmtTypeProvider, StmtEmitter {}
+protocol Stmt : ASTNode, StmtTypeProvider, StmtEmitter {}
 
 
 
-final class ElseIfBlockStmt: Stmt {
+final class ElseIfBlockStmt : Stmt {
     var condition: Expr?
     var block: BlockExpr
     
@@ -24,7 +24,7 @@ final class ElseIfBlockStmt: Stmt {
 }
 
 
-final class ConditionalStmt: Stmt {
+final class ConditionalStmt : Stmt {
     let statements: [ElseIfBlockStmt]
     
     init(statements: [(condition: Expr?, block: BlockExpr)]) throws {
@@ -47,12 +47,12 @@ final class ConditionalStmt: Stmt {
 }
 
 
-protocol LoopStmt: Stmt {
+protocol LoopStmt : Stmt {
     var block: BlockExpr { get }
 }
 
 
-final class ForInLoopStmt: LoopStmt {
+final class ForInLoopStmt : LoopStmt {
     let binded: VariableExpr
     let iterator: Expr
     var block: BlockExpr
@@ -62,9 +62,11 @@ final class ForInLoopStmt: LoopStmt {
         self.iterator = iterator
         self.block = block
     }
+    
+    var generatorFunctionName: String?
 }
 
-final class WhileLoopStmt: LoopStmt {
+final class WhileLoopStmt : LoopStmt {
     let condition: Expr
     var block: BlockExpr
     
@@ -74,8 +76,18 @@ final class WhileLoopStmt: LoopStmt {
     }
 }
 
+protocol ScopeEscapeStmt : Stmt {
+    var expr: Expr { get }
+}
 
-final class ReturnStmt: Stmt {
+final class ReturnStmt : ScopeEscapeStmt {
+    let expr: Expr
+    
+    init(expr: Expr) {
+        self.expr = expr
+    }
+}
+final class YieldStmt : ScopeEscapeStmt {
     let expr: Expr
     
     init(expr: Expr) {

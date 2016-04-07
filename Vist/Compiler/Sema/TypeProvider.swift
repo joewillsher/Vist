@@ -56,7 +56,7 @@ extension CollectionType {
         return try indexOf(predicate).map { self[$0] }
     }
 }
-extension CollectionType where Generator.Element: Equatable {
+extension CollectionType where Generator.Element : Equatable {
     
     @warn_unused_result
     public func find(element: Generator.Element) -> Generator.Element? {

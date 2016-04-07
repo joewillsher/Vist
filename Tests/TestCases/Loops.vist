@@ -15,3 +15,9 @@ for i in 2 ..< 5 {
 
 for i in 0 ... 4 do print 1
 // test: 1 1 1 1 1
+//func open::Foo->Int = (a) do return a.a
+
+//let u = (open (Foo 1))
+//print u
+
+

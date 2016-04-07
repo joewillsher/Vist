@@ -96,6 +96,7 @@ private extension Token {
         case "concept": return .concept
         case "init": return .`init`
         case "ref": return .ref
+        case "yield": return .yield
         default: return .identifier(alpha)
         }
     }

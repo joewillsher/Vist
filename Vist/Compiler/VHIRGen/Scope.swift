@@ -12,13 +12,15 @@ final class Scope {
     private var variables: [String: Accessor]
     private weak var parent: Scope?
     private unowned var module: Module
+    private(set) var function: Function?
     
     init(module: Module) {
         self.module = module
         self.variables = [:]
     }
-    init(parent: Scope) {
+    init(parent: Scope, function: Function?) {
         self.parent = parent
+        self.function = function
         self.variables = [:]
         self.module = parent.module
     }

@@ -48,6 +48,15 @@ final class FuncDecl: Decl, StructMemberExpr, LibraryTopLevel {
         self.genericParameters = genericParameters
     }
     
+    /// Is the funtion a generator
+    var isGeneratorFunction: Bool {
+        // its a method called 'generate' with no params & a non void return type
+        return name == "generate" &&
+            (parent != nil) &&
+            fnType.paramType.typeNames().isEmpty &&
+            !fnType.returnType.isVoid
+    }
+    
     var mangledName: String
     
     /// `self` if the function is a member function

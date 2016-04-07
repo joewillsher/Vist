@@ -147,7 +147,8 @@ vist_objectHasUniqueReference(RefcountedObject *object) {
 
 static jmp_buf yieldTarget;
 
-NOMANGLE NOINLINE
+/// Returns to the saved stack position
+NOMANGLE ALWAYSINLINE
 void
 vist_yieldUnwind() {
     return longjmp(yieldTarget, 1);
@@ -155,7 +156,7 @@ vist_yieldUnwind() {
 
 /// Sets this stack state as the target state
 /// \returns whether we got to this spot by yielding
-NOMANGLE NOINLINE
+NOMANGLE ALWAYSINLINE
 bool
 vist_setYieldTarget() {
     return setjmp(yieldTarget);

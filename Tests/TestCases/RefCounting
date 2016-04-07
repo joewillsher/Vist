@@ -1,0 +1,17 @@
+
+
+ref type Foo {
+var a: Int
+}
+
+func fooFactory::Int->Foo = {
+return Foo $0
+}
+func fooer::Int->Foo = {
+let f = fooFactory 2
+return f
+}
+
+let a = fooer 4
+print a.a
+

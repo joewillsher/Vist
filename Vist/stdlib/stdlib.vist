@@ -33,13 +33,7 @@ type Double {
     init Double = (val) do value = val.value
 }
 
-type Range {
-    var start: Int, end: Int
-    init Range = (val) {
-        start = val.start
-        end = val.end
-    }
-}
+
 
 
 //type Array {
@@ -215,6 +209,21 @@ func != :: Double Double -> Bool = (a b) do
     return Bool (Builtin.f_neq a.value b.value)
 
 
+
+
+
+type Range {
+    var start: Int, end: Int
+    init Range = (val) {
+        start = val.start
+        end = val.end
+    }
+    
+    
+//    func generate::->Int = {
+//        yield 1
+//    }
+}
 
 // ranges
 @public @inline @operator(40)

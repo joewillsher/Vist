@@ -54,7 +54,7 @@ enum DefinedType {
         }
     }
     
-    
+    var isVoid: Bool { if case .void = self { return true } else { return false } }
     
     func typeInScope(scope: SemaScope) throws -> Ty {
         switch self {

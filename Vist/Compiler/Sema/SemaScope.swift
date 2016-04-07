@@ -15,7 +15,7 @@ final class SemaScope {
     private var types: [String: StorageType]
     var concepts: [String: ConceptType]
     let isStdLib: Bool
-    var returnType: Ty?
+    var returnType: Ty?, isYield: Bool
     let parent: SemaScope?
     
     var genericParameters: [ConstrainedType]? = nil
@@ -112,9 +112,10 @@ final class SemaScope {
         }
     }
     
-    init(parent: SemaScope, returnType: Ty? = BuiltinType.void, semaContext: Ty? = nil) {
+    init(parent: SemaScope, returnType: Ty? = BuiltinType.void, isYield: Bool = false, semaContext: Ty? = nil) {
         self.parent = parent
         self.returnType = returnType
+        self.isYield = isYield
         self.variables = [:]
         self.functions = [:]
         self.types = [:]
@@ -127,6 +128,7 @@ final class SemaScope {
     private init(returnType: Ty? = BuiltinType.void, isStdLib: Bool, semaContext: Ty? = nil) {
         self.parent = nil
         self.returnType = returnType
+        self.isYield = false
         self.variables = [:]
         self.functions = [:]
         self.types = [:]
@@ -140,7 +142,7 @@ final class SemaScope {
     }
     
     /// Creates a scope assocoiated with its parent which cannot read from its func, var, & type tables
-    static func nonCapturingScope(parent: SemaScope, returnType: Ty? = BuiltinType.void, semaContext: Ty? = nil) -> SemaScope {
+    static func nonCapturingScope(parent: SemaScope, returnType: Ty? = BuiltinType.void, isYield: Bool = false, semaContext: Ty? = nil) -> SemaScope {
         return SemaScope(returnType: returnType, isStdLib: parent.isStdLib, semaContext: semaContext)
     }
 }

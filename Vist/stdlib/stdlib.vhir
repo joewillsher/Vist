@@ -228,17 +228,6 @@ $entry(%a: %Double, %b: %Double):
 
 func @vist-Uprint_ti64 : &thin (%Builtin.Int64) -> %Builtin.Void
 
-func @Range_tII : &thin (%Int, %Int) -> %Range {
-$entry(%$0: %Int, %$1: %Int):
-  %self = alloc %Range  	// users: %start, %end, %2
-  %start = struct_element %self: %*R, #start  	// user: %0
-  %end = struct_element %self: %*R, #end  	// user: %1
-  store %$0 in %start: %*I 
-  store %$1 in %end: %*I 
-  %2 = load %self: %*R  	// user: %3
-  return %2
-}
-
 func @-E-E_tII : &thin (%Int, %Int) -> %Bool {
 $entry(%a: %Int, %b: %Int):
   %0 = struct_extract %a: %Int, #value  	// user: %2
@@ -255,6 +244,17 @@ $entry(%a: %Double, %b: %Double):
   %2 = builtin f_cmp_gte %0: %Builtin.Double, %1: %Builtin.Double  	// user: %3
   %3 = call @Bool_tb (%2: %Builtin.Bool)  	// user: %4
   return %3
+}
+
+func @Range_tII : &thin (%Int, %Int) -> %Range {
+$entry(%$0: %Int, %$1: %Int):
+  %self = alloc %Range  	// users: %start, %end, %2
+  %start = struct_element %self: %*R, #start  	// user: %0
+  %end = struct_element %self: %*R, #end  	// user: %1
+  store %$0 in %start: %*I 
+  store %$1 in %end: %*I 
+  %2 = load %self: %*R  	// user: %3
+  return %2
 }
 
 func @print_tI32 : &thin (%Int32) -> %Builtin.Void {

@@ -853,6 +853,13 @@ extension Parser {
         
         return ReturnStmt(expr: try parseOperatorExpr())
     }
+    
+    /// Parses expression following a `yield`
+    private func parseYieldExpr() throws -> YieldStmt {
+        getNextToken() // eat `yield`
+        
+        return YieldStmt(expr: try parseOperatorExpr())
+    }
 
     /// Function scopes -- starts a new '{' or 'do' block
     ///
@@ -1163,6 +1170,7 @@ extension Parser {
         case .`var`:                return try parseVariableDecl(.global).mapAs(ASTNode)
         case .`func`:               return [try parseFuncDeclaration(.global)]
         case .`return`:             return [try parseReturnExpr()]
+        case .yield:                return [try parseYieldExpr()]
         case .openParen:            return [try parseParenExpr()]
         case .openBrace:            return [try parseBraceExpr()]
         case .identifier(let str):  return [try parseIdentifierExpr(str)]

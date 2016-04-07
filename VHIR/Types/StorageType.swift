@@ -65,6 +65,10 @@ extension StorageType {
     func validSubstitutionFor(generic: GenericType) -> Bool {
         return generic.concepts.map(models).contains(false)
     }
+    
+    func generatorFunction() -> FnType? {
+        return methods.find { method in (method.name == "generate") && method.type.params.isEmpty && (method.type.returns != BuiltinType.void) }?.type
+    }
 }
 
 

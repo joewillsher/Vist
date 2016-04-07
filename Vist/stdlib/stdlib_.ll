@@ -19,6 +19,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 @.str3 = private unnamed_addr constant [12 x i8] c">retain %i\0A\00", align 1
 @.str4 = private unnamed_addr constant [21 x i8] c">release-unowned %i\0A\00", align 1
 @.str5 = private unnamed_addr constant [21 x i8] c">dealloc-unowned %i\0A\00", align 1
+@_ZL11yieldTarget = internal global [37 x i32] zeroinitializer, align 16
 @.str6 = private unnamed_addr constant [6 x i8] c"%lli\0A\00", align 1
 @.str7 = private unnamed_addr constant [4 x i8] c"%i\0A\00", align 1
 @.str8 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
@@ -88,10 +89,10 @@ entry:
   br i1 %cmp, label %if.then, label %if.else
 
 if.then:                                          ; preds = %entry
-  %puts.i = tail call i32 @puts(i8* getelementptr inbounds ([9 x i8]* @str, i64 0, i64 0)) #7
+  %puts.i = tail call i32 @puts(i8* getelementptr inbounds ([9 x i8]* @str, i64 0, i64 0)) #10
   %object1.i = getelementptr inbounds %struct.__sbuf* %object, i64 0, i32 0
   %2 = load i8** %object1.i, align 8, !tbaa !2
-  tail call void @free(i8* %2) #7
+  tail call void @free(i8* %2) #10
   br label %if.end
 
 if.else:                                          ; preds = %entry
@@ -133,10 +134,10 @@ entry:
   br i1 %cmp, label %if.then, label %if.end
 
 if.then:                                          ; preds = %entry
-  %puts.i = tail call i32 @puts(i8* getelementptr inbounds ([9 x i8]* @str, i64 0, i64 0)) #7
+  %puts.i = tail call i32 @puts(i8* getelementptr inbounds ([9 x i8]* @str, i64 0, i64 0)) #10
   %object1.i = getelementptr inbounds %struct.__sbuf* %object, i64 0, i32 0
   %2 = load i8** %object1.i, align 8, !tbaa !2
-  tail call void @free(i8* %2) #7
+  tail call void @free(i8* %2) #10
   br label %if.end
 
 if.end:                                           ; preds = %if.then, %entry
@@ -160,29 +161,50 @@ entry:
   ret i1 %cmp
 }
 
+; Function Attrs: noinline noreturn ssp uwtable
+define void @vist_yieldUnwind() #3 {
+entry:
+  tail call void @longjmp(i32* getelementptr inbounds ([37 x i32]* @_ZL11yieldTarget, i64 0, i64 0), i32 1) #13
+  unreachable
+}
+
+; Function Attrs: noreturn
+declare void @longjmp(i32*, i32) #4
+
+; Function Attrs: noinline ssp uwtable
+define zeroext i1 @vist_setYieldTarget() #5 {
+entry:
+  %call = call i32 @setjmp(i32* getelementptr inbounds ([37 x i32]* @_ZL11yieldTarget, i64 0, i64 0)) #14
+  %tobool = icmp ne i32 %call, 0
+  ret i1 %tobool
+}
+
+; Function Attrs: returns_twice
+declare i32 @setjmp(i32*) #6
+
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @vist-Uprint_ti64(i64 %i) #3 {
+define void @vist-Uprint_ti64(i64 %i) #7 {
 entry:
   %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str6, i64 0, i64 0), i64 %i)
   ret void
 }
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @vist-Uprint_ti32(i32 %i) #3 {
+define void @vist-Uprint_ti32(i32 %i) #7 {
 entry:
   %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str7, i64 0, i64 0), i32 %i)
   ret void
 }
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @vist-Uprint_tf64(double %d) #3 {
+define void @vist-Uprint_tf64(double %d) #7 {
 entry:
   %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str8, i64 0, i64 0), double %d)
   ret void
 }
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @vist-Uprint_tf32(float %d) #3 {
+define void @vist-Uprint_tf32(float %d) #7 {
 entry:
   %conv = fpext float %d to double
   %call = tail call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str8, i64 0, i64 0), double %conv)
@@ -190,7 +212,7 @@ entry:
 }
 
 ; Function Attrs: noinline nounwind ssp uwtable
-define void @vist-Uprint_tb(i1 zeroext %b) #3 {
+define void @vist-Uprint_tb(i1 zeroext %b) #7 {
 entry:
   %cond = select i1 %b, i8* getelementptr inbounds ([6 x i8]* @.str9, i64 0, i64 0), i8* getelementptr inbounds ([7 x i8]* @.str10, i64 0, i64 0)
   %call = tail call i32 (i8*, ...)* @printf(i8* %cond)
@@ -198,17 +220,17 @@ entry:
 }
 
 ; Function Attrs: alwaysinline ssp uwtable
-define void @vist-Ucshim-Uwrite_topi64(i8* %str, i64 %size) #4 {
+define void @vist-Ucshim-Uwrite_topi64(i8* %str, i64 %size) #8 {
 entry:
   %0 = load %struct.__sFILE** @__stdoutp, align 8, !tbaa !9
   %call = tail call i64 @"\01_fwrite"(i8* %str, i64 %size, i64 1, %struct.__sFILE* %0)
   ret void
 }
 
-declare i64 @"\01_fwrite"(i8*, i64, i64, %struct.__sFILE*) #5
+declare i64 @"\01_fwrite"(i8*, i64, i64, %struct.__sFILE*) #9
 
 ; Function Attrs: noinline ssp uwtable
-define void @vist-Ucshim-Uputchar_ti8(i8 signext %c) #6 {
+define void @vist-Ucshim-Uputchar_ti8(i8 signext %c) #5 {
 entry:
   %conv = sext i8 %c to i32
   %0 = load %struct.__sFILE** @__stdoutp, align 8, !tbaa !9
@@ -244,10 +266,10 @@ _Z7__sputciP7__sFILE.exit:                        ; preds = %if.else.i, %if.then
   ret void
 }
 
-declare i32 @__swbuf(i32, %struct.__sFILE*) #5
+declare i32 @__swbuf(i32, %struct.__sFILE*) #9
 
 ; Function Attrs: nounwind
-declare i32 @puts(i8* nocapture readonly) #7
+declare i32 @puts(i8* nocapture readonly) #10
 
 define %Double @Double_tD(%Double %val) {
 entry:
@@ -462,17 +484,6 @@ entry:
   ret %Bool %3
 }
 
-define %Range @Range_tII(%Int %"$0", %Int %"$1") {
-entry:
-  %self = alloca %Range
-  %start = getelementptr inbounds %Range* %self, i32 0, i32 0
-  %end = getelementptr inbounds %Range* %self, i32 0, i32 1
-  store %Int %"$0", %Int* %start
-  store %Int %"$1", %Int* %end
-  %0 = load %Range* %self
-  ret %Range %0
-}
-
 define %Bool @-E-E_tII(%Int %a, %Int %b) {
 entry:
   %0 = extractvalue %Int %a, 0
@@ -489,6 +500,17 @@ entry:
   %2 = fcmp oge double %0, %1
   %3 = call %Bool @Bool_tb(i1 %2)
   ret %Bool %3
+}
+
+define %Range @Range_tII(%Int %"$0", %Int %"$1") {
+entry:
+  %self = alloca %Range
+  %start = getelementptr inbounds %Range* %self, i32 0, i32 0
+  %end = getelementptr inbounds %Range* %self, i32 0, i32 1
+  store %Int %"$0", %Int* %start
+  store %Int %"$1", %Int* %end
+  %0 = load %Range* %self
+  ret %Range %0
 }
 
 define void @print_tI32(%Int32 %a) {
@@ -852,33 +874,38 @@ entry:
 }
 
 ; Function Attrs: nounwind
-declare void @llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1) #7
+declare void @llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1) #10
 
 ; Function Attrs: noreturn nounwind
-declare void @llvm.trap() #8
+declare void @llvm.trap() #11
 
 ; Function Attrs: nounwind readnone
-declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #9
+declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #12
 
 ; Function Attrs: nounwind readnone
-declare { i64, i1 } @llvm.ssub.with.overflow.i64(i64, i64) #9
+declare { i64, i1 } @llvm.ssub.with.overflow.i64(i64, i64) #12
 
 ; Function Attrs: nounwind readnone
-declare { i64, i1 } @llvm.smul.with.overflow.i64(i64, i64) #9
+declare { i64, i1 } @llvm.smul.with.overflow.i64(i64, i64) #12
 
 ; Function Attrs: nounwind readnone
-declare i1 @llvm.expect.i1(i1, i1) #9
+declare i1 @llvm.expect.i1(i1, i1) #12
 
 attributes #0 = { alwaysinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { nounwind "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #2 = { alwaysinline nounwind readonly ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #3 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #4 = { alwaysinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #5 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #6 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #7 = { nounwind }
-attributes #8 = { noreturn nounwind }
-attributes #9 = { nounwind readnone }
+attributes #3 = { noinline noreturn ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #4 = { noreturn "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #5 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #6 = { returns_twice "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #7 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #8 = { alwaysinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #9 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #10 = { nounwind }
+attributes #11 = { noreturn nounwind }
+attributes #12 = { nounwind readnone }
+attributes #13 = { noreturn }
+attributes #14 = { returns_twice }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}
