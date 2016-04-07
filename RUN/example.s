@@ -13,41 +13,37 @@ Ltmp1:
 	movq	%rsp, %rbp
 Ltmp2:
 	.cfi_def_cfa_register %rbp
-	subq	$48, %rsp
-	movl	$8, %eax
-	movq	%rdi, -24(%rbp)         ## 8-byte Spill
-	movl	%eax, %edi
+	subq	$32, %rsp
+	movl	$8, %edi
 	callq	_vist_allocObject
 	movq	%rax, %rdi
-	movq	%rax, -32(%rbp)         ## 8-byte Spill
+	movq	%rax, -24(%rbp)         ## 8-byte Spill
 	callq	_vist_retainObject
-	movq	-32(%rbp), %rax         ## 8-byte Reload
+	movq	-24(%rbp), %rax         ## 8-byte Reload
 	movq	(%rax), %rdi
-	movq	-24(%rbp), %rcx         ## 8-byte Reload
-	movq	%rcx, (%rdi)
+	movq	$2, (%rdi)
 	movq	%rax, %rdi
 	callq	_vist_releaseUnownedObject
-	movq	-32(%rbp), %rax         ## 8-byte Reload
-	movl	8(%rax), %edx
-	movq	(%rax), %rcx
-	movq	%rcx, -16(%rbp)
-	movl	%edx, -8(%rbp)
-	leaq	-16(%rbp), %rcx
-	movq	%rcx, %rdi
-	movq	%rcx, -40(%rbp)         ## 8-byte Spill
+	movq	-24(%rbp), %rax         ## 8-byte Reload
+	movl	8(%rax), %ecx
+	movq	(%rax), %rdi
+	movq	%rdi, -16(%rbp)
+	movl	%ecx, -8(%rbp)
+	leaq	-16(%rbp), %rdi
+	movq	%rdi, -32(%rbp)         ## 8-byte Spill
 	callq	_vist_retainObject
-	movq	-40(%rbp), %rdi         ## 8-byte Reload
+	movq	-32(%rbp), %rdi         ## 8-byte Reload
 	callq	_vist_releaseUnownedObject
 	movq	-16(%rbp), %rax
 	movl	-8(%rbp), %edx
-	addq	$48, %rsp
+	addq	$32, %rsp
 	popq	%rbp
 	retq
 	.cfi_endproc
 
-	.globl	_main
+	.globl	_Foo_tI
 	.align	4, 0x90
-_main:                                  ## @main
+_Foo_tI:                                ## @Foo_tI
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
@@ -58,44 +54,32 @@ Ltmp4:
 	movq	%rsp, %rbp
 Ltmp5:
 	.cfi_def_cfa_register %rbp
-	subq	$64, %rsp
-	leaq	-16(%rbp), %rax
-	movl	$8, %edi
-	movq	%rax, -40(%rbp)         ## 8-byte Spill
+	subq	$16, %rsp
+	movl	$8, %eax
+	movq	%rdi, -8(%rbp)          ## 8-byte Spill
+	movl	%eax, %edi
 	callq	_vist_allocObject
 	movq	%rax, %rdi
-	movq	%rax, -48(%rbp)         ## 8-byte Spill
+	movq	%rax, -16(%rbp)         ## 8-byte Spill
 	callq	_vist_retainObject
-	movq	-48(%rbp), %rax         ## 8-byte Reload
+	movq	-16(%rbp), %rax         ## 8-byte Reload
 	movq	(%rax), %rdi
-	movq	$4, (%rdi)
+	movq	-8(%rbp), %rcx          ## 8-byte Reload
+	movq	%rcx, (%rdi)
 	movq	%rax, %rdi
 	callq	_vist_releaseUnownedObject
-	movq	-48(%rbp), %rax         ## 8-byte Reload
-	movl	8(%rax), %ecx
-	movq	(%rax), %rdi
-	movq	%rdi, -16(%rbp)
-	movl	%ecx, -8(%rbp)
-	movq	-40(%rbp), %rdi         ## 8-byte Reload
-	movq	%rdi, -56(%rbp)         ## 8-byte Spill
-	callq	_vist_retainObject
-	movq	-56(%rbp), %rdi         ## 8-byte Reload
-	callq	_vist_releaseUnownedObject
-	leaq	-32(%rbp), %rax
-	movq	-16(%rbp), %rdi
-	movl	-8(%rbp), %ecx
-	movq	%rdi, -32(%rbp)
-	movl	%ecx, -24(%rbp)
-	movq	%rax, %rdi
-	callq	_vist_deallocUnownedObject
-	addq	$64, %rsp
+	movq	-16(%rbp), %rax         ## 8-byte Reload
+	movq	(%rax), %rax
+	movq	-16(%rbp), %rcx         ## 8-byte Reload
+	movl	8(%rcx), %edx
+	addq	$16, %rsp
 	popq	%rbp
 	retq
 	.cfi_endproc
 
-	.globl	_Foo_tI
+	.globl	_fooFactory_tI
 	.align	4, 0x90
-_Foo_tI:                                ## @Foo_tI
+_fooFactory_tI:                         ## @fooFactory_tI
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
@@ -125,6 +109,58 @@ Ltmp8:
 	movq	-16(%rbp), %rcx         ## 8-byte Reload
 	movl	8(%rcx), %edx
 	addq	$16, %rsp
+	popq	%rbp
+	retq
+	.cfi_endproc
+
+	.globl	_main
+	.align	4, 0x90
+_main:                                  ## @main
+	.cfi_startproc
+## BB#0:                                ## %entry
+	pushq	%rbp
+Ltmp9:
+	.cfi_def_cfa_offset 16
+Ltmp10:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+Ltmp11:
+	.cfi_def_cfa_register %rbp
+	subq	$64, %rsp
+	movl	$8, %edi
+	callq	_vist_allocObject
+	movq	%rax, %rdi
+	movq	%rax, -40(%rbp)         ## 8-byte Spill
+	callq	_vist_retainObject
+	movq	-40(%rbp), %rax         ## 8-byte Reload
+	movq	(%rax), %rdi
+	movq	$2, (%rdi)
+	movq	%rax, %rdi
+	callq	_vist_releaseUnownedObject
+	movq	-40(%rbp), %rax         ## 8-byte Reload
+	movl	8(%rax), %ecx
+	movq	(%rax), %rdi
+	movq	%rdi, -16(%rbp)
+	movl	%ecx, -8(%rbp)
+	leaq	-16(%rbp), %rdi
+	movq	%rdi, -48(%rbp)         ## 8-byte Spill
+	callq	_vist_retainObject
+	movq	-48(%rbp), %rdi         ## 8-byte Reload
+	callq	_vist_releaseUnownedObject
+	movq	-16(%rbp), %rax
+	movl	-8(%rbp), %ecx
+	movq	%rax, -32(%rbp)
+	movl	%ecx, -24(%rbp)
+	leaq	-32(%rbp), %rax
+	movq	%rax, %rdi
+	movq	%rax, -56(%rbp)         ## 8-byte Spill
+	callq	_vist_retainObject
+	movq	-32(%rbp), %rax
+	movq	(%rax), %rdi
+	callq	_print_tI
+	movq	-56(%rbp), %rdi         ## 8-byte Reload
+	callq	_vist_releaseObject
+	addq	$64, %rsp
 	popq	%rbp
 	retq
 	.cfi_endproc

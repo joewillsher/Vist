@@ -4,13 +4,21 @@ ref type Foo {
     var a: Int
 }
 
+func fooFactory::Int->Foo = {
+    return Foo $0
+}
 func fooer::Int->Foo = {
-    let f = Foo $0
+    let f = fooFactory 2
     return f
 }
 
-fooer 4
+let a = fooer 4
+print a.a
 
+//func open::Foo->Int = (a) do return a.a
+
+//let u = (open (Foo 1))
+//print u
 
 // Misc todos:
 //  - Initialiser(allocating) calling convention?

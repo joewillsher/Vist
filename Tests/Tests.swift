@@ -27,7 +27,7 @@ extension VistTest {
 }
 
 /// Test the compilation and output of code samples
-final class OutputTests: XCTestCase, VistTest {
+final class OutputTests : XCTestCase, VistTest {
     
     /// pipe used as the stdout of the test cases
     var pipe: NSPipe? = nil
@@ -38,18 +38,22 @@ final class OutputTests: XCTestCase, VistTest {
     }
 }
 
+final class RefCountingTests : XCTestCase, VistTest {
+    
+}
+
 /// Tests runtime performance
-final class RuntimePerformanceTests: XCTestCase, VistTest {
+final class RuntimePerformanceTests : XCTestCase, VistTest {
     
 }
 
 /// Testing building the stdlib & runtime
-final class CoreTests: XCTestCase, VistTest {
+final class CoreTests : XCTestCase, VistTest {
     
 }
 
 /// Tests the error handling & type checking system
-final class ErrorTests: XCTestCase, VistTest {
+final class ErrorTests : XCTestCase, VistTest {
     
 }
 
@@ -198,6 +202,10 @@ extension OutputTests {
     }
     
 
+}
+
+extension RefCountingTests {
+    // TODO
 }
 
 

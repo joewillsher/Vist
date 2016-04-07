@@ -37,6 +37,10 @@ final class Scope {
         return parent?.removeVariableNamed(name)
     }
     
+    func isInScope(variable: Accessor) -> Bool {
+        return variables.values.contains { $0 === variable }
+    }
+    
     /// Release all refcounted variables in this scope
     /// - parameter deleting: Whether to delete the scope's variables after releasing
     /// - parameter except: Do not release this variable

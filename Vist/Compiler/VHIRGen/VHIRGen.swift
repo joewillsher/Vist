@@ -316,10 +316,12 @@ extension ReturnStmt: ValueEmitter {
         
         // before returning, we release all variables in the scope...
         try scope.releaseVariables(deleting: false, except: retVal)
-        // ...and release-unowned the return value
-        //    - we exepct the caller of the function to retain the value
-        //      or dealloc it, if it is unused
-        try retVal.releaseUnownedIfRefcounted()
+        // ...and release-unowned the return value if its owned by the scope
+        //    - we exepct the caller of the function to retain the value or
+        //      dealloc it, so we return it as +0
+        if scope.isInScope(retVal) {
+            try retVal.releaseUnownedIfRefcounted()
+        }
         
         return try module.builder.buildReturn(Operand(retVal.aggregateGetter())).accessor()
     }

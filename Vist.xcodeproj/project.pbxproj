@@ -309,7 +309,6 @@
 		D489F3C01C1E396E00254FFC /* example */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = example; path = RUN/example; sourceTree = "<group>"; };
 		D4BBE4191C4157E7001B8934 /* runtime.bc */ = {isa = PBXFileReference; lastKnownFileType = file; name = runtime.bc; path = Runtime/runtime.bc; sourceTree = "<group>"; };
 		D4BBE41A1C4157E7001B8934 /* runtime.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = runtime.ll; path = Runtime/runtime.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
-		D4BBE41E1C41584C001B8934 /* stdlib.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = stdlib.o; path = stdlib/stdlib.o; sourceTree = "<group>"; };
 		D4BCA8001C90ED470087A98D /* Editor.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Editor.xcodeproj; path = ../Editor/Editor.xcodeproj; sourceTree = "<group>"; };
 		D4CF76761C8CD4A70058A8EC /* TupleInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TupleInst.swift; path = Instructions/TupleInst.swift; sourceTree = "<group>"; };
 		D4CF767C1C8CF8490058A8EC /* Runtime.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Runtime.swift; path = Compiler/Sema/Expose/Runtime.swift; sourceTree = "<group>"; };
@@ -475,7 +474,6 @@
 				D437F8011CA984860089F5DE /* stdlib.vhir */,
 				D43DF1EC1C5540AF0049EC2F /* stdlib_.ll */,
 				D4644BE31C40619800364B99 /* stdlib.ll */,
-				D4BBE41E1C41584C001B8934 /* stdlib.o */,
 				D45D4CFE1C74F5E400918E04 /* stdlib.bc */,
 			);
 			name = StdLib;

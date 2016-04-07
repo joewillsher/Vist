@@ -6,28 +6,19 @@ type %RefcountedObject = { %Builtin.OpaquePointer, %Builtin.Int32 }
 
 func @fooer_tI : &thin (%Int) -> %Foo.refcounted {
 $entry(%$0: %Int):
-  %0 = call @Foo_tI (%$0: %Int)  	// user: %2
-  %1 = alloc %Foo.refcounted  	// users: %2, nil, %3
-  store %0 in %1: %*Foo.refcounted 
-  %3 = load %1: %*Foo.refcounted  	// user: %f
-  variable_decl %f = %3: %Foo.refcounted  	// user: %5
-  %4 = alloc %Foo.refcounted  	// users: %5, nil, %6, %7, %8
-  store %f in %4: %*Foo.refcounted 
-  %6 = retain_object %4: %*Foo.refcounted 
-  %7 = release_unowned_object %4: %*Foo.refcounted 
-  %8 = load %4: %*Foo.refcounted  	// user: %9
-  return %8
-}
-
-func @main : &thin () -> %Builtin.Void {
-$entry:
-  %0 = int_literal 4  	// user: %1
+  %0 = int_literal 2  	// user: %1
   %1 = struct %I (%0: %Builtin.Int64)  	// user: %2
-  %2 = call @fooer_tI (%1: %Int)  	// user: %4
+  %2 = call @fooFactory_tI (%1: %Int)  	// user: %4
   %3 = alloc %Foo.refcounted  	// users: %4, nil, %5
   store %2 in %3: %*Foo.refcounted 
-  %5 = dealloc_unowned_object %3: %*Foo.refcounted 
-  return ()
+  %5 = load %3: %*Foo.refcounted  	// user: %f
+  variable_decl %f = %5: %Foo.refcounted  	// user: %7
+  %6 = alloc %Foo.refcounted  	// users: %7, nil, %8, %9, %10
+  store %f in %6: %*Foo.refcounted 
+  %8 = retain_object %6: %*Foo.refcounted 
+  %9 = release_unowned_object %6: %*Foo.refcounted 
+  %10 = load %6: %*Foo.refcounted  	// user: %11
+  return %10
 }
 
 func @Foo_tI : &thin (%Int) -> %Foo.refcounted {
@@ -42,4 +33,36 @@ $entry(%$0: %Int):
   %5 = release_unowned_object %0: %*Foo.refcounted 
   %6 = load %0: %*Foo.refcounted  	// user: %7
   return %6
+}
+
+func @print_tI : &thin (%Int) -> %Builtin.Void
+
+func @fooFactory_tI : &thin (%Int) -> %Foo.refcounted {
+$entry(%$0: %Int):
+  %0 = call @Foo_tI (%$0: %Int)  	// user: %2
+  %1 = alloc %Foo.refcounted  	// users: %2, nil, %3
+  store %0 in %1: %*Foo.refcounted 
+  %3 = load %1: %*Foo.refcounted  	// user: %4
+  return %3
+}
+
+func @main : &thin () -> %Builtin.Void {
+$entry:
+  %0 = int_literal 4  	// user: %1
+  %1 = struct %I (%0: %Builtin.Int64)  	// user: %2
+  %2 = call @fooer_tI (%1: %Int)  	// user: %4
+  %3 = alloc %Foo.refcounted  	// users: %4, nil, %5
+  store %2 in %3: %*Foo.refcounted 
+  %5 = load %3: %*Foo.refcounted  	// user: %a
+  variable_decl %a = %5: %Foo.refcounted  	// user: %7
+  %6 = alloc %Foo.refcounted  	// users: %7, nil, %8, %9, %14
+  store %a in %6: %*Foo.refcounted 
+  %8 = retain_object %6: %*Foo.refcounted 
+  %9 = struct_element %6: %*Foo.refcounted, #object  	// user: %10
+  %10 = load %9: %**Foo  	// user: %11
+  %11 = load %10: %*Foo  	// user: %12
+  %12 = struct_extract %11: %Foo, #a  	// user: %13
+  %13 = call @print_tI (%12: %Int) 
+  %14 = release_object %6: %*Foo.refcounted 
+  return ()
 }

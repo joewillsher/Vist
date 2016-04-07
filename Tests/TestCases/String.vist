@@ -1,4 +1,15 @@
+let meme = "meme"
 
-print "meme" // test: meme
+print meme.length // test: 4
+print (meme.bufferCapacity ()) // test: 5
+print (meme.isUTF8Encoded ()) // test: true
 
+print meme // test: meme0
+print 0 // 0 for new line ^
 
+let b = "🔥 test 🔥"
+print b.length // test: 14
+print (b.bufferCapacity ()) // test: 15
+print (b.isUTF8Encoded ()) // test: false
+
+print b // test: 🔥 test 🔥

@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <setjmp.h>
 
 #define NOMANGLE extern "C"
 #define NORETURN __attribute__((noreturn))
@@ -139,6 +140,33 @@ bool
 vist_objectHasUniqueReference(RefcountedObject *object) {
     return object->refCount == 1;
 };
+
+
+
+// Generator logic
+
+static jmp_buf yieldTarget;
+
+NOMANGLE NOINLINE
+void
+vist_yieldUnwind() {
+    return longjmp(yieldTarget, 1);
+}
+
+/// Sets this stack state as the target state
+/// \returns whether we got to this spot by yielding
+NOMANGLE NOINLINE
+bool
+vist_setYieldTarget() {
+    return setjmp(yieldTarget);
+}
+
+
+
+
+
+
+
 
 
 
