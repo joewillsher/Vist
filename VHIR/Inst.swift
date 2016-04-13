@@ -20,7 +20,7 @@ protocol Inst : Value {
 class InstBase : Inst {
     
     /// Self’s type, override with a computed getter
-    var type: Ty? { fatalError("Override function '\(#function)' in '\(self.dynamicType)'") }
+    var type: Type? { fatalError("Override function '\(#function)' in '\(self.dynamicType)'") }
     /// override with the IR description, called by base to print this inst
     var instVHIR: String { fatalError("Override me '\(#function)' in '\(self.dynamicType)'") }
     

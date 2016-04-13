@@ -15,11 +15,11 @@ protocol VHIRFunctionCall : Inst, VHIRLower {
 
 final class FunctionCallInst: InstBase, VHIRFunctionCall {
     var function: Function
-    var returnType: Ty
+    var returnType: Type
     
-    override var type: Ty? { return returnType }
+    override var type: Type? { return returnType }
     
-    private init(function: Function, returnType: Ty, args: [Operand], irName: String?) {
+    private init(function: Function, returnType: Type, args: [Operand], irName: String?) {
         self.function = function
         self.returnType = returnType
         super.init(args: args, irName: irName)
@@ -36,11 +36,11 @@ final class FunctionCallInst: InstBase, VHIRFunctionCall {
 
 final class FunctionApplyInst: InstBase, VHIRFunctionCall {
     var function: PtrOperand
-    var returnType: Ty
+    var returnType: Type
     
-    override var type: Ty? { return returnType }
+    override var type: Type? { return returnType }
     
-    private init(function: PtrOperand, returnType: Ty, args: [Operand], irName: String?) {
+    private init(function: PtrOperand, returnType: Type, args: [Operand], irName: String?) {
         self.function = function
         self.returnType = returnType
         super.init(args: args, irName: irName)
@@ -63,7 +63,7 @@ extension Builder {
         return try _add(FunctionCallInst(function: function, returnType: function.type.returns, args: args, irName: irName))
     }
     /// Applies the args to a function ref
-    func buildFunctionApply(function: PtrOperand, returnType: Ty, args: [Operand], irName: String? = nil) throws -> FunctionApplyInst {
+    func buildFunctionApply(function: PtrOperand, returnType: Type, args: [Operand], irName: String? = nil) throws -> FunctionApplyInst {
         return try _add(FunctionApplyInst(function: function, returnType: returnType, args: args, irName: irName))
     }
 }

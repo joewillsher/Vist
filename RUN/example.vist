@@ -7,7 +7,6 @@ type Gen {
     func generate::->Int = {
         yield num
     }
-    
 }
 
 

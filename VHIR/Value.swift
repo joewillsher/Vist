@@ -11,7 +11,7 @@ protocol Value : class, VHIRElement {
     /// An explicit name to give self in the ir repr
     var irName: String? { get set }
     
-    var type: Ty? { get }
+    var type: Type? { get }
     
     /// The block containing `self`
     weak var parentBlock: BasicBlock? { get set }
@@ -24,17 +24,26 @@ protocol Value : class, VHIRElement {
     var name: String { get set }
 }
 
-/// Appears on the LHS of an expressions. `a = 1`, `a.b.c`
-///
-/// Often abstracts over memory -- this can be accessed by a pointer.
-/// This is needed for mutating the val or getting sub-elements by ref
+/**
+ Appears on the LHS of an expressions. `a = 1`, `a.b.c`
+ 
+ Often abstracts over memory -- this can be accessed by a pointer.
+ This is needed for mutating the val or getting sub-elements by ref
+*/
 protocol LValue : Value {
     /// LValues provide storage which is abstract -- `memType` provides
     /// an interface to the underlying type, as `type` may return  type `*memType`
-    var memType: Ty? { get }
+    var memType: Type? { get }
 }
 
 extension Value {
+    
+    /**
+     for mapping getter for type -- cant do
+     `let a = params.optionalMap(Value.type) else { throw ...`
+     so we can `let a = params.map(Value.getType)`
+     */
+    static func getType(forVal: Value) throws -> Type { if let t = forVal.type { return t } else { throw irGenError(.typeNotFound, userVisible: false) } }
     
     /// Removes all `Operand` instances which point to `self`
     func removeAllUses() { uses.forEach(removeUse)  }

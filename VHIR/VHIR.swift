@@ -34,7 +34,7 @@ extension CollectionType where Generator.Element : VHIRElement {
         return "(\(a.joinWithSeparator(", ")))"
     }
 }
-extension CollectionType where Generator.Element == Ty {
+extension CollectionType where Generator.Element == Type {
     func vhirTypeTuple() -> String {
         let a = map { $0.vhir }
         return "(\(a.joinWithSeparator(", ")))"

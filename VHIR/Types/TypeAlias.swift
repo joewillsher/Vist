@@ -11,7 +11,7 @@
 /// and allow the types to be named.
 ///
 /// `TypeAlias` simply wraps `targetType` and
-final class TypeAlias : Ty {
+final class TypeAlias : Type {
     let name: String, targetType: StorageType
     
     init(name: String, targetType: StorageType) {
@@ -49,7 +49,7 @@ extension TypeAlias {
         return namedType
     }
     
-    func usingTypesIn(module: Module) -> Ty {
+    func usingTypesIn(module: Module) -> Type {
         return self
     }
     var mangledName: String {

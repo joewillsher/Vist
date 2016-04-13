@@ -38,7 +38,7 @@ enum DefinedType {
         }
     }
     
-    private func tyArr(scope: SemaScope) throws -> [Ty] {
+    private func tyArr(scope: SemaScope) throws -> [Type] {
         switch self {
         case .void:             return []
         case .type, .function:  return [try typeInScope(scope)]
@@ -56,7 +56,7 @@ enum DefinedType {
     
     var isVoid: Bool { if case .void = self { return true } else { return false } }
     
-    func typeInScope(scope: SemaScope) throws -> Ty {
+    func typeInScope(scope: SemaScope) throws -> Type {
         switch self {
         case .void:
             return BuiltinType.void
@@ -64,7 +64,7 @@ enum DefinedType {
         case let .type(typeName):
             
             if let builtin = BuiltinType(typeName) {
-                return builtin as Ty
+                return builtin as Type
             }
             else if let i = scope[type: typeName] {
                 return i
@@ -86,11 +86,11 @@ enum DefinedType {
 
 extension DefinedFunctionType {
     
-    func params(scope: SemaScope) throws -> [Ty] {
+    func params(scope: SemaScope) throws -> [Type] {
         return try paramType.tyArr(scope)
     }
     
-    func returnType(scope: SemaScope) throws -> Ty {
+    func returnType(scope: SemaScope) throws -> Type {
         return try returnType.typeInScope(scope)
     }
 }

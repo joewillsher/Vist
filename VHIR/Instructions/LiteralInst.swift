@@ -9,7 +9,7 @@
 final class IntLiteralInst : InstBase {
     var value: LiteralValue<Int>, size: Int
     
-    override var type: Ty? { return BuiltinType.int(size: UInt32(size)) }
+    override var type: Type? { return BuiltinType.int(size: UInt32(size)) }
     
     private init(val: Int, size: Int, irName: String?) {
         self.value = LiteralValue(val: val, irName: nil)
@@ -24,7 +24,7 @@ final class IntLiteralInst : InstBase {
 final class BoolLiteralInst : InstBase {
     var value: LiteralValue<Bool>
     
-    override var type: Ty? { return value.type }
+    override var type: Type? { return value.type }
     
     private init(val: Bool, irName: String?) {
         self.value = LiteralValue(val: val, irName: nil)
@@ -39,7 +39,7 @@ final class StringLiteralInst : InstBase {
     var value: LiteralValue<String>
     
     var encoding: String.Encoding { return value.value.encoding }
-    override var type: Ty? { return value.type }
+    override var type: Type? { return value.type }
     
     private init(val: String, irName: String?) {
         self.value = LiteralValue(val: val, irName: nil)
@@ -56,7 +56,7 @@ final class LiteralValue<Literal> : Value {
     var value: Literal
     
     var irName: String?
-    var type: Ty? {
+    var type: Type? {
         switch value {
         case is Int: return BuiltinType.int(size: 64)
         case is Bool: return BuiltinType.bool
@@ -76,7 +76,7 @@ final class LiteralValue<Literal> : Value {
 
 
 final class VoidLiteralValue : Value {
-    var type: Ty? { return BuiltinType.void }
+    var type: Type? { return BuiltinType.void }
     weak var parentBlock: BasicBlock?
     var uses: [Operand] = []
     var irName: String? = nil

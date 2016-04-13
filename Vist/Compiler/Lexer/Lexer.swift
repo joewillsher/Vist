@@ -29,6 +29,26 @@ private extension Character {
         return Int32(s[s.startIndex].value)
     }
     
+    /// Is an operator code unit in itself
+    ///
+    /// These are language code units which should be lexed
+    /// as independent always
+    func isOperatorCodeUnit() -> Bool {
+        return "=[],.:;()->|}{@".characters.contains(self)
+    }
+    // TODO
+//    /// Is a valid start of an operator
+//    func isOperatorStartCodeUnit() -> Bool {
+//        
+//    }
+//    func isIdentifierStartCodeUnit() -> Bool {
+//        
+//    }
+//    func isIdentifierContinuationCodeUnit() -> Bool {
+//        
+//    }
+
+    
     func isAlNumOr_() -> Bool {
         return isalnum(value) != 0 || self == "_"
     }
@@ -47,7 +67,7 @@ private extension Character {
     }
     
     func isSymbol() -> Bool {
-        return (isblank(value) != 1) && operators.keys.reduce("", combine: +).characters.contains(self) || stdlibOperators.reduce("", combine: +).characters.contains(self)
+        return (isblank(value) != 1) && isOperatorCodeUnit() || stdlibOperators.reduce("", combine: +).characters.contains(self)
     }
     
     func isWhiteSpace() -> Bool {

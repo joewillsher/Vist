@@ -18,6 +18,8 @@ printf 'Build vist compiler\n'
 # install vistc
 xcodebuild -scheme Vist -configuration "Release" DEPLOYMENT_LOCATION=YES DSTROOT="" -project Vist.xcodeproj
 
+vist -build-stdlib
+
 printf 'Done\n'
 
 

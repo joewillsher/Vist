@@ -12,7 +12,7 @@ final class VariableInst : InstBase {
     //var attrs: [OwnershipAttrs] // specify ref/val semantics
     // also memory management info stored
     
-    override var type: Ty? { return value.type }
+    override var type: Type? { return value.type }
     
     private init(value: Operand, irName: String?) {
         self.value = value

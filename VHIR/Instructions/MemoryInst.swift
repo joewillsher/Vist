@@ -7,22 +7,22 @@
 //
 
 final class AllocInst : InstBase, LValue {
-    var storedType: Ty
+    var storedType: Type
     
-    private init(memType: Ty, irName: String?) {
+    private init(memType: Type, irName: String?) {
         self.storedType = memType
         super.init(args: [], irName: irName)
     }
     
-    override var type: Ty? { return BuiltinType.pointer(to: storedType) }
-    var memType: Ty? { return storedType }
+    override var type: Type? { return BuiltinType.pointer(to: storedType) }
+    var memType: Type? { return storedType }
     
     override var instVHIR: String {
         return "\(name) = alloc \(storedType) \(useComment)"
     }
 }
 final class StoreInst : InstBase {
-    override var type: Ty? { return address.type }
+    override var type: Type? { return address.type }
     private(set) var address: PtrOperand, value: Operand
     
     private init(address: PtrOperand, value: Operand) {
@@ -39,7 +39,7 @@ final class StoreInst : InstBase {
     }
 }
 final class LoadInst : InstBase {
-    override var type: Ty? { return address.memType }
+    override var type: Type? { return address.memType }
     private(set) var address: PtrOperand
     
     private init(address: PtrOperand, irName: String?) {
@@ -53,14 +53,14 @@ final class LoadInst : InstBase {
 }
 final class BitcastInst : InstBase, LValue {
     var pointerType: BuiltinType { return BuiltinType.pointer(to: newType) }
-    override var type: Ty? { return pointerType }
-    var memType: Ty? { return newType }
+    override var type: Type? { return pointerType }
+    var memType: Type? { return newType }
     /// The operand of the cast
     private(set) var address: PtrOperand
     /// The new memory type of the cast
-    private(set) var newType: Ty
+    private(set) var newType: Type
     
-    private init(address: PtrOperand, newType: Ty, irName: String?) {
+    private init(address: PtrOperand, newType: Type, irName: String?) {
         self.address = address
         self.newType = newType
         super.init(args: [address], irName: irName)
@@ -73,7 +73,7 @@ final class BitcastInst : InstBase, LValue {
 
 extension Builder {
     
-    func buildAlloc(type: Ty, irName: String? = nil) throws -> AllocInst {
+    func buildAlloc(type: Type, irName: String? = nil) throws -> AllocInst {
         let ty = type.usingTypesIn(module)
         return try _add(AllocInst(memType: ty, irName: irName))
     }
@@ -86,7 +86,7 @@ extension Builder {
     }
     /// Builds a bitcast instruction
     /// - parameter newType: The memory type to be cast to -- the ptr will have type newType*
-    func buildBitcast(from address: PtrOperand, newType: Ty, irName: String? = nil) throws -> BitcastInst {
+    func buildBitcast(from address: PtrOperand, newType: Type, irName: String? = nil) throws -> BitcastInst {
         return try _add(BitcastInst(address: address, newType: newType.usingTypesIn(module), irName: irName))
     }
     

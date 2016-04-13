@@ -91,12 +91,13 @@ extension ForInLoopStmt: StmtTypeProvider {
         let generator = try iterator.typeForNode(scope)
         
         // check its a generator, and the return type is the loop variable type
-        guard case let storage as StorageType = generator, let generatorFunctionType = storage.generatorFunction() else { throw semaError(.notGenerator(generator)) }
+        guard case let storage as StorageType = generator, let generatorFunctionType = storage.generatorFunction(), let yieldType = generatorFunctionType.yieldType
+            else { throw semaError(.notGenerator(generator)) }
         
         // add bound name to scopes
-        loopScope[variable: binded.name] = (type: generatorFunctionType.returns, mutable: false)
+        loopScope[variable: binded.name] = (type: yieldType, mutable: false)
         
-        self.generatorFunctionName = "generate".mangle(generatorFunctionType)
+        self.generatorFunctionName = "generate".mangle(generatorFunctionType.withParent(storage))
         
         // parse inside of loop in loop scope
         try block.exprs.walkChildren { exp in
@@ -112,7 +113,7 @@ extension WhileLoopStmt: StmtTypeProvider {
     func typeForNode(scope: SemaScope) throws {
         
         // scopes for inner loop
-        let loopScope = SemaScope(parent: scope, returnType: scope.returnType)
+        let loopScope = SemaScope(parent: scope, returnType: scope.returnType, isYield: scope.isYield)
         
         // gen types for iterator
         guard try condition.typeForNode(scope) == StdLib.boolType else { throw semaError(.nonBooleanCondition) }

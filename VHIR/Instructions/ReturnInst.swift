@@ -20,7 +20,7 @@ final class ReturnInst : InstBase {
         return "return \(value.name)"
     }
     
-    override var type: Ty? { return nil }
+    override var type: Type? { return nil }
     
     override var hasSideEffects: Bool { return true }
     override var isTerminator: Bool { return true }

@@ -15,8 +15,14 @@ final class Function : VHIRElement {
     private unowned var parentModule: Module
     var visibility: Visibility
     
-    var loweredFunction: LLVMValueRef = nil
+    var loweredFunction: LLVMValueRef = nil {
+        // update function ref operands
+        didSet {
+            for user in uses { user.updateUsesWithLoweredVal(loweredFunction) }
+        }
+    }
     var _condFailBlock: LLVMBasicBlockRef = nil
+    var uses: [Operand] = []
     
     private init(name: String, type: FnType, module: Module) {
         self.name = name
@@ -51,21 +57,28 @@ extension Function {
     
     /// Creates the function body, and applies `paramNames` as the 
     /// args to the entry block
-    ///
     /// - precondition: Body is undefined
-    func defineBody(paramNames paramNames: [String]) throws {
+    func defineBody(paramNames pNames: [String]) throws {
         guard !hasBody else { throw VHIRError.hasBody }
         
-        let params: [Param]
+        let paramNames: [String]
         
-        switch type.callingConvention {
-        case .method(let selfType):
-            let selfParam = RefParam(paramName: "self", memType: selfType)
-            let appliedParams = zip(paramNames, type.params.dropFirst().map{$0.usingTypesIn(module)}).map(Param.init)
-            params = [selfParam] + appliedParams
-            
-        case .thin:
-            params = zip(paramNames, type.params.map{$0.usingTypesIn(module)}).map(Param.init)
+        if case .method = type.callingConvention {
+            paramNames = ["self"] + pNames
+        }
+        else {
+            paramNames = pNames
+        }
+        
+        // values for the explicit params
+        let params = zip(paramNames, type.params).map { name, type -> Param in
+            let t = type.usingTypesIn(module)
+            if case let bt as BuiltinType = t, case .pointer(let pointee) = bt {
+                return RefParam(paramName: name, memType: pointee)
+            }
+            else {
+                return Param(paramName: name, type: t)
+            }
         }
         
         body = FunctionBody(params: params, parentFunction: self, blocks: [])
@@ -94,11 +107,41 @@ extension Function {
         body?.blocks.append(block)
     }
     
+    /// Return a reference to this function
+    func buildFunctionPointer() -> PtrOperand {
+        return PtrOperand(FunctionRef(toFunction: self, parentBlock: module.builder.insertPoint.block))
+    }
+    
     func dumpIR() {
         if loweredFunction != nil { LLVMDumpValue(loweredFunction) } else { print("\(name) <NULL>") }
     }
     func dump() { print(vhir) }
     var module: Module { return parentModule }
+}
+
+/// A function ref lvalue, this allows functions to be treated as values
+final class FunctionRef : LValue {
+//    unowned
+    let function: Function
+    
+    private init(toFunction function: Function, parentBlock: BasicBlock?) {
+        self.function = function
+        self.parentBlock = parentBlock
+        self.irName = function.name
+    }
+    
+    var irName: String?
+    
+    var memType: Type? { return function.type }
+    var type: Type? { return BuiltinType.pointer(to: function.type) }
+    
+    weak var parentBlock: BasicBlock?
+    
+    var uses: [Operand] {
+        get { return function.uses }
+        set(uses) { function.uses = uses }
+    }
+    
 }
 
 extension BasicBlock {
@@ -143,6 +186,7 @@ extension Builder {
     }
     /// Builds a function and adds it to the module. Declares a body and entry block
     func getOrBuildFunction(name: String, type: FnType, paramNames: [String]) throws -> Function {
+        guard paramNames.count == type.params.count else { fatalError() }
         if let f = module.functionNamed(name) where !f.hasBody {
             try f.defineBody(paramNames: paramNames)
             return f
@@ -162,7 +206,7 @@ extension Builder {
     
     /// Creates function prototype an adds to module
     func createFunctionPrototype(name: String, type: FnType) throws -> Function {
-        let type = type.vhirType(module).usingTypesIn(module) as! FnType
+        let type = type.cannonicalType(module).usingTypesIn(module) as! FnType
         let function = Function(name: name, type: type, module: module)
         module.insert(function)
         return function
@@ -179,13 +223,13 @@ extension Module {
     }
     
     /// Returns a stdlib function, updating the module fn list if needed
-    func getOrInsertStdLibFunction(named name: String, argTypes: [Ty]) throws -> Function? {
+    func getOrInsertStdLibFunction(named name: String, argTypes: [Type]) throws -> Function? {
         guard let (mangledName, fnTy) = StdLib.functionNamed(name, args: argTypes) else { return nil }
         return try getOrInsertFunction(named: mangledName, type: fnTy)
     }
     
     /// Returns a runtime function, updating the module fn list if needed
-    func getOrInsertRuntimeFunction(named name: String, argTypes: [Ty]) throws -> Function? {
+    func getOrInsertRuntimeFunction(named name: String, argTypes: [Type]) throws -> Function? {
         guard let (mangledName, fnTy) = Runtime.functionNamed(name, argTypes: argTypes) else { return nil }
         return try getOrInsertFunction(named: mangledName, type: fnTy)
     }

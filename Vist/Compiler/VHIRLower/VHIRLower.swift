@@ -267,6 +267,12 @@ extension ReturnInst : VHIRLower {
         }
     }
 }
+extension YieldInst : VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        var args = [value.loweredValue]
+        return LLVMBuildCall(irGen.builder, targetThunk!.loweredFunction, &args, 1, irName ?? "")
+    }
+}
 
 extension VariableInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
@@ -297,6 +303,12 @@ private extension FunctionCallInst {
         type?.addMetadataTo(call)
         
         return call
+    }
+}
+
+extension FunctionRef : VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        return function.loweredFunction
     }
 }
 
@@ -571,7 +583,7 @@ extension ArrayInst : VHIRLower {
                                          irGen: irGen)
     }
     
-    private static func lowerBuffer(buffer: [LLVMValueRef], elType: Ty, irName: String?, module: Module, irGen: IRGen) throws -> LLVMValueRef {
+    private static func lowerBuffer(buffer: [LLVMValueRef], elType: Type, irName: String?, module: Module, irGen: IRGen) throws -> LLVMValueRef {
         let elementType = elType.lowerType(module)
         let elPtrType = LLVMPointerType(elementType, 0)
         
@@ -637,7 +649,7 @@ extension ExistentialWitnessMethodInst : VHIRLower {
         let i = try existentialType.indexOf(methodNamed: methodName, argTypes: argTypes)
         let fnType = try existentialType
             .methodType(methodNamed: methodName, argTypes: argTypes)
-            .withOpaqueParent().vhirType(module)
+            .withOpaqueParent().cannonicalType(module)
             .usingTypesIn(module)
         
         var index = LLVMConstInt(LLVMInt32Type(), UInt64(i), false) // i32

@@ -13,7 +13,7 @@ extension String {
     func mangle(type: FnType) -> String {
         return "\(mappedChars())_\(type.mangledName)"
     }
-    func mangle(type: [Ty]) -> String {
+    func mangle(type: [Type]) -> String {
         return mangle(FnType(params: type, returns: BuiltinType.void/*Doesnt matter*/))
     }
     

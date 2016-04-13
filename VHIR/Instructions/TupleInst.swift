@@ -16,7 +16,7 @@ final class TupleCreateInst : InstBase {
         super.init(args: elements, irName: irName)
     }
     
-    override var type: Ty? { return tupleType }
+    override var type: Type? { return tupleType }
     
     override var instVHIR: String {
         return "\(name) = tuple \(args.vhirValueTuple()) \(useComment)"
@@ -25,16 +25,16 @@ final class TupleCreateInst : InstBase {
 
 final class TupleExtractInst : InstBase {
     var tuple: Operand, elementIndex: Int
-    var elementType: Ty
+    var elementType: Type
     
-    private init(tuple: Operand, index: Int, elementType: Ty, irName: String?) {
+    private init(tuple: Operand, index: Int, elementType: Type, irName: String?) {
         self.tuple = tuple
         self.elementIndex = index
         self.elementType = elementType
         super.init(args: [tuple], irName: irName)
     }
     
-    override var type: Ty? { return elementType }
+    override var type: Type? { return elementType }
     
     override var instVHIR: String {
         return "\(name) = tuple_extract \(tuple.vhir), \(elementIndex) \(useComment)"
@@ -44,17 +44,17 @@ final class TupleExtractInst : InstBase {
 
 final class TupleElementPtrInst : InstBase, LValue {
     var tuple: PtrOperand, elementIndex: Int
-    var elementType: Ty
+    var elementType: Type
     
-    private init(tuple: PtrOperand, index: Int, elementType: Ty, irName: String?) {
+    private init(tuple: PtrOperand, index: Int, elementType: Type, irName: String?) {
         self.tuple = tuple
         self.elementIndex = index
         self.elementType = elementType
         super.init(args: [tuple], irName: irName)
     }
     
-    override var type: Ty? { return BuiltinType.pointer(to: elementType) }
-    var memType: Ty? { return elementType }
+    override var type: Type? { return BuiltinType.pointer(to: elementType) }
+    var memType: Type? { return elementType }
 
     override var instVHIR: String {
         return "\(name) = tuple_element \(tuple.vhir), \(elementIndex) \(useComment)"

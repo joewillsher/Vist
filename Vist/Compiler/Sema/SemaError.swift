@@ -10,18 +10,18 @@ enum SemaError: VistError {
     case invalidType(BuiltinType), invalidFloatType(UInt32)
     case invalidRedeclaration(String), invalidTypeRedeclaration(String)
     case noVariable(String)
-    case heterogenousArray([Ty]), emptyArray
+    case heterogenousArray([Type]), emptyArray
     case cannotSubscriptNonArrayVariable, nonIntegerSubscript
-    case nonBooleanCondition, notRangeType, differentTypeForMutation(name: String?, from: Ty, to: Ty)
+    case nonBooleanCondition, notRangeType, differentTypeForMutation(name: String?, from: Type, to: Type)
     case immutableVariable(name: String, type: String), immutableProperty(p: String, ty: String), immutableObject(type: String), immutableTupleMember(index: Int)
     case cannotAssignToNullExpression(String)
     case noTupleElement(index: Int, size: Int)
     
-    case noFunction(String, [Ty]), wrongFuncParamList(applied: [String], forType: [Ty])
-    case wrongFunctionReturnType(applied: Ty, expected: Ty)
-    case wrongFunctionApplications(name: String, applied: [Ty], expected: [Ty])
+    case noFunction(String, [Type]), wrongFuncParamList(applied: [String], forType: [Type])
+    case wrongFunctionReturnType(applied: Type, expected: Type)
+    case wrongFunctionApplications(name: String, applied: [Type], expected: [Type])
     case noTypeNamed(String)
-    case noPropertyNamed(type: String, property: String), cannotStoreInParameterStruct(propertyName: String), notStructType(Ty?), notTupleType(Ty?)
+    case noPropertyNamed(type: String, property: String), cannotStoreInParameterStruct(propertyName: String), notStructType(Type?), notTupleType(Type?)
     
     // not user visible
     case noStdBoolType, noStdIntType, notTypeProvider, noTypeForStruct, noTypeForTuple
@@ -29,7 +29,7 @@ enum SemaError: VistError {
     case typeNotFound, paramsNotTyped, integerNotTyped, boolNotTyped
     case noMemberwiseInit
     
-    case invalidYield, invalidReturn, notGenerator(Ty?)
+    case invalidYield, invalidReturn, notGenerator(Type?)
     
     case genericSubstitutionInvalid, notValidLookup, unreachable(String), todo(String)
     
@@ -122,10 +122,10 @@ enum SemaError: VistError {
 
 
 // used for array's error messages
-private extension CollectionType where Generator.Element == Ty {
+private extension CollectionType where Generator.Element == Type {
     
     /// Returns info about the collection
-    func heterogeneous() -> (type: Ty?, except: Ty?) {
+    func heterogeneous() -> (type: Type?, except: Type?) {
         guard let first = self.first else { return (nil, nil) }
         
         guard let u = indexOf({ $0 != first }) else { return (nil, nil) }

@@ -9,18 +9,18 @@
 
 final class ArrayInst : InstBase {
     var values: [Operand]
-    let arrayType: (mem: Ty, size: Int)
+    let arrayType: (mem: Type, size: Int)
     
-    override var type: Ty? { return BuiltinType.array(el: arrayType.mem, size: UInt32(arrayType.size)) }
+    override var type: Type? { return BuiltinType.array(el: arrayType.mem, size: UInt32(arrayType.size)) }
     
-    private init(values: [Operand], memType: Ty, irName: String?) {
+    private init(values: [Operand], memType: Type, irName: String?) {
         self.values = values
         self.arrayType = (mem: memType, size: values.count)
         super.init(args: values, irName: irName)
     }
     
     override var instVHIR: String {
-        let v = values.map { $0.valueName }
+        let v = values.map { value in value.valueName }
         return "\(name) = array [\(v.joinWithSeparator(", "))] \(useComment)"
     }
     
@@ -28,8 +28,8 @@ final class ArrayInst : InstBase {
 
 extension Builder {
     
-    func buildArray(values: [Operand], memType: Ty, irName: String? = nil) throws -> ArrayInst {
-        guard values.indexOf({$0.type != memType}) == nil else { fatalError("Not homogenous array") }
+    func buildArray(values: [Operand], memType: Type, irName: String? = nil) throws -> ArrayInst {
+        guard values.indexOf({value in value.type != memType}) == nil else { fatalError("Not homogenous array") }
         return try _add(ArrayInst(values: values, memType: memType, irName: irName))
     }
 }

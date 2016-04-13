@@ -189,7 +189,35 @@ $entry:
   return ()
 }
 
-func @vist-Ucshim-Uputchar_ti8 : &thin (%Builtin.Int8) -> %Builtin.Void
+func @generate_mR : &method (%*R) -> %Builtin.Void {
+$entry(%self: %*R):
+  %start = struct_element %self: %*R, #start  	// user: %0
+  %0 = load %start: %*I  	// user: %2
+  %1 = alloc %Int  	// users: %2, %4, %8, %10, %14
+  store %0 in %1: %*I 
+  break $cond
+
+$cond:			// preds: entry, loop
+  %4 = load %1: %*I  	// user: %6
+  %end = struct_element %self: %*R, #end  	// user: %5
+  %5 = load %end: %*I  	// user: %6
+  %6 = call @-L-E_tII (%4: %Int, %5: %Int)  	// user: %cond
+  %cond = struct_extract %6: %Bool, #value  	// user: nil
+  break %cond: %Builtin.Bool, $loop, $loop.exit
+
+$loop:			// preds: cond
+  %8 = load %1: %*I  	// user: %9
+  yield <null> (%8: %Int) 
+  %10 = load %1: %*I  	// user: %13
+  %11 = int_literal 1  	// user: %12
+  %12 = struct %I (%11: %Builtin.Int64)  	// user: %13
+  %13 = call @-P_tII (%10: %Int, %12: %Int)  	// user: %14
+  store %13 in %1: %*I 
+  break $cond
+
+$loop.exit:			// preds: cond
+  return ()
+}
 
 func @Int32_tI32 : &thin (%Int32) -> %Int32 {
 $entry(%val: %Int32):
@@ -410,31 +438,6 @@ $fail.0:			// preds: entry
   break $else.1
 
 $else.1:			// preds: fail.0
-  %11 = int_literal 0  	// user: %12
-  %12 = struct %I (%11: %Builtin.Int64)  	// user: %16
-  %13 = alloc %String  	// users: %14, %15
-  store %str in %13: %*String 
-  %15 = call @bufferCapacity_mString (%13: %*String)  	// user: %16
-  %16 = call @-D-D-L_tII (%12: %Int, %15: %Int)  	// users: %17, %18
-  %17 = struct_extract %16: %Range, #start  	// user: %19
-  %18 = struct_extract %16: %Range, #end  	// user: %20
-  %19 = struct_extract %17: %Int, #value  	// user: %21
-  %20 = struct_extract %18: %Int, #value  	// user: %28
-  break $loop(%19: %Builtin.Int64)
-
-$loop(%loop.count: %Builtin.Int64):			// preds: else.1, loop
-  %i = struct %I (%loop.count: %Builtin.Int64)  	// user: %24
-  %22 = alloc %String  	// users: %23, %24
-  store %str in %22: %*String 
-  %24 = call @codeUnitAtIndex_mStringI (%22: %*String, %i: %Int)  	// user: %25
-  %25 = builtin opaque_load %24: %Builtin.OpaquePointer  	// user: %26
-  %26 = call @vist-Ucshim-Uputchar_ti8 (%25: %Builtin.Int8) 
-  %27 = int_literal 1  	// user: %count.it
-  %count.it = builtin i_add_overflow %loop.count: %Builtin.Int64, %27: %Builtin.Int64  	// users: %28, %29
-  %28 = builtin i_cmp_lte %count.it: %Builtin.Int64, %20: %Builtin.Int64  	// user: nil
-  break %28: %Builtin.Bool, $loop(%count.it: %Builtin.Int64), $loop.exit
-
-$loop.exit:			// preds: loop
   return ()
 }
 
@@ -562,6 +565,8 @@ $entry:
   %4 = load %self: %*I  	// user: %5
   return %4
 }
+
+func @generate : &method (%*R) -> %Builtin.Void
 
 func @-B-E_tDD : &thin (%Double, %Double) -> %Bool {
 $entry(%a: %Double, %b: %Double):

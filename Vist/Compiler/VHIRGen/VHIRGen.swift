@@ -230,7 +230,7 @@ extension FuncDecl : StmtEmitter {
         
         // if has body
         guard let impl = impl else {
-            try module.builder.createFunctionPrototype(mangledName, type: type.vhirType(module))
+            try module.builder.createFunctionPrototype(mangledName, type: type)
             return
         }
         
@@ -478,50 +478,46 @@ extension ForInLoopStmt : StmtEmitter {
         // extract loop start and ends as builtin ints
         let generator = try iterator.emitRValue(module: module, scope: scope).asReferenceAccessor().reference()
         
-        guard let functionName = generatorFunctionName, let generatorFunction = module.functionNamed(functionName) else { fatalError() }
+        guard let functionName = generatorFunctionName, let generatorFunction = module.functionNamed(functionName), let yieldType = generatorFunction.type.yieldType else { fatalError() }
         
         let entryInsertPoint = module.builder.insertPoint
         
-        let loopThunk = try module.builder.getOrBuildFunction("loop_thunk", type: FnType(params: [generatorFunction.type.returns]), paramNames: [binded.name])
+        let loopThunk = try module.builder.getOrBuildFunction("loop_thunk", type: FnType(params: [yieldType]), paramNames: [binded.name])
         try module.builder.setInsertPoint(loopThunk)
         
         let loopScope = Scope(parent: scope, function: loopThunk)
         loopScope.add(try loopThunk.paramNamed(binded.name).accessor(), name: binded.name)
         
         try block.emitStmt(module: module, scope: loopScope)
-        try module.builder.buildYieldUnwind()
+        try module.builder.buildReturnVoid()
         
 //        generatorFunction.iniline = .alaways
         
         module.builder.insertPoint = entryInsertPoint
         
-        try module.builder.buildFunctionCall(generatorFunction, args: [generator])
+        try module.builder.buildFunctionCall(generatorFunction, args: [generator, loopThunk.buildFunctionPointer()])
         
         for case let inst as YieldInst in generatorFunction.instructions {
             inst.targetThunk = loopThunk
         }
         
 //        module.dump()
-        
+        // TODO: making a random function called `generator` idk why, fix it
         
     }
 }
 
-//extension BlockExpr {
-//    
-//    /// Emit a thunk
-//    func emitThunk(module module: Module, scope: Scope) throws -> Accessor {
-//        
-//    }
-//    
-//}
-
 
 extension YieldStmt : StmtEmitter {
     func emitStmt(module module: Module, scope: Scope) throws {
+        
+        guard case let loopThunk as RefParam = module.builder.insertPoint.function?.params?[1]
+//            where loopThunk as
+            else { fatalError() }
+        
         let val = try expr.emitRValue(module: module, scope: scope)
-        let thunk = module.functionNamed("main")!
-        try module.builder.buildYield(Operand(val.aggregateGetter()), to: thunk)
+        let param = try val.aggregateGetter()
+        try module.builder.buildFunctionApply(PtrOperand(loopThunk), returnType: BuiltinType.void, args: [Operand(param)])
     }
 }
 
@@ -618,14 +614,14 @@ extension InitialiserDecl: StmtEmitter {
         
         // if has body
         guard let impl = impl else {
-            try module.builder.createFunctionPrototype(mangledName, type: initialiserType.vhirType(module))
+            try module.builder.createFunctionPrototype(mangledName, type: initialiserType.cannonicalType(module))
             return
         }
         
         let originalInsertPoint = module.builder.insertPoint
         
         // make function and move into it
-        let function = try module.builder.buildFunction(mangledName, type: initialiserType.vhirType(module), paramNames: impl.params)
+        let function = try module.builder.buildFunction(mangledName, type: initialiserType.cannonicalType(module), paramNames: impl.params)
         try module.builder.setInsertPoint(function)
         
         // make scope and occupy it with params

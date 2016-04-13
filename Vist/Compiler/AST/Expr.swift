@@ -11,10 +11,10 @@
 ///      - literals, tuples, parens, array, closure
 ///      - Call expression, operator, methods, casts
 ///      - Sub expressions of syntax structures, like `type name generic params`
-protocol Expr: ASTNode, _Typed, ExprTypeProvider, ValueEmitter {}
-protocol TypedExpr: Expr, Typed {}
+protocol Expr : ASTNode, _Typed, ExprTypeProvider, ValueEmitter {}
+protocol TypedExpr : Expr, Typed {}
 
-final class BlockExpr: TypedExpr, ScopeNode {
+final class BlockExpr : TypedExpr, ScopeNode {
     var exprs: [ASTNode]
     var variables: [String]
     
@@ -30,7 +30,7 @@ final class BlockExpr: TypedExpr, ScopeNode {
     }
 }
 
-final class ClosureExpr: TypedExpr, ScopeNode {
+final class ClosureExpr : TypedExpr, ScopeNode {
     var exprs: [ASTNode]
     var parameters: [String]
     
@@ -112,7 +112,7 @@ final class StringLiteral: TypedExpr {
 //        val =  c
 //    }
 //    
-//    var type: Ty? = nil
+//    var type: Type? = nil
 //}
 
 
@@ -134,7 +134,7 @@ final class VariableExpr: ChainableExpr {
         self.name = name
     }
     
-    var _type: Ty? = nil
+    var _type: Type? = nil
 }
 
 protocol ChainableExpr: Expr {
@@ -153,7 +153,7 @@ final class MutationExpr: Expr {
         self.value = value
     }
     
-    var _type: Ty? = nil
+    var _type: Type? = nil
 }
 
 
@@ -167,7 +167,7 @@ final class MutationExpr: Expr {
 protocol FunctionCall: class, Expr, _Typed {
     var name: String { get }
     var argArr: [Expr] { get }
-    var _type: Ty? { get set }
+    var _type: Type? { get set }
 
     var mangledName: String { get set }
     var fnType: FnType? { get set }
@@ -189,7 +189,7 @@ final class BinaryExpr: FunctionCall {
     var argArr: [Expr] { return [lhs, rhs] }
     
     var fnType: FnType? = nil
-    var _type: Ty? = nil
+    var _type: Type? = nil
 }
 
 final class PrefixExpr: Expr {
@@ -201,7 +201,7 @@ final class PrefixExpr: Expr {
         self.expr = expr
     }
     
-    var _type: Ty? = nil
+    var _type: Type? = nil
 }
 
 final class PostfixExpr: Expr {
@@ -213,7 +213,7 @@ final class PostfixExpr: Expr {
         self.expr = expr
     }
     
-    var _type: Ty? = nil
+    var _type: Type? = nil
 }
 
 
@@ -237,12 +237,12 @@ final class FunctionCallExpr: Expr, FunctionCall {
     var argArr: [Expr] { return args.elements }
     
     var fnType: FnType? = nil
-    var _type: Ty? = nil
+    var _type: Type? = nil
 }
 
 
 final class FunctionImplementationExpr: Expr {
-    let params: [String]
+    var params: [String]
     let body: BlockExpr
     
     init(params: [String], body: BlockExpr) {
@@ -250,7 +250,7 @@ final class FunctionImplementationExpr: Expr {
         self.body = body
     }
     
-    var _type: Ty? = nil
+    var _type: Type? = nil
 }
 
 final class TupleMemberLookupExpr: LookupExpr {
@@ -262,7 +262,7 @@ final class TupleMemberLookupExpr: LookupExpr {
         self.object = object
     }
     
-    var _type: Ty? = nil
+    var _type: Type? = nil
 }
 
 
@@ -285,7 +285,7 @@ final class ArrayExpr: ChainableExpr, Typed {
         self.arr = arr
     }
     
-    var elType: Ty?
+    var elType: Type?
     var type: BuiltinType? = nil
 }
 
@@ -298,7 +298,7 @@ final class ArraySubscriptExpr: ChainableExpr {
         self.index = index
     }
     
-    var _type: Ty? = nil
+    var _type: Type? = nil
 }
 
 
@@ -392,7 +392,7 @@ final class MethodCallExpr: ChainableExpr, FunctionCall {
     
     var structType: StorageType? = nil
     var fnType: FnType? = nil
-    var _type: Ty? = nil
+    var _type: Type? = nil
 }
 
 final class PropertyLookupExpr: LookupExpr {
@@ -404,7 +404,7 @@ final class PropertyLookupExpr: LookupExpr {
         self.object = object
     }
     
-    var _type: Ty? = nil
+    var _type: Type? = nil
 }
 
 
@@ -417,7 +417,7 @@ final class PropertyLookupExpr: LookupExpr {
 
 
 struct NullExpr: Expr {
-    var _type: Ty? = BuiltinType.null
+    var _type: Type? = BuiltinType.null
 }
 
 
@@ -437,7 +437,7 @@ final class TupleExpr: ChainableExpr {
         return elements.flatMap { $0 as? T }
     }
     
-    var _type: Ty? = nil
+    var _type: Type? = nil
 }
 
 struct CommentExpr: Expr {
@@ -446,7 +446,7 @@ struct CommentExpr: Expr {
         self.str = str
     }
     
-    var _type: Ty? = nil
+    var _type: Type? = nil
 }
 
 final class Void: TypedExpr {

@@ -35,9 +35,9 @@ extension StructType {
         return module.getOrInsert(t)
     }
     
-    func usingTypesIn(module: Module) -> Ty {
-        let mappedEls = members.map {
-            ($0.name, $0.type.usingTypesIn(module), $0.mutable) as StructMember
+    func usingTypesIn(module: Module) -> Type {
+        let mappedEls = members.map { member in
+            (member.name, member.type.usingTypesIn(module), member.isMutable) as StructMember
         }
         var newTy = StructType(members: mappedEls, methods: methods, name: name, heapAllocated: heapAllocated)
         newTy.genericTypes = genericTypes
@@ -50,7 +50,7 @@ extension StructType {
         return StructType(members: [], methods: [], name: n)
     }
     
-    static func withTypes(tys: [Ty], name: String = "") -> StructType {
+    static func withTypes(tys: [Type], name: String = "") -> StructType {
         return StructType(members: tys.map { (name: name, type: $0, mutable: true) }, methods: [], name: name)
     }
     

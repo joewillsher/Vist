@@ -2,14 +2,7 @@
 type %Gen = { %Int }
 type %Int = { %Builtin.Int64 }
 
-func @generate_mGen : &method (%*Gen) -> %Int {
-$entry(%self: %*Gen):
-  %num = struct_element %self: %*Gen, #num  	// user: %0
-  %0 = load %num: %*I  	// user: %1
-  yield @loop_thunk  (%0: %Int) 
-}
-
-func @generate : &method (%*Gen) -> %Int
+func @generate : &method (%*Gen, %*tI) -> %Builtin.Void
 
 func @Gen_tI : &thin (%Int) -> %Gen {
 $entry(%$0: %Int):
@@ -20,13 +13,19 @@ $entry(%$0: %Int):
   return %1
 }
 
+func @generate_mGenPtI : &method (%*Gen, %*tI) -> %Builtin.Void {
+$entry(%self: %*Gen, %loop_thunk: %*tI):
+  %num = struct_element %self: %*Gen, #num  	// user: %0
+  %0 = load %num: %*I  	// user: %1
+  %1 = apply %loop_thunk (%0: %Int) 
+  return ()
+}
+
 func @loop_thunk : &thin (%Int) -> %Builtin.Void {
 $entry(%a: %Int):
   %0 = call @print_tI (%a: %Int) 
-  yield_unwind
+  return ()
 }
-
-func @print_tI : &thin (%Int) -> %Builtin.Void
 
 func @main : &thin () -> %Builtin.Void {
 $entry:
@@ -34,8 +33,10 @@ $entry:
   %1 = struct %I (%0: %Builtin.Int64)  	// user: %2
   %2 = call @Gen_tI (%1: %Int)  	// user: %gen
   variable_decl %gen = %2: %Gen  	// user: %4
-  %3 = alloc %Gen  	// users: %4, %generate
+  %3 = alloc %Gen  	// users: %4, %5
   store %gen in %3: %*Gen 
-  %generate = call @generate_mGen (%3: %*Gen) 
+  %5 = call @generate_mGenPtI (%3: %*Gen, %loop_thunk: %*tI) 
   return ()
 }
+
+func @print_tI : &thin (%Int) -> %Builtin.Void

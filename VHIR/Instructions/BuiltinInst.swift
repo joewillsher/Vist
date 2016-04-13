@@ -8,14 +8,14 @@
 
 
 final class BuiltinInstCall : InstBase {
-    override var type: Ty? { return returnType }
+    override var type: Type? { return returnType }
     let inst: BuiltinInst
     var instName: String { return inst.rawValue }
-    var returnType: Ty
+    var returnType: Type
     
     private init?(inst: BuiltinInst, args: [Operand], irName: String?) {
         self.inst = inst
-        guard let argTypes = args.optionalMap({ $0.type }), let retTy = inst.returnType(params: argTypes) else { return nil }
+        guard let argTypes = try? args.map(InstBase.getType(_:)), let retTy = inst.returnType(params: argTypes) else { return nil }
         self.returnType = retTy
         super.init(args: args, irName: irName)
     }
@@ -76,7 +76,7 @@ enum BuiltinInst : String {
         case .trap: return 0
         }
     }
-    func returnType(params params: [Ty]) -> Ty? {
+    func returnType(params params: [Type]) -> Type? {
         switch self {
         case .iadd, .isub, .imul:
             return TupleType(members: [params.first!, Builtin.boolType]) // overflowing arithmetic

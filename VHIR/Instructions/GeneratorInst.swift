@@ -21,7 +21,7 @@ final class YieldInst : InstBase {
         return "yield \(targetThunk.map { "@\($0.name) " } ?? "<null>") (\(value)) \(useComment)"
     }
     
-    override var type: Ty? { return nil }
+    override var type: Type? { return nil }
     
     override var hasSideEffects: Bool { return true }
 }
@@ -37,7 +37,7 @@ final class YieldUnwindInst : InstBase {
         return "yield_unwind"
     }
     
-    override var type: Ty? { return nil }
+    override var type: Type? { return nil }
 
     override var hasSideEffects: Bool { return true }
 }

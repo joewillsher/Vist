@@ -16,9 +16,9 @@ final class AllocObjectInst : InstBase, LValue {
         super.init(args: [], irName: irName)
     }
     
-    var refType: Ty { return storedType.refCountedBox(module).usingTypesIn(module) }
-    override var type: Ty? { return memType.map { BuiltinType.pointer(to: $0) } }
-    var memType: Ty? { return Runtime.refcountedObjectType.usingTypesIn(module) }
+    var refType: Type { return storedType.refCountedBox(module).usingTypesIn(module) }
+    override var type: Type? { return memType.map { BuiltinType.pointer(to: $0) } }
+    var memType: Type? { return Runtime.refcountedObjectType.usingTypesIn(module) }
     
     override var instVHIR: String {
         return "\(name) = alloc_object \(refType) \(useComment)"
@@ -33,8 +33,8 @@ final class RetainInst : InstBase {
         super.init(args: [object], irName: irName)
     }
     
-    override var type: Ty? { return object.memType.map { BuiltinType.pointer(to: $0) } }
-    var memType: Ty? { return object.memType }
+    override var type: Type? { return object.memType.map { BuiltinType.pointer(to: $0) } }
+    var memType: Type? { return object.memType }
     
     override var instHasSideEffects: Bool { return true }
     
@@ -52,8 +52,8 @@ final class ReleaseInst : InstBase {
         super.init(args: [object], irName: irName)
     }
     
-    override var type: Ty? { return object.memType.map { BuiltinType.pointer(to: $0) } }
-    var memType: Ty? { return object.memType }
+    override var type: Type? { return object.memType.map { BuiltinType.pointer(to: $0) } }
+    var memType: Type? { return object.memType }
     
     override var instHasSideEffects: Bool { return true }
     
@@ -71,8 +71,8 @@ final class DeallocObjectInst : InstBase {
         super.init(args: [object], irName: irName)
     }
     
-    override var type: Ty? { return object.memType.map { BuiltinType.pointer(to: $0) } }
-    var memType: Ty? { return object.memType }
+    override var type: Type? { return object.memType.map { BuiltinType.pointer(to: $0) } }
+    var memType: Type? { return object.memType }
     
     override var instHasSideEffects: Bool { return true }
     

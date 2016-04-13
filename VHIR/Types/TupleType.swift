@@ -7,10 +7,10 @@
 //
 
 
-final class TupleType : Ty {
-    var members: [Ty]
+final class TupleType : Type {
+    var members: [Type]
     
-    init(members: [Ty]) {
+    init(members: [Type]) {
         self.members = members
     }
     
@@ -19,11 +19,11 @@ final class TupleType : Ty {
         return LLVMStructType(&arr, UInt32(members.count), false)
     }
     
-    func usingTypesIn(module: Module) -> Ty {
+    func usingTypesIn(module: Module) -> Type {
         return TupleType(members: members.map { $0.usingTypesIn(module) })
     }
     
-    func propertyType(index: Int) throws -> Ty {
+    func propertyType(index: Int) throws -> Type {
         guard index < members.count else { throw semaError(.noTupleElement(index: index, size: members.count)) }
         return members[index]
     }

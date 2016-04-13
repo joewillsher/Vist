@@ -45,7 +45,7 @@ struct Runtime {
     /// - parameter name: Unmangled name
     /// - parameter args: Applied arg types
     /// - returns: An optional tuple of `(mangledName, type)`
-    static func functionNamed(name: String, argTypes args: [Ty]) -> (mangledName: String, type: FnType)? {
+    static func functionNamed(name: String, argTypes args: [Type]) -> (mangledName: String, type: FnType)? {
         return functionContainer[fn: name, types: args]
     }
     

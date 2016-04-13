@@ -7,7 +7,7 @@
 //
 
 protocol ExprTypeProvider {
-    func typeForNode(scope: SemaScope) throws -> Ty
+    func typeForNode(scope: SemaScope) throws -> Type
 }
 
 protocol StmtTypeProvider {
@@ -19,7 +19,7 @@ protocol DeclTypeProvider {
 
 // TODO: make private
 extension ExprTypeProvider {
-    func typeForNode(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Type {
         return BuiltinType.null
     }
 }

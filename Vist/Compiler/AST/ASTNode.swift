@@ -6,22 +6,21 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-protocol ASTNode: Printable {}
+protocol ASTNode: Printable { }
 
-// use behaviour delegates (when released in swift 3) to make `let (delated) type: Ty { get }`
+// use behaviour delegates (when released in swift 3) to make `let (delated) type: Type { get }`
 ///
 /// AST walker node
 ///
 /// Provides common interfaces for expressions, declarations, and statements
-///
-final class AST: ASTNode, ScopeNode {
+final class AST : ASTNode, ScopeNode {
     var exprs: [ASTNode]
     
     init(exprs: [ASTNode]) {
         self.exprs = exprs
     }
     
-    var type: Ty? = nil
+    var type: Type? = nil
     
     var childNodes: [ASTNode] {
         return exprs
@@ -33,7 +32,7 @@ final class AST: ASTNode, ScopeNode {
 /// Conformants have a `_type` member which is an existential type
 ///
 protocol _Typed {
-    var _type: Ty? { get set }
+    var _type: Type? { get set }
 }
 
 extension _Typed {
@@ -43,10 +42,9 @@ extension _Typed {
 }
 
 /// Typed protocol which defines a generic type
-///
-protocol Typed: _Typed {
-    associatedtype Type: Ty
-    var type: Type? { get set }
+protocol Typed : _Typed {
+    associatedtype Ty: Type
+    var type: Ty? { get set }
 }
 
 // extending `Typed` to conform to `_Typed`
@@ -56,12 +54,12 @@ extension Typed {
     /// 
     /// It should only be used by API, use the `type` property instead
     @available(*, unavailable, message="Use the `type` property")
-    var _type: Ty? {
+    var _type: Type? {
         get {
-            return type as? Ty
+            return type as Type?
         }
         set {
-            if case let t as Type = newValue {
+            if case let t as Ty = newValue {
                 type = t
             }
             else {

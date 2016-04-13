@@ -9,13 +9,13 @@
 /// A parameter passed between blocks and functions
 class Param : Value {
     var paramName: String
-    var type: Ty?
+    var type: Type?
     weak var parentBlock: BasicBlock?
     var uses: [Operand] = []
     
     var phi: LLVMValueRef = nil
     
-    init(paramName: String, type: Ty) {
+    init(paramName: String, type: Type) {
         self.paramName = paramName
         self.type = type
     }
@@ -28,9 +28,9 @@ class Param : Value {
 /// A param backed by a pointer
 final class RefParam : Param, LValue {
     
-    var memType: Ty?
+    var memType: Type?
     
-    init(paramName: String, memType: Ty) {
+    init(paramName: String, memType: Type) {
         self.memType = memType
         super.init(paramName: paramName, type: BuiltinType.pointer(to: memType))
     }

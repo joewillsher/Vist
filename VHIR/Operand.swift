@@ -22,12 +22,12 @@ class Operand : Value {
     }
 
     @available(*, unavailable, message="`Operand` initialisers should not take `Operand`s")
-    init(_ operand: Operand) { fatalError() }
+    init(_ operand: Operand) { fatalError("`Operand` initialisers should not take `Operand`s") }
     
     private(set) var loweredValue: LLVMValueRef = nil
     func setLoweredValue(val: LLVMValueRef) { loweredValue = val }
 
-    var type: Ty? { return value?.type }
+    var type: Type? { return value?.type }
 }
 
 extension Operand {
@@ -64,14 +64,14 @@ extension Operand {
 final class PtrOperand : Operand, LValue {
     
     /// The stored lvalue
-    var memType: Ty?
+    var memType: Type?
     
     init(_ value: LValue) {
         self.memType = value.memType
         super.init(value)
     }
     
-    private init(rvalue: Value, memType: Ty) {
+    private init(rvalue: Value, memType: Type) {
         self.memType = memType
         super.init(rvalue)
     }
@@ -99,7 +99,7 @@ final class BlockOperand : Operand {
     let param: Param
     private unowned let predBlock: BasicBlock
     
-    override var type: Ty? { return param.type }
+    override var type: Type? { return param.type }
     
     /// Sets the phi's value for the incoming block `self.predBlock`
     override func setLoweredValue(val: LLVMValueRef) {

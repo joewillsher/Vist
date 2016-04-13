@@ -16,7 +16,7 @@ protocol Accessor : class {
     /// - note: not guaranteed to be a reference to the original.
     func asReferenceAccessor() throws -> GetSetAccessor
     
-    var storedType: Ty? { get }
+    var storedType: Type? { get }
     
     func getMemCopy() throws -> GetSetAccessor
     func aggregateGetter() throws -> Value
@@ -63,7 +63,7 @@ extension GetSetAccessor {
     // if its already a red accessor we're done
     func asReferenceAccessor() throws -> GetSetAccessor { return self }
     
-    var storedType: Ty? { return mem.memType }
+    var storedType: Type? { return mem.memType }
     
     func getter() throws -> Value {
         return try module.builder.buildLoad(from: reference())
@@ -108,7 +108,7 @@ final class ValAccessor : Accessor {
         return try value.allocGetSetAccessor()
     }
     
-    var storedType: Ty? { return value.type }
+    var storedType: Type? { return value.type }
 }
 
 // Helper function for constructing a reference copy

@@ -14,7 +14,7 @@ protocol BreakInstruction : Inst {
 final class BreakInst : InstBase, BreakInstruction {
     var call: BlockCall
     
-    override var type: Ty? { return nil }
+    override var type: Type? { return nil }
     
     private init(call: BlockCall) {
         self.call = call
@@ -33,7 +33,7 @@ final class CondBreakInst : InstBase, BreakInstruction {
     var thenCall: BlockCall, elseCall: BlockCall
     var condition: Operand
     
-    override var type: Ty? { return nil }
+    override var type: Type? { return nil }
     
     private init(then: BlockCall, else: BlockCall, condition: Operand) {
         self.thenCall = then

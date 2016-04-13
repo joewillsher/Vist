@@ -12,7 +12,13 @@ struct StdLib {
     static let int32Type =  StructType(members:   [("value", BuiltinType.int(size: 32), true)],       methods: [], name: "Int32")
     static let boolType =   StructType(members:   [("value", BuiltinType.bool, true)],                methods: [], name: "Bool")
     static let doubleType = StructType(members:   [("value", BuiltinType.float(size: 64), true)],     methods: [], name: "Double")
-    static let rangeType =  StructType(members:   [("start", intType, true), ("end", intType, true)], methods: [], name: "Range")
+    static let rangeType =  StructType(
+        members:   [
+            ("start", intType, true),
+            ("end", intType, true)],
+        methods: [
+            ("generate", FnType(params: [], returns: BuiltinType.void, yieldType: intType))
+        ], name: "Range")
     static let stringType = StructType(
         members:   [
             ("base", BuiltinType.opaquePointer, true),
@@ -106,7 +112,7 @@ struct StdLib {
     private static let functionContainer = FunctionContainer(functions: functions, types: types, metadata: ["stdlib.call.optim"])
     
     
-    private static func getStdLibFunctionWithInitInfo(id: String, args: [Ty]) -> (String, FnType)? {
+    private static func getStdLibFunctionWithInitInfo(id: String, args: [Type]) -> (String, FnType)? {
         return functionContainer[fn: id, types: args]
     }
     
@@ -122,7 +128,7 @@ struct StdLib {
     /// - parameter name: Unmangled name
     /// - parameter args: Applied arg types
     /// - returns: An optional tuple of `(mangledName, type)`
-    static func functionNamed(name: String, args: [Ty]) -> (mangledName: String, type: FnType)? {
+    static func functionNamed(name: String, args: [Type]) -> (mangledName: String, type: FnType)? {
         return functionContainer[fn: name, types: args]
     }    
     

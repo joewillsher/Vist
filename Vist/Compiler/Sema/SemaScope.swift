@@ -6,7 +6,7 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-typealias Variable = (type: Ty, mutable: Bool)
+typealias Variable = (type: Type, mutable: Bool)
 
 final class SemaScope {
     
@@ -15,7 +15,7 @@ final class SemaScope {
     private var types: [String: StorageType]
     var concepts: [String: ConceptType]
     let isStdLib: Bool
-    var returnType: Ty?, isYield: Bool
+    var returnType: Type?, isYield: Bool
     let parent: SemaScope?
     
     var genericParameters: [ConstrainedType]? = nil
@@ -25,7 +25,7 @@ final class SemaScope {
     /// Hint about what type the object should have
     ///
     /// Used for blocks’ types
-    var semaContext: Ty?
+    var semaContext: Type?
     
     subscript (variable variable: String) -> Variable? {
         get {
@@ -48,7 +48,7 @@ final class SemaScope {
     /// in the builtin functions, then it looks through this scope,
     /// then searches parent scopes, throwing if not found
     ///
-    func function(name: String, argTypes: [Ty]) throws -> (String, FnType) {
+    func function(name: String, argTypes: [Type]) throws -> (String, FnType) {
         
         // if not stdlib, lookup from the stdlib defs
         // if stdlib lookup from builtin fns
@@ -112,7 +112,7 @@ final class SemaScope {
         }
     }
     
-    init(parent: SemaScope, returnType: Ty? = BuiltinType.void, isYield: Bool = false, semaContext: Ty? = nil) {
+    init(parent: SemaScope, returnType: Type? = BuiltinType.void, isYield: Bool = false, semaContext: Type? = nil) {
         self.parent = parent
         self.returnType = returnType
         self.isYield = isYield
@@ -125,7 +125,7 @@ final class SemaScope {
     
     // used by the global scope & non capturing static function
     /// Declares a type without a parent
-    private init(returnType: Ty? = BuiltinType.void, isStdLib: Bool, semaContext: Ty? = nil) {
+    private init(returnType: Type? = BuiltinType.void, isStdLib: Bool, semaContext: Type? = nil) {
         self.parent = nil
         self.returnType = returnType
         self.isYield = false
@@ -142,7 +142,7 @@ final class SemaScope {
     }
     
     /// Creates a scope assocoiated with its parent which cannot read from its func, var, & type tables
-    static func nonCapturingScope(parent: SemaScope, returnType: Ty? = BuiltinType.void, isYield: Bool = false, semaContext: Ty? = nil) -> SemaScope {
+    static func nonCapturingScope(parent: SemaScope, returnType: Type? = BuiltinType.void, isYield: Bool = false, semaContext: Type? = nil) -> SemaScope {
         return SemaScope(returnType: returnType, isStdLib: parent.isStdLib, semaContext: semaContext)
     }
 }
@@ -155,7 +155,7 @@ extension CollectionType
     Generator.Element == (String, FnType)
 {
     /// Subscript functions by their unmangled names and applies types
-    subscript(raw raw: String, paramTypes types: [Ty]) -> FnType? {
+    subscript(raw raw: String, paramTypes types: [Type]) -> FnType? {
         get {
             for (k, v) in self where k.demangleName() == raw && v.params.elementsEqual(types, isEquivalent: ==) {
                 return v

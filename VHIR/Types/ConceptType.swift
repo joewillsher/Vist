@@ -38,9 +38,13 @@ extension ConceptType {
         return requiredFunctions
     }
     
-    func usingTypesIn(module: Module) -> Ty {
-        let fns = requiredFunctions.map { (name: $0.name, type: $0.type.usingTypesIn(module) as! FnType)  as StructMethod }
-        let mems = requiredProperties.map { ($0.name, $0.type.usingTypesIn(module), $0.mutable) as StructMember }
+    func usingTypesIn(module: Module) -> Type {
+        let fns = requiredFunctions.map { fn in
+            (name: fn.name, type: fn.type.usingTypesIn(module) as! FnType) as StructMethod
+        }
+        let mems = requiredProperties.map { memb in
+            (memb.name, memb.type.usingTypesIn(module), memb.isMutable) as StructMember
+        }
         let c = ConceptType(name: name, requiredFunctions: fns, requiredProperties: mems)
         return module.getOrInsert(TypeAlias(name: name, targetType: c))
     }

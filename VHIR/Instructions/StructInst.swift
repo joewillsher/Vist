@@ -9,7 +9,7 @@
 
 final class StructInitInst : InstBase {
     
-    override var type: Ty? { return module.getOrInsert(structType) }
+    override var type: Type? { return module.getOrInsert(structType) }
     var structType: StructType
     
     private init(type: StructType, args: [Operand], irName: String?) {
@@ -25,9 +25,9 @@ final class StructInitInst : InstBase {
 final class StructExtractInst : InstBase {
     
     var object: Operand, propertyName: String
-    var propertyType: Ty, structType: StructType
+    var propertyType: Type, structType: StructType
     
-    private init(object: Operand, property: String, propertyType: Ty, structType: StructType, irName: String? = nil) {
+    private init(object: Operand, property: String, propertyType: Type, structType: StructType, irName: String? = nil) {
         self.object = object
         self.propertyName = property
         self.propertyType = propertyType
@@ -35,7 +35,7 @@ final class StructExtractInst : InstBase {
         super.init(args: [object], irName: irName)
     }
     
-    override var type: Ty? { return propertyType }
+    override var type: Type? { return propertyType }
     
     override var instVHIR: String {
         return "\(name) = struct_extract \(object.vhir), #\(propertyName) \(useComment)"
@@ -45,9 +45,9 @@ final class StructExtractInst : InstBase {
 
 final class StructElementPtrInst : InstBase, LValue {
     var object: PtrOperand, propertyName: String
-    var propertyType: Ty, structType: StructType
+    var propertyType: Type, structType: StructType
     
-    private init(object: PtrOperand, property: String, propertyType: Ty, structType: StructType, irName: String? = nil) {
+    private init(object: PtrOperand, property: String, propertyType: Type, structType: StructType, irName: String? = nil) {
         self.object = object
         self.propertyName = property
         self.propertyType = propertyType
@@ -55,8 +55,8 @@ final class StructElementPtrInst : InstBase, LValue {
         super.init(args: [object], irName: irName)
     }
     
-    override var type: Ty? { return BuiltinType.pointer(to: propertyType) }
-    var memType: Ty? { return propertyType }
+    override var type: Type? { return BuiltinType.pointer(to: propertyType) }
+    var memType: Type? { return propertyType }
     
     override var instVHIR: String {
         return "\(name) = struct_element \(object.vhir), #\(propertyName) \(useComment)"

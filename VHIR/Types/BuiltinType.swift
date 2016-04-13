@@ -8,11 +8,11 @@
 
 
 
-enum BuiltinType : Ty {
+enum BuiltinType : Type {
     case null, void
     case int(size: UInt32), float(size: UInt32), bool
-    indirect case array(el: Ty, size: UInt32?)
-    indirect case pointer(to: Ty)
+    indirect case array(el: Type, size: UInt32?)
+    indirect case pointer(to: Type)
     case opaquePointer
     
     func lowerType(module: Module) -> LLVMTypeRef {
@@ -89,7 +89,7 @@ enum BuiltinType : Ty {
         }
     }
     
-    func usingTypesIn(module: Module) -> Ty {
+    func usingTypesIn(module: Module) -> Type {
         switch self {
         case .pointer(let pointee): return BuiltinType.pointer(to: pointee.usingTypesIn(module))
         default: return self

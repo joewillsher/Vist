@@ -21,7 +21,7 @@ final class BasicBlock : VHIRElement {
     // block args are `Operand`s
     var parameters: [Param]?
     private(set) var applications: [BlockApplication]
-    var predecessors: [BasicBlock] { return applications.flatMap { $0.predecessor } }
+    var predecessors: [BasicBlock] { return applications.flatMap { application in application.predecessor } }
 //    private(set) var successors: [BasicBlock] = []
     
     init(name: String, parameters: [Param]?, parentFunction: Function) {
@@ -58,13 +58,13 @@ extension BasicBlock {
     }
     
     func paramNamed(name: String) throws -> Param {
-        guard let param = parameters?.find({ $0.paramName == name }) else { throw VHIRError.noParamNamed(name) }
+        guard let param = parameters?.find({ param in param.paramName == name }) else { throw VHIRError.noParamNamed(name) }
         return param
     }
     func appliedArgsForParam(param: Param) throws -> [BlockOperand] {
         
-        guard let i = parameters?.indexOf({$0 === param}),
-            let args = applications.optionalMap({ $0.args?[i] as? BlockOperand })
+        guard let paramIndex = parameters?.indexOf({ blockParam in blockParam === param}),
+            let args = applications.optionalMap({ application in application.args?[paramIndex] as? BlockOperand })
             else { throw VHIRError.noParamNamed(param.name) }
         
         return args
@@ -78,9 +78,11 @@ extension BasicBlock {
     /// Applies the parameters to this block, `from` sepecifies the
     /// predecessor to associate these `params` with
     func addApplication(from block: BasicBlock, args: [BlockOperand]?, breakInst: BreakInstruction) throws {
+        
         // make sure application is correctly typed
-        if let vals = parameters?.optionalMap({$0.type}) {
-            guard let equal = args?.optionalMap({ $0.type })?.elementsEqual(vals, isEquivalent: ==)
+        if let vals = try parameters?.map(InstBase.getType(_:)) {
+            guard let equal = try args?.map(InstBase.getType(_:))
+                .elementsEqual(vals, isEquivalent: ==)
                 where equal else { throw VHIRError.paramsNotTyped }
         }
         else { guard args == nil else { throw VHIRError.paramsNotTyped }}
@@ -135,10 +137,10 @@ extension Builder {
 extension Inst {
     
     func successor() throws -> Inst? {
-        return try parentBlock.map { $0.instructions[try $0.indexOfInst(self).successor()] }
+        return try parentBlock.map { parent in parent.instructions[try parent.indexOfInst(self).successor()] }
     }
     func predecessor() throws -> Inst? {
-        return try parentBlock.map { $0.instructions[try $0.indexOfInst(self).predecessor()] }
+        return try parentBlock.map { parent in parent.instructions[try parent.indexOfInst(self).predecessor()] }
     }
     
 }

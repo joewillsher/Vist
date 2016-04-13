@@ -13,7 +13,7 @@
 
 extension IntegerLiteral : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Type {
         // TODO: modify the AST to make this a function call
         let ty = StdLib.intType
         self.type = ty
@@ -23,7 +23,7 @@ extension IntegerLiteral : ExprTypeProvider {
 
 extension FloatingPointLiteral : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Type {
         let ty = StdLib.doubleType
         self.type = ty
         return ty
@@ -32,7 +32,7 @@ extension FloatingPointLiteral : ExprTypeProvider {
 
 extension BooleanLiteral : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Type {
         let ty = StdLib.boolType
         self.type = ty
         return ty
@@ -41,7 +41,7 @@ extension BooleanLiteral : ExprTypeProvider {
 
 extension StringLiteral : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Type {
         let t = StdLib.stringType
         self.type = t
         return t
@@ -50,7 +50,7 @@ extension StringLiteral : ExprTypeProvider {
 
 extension NullExpr : ExprTypeProvider {
     
-    mutating func typeForNode(scope: SemaScope) throws -> Ty {
+    mutating func typeForNode(scope: SemaScope) throws -> Type {
         _type = nil
         return BuiltinType.null
     }
@@ -62,7 +62,7 @@ extension NullExpr : ExprTypeProvider {
 
 extension VariableExpr : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Type {
         
         // lookup variable type in scope
         guard let v = scope[variable: name] else {
@@ -78,7 +78,7 @@ extension VariableExpr : ExprTypeProvider {
 
 extension MutationExpr : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Type {
         
         // gen types for variable and value
         let old = try object.typeForNode(scope)
@@ -129,7 +129,7 @@ extension MutationExpr : ExprTypeProvider {
 // TODO: Define rvalue and lvalue prototol to constrain assignments and stuff
 extension ChainableExpr {
     
-    func recursiveType(scope: SemaScope) throws -> (type: Ty, parentMutable: Bool?, mutable: Bool) {
+    func recursiveType(scope: SemaScope) throws -> (type: Type, parentMutable: Bool?, mutable: Bool) {
         
         switch self {
         case let variable as VariableExpr:
@@ -143,7 +143,7 @@ extension ChainableExpr {
             return (
                 type: try objectType.propertyType(propertyLookup.propertyName),
                 parentMutable: objectMutable && (parentMutable ?? true),
-                mutable: try objectType.propertyMutable(propertyLookup.propertyName)
+                mutable: try objectType.propertyIsMutable(propertyLookup.propertyName)
             )
             
         case let tupleMemberLookup as TupleMemberLookupExpr:
@@ -216,7 +216,7 @@ extension VariableDecl : DeclTypeProvider {
 
 extension Void : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Type {
         self.type = BuiltinType.void
         return BuiltinType.void
     }
@@ -232,7 +232,7 @@ extension Void : ExprTypeProvider {
 
 extension ClosureExpr : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Type {
         
         // no type inferrence from param list, just from AST context
         let ty = (scope.semaContext as? FnType) ?? FnType(params: [BuiltinType.void], returns: BuiltinType.void)
@@ -250,7 +250,7 @@ extension ClosureExpr : ExprTypeProvider {
         // TODO: Implementation relying on parameters
         // Specify which parameters from the scope are copied into the closure
         //  - this is needed for method calls -- as `self` needs to be copied in
-        // Make syntax for the users to define this
+        // Make syntax for the users to define this?
         
         for exp in exprs {
             try exp.typeForNode(innerScope)
@@ -268,13 +268,10 @@ extension ClosureExpr : ExprTypeProvider {
 
 extension ArrayExpr : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Type {
         
         // element types
-        var types: [Ty] = []
-        for el in arr {
-            types.append(try el.typeForNode(scope))
-        }
+        let types = try arr.map { el in try el.typeForNode(scope) }
         
         // make sure array is homogeneous
         guard !types.contains({types.first != $0}) else { throw semaError(.heterogenousArray(types)) }
@@ -293,7 +290,7 @@ extension ArrayExpr : ExprTypeProvider {
 
 extension ArraySubscriptExpr : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Type {
         
         // make sure its an array
         guard case let v as VariableExpr = arr, case BuiltinType.array(let type, _)? = scope[variable: v.name]?.type else { throw semaError(.cannotSubscriptNonArrayVariable) }

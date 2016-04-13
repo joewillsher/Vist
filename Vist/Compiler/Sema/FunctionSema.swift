@@ -16,18 +16,26 @@ extension FuncDecl: DeclTypeProvider {
         declScope.genericParameters = genericParameters
         
         let paramTypes = try fnType.params(declScope), returnType = try fnType.returnType(declScope)
-        let ty: FnType
+        // if its a generator function there is no return
+        let ret = isGeneratorFunction ? BuiltinType.void : returnType
+        
+        var ty: FnType
         
         if case let parentType as StorageType = parent?._type {
-            ty = FnType(params: paramTypes, returns: returnType, callingConvention: .method(selfType: parentType))
+            ty = FnType(params: paramTypes, returns: ret, callingConvention: .method(selfType: parentType))
         }
         else {
-            ty = FnType(params: paramTypes, returns: returnType)
+            ty = FnType(params: paramTypes, returns: ret)
         }
         
+        if isGeneratorFunction {
+            ty.setGeneratorVariantType(yielding: returnType)
+        }
+
         mangledName = name.mangle(ty)
-        
-        let fnScope = SemaScope(parent: declScope, returnType: ty.returns, isYield: isGeneratorFunction)
+
+        // scope return type hint applies to yield and return so use `returnType`
+        let fnScope = SemaScope(parent: declScope, returnType: returnType, isYield: isGeneratorFunction)
         // TODO: non capturing scope, but only for variables
         
         scope.addFunction(name, type: ty)  // update function table
@@ -61,12 +69,18 @@ extension FuncDecl: DeclTypeProvider {
             try exp.typeForNode(fnScope)
         }
         
+        if isGeneratorFunction {
+            // so there are equal number of param names and params in the type
+            // for the VHIRGen phase
+            impl.params.append("loop_thunk")
+        }
+        
     }
 }
 
 extension BinaryExpr: ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Type {
         let t = try semaFunctionCall(scope)
         self.fnType = t
         return t.returns
@@ -76,7 +90,7 @@ extension BinaryExpr: ExprTypeProvider {
 
 extension FunctionCallExpr: ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Type {
         let t = try semaFunctionCall(scope)
         self.fnType = t
         return t.returns
@@ -93,7 +107,7 @@ extension FunctionCall {
         }
         
         // get from table
-        guard let argTypes = argArr.optionalMap({ $0._type }) else { throw semaError(.paramsNotTyped, userVisible: false) }
+        guard let argTypes = argArr.optionalMap({ expr in expr._type }) else { throw semaError(.paramsNotTyped, userVisible: false) }
         
         let (mangledName, fnType) = try scope.function(name, argTypes: argTypes)
         self.mangledName = mangledName

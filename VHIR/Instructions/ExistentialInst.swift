@@ -12,7 +12,7 @@ final class ExistentialPropertyInst: InstBase {
     var existential: PtrOperand
     let propertyName: String, existentialType: ConceptType
     
-    override var type: Ty? { return try? existentialType.propertyType(propertyName) }
+    override var type: Type? { return try? existentialType.propertyType(propertyName) }
     
     private init(existential: PtrOperand, propertyName: String, existentialType: ConceptType, irName: String?) {
         self.existential = existential
@@ -33,7 +33,7 @@ final class ExistentialPropertyInst: InstBase {
 final class ExistentialConstructInst : InstBase {
     var value: PtrOperand, existentialType: ConceptType
     
-    override var type: Ty? { return existentialType.usingTypesIn(module) }
+    override var type: Type? { return existentialType.usingTypesIn(module) }
     
     private init(value: PtrOperand, existentialType: ConceptType, irName: String?) {
         self.value = value
@@ -49,13 +49,13 @@ final class ExistentialConstructInst : InstBase {
 
 final class ExistentialWitnessMethodInst : InstBase, LValue {
     var existential: PtrOperand
-    let methodName: String, argTypes: [Ty], existentialType: ConceptType
+    let methodName: String, argTypes: [Type], existentialType: ConceptType
     
     var methodType: FnType? { return try? existentialType.methodType(methodNamed: methodName, argTypes: argTypes) }
-    override var type: Ty? { return memType.map { BuiltinType.pointer(to: $0) } }
-    var memType: Ty? { return methodType }
+    override var type: Type? { return memType.map { BuiltinType.pointer(to: $0) } }
+    var memType: Type? { return methodType }
     
-    private init(existential: PtrOperand, methodName: String, argTypes: [Ty], existentialType: ConceptType, irName: String?) {
+    private init(existential: PtrOperand, methodName: String, argTypes: [Type], existentialType: ConceptType, irName: String?) {
         self.existential = existential
         self.methodName = methodName
         self.existentialType = existentialType
@@ -73,8 +73,8 @@ final class ExistentialWitnessMethodInst : InstBase, LValue {
 final class ExistentialUnboxInst : InstBase, LValue {
     var existential: PtrOperand
     
-    override var type: Ty? { return BuiltinType.opaquePointer }
-    var memType: Ty? { return BuiltinType.int(size: 8) }
+    override var type: Type? { return BuiltinType.opaquePointer }
+    var memType: Type? { return BuiltinType.int(size: 8) }
     
     private init(existential: PtrOperand, irName: String?) {
         self.existential = existential
@@ -99,7 +99,7 @@ extension Builder {
         return try _add(ExistentialConstructInst(value: value, existentialType: existentialType, irName: irName))
     }
     /// Builds an existential from a definite object.
-    func buildExistentialWitnessMethod(existential: PtrOperand, methodName: String, argTypes: [Ty], existentialType: ConceptType, irName: String? = nil) throws -> ExistentialWitnessMethodInst {
+    func buildExistentialWitnessMethod(existential: PtrOperand, methodName: String, argTypes: [Type], existentialType: ConceptType, irName: String? = nil) throws -> ExistentialWitnessMethodInst {
         return try _add(ExistentialWitnessMethodInst(existential: existential, methodName: methodName, argTypes: argTypes, existentialType: existentialType, irName: irName))
     }
     func buildExistentialUnbox(value: PtrOperand, irName: String? = nil) throws -> ExistentialUnboxInst {

@@ -1,5 +1,5 @@
 //
-//  Ty.swift
+//  Type.swift
 //  Vist
 //
 //  Created by Josef Willsher on 27/12/2015.
@@ -8,14 +8,14 @@
 
 private var emptyModule = LLVMModuleCreateWithName("___null___")
 
-protocol Ty : Printable, VHIRElement {
+protocol Type : Printable, VHIRElement {
     
     /// Name used in mangling function signatures
     var mangledName: String { get }
     
     func lowerType(module: Module) -> LLVMTypeRef
     /// Replaces the function's memeber types with the module's typealias
-    func usingTypesIn(module: Module) -> Ty
+    func usingTypesIn(module: Module) -> Type
     
     /// The explicit name of this type. The same as the
     /// mangled name, unless the mangled name uses a different
@@ -23,7 +23,7 @@ protocol Ty : Printable, VHIRElement {
     var explicitName: String { get }
 }
 
-extension Ty {
+extension Type {
     // implement default behaviour
     var explicitName: String {
         return mangledName
@@ -40,20 +40,20 @@ extension Ty {
 // MARK: Cannonical equality functions, compares their module-agnostic type info
 
 @warn_unused_result
-func == (lhs: Ty?, rhs: Ty) -> Bool {
+func == (lhs: Type?, rhs: Type) -> Bool {
     if let l = lhs { return l == rhs } else { return false }
 }
 @warn_unused_result
-func == (lhs: Ty?, rhs: Ty?) -> Bool {
+func == (lhs: Type?, rhs: Type?) -> Bool {
     if let l = lhs, let r = rhs { return l == r } else { return false }
 }
 @warn_unused_result
-func != (lhs: Ty?, rhs: Ty) -> Bool {
+func != (lhs: Type?, rhs: Type) -> Bool {
     if let l = lhs { return l != rhs } else { return false }
 }
 
 @warn_unused_result
-func == (lhs: Ty, rhs: Ty) -> Bool {
+func == (lhs: Type, rhs: Type) -> Bool {
     switch (lhs, rhs) {
     case (let l as StorageType, let r as ConceptType):
         return l.models(r)
@@ -67,7 +67,7 @@ func == (lhs: Ty, rhs: Ty) -> Bool {
     case let (l as FnType, r as FnType):
         return r == l
     case (let lhs as StorageType, let rhs as StorageType):
-        return lhs.name == rhs.name && lhs.members.elementsEqual(rhs.members, isEquivalent: ==) && lhs.methods.elementsEqual(rhs.methods, isEquivalent: ==)
+        return lhs.name == rhs.name
     case let (l as BuiltinType, r as BuiltinType):
         return l == r
     case let (l as TupleType, r as TupleType):
@@ -80,7 +80,7 @@ func == (lhs: Ty, rhs: Ty) -> Bool {
 }
 
 @warn_unused_result
-func != (lhs: Ty, rhs: Ty) -> Bool {
+func != (lhs: Type, rhs: Type) -> Bool {
     return !(lhs == rhs)
 }
 

@@ -12,7 +12,7 @@
 
 extension StructExpr: ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Type {
         
         let errorCollector = ErrorCollector()
         let structScope = SemaScope(parent: scope, returnType: nil) // cannot return from Struct scope
@@ -60,7 +60,10 @@ extension StructExpr: ExprTypeProvider {
         }
         
         try errorCollector.run {
-            let definesOwnMemberwiseInit = try initialisers.contains({ try $0.ty.params(scope).elementsEqual(ty.members.map { $0.type }, isEquivalent: ==) })
+            let definesOwnMemberwiseInit = try initialisers.contains({ initialiser in
+                let memberTypes = ty.members.map { $0.type }
+                return try initialiser.ty.params(scope).elementsEqual(memberTypes, isEquivalent: ==)
+            })
             
             if !definesOwnMemberwiseInit {
                 initialisers.append(try memberwiseInitialiser())
@@ -85,7 +88,7 @@ extension StructExpr: ExprTypeProvider {
 
 extension ConceptExpr: ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Type {
         
         let conceptScope = SemaScope(parent: scope)
         let errorCollector = ErrorCollector()
@@ -165,7 +168,7 @@ extension InitialiserDecl: DeclTypeProvider {
 
 extension PropertyLookupExpr: ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Type {
         
         guard case let objType as StorageType = try object.typeForNode(scope) else { throw semaError(.noTypeForStruct, userVisible: false) }
         
@@ -178,7 +181,7 @@ extension PropertyLookupExpr: ExprTypeProvider {
 
 extension MethodCallExpr: ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Type {
         
         let ty = try object.typeForNode(scope)
         guard case let parentType as StorageType = ty else { throw semaError(.notStructType(ty), userVisible: false) }
@@ -207,7 +210,7 @@ extension MethodCallExpr: ExprTypeProvider {
 
 extension TupleExpr: ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Type {
         
         guard elements.count != 0 else {
             let t = BuiltinType.void
@@ -224,7 +227,7 @@ extension TupleExpr: ExprTypeProvider {
 
 extension TupleMemberLookupExpr: ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Ty {
+    func typeForNode(scope: SemaScope) throws -> Type {
         
         guard case let objType as TupleType = try object.typeForNode(scope) else { throw semaError(.noTypeForTuple, userVisible: false) }
         

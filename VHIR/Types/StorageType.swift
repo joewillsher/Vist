@@ -6,12 +6,12 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-typealias StructMember = (name: String, type: Ty, mutable: Bool)
+typealias StructMember = (name: String, type: Type, isMutable: Bool)
 typealias StructMethod = (name: String, type: FnType)
 
 /// A type which can have elements looked up by name,
 /// for example structs and existential protocols
-protocol StorageType : Ty {
+protocol StorageType : Type {
     /// User visible type name
     var name: String { get }
     
@@ -33,7 +33,7 @@ extension StorageType {
         return i
     }
     
-    func indexOf(methodNamed name: String, argTypes: [Ty]) throws -> Int {
+    func indexOf(methodNamed name: String, argTypes: [Type]) throws -> Int {
         guard let i = methods.indexOf({ $0.name == name && $0.type.params.elementsEqual(argTypes, isEquivalent: ==)})
             else { throw semaError(.noPropertyNamed(type: self.name, property: name)) }
         return i
@@ -44,13 +44,13 @@ extension StorageType {
         return function.loweredFunction
     }
     
-    func propertyType(name: String) throws -> Ty {
+    func propertyType(name: String) throws -> Type {
         return members[try indexOfMemberNamed(name)].type
     }
-    func propertyMutable(name: String) throws -> Bool {
-        return members[try indexOfMemberNamed(name)].mutable
+    func propertyIsMutable(name: String) throws -> Bool {
+        return members[try indexOfMemberNamed(name)].isMutable
     }
-    func methodType(methodNamed name: String, argTypes types: [Ty]) throws -> FnType {
+    func methodType(methodNamed name: String, argTypes types: [Type]) throws -> FnType {
         let t =  methods[try indexOf(methodNamed: name, argTypes: types)].type
         return t.withParent(self)
     }
@@ -67,7 +67,7 @@ extension StorageType {
     }
     
     func generatorFunction() -> FnType? {
-        return methods.find { method in (method.name == "generate") && method.type.params.isEmpty && (method.type.returns != BuiltinType.void) }?.type
+        return methods.find { method in method.name == "generate" && method.type.isGeneratorFunction }?.type
     }
 }
 
