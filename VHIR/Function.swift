@@ -9,32 +9,43 @@
 /// A VHIR function, has a type and is made of a series
 /// of basic blocks
 final class Function : VHIRElement {
+    /// The mangled function name
     var name: String
+    /// The cannonical type
     var type: FnType
+    /// A function body. If nil this function is a prototype
     private var body: FunctionBody?
-    private unowned var parentModule: Module
-    var visibility: Visibility
     
+    private unowned var parentModule: Module
+    var uses: [Operand] = []
+    
+    // Attrs
+    var visibility: Visibility = .`internal`
+    var inline: InlineRequirement = .`default`
+    var attributes: Attributes = []
+    
+    /// The LLVM function this is lowered to
     var loweredFunction: LLVMValueRef = nil {
         // update function ref operands
         didSet {
             for user in uses { user.updateUsesWithLoweredVal(loweredFunction) }
         }
     }
+    /// The block self's errors should jmp to
     var _condFailBlock: LLVMBasicBlockRef = nil
-    var uses: [Operand] = []
+    
     
     private init(name: String, type: FnType, module: Module) {
         self.name = name
         self.parentModule = module
         self.type = type
-        self.visibility = .`internal`
     }
     
+    /// A `Function`'s body. This contains the parameters and basic block list
     private final class FunctionBody {
-        private(set) var blocks: [BasicBlock]
-        private(set) var params: [Param]
-        unowned var parentFunction: Function
+        var blocks: [BasicBlock], params: [Param]
+        /// The block self is a member of
+        unowned let parentFunction: Function
         
         private init(params: [Param], parentFunction: Function, blocks: [BasicBlock]) {
             self.params = params
@@ -43,16 +54,34 @@ final class Function : VHIRElement {
         }
     }
     
+    /// The VHIR visibility
     enum Visibility {
         case `private`, `internal`, `public`
+    }
+    /// How the inliner should handle this function
+    enum InlineRequirement {
+        case `default`, always, never
+    }
+    /// Other attributes
+    struct Attributes : OptionSetType {
+        let rawValue: Int
+        init(rawValue: Int) { self.rawValue = rawValue }
+        
+        static var noreturn = Attributes(rawValue: 1 << 0)
+        static var readnone = Attributes(rawValue: 1 << 1)
     }
 }
 
 
 extension Function {
     
+    /// Whether this function has a defined body
     var hasBody: Bool { return body != nil && (body?.blocks.isEmpty ?? false) }
+    /// The list of blocks in this function
+    /// - precondition: self `hasBody`
     var blocks: [BasicBlock]? { return body?.blocks }
+    /// The list of params to this function
+    /// - precondition: self `hasBody`
     var params: [Param]? { return body?.params }
     
     /// Creates the function body, and applies `paramNames` as the 
@@ -87,15 +116,17 @@ extension Function {
         for p in params { p.parentBlock = entry }
     }
     
+    /// The function's entry block
+    /// - precondition: self `hasBody`
     var entryBlock: BasicBlock? { return body?.blocks.first }
     var lastBlock: BasicBlock? { return body?.blocks.last }
     
-    /// The infex of `block` in `self`’s block list
+    /// The index of `block` in `self`’s block list
     private func indexOf(block: BasicBlock) throws -> Int {
         if let index = blocks?.indexOf({$0 === block}) { return index } else { throw VHIRError.bbNotInFn }
     }
     
-    /// Get the Param `name` for `self`
+    /// Get the Param `name` from `self`
     func paramNamed(name: String) throws -> Param {
         if let p = try body?.blocks.first?.paramNamed(name) { return p } else { throw VHIRError.noParamNamed(name) }
     }
@@ -103,10 +134,25 @@ extension Function {
     func insert(block block: BasicBlock, atIndex index: Int) {
         body?.blocks.insert(block, atIndex: index)
     }
+    /// Add basic block to end of `self`
     func append(block block: BasicBlock) {
         body?.blocks.append(block)
     }
     
+    /// Apply AST attributes to set linkage, inline status, and attrs
+    private func applyAttributes(attrs: [FunctionAttributeExpr]) {
+        // linkage
+        if attrs.contains(.`private`) { visibility = .`private` }
+        else if attrs.contains(.`public`) { visibility = .`public` }
+        
+        // inline attrs
+        if attrs.contains(.inline) { inline = .always }
+        else if attrs.contains(.noinline) { inline = .never }
+        
+        // other attrs
+        if attrs.contains(.noreturn) { attributes.insert(.noreturn) }
+    }
+
     /// Return a reference to this function
     func buildFunctionPointer() -> PtrOperand {
         return PtrOperand(FunctionRef(toFunction: self, parentBlock: module.builder.insertPoint.block))
@@ -179,19 +225,22 @@ extension BasicBlock {
 extension Builder {
     
     /// Builds a function and adds it to the module. Declares a body and entry block
-    func buildFunction(name: String, type: FnType, paramNames: [String]) throws -> Function {
-        let f = try createFunctionPrototype(name, type: type)
+    func buildFunction(name: String, type: FnType, paramNames: [String], attrs: [FunctionAttributeExpr] = []) throws -> Function {
+        let f = try createFunctionPrototype(name, type: type, attrs: attrs)
         try f.defineBody(paramNames: paramNames)
         return f
     }
     /// Builds a function and adds it to the module. Declares a body and entry block
-    func getOrBuildFunction(name: String, type: FnType, paramNames: [String]) throws -> Function {
-        guard paramNames.count == type.params.count else { fatalError() }
+    func getOrBuildFunction(name: String, type: FnType, paramNames: [String], attrs: [FunctionAttributeExpr] = []) throws -> Function {
+        assert(paramNames.count == type.params.count)
+        
         if let f = module.functionNamed(name) where !f.hasBody {
             try f.defineBody(paramNames: paramNames)
             return f
         }
-        return try buildFunction(name, type: type, paramNames: paramNames)
+        else {
+            return try buildFunction(name, type: type, paramNames: paramNames, attrs: attrs)
+        }
     }
 
     
@@ -205,9 +254,10 @@ extension Builder {
     }
     
     /// Creates function prototype an adds to module
-    func createFunctionPrototype(name: String, type: FnType) throws -> Function {
+    func createFunctionPrototype(name: String, type: FnType, attrs: [FunctionAttributeExpr] = []) throws -> Function {
         let type = type.cannonicalType(module).usingTypesIn(module) as! FnType
         let function = Function(name: name, type: type, module: module)
+        function.applyAttributes(attrs)
         module.insert(function)
         return function
     }
@@ -217,9 +267,9 @@ extension Builder {
 extension Module {
     
     /// Returns the function from the module. Adds prototype it if not already there
-    func getOrInsertFunction(named name: String, type: FnType) throws -> Function {
+    func getOrInsertFunction(named name: String, type: FnType, attrs: [FunctionAttributeExpr] = []) throws -> Function {
         if let f = functionNamed(name) { return f }
-        return try builder.createFunctionPrototype(name, type: type)
+        return try builder.createFunctionPrototype(name, type: type, attrs: attrs)
     }
     
     /// Returns a stdlib function, updating the module fn list if needed

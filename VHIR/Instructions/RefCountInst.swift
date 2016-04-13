@@ -8,6 +8,12 @@
 
 // MARK: Reference counting instructions
 
+/**
+ Allocate ref counted object on the heap. Lowered to a call
+ of `vist_allocObject(size)`
+ 
+ `%a = alloc_object %Foo.refcounted`
+ */
 final class AllocObjectInst : InstBase, LValue {
     var storedType: StructType
     
@@ -25,6 +31,12 @@ final class AllocObjectInst : InstBase, LValue {
     }
 }
 
+/**
+ Retain a refcounted object - increments the ref count. Lowered to
+ a call of `vist_retainObject()`
+ 
+ `retain_object %0:%Foo.refcounted`
+ */
 final class RetainInst : InstBase {
     var object: PtrOperand
     
@@ -43,6 +55,16 @@ final class RetainInst : InstBase {
     }
 }
 
+/**
+ Release a refcounted object - decrements the ref count and, if not
+ unowned, it is dealloced if it falls to 0. Lowered to a call of
+ `vist_releaseObject()` or `vist_releaseUnownedObject`
+ 
+ ```
+ release_object %0:%Foo.refcounted
+ release_unowned_object %0:%Foo.refcounted
+ ```
+ */
 final class ReleaseInst : InstBase {
     var object: PtrOperand, unowned: Bool
     
@@ -62,6 +84,15 @@ final class ReleaseInst : InstBase {
     }
 }
 
+/**
+ Dealloc a refcounted object - if unowned only deallocs if the refcount 
+ is 0. Lowered to a call of `vist_deallocObject()` or `vist_deallocUnownedObject()`
+ 
+ ```
+ dealloc_object %0:%Foo.refcounted
+ dealloc_unowned_object %0:%Foo.refcounted
+ ```
+ */
 final class DeallocObjectInst : InstBase {
     var object: PtrOperand, unowned: Bool
     

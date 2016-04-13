@@ -6,17 +6,20 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
+/// A VHIR instruction
 protocol Inst : Value {
-    var uses: [Operand] { get }
+    /// The arguments applied to `self`
     var args: [Operand] { get set }
     
     var instHasSideEffects: Bool { get }
     var instIsTerminator: Bool { get }
 }
 
-/// An instruction. Must be overriden but is used to remove
-/// a lot of the state boilerplate that cant be defaulted
-/// using just protocols
+/** 
+ An instruction. Must be overriden but is used to remove
+ a lot of the state boilerplate that cant be defaulted
+ using just protocols
+ */
 class InstBase : Inst {
     
     /// Self’s type, override with a computed getter
@@ -52,6 +55,7 @@ extension Inst {
     func removeFromParent() throws {
         try parentBlock?.remove(self)
     }
+    
     /// Removes the function from its parent and
     /// drops all references to it
     func eraseFromParent() throws {
@@ -67,3 +71,4 @@ extension Inst {
     }
     
 }
+

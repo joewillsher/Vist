@@ -7,6 +7,17 @@
 //
 
 
+/** 
+ An argument type. `Inst`s take `Operand`.
+ 
+ The operand is added to the argument's users list, and 
+ allows functionality for modofying instruction sequences
+ (for the opt passes).
+ 
+ This also stores the value's lowered LLVM value, and
+ when a LLVM value is calculated in IRLower all operands
+ are updated to store that.
+*/
 class Operand : Value {
     /// The underlying value
     var value: Value?
@@ -60,7 +71,8 @@ extension Operand {
 }
 
 
-/// An operand which stores a reference-backed lvalue
+/// An operand which stores a reference-backed lvalue. Can itself
+/// be used as an lvalue
 final class PtrOperand : Operand, LValue {
     
     /// The stored lvalue
@@ -71,6 +83,9 @@ final class PtrOperand : Operand, LValue {
         super.init(value)
     }
     
+    /// Init from rvalue
+    /// - precondition: `memType` is the type of `rvalue`'s memory and 
+    ///                 is guaranteed to be a pointer type
     private init(rvalue: Value, memType: Type) {
         self.memType = memType
         super.init(rvalue)

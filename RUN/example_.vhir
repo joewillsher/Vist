@@ -1,25 +1,20 @@
 
-type %Gen = { %Int }
+type %HalfOpenRange = { %Int, %Int }
+type %Bool = { %Builtin.Bool }
 type %Int = { %Builtin.Int64 }
 
-func @generate : &method (%*Gen, %*tI) -> %Builtin.Void
-
-func @Gen_tI : &thin (%Int) -> %Gen {
-$entry(%$0: %Int):
-  %self = alloc %Gen  	// users: %num, %1
-  %num = struct_element %self: %*Gen, #num  	// user: %0
-  store %$0 in %num: %*I 
-  %1 = load %self: %*Gen  	// user: %2
-  return %1
+func @HalfOpenRange_tII : &thin (%Int, %Int) -> %HalfOpenRange {
+$entry(%$0: %Int, %$1: %Int):
+  %self = alloc %HalfOpenRange  	// users: %start, %end, %2
+  %start = struct_element %self: %*HalfOpenRange, #start  	// user: %0
+  %end = struct_element %self: %*HalfOpenRange, #end  	// user: %1
+  store %$0 in %start: %*I 
+  store %$1 in %end: %*I 
+  %2 = load %self: %*HalfOpenRange  	// user: %3
+  return %2
 }
 
-func @generate_mGenPtI : &method (%*Gen, %*tI) -> %Builtin.Void {
-$entry(%self: %*Gen, %loop_thunk: %*tI):
-  %num = struct_element %self: %*Gen, #num  	// user: %0
-  %0 = load %num: %*I  	// user: %1
-  %1 = apply %loop_thunk (%0: %Int) 
-  return ()
-}
+func @-L_tII : &thin (%Int, %Int) -> %Bool
 
 func @loop_thunk : &thin (%Int) -> %Builtin.Void {
 $entry(%a: %Int):
@@ -27,16 +22,50 @@ $entry(%a: %Int):
   return ()
 }
 
-func @main : &thin () -> %Builtin.Void {
-$entry:
-  %0 = int_literal 1  	// user: %1
-  %1 = struct %I (%0: %Builtin.Int64)  	// user: %2
-  %2 = call @Gen_tI (%1: %Int)  	// user: %gen
-  variable_decl %gen = %2: %Gen  	// user: %4
-  %3 = alloc %Gen  	// users: %4, %5
-  store %gen in %3: %*Gen 
-  %5 = call @generate_mGenPtI (%3: %*Gen, %loop_thunk: %*tI) 
+func @print_tI : &thin (%Int) -> %Builtin.Void
+
+func @-P_tII : &thin (%Int, %Int) -> %Int
+
+func @generate_mHalfOpenRangePtI : &method (%*HalfOpenRange, %*tI) -> %Builtin.Void {
+$entry(%self: %*HalfOpenRange, %loop_thunk: %*tI):
+  %start = struct_element %self: %*HalfOpenRange, #start  	// user: %0
+  %0 = load %start: %*I  	// user: %2
+  %1 = alloc %Int  	// users: %2, %4, %8, %10, %14
+  store %0 in %1: %*I 
+  break $cond
+
+$cond:			// preds: entry, loop
+  %4 = load %1: %*I  	// user: %6
+  %end = struct_element %self: %*HalfOpenRange, #end  	// user: %5
+  %5 = load %end: %*I  	// user: %6
+  %6 = call @-L_tII (%4: %Int, %5: %Int)  	// user: %cond
+  %cond = struct_extract %6: %Bool, #value  	// user: nil
+  break %cond: %Builtin.Bool, $loop, $loop.exit
+
+$loop:			// preds: cond
+  %8 = load %1: %*I  	// user: %9
+  %9 = apply %loop_thunk (%8: %Int) 
+  %10 = load %1: %*I  	// user: %13
+  %11 = int_literal 1  	// user: %12
+  %12 = struct %I (%11: %Builtin.Int64)  	// user: %13
+  %13 = call @-P_tII (%10: %Int, %12: %Int)  	// user: %14
+  store %13 in %1: %*I 
+  break $cond
+
+$loop.exit:			// preds: cond
   return ()
 }
 
-func @print_tI : &thin (%Int) -> %Builtin.Void
+func @main : &thin () -> %Builtin.Void {
+$entry:
+  %0 = int_literal 1  	// user: %1
+  %1 = struct %I (%0: %Builtin.Int64)  	// user: %4
+  %2 = int_literal 10  	// user: %3
+  %3 = struct %I (%2: %Builtin.Int64)  	// user: %4
+  %4 = call @HalfOpenRange_tII (%1: %Int, %3: %Int)  	// user: %range
+  variable_decl %range = %4: %HalfOpenRange  	// user: %6
+  %5 = alloc %HalfOpenRange  	// users: %6, %7
+  store %range in %5: %*HalfOpenRange 
+  %7 = call @generate_mHalfOpenRangePtI (%5: %*HalfOpenRange, %loop_thunk: %*tI) 
+  return ()
+}

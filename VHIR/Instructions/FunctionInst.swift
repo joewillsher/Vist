@@ -7,12 +7,19 @@
 //
 
 
+/// Any VHIR function call Inst
+/// - seealso: `FunctionCallInst`
+/// - seealso: `FunctionApplicationInst`
 protocol VHIRFunctionCall : Inst, VHIRLower {
     var functionRef: LLVMValueRef { get }
     var functionType: FnType { get }
 }
 
-
+/**
+ A function call
+ 
+ `%a = call @HalfOpenRange_tII (%0:%Int, %1:%Int)`
+ */
 final class FunctionCallInst: InstBase, VHIRFunctionCall {
     var function: Function
     var returnType: Type
@@ -34,6 +41,11 @@ final class FunctionCallInst: InstBase, VHIRFunctionCall {
     var functionType: FnType { return function.type }
 }
 
+/**
+ A function application. Call a function ref variable
+ 
+ `%a = apply %0 (%1:%Int, %2:%Int)`
+ */
 final class FunctionApplyInst: InstBase, VHIRFunctionCall {
     var function: PtrOperand
     var returnType: Type

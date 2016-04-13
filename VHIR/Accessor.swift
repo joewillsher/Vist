@@ -6,11 +6,16 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-/// Provides means of reading a value from memory
-///
-/// A `getter` allows loading of a value, and conformants may also provide a ``setter
+/**
+ Provides means of reading a value from memory. A `getter` allows loading of a value.
+ 
+ This exposes many methods for optionally refcounting the Accessor, they defualt to noops.
+ */
 protocol Accessor : class {
     /// Gets the value from the stored object
+    /// - note: If the stored instance of type `storedType` is a
+    ///         box then this is not equal to the result of calling
+    ///         `aggregateGetter()`
     func getter() throws -> Value
     /// Returns copy of this acccessor with reference semantics
     /// - note: not guaranteed to be a reference to the original.
@@ -18,7 +23,9 @@ protocol Accessor : class {
     
     var storedType: Type? { get }
     
+    /// Retrieve an independent copy of the object
     func getMemCopy() throws -> GetSetAccessor
+    /// Get the whole object as-is
     func aggregateGetter() throws -> Value
     
     func releaseIfRefcounted() throws
@@ -42,7 +49,7 @@ protocol GetSetAccessor : Accessor {
     func aggregateReference() -> PtrOperand
 }
 
-
+// Default implementations
 
 extension Accessor {
     
@@ -88,10 +95,6 @@ extension GetSetAccessor {
     var module: Module { return mem.module }
 }
 
-// TODO: this
-// should getter return an operand/ptroperand
-// make `try getter().allocGetSetAccessor()` try `value.allocGetSetAccessor()`
-
 // MARK: Implementations
 
 /// Provides access to values by exposing a getter which returns the value
@@ -129,6 +132,12 @@ final class RefAccessor : GetSetAccessor {
     init(memory: LValue) { self.mem = memory }
 }
 
+/**
+ An accessor whose memory is reference counted
+ 
+ This exposes API to `alloc`, `retain`, `release`, and `dealloc` ref coutned
+ heap pointers.
+*/
 final class RefCountedAccessor : GetSetAccessor {
     var mem: LValue
     
@@ -156,7 +165,9 @@ final class RefCountedAccessor : GetSetAccessor {
         try module.builder.buildRetain(aggregateReference())
     }
     
-    /// Release a reference, decrement the ref count but don’t deallocate
+    /// Releases the object without decrementing the ref count.
+    /// - note: Used in returns as the user of the return is expected
+    ///         to either `retain` it or `deallocUnowned` it
     func releaseUnowned() throws {
         try module.builder.buildReleaseUnowned(aggregateReference())
     }
@@ -166,10 +177,12 @@ final class RefCountedAccessor : GetSetAccessor {
         try module.builder.buildRelease(aggregateReference())
     }
     
+    /// Deallocates the object
     func dealloc() throws {
         try module.builder.buildDeallocObject(aggregateReference())
     }
     
+    /// Deallocates an unowned object if the ref count is 0
     func deallocUnowned() throws {
         try module.builder.buildDeallocUnownedObject(aggregateReference())
     }
@@ -179,11 +192,8 @@ final class RefCountedAccessor : GetSetAccessor {
         try retain()
         return RefCountedAccessor(refcountedBox: aggregateReference(), _reference: _reference)
     }
-    
-    deinit {
-        
-    }
-    
+
+    // TODO: Implement getRefCount and ref_count builtin
 //    func getRefCount() throws -> Value {
 //        
 //    }
@@ -207,7 +217,6 @@ final class RefCountedAccessor : GetSetAccessor {
     func deallocUnownedIfRefcounted() throws { try deallocUnowned() }
 }
 
-// TODO: make a LazyRefAccessor wrap a GetSetAccessor
 
 /// A Ref accessor whose accessor is evaluated on demand. Useful for values
 /// which might not be used
@@ -225,6 +234,5 @@ final class LazyRefAccessor : GetSetAccessor {
 }
 
 
-// mutliple users share PtrOperand because this returns the same copy
 
 

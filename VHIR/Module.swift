@@ -7,7 +7,16 @@
 //
 
 
-/// The module type, functions get put into this
+/**
+ The module -- the single container of state in a compilation.
+ 
+ This contians a record of
+    - Defined functions, using their mangled names and cannonical types
+    - A list of nominal types for the module.
+    - A `Builder` instance which can be used to modify the module by adding
+      instructions
+    - During lowering it holds a reference to a LLVM module and builder
+ */
 final class Module : VHIRElement {
     private(set) var functions: Set<Function> = [], typeList: Set<TypeAlias> = []
     var builder: Builder!

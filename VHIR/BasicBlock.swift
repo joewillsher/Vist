@@ -6,23 +6,31 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-/// A collection of instructions
-///
-/// Params are passed between blocks in parameters, blocks can
-/// reference insts in other blocks. The entry block of a function
-/// is called with params of the function
+/**
+ A collection of instructions
+ 
+ Params are passed between blocks in parameters, blocks can
+ reference insts in other blocks. The entry block of a function
+ is called with params of the function
+ */
 final class BasicBlock : VHIRElement {
+    /// A name for the block
     var name: String
+    /// The collection of instructions in this block
     private(set) var instructions: [Inst] = []
+    
     weak var parentFunction: Function?
     var loweredBlock: LLVMValueRef = nil
     
-    // block params are `Param`s
-    // block args are `Operand`s
+    /// The params passed into the block, a list of params
     var parameters: [Param]?
+
+    /// The applications to this block. A list of predecessors
+    /// and the arguments they applied
     private(set) var applications: [BlockApplication]
+    
+    /// A list of the predecessor blocks. These blocks broke to `self`
     var predecessors: [BasicBlock] { return applications.flatMap { application in application.predecessor } }
-//    private(set) var successors: [BasicBlock] = []
     
     init(name: String, parameters: [Param]?, parentFunction: Function) {
         self.name = name
@@ -31,12 +39,10 @@ final class BasicBlock : VHIRElement {
         applications = []
     }
     
-    /// The application of a block, how you jump into the block
-    ///
-    /// Can either be an entry block or a block you break to
+    /// The application of a block, how you jump into the block. `nil` preds
+    /// and breakInst implies it it an entry block
     final class BlockApplication {
         var args: [Operand]?, predecessor: BasicBlock?, breakInst: BreakInstruction?
-        var phi: LLVMValueRef?
         
         init(params: [Operand]?, predecessor: BasicBlock?, breakInst: BreakInstruction?) {
             self.args = params
@@ -50,18 +56,21 @@ final class BasicBlock : VHIRElement {
 
 extension BasicBlock {
     
+    
     func insert(inst: Inst, after: Inst) throws {
-        instructions.insert(inst, atIndex: try indexOfInst(after).successor())
+        instructions.insert(inst, atIndex: try indexOf(after).successor())
     }
     func append(inst: Inst) {
         instructions.append(inst)
     }
     
+    /// Get param named `name` or throw
     func paramNamed(name: String) throws -> Param {
         guard let param = parameters?.find({ param in param.paramName == name }) else { throw VHIRError.noParamNamed(name) }
         return param
     }
-    func appliedArgsForParam(param: Param) throws -> [BlockOperand] {
+    /// Get an array of the arguments that were applied for `param`
+    func appliedArgs(for param: Param) throws -> [BlockOperand] {
         
         guard let paramIndex = parameters?.indexOf({ blockParam in blockParam === param}),
             let args = applications.optionalMap({ application in application.args?[paramIndex] as? BlockOperand })
@@ -90,17 +99,22 @@ extension BasicBlock {
         applications.append(.body(block, params: args, breakInst: breakInst))
 //        block.successors.append(self)
     }
-    private func indexOfInst(inst: Inst) throws -> Int {
+    
+    /// Helper, the index of `inst` in self or throw
+    private func indexOf(inst: Inst) throws -> Int {
         guard let i = instructions.indexOf({ $0 === inst }) else { throw VHIRError.instNotInBB }
         return i
     }
     
     // instructions
     func set(inst: Inst, newValue: Inst) throws {
-        instructions[try indexOfInst(inst)] = newValue
+        instructions[try indexOf(inst)] = newValue
     }
+    
+    /// Remove `inst` from self
+    /// - precondition: `inst` is a member of `self`
     func remove(inst: Inst) throws {
-        instructions.removeAtIndex(try indexOfInst(inst))
+        instructions.removeAtIndex(try indexOf(inst))
         inst.parentBlock = nil
     }
     
@@ -110,12 +124,15 @@ extension BasicBlock {
 
 
 extension BasicBlock.BlockApplication {
+    /// Get an entry instance
     static func entry(params: [Param]?) -> BasicBlock.BlockApplication {
         return BasicBlock.BlockApplication(params: params?.map(Operand.init), predecessor: nil, breakInst: nil)
     }
+    /// Get a non entry instance
     static func body(predecessor: BasicBlock, params: [BlockOperand]?, breakInst: BreakInstruction) -> BasicBlock.BlockApplication {
         return BasicBlock.BlockApplication(params: params, predecessor: predecessor, breakInst: breakInst)
     }
+    /// is self an entry application
     var isEntry: Bool { return predecessor == nil }
 }
 
@@ -136,11 +153,13 @@ extension Builder {
 
 extension Inst {
     
+    /// The successor to `self`
     func successor() throws -> Inst? {
-        return try parentBlock.map { parent in parent.instructions[try parent.indexOfInst(self).successor()] }
+        return try parentBlock.map { parent in parent.instructions[try parent.indexOf(self).successor()] }
     }
+    /// The predecessor of `self`
     func predecessor() throws -> Inst? {
-        return try parentBlock.map { parent in parent.instructions[try parent.indexOfInst(self).predecessor()] }
+        return try parentBlock.map { parent in parent.instructions[try parent.indexOf(self).predecessor()] }
     }
     
 }

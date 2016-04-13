@@ -214,33 +214,25 @@ extension FunctionCall/*: VHIRGenerator*/ {
     }
 }
 
-private extension CollectionType where Generator.Element == FunctionAttributeExpr {
-    var visibility: Function.Visibility {
-        if contains(.`private`) { return .`private` }
-        else if contains(.`public`) { return .`public` }
-        else { return .`internal` } // default case is internal
-    }
-}
 
 extension FuncDecl : StmtEmitter {
-    
+        
     func emitStmt(module module: Module, scope: Scope) throws {
         
         guard let type = fnType.type else { throw VHIRError.noType(#file) }
         
         // if has body
         guard let impl = impl else {
-            try module.builder.createFunctionPrototype(mangledName, type: type)
+            let f = try module.builder.createFunctionPrototype(mangledName, type: type, attrs: attrs)
             return
         }
         
         let originalInsertPoint = module.builder.insertPoint
         
         // find proto/make function and move into it
-        let function = try module.builder.getOrBuildFunction(mangledName, type: type, paramNames: impl.params)
+        let function = try module.builder.getOrBuildFunction(mangledName, type: type, paramNames: impl.params, attrs: attrs)
         try module.builder.setInsertPoint(function)
         
-        function.visibility = attrs.visibility
         
         // make scope and occupy it with params
         let fnScope = Scope(parent: scope, function: function)
@@ -478,30 +470,39 @@ extension ForInLoopStmt : StmtEmitter {
         // extract loop start and ends as builtin ints
         let generator = try iterator.emitRValue(module: module, scope: scope).asReferenceAccessor().reference()
         
+        // get generator function
         guard let functionName = generatorFunctionName, let generatorFunction = module.functionNamed(functionName), let yieldType = generatorFunction.type.yieldType else { fatalError() }
         
+        // save current position
         let entryInsertPoint = module.builder.insertPoint
         
+        // create a loop thunk, which stores the loop body
         let loopThunk = try module.builder.getOrBuildFunction("loop_thunk", type: FnType(params: [yieldType]), paramNames: [binded.name])
         try module.builder.setInsertPoint(loopThunk)
         
+        // make the semantic scope for the loop
         let loopScope = Scope(parent: scope, function: loopThunk)
         loopScope.add(try loopThunk.paramNamed(binded.name).accessor(), name: binded.name)
+        
+        // TODO: mandatory VHIR inlining of loop thunk and generator
+        // currently this fails
+        /*
+         let q = 2
+         for a in 0..<10 do
+            print q
+         */
         
         try block.emitStmt(module: module, scope: loopScope)
         try module.builder.buildReturnVoid()
         
-//        generatorFunction.iniline = .alaways
+        // require that we inline the loop thunks
+        loopThunk.inline = .always
+        generatorFunction.inline = .always
         
         module.builder.insertPoint = entryInsertPoint
         
         try module.builder.buildFunctionCall(generatorFunction, args: [generator, loopThunk.buildFunctionPointer()])
         
-        for case let inst as YieldInst in generatorFunction.instructions {
-            inst.targetThunk = loopThunk
-        }
-        
-//        module.dump()
         // TODO: making a random function called `generator` idk why, fix it
         
     }
@@ -580,7 +581,7 @@ extension StructExpr : ValueEmitter {
         
         for m in methods {
             guard let t = m.fnType.type else { fatalError() }
-            try module.getOrInsertFunction(named: m.name, type: t)
+            try module.getOrInsertFunction(named: m.mangledName, type: t, attrs: m.attrs)
         }
         for m in methods {
             try m.emitStmt(module: module, scope: scope)
@@ -623,6 +624,8 @@ extension InitialiserDecl: StmtEmitter {
         // make function and move into it
         let function = try module.builder.buildFunction(mangledName, type: initialiserType.cannonicalType(module), paramNames: impl.params)
         try module.builder.setInsertPoint(function)
+        
+        function.inline = .always
         
         // make scope and occupy it with params
         let fnScope = Scope(parent: scope, function: function)

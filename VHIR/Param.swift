@@ -27,7 +27,6 @@ class Param : Value {
 
 /// A param backed by a pointer
 final class RefParam : Param, LValue {
-    
     var memType: Type?
     
     init(paramName: String, memType: Type) {

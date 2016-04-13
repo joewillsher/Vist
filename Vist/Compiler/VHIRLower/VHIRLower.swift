@@ -115,10 +115,41 @@ extension Module {
 
 
 extension Function: VHIRLower {
+    
+    private func applyInline() {
+        switch inline {
+        case .`default`: break
+        case .always: LLVMAddFunctionAttr(loweredFunction, LLVMAlwaysInlineAttribute)
+        case .never: LLVMAddFunctionAttr(loweredFunction, LLVMNoInlineAttribute)
+        }
+    }
+    private func applyVisibility() {
+        switch visibility {
+        case .`public`:
+            LLVMSetVisibility(loweredFunction, LLVMDefaultVisibility)
+            LLVMSetLinkage(loweredFunction, LLVMExternalLinkage)
+        case .`internal`:
+            LLVMSetVisibility(loweredFunction, LLVMDefaultVisibility)
+            LLVMSetLinkage(loweredFunction, LLVMExternalLinkage)
+        case .`private`:
+            LLVMSetVisibility(loweredFunction, LLVMProtectedVisibility)
+            LLVMSetLinkage(loweredFunction, LLVMPrivateLinkage)
+        }
+    }
+    private func applyAttributes() {
+        if attributes.contains(.noreturn) { LLVMAddFunctionAttr(loweredFunction, LLVMNoReturnAttribute) }
+        if attributes.contains(.readnone) { LLVMAddFunctionAttr(loweredFunction, LLVMReadNoneAttribute) }
+    }
+    
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         
         let b = LLVMGetInsertBlock(irGen.builder)
         let fn = LLVMGetNamedFunction(irGen.module, name)
+        
+        // apply function attributes, linkage, and visibility
+        applyInline()
+        applyVisibility()
+        applyAttributes()
         
         // if no body, return
         guard let blocks = blocks else { return fn }
@@ -187,7 +218,7 @@ extension Param: VHIRLower {
         else {
             let phi = buildPhi()
             
-            for operand in try block.appliedArgsForParam(self) {
+            for operand in try block.appliedArgs(for: self) {
                 operand.phi = phi
             }
             
@@ -306,25 +337,6 @@ private extension FunctionCallInst {
     }
 }
 
-extension FunctionRef : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        return function.loweredFunction
-    }
-}
-
-private extension FunctionAttributeExpr {
-    func addAttrTo(function: LLVMValueRef) {
-        switch self {
-        case .inline: LLVMAddFunctionAttr(function, LLVMAlwaysInlineAttribute)
-        case .noreturn: LLVMAddFunctionAttr(function, LLVMNoReturnAttribute)
-        case .noinline: LLVMAddFunctionAttr(function, LLVMNoInlineAttribute)
-        case .`private`: LLVMSetLinkage(function, LLVMPrivateLinkage)
-        case .`public`: LLVMSetLinkage(function, LLVMExternalLinkage)
-        default: break
-        }
-    }
-}
-
 extension TupleCreateInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         guard let t = type else { throw irGenError(.notStructType) }
@@ -379,7 +391,7 @@ extension Function {
         // Build trap and unreachable
         try BuiltinInstCall.trapInst().vhirLower(module, irGen: irGen)
         LLVMBuildUnreachable(irGen.builder)
-        
+
         // move back; save and return the fail block
         LLVMPositionBuilderAtEnd(irGen.builder, ins)
         _condFailBlock = block

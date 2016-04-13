@@ -7,6 +7,11 @@
 //
 
 
+/**
+ A call to a builtin VHIR function
+ 
+ `%a = builtin i_add %1:%Builtin.Int %2:$Builtin.Int`
+ */
 final class BuiltinInstCall : InstBase {
     override var type: Type? { return returnType }
     let inst: BuiltinInst
@@ -51,6 +56,8 @@ final class BuiltinInstCall : InstBase {
     }
 }
 
+/// A builtin VHIR function. Each can be called in Vist code (stdlib only)
+/// by doing Builtin.intrinsic
 enum BuiltinInst : String {
     case iadd = "i_add", isub = "i_sub", imul = "i_mul", idiv = "i_div", irem = "i_rem", ieq = "i_eq", ineq = "i_neq"
     case iaddoverflow = "i_add_overflow"
@@ -105,7 +112,6 @@ enum BuiltinInst : String {
 extension Builder {
     
     // change name back when not crashing
-    // file bug
     func buildBuiltinInstructionCall(i: BuiltinInst, args: Operand..., irName: String? = nil) throws -> BuiltinInstCall {
         return try buildBuiltinInstruction(i, args: args, irName: irName)
     }

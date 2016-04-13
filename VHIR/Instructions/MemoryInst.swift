@@ -6,6 +6,11 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
+/**
+ Allocate stack memory
+ 
+ `%a = alloc %Int`
+ */
 final class AllocInst : InstBase, LValue {
     var storedType: Type
     
@@ -21,6 +26,11 @@ final class AllocInst : InstBase, LValue {
         return "\(name) = alloc \(storedType) \(useComment)"
     }
 }
+/**
+ Store into a memory location
+ 
+ `store %0 in %a: %*Int`
+ */
 final class StoreInst : InstBase {
     override var type: Type? { return address.type }
     private(set) var address: PtrOperand, value: Operand
@@ -31,13 +41,17 @@ final class StoreInst : InstBase {
         super.init(args: [value, address], irName: nil)
     }
     
-    // TODO: rename 'can remove' or something
     override var hasSideEffects: Bool { return true }
     
     override var instVHIR: String {
         return "store \(value.name) in \(address) \(useComment)"
     }
 }
+/**
+ Load from a memory location
+ 
+ `%a = load %0: %*Int`
+ */
 final class LoadInst : InstBase {
     override var type: Type? { return address.memType }
     private(set) var address: PtrOperand
@@ -51,6 +65,11 @@ final class LoadInst : InstBase {
         return "\(name) = load \(address) \(useComment)"
     }
 }
+/**
+ Bitcast a memory location
+ 
+ `%a = bitcast %0:%*Int to %*Builtin.Int`
+ */
 final class BitcastInst : InstBase, LValue {
     var pointerType: BuiltinType { return BuiltinType.pointer(to: newType) }
     override var type: Type? { return pointerType }
