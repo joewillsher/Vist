@@ -51,7 +51,7 @@ final class ExistentialWitnessMethodInst : InstBase, LValue {
     var existential: PtrOperand
     let methodName: String, argTypes: [Type], existentialType: ConceptType
     
-    var methodType: FnType? { return try? existentialType.methodType(methodNamed: methodName, argTypes: argTypes) }
+    var methodType: FunctionType? { return try? existentialType.methodType(methodNamed: methodName, argTypes: argTypes) }
     override var type: Type? { return memType.map { BuiltinType.pointer(to: $0) } }
     var memType: Type? { return methodType }
     

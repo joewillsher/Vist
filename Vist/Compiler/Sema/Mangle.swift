@@ -10,11 +10,11 @@ import class Foundation.NSString
 
 extension String {
     
-    func mangle(type: FnType) -> String {
+    func mangle(type: FunctionType) -> String {
         return "\(mappedChars())_\(type.mangledName)"
     }
     func mangle(type: [Type]) -> String {
-        return mangle(FnType(params: type, returns: BuiltinType.void/*Doesnt matter*/))
+        return mangle(FunctionType(params: type, returns: BuiltinType.void/*Doesnt matter*/))
     }
     
     private static var mangleMap: [(Character, Character)] = [

@@ -11,7 +11,7 @@ typealias Variable = (type: Type, mutable: Bool)
 final class SemaScope {
     
     private var variables: [String: Variable]
-    private var functions: [String: FnType]
+    private var functions: [String: FunctionType]
     private var types: [String: StorageType]
     var concepts: [String: ConceptType]
     let isStdLib: Bool
@@ -48,7 +48,7 @@ final class SemaScope {
     /// in the builtin functions, then it looks through this scope,
     /// then searches parent scopes, throwing if not found
     ///
-    func function(name: String, argTypes: [Type]) throws -> (String, FnType) {
+    func function(name: String, argTypes: [Type]) throws -> (String, FunctionType) {
         
         // if not stdlib, lookup from the stdlib defs
         // if stdlib lookup from builtin fns
@@ -76,7 +76,7 @@ final class SemaScope {
         }
     }
     
-    func addFunction(name: String, type: FnType) {
+    func addFunction(name: String, type: FunctionType) {
         functions[name.mangle(type)] = type
     }
     
@@ -152,10 +152,10 @@ final class SemaScope {
 
 extension CollectionType
     where
-    Generator.Element == (String, FnType)
+    Generator.Element == (String, FunctionType)
 {
     /// Subscript functions by their unmangled names and applies types
-    subscript(raw raw: String, paramTypes types: [Type]) -> FnType? {
+    subscript(raw raw: String, paramTypes types: [Type]) -> FunctionType? {
         get {
             for (k, v) in self where k.demangleName() == raw && v.params.elementsEqual(types, isEquivalent: ==) {
                 return v

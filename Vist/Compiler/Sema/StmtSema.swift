@@ -97,7 +97,7 @@ extension ForInLoopStmt: StmtTypeProvider {
         // add bound name to scopes
         loopScope[variable: binded.name] = (type: yieldType, mutable: false)
         
-        self.generatorFunctionName = "generate".mangle(generatorFunctionType.withParent(storage))
+        self.generatorFunctionName = "generate".mangle(generatorFunctionType.withParent(storage, mutating: false))
         
         // parse inside of loop in loop scope
         try block.exprs.walkChildren { exp in

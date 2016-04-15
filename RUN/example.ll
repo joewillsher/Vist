@@ -30,27 +30,23 @@ declare void @print_tI(%Int)
 declare %Int @-P_tII(%Int, %Int)
 
 ; Function Attrs: alwaysinline
-define void @generate_mHalfOpenRangePtI(%HalfOpenRange* nocapture readonly %self, void (%Int)* nocapture %loop_thunk) #1 {
+define void @generate_mHalfOpenRangePtI(%HalfOpenRange %self, void (%Int)* nocapture %loop_thunk) #1 {
 entry:
-  %0 = getelementptr inbounds %HalfOpenRange* %self, i64 0, i32 0, i32 0
-  %1 = load i64* %0, align 8
-  %.fca.0.insert12 = insertvalue %Int undef, i64 %1, 0
-  %end = getelementptr inbounds %HalfOpenRange* %self, i64 0, i32 1
-  %2 = load %Int* %end, align 8
-  %3 = tail call %Bool @-L_tII(%Int %.fca.0.insert12, %Int %2), !stdlib.call.optim !0
-  %cond113 = extractvalue %Bool %3, 0
-  br i1 %cond113, label %loop.preheader, label %loop.exit
+  %start = extractvalue %HalfOpenRange %self, 0
+  %end = extractvalue %HalfOpenRange %self, 1
+  %0 = tail call %Bool @-L_tII(%Int %start, %Int %end), !stdlib.call.optim !0
+  %cond110 = extractvalue %Bool %0, 0
+  br i1 %cond110, label %loop.preheader, label %loop.exit
 
 loop.preheader:                                   ; preds = %entry
   br label %loop
 
 loop:                                             ; preds = %loop.preheader, %loop
-  %.fca.0.insert14 = phi %Int [ %4, %loop ], [ %.fca.0.insert12, %loop.preheader ]
-  tail call void %loop_thunk(%Int %.fca.0.insert14)
-  %4 = tail call %Int @-P_tII(%Int %.fca.0.insert14, %Int { i64 1 }), !stdlib.call.optim !0
-  %5 = load %Int* %end, align 8
-  %6 = tail call %Bool @-L_tII(%Int %4, %Int %5), !stdlib.call.optim !0
-  %cond1 = extractvalue %Bool %6, 0
+  %start.sink11 = phi %Int [ %1, %loop ], [ %start, %loop.preheader ]
+  tail call void %loop_thunk(%Int %start.sink11)
+  %1 = tail call %Int @-P_tII(%Int %start.sink11, %Int { i64 1 }), !stdlib.call.optim !0
+  %2 = tail call %Bool @-L_tII(%Int %1, %Int %end), !stdlib.call.optim !0
+  %cond1 = extractvalue %Bool %2, 0
   br i1 %cond1, label %loop, label %loop.exit.loopexit
 
 loop.exit.loopexit:                               ; preds = %loop
@@ -63,16 +59,16 @@ loop.exit:                                        ; preds = %loop.exit.loopexit,
 define void @main() {
 entry:
   %0 = tail call %Bool @-L_tII(%Int { i64 1 }, %Int { i64 10 }), !stdlib.call.optim !0
-  %cond113.i = extractvalue %Bool %0, 0
-  br i1 %cond113.i, label %loop.i.preheader, label %generate_mHalfOpenRangePtI.exit
+  %cond110.i = extractvalue %Bool %0, 0
+  br i1 %cond110.i, label %loop.i.preheader, label %generate_mHalfOpenRangePtI.exit
 
 loop.i.preheader:                                 ; preds = %entry
   br label %loop.i
 
 loop.i:                                           ; preds = %loop.i.preheader, %loop.i
-  %.fca.0.insert14.i = phi %Int [ %1, %loop.i ], [ { i64 1 }, %loop.i.preheader ]
-  tail call void @print_tI(%Int %.fca.0.insert14.i), !stdlib.call.optim !0
-  %1 = tail call %Int @-P_tII(%Int %.fca.0.insert14.i, %Int { i64 1 }), !stdlib.call.optim !0
+  %start.sink11.i = phi %Int [ %1, %loop.i ], [ { i64 1 }, %loop.i.preheader ]
+  tail call void @print_tI(%Int %start.sink11.i), !stdlib.call.optim !0
+  %1 = tail call %Int @-P_tII(%Int %start.sink11.i, %Int { i64 1 }), !stdlib.call.optim !0
   %2 = tail call %Bool @-L_tII(%Int %1, %Int { i64 10 }), !stdlib.call.optim !0
   %cond1.i = extractvalue %Bool %2, 0
   br i1 %cond1.i, label %loop.i, label %generate_mHalfOpenRangePtI.exit.loopexit

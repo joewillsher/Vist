@@ -23,7 +23,7 @@ final class BlockExpr : TypedExpr, ScopeNode {
         self.variables = variables
     }
     
-    var type: FnType? = nil
+    var type: FunctionType? = nil
     
     var childNodes: [ASTNode] {
         return exprs
@@ -39,7 +39,7 @@ final class ClosureExpr : TypedExpr, ScopeNode {
         self.parameters = params
     }
     
-    var type: FnType? = nil
+    var type: FunctionType? = nil
     
     var childNodes: [ASTNode] {
         return exprs
@@ -170,7 +170,7 @@ protocol FunctionCall: class, Expr, _Typed {
     var _type: Type? { get set }
 
     var mangledName: String { get set }
-    var fnType: FnType? { get set }
+    var fnType: FunctionType? { get set }
 }
 
 final class BinaryExpr: FunctionCall {
@@ -188,7 +188,7 @@ final class BinaryExpr: FunctionCall {
     var name: String { return op }
     var argArr: [Expr] { return [lhs, rhs] }
     
-    var fnType: FnType? = nil
+    var fnType: FunctionType? = nil
     var _type: Type? = nil
 }
 
@@ -236,7 +236,7 @@ final class FunctionCallExpr: Expr, FunctionCall {
     var mangledName: String
     var argArr: [Expr] { return args.elements }
     
-    var fnType: FnType? = nil
+    var fnType: FunctionType? = nil
     var _type: Type? = nil
 }
 
@@ -391,7 +391,7 @@ final class MethodCallExpr: ChainableExpr, FunctionCall {
     var argArr: [Expr] { return args.elements }
     
     var structType: StorageType? = nil
-    var fnType: FnType? = nil
+    var fnType: FunctionType? = nil
     var _type: Type? = nil
 }
 

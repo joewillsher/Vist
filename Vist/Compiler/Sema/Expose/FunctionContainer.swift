@@ -12,7 +12,7 @@
 ///
 struct FunctionContainer {
     
-    private let functions: [String: FnType]
+    private let functions: [String: FunctionType]
     private let types: [StructType]
     private let concepts: [ConceptType]
     
@@ -21,8 +21,8 @@ struct FunctionContainer {
     /// Tuples are of the unmangled name and the type object
     ///
     /// Optionally takes an array of metadata to apply to all functions
-    init (functions: [(String, FnType)], types: [StructType], concepts: [ConceptType] = [], metadata: [String] = [], mangleFunctionNames: Bool = true) {
-        var t: [String: FnType] = [:]
+    init (functions: [(String, FunctionType)], types: [StructType], concepts: [ConceptType] = [], metadata: [String] = [], mangleFunctionNames: Bool = true) {
+        var t: [String: FunctionType] = [:]
         
         for (n, _ty) in functions {
             var ty = _ty
@@ -33,7 +33,7 @@ struct FunctionContainer {
         
         let typesWithMethods = types.map { t -> StructType in
             var type = t
-            type.methods = type.methods.map { m in (m.name,  m.type.withParent(t)) }
+            type.methods = type.methods.map { m in (m.name,  m.type.withParent(t, mutating: m.mutating), m.mutating) }
             return type
         }
         
@@ -46,7 +46,7 @@ struct FunctionContainer {
     /// - parameter id: Unmangled name
     /// - parameter types: Applied arg types
     /// - returns: An optional tuple of `(mangledName, type)`
-    subscript(fn fn: String, types types: [Type]) -> (mangledName: String, type: FnType)? {
+    subscript(fn fn: String, types types: [Type]) -> (mangledName: String, type: FunctionType)? {
         get {
             let mangled = fn.mangle(types)
             guard let ty = functions[mangled] else { return nil }
@@ -54,7 +54,7 @@ struct FunctionContainer {
         }
     }
     /// unmangled
-    subscript(mangledName mangledName: String) -> (mangledName: String, type: FnType)? {
+    subscript(mangledName mangledName: String) -> (mangledName: String, type: FunctionType)? {
         get {
             return functions[mangledName].map { (mangledName, $0) }
         }

@@ -1,20 +1,19 @@
 
 
-let a: Int? = 1
+protocol Foo { }
+
+struct A:Foo { }
 
 
-#if swift(>=3)
-    enum Error : ErrorProtocol { case rip }
-#else
-    enum Error : ErrorType { case rip }
-#endif
+let a: Foo = A()
+let b: Foo = A()
 
-func throwing() throws { throw Error.rip }
 
-func foo(a: Int) {
-    try throwing()
+
+a.dynamicType
+
+if let aopened = a as? A {
+    o
 }
-
-
 
 

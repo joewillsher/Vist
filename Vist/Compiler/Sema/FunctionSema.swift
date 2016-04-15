@@ -15,17 +15,18 @@ extension FuncDecl: DeclTypeProvider {
         let declScope = SemaScope(parent: scope)
         declScope.genericParameters = genericParameters
         
+        let mutableSelf = attrs.contains(.mutating)
         let paramTypes = try fnType.params(declScope), returnType = try fnType.returnType(declScope)
         // if its a generator function there is no return
         let ret = isGeneratorFunction ? BuiltinType.void : returnType
         
-        var ty: FnType
+        var ty: FunctionType
         
         if case let parentType as StorageType = parent?._type {
-            ty = FnType(params: paramTypes, returns: ret, callingConvention: .method(selfType: parentType))
+            ty = FunctionType(params: paramTypes, returns: ret, callingConvention: .method(selfType: parentType, mutating: mutableSelf))
         }
         else {
-            ty = FnType(params: paramTypes, returns: ret)
+            ty = FunctionType(params: paramTypes, returns: ret)
         }
         
         if isGeneratorFunction {
@@ -54,7 +55,6 @@ extension FuncDecl: DeclTypeProvider {
         // if is a method
         if case let parentType as StorageType = parent?._type {
             
-            let mutableSelf = attrs.contains(.mutating)
             // add self
             fnScope[variable: "self"] = (type: parentType, mutable: mutableSelf)
             
@@ -99,7 +99,7 @@ extension FunctionCallExpr: ExprTypeProvider {
 
 extension FunctionCall {
     
-    func semaFunctionCall(scope: SemaScope) throws -> FnType {
+    func semaFunctionCall(scope: SemaScope) throws -> FunctionType {
         
         // gen types for objects in call
         for arg in argArr {

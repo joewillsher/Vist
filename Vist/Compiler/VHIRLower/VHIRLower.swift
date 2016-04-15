@@ -63,7 +63,7 @@ extension Operand: VHIRLower {
 extension Module {
     
     /// Creates or gets a function pointer
-    private func getOrAddFunction(named name: String, type: FnType, irGen: IRGen) -> LLVMValueRef {
+    private func getOrAddFunction(named name: String, type: FunctionType, irGen: IRGen) -> LLVMValueRef {
         // if already defined, we return it
         let f = LLVMGetNamedFunction(irGen.module, name)
         if f != nil { return f }
@@ -328,7 +328,7 @@ extension VHIRFunctionCall {
 }
 
 private extension FunctionCallInst {
-    private static func callFunction(ref: LLVMValueRef, type: FnType? = nil, args: [LLVMValueRef], irGen: IRGen, irName: String?) throws -> LLVMValueRef {
+    private static func callFunction(ref: LLVMValueRef, type: FunctionType? = nil, args: [LLVMValueRef], irGen: IRGen, irName: String?) throws -> LLVMValueRef {
         var a = args
         let call = LLVMBuildCall(irGen.builder, ref, &a, UInt32(args.count), irName ?? "")
         type?.addMetadataTo(call)
@@ -573,8 +573,12 @@ private extension ConceptType {
         let opaquePtrType = BuiltinType.opaquePointer
         
         let ptrs = try requiredFunctions
-            .map { methodName, type in try structType.ptrToMethodNamed(methodName, type: type.withParent(structType), module: module) }
-            .map { ptr in LLVMBuildBitCast(irGen.builder, ptr, opaquePtrType.lowerType(module), LLVMGetValueName(ptr)) }
+            .map { methodName, type, mutating in
+                try structType.ptrToMethodNamed(methodName, type: type.withParent(structType, mutating: mutating), module: module)
+            }
+            .map { ptr in
+                LLVMBuildBitCast(irGen.builder, ptr, opaquePtrType.lowerType(module), LLVMGetValueName(ptr))
+        }
         
         return try ArrayInst.lowerBuffer(ptrs,
                                          elType: opaquePtrType,

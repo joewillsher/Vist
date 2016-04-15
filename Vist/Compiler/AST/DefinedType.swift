@@ -16,7 +16,7 @@ final class DefinedFunctionType {
         self.returnType = returnType
     }
     
-    var type: FnType? = nil
+    var type: FunctionType? = nil
 }
 
 
@@ -77,7 +77,7 @@ enum DefinedType {
             return elements.isEmpty ? BuiltinType.void : TupleType(members: try elements.map({try $0.typeInScope(scope)}))
             
         case let .function(functionType):
-            return FnType(params: try functionType.paramType.tyArr(scope), returns: try functionType.returnType.typeInScope(scope))
+            return FunctionType(params: try functionType.paramType.tyArr(scope), returns: try functionType.returnType.typeInScope(scope))
         }
     }
 }

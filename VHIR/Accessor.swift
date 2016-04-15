@@ -12,11 +12,13 @@
  This exposes many methods for optionally refcounting the Accessor, they defualt to noops.
  */
 protocol Accessor : class {
+    
     /// Gets the value from the stored object
     /// - note: If the stored instance of type `storedType` is a
     ///         box then this is not equal to the result of calling
     ///         `aggregateGetter()`
     func getter() throws -> Value
+    
     /// Returns copy of this acccessor with reference semantics
     /// - note: not guaranteed to be a reference to the original.
     func asReferenceAccessor() throws -> GetSetAccessor
@@ -233,6 +235,25 @@ final class LazyRefAccessor : GetSetAccessor {
     init(fn: () throws -> LValue) { build = fn }
 }
 
+
+final class LazyAccessor : Accessor {
+    private var build: () throws -> Value
+    private var val: Value?
+    
+    var storedType: Type? { return val?.type }
+
+    func getter() throws -> Value {
+        if let v = val { return v }
+        val = try! build()
+        return val!
+    }
+    
+    func asReferenceAccessor() throws -> GetSetAccessor {
+        return try val!.allocGetSetAccessor()
+    }
+    
+    init(fn: () throws -> Value) { build = fn }
+}
 
 
 

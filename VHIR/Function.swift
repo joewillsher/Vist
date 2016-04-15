@@ -12,7 +12,7 @@ final class Function : VHIRElement {
     /// The mangled function name
     var name: String
     /// The cannonical type
-    var type: FnType
+    var type: FunctionType
     /// A function body. If nil this function is a prototype
     private var body: FunctionBody?
     
@@ -35,7 +35,7 @@ final class Function : VHIRElement {
     var _condFailBlock: LLVMBasicBlockRef = nil
     
     
-    private init(name: String, type: FnType, module: Module) {
+    private init(name: String, type: FunctionType, module: Module) {
         self.name = name
         self.parentModule = module
         self.type = type
@@ -225,13 +225,13 @@ extension BasicBlock {
 extension Builder {
     
     /// Builds a function and adds it to the module. Declares a body and entry block
-    func buildFunction(name: String, type: FnType, paramNames: [String], attrs: [FunctionAttributeExpr] = []) throws -> Function {
+    func buildFunction(name: String, type: FunctionType, paramNames: [String], attrs: [FunctionAttributeExpr] = []) throws -> Function {
         let f = try createFunctionPrototype(name, type: type, attrs: attrs)
         try f.defineBody(paramNames: paramNames)
         return f
     }
     /// Builds a function and adds it to the module. Declares a body and entry block
-    func getOrBuildFunction(name: String, type: FnType, paramNames: [String], attrs: [FunctionAttributeExpr] = []) throws -> Function {
+    func getOrBuildFunction(name: String, type: FunctionType, paramNames: [String], attrs: [FunctionAttributeExpr] = []) throws -> Function {
         assert(paramNames.count == type.params.count)
         
         if let f = module.functionNamed(name) where !f.hasBody {
@@ -254,8 +254,8 @@ extension Builder {
     }
     
     /// Creates function prototype an adds to module
-    func createFunctionPrototype(name: String, type: FnType, attrs: [FunctionAttributeExpr] = []) throws -> Function {
-        let type = type.cannonicalType(module).usingTypesIn(module) as! FnType
+    func createFunctionPrototype(name: String, type: FunctionType, attrs: [FunctionAttributeExpr] = []) throws -> Function {
+        let type = type.cannonicalType(module).usingTypesIn(module) as! FunctionType
         let function = Function(name: name, type: type, module: module)
         function.applyAttributes(attrs)
         module.insert(function)
@@ -267,7 +267,7 @@ extension Builder {
 extension Module {
     
     /// Returns the function from the module. Adds prototype it if not already there
-    func getOrInsertFunction(named name: String, type: FnType, attrs: [FunctionAttributeExpr] = []) throws -> Function {
+    func getOrInsertFunction(named name: String, type: FunctionType, attrs: [FunctionAttributeExpr] = []) throws -> Function {
         if let f = functionNamed(name) { return f }
         return try builder.createFunctionPrototype(name, type: type, attrs: attrs)
     }

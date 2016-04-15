@@ -26,30 +26,28 @@ func @print_tI : &thin (%Int) -> %Builtin.Void
 
 func @-P_tII : &thin (%Int, %Int) -> %Int
 
-func @generate_mHalfOpenRangePtI : &method (%*HalfOpenRange, %*tI) -> %Builtin.Void {
-$entry(%self: %*HalfOpenRange, %loop_thunk: %*tI):
-  %start = struct_element %self: %*HalfOpenRange, #start  	// user: %0
-  %0 = load %start: %*I  	// user: %2
-  %1 = alloc %Int  	// users: %2, %4, %8, %10, %14
-  store %0 in %1: %*I 
+func @generate_mHalfOpenRangePtI : &method (%HalfOpenRange, %*tI) -> %Builtin.Void {
+$entry(%self: %HalfOpenRange, %loop_thunk: %*tI):
+  %start = struct_extract %self: %HalfOpenRange, #start  	// user: %1
+  %0 = alloc %Int  	// users: %1, %3, %6, %8, %12
+  store %start in %0: %*I 
   break $cond
 
 $cond:			// preds: entry, loop
-  %4 = load %1: %*I  	// user: %6
-  %end = struct_element %self: %*HalfOpenRange, #end  	// user: %5
-  %5 = load %end: %*I  	// user: %6
-  %6 = call @-L_tII (%4: %Int, %5: %Int)  	// user: %cond
-  %cond = struct_extract %6: %Bool, #value  	// user: nil
+  %3 = load %0: %*I  	// user: %4
+  %end = struct_extract %self: %HalfOpenRange, #end  	// user: %4
+  %4 = call @-L_tII (%3: %Int, %end: %Int)  	// user: %cond
+  %cond = struct_extract %4: %Bool, #value  	// user: nil
   break %cond: %Builtin.Bool, $loop, $loop.exit
 
 $loop:			// preds: cond
-  %8 = load %1: %*I  	// user: %9
-  %9 = apply %loop_thunk (%8: %Int) 
-  %10 = load %1: %*I  	// user: %13
-  %11 = int_literal 1  	// user: %12
-  %12 = struct %I (%11: %Builtin.Int64)  	// user: %13
-  %13 = call @-P_tII (%10: %Int, %12: %Int)  	// user: %14
-  store %13 in %1: %*I 
+  %6 = load %0: %*I  	// user: %7
+  %7 = apply %loop_thunk (%6: %Int) 
+  %8 = load %0: %*I  	// user: %11
+  %9 = int_literal 1  	// user: %10
+  %10 = struct %I (%9: %Builtin.Int64)  	// user: %11
+  %11 = call @-P_tII (%8: %Int, %10: %Int)  	// user: %12
+  store %11 in %0: %*I 
   break $cond
 
 $loop.exit:			// preds: cond
@@ -63,9 +61,7 @@ $entry:
   %2 = int_literal 10  	// user: %3
   %3 = struct %I (%2: %Builtin.Int64)  	// user: %4
   %4 = call @HalfOpenRange_tII (%1: %Int, %3: %Int)  	// user: %range
-  variable_decl %range = %4: %HalfOpenRange  	// user: %6
-  %5 = alloc %HalfOpenRange  	// users: %6, %7
-  store %range in %5: %*HalfOpenRange 
-  %7 = call @generate_mHalfOpenRangePtI (%5: %*HalfOpenRange, %loop_thunk: %*tI) 
+  variable_decl %range = %4: %HalfOpenRange  	// user: %5
+  %5 = call @generate_mHalfOpenRangePtI (%range: %HalfOpenRange, %loop_thunk: %*tI) 
   return ()
 }

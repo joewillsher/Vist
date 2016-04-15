@@ -7,7 +7,7 @@
 //
 
 typealias StructMember = (name: String, type: Type, isMutable: Bool)
-typealias StructMethod = (name: String, type: FnType)
+typealias StructMethod = (name: String, type: FunctionType, mutating: Bool)
 
 /// A type which can have elements looked up by name,
 /// for example structs and existential protocols
@@ -39,7 +39,7 @@ extension StorageType {
         return i
     }
     
-    func ptrToMethodNamed(name: String, type: FnType, module: Module) throws -> LLVMValueRef {
+    func ptrToMethodNamed(name: String, type: FunctionType, module: Module) throws -> LLVMValueRef {
         guard let function = module.functionNamed(name.mangle(type)) else { fatalError() }
         return function.loweredFunction
     }
@@ -50,9 +50,9 @@ extension StorageType {
     func propertyIsMutable(name: String) throws -> Bool {
         return members[try indexOfMemberNamed(name)].isMutable
     }
-    func methodType(methodNamed name: String, argTypes types: [Type]) throws -> FnType {
-        let t =  methods[try indexOf(methodNamed: name, argTypes: types)].type
-        return t.withParent(self)
+    func methodType(methodNamed name: String, argTypes types: [Type]) throws -> FunctionType {
+        let t =  methods[try indexOf(methodNamed: name, argTypes: types)]
+        return t.type.withParent(self, mutating: t.mutating)
     }
     
     /// Returns whether a type models a concept
@@ -66,7 +66,7 @@ extension StorageType {
         return generic.concepts.map(models).contains(false)
     }
     
-    func generatorFunction() -> FnType? {
+    func generatorFunction() -> FunctionType? {
         return methods.find { method in method.name == "generate" && method.type.isGeneratorFunction }?.type
     }
 }

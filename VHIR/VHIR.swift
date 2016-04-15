@@ -89,7 +89,7 @@ extension Module {
 
 
 
-extension FnType {
+extension FunctionType {
     var vhir: String {
         return "\(params.vhirTypeTuple()) -> \(returns.vhir)"
     }

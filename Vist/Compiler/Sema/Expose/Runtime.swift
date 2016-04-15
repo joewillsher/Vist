@@ -18,24 +18,24 @@ struct Runtime {
     static let refcountedObjectType = StructType.withTypes([BuiltinType.opaquePointer, BuiltinType.int(size: 32)], name: "RefcountedObject")
     static let refcountedObjectPointerType = BuiltinType.pointer(to: refcountedObjectType)
     
-    private static let functions: [(String, FnType)] = [
+    private static let functions: [(String, FunctionType)] = [
         // runtime fns
-        ("vist_print", FnType(params: [intType], returns: voidType)),
-        ("vist_print", FnType(params: [doubleType], returns: voidType)),
-        ("vist_print", FnType(params: [boolType], returns: voidType)),
-        ("vist_print", FnType(params: [int32Type], returns: voidType)),
-        ("vist_cshim_putchar", FnType(params: [BuiltinType.int(size: 8)], returns: voidType)),
-        ("vist_cshim_write", FnType(params: [opaquePointerType, intType], returns: voidType)),
+        ("vist_print", FunctionType(params: [intType], returns: voidType)),
+        ("vist_print", FunctionType(params: [doubleType], returns: voidType)),
+        ("vist_print", FunctionType(params: [boolType], returns: voidType)),
+        ("vist_print", FunctionType(params: [int32Type], returns: voidType)),
+        ("vist_cshim_putchar", FunctionType(params: [BuiltinType.int(size: 8)], returns: voidType)),
+        ("vist_cshim_write", FunctionType(params: [opaquePointerType, intType], returns: voidType)),
     ]
-    private static let unmangled: [(String, FnType)] = [
-        ("vist_allocObject", FnType(params: [int32Type], returns: refcountedObjectPointerType)),
-        ("vist_deallocObject", FnType(params: [refcountedObjectPointerType], returns: voidType)),
-        ("vist_retainObject", FnType(params: [refcountedObjectPointerType], returns: voidType)),
-        ("vist_releaseObject", FnType(params: [refcountedObjectPointerType], returns: voidType)),
-        ("vist_releaseUnownedObject", FnType(params: [refcountedObjectPointerType], returns: voidType)),
-        ("vist_deallocUnownedObject", FnType(params: [refcountedObjectPointerType], returns: voidType)),
-        ("vist_setYieldTarget", FnType(params: [], returns: boolType)),
-        ("vist_yieldUnwind", FnType(params: [], returns: voidType)),
+    private static let unmangled: [(String, FunctionType)] = [
+        ("vist_allocObject", FunctionType(params: [int32Type], returns: refcountedObjectPointerType)),
+        ("vist_deallocObject", FunctionType(params: [refcountedObjectPointerType], returns: voidType)),
+        ("vist_retainObject", FunctionType(params: [refcountedObjectPointerType], returns: voidType)),
+        ("vist_releaseObject", FunctionType(params: [refcountedObjectPointerType], returns: voidType)),
+        ("vist_releaseUnownedObject", FunctionType(params: [refcountedObjectPointerType], returns: voidType)),
+        ("vist_deallocUnownedObject", FunctionType(params: [refcountedObjectPointerType], returns: voidType)),
+        ("vist_setYieldTarget", FunctionType(params: [], returns: boolType)),
+        ("vist_yieldUnwind", FunctionType(params: [], returns: voidType)),
     ]
     
     private static let functionContainer = FunctionContainer(functions: functions, types: [])
@@ -45,7 +45,7 @@ struct Runtime {
     /// - parameter name: Unmangled name
     /// - parameter args: Applied arg types
     /// - returns: An optional tuple of `(mangledName, type)`
-    static func functionNamed(name: String, argTypes args: [Type]) -> (mangledName: String, type: FnType)? {
+    static func functionNamed(name: String, argTypes args: [Type]) -> (mangledName: String, type: FunctionType)? {
         return functionContainer[fn: name, types: args]
     }
     
@@ -53,7 +53,7 @@ struct Runtime {
     /// - parameter name: Unmangled name
     /// - parameter args: Applied arg types
     /// - returns: An optional tuple of `(mangledName, type)`
-    static func unmangledFunctionNamed(name: String) -> (mangledName: String, type: FnType)? {
+    static func unmangledFunctionNamed(name: String) -> (mangledName: String, type: FunctionType)? {
         return unmangledContainer[mangledName: name]
     }
     

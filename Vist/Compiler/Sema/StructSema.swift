@@ -46,7 +46,8 @@ extension StructExpr: ExprTypeProvider {
             return try errorCollector.run {
                 try f.typeForNode(structScope)
                 guard let t = f.fnType.type else { throw semaError(.structMethodNotTyped(type: name, methodName: f.name), userVisible: false) }
-                return (f.name, t)
+                let mutableSelf = f.attrs.contains(.mutating)
+                return (name: f.name, type: t, mutating: mutableSelf)
             }
         }
         
@@ -102,7 +103,8 @@ extension ConceptExpr: ExprTypeProvider {
         
         let methodTypes = try requiredMethods.walkChildren(errorCollector) { method throws -> StructMethod in
             guard let t = method.fnType.type else { throw semaError(.structMethodNotTyped(type: name, methodName: method.name)) }
-            return (method.name, t)
+            let mutableSelf = method.attrs.contains(.mutating)
+            return (name: method.name, type: t, mutating: mutableSelf)
         }
         let propertyTypes = try requiredProperties.walkChildren(errorCollector) { prop throws -> StructMember in
             guard let t = prop.value._type else { throw semaError(.structPropertyNotTyped(type: name, property: prop.name)) }
@@ -135,7 +137,7 @@ extension InitialiserDecl: DeclTypeProvider {
         
         let params = try ty.params(scope)
         
-        let initialiserFunctionType = FnType(params: params, returns: parentType)
+        let initialiserFunctionType = FunctionType(params: params, returns: parentType)
         self.mangledName = parentName.mangle(initialiserFunctionType)
         
         scope.addFunction(parentName, type: initialiserFunctionType)

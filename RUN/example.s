@@ -42,27 +42,22 @@ Ltmp4:
 Ltmp5:
 	.cfi_def_cfa_register %rbp
 	subq	$48, %rsp
-	movq	(%rdi), %rax
-	movq	8(%rdi), %rcx
-	addq	$8, %rdi
 	movq	%rdi, -8(%rbp)          ## 8-byte Spill
-	movq	%rax, %rdi
 	movq	%rsi, -16(%rbp)         ## 8-byte Spill
-	movq	%rcx, %rsi
-	movq	%rax, -24(%rbp)         ## 8-byte Spill
+	movq	%rdx, -24(%rbp)         ## 8-byte Spill
 	callq	"_-L_tII"
 	testb	$1, %al
 	jne	LBB2_1
 	jmp	LBB2_4
 LBB2_1:                                 ## %loop.preheader
-	movq	-24(%rbp), %rax         ## 8-byte Reload
+	movq	-8(%rbp), %rax          ## 8-byte Reload
 	movq	%rax, -32(%rbp)         ## 8-byte Spill
 	jmp	LBB2_2
 LBB2_2:                                 ## %loop
                                         ## =>This Inner Loop Header: Depth=1
 	movq	-32(%rbp), %rax         ## 8-byte Reload
 	movq	%rax, %rdi
-	movq	-16(%rbp), %rcx         ## 8-byte Reload
+	movq	-24(%rbp), %rcx         ## 8-byte Reload
 	movq	%rax, -40(%rbp)         ## 8-byte Spill
 	callq	*%rcx
 	movl	$1, %edx
@@ -70,9 +65,8 @@ LBB2_2:                                 ## %loop
 	movq	-40(%rbp), %rdi         ## 8-byte Reload
 	callq	"_-P_tII"
 	movq	%rax, %rcx
-	movq	-8(%rbp), %rsi          ## 8-byte Reload
-	movq	(%rsi), %rsi
 	movq	%rax, %rdi
+	movq	-16(%rbp), %rsi         ## 8-byte Reload
 	movq	%rcx, -48(%rbp)         ## 8-byte Spill
 	callq	"_-L_tII"
 	testb	$1, %al

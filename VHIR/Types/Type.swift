@@ -64,7 +64,7 @@ func == (lhs: Type, rhs: Type) -> Bool {
     case (let l as GenericType, let r as StorageType):
         return r.validSubstitutionFor(l)
         
-    case let (l as FnType, r as FnType):
+    case let (l as FunctionType, r as FunctionType):
         return r == l
     case (let lhs as StorageType, let rhs as StorageType):
         return lhs.name == rhs.name

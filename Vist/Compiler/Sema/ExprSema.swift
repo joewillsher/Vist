@@ -189,7 +189,7 @@ extension VariableDecl : DeclTypeProvider {
         
         let objectType = try value.typeForNode(declScope)
         
-        if case let fn as FnType = objectType {
+        if case let fn as FunctionType = objectType {
             scope.addFunction(name, type: fn) // store in function table if closure
         }
         else {
@@ -235,7 +235,7 @@ extension ClosureExpr : ExprTypeProvider {
     func typeForNode(scope: SemaScope) throws -> Type {
         
         // no type inferrence from param list, just from AST context
-        let ty = (scope.semaContext as? FnType) ?? FnType(params: [BuiltinType.void], returns: BuiltinType.void)
+        let ty = (scope.semaContext as? FunctionType) ?? FunctionType(params: [BuiltinType.void], returns: BuiltinType.void)
         self.type = ty
         
         // we dont want implicit captutring

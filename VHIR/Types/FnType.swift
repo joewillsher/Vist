@@ -1,12 +1,12 @@
 //
-//  FnType.swift
+//  FunctionType.swift
 //  Vist
 //
 //  Created by Josef Willsher on 17/01/2016.
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-struct FnType : Type {
+struct FunctionType : Type {
     var params: [Type], returns: Type
     var metadata: [String]
     let callingConvention: CallingConvention
@@ -21,19 +21,21 @@ struct FnType : Type {
     
     enum CallingConvention {
         case thin
-        case method(selfType: Type)
-        //case thick(contextPtr: )
+        case method(selfType: Type, mutating: Bool)
+        case thick(capturing: [Type])
         
         var name: String {
             switch self {
             case .thin: return "thin"
             case .method: return "method"
+            case .thick: return "thick"
             }
         }
         func usingTypesIn(module: Module) -> CallingConvention {
             switch self {
             case .thin: return self
-            case .method(let selfType): return .method(selfType: selfType.usingTypesIn(module))
+            case .thick(let capturing): return .thick(capturing: capturing.map { captureTy in captureTy.usingTypesIn(module) })
+            case .method(let selfType, let mutating): return .method(selfType: selfType.usingTypesIn(module), mutating: mutating)
             }
         }
     }
@@ -45,19 +47,19 @@ struct FnType : Type {
 }
 
 
-extension FnType {
+extension FunctionType {
     // get the generator type of the function
     mutating func setGeneratorVariantType(yielding yieldType: Type) {
-        guard case .method(let s) = callingConvention else { return }
-        self = FnType(params: [BuiltinType.pointer(to: FnType(params: [yieldType], returns: BuiltinType.void, callingConvention: .thin, yieldType: nil))],
-                      returns: BuiltinType.void, callingConvention: .method(selfType: s), yieldType: yieldType)
+        guard case .method(let s, let m) = callingConvention else { return }
+        self = FunctionType(params: [BuiltinType.pointer(to: FunctionType(params: [yieldType], returns: BuiltinType.void, callingConvention: .thin, yieldType: nil))],
+                            returns: BuiltinType.void, callingConvention: .method(selfType: s, mutating: m), yieldType: yieldType)
     }
     var isGeneratorFunction: Bool { return yieldType != nil }
     
     func lowerType(module: Module) -> LLVMTypeRef {
         
         let ret: LLVMTypeRef
-        if case _ as FnType = returns {
+        if case _ as FunctionType = returns {
             ret = BuiltinType.pointer(to: returns).lowerType(module)
         }
         else {
@@ -74,12 +76,21 @@ extension FnType {
         let params = self.params.map { $0.usingTypesIn(module) }
         let returns = self.returns.usingTypesIn(module)
         let convention = self.callingConvention.usingTypesIn(module)
-        return FnType(params: params, returns: returns, metadata: metadata, callingConvention: convention, yieldType: yieldType)
+        return FunctionType(params: params, returns: returns, metadata: metadata, callingConvention: convention, yieldType: yieldType)
     }
     
     
-    /// The type used by the IR -- it lowers the calling convention
-    func cannonicalType(module: Module) -> FnType {
+    /**
+     The type used by the IR -- it lowers the calling convention
+    
+     The function arguments are lowered as follows:
+        - Thick functions add their implicit context reference to the beginning 
+          of the paramether list
+        - Methods add their implicit self parameter to the beginning of the param
+          list. It is a pointer if the method is mutating or if self is a reference
+          type. Otherwise self is passed by value
+     */
+    func cannonicalType(module: Module) -> FunctionType {
         
         if isCanonicalType { return self }
         
@@ -90,31 +101,43 @@ extension FnType {
         else {
             ret = returns
         }
-        var t: FnType
+        var t: FunctionType
         switch callingConvention {
         case .thin:
-            t = FnType(params: params,
+            t = FunctionType(params: params,
                           returns: ret,
                           metadata: metadata,
                           callingConvention: .thin,
                           yieldType: yieldType)
-        case .method(let selfType):
-            let selfPtr = BuiltinType.pointer(to: selfType)
-            t = FnType(params: [selfPtr] + params,
+            
+        case .thick(let captured):
+            let context = BuiltinType.pointer(to: StructType.withTypes(captured))
+            t = FunctionType(params: [context] + params,
+                             returns: ret,
+                             metadata: metadata,
+                             callingConvention: .thin,
+                             yieldType: yieldType)
+            
+        case .method(let selfType, let mutating):
+            // if ref type or mutating method pass self by ref
+            let selfPtr = mutating || ((selfType as? StructType)?.heapAllocated ?? true)
+                ? BuiltinType.pointer(to: selfType)
+                : selfType
+            t = FunctionType(params: [selfPtr] + params,
                           returns: returns,
                           metadata: metadata,
-                          callingConvention: .method(selfType: selfType),
+                          callingConvention: .method(selfType: selfType, mutating: mutating),
                           yieldType: yieldType)
         }
         t.isCanonicalType = true
         return t
     }
     
-    static func taking(params: Type..., ret: Type = BuiltinType.void) -> FnType {
-        return FnType(params: params, returns: ret)
+    static func taking(params: Type..., ret: Type = BuiltinType.void) -> FunctionType {
+        return FunctionType(params: params, returns: ret)
     }
-    static func returning(ret: Type) -> FnType {
-        return FnType(params: [], returns: ret)
+    static func returning(ret: Type) -> FunctionType {
+        return FunctionType(params: [], returns: ret)
     }
     
     var nonVoid: [Type]  {
@@ -138,10 +161,13 @@ extension FnType {
     var mangledName: String {
         let conventionPrefix: String
         switch callingConvention {
-        case .method(let selfType):
+        case .method(let selfType, _): // method
             conventionPrefix = "m" + selfType.mangledName
-        case .thin:
+        case .thin: // thin
             conventionPrefix = "t"
+        case .thick(let capturing): // context & params
+            let n = capturing.map{$0.mangledName}
+            conventionPrefix = "c" + n.joinWithSeparator("") + "p"
         }
         return conventionPrefix + params
             .map { $0.mangledName }
@@ -149,19 +175,19 @@ extension FnType {
     }
     
     /// Returns a version of this type, but with a defined parent
-    func withParent(parent: StorageType) -> FnType {
-        return FnType(params: params, returns: returns, metadata: metadata, callingConvention: .method(selfType: parent), yieldType: yieldType)
+    func withParent(parent: StorageType, mutating: Bool) -> FunctionType {
+        return FunctionType(params: params, returns: returns, metadata: metadata, callingConvention: .method(selfType: parent, mutating: mutating), yieldType: yieldType)
     }
     /// Returns a version of this type, but with a parent of type i8 (so ptrs to it are i8*)
-    func withOpaqueParent() -> FnType {
-        return FnType(params: params, returns: returns, metadata: metadata, callingConvention: .method(selfType: BuiltinType.int(size: 8)), yieldType: yieldType)
+    func withOpaqueParent() -> FunctionType {
+        return FunctionType(params: params, returns: returns, metadata: metadata, callingConvention: .method(selfType: BuiltinType.int(size: 8), mutating: false), yieldType: yieldType)
     }
 }
 
-extension FnType : Equatable { }
+extension FunctionType : Equatable { }
 
 @warn_unused_result
-func == (lhs: FnType, rhs: FnType) -> Bool {
+func == (lhs: FunctionType, rhs: FunctionType) -> Bool {
     return lhs.params.elementsEqual(rhs.params, isEquivalent: ==) && lhs.returns == rhs.returns
 }
 

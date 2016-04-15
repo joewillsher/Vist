@@ -85,7 +85,7 @@ extension AST {
             }
         }
         else {
-            let mainTy = FnType(params: [], returns: BuiltinType.void)
+            let mainTy = FunctionType(params: [], returns: BuiltinType.void)
             let main = try builder.buildFunction("main", type: mainTy, paramNames: [])
             
             try exprs.emitBody(module: module, scope: scope)
@@ -170,7 +170,7 @@ extension VariableDecl : ValueEmitter {
 extension FunctionCall/*: VHIRGenerator*/ {
     
     func argOperands(module module: Module, scope: Scope) throws -> [Operand] {
-        guard case let fnType as FnType = fnType?.usingTypesIn(module) else { throw VHIRError.paramsNotTyped }
+        guard case let fnType as FunctionType = fnType?.usingTypesIn(module) else { throw VHIRError.paramsNotTyped }
         
         return try zip(argArr, fnType.params).map { rawArg, paramType in
             let arg = try rawArg.emitRValue(module: module, scope: scope)
@@ -192,7 +192,7 @@ extension FunctionCall/*: VHIRGenerator*/ {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         
-        guard case let fnType as FnType = fnType?.usingTypesIn(module) else { throw VHIRError.paramsNotTyped }
+        guard case let fnType as FunctionType = fnType?.usingTypesIn(module) else { throw VHIRError.paramsNotTyped }
         let args = try argOperands(module: module, scope: scope)
 
         if let stdlib = try module.getOrInsertStdLibFunction(named: name, argTypes: fnType.params) {
@@ -223,7 +223,7 @@ extension FuncDecl : StmtEmitter {
         
         // if has body
         guard let impl = impl else {
-            let f = try module.builder.createFunctionPrototype(mangledName, type: type, attrs: attrs)
+            try module.builder.createFunctionPrototype(mangledName, type: type, attrs: attrs)
             return
         }
         
@@ -245,21 +245,34 @@ extension FuncDecl : StmtEmitter {
         }
         // A method calling convention means we have to pass `self` in, and tell vars how
         // to access it, and `self`’s properties
-        if case .method(let selfType) = type.callingConvention {
+        if case .method(let selfType, _) = type.callingConvention {
             // We need self to be passed by ref as a `RefParam`
-            let selfParam = function.params![0] as! RefParam
-            let selfVar = selfParam.accessor
+            let selfParam = function.params![0]
+            let selfVar = try selfParam.accessor()
             try selfVar.retainIfRefcounted()
             fnScope.add(selfVar, name: "self") // add `self`
             
-            // add self's properties, their accessor is a lazily evaluated struct GEP
             if case let type as StorageType = selfType {
-                for property in type.members {
-                    let pVar = LazyRefAccessor {
-                        try module.builder.buildStructElementPtr(selfVar.reference(), property: property.name, irName: property.name)
+                
+                switch selfVar {
+                // if it is a ref self the self accessors are lazily calculated struct GEP
+                case let selfRef as GetSetAccessor:
+                    for property in type.members {
+                        let pVar = LazyRefAccessor {
+                            try module.builder.buildStructElementPtr(selfRef.reference(), property: property.name, irName: property.name)
+                        }
+                        fnScope.add(pVar, name: property.name)
                     }
-                    fnScope.add(pVar, name: property.name)
+                // If it is a value self then we do a struct extract to get self elements
+                case is Accessor:
+                    for property in type.members {
+                        let pVar = LazyAccessor {
+                            try module.builder.buildStructExtract(Operand(selfVar.getter()), property: property.name, irName: property.name)
+                        }
+                        fnScope.add(pVar, name: property.name)
+                    }
                 }
+                
             }
             
         }
@@ -276,13 +289,6 @@ extension FuncDecl : StmtEmitter {
         else {
             fnScope.removeVariables()
         }
-//        for terminator in function.instructions where terminator.instIsTerminator {
-//            if let i = try terminator.predecessor() {
-//                try module.builder.setInsertPoint(i)
-//                try fnScope.releaseVariables(deleting: false)
-//                // release all here
-//            }
-//        }
         
         module.builder.insertPoint = originalInsertPoint
     }
@@ -467,9 +473,6 @@ extension ForInLoopStmt : StmtEmitter {
     
     func emitStmt(module module: Module, scope: Scope) throws {
         
-        // extract loop start and ends as builtin ints
-        let generator = try iterator.emitRValue(module: module, scope: scope).asReferenceAccessor().reference()
-        
         // get generator function
         guard let functionName = generatorFunctionName, let generatorFunction = module.functionNamed(functionName), let yieldType = generatorFunction.type.yieldType else { fatalError() }
         
@@ -477,7 +480,7 @@ extension ForInLoopStmt : StmtEmitter {
         let entryInsertPoint = module.builder.insertPoint
         
         // create a loop thunk, which stores the loop body
-        let loopThunk = try module.builder.getOrBuildFunction("loop_thunk", type: FnType(params: [yieldType]), paramNames: [binded.name])
+        let loopThunk = try module.builder.getOrBuildFunction("loop_thunk", type: FunctionType(params: [yieldType]), paramNames: [binded.name])
         try module.builder.setInsertPoint(loopThunk)
         
         // make the semantic scope for the loop
@@ -501,6 +504,8 @@ extension ForInLoopStmt : StmtEmitter {
         
         module.builder.insertPoint = entryInsertPoint
         
+        // get the instance of the generator
+        let generator = Operand(try iterator.emitRValue(module: module, scope: scope).getter())
         try module.builder.buildFunctionCall(generatorFunction, args: [generator, loopThunk.buildFunctionPointer()])
         
         // TODO: making a random function called `generator` idk why, fix it
@@ -695,21 +700,21 @@ extension MethodCallExpr : ValueEmitter {
         let args = try argOperands(module: module, scope: scope)
         let selfVar = try object.emitRValue(module: module, scope: scope)
         
-        // get ptr to self, if its not reference based we build
-        // memory and store it there to get a ptr.
-        let selfRef = try selfVar.asReferenceAccessor().reference()
-        
         guard let fnType = fnType else { fatalError() }
         
         // construct function call
         switch object._type {
         case is StructType:
+            guard case .method(_, let mutating) = fnType.callingConvention else { fatalError() }
+            let selfObject = try mutating ? selfVar.asReferenceAccessor().reference() : Operand(selfVar.getter())
+
             let function = try module.getOrInsertFunction(named: mangledName, type: fnType)
-            return try module.builder.buildFunctionCall(function, args: [selfRef] + args).accessor()
+            return try module.builder.buildFunctionCall(function, args: [selfObject] + args).accessor()
             
         case let existentialType as ConceptType:
             
             guard let argTypes = args.optionalMap({$0.type}) else { fatalError() }
+            let selfRef = try selfVar.asReferenceAccessor().reference()
             
             // get the witness from the existential
             let fn = try module.builder.buildExistentialWitnessMethod(selfRef,
@@ -717,7 +722,7 @@ extension MethodCallExpr : ValueEmitter {
                                                                       argTypes: argTypes,
                                                                       existentialType: existentialType,
                                                                       irName: "witness")
-            guard case let fnType as FnType = fn.memType else { fatalError() }
+            guard case let fnType as FunctionType = fn.memType else { fatalError() }
             
             // get the instance from the existential
             let unboxedSelf = try module.builder.buildExistentialUnbox(selfRef, irName: "unboxed")
