@@ -49,6 +49,8 @@ protocol GetSetAccessor : Accessor {
     /// Return the aggregate reference -- not guaranteed to be the same
     /// as the location `reference` uses to access elements
     func aggregateReference() -> PtrOperand
+    
+    var module: Module { get }
 }
 
 // Default implementations
@@ -132,6 +134,15 @@ extension Value {
 final class RefAccessor : GetSetAccessor {
     var mem: LValue
     init(memory: LValue) { self.mem = memory }
+}
+
+/// Provides access to a global value with backing memory
+final class GlobalRefAccessor : GetSetAccessor {
+    var mem: LValue, module: Module
+    init(memory: LValue, module: Module) {
+        self.mem = memory
+        self.module = module
+    }
 }
 
 /**

@@ -9,35 +9,58 @@
 struct FunctionType : Type {
     var params: [Type], returns: Type
     var metadata: [String]
-    let callingConvention: CallingConvention
+    var callingConvention: CallingConvention
     
-    init(params: [Type], returns: Type = BuiltinType.void, metadata: [String] = [], callingConvention: CallingConvention = .thin, yieldType: Type? = nil) {
+    init(params: [Type], returns: Type = BuiltinType.void, metadata: [String] = [], callingConvention: CallingConvention? = nil, yieldType: Type? = nil) {
         self.params = params
         self.returns = returns
         self.metadata = metadata
-        self.callingConvention = callingConvention
+        // for some reason I cant use `callingConvention: CallingConvention = .thin` or it crashes
+        self.callingConvention = callingConvention ?? .thin
         self.yieldType = yieldType
     }
     
     enum CallingConvention {
         case thin
         case method(selfType: Type, mutating: Bool)
-        case thick(capturing: [Type])
+//        case thickMethod(selfType: Type, mutating: Bool, capturing: [Type])
+//        case thick(capturing: [Type])
         
         var name: String {
             switch self {
-            case .thin: return "thin"
-            case .method: return "method"
-            case .thick: return "thick"
+            case .thin: return "&thin"
+            case .method: return "&method"
+//            case .thickMethod: return "&thick &method"
+//            case .thick: return "&thick"
             }
         }
         func usingTypesIn(module: Module) -> CallingConvention {
             switch self {
             case .thin: return self
-            case .thick(let capturing): return .thick(capturing: capturing.map { captureTy in captureTy.usingTypesIn(module) })
-            case .method(let selfType, let mutating): return .method(selfType: selfType.usingTypesIn(module), mutating: mutating)
+            case .method(let selfType, let mutating):
+                return .method(selfType: selfType.usingTypesIn(module),
+                               mutating: mutating)
+//            case .thick(let capturing):
+//                return .thick(capturing: capturing.map { captureTy in captureTy.usingTypesIn(module) })
+//            case .thickMethod(let selfType, let mutating, let capturing):
+//                return .thickMethod(selfType: selfType.usingTypesIn(module),
+//                                    mutating: mutating,
+//                                    capturing: capturing.map { captureTy in captureTy.usingTypesIn(module) })
             }
         }
+//        mutating func addCaptures(captures: Type...) {
+//            
+//            switch self {
+//            case .thick(let c):
+//                self = .thick(capturing: c + captures)
+//            case .thin:
+//                self = .thick(capturing: captures)
+//            case .method(let s, let m):
+//                self = .thickMethod(selfType: s, mutating: m, capturing: captures)
+//            case .thickMethod(let s, let m, let c):
+//                self = .thickMethod(selfType: s, mutating: m, capturing: c + captures)
+//            }
+//        }
     }
     
     // Generator functions yield this type
@@ -51,8 +74,14 @@ extension FunctionType {
     // get the generator type of the function
     mutating func setGeneratorVariantType(yielding yieldType: Type) {
         guard case .method(let s, let m) = callingConvention else { return }
-        self = FunctionType(params: [BuiltinType.pointer(to: FunctionType(params: [yieldType], returns: BuiltinType.void, callingConvention: .thin, yieldType: nil))],
-                            returns: BuiltinType.void, callingConvention: .method(selfType: s, mutating: m), yieldType: yieldType)
+        self = FunctionType(params: [BuiltinType.pointer(to:
+                FunctionType(params: [yieldType],
+                            returns: BuiltinType.void,
+                            callingConvention: .thin,
+                            yieldType: nil))],
+                        returns: BuiltinType.void,
+                        callingConvention: .method(selfType: s, mutating: m),
+                        yieldType: yieldType)
     }
     var isGeneratorFunction: Bool { return yieldType != nil }
     
@@ -82,13 +111,13 @@ extension FunctionType {
     
     /**
      The type used by the IR -- it lowers the calling convention
-    
+     
      The function arguments are lowered as follows:
-        - Thick functions add their implicit context reference to the beginning 
-          of the paramether list
-        - Methods add their implicit self parameter to the beginning of the param
-          list. It is a pointer if the method is mutating or if self is a reference
-          type. Otherwise self is passed by value
+     - Thick functions add their implicit context reference to the beginning
+     of the paramether list
+     - Methods add their implicit self parameter to the beginning of the param
+     list. It is a pointer if the method is mutating or if self is a reference
+     type. Otherwise self is passed by value
      */
     func cannonicalType(module: Module) -> FunctionType {
         
@@ -101,33 +130,32 @@ extension FunctionType {
         else {
             ret = returns
         }
-        var t: FunctionType
+        
+        var t: FunctionType = self
+        t.returns = ret
+        
         switch callingConvention {
         case .thin:
-            t = FunctionType(params: params,
-                          returns: ret,
-                          metadata: metadata,
-                          callingConvention: .thin,
-                          yieldType: yieldType)
-            
-        case .thick(let captured):
-            let context = BuiltinType.pointer(to: StructType.withTypes(captured))
-            t = FunctionType(params: [context] + params,
-                             returns: ret,
-                             metadata: metadata,
-                             callingConvention: .thin,
-                             yieldType: yieldType)
+            break
+//            
+//        case .thick(let captured):
+//            let captured = captured.map { BuiltinType.pointer(to: $0) as Type }
+//            t.params.appendContentsOf(captured)
             
         case .method(let selfType, let mutating):
             // if ref type or mutating method pass self by ref
             let selfPtr = mutating || ((selfType as? StructType)?.heapAllocated ?? true)
                 ? BuiltinType.pointer(to: selfType)
                 : selfType
-            t = FunctionType(params: [selfPtr] + params,
-                          returns: returns,
-                          metadata: metadata,
-                          callingConvention: .method(selfType: selfType, mutating: mutating),
-                          yieldType: yieldType)
+            t.params.insert(selfPtr, atIndex: 0)
+//            
+//        case .thickMethod(let selfType, let mutating, let captured):
+//            let captured = captured.map { BuiltinType.pointer(to: $0) as Type }
+//            let selfPtr = mutating || ((selfType as? StructType)?.heapAllocated ?? true)
+//                ? BuiltinType.pointer(to: selfType)
+//                : selfType
+//            t.params.appendContentsOf(captured)
+//            t.params.insert(selfPtr, atIndex: 0)
         }
         t.isCanonicalType = true
         return t
@@ -165,9 +193,12 @@ extension FunctionType {
             conventionPrefix = "m" + selfType.mangledName
         case .thin: // thin
             conventionPrefix = "t"
-        case .thick(let capturing): // context & params
-            let n = capturing.map{$0.mangledName}
-            conventionPrefix = "c" + n.joinWithSeparator("") + "p"
+//        case .thick(let capturing): // context & params
+//            let n = capturing.map{$0.mangledName}
+//            conventionPrefix = "c" + n.joinWithSeparator("") + "p"
+//        case .thickMethod(let selfType, _, let capturing): // context & params
+//            let n = capturing.map{$0.mangledName}
+//            conventionPrefix = "m" + selfType.mangledName + "c" + n.joinWithSeparator("") + "p"
         }
         return conventionPrefix + params
             .map { $0.mangledName }

@@ -15,8 +15,9 @@ type HalfOpenRange {
 
 let range = HalfOpenRange 1 10
 
+let y = 1
 for a in range do
-    print a
+    print a + y
 
 
 

@@ -16,11 +16,13 @@ struct FunctionContainer {
     private let types: [StructType]
     private let concepts: [ConceptType]
     
-    /// Initialiser takes a collection of tuples.
-    ///
-    /// Tuples are of the unmangled name and the type object
-    ///
-    /// Optionally takes an array of metadata to apply to all functions
+    /**
+     Initialiser takes a collection of tuples.
+     
+     Tuples are of the unmangled name and the type object
+     
+     Optionally takes an array of metadata to apply to all functions
+     */
     init (functions: [(String, FunctionType)], types: [StructType], concepts: [ConceptType] = [], metadata: [String] = [], mangleFunctionNames: Bool = true) {
         var t: [String: FunctionType] = [:]
         

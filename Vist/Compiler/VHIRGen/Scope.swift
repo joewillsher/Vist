@@ -10,28 +10,45 @@
 /// the VHIRGen phase.
 final class Scope {
     private var variables: [String: Accessor]
-    private weak var parent: Scope?
+    private(set) weak var parent: Scope?
     private unowned var module: Module
     private(set) var function: Function?
+    var captureHandler: CaptureHandler?, breakPoint: Builder.InsertPoint?
     
     init(module: Module) {
         self.module = module
         self.variables = [:]
     }
-    init(parent: Scope, function: Function?) {
+    init(parent: Scope, function: Function?, captureHandler: CaptureHandler? = nil, breakPoint: Builder.InsertPoint? = nil) {
         self.parent = parent
         self.function = function
         self.variables = [:]
         self.module = parent.module
+        self.captureHandler = captureHandler ?? parent.captureHandler
+        self.breakPoint = breakPoint ?? parent.breakPoint
+    }
+    static func capturingScope(parent: Scope, function: Function, captureHandler: CaptureHandler, breakPoint: Builder.InsertPoint) -> Scope {
+        return Scope(parent: parent, function: function, captureHandler: captureHandler, breakPoint: breakPoint)
     }
     
     func add(variable: Accessor, name: String) {
         variables[name] = variable
     }
     
-    func variableNamed(name: String) -> Accessor? {
+    /// - Returns: The accessor of a variable named `name`
+    /// - Note: Updates the capture handler if we read from a parent
+    func variableNamed(name: String) throws -> Accessor? {
         if let v = variables[name] { return v }
-        return parent?.variableNamed(name)
+        
+        let foundInParent = try parent?.variableNamed(name)
+        if let f = foundInParent, var handler = captureHandler {
+            // if we have a capture handler, infor that it 
+            // captures this accessor
+            let accessor = try handler.addCapture(f, scope: self, name: name)
+            add(accessor, name: name)
+            return accessor
+        }
+        return foundInParent
     }
 
     func removeVariableNamed(name: String) -> Accessor? {

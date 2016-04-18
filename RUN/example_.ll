@@ -21,7 +21,7 @@ entry:
 declare %Bool @-L_tII(%Int, %Int)
 
 ; Function Attrs: alwaysinline
-define void @loop_thunk(%Int %a) #0 {
+define void @generate_mHalfOpenRangePtI.loop_thunk(%Int %a) #0 {
 entry:
   call void @print_tI(%Int %a), !stdlib.call.optim !0
   ret void
@@ -63,7 +63,7 @@ entry:
   %0 = call %HalfOpenRange @HalfOpenRange_tII(%Int { i64 1 }, %Int { i64 10 })
   %range = alloca %HalfOpenRange
   store %HalfOpenRange %0, %HalfOpenRange* %range
-  call void @generate_mHalfOpenRangePtI(%HalfOpenRange %0, void (%Int)* @loop_thunk)
+  call void @generate_mHalfOpenRangePtI(%HalfOpenRange %0, void (%Int)* @generate_mHalfOpenRangePtI.loop_thunk)
   ret void
 }
 

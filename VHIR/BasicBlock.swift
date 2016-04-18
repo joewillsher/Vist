@@ -118,6 +118,15 @@ extension BasicBlock {
         inst.parentBlock = nil
     }
     
+    /// Adds a param to the block
+    /// - precondition: This block is an entry block
+    func addEntryBlockParam(param: Param) throws {
+        guard let entry = applications.first where entry.isEntry else { fatalError() }
+        parameters?.append(param)
+        entry.args?.append(Operand(param))
+    }
+    
+    
     var module: Module { return parentFunction!.module }
     func dump() { print(vhir) }
 }

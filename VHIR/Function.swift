@@ -60,7 +60,7 @@ final class Function : VHIRElement {
     }
     /// How the inliner should handle this function
     enum InlineRequirement {
-        case `default`, always, never
+        case `default`, always, never //, immediatelyInVHIR
     }
     /// Other attributes
     struct Attributes : OptionSetType {
@@ -158,12 +158,30 @@ extension Function {
         return PtrOperand(FunctionRef(toFunction: self, parentBlock: module.builder.insertPoint.block))
     }
     
+    func getAsClosure() throws -> Closure {
+        let type = self.type.cannonicalType(module)
+        var ty = FunctionType(params: type.params,
+                              returns: type.returns,
+                              callingConvention: type.callingConvention,
+                              yieldType: type.yieldType)
+        ty.isCanonicalType = true
+        let f = try module.builder.buildFunction(name,
+                                                type: ty.cannonicalType(module),
+                                                paramNames: params?.map{$0.paramName} ?? [])
+        return Closure(_thunkOf: f)
+    }
+    
+    func addParam(param: Param) throws {
+        try entryBlock?.addEntryBlockParam(param)
+    }
+    
     func dumpIR() {
         if loweredFunction != nil { LLVMDumpValue(loweredFunction) } else { print("\(name) <NULL>") }
     }
     func dump() { print(vhir) }
     var module: Module { return parentModule }
 }
+
 
 /// A function ref lvalue, this allows functions to be treated as values
 final class FunctionRef : LValue {

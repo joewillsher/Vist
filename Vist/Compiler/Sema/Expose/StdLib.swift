@@ -37,7 +37,7 @@ struct StdLib {
     
     private static let functions: [(String, FunctionType)] = [
         // int
-        ("+", FunctionType(params: [intType, intType], returns: intType)),
+        ("+", FunctionType(params: [intType, intType], returns: intType, callingConvention: .thin)),
         ("-", FunctionType(params: [intType, intType], returns: intType)),
         ("*", FunctionType(params: [intType, intType], returns: intType)),
         ("/", FunctionType(params: [intType, intType], returns: intType)),

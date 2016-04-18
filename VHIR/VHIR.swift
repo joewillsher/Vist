@@ -71,7 +71,7 @@ extension Function {
         let b = blocks?.map { $0.vhir }
         let bString = b.map { " {\n\($0.joinWithSeparator("\n"))}" } ?? ""
         let conv = type.callingConvention.name
-        return "func @\(name) : &\(conv) \(type.vhir)\(bString)"
+        return "func @\(name) : \(conv) \(type.vhir)\(bString)"
     }
 }
 
@@ -79,7 +79,15 @@ extension Module {
     var vhir: String {
         let t = typeList.map { $0.declVHIR }
         let f = functions.map { $0.vhir }
-        return "\n" + t.joinWithSeparator("\n") + "\n\n" + f.joinWithSeparator("\n\n")
+        let g = globalValues.map { "global \($0.vhir)" }
+        return
+            "\n" +
+            t.joinWithSeparator("\n") +
+            "\n\n" +
+            g.joinWithSeparator("\n") +
+            "\n\n" +
+            f.joinWithSeparator("\n\n") +
+            "\n"
     }
 }
 

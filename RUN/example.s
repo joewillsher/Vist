@@ -11,9 +11,9 @@ _HalfOpenRange_tII:                     ## @HalfOpenRange_tII
 	popq	%rbp
 	retq
 
-	.globl	_loop_thunk
+	.globl	_generate_mHalfOpenRangePtI.loop_thunk
 	.align	4, 0x90
-_loop_thunk:                            ## @loop_thunk
+_generate_mHalfOpenRangePtI.loop_thunk: ## @generate_mHalfOpenRangePtI.loop_thunk
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp

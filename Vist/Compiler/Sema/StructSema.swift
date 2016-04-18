@@ -55,7 +55,7 @@ extension StructExpr: ExprTypeProvider {
         
         scope[type: name] = ty
         self.type = ty
-
+        
         if let implicit = implicitIntialiser() {
             initialisers.append(implicit)
         }

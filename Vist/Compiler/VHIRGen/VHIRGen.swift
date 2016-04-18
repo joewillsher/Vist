@@ -300,10 +300,10 @@ extension FuncDecl : StmtEmitter {
 extension VariableExpr : LValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
-        return scope.variableNamed(name)!
+        return try scope.variableNamed(name)!
     }
     func emitLValue(module module: Module, scope: Scope) throws -> GetSetAccessor {
-        return scope.variableNamed(name)! as! GetSetAccessor
+        return try scope.variableNamed(name)! as! GetSetAccessor
     }
 }
 
@@ -457,58 +457,81 @@ extension ConditionalStmt: StmtEmitter {
 
 extension ForInLoopStmt : StmtEmitter {
     
-//        break $loop(%6: %Builtin.Int64)
-//    
-//    $loop(%loop.count: %Builtin.Int64):                                           // preds: entry, loop
-//        %8 = struct %Int (%loop.count: %Builtin.Int64)                              // uses: %9
-//    
-//        BODY...
-//
-//        %count.it = builtin i_add %loop.count: %Builtin.Int64, %10: %Builtin.Int64  // uses: %13
-//        %11 = bool_literal false                                                    // uses: %12
-//        %12 = struct %Bool (%11: %Builtin.Bool)                                     // uses:
-//        break %12: %Bool, $loop(%count.it: %Builtin.Int64), $loop.exit
-//    
-//    $loop.exit:                                                                   // preds: loop
-    
+
+    /**
+     For in loops rely on generators. Array could define a generator:
+     
+     ```vist
+     extend Array {
+        func generate::->Element = {
+            for i in 0 ..< endIndex do
+                yield self[i]
+        }
+     }
+     ```
+     
+     A for in loop can revieve from the generator--the yielding allows it
+     to look like the function returns many times. In reality `generate` is
+     lowered to take a closure that takes its return type:
+     
+     ```vhir
+     // written type:
+     func @generate : &method (%HalfOpenRange) -> %Int
+     // lowered type:
+     func @generate_mHalfOpenRangePtI : &method (%HalfOpenRange, %*(&thin (%Int) -> %Builtin.Void)) -> %Builtin.Void
+     ```
+     
+     The `yield` applies this closure. The closure can also be thick, this allows
+     it to capture state from the loop's scope.
+     
+     TODO:
+     Returning from the loop requires longjmping out
+     */
     func emitStmt(module module: Module, scope: Scope) throws {
         
         // get generator function
         guard let functionName = generatorFunctionName, let generatorFunction = module.functionNamed(functionName), let yieldType = generatorFunction.type.yieldType else { fatalError() }
         
-        // save current position
         let entryInsertPoint = module.builder.insertPoint
-        
+
         // create a loop thunk, which stores the loop body
-        let loopThunk = try module.builder.getOrBuildFunction("loop_thunk", type: FunctionType(params: [yieldType]), paramNames: [binded.name])
-        try module.builder.setInsertPoint(loopThunk)
+        let n = (entryInsertPoint.function?.name).map { "\($0)." } ?? ""
+        let loopThunk = try module.builder.getOrBuildFunction("\(n)loop_thunk",
+                                                              type: FunctionType(params: [yieldType]),
+                                                              paramNames: [binded.name])
+        
+        
+        module.builder.insertPoint = entryInsertPoint // move back to loop def
         
         // make the semantic scope for the loop
-        let loopScope = Scope(parent: scope, function: loopThunk)
-        loopScope.add(try loopThunk.paramNamed(binded.name).accessor(), name: binded.name)
+        let loopClosure = Closure.wrapping(loopThunk), generatorClosure = Closure.wrapping(generatorFunction)
+        let loopScope = Scope.capturingScope(scope,
+                                             function: loopClosure.thunk,
+                                             captureHandler: loopClosure,
+                                             breakPoint: module.builder.insertPoint)
+        let loopVarAccessor = try loopClosure.thunk.paramNamed(binded.name).accessor()
+        loopScope.add(loopVarAccessor, name: binded.name)
         
-        // TODO: mandatory VHIR inlining of loop thunk and generator
-        // currently this fails
-        /*
-         let q = 2
-         for a in 0..<10 do
-            print q
-         */
-        
+        // save current position
+        try module.builder.setInsertPoint(loopClosure.thunk) // move to loop thunk
         try block.emitStmt(module: module, scope: loopScope)
         try module.builder.buildReturnVoid()
+        // move back out
+        module.builder.insertPoint = entryInsertPoint
         
         // require that we inline the loop thunks
-        loopThunk.inline = .always
-        generatorFunction.inline = .always
+        loopClosure.thunk.inline = .always
+        loopClosure.thunk.inline = .always
         
-        module.builder.insertPoint = entryInsertPoint
         
         // get the instance of the generator
         let generator = Operand(try iterator.emitRValue(module: module, scope: scope).getter())
-        try module.builder.buildFunctionCall(generatorFunction, args: [generator, loopThunk.buildFunctionPointer()])
         
-        // TODO: making a random function called `generator` idk why, fix it
+        // call the generator function from loop position
+        // apply the scope it requests
+        
+        try module.builder.buildFunctionCall(generatorClosure.thunk,
+                                             args: [generator, loopClosure.thunk.buildFunctionPointer()])
         
     }
 }
@@ -523,6 +546,7 @@ extension YieldStmt : StmtEmitter {
         
         let val = try expr.emitRValue(module: module, scope: scope)
         let param = try val.aggregateGetter()
+        
         try module.builder.buildFunctionApply(PtrOperand(loopThunk), returnType: BuiltinType.void, args: [Operand(param)])
     }
 }

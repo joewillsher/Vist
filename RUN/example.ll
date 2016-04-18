@@ -19,7 +19,7 @@ entry:
 declare %Bool @-L_tII(%Int, %Int)
 
 ; Function Attrs: alwaysinline
-define void @loop_thunk(%Int %a) #1 {
+define void @generate_mHalfOpenRangePtI.loop_thunk(%Int %a) #1 {
 entry:
   tail call void @print_tI(%Int %a), !stdlib.call.optim !0
   ret void
