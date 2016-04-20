@@ -51,7 +51,7 @@ extension ASTNode {
             // unused values could have a ref count of 0 and not be deallocated
             // any unused function calls should have dealloc_unowned_object called on them
             if rval is FunctionCallExpr {
-                try unusedAccessor.deallocUnownedIfRefcounted()
+                try unusedAccessor.deallocUnowned()
             }
         }
         else if case let stmt as StmtEmitter = self {
@@ -159,7 +159,7 @@ extension VariableDecl : ValueEmitter {
         }
         else {
             let variable = try module.builder.buildVariableDecl(Operand(val.aggregateGetter()), irName: name).accessor()
-            try variable.retainIfRefcounted()
+            try variable.retain()
             scope.add(variable, name: name)
             return variable
         }
@@ -176,7 +176,7 @@ extension FunctionCall/*: VHIRGenerator*/ {
             let arg = try rawArg.emitRValue(module: module, scope: scope)
             
             // retain the parameters -- pass them in at +1 so the function can release them at its end
-            try arg.retainIfRefcounted()
+            try arg.retain()
             
             // if the function expects an existential, we construct one
             if case let alias as TypeAlias = paramType, case let existentialType as ConceptType = alias.targetType {
@@ -240,7 +240,7 @@ extension FuncDecl : StmtEmitter {
         // add the explicit method parameters
         for paramName in impl.params {
             let paramAccessor = try function.paramNamed(paramName).accessor()
-            try paramAccessor.retainIfRefcounted()
+            try paramAccessor.retain()
             fnScope.add(paramAccessor, name: paramName)
         }
         // A method calling convention means we have to pass `self` in, and tell vars how
@@ -249,7 +249,7 @@ extension FuncDecl : StmtEmitter {
             // We need self to be passed by ref as a `RefParam`
             let selfParam = function.params![0]
             let selfVar = try selfParam.accessor()
-            try selfVar.retainIfRefcounted()
+            try selfVar.retain()
             fnScope.add(selfVar, name: "self") // add `self`
             
             if case let type as StorageType = selfType {
@@ -318,7 +318,7 @@ extension ReturnStmt: ValueEmitter {
         //    - we exepct the caller of the function to retain the value or
         //      dealloc it, so we return it as +0
         if scope.isInScope(retVal) {
-            try retVal.releaseUnownedIfRefcounted()
+            try retVal.releaseUnowned()
         }
         
         return try module.builder.buildReturn(Operand(retVal.aggregateGetter())).accessor()
@@ -490,8 +490,15 @@ extension ForInLoopStmt : StmtEmitter {
     func emitStmt(module module: Module, scope: Scope) throws {
         
         // get generator function
-        guard let functionName = generatorFunctionName, let generatorFunction = module.functionNamed(functionName), let yieldType = generatorFunction.type.yieldType else { fatalError() }
+        guard let functionName = generatorFunctionName,
+            let generatorFunction = try module.functionNamed(functionName) ?? module.getOrInsertStdLibFunction(mangledName: functionName),
+            let yieldType = generatorFunction.type.yieldType else { fatalError() }
         
+        // If we got the generator function from the stdlib, remangle 
+        // the name non cannonically
+        if let t = StdLib.function(mangledName: functionName) {
+            generatorFunction.name = functionName.demangleName().mangle(t)
+        }
         let entryInsertPoint = module.builder.insertPoint
 
         // create a loop thunk, which stores the loop body
@@ -501,9 +508,11 @@ extension ForInLoopStmt : StmtEmitter {
                                                               paramNames: [binded.name])
         
         
-        module.builder.insertPoint = entryInsertPoint // move back to loop def
+        // save current position
+        module.builder.insertPoint = entryInsertPoint
         
         // make the semantic scope for the loop
+        // if the scope captures from the parent, it goes through a global variable
         let loopClosure = Closure.wrapping(loopThunk), generatorClosure = Closure.wrapping(generatorFunction)
         let loopScope = Scope.capturingScope(scope,
                                              function: loopClosure.thunk,
@@ -512,20 +521,19 @@ extension ForInLoopStmt : StmtEmitter {
         let loopVarAccessor = try loopClosure.thunk.paramNamed(binded.name).accessor()
         loopScope.add(loopVarAccessor, name: binded.name)
         
-        // save current position
+        // emit body for loop thunk
         try module.builder.setInsertPoint(loopClosure.thunk) // move to loop thunk
         try block.emitStmt(module: module, scope: loopScope)
         try module.builder.buildReturnVoid()
         // move back out
         module.builder.insertPoint = entryInsertPoint
         
-        // require that we inline the loop thunks
+        // require that we inline the loop thunks early
         loopClosure.thunk.inline = .always
         loopClosure.thunk.inline = .always
-        
         
         // get the instance of the generator
-        let generator = Operand(try iterator.emitRValue(module: module, scope: scope).getter())
+        let generator = Operand(try self.generator.emitRValue(module: module, scope: scope).getter())
         
         // call the generator function from loop position
         // apply the scope it requests
@@ -686,7 +694,7 @@ extension InitialiserDecl: StmtEmitter {
         // vhir gen for body
         try impl.body.emitStmt(module: module, scope: fnScope)
         
-        try fnScope.removeVariableNamed("self")?.releaseUnownedIfRefcounted()
+        try fnScope.removeVariableNamed("self")?.releaseUnowned()
         try fnScope.releaseVariables(deleting: true)
         
         try module.builder.buildReturn(Operand(try selfVar.aggregateGetter()))
@@ -706,7 +714,7 @@ extension MutationExpr : ValueEmitter {
         
         // set the lhs to rval
         try lhs.emitLValue(module: module, scope: scope).setter(Operand(rval))
-
+        
         return try VoidLiteralValue().accessor()
     }
     

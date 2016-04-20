@@ -23,15 +23,11 @@ struct FunctionType : Type {
     enum CallingConvention {
         case thin
         case method(selfType: Type, mutating: Bool)
-//        case thickMethod(selfType: Type, mutating: Bool, capturing: [Type])
-//        case thick(capturing: [Type])
         
         var name: String {
             switch self {
             case .thin: return "&thin"
             case .method: return "&method"
-//            case .thickMethod: return "&thick &method"
-//            case .thick: return "&thick"
             }
         }
         func usingTypesIn(module: Module) -> CallingConvention {
@@ -40,27 +36,8 @@ struct FunctionType : Type {
             case .method(let selfType, let mutating):
                 return .method(selfType: selfType.usingTypesIn(module),
                                mutating: mutating)
-//            case .thick(let capturing):
-//                return .thick(capturing: capturing.map { captureTy in captureTy.usingTypesIn(module) })
-//            case .thickMethod(let selfType, let mutating, let capturing):
-//                return .thickMethod(selfType: selfType.usingTypesIn(module),
-//                                    mutating: mutating,
-//                                    capturing: capturing.map { captureTy in captureTy.usingTypesIn(module) })
             }
         }
-//        mutating func addCaptures(captures: Type...) {
-//            
-//            switch self {
-//            case .thick(let c):
-//                self = .thick(capturing: c + captures)
-//            case .thin:
-//                self = .thick(capturing: captures)
-//            case .method(let s, let m):
-//                self = .thickMethod(selfType: s, mutating: m, capturing: captures)
-//            case .thickMethod(let s, let m, let c):
-//                self = .thickMethod(selfType: s, mutating: m, capturing: c + captures)
-//            }
-//        }
     }
     
     // Generator functions yield this type
@@ -137,10 +114,6 @@ extension FunctionType {
         switch callingConvention {
         case .thin:
             break
-//            
-//        case .thick(let captured):
-//            let captured = captured.map { BuiltinType.pointer(to: $0) as Type }
-//            t.params.appendContentsOf(captured)
             
         case .method(let selfType, let mutating):
             // if ref type or mutating method pass self by ref
@@ -148,14 +121,6 @@ extension FunctionType {
                 ? BuiltinType.pointer(to: selfType)
                 : selfType
             t.params.insert(selfPtr, atIndex: 0)
-//            
-//        case .thickMethod(let selfType, let mutating, let captured):
-//            let captured = captured.map { BuiltinType.pointer(to: $0) as Type }
-//            let selfPtr = mutating || ((selfType as? StructType)?.heapAllocated ?? true)
-//                ? BuiltinType.pointer(to: selfType)
-//                : selfType
-//            t.params.appendContentsOf(captured)
-//            t.params.insert(selfPtr, atIndex: 0)
         }
         t.isCanonicalType = true
         return t
@@ -193,12 +158,6 @@ extension FunctionType {
             conventionPrefix = "m" + selfType.mangledName
         case .thin: // thin
             conventionPrefix = "t"
-//        case .thick(let capturing): // context & params
-//            let n = capturing.map{$0.mangledName}
-//            conventionPrefix = "c" + n.joinWithSeparator("") + "p"
-//        case .thickMethod(let selfType, _, let capturing): // context & params
-//            let n = capturing.map{$0.mangledName}
-//            conventionPrefix = "m" + selfType.mangledName + "c" + n.joinWithSeparator("") + "p"
         }
         return conventionPrefix + params
             .map { $0.mangledName }

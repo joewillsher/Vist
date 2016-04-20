@@ -88,7 +88,7 @@ extension ForInLoopStmt: StmtTypeProvider {
         
         // scopes for inner loop
         let loopScope = SemaScope(parent: scope, returnType: scope.returnType)
-        let generator = try iterator.typeForNode(scope)
+        let generator = try self.generator.typeForNode(scope)
         
         // check its a generator, and the return type is the loop variable type
         guard case let storage as StorageType = generator, let generatorFunctionType = storage.generatorFunction(), let yieldType = generatorFunctionType.yieldType

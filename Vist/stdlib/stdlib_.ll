@@ -161,20 +161,20 @@ entry:
   ret i1 %cmp
 }
 
-; Function Attrs: noinline noreturn ssp uwtable
+; Function Attrs: alwaysinline noreturn ssp uwtable
 define void @vist_yieldUnwind() #3 {
 entry:
-  tail call void @longjmp(i32* getelementptr inbounds ([37 x i32]* @_ZL11yieldTarget, i64 0, i64 0), i32 1) #13
+  tail call void @longjmp(i32* getelementptr inbounds ([37 x i32]* @_ZL11yieldTarget, i64 0, i64 0), i32 1) #15
   unreachable
 }
 
 ; Function Attrs: noreturn
 declare void @longjmp(i32*, i32) #4
 
-; Function Attrs: noinline ssp uwtable
+; Function Attrs: alwaysinline ssp uwtable
 define zeroext i1 @vist_setYieldTarget() #5 {
 entry:
-  %call = call i32 @setjmp(i32* getelementptr inbounds ([37 x i32]* @_ZL11yieldTarget, i64 0, i64 0)) #14
+  %call = call i32 @setjmp(i32* getelementptr inbounds ([37 x i32]* @_ZL11yieldTarget, i64 0, i64 0)) #16
   %tobool = icmp ne i32 %call, 0
   ret i1 %tobool
 }
@@ -220,17 +220,17 @@ entry:
 }
 
 ; Function Attrs: alwaysinline ssp uwtable
-define void @vist-Ucshim-Uwrite_topi64(i8* %str, i64 %size) #8 {
+define void @vist-Ucshim-Uwrite_topi64(i8* %str, i64 %size) #5 {
 entry:
   %0 = load %struct.__sFILE** @__stdoutp, align 8, !tbaa !9
   %call = tail call i64 @"\01_fwrite"(i8* %str, i64 %size, i64 1, %struct.__sFILE* %0)
   ret void
 }
 
-declare i64 @"\01_fwrite"(i8*, i64, i64, %struct.__sFILE*) #9
+declare i64 @"\01_fwrite"(i8*, i64, i64, %struct.__sFILE*) #8
 
 ; Function Attrs: noinline ssp uwtable
-define void @vist-Ucshim-Uputchar_ti8(i8 signext %c) #5 {
+define void @vist-Ucshim-Uputchar_ti8(i8 signext %c) #9 {
 entry:
   %conv = sext i8 %c to i32
   %0 = load %struct.__sFILE** @__stdoutp, align 8, !tbaa !9
@@ -266,12 +266,13 @@ _Z7__sputciP7__sFILE.exit:                        ; preds = %if.else.i, %if.then
   ret void
 }
 
-declare i32 @__swbuf(i32, %struct.__sFILE*) #9
+declare i32 @__swbuf(i32, %struct.__sFILE*) #8
 
 ; Function Attrs: nounwind
 declare i32 @puts(i8* nocapture readonly) #10
 
-define %Double @Double_tD(%Double %val) {
+; Function Attrs: alwaysinline
+define %Double @Double_tD(%Double %val) #11 {
 entry:
   %self = alloca %Double
   %value = getelementptr inbounds %Double* %self, i32 0, i32 0
@@ -281,7 +282,8 @@ entry:
   ret %Double %1
 }
 
-define %Int @-T-O_tII(%Int %a, %Int %b) {
+; Function Attrs: alwaysinline
+define %Int @-T-O_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -290,7 +292,8 @@ entry:
   ret %Int %3
 }
 
-define %Int @Int_ti64(i64 %"$0") {
+; Function Attrs: alwaysinline
+define %Int @Int_ti64(i64 %"$0") #11 {
 entry:
   %self = alloca %Int
   %value = getelementptr inbounds %Int* %self, i32 0, i32 0
@@ -299,7 +302,8 @@ entry:
   ret %Int %0
 }
 
-define %Int @-D_tII(%Int %a, %Int %b) {
+; Function Attrs: alwaysinline
+define %Int @-D_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -308,7 +312,8 @@ entry:
   ret %Int %3
 }
 
-define %Double @-P_tDD(%Double %a, %Double %b) {
+; Function Attrs: alwaysinline
+define %Double @-P_tDD(%Double %a, %Double %b) #11 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
@@ -317,7 +322,8 @@ entry:
   ret %Double %3
 }
 
-define %String @String_topi64b(i8* %ptr, i64 %count, i1 %isUTF8Encoded) {
+; Function Attrs: alwaysinline
+define %String @String_topi64b(i8* %ptr, i64 %count, i1 %isUTF8Encoded) #11 {
 entry:
   %self = alloca %String
   %base = getelementptr inbounds %String* %self, i32 0, i32 0
@@ -351,7 +357,8 @@ exit:                                             ; preds = %if.0, %entry
   ret %String %10
 }
 
-define %Bool @-L-E_tII(%Int %a, %Int %b) {
+; Function Attrs: alwaysinline
+define %Bool @-L-E_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -360,7 +367,8 @@ entry:
   ret %Bool %3
 }
 
-define %Bool @-O-O_tBB(%Bool %a, %Bool %b) {
+; Function Attrs: alwaysinline
+define %Bool @-O-O_tBB(%Bool %a, %Bool %b) #11 {
 entry:
   %0 = extractvalue %Bool %a, 0
   %1 = extractvalue %Bool %b, 0
@@ -369,7 +377,8 @@ entry:
   ret %Bool %3
 }
 
-define %Bool @-G_tDD(%Double %a, %Double %b) {
+; Function Attrs: alwaysinline
+define %Bool @-G_tDD(%Double %a, %Double %b) #11 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
@@ -378,9 +387,8 @@ entry:
   ret %Bool %3
 }
 
-declare %Bool @isUTF8Encoded(%String*)
-
-define %Double @Double_tf64(double %"$0") {
+; Function Attrs: alwaysinline
+define %Double @Double_tf64(double %"$0") #11 {
 entry:
   %self = alloca %Double
   %value = getelementptr inbounds %Double* %self, i32 0, i32 0
@@ -389,7 +397,8 @@ entry:
   ret %Double %0
 }
 
-define %Bool @-G_tII(%Int %a, %Int %b) {
+; Function Attrs: alwaysinline
+define %Bool @-G_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -398,16 +407,42 @@ entry:
   ret %Bool %3
 }
 
-define void @print_tI(%Int %a) {
+; Function Attrs: alwaysinline
+define void @print_tI(%Int %a) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   call void @vist-Uprint_ti64(i64 %0)
   ret void
 }
 
-declare %Int @bufferCapacity(%String*)
+define void @generate_mRPtI(%Range %self, void (%Int)* %loop_thunk) {
+entry:
+  %start = extractvalue %Range %self, 0
+  %0 = alloca %Int
+  store %Int %start, %Int* %0
+  br label %cond
 
-define %Int @-C_tII(%Int %a, %Int %b) {
+cond:                                             ; preds = %loop, %entry
+  %1 = load %Int* %0
+  %end = extractvalue %Range %self, 1
+  %2 = call %Bool @-L_tII(%Int %1, %Int %end)
+  %cond1 = extractvalue %Bool %2, 0
+  br i1 %cond1, label %loop, label %loop.exit
+
+loop:                                             ; preds = %cond
+  %3 = load %Int* %0
+  call void %loop_thunk(%Int %3)
+  %4 = load %Int* %0
+  %5 = call %Int @-P_tII(%Int %4, %Int { i64 1 })
+  store %Int %5, %Int* %0
+  br label %cond
+
+loop.exit:                                        ; preds = %cond
+  ret void
+}
+
+; Function Attrs: alwaysinline
+define %Int @-C_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -416,9 +451,8 @@ entry:
   ret %Int %3
 }
 
-declare i8* @codeUnitAtIndex(%String*, %Int)
-
-define %Int @-T-N_tII(%Int %a, %Int %b) {
+; Function Attrs: alwaysinline
+define %Int @-T-N_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -427,13 +461,15 @@ entry:
   ret %Int %3
 }
 
-define %Range @-D-D-D_tII(%Int %a, %Int %b) {
+; Function Attrs: alwaysinline
+define %Range @-D-D-D_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = call %Range @Range_tII(%Int %a, %Int %b)
   ret %Range %0
 }
 
-define %Bool @Bool_tB(%Bool %val) {
+; Function Attrs: alwaysinline
+define %Bool @Bool_tB(%Bool %val) #11 {
 entry:
   %self = alloca %Bool
   %value = getelementptr inbounds %Bool* %self, i32 0, i32 0
@@ -443,13 +479,15 @@ entry:
   ret %Bool %1
 }
 
-define void @fatalError_t() {
+; Function Attrs: alwaysinline noreturn
+define void @fatalError_t() #12 {
 entry:
   call void @llvm.trap()
   ret void
 }
 
-define %Int32 @Int32_tI32(%Int32 %val) {
+; Function Attrs: alwaysinline
+define %Int32 @Int32_tI32(%Int32 %val) #11 {
 entry:
   %self = alloca %Int32
   %value = getelementptr inbounds %Int32* %self, i32 0, i32 0
@@ -459,7 +497,8 @@ entry:
   ret %Int32 %1
 }
 
-define %Int32 @Int32_ti32(i32 %"$0") {
+; Function Attrs: alwaysinline
+define %Int32 @Int32_ti32(i32 %"$0") #11 {
 entry:
   %self = alloca %Int32
   %value = getelementptr inbounds %Int32* %self, i32 0, i32 0
@@ -468,14 +507,16 @@ entry:
   ret %Int32 %0
 }
 
-define i8* @-P_topI(i8* %pointer, %Int %offset) {
+; Function Attrs: alwaysinline
+define i8* @-P_topI(i8* %pointer, %Int %offset) #11 {
 entry:
   %0 = extractvalue %Int %offset, 0
   %1 = getelementptr i8* %pointer, i64 %0
   ret i8* %1
 }
 
-define %Bool @-L_tDD(%Double %a, %Double %b) {
+; Function Attrs: alwaysinline
+define %Bool @-L_tDD(%Double %a, %Double %b) #11 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
@@ -484,7 +525,8 @@ entry:
   ret %Bool %3
 }
 
-define %Bool @-E-E_tII(%Int %a, %Int %b) {
+; Function Attrs: alwaysinline
+define %Bool @-E-E_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -493,7 +535,8 @@ entry:
   ret %Bool %3
 }
 
-define %Bool @-G-E_tDD(%Double %a, %Double %b) {
+; Function Attrs: alwaysinline
+define %Bool @-G-E_tDD(%Double %a, %Double %b) #11 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
@@ -502,7 +545,8 @@ entry:
   ret %Bool %3
 }
 
-define %Range @Range_tII(%Int %"$0", %Int %"$1") {
+; Function Attrs: alwaysinline
+define %Range @Range_tII(%Int %"$0", %Int %"$1") #11 {
 entry:
   %self = alloca %Range
   %start = getelementptr inbounds %Range* %self, i32 0, i32 0
@@ -513,14 +557,16 @@ entry:
   ret %Range %0
 }
 
-define void @print_tI32(%Int32 %a) {
+; Function Attrs: alwaysinline
+define void @print_tI32(%Int32 %a) #11 {
 entry:
   %0 = extractvalue %Int32 %a, 0
   call void @vist-Uprint_ti32(i32 %0)
   ret void
 }
 
-define %Double @-C_tDD(%Double %a, %Double %b) {
+; Function Attrs: alwaysinline
+define %Double @-C_tDD(%Double %a, %Double %b) #11 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
@@ -529,7 +575,8 @@ entry:
   ret %Double %3
 }
 
-define %Int @-P_tII(%Int %a, %Int %b) {
+; Function Attrs: alwaysinline
+define %Int @-P_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -549,7 +596,8 @@ entry.cont:                                       ; preds = %entry
   unreachable
 }
 
-define %Int @-L-L_tII(%Int %a, %Int %b) {
+; Function Attrs: alwaysinline
+define %Int @-L-L_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -558,7 +606,8 @@ entry:
   ret %Int %3
 }
 
-define %Bool @-G-E_tII(%Int %a, %Int %b) {
+; Function Attrs: alwaysinline
+define %Bool @-G-E_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -567,7 +616,8 @@ entry:
   ret %Bool %3
 }
 
-define %Int @-G-G_tII(%Int %a, %Int %b) {
+; Function Attrs: alwaysinline
+define %Int @-G-G_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -576,15 +626,15 @@ entry:
   ret %Int %3
 }
 
-define %Int @bufferCapacity_mString(%String* %self) {
+define %Int @bufferCapacity_mString(%String %self) {
 entry:
-  %_capacityAndEncoding = getelementptr inbounds %String* %self, i32 0, i32 2
-  %0 = load %Int* %_capacityAndEncoding
-  %1 = call %Int @-G-G_tII(%Int %0, %Int { i64 1 })
-  ret %Int %1
+  %_capacityAndEncoding = extractvalue %String %self, 2
+  %0 = call %Int @-G-G_tII(%Int %_capacityAndEncoding, %Int { i64 1 })
+  ret %Int %0
 }
 
-define %Bool @-L-E_tDD(%Double %a, %Double %b) {
+; Function Attrs: alwaysinline
+define %Bool @-L-E_tDD(%Double %a, %Double %b) #11 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
@@ -593,7 +643,8 @@ entry:
   ret %Bool %3
 }
 
-define %Bool @Bool_tb(i1 %"$0") {
+; Function Attrs: alwaysinline
+define %Bool @Bool_tb(i1 %"$0") #11 {
 entry:
   %self = alloca %Bool
   %value = getelementptr inbounds %Bool* %self, i32 0, i32 0
@@ -602,7 +653,8 @@ entry:
   ret %Bool %0
 }
 
-define %Bool @Bool_t() {
+; Function Attrs: alwaysinline
+define %Bool @Bool_t() #11 {
 entry:
   %self = alloca %Bool
   %value = getelementptr inbounds %Bool* %self, i32 0, i32 0
@@ -613,7 +665,8 @@ entry:
   ret %Bool %0
 }
 
-define %Bool @-E-E_tDD(%Double %a, %Double %b) {
+; Function Attrs: alwaysinline
+define %Bool @-E-E_tDD(%Double %a, %Double %b) #11 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
@@ -622,7 +675,8 @@ entry:
   ret %Bool %3
 }
 
-define %Bool @-L_tII(%Int %a, %Int %b) {
+; Function Attrs: alwaysinline
+define %Bool @-L_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -631,7 +685,8 @@ entry:
   ret %Bool %3
 }
 
-define %String @String_topII(i8* %"$0", %Int %"$1", %Int %"$2") {
+; Function Attrs: alwaysinline
+define %String @String_topII(i8* %"$0", %Int %"$1", %Int %"$2") #11 {
 entry:
   %self = alloca %String
   %base = getelementptr inbounds %String* %self, i32 0, i32 0
@@ -644,52 +699,29 @@ entry:
   ret %String %0
 }
 
-define void @print_tString(%String %str) {
+; Function Attrs: alwaysinline
+define void @print_tString(%String %str) #11 {
 entry:
-  %0 = alloca %String
-  store %String %str, %String* %0
-  %1 = call %Bool @isUTF8Encoded_mString(%String* %0)
-  %2 = extractvalue %Bool %1, 0
-  br i1 %2, label %if.0, label %fail.0
+  %0 = call %Bool @isUTF8Encoded_mString(%String %str)
+  %1 = extractvalue %Bool %0, 0
+  br i1 %1, label %if.0, label %fail.0
 
 if.0:                                             ; preds = %entry
-  %3 = extractvalue %String %str, 0
-  %4 = extractvalue %String %str, 1
-  %5 = extractvalue %Int %4, 0
-  call void @vist-Ucshim-Uwrite_topi64(i8* %3, i64 %5)
+  %2 = extractvalue %String %str, 0
+  %3 = extractvalue %String %str, 1
+  %4 = extractvalue %Int %3, 0
+  call void @vist-Ucshim-Uwrite_topi64(i8* %2, i64 %4)
   ret void
 
 fail.0:                                           ; preds = %entry
   br label %else.1
 
 else.1:                                           ; preds = %fail.0
-  %6 = alloca %String
-  store %String %str, %String* %6
-  %7 = call %Int @bufferCapacity_mString(%String* %6)
-  %8 = call %Range @-D-D-L_tII(%Int zeroinitializer, %Int %7)
-  %9 = extractvalue %Range %8, 0
-  %10 = extractvalue %Range %8, 1
-  %11 = extractvalue %Int %9, 0
-  %12 = extractvalue %Int %10, 0
-  br label %loop
-
-loop:                                             ; preds = %loop, %else.1
-  %loop.count = phi i64 [ %11, %else.1 ], [ %count.it, %loop ]
-  %i = insertvalue %Int undef, i64 %loop.count, 0
-  %13 = alloca %String
-  store %String %str, %String* %13
-  %14 = call i8* @codeUnitAtIndex_mStringI(%String* %13, %Int %i)
-  %15 = load i8* %14
-  call void @vist-Ucshim-Uputchar_ti8(i8 %15)
-  %count.it = add i64 %loop.count, 1
-  %16 = icmp sle i64 %count.it, %12
-  br i1 %16, label %loop, label %loop.exit
-
-loop.exit:                                        ; preds = %loop
   ret void
 }
 
-define %Range @Range_tR(%Range %val) {
+; Function Attrs: alwaysinline
+define %Range @Range_tR(%Range %val) #11 {
 entry:
   %self = alloca %Range
   %start = getelementptr inbounds %Range* %self, i32 0, i32 0
@@ -702,7 +734,8 @@ entry:
   ret %Range %2
 }
 
-define %Double @-M_tDD(%Double %a, %Double %b) {
+; Function Attrs: alwaysinline
+define %Double @-M_tDD(%Double %a, %Double %b) #11 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
@@ -711,14 +744,16 @@ entry:
   ret %Double %3
 }
 
-define void @print_tD(%Double %a) {
+; Function Attrs: alwaysinline
+define void @print_tD(%Double %a) #11 {
 entry:
   %0 = extractvalue %Double %a, 0
   call void @vist-Uprint_tf64(double %0)
   ret void
 }
 
-define %Bool @-N-N_tBB(%Bool %a, %Bool %b) {
+; Function Attrs: alwaysinline
+define %Bool @-N-N_tBB(%Bool %a, %Bool %b) #11 {
 entry:
   %0 = extractvalue %Bool %a, 0
   %1 = extractvalue %Bool %b, 0
@@ -727,7 +762,8 @@ entry:
   ret %Bool %3
 }
 
-define %Int @-T-R_tII(%Int %a, %Int %b) {
+; Function Attrs: alwaysinline
+define %Int @-T-R_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -736,7 +772,8 @@ entry:
   ret %Int %3
 }
 
-define %Double @-A_tDD(%Double %a, %Double %b) {
+; Function Attrs: alwaysinline
+define %Double @-A_tDD(%Double %a, %Double %b) #11 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
@@ -745,7 +782,8 @@ entry:
   ret %Double %3
 }
 
-define %Bool @-B-E_tII(%Int %a, %Int %b) {
+; Function Attrs: alwaysinline
+define %Bool @-B-E_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -754,24 +792,23 @@ entry:
   ret %Bool %3
 }
 
-define i8* @codeUnitAtIndex_mStringI(%String* %self, %Int %index) {
+define i8* @codeUnitAtIndex_mStringI(%String %self, %Int %index) {
 entry:
-  %base = getelementptr inbounds %String* %self, i32 0, i32 0
-  %0 = load i8** %base
-  %1 = call i8* @-P_topI(i8* %0, %Int %index)
-  ret i8* %1
+  %base = extractvalue %String %self, 0
+  %0 = call i8* @-P_topI(i8* %base, %Int %index)
+  ret i8* %0
 }
 
-define %Bool @isUTF8Encoded_mString(%String* %self) {
+define %Bool @isUTF8Encoded_mString(%String %self) {
 entry:
-  %_capacityAndEncoding = getelementptr inbounds %String* %self, i32 0, i32 2
-  %0 = load %Int* %_capacityAndEncoding
-  %1 = call %Int @-T-N_tII(%Int %0, %Int { i64 1 })
-  %2 = call %Bool @-E-E_tII(%Int %1, %Int { i64 1 })
-  ret %Bool %2
+  %_capacityAndEncoding = extractvalue %String %self, 2
+  %0 = call %Int @-T-N_tII(%Int %_capacityAndEncoding, %Int { i64 1 })
+  %1 = call %Bool @-E-E_tII(%Int %0, %Int { i64 1 })
+  ret %Bool %1
 }
 
-define %Int @-M_tII(%Int %a, %Int %b) {
+; Function Attrs: alwaysinline
+define %Int @-M_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -791,7 +828,8 @@ entry.cont:                                       ; preds = %entry
   unreachable
 }
 
-define %Int @-A_tII(%Int %a, %Int %b) {
+; Function Attrs: alwaysinline
+define %Int @-A_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
@@ -811,7 +849,8 @@ entry.cont:                                       ; preds = %entry
   unreachable
 }
 
-define %Int @Int_t() {
+; Function Attrs: alwaysinline
+define %Int @Int_t() #11 {
 entry:
   %self = alloca %Int
   %value = getelementptr inbounds %Int* %self, i32 0, i32 0
@@ -822,7 +861,8 @@ entry:
   ret %Int %0
 }
 
-define %Bool @-B-E_tDD(%Double %a, %Double %b) {
+; Function Attrs: alwaysinline
+define %Bool @-B-E_tDD(%Double %a, %Double %b) #11 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
@@ -831,7 +871,8 @@ entry:
   ret %Bool %3
 }
 
-define %Int @Int_tI(%Int %val) {
+; Function Attrs: alwaysinline
+define %Int @Int_tI(%Int %val) #11 {
 entry:
   %self = alloca %Int
   %value = getelementptr inbounds %Int* %self, i32 0, i32 0
@@ -841,21 +882,24 @@ entry:
   ret %Int %1
 }
 
-define void @print_tB(%Bool %a) {
+; Function Attrs: alwaysinline
+define void @print_tB(%Bool %a) #11 {
 entry:
   %0 = extractvalue %Bool %a, 0
   call void @vist-Uprint_tb(i1 %0)
   ret void
 }
 
-define %Range @-D-D-L_tII(%Int %a, %Int %b) {
+; Function Attrs: alwaysinline
+define %Range @-D-D-L_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = call %Int @-M_tII(%Int %b, %Int { i64 1 })
   %1 = call %Range @Range_tII(%Int %a, %Int %0)
   ret %Range %1
 }
 
-define %Double @-D_tDD(%Double %a, %Double %b) {
+; Function Attrs: alwaysinline
+define %Double @-D_tDD(%Double %a, %Double %b) #11 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
@@ -864,7 +908,8 @@ entry:
   ret %Double %3
 }
 
-define %Bool @-Uexpect_tBB(%Bool %val, %Bool %assume) {
+; Function Attrs: alwaysinline
+define %Bool @-Uexpect_tBB(%Bool %val, %Bool %assume) #11 {
 entry:
   %0 = extractvalue %Bool %val, 0
   %1 = extractvalue %Bool %assume, 0
@@ -877,35 +922,37 @@ entry:
 declare void @llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1) #10
 
 ; Function Attrs: noreturn nounwind
-declare void @llvm.trap() #11
+declare void @llvm.trap() #13
 
 ; Function Attrs: nounwind readnone
-declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #12
+declare { i64, i1 } @llvm.sadd.with.overflow.i64(i64, i64) #14
 
 ; Function Attrs: nounwind readnone
-declare { i64, i1 } @llvm.ssub.with.overflow.i64(i64, i64) #12
+declare { i64, i1 } @llvm.ssub.with.overflow.i64(i64, i64) #14
 
 ; Function Attrs: nounwind readnone
-declare { i64, i1 } @llvm.smul.with.overflow.i64(i64, i64) #12
+declare { i64, i1 } @llvm.smul.with.overflow.i64(i64, i64) #14
 
 ; Function Attrs: nounwind readnone
-declare i1 @llvm.expect.i1(i1, i1) #12
+declare i1 @llvm.expect.i1(i1, i1) #14
 
 attributes #0 = { alwaysinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #1 = { nounwind "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #2 = { alwaysinline nounwind readonly ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #3 = { noinline noreturn ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #3 = { alwaysinline noreturn ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #4 = { noreturn "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #5 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #5 = { alwaysinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #6 = { returns_twice "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #7 = { noinline nounwind ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #8 = { alwaysinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #9 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #8 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #9 = { noinline ssp uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #10 = { nounwind }
-attributes #11 = { noreturn nounwind }
-attributes #12 = { nounwind readnone }
-attributes #13 = { noreturn }
-attributes #14 = { returns_twice }
+attributes #11 = { alwaysinline }
+attributes #12 = { alwaysinline noreturn }
+attributes #13 = { noreturn nounwind }
+attributes #14 = { nounwind readnone }
+attributes #15 = { noreturn }
+attributes #16 = { returns_twice }
 
 !llvm.ident = !{!0}
 !llvm.module.flags = !{!1}

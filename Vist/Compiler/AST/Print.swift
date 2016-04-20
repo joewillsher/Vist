@@ -89,3 +89,6 @@ extension Optional: Printable {
         }
     }
 }
+
+func undefined<T>() -> T { fatalError() }
+

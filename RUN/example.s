@@ -11,9 +11,9 @@ _HalfOpenRange_tII:                     ## @HalfOpenRange_tII
 	popq	%rbp
 	retq
 
-	.globl	_generate_mHalfOpenRangePtI.loop_thunk
+	.globl	_main.loop_thunk
 	.align	4, 0x90
-_generate_mHalfOpenRangePtI.loop_thunk: ## @generate_mHalfOpenRangePtI.loop_thunk
+_main.loop_thunk:                       ## @main.loop_thunk
 	.cfi_startproc
 ## BB#0:                                ## %entry
 	pushq	%rbp
@@ -24,6 +24,16 @@ Ltmp1:
 	movq	%rsp, %rbp
 Ltmp2:
 	.cfi_def_cfa_register %rbp
+	subq	$16, %rsp
+	movq	_a.globlstorage(%rip), %rax
+	movq	(%rax), %rsi
+	movq	%rax, -8(%rbp)          ## 8-byte Spill
+	callq	"_-A_tII"
+	movq	%rax, %rsi
+	movq	-8(%rbp), %rdi          ## 8-byte Reload
+	movq	%rax, (%rdi)
+	movq	%rsi, %rdi
+	addq	$16, %rsp
 	popq	%rbp
 	jmp	_print_tI               ## TAILCALL
 	.cfi_endproc
@@ -95,51 +105,42 @@ Ltmp7:
 	movq	%rsp, %rbp
 Ltmp8:
 	.cfi_def_cfa_register %rbp
-	subq	$32, %rsp
-	movl	$1, %eax
-	movl	%eax, %edi
-	movl	$10, %eax
-	movl	%eax, %esi
-	callq	"_-L_tII"
-	testb	$1, %al
-	jne	LBB3_1
-	jmp	LBB3_4
-LBB3_1:                                 ## %loop.i.preheader
-	movl	$1, %eax
-	movl	%eax, %ecx
-	movq	%rcx, -8(%rbp)          ## 8-byte Spill
-	jmp	LBB3_2
-LBB3_2:                                 ## %loop.i
-                                        ## =>This Inner Loop Header: Depth=1
-	movq	-8(%rbp), %rax          ## 8-byte Reload
-	movq	%rax, %rdi
-	movq	%rax, -16(%rbp)         ## 8-byte Spill
-	callq	_print_tI
+	subq	$16, %rsp
+	movq	$1, -8(%rbp)
+	leaq	-8(%rbp), %rax
+	movq	%rax, _a.globlstorage(%rip)
 	movl	$1, %ecx
-	movl	%ecx, %esi
-	movq	-16(%rbp), %rdi         ## 8-byte Reload
-	callq	"_-P_tII"
-	movq	%rax, %rsi
-	movl	$10, %ecx
 	movl	%ecx, %edi
-	movq	%rdi, -24(%rbp)         ## 8-byte Spill
+	movl	$10, %ecx
+	movl	%ecx, %esi
+	callq	"_-D-D-D_tII"
+	leaq	_main.loop_thunk(%rip), %rsi
 	movq	%rax, %rdi
-	movq	-24(%rbp), %rax         ## 8-byte Reload
-	movq	%rsi, -32(%rbp)         ## 8-byte Spill
-	movq	%rax, %rsi
-	callq	"_-L_tII"
-	testb	$1, %al
-	movq	-32(%rbp), %rsi         ## 8-byte Reload
-	movq	%rsi, -8(%rbp)          ## 8-byte Spill
-	jne	LBB3_2
-	jmp	LBB3_3
-LBB3_3:                                 ## %generate_mHalfOpenRangePtI.exit.loopexit
-	jmp	LBB3_4
-LBB3_4:                                 ## %generate_mHalfOpenRangePtI.exit
-	addq	$32, %rsp
+	movq	%rsi, -16(%rbp)         ## 8-byte Spill
+	movq	%rdx, %rsi
+	movq	-16(%rbp), %rdx         ## 8-byte Reload
+	callq	_generate_mRPtI
+	leaq	L___unnamed_1(%rip), %rdi
+	movl	$4, %ecx
+	movl	%ecx, %esi
+	movl	$1, %edx
+	callq	_String_topi64b
+	movq	%rax, %rdi
+	movq	%rdx, %rsi
+	movq	%rcx, %rdx
+	callq	_print_tString
+	movq	-8(%rbp), %rdi
+	callq	_print_tI
+	addq	$16, %rsp
 	popq	%rbp
 	retq
 	.cfi_endproc
+
+	.globl	_a.globlstorage         ## @a.globlstorage
+.zerofill __DATA,__common,_a.globlstorage,8,3
+	.section	__TEXT,__cstring,cstring_literals
+L___unnamed_1:                          ## @0
+	.asciz	"out"
 
 
 .subsections_via_symbols

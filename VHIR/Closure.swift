@@ -100,49 +100,42 @@ extension Closure : CaptureHandler {
         // add to self capture list
         captured.append(variable)
         // update function
-        let type = variable.storedType!
         
         let initialInsert = module.builder.insertPoint
+        defer { module.builder.insertPoint = initialInsert }
         module.builder.insertPoint = scope.breakPoint!
+
+        if
+            case let accessor as GetSetAccessor = variable,
+            case let decl as GetSetAccessor = try scope.parent?.variableNamed(name),
+            let type = accessor.mem.type {
+           
+            let g = GlobalValue(name: "\(name).globlstorage", type: type)
+            try module.builder.buildStore(decl.reference(), in: PtrOperand(g))
+            
+            let accessor = GlobalIndirectRefAccessor(memory: g, module: function.module)
+            
+            scope.add(accessor, name: name)
+            module.globalValues.insert(g)
+            return accessor
+        }
+        else if
+            let type = variable.storedType,
+            let decl = try scope.parent?.variableNamed(name) {
+            
+            let g = GlobalValue(name: "\(name).globl", type: type)
+            try module.builder.buildStore(Operand(decl.aggregateGetter()), in: PtrOperand(g))
+
+            let accessor = GlobalRefAccessor(memory: g, module: function.module)
+            scope.add(accessor, name: name)
+            module.globalValues.insert(g)
+            return accessor
+        }
+        else {
+            fatalError()
+        }
         
-        let decl = try scope.parent!.variableNamed(name)!
-        let g = GlobalValue(name: "\(name).global", type: type)
-        try module.builder.buildStore(Operand(decl.aggregateGetter()), in: PtrOperand(g))
-        
-        let accessor = GlobalRefAccessor(memory: g, module: function.module)
-        scope.add(accessor, name: name)
-        module.globalValues.insert(g)
-        
-        module.builder.insertPoint = initialInsert
-        
-        return accessor
     }
-//    
-//    mutating func removeCapture(variable: Accessor) throws {
-//        let c: [Type], s: Type?, m: Bool?
-//        if case .thick(let captured) = thunk.type.callingConvention {
-//            c = captured
-//            s = nil
-//            m = nil
-//        }
-//        else if case .thickMethod(let sType, let mut, let captured) = thunk.type.callingConvention {
-//            c = captured
-//            s = sType
-//            m = mut
-//        }
-//        else { fatalError() }
-//        
-//        
-//        let i = captured.indexOf { capture in capture === variable }!
-//        let a = c.enumerate().filter({$0.0 != i}).map({$0.1})
-//        captured.removeAtIndex(i)
-//        if case .thickMethod(let s, let m, _) = thunk.type.callingConvention {
-//            thunk.type.callingConvention = .thin
-//        }
-//        else {
-//            thunk.type.callingConvention = .thick(capturing: a)
-//        }
-//    }
     
     var vhir: String { return thunk.vhir }
     var module: Module { return thunk.module }

@@ -66,7 +66,7 @@ final class Scope {
     func releaseVariables(deleting deleting: Bool, except: Accessor? = nil) throws {
         for variable in variables.values
             where (except.map { $0 !== variable }) ?? true {
-            try variable.releaseIfRefcounted()
+            try variable.release()
         }
         if deleting { variables.removeAll() }
     }

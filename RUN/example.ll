@@ -2,9 +2,16 @@
 target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-macosx10.11.0"
 
-%HalfOpenRange = type { %Int, %Int }
 %Int = type { i64 }
+%Range = type { %Int, %Int }
+%HalfOpenRange = type { %Int, %Int }
 %Bool = type { i1 }
+%String = type { i8*, %Int, %Int }
+
+@a.globlstorage = unnamed_addr global %Int* null
+@0 = private unnamed_addr constant [4 x i8] c"out\00"
+
+declare %Range @-D-D-D_tII(%Int, %Int)
 
 ; Function Attrs: alwaysinline nounwind readnone
 define %HalfOpenRange @HalfOpenRange_tII(%Int %"$0", %Int %"$1") #0 {
@@ -16,21 +23,30 @@ entry:
   ret %HalfOpenRange %.fca.1.0.insert
 }
 
+declare void @generate_mRPtI(%Range, void (%Int)*)
+
 declare %Bool @-L_tII(%Int, %Int)
 
 ; Function Attrs: alwaysinline
-define void @generate_mHalfOpenRangePtI.loop_thunk(%Int %a) #1 {
+define void @main.loop_thunk(%Int %x) #1 {
 entry:
-  tail call void @print_tI(%Int %a), !stdlib.call.optim !0
+  %0 = load %Int** @a.globlstorage, align 8
+  %1 = load %Int* %0, align 8
+  %2 = tail call %Int @-A_tII(%Int %x, %Int %1), !stdlib.call.optim !0
+  store %Int %2, %Int* %0, align 8
+  tail call void @print_tI(%Int %2), !stdlib.call.optim !0
   ret void
 }
 
 declare void @print_tI(%Int)
 
+declare %String @String_topi64b(i8*, i64, i1)
+
+declare void @print_tString(%String)
+
 declare %Int @-P_tII(%Int, %Int)
 
-; Function Attrs: alwaysinline
-define void @generate_mHalfOpenRangePtI(%HalfOpenRange %self, void (%Int)* nocapture %loop_thunk) #1 {
+define void @generate_mHalfOpenRangePtI(%HalfOpenRange %self, void (%Int)* nocapture %loop_thunk) {
 entry:
   %start = extractvalue %HalfOpenRange %self, 0
   %end = extractvalue %HalfOpenRange %self, 1
@@ -58,27 +74,21 @@ loop.exit:                                        ; preds = %loop.exit.loopexit,
 
 define void @main() {
 entry:
-  %0 = tail call %Bool @-L_tII(%Int { i64 1 }, %Int { i64 10 }), !stdlib.call.optim !0
-  %cond110.i = extractvalue %Bool %0, 0
-  br i1 %cond110.i, label %loop.i.preheader, label %generate_mHalfOpenRangePtI.exit
-
-loop.i.preheader:                                 ; preds = %entry
-  br label %loop.i
-
-loop.i:                                           ; preds = %loop.i.preheader, %loop.i
-  %start.sink11.i = phi %Int [ %1, %loop.i ], [ { i64 1 }, %loop.i.preheader ]
-  tail call void @print_tI(%Int %start.sink11.i), !stdlib.call.optim !0
-  %1 = tail call %Int @-P_tII(%Int %start.sink11.i, %Int { i64 1 }), !stdlib.call.optim !0
-  %2 = tail call %Bool @-L_tII(%Int %1, %Int { i64 10 }), !stdlib.call.optim !0
-  %cond1.i = extractvalue %Bool %2, 0
-  br i1 %cond1.i, label %loop.i, label %generate_mHalfOpenRangePtI.exit.loopexit
-
-generate_mHalfOpenRangePtI.exit.loopexit:         ; preds = %loop.i
-  br label %generate_mHalfOpenRangePtI.exit
-
-generate_mHalfOpenRangePtI.exit:                  ; preds = %generate_mHalfOpenRangePtI.exit.loopexit, %entry
+  %0 = alloca %Int, align 8
+  %.fca.0.gep = getelementptr inbounds %Int* %0, i64 0, i32 0
+  store i64 1, i64* %.fca.0.gep, align 8
+  store %Int* %0, %Int** @a.globlstorage, align 8
+  %1 = call %Range @-D-D-D_tII(%Int { i64 1 }, %Int { i64 10 }), !stdlib.call.optim !0
+  call void @generate_mRPtI(%Range %1, void (%Int)* @main.loop_thunk)
+  %2 = call %String @String_topi64b(i8* getelementptr inbounds ([4 x i8]* @0, i64 0, i64 0), i64 4, i1 true), !stdlib.call.optim !0
+  call void @print_tString(%String %2), !stdlib.call.optim !0
+  %.fca.0.load = load i64* %.fca.0.gep, align 8
+  %.fca.0.insert = insertvalue %Int undef, i64 %.fca.0.load, 0
+  call void @print_tI(%Int %.fca.0.insert), !stdlib.call.optim !0
   ret void
 }
+
+declare %Int @-A_tII(%Int, %Int)
 
 attributes #0 = { alwaysinline nounwind readnone }
 attributes #1 = { alwaysinline }

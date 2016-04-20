@@ -1,9 +1,13 @@
 
 type %HalfOpenRange = { %Int, %Int }
-type %Bool = { %Builtin.Bool }
+type %String = { %Builtin.OpaquePointer, %Int, %Int }
 type %Int = { %Builtin.Int64 }
+type %Bool = { %Builtin.Bool }
+type %Range = { %Int, %Int }
 
-global %y.global: %Int
+global %a.globlstorage: %*I
+
+func @-D-D-D_tII : &thin (%Int, %Int) -> %Range
 
 func @HalfOpenRange_tII : &thin (%Int, %Int) -> %HalfOpenRange {
 $entry(%$0: %Int, %$1: %Int):
@@ -16,17 +20,26 @@ $entry(%$0: %Int, %$1: %Int):
   return %2
 }
 
+func @generate_mRPtI : &method (%Range, %*tI) -> %Builtin.Void
+
 func @-L_tII : &thin (%Int, %Int) -> %Bool
 
 func @main.loop_thunk : &thin (%Int) -> %Builtin.Void {
-$entry(%a: %Int):
-  %0 = load %y.global: %*I  	// user: %1
-  %1 = call @-P_tII (%a: %Int, %0: %Int)  	// user: %2
-  %2 = call @print_tI (%1: %Int) 
+$entry(%x: %Int):
+  %0 = load %a.globlstorage: %**I  	// user: %4
+  %1 = load %0: %*I  	// user: %2
+  %2 = call @-A_tII (%x: %Int, %1: %Int)  	// user: %3
+  store %2 in %0: %*I 
+  %4 = load %0: %*I  	// user: %5
+  %5 = call @print_tI (%4: %Int) 
   return ()
 }
 
 func @print_tI : &thin (%Int) -> %Builtin.Void
+
+func @String_topi64b : &thin (%Builtin.OpaquePointer, %Builtin.Int64, %Builtin.Bool) -> %String
+
+func @print_tString : &thin (%String) -> %Builtin.Void
 
 func @-P_tII : &thin (%Int, %Int) -> %Int
 
@@ -65,11 +78,26 @@ $entry:
   %2 = int_literal 10  	// user: %3
   %3 = struct %I (%2: %Builtin.Int64)  	// user: %4
   %4 = call @HalfOpenRange_tII (%1: %Int, %3: %Int)  	// user: %range
-  variable_decl %range = %4: %HalfOpenRange  	// user: %8
+  variable_decl %range = %4: %HalfOpenRange 
   %5 = int_literal 1  	// user: %6
-  %6 = struct %I (%5: %Builtin.Int64)  	// user: %y
-  variable_decl %y = %6: %Int  	// user: %7
-  store %y in %y.global: %*I 
-  %8 = call @generate_mHalfOpenRangePtI (%range: %HalfOpenRange, %main.loop_thunk: %*tI) 
+  %6 = struct %I (%5: %Builtin.Int64)  	// user: %8
+  %7 = alloc %Int  	// users: %8, %9, %19
+  store %6 in %7: %*I 
+  store %7 in %a.globlstorage: %**I 
+  %10 = int_literal 1  	// user: %11
+  %11 = struct %I (%10: %Builtin.Int64)  	// user: %14
+  %12 = int_literal 10  	// user: %13
+  %13 = struct %I (%12: %Builtin.Int64)  	// user: %14
+  %14 = call @-D-D-D_tII (%11: %Int, %13: %Int)  	// user: %15
+  %15 = call @generate_mRPtI (%14: %Range, %main.loop_thunk: %*tI) 
+  %16 = string_literal utf8 "out"  	// user: %17
+  %size = int_literal 4  	// user: %17
+  %isUTF8 = bool_literal true  	// user: %17
+  %17 = call @String_topi64b (%16: %Builtin.OpaquePointer, %size: %Builtin.Int64, %isUTF8: %Builtin.Bool)  	// user: %18
+  %18 = call @print_tString (%17: %String) 
+  %19 = load %7: %*I  	// user: %20
+  %20 = call @print_tI (%19: %Int) 
   return ()
 }
+
+func @-A_tII : &thin (%Int, %Int) -> %Int

@@ -60,7 +60,7 @@ final class Function : VHIRElement {
     }
     /// How the inliner should handle this function
     enum InlineRequirement {
-        case `default`, always, never //, immediatelyInVHIR
+        case `default`, always, never//, earlyAndAlways
     }
     /// Other attributes
     struct Attributes : OptionSetType {
@@ -292,18 +292,23 @@ extension Module {
     
     /// Returns a stdlib function, updating the module fn list if needed
     func getOrInsertStdLibFunction(named name: String, argTypes: [Type]) throws -> Function? {
-        guard let (mangledName, fnTy) = StdLib.functionNamed(name, args: argTypes) else { return nil }
+        guard let (mangledName, fnTy) = StdLib.function(name: name, args: argTypes) else { return nil }
         return try getOrInsertFunction(named: mangledName, type: fnTy)
+    }
+    /// Returns a stdlib function, updating the module fn list if needed
+    func getOrInsertStdLibFunction(mangledName name: String) throws -> Function? {
+        guard let fnTy = StdLib.function(mangledName: name) else { return nil }
+        return try getOrInsertFunction(named: name, type: fnTy)
     }
     
     /// Returns a runtime function, updating the module fn list if needed
     func getOrInsertRuntimeFunction(named name: String, argTypes: [Type]) throws -> Function? {
-        guard let (mangledName, fnTy) = Runtime.functionNamed(name, argTypes: argTypes) else { return nil }
+        guard let (mangledName, fnTy) = Runtime.function(name: name, argTypes: argTypes) else { return nil }
         return try getOrInsertFunction(named: mangledName, type: fnTy)
     }
     /// Returns a raw, unmangled runtime function, updating the module fn list if needed
     func getOrInsertRawRuntimeFunction(named name: String) throws -> Function? {
-        guard let (mangledName, fnTy) = Runtime.unmangledFunctionNamed(name) else { return nil }
+        guard let (mangledName, fnTy) = Runtime.function(mangledName: name) else { return nil }
         return try getOrInsertFunction(named: mangledName, type: fnTy)
     }
     

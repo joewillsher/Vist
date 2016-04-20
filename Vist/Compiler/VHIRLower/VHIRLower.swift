@@ -74,7 +74,7 @@ extension Module {
     }
     
     private func getOrAddRuntimeFunction(named name: String, irGen: IRGen) -> LLVMValueRef {
-        let (_, fnType) = Runtime.unmangledFunctionNamed(name)!
+        let (_, fnType) = Runtime.function(mangledName: name)!
         return module.getOrAddFunction(named: name, type: fnType, irGen: irGen)
     }
     
@@ -93,6 +93,10 @@ extension Module {
             for (i, p) in (fn.params ?? []).enumerate() where p.irName != nil {
                 LLVMSetValueName(LLVMGetParam(function, UInt32(i)), p.irName ?? "")
             }
+        }
+        
+        for global in globalValues {
+            global.updateUsesWithLoweredVal(try global.vhirLower(self, irGen: irGen))
         }
         
         // lower the function bodies
@@ -515,6 +519,17 @@ extension BitcastInst : VHIRLower {
 }
 
 
+extension GlobalValue : VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+        let type = memType!.lowerType(module)
+        let global = LLVMAddGlobal(irGen.module, type, globalName)
+        LLVMSetUnnamedAddr(global, true)
+        LLVMSetExternallyInitialized(global, false)
+        LLVMSetInitializer(global, LLVMConstNull(type))
+        return global
+    }
+}
+
 
 extension ExistentialConstructInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
@@ -684,7 +699,7 @@ extension ExistentialWitnessMethodInst : VHIRLower {
 
 
 private extension PtrOperand {
-    func bitcastToRefCountedType(irGen: IRGen) throws -> LLVMValueRef {
+    func bitcastToOpaqueRefCountedType(irGen: IRGen) throws -> LLVMValueRef {
         let refcounted = Runtime.refcountedObjectPointerType.lowerType(module)
         return LLVMBuildBitCast(irGen.builder, loweredValue, refcounted, "")
     }
@@ -706,7 +721,7 @@ extension RetainInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
         let ref = module.getOrAddRuntimeFunction(named: "vist_retainObject", irGen: irGen)
         return try FunctionCallInst.callFunction(ref,
-                                                 args: [try object.bitcastToRefCountedType(irGen)],
+                                                 args: [try object.bitcastToOpaqueRefCountedType(irGen)],
                                                  irGen: irGen,
                                                  irName: irName)
     }
@@ -718,7 +733,7 @@ extension ReleaseInst : VHIRLower {
         let ref = module.getOrAddRuntimeFunction(named: functionName, irGen: irGen)
         
         return try FunctionCallInst.callFunction(ref,
-                                                 args: [try object.bitcastToRefCountedType(irGen)],
+                                                 args: [try object.bitcastToOpaqueRefCountedType(irGen)],
                                                  irGen: irGen,
                                                  irName: irName)
     }
@@ -731,7 +746,7 @@ extension DeallocObjectInst : VHIRLower {
         let ref = module.getOrAddRuntimeFunction(named: functionName, irGen: irGen)
         
         return try FunctionCallInst.callFunction(ref,
-                                                 args: [try object.bitcastToRefCountedType(irGen)],
+                                                 args: [try object.bitcastToOpaqueRefCountedType(irGen)],
                                                  irGen: irGen,
                                                  irName: irName)
     }

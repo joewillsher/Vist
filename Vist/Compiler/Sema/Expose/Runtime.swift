@@ -45,15 +45,15 @@ struct Runtime {
     /// - parameter name: Unmangled name
     /// - parameter args: Applied arg types
     /// - returns: An optional tuple of `(mangledName, type)`
-    static func functionNamed(name: String, argTypes args: [Type]) -> (mangledName: String, type: FunctionType)? {
+    static func function(name name: String, argTypes args: [Type]) -> (mangledName: String, type: FunctionType)? {
         return functionContainer[fn: name, types: args]
     }
     
-    /// Get a builtin function by name
-    /// - parameter name: Unmangled name
+    /// Get a builtin function by mangled name
+    /// - parameter name: Mangled name
     /// - parameter args: Applied arg types
     /// - returns: An optional tuple of `(mangledName, type)`
-    static func unmangledFunctionNamed(name: String) -> (mangledName: String, type: FunctionType)? {
+    static func function(mangledName name: String) -> (mangledName: String, type: FunctionType)? {
         return unmangledContainer[mangledName: name]
     }
     

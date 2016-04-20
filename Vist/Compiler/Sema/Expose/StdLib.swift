@@ -120,18 +120,25 @@ struct StdLib {
     // MARK: Exposed functions
     
     /// Returns the struct type of a named StdLib object
-    static func typeNamed(id: String) -> StructType? {
+    static func type(name id: String) -> StructType? {
         return functionContainer[type: id]
     }
 
+    /// Get the type of a function from the standard library by mangled name
+    /// - parameter mangledName: Mangled function name
+    static func function(mangledName name: String) -> FunctionType? {
+        return functionContainer[mangledName: name]?.type
+    }    
+    
     /// Get a named function from the standard library
     /// - parameter name: Unmangled name
     /// - parameter args: Applied arg types
     /// - returns: An optional tuple of `(mangledName, type)`
-    static func functionNamed(name: String, args: [Type]) -> (mangledName: String, type: FunctionType)? {
+    static func function(name name: String, args: [Type]) -> (mangledName: String, type: FunctionType)? {
         return functionContainer[fn: name, types: args]
-    }    
+    }
     
+
 }
 
 

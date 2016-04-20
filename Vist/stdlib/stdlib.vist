@@ -220,10 +220,10 @@ type Range {
     }
     
     func generate::->Int = {
-        var count = start
-        while (count <= end) {
-            yield count
-            count = count + 1
+        var i = start
+        while (i < end) {
+            yield i
+            i = i + 1
         }
     }
 }

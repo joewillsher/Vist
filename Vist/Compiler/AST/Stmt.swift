@@ -54,12 +54,12 @@ protocol LoopStmt : Stmt {
 
 final class ForInLoopStmt : LoopStmt {
     let binded: VariableExpr
-    let iterator: Expr
+    let generator: Expr
     var block: BlockExpr
     
     init(identifier: VariableExpr, iterator: Expr, block: BlockExpr) {
         self.binded = identifier
-        self.iterator = iterator
+        self.generator = iterator
         self.block = block
     }
     

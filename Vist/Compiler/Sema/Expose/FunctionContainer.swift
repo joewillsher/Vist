@@ -24,22 +24,29 @@ struct FunctionContainer {
      Optionally takes an array of metadata to apply to all functions
      */
     init (functions: [(String, FunctionType)], types: [StructType], concepts: [ConceptType] = [], metadata: [String] = [], mangleFunctionNames: Bool = true) {
-        var t: [String: FunctionType] = [:]
+        var functionTypes: [String: FunctionType] = [:]
         
         for (n, _ty) in functions {
             var ty = _ty
             let mangled = mangleFunctionNames ? n.mangle(ty.params) : n
             ty.metadata += metadata
-            t[mangled] = ty
+            functionTypes[mangled] = ty
         }
         
         let typesWithMethods = types.map { t -> StructType in
             var type = t
             type.methods = type.methods.map { m in (m.name,  m.type.withParent(t, mutating: m.mutating), m.mutating) }
+            for m in type.methods { // add methods to function table
+                var type = m.type
+                if let y = type.yieldType {
+                    type.setGeneratorVariantType(yielding: y)
+                }
+                functionTypes[m.name.mangle(m.type)] = type
+            }
             return type
         }
         
-        self.functions = t
+        self.functions = functionTypes
         self.types = typesWithMethods
         self.concepts = concepts
     }
