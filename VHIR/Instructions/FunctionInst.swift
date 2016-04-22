@@ -11,7 +11,7 @@
 /// - seealso: `FunctionCallInst`
 /// - seealso: `FunctionApplicationInst`
 protocol VHIRFunctionCall : Inst, VHIRLower {
-    var functionRef: LLVMValueRef { get }
+    var functionRef: LLVMFunction { get }
     var functionType: FunctionType { get }
 }
 
@@ -37,7 +37,7 @@ final class FunctionCallInst: InstBase, VHIRFunctionCall {
     }
     override var hasSideEffects: Bool { return true }
     
-    var functionRef: LLVMValueRef { return function.loweredFunction }
+    var functionRef: LLVMFunction { return function.loweredFunction! }
     var functionType: FunctionType { return function.type }
 }
 
@@ -63,7 +63,7 @@ final class FunctionApplyInst: InstBase, VHIRFunctionCall {
     }
     override var hasSideEffects: Bool { return true }
     
-    var functionRef: LLVMValueRef { return function.loweredValue }
+    var functionRef: LLVMFunction { return try! LLVMFunction(ref: function.loweredValue!._value) }
     var functionType: FunctionType { return function.memType as! FunctionType }
 }
 

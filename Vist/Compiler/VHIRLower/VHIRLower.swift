@@ -57,11 +57,11 @@ extension Module {
         return module.getOrAddFunction(named: name, type: fnType, irGen: irGen)
     }
     
-    func vhirLower(module: LLVMModuleRef, isStdLib: Bool) throws {
+    func vhirLower(module: LLVMModule, isStdLib: Bool) throws {
         
-        let irGen = (LLVMCreateBuilder(), module, isStdLib) as IRGen
+        loweredBuilder = LLVMBuilder()
         loweredModule = module
-        loweredBuilder = irGen.builder
+        let irGen = (loweredBuilder.builder, module.module, isStdLib) as IRGen
         
         for fn in functions {
             // create function proto
@@ -89,8 +89,8 @@ extension Module {
     
     private func validate() throws {
         var err = UnsafeMutablePointer<Int8>.alloc(1)
-        guard !LLVMVerifyModule(loweredModule, LLVMReturnStatusAction, &err) else {
-            throw irGenError(.invalidModule(loweredModule, String.fromCString(err)), userVisible: true)
+        guard !LLVMVerifyModule(loweredModule!.module, LLVMReturnStatusAction, &err) else {
+            throw irGenError(.invalidModule(loweredModule!.module, String.fromCString(err)), userVisible: true)
         }
     }
 }
@@ -127,9 +127,8 @@ extension Function : VHIRLower {
     
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
         
-        let _module = LLVMModule(ref: irGen.module), _builder = LLVMBuilder(ref: irGen.builder)
-        let b = LLVMGetInsertBlock(irGen.builder)
-        guard let fn = _module.function(named: name) else { fatalError() }
+        let b = module.loweredBuilder.getInsertBlock()
+        guard let fn = module.loweredModule.function(named: name) else { fatalError() }
         
         // apply function attributes, linkage, and visibility
         try applyInline()
@@ -142,7 +141,7 @@ extension Function : VHIRLower {
         // declare blocks, so break instructions have something to br to
         for bb in blocks {
             bb.loweredBlock = try fn.appendBasicBlock(named: bb.name)
-            _builder.positionAtEnd(bb.loweredBlock!)
+            module.loweredBuilder.positionAtEnd(bb.loweredBlock!)
             
             for param in bb.parameters ?? [] {
                 let v = try param.vhirLower(module, irGen: irGen)
@@ -151,7 +150,7 @@ extension Function : VHIRLower {
         }
         
         for bb in blocks {
-            _builder.positionAtEnd(bb.loweredBlock!)
+            module.loweredBuilder.positionAtEnd(bb.loweredBlock!)
             
             for case let inst as protocol<VHIRLower, Inst> in bb.instructions {
                 let v = try inst.vhirLower(module, irGen: irGen)
@@ -165,7 +164,7 @@ extension Function : VHIRLower {
             
         }
         
-        if b != nil { LLVMPositionBuilderAtEnd(irGen.builder, b) }
+        if let b = b { module.loweredBuilder.positionAtEnd(b) }
         
         try validate()
         
@@ -203,7 +202,7 @@ extension Param : VHIRLower {
             return phi
         }
         else {
-            let phi = try module.loweredBuilder!.buildPhi(type: type!.lowerType(module), name: paramName)
+            let phi = try module.loweredBuilder.buildPhi(type: type!.lowerType(module), name: paramName)
             
             for operand in try block.appliedArgs(for: self) {
                 operand.phi = phi
@@ -220,8 +219,8 @@ extension VariableInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
         guard let type = type else { throw irGenError(.notTyped) }
         
-        let mem = try module.loweredBuilder!.buildAlloca(type: type.lowerType(module), name: irName)
-        try module.loweredBuilder!.buildStore(value: value.loweredValue!, in: mem)
+        let mem = try module.loweredBuilder.buildAlloca(type: type.lowerType(module), name: irName)
+        try module.loweredBuilder.buildStore(value: value.loweredValue!, in: mem)
         return value.loweredValue!
     }
 }
@@ -241,32 +240,9 @@ extension GlobalValue : VHIRLower {
 extension ArrayInst : VHIRLower {
     func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
         
-        return try ArrayInst.lowerBuffer(values.map { $0.loweredValue! },
-                                         elType: arrayType.mem,
-                                         irName: irName,
-                                         module: module,
-                                         irGen: irGen)
-    }
-    
-    static func lowerBuffer(buffer: [LLVMValue], elType: Type, irName: String?, module: Module, irGen: IRGen) throws -> LLVMValue {
-        let elementType = elType.lowerType(module)
-        let elPtrType = LLVMPointerType(elementType, 0)
-        
-        let arrType = LLVMArrayType(elementType, UInt32(buffer.count))
-        let ptr = LLVMBuildAlloca(irGen.builder, arrType, irName ?? "") // [n x el]*
-        let basePtr = LLVMBuildBitCast(irGen.builder, ptr, elPtrType, "") // el*
-        
-        for (index, val) in buffer.enumerate() {
-            // Make the index to lookup
-            var mem = [LLVMConstInt(LLVMInt32Type(), UInt64(index), false)]
-            // get the element ptr
-            let el = LLVMBuildGEP(irGen.builder, basePtr, &mem, 1, "el.\(index)")
-            let bcElPtr = LLVMBuildBitCast(irGen.builder, el, elPtrType, "el.ptr.\(index)")
-            // store val into memory
-            LLVMBuildStore(irGen.builder, val, bcElPtr)
-        }
-        
-        return LLVMBuildLoad(irGen.builder, ptr, "")
+        return try module.loweredBuilder.buildArray(values.map { $0.loweredValue! },
+                                                    elType: arrayType.mem.lowerType(module),
+                                                    irName: irName)
     }
 }
 

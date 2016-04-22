@@ -123,7 +123,7 @@ final class BlockOperand : Operand {
             return
         }
         var incoming = [val._value], incomingBlocks = [predBlock.loweredBlock!.block]
-        LLVMAddIncoming(param.phi, &incoming, &incomingBlocks, 1)
+        LLVMAddIncoming(param.phi!._value, &incoming, &incomingBlocks, 1)
     }
     
     /// access to the underlying phi switch. Normal `setLoweredValue` 

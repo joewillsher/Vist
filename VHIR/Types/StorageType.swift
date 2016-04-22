@@ -39,9 +39,9 @@ extension StorageType {
         return i
     }
     
-    func ptrToMethodNamed(name: String, type: FunctionType, module: Module) throws -> LLVMValueRef {
+    func ptrToMethodNamed(name: String, type: FunctionType, module: Module) throws -> LLVMFunction {
         guard let function = module.functionNamed(name.mangle(type)) else { fatalError() }
-        return function.loweredFunction
+        return function.loweredFunction!
     }
     
     func propertyType(name: String) throws -> Type {

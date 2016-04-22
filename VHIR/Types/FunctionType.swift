@@ -137,7 +137,7 @@ extension FunctionType {
         return params.filter { if case BuiltinType.void = $0 { return false } else { return true } }
     }
     
-    func addMetadataTo(call: LLVMValueRef) {
+    func addMetadataTo(call: LLVMValue) {
         
         for metadata in self.metadata {
             
@@ -147,7 +147,7 @@ extension FunctionType {
             
             let kindID = LLVMGetMDKindID(metadata, attrLength)
             
-            LLVMSetMetadata(call, kindID, mdNode)
+            LLVMSetMetadata(call._value, kindID, mdNode)
         }
     }
     

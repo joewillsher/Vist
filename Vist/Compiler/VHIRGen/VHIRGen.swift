@@ -136,7 +136,7 @@ extension StringLiteral : ValueEmitter {
         
         let string = try module.builder.buildStringLiteral(str)
         let length = try module.builder.buildIntLiteral(str.utf8.count + 1, irName: "size")
-        let isUTFU = try module.builder.buildBoolLiteral(str.encoding.rawValue == 1, irName: "isUTF8")
+        let isUTFU = try module.builder.buildBoolLiteral(str.encoding.rawValue == String.Encoding.utf8.rawValue, irName: "isUTF8")
         
         let initialiser = try module.getOrInsertStdLibFunction(named: "String", argTypes: [BuiltinType.opaquePointer, BuiltinType.int(size: 64), BuiltinType.bool])!
         let std = try module.builder.buildFunctionCall(initialiser, args: [Operand(string), Operand(length), Operand(isUTFU)])

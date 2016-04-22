@@ -7,56 +7,51 @@
 //
 
 extension AllocObjectInst : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        let size = LLVMConstInt(LLVMInt32Type(), UInt64(storedType.size(module)), false)
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
+        let size = LLVMValue.constInt(storedType.size(module), size: 32)
         
         let ref = module.getOrAddRuntimeFunction(named: "vist_allocObject", irGen: irGen)
-        return try FunctionCallInst.callFunction(ref,
-                                                 args: [size],
-                                                 irGen: irGen,
-                                                 irName: irName)
+        return try module.loweredBuilder.buildCall(ref,
+                                                    args: [size],
+                                                    name: irName)
+
     }
 }
 
 extension RetainInst : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
         let ref = module.getOrAddRuntimeFunction(named: "vist_retainObject", irGen: irGen)
-        return try FunctionCallInst.callFunction(ref,
-                                                 args: [try object.bitcastToOpaqueRefCountedType(irGen)],
-                                                 irGen: irGen,
-                                                 irName: irName)
+        return try module.loweredBuilder.buildCall(ref,
+                                                    args: [object.bitcastToOpaqueRefCountedType()],
+                                                    name: irName)
     }
 }
 
 extension ReleaseInst : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
         let functionName = unowned ? "vist_releaseUnownedObject" : "vist_releaseObject"
         let ref = module.getOrAddRuntimeFunction(named: functionName, irGen: irGen)
-        
-        return try FunctionCallInst.callFunction(ref,
-                                                 args: [try object.bitcastToOpaqueRefCountedType(irGen)],
-                                                 irGen: irGen,
-                                                 irName: irName)
+        return try module.loweredBuilder.buildCall(ref,
+                                                    args: [object.bitcastToOpaqueRefCountedType()],
+                                                    name: irName)
     }
 }
 
 
 extension DeallocObjectInst : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
         let functionName = unowned ? "vist_deallocUnownedObject" : "vist_deallocObject"
         let ref = module.getOrAddRuntimeFunction(named: functionName, irGen: irGen)
-        
-        return try FunctionCallInst.callFunction(ref,
-                                                 args: [try object.bitcastToOpaqueRefCountedType(irGen)],
-                                                 irGen: irGen,
-                                                 irName: irName)
+        return try module.loweredBuilder.buildCall(ref,
+                                                    args: [object.bitcastToOpaqueRefCountedType()],
+                                                    name: irName)
     }
 }
 
 
 private extension PtrOperand {
-    func bitcastToOpaqueRefCountedType(irGen: IRGen) throws -> LLVMValueRef {
-        let refcounted = Runtime.refcountedObjectPointerType.lowerType(module)
-        return LLVMBuildBitCast(irGen.builder, loweredValue, refcounted, "")
+    func bitcastToOpaqueRefCountedType() throws -> LLVMValue {
+        let refcounted = Runtime.refcountedObjectPointerType.lowerType(module) as LLVMType
+        return try module.loweredBuilder.buildBitcast(value: loweredValue!, to: refcounted)
     }
 }

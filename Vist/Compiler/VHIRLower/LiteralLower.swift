@@ -9,13 +9,13 @@
 import Foundation.NSString
 
 extension IntLiteralInst : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        return LLVMConstInt(type!.lowerType(module), UInt64(value.value), false)
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
+        return LLVMValue.constInt(value.value, size: size)
     }
 }
 extension BoolLiteralInst : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        return LLVMConstInt(type!.lowerType(module), value.value ? 1 : 0, false)
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
+        return LLVMValue.constBool(value.value)
     }
 }
 
@@ -29,12 +29,6 @@ extension String {
         default: return .utf8
         }
     }
-    var numberOfCodeUnits: Int {
-        switch encoding {
-        case .utf8: return utf8.count
-        case .utf16: return utf16.count
-        }
-    }
 }
 extension String.Encoding : CustomStringConvertible {
     var description: String {
@@ -46,22 +40,9 @@ extension String.Encoding : CustomStringConvertible {
 }
 
 extension StringLiteralInst : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        let str = LLVMBuildGlobalString(irGen.builder, value.value, "")
-        return LLVMBuildBitCast(irGen.builder, str, BuiltinType.opaquePointer.lowerType(module), irName ?? "")
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
+        let str = try module.loweredBuilder.buildGlobalString(value.value)
+        return try module.loweredBuilder.buildBitcast(value: str, to: BuiltinType.opaquePointer.lowerType(module))
     }
 }
 
-
-extension StructInitInst : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        guard case let t as TypeAlias = type else { throw irGenError(.notStructType) }
-        var val = LLVMGetUndef(t.lowerType(module))
-        
-        for (i, el) in args.enumerate() {
-            val = LLVMBuildInsertValue(irGen.builder, val, el.loweredValue, UInt32(i), irName ?? "")
-        }
-        
-        return val
-    }
-}

@@ -155,7 +155,7 @@ func compileDocuments(
     
     // Generate LLVM IR code for program
     if options.contains(.verbose) { print("\n-----------------------------IR LOWER------------------------------\n") }
-    try vhirModule.vhirLower(llvmModule, isStdLib: options.contains(.parseStdLib))
+    try vhirModule.vhirLower(LLVMModule(ref: llvmModule), isStdLib: options.contains(.parseStdLib))
     
     // print and write to file
     try String.fromCString(LLVMPrintModuleToString(llvmModule))?.writeToFile("\(currentDirectory)/\(file)_.ll", atomically: true, encoding: NSUTF8StringEncoding)

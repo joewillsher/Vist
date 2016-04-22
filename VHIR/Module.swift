@@ -21,8 +21,8 @@ final class Module : VHIRElement {
     private(set) var functions: Set<Function> = [], typeList: Set<TypeAlias> = []
     var globalValues: Set<GlobalValue> = []
     var builder: Builder!
-    var loweredModule: LLVMModule? = nil
-    var loweredBuilder: LLVMBuilder? = nil
+    var loweredModule: LLVMModule! = nil
+    var loweredBuilder: LLVMBuilder! = nil
     
     init() { builder = Builder(module: self) }
     var module: Module { return self }
@@ -66,6 +66,6 @@ extension Module {
         return typeList.find {$0.name == name}
     }
     
-    func dumpIR() { if loweredModule != nil { LLVMDumpModule(loweredModule) } else { print("module <NULL>") } }
+    func dumpIR() { loweredModule?.dump() }
     func dump() { print(vhir) }
 }

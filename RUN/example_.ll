@@ -40,6 +40,7 @@ entry:
   call void @generate_mRPtI(%Range %1, void (%Int)* @main.loop_thunk)
   %2 = call %String @String_topi64b(i8* getelementptr inbounds ([4 x i8]* @0, i32 0, i32 0), i64 4, i1 true), !stdlib.call.optim !0
   call void @print_tString(%String %2), !stdlib.call.optim !0
+  call void @print_tI(%Int { i64 1 }), !stdlib.call.optim !0
   %3 = load %Int* %0
   call void @print_tI(%Int %3), !stdlib.call.optim !0
   ret void

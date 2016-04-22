@@ -40,6 +40,7 @@ entry:
   call void @generate_mRPtI(%Range %1, void (%Int)* @main.loop_thunk)
   %2 = call %String @String_topi64b(i8* getelementptr inbounds ([4 x i8]* @0, i64 0, i64 0), i64 4, i1 true), !stdlib.call.optim !0
   call void @print_tString(%String %2), !stdlib.call.optim !0
+  call void @print_tI(%Int { i64 1 }), !stdlib.call.optim !0
   %.fca.0.load = load i64* %.fca.0.gep, align 8
   %.fca.0.insert = insertvalue %Int undef, i64 %.fca.0.load, 0
   call void @print_tI(%Int %.fca.0.insert), !stdlib.call.optim !0

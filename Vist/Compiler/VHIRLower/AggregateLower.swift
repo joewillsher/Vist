@@ -6,42 +6,59 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-extension TupleCreateInst : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        guard let t = type else { throw irGenError(.notStructType) }
-        var val = LLVMGetUndef(t.lowerType(module))
+private extension CollectionType where Generator.Element == Operand {
+    
+    func initAggregateType(type: LLVMType, builder: LLVMBuilder, irName: String? = nil) throws -> LLVMValue {
         
-        for (i, el) in args.enumerate() {
-            val = LLVMBuildInsertValue(irGen.builder, val, el.loweredValue, UInt32(i), irName ?? "")
+        // creates an undef, then for each element in type, inserts the next element into it
+        return try enumerate()
+            .reduce(LLVMValue.undef(type)) { aggr, el in
+                return try builder.buildInsertValue(value: el.element.loweredValue!,
+                                                    in: aggr,
+                                                    index: el.index,
+                                                    name: irName)
         }
-        
-        return val
+    }
+    
+}
+
+extension TupleCreateInst : VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
+        guard let t = type else { throw irGenError(.notStructType) }
+        return try args.initAggregateType(t.lowerType(module), builder: module.loweredBuilder, irName: irName)
+    }
+}
+
+extension StructInitInst : VHIRLower {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
+        guard case let t as TypeAlias = type else { throw irGenError(.notStructType) }
+        return try args.initAggregateType(t.lowerType(module), builder: module.loweredBuilder, irName: irName)
     }
 }
 
 extension TupleExtractInst : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        return LLVMBuildExtractValue(irGen.builder, tuple.loweredValue, UInt32(elementIndex), irName ?? "")
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
+        return try module.loweredBuilder.buildExtractValue(tuple.loweredValue!, index: elementIndex, name: irName)
     }
 }
 
 extension TupleElementPtrInst : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        return LLVMBuildStructGEP(irGen.builder, tuple.loweredValue, UInt32(elementIndex), irName ?? "")
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
+        return try module.loweredBuilder.buildStructGEP(tuple.loweredValue!, index: elementIndex, name: irName)
     }
 }
 
 extension StructExtractInst : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
         let index = try structType.indexOfMemberNamed(propertyName)
-        return LLVMBuildExtractValue(irGen.builder, object.loweredValue, UInt32(index), irName ?? "")
+        return try module.loweredBuilder.buildExtractValue(object.loweredValue!, index: index, name: irName)
     }
 }
 
 extension StructElementPtrInst : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
         let index = try structType.indexOfMemberNamed(propertyName)
-        return LLVMBuildStructGEP(irGen.builder, object.loweredValue, UInt32(index), irName ?? "")
+        return try module.loweredBuilder.buildStructGEP(object.loweredValue!, index: index, name: irName)
     }
 }
 

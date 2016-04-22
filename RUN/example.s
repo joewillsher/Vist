@@ -40,20 +40,22 @@ Ltmp4:
 	movq	%rsp, %rbp
 Ltmp5:
 	.cfi_def_cfa_register %rbp
-	subq	$16, %rsp
+	subq	$32, %rsp
 	movq	$1, -8(%rbp)
 	leaq	-8(%rbp), %rax
 	movq	%rax, _a.globlstorage(%rip)
 	movl	$1, %ecx
-	movl	%ecx, %edi
+	movl	%ecx, %eax
 	movl	$10, %ecx
 	movl	%ecx, %esi
+	movq	%rax, %rdi
+	movq	%rax, -16(%rbp)         ## 8-byte Spill
 	callq	"_-D-D-D_tII"
 	leaq	_main.loop_thunk(%rip), %rsi
 	movq	%rax, %rdi
-	movq	%rsi, -16(%rbp)         ## 8-byte Spill
+	movq	%rsi, -24(%rbp)         ## 8-byte Spill
 	movq	%rdx, %rsi
-	movq	-16(%rbp), %rdx         ## 8-byte Reload
+	movq	-24(%rbp), %rdx         ## 8-byte Reload
 	callq	_generate_mRPtI
 	leaq	L___unnamed_1(%rip), %rdi
 	movl	$4, %ecx
@@ -64,9 +66,11 @@ Ltmp5:
 	movq	%rdx, %rsi
 	movq	%rcx, %rdx
 	callq	_print_tString
+	movq	-16(%rbp), %rdi         ## 8-byte Reload
+	callq	_print_tI
 	movq	-8(%rbp), %rdi
 	callq	_print_tI
-	addq	$16, %rsp
+	addq	$32, %rsp
 	popq	%rbp
 	retq
 	.cfi_endproc

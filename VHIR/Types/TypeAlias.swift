@@ -37,7 +37,7 @@ extension TypeAlias {
         }
         
         // when lowering the alias, we need to get the ref in the LLVM module...
-        let found = getNamedType(targetType.irName, module.loweredModule)
+        let found = getNamedType(targetType.irName, module.loweredModule!.module)
         if found != nil {
             return found
         }

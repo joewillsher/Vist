@@ -7,74 +7,74 @@
 //
 
 extension ExistentialConstructInst : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
         
         guard case let aliasType as TypeAlias = value.memType, case let structType as StructType = aliasType.targetType else { fatalError() }
         
-        let exType = existentialType.usingTypesIn(module).lowerType(module)
-        let valueMem = LLVMBuildAlloca(irGen.builder, aliasType.lowerType(module), "") // allocate the struct
-        let ptr = LLVMBuildAlloca(irGen.builder, exType, "")
+        let exType = existentialType.usingTypesIn(module).lowerType(module) as LLVMType
+        let valueMem = try module.loweredBuilder.buildAlloca(type: aliasType.lowerType(module)) // allocate the struct
+        let ptr = try module.loweredBuilder.buildAlloca(type: exType)
         
         let llvmName = irName.map { "\($0)." }
         
-        let propArrayPtr = LLVMBuildStructGEP(irGen.builder, ptr, 0, "\(llvmName)prop_metadata") // [n x i32]*
-        let methodArrayPtr = LLVMBuildStructGEP(irGen.builder, ptr, 1, "\(llvmName)method_metadata") // [n x i8*]*
-        let structPtr = LLVMBuildStructGEP(irGen.builder, ptr, 2, "\(llvmName)opaque") // i8**
+        let propArrayPtr = try module.loweredBuilder.buildStructGEP(ptr, index: 0, name: "\(llvmName)prop_metadata") // [n x i32]*
+        let methodArrayPtr = try module.loweredBuilder.buildStructGEP(ptr, index: 1, name: "\(llvmName)method_metadata") // [n x i8*]*
+        let structPtr = try module.loweredBuilder.buildStructGEP(ptr, index: 2, name: "\(llvmName)opaque")  // i8**
         
         let propArr = try existentialType.existentialPropertyMetadataFor(structType, module: module, irGen: irGen)
-        LLVMBuildStore(irGen.builder, propArr, propArrayPtr)
+        try module.loweredBuilder.buildStore(value: propArr, in: propArrayPtr)
         
         let methodArr = try existentialType.existentialMethodMetadataFor(structType, module: module, irGen: irGen)
-        LLVMBuildStore(irGen.builder, methodArr, methodArrayPtr)
+        try module.loweredBuilder.buildStore(value: methodArr, in: methodArrayPtr)
         
-        let v = LLVMBuildLoad(irGen.builder, value.loweredValue, "")
-        LLVMBuildStore(irGen.builder, v, valueMem)
-        let opaqueValueMem = LLVMBuildBitCast(irGen.builder, valueMem, BuiltinType.opaquePointer.lowerType(module), "")
-        LLVMBuildStore(irGen.builder, opaqueValueMem, structPtr)
+        let v = try module.loweredBuilder.buildLoad(from: value.loweredValue!)
+        try module.loweredBuilder.buildStore(value: v, in: valueMem)
+        let opaqueValueMem = try module.loweredBuilder.buildBitcast(value: valueMem, to: BuiltinType.opaquePointer.lowerType(module))
+        try module.loweredBuilder.buildStore(value: opaqueValueMem, in: structPtr)
         
-        return LLVMBuildLoad(irGen.builder, ptr, irName ?? "")
+        return try module.loweredBuilder.buildLoad(from: ptr, name: irName)
     }
 }
 
 extension ExistentialPropertyInst : VHIRLower {
     
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
         
-        guard case let aliasType as TypeAlias = existential.memType, case let conceptType as ConceptType = aliasType.targetType, let propertyType = type?.lowerType(module) else { fatalError() }
+        guard case let aliasType as TypeAlias = existential.memType, case let conceptType as ConceptType = aliasType.targetType, let propertyType = type else { fatalError() }
         
         // index of property in the concept's table
         // use this to look up the index in self by getting the ixd from the runtime's array
         let i = try conceptType.indexOfMemberNamed(propertyName)
-        
-        var index = [LLVMConstInt(LLVMInt32Type(), UInt64(i), false)] // i32
+        let index = LLVMValue.constInt(i, size: 32) // i32
         
         let llvmName = irName.map { "\($0)." } ?? ""
         
-        let i32PtrType = BuiltinType.pointer(to: BuiltinType.int(size: 32)).lowerType(module)
-        let arr = LLVMBuildStructGEP(irGen.builder, existential.loweredValue, 0, "\(llvmName)metadata_ptr") // [n x i32]*
-        let propertyMetadataBasePtr = LLVMBuildBitCast(irGen.builder, arr, i32PtrType, "\(llvmName)metadata_base_ptr") // i32*
+        let i32PtrType = BuiltinType.pointer(to: BuiltinType.int(size: 32)).lowerType(module) as LLVMType
+        let arr = try module.loweredBuilder.buildStructGEP(existential.loweredValue!, index: 0, name: "\(llvmName)metadata_ptr") // [n x i32]*
+        let propertyMetadataBasePtr = try module.loweredBuilder.buildBitcast(value: arr, to: i32PtrType, name: "\(llvmName)metadata_base_ptr") // i32*
         
-        let pointerToArrayElement = LLVMBuildGEP(irGen.builder, propertyMetadataBasePtr, &index, 1, "") // i32*
-        var offset = [LLVMBuildLoad(irGen.builder, pointerToArrayElement, "")] // i32
+        let pointerToArrayElement = try module.loweredBuilder.buildGEP(propertyMetadataBasePtr, index: index) // i32*
+        let offset = try module.loweredBuilder.buildLoad(from: pointerToArrayElement) // i32
         
-        let elementPtrType = LLVMPointerType(propertyType, 0) // ElTy.Type
-        let structElementPointer = LLVMBuildStructGEP(module.loweredBuilder, existential.loweredValue, 2, "\(llvmName)element_pointer") // i8**
-        let opaqueInstancePointer = LLVMBuildLoad(module.loweredBuilder, structElementPointer, "\(llvmName)opaque_instance_pointer") // i8*
-        let instanceMemberPtr = LLVMBuildGEP(irGen.builder, opaqueInstancePointer, &offset, 1, "") // i8*
-        let elPtr = LLVMBuildBitCast(irGen.builder, instanceMemberPtr, elementPtrType, "\(llvmName)ptr") // ElTy*
-        return LLVMBuildLoad(irGen.builder, elPtr, irName ?? "")
+        let elementPtrType = propertyType.lowerType(module).getPointerType() // ElTy*.Type
+        let structElementPointer = try module.loweredBuilder.buildStructGEP(existential.loweredValue!, index: 2, name: "\(llvmName)element_pointer") // i8**
+        let opaqueInstancePointer = try module.loweredBuilder.buildLoad(from: structElementPointer, name: "\(llvmName)opaque_instance_pointer")  // i8*
+        let instanceMemberPtr = try module.loweredBuilder.buildGEP(opaqueInstancePointer, index: offset)
+        let elPtr = try module.loweredBuilder.buildBitcast(value: instanceMemberPtr, to: elementPtrType, name: "\(llvmName)ptr")  // ElTy*
+        
+        return try module.loweredBuilder.buildLoad(from: elPtr, name: irName)
     }
 }
 
 extension ExistentialUnboxInst : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
-        let p = LLVMBuildStructGEP(irGen.builder, existential.loweredValue, 2, "")
-        return LLVMBuildLoad(irGen.builder, p, irName ?? "")
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
+        let p = try module.loweredBuilder.buildStructGEP(existential.loweredValue!, index: 2, name: name)
+        return try module.loweredBuilder.buildLoad(from: p, name: irName)
     }
 }
 
 extension ExistentialWitnessMethodInst : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
         
         let llvmName = irName.map { "\($0)." } ?? ""
         let i = try existentialType.indexOf(methodNamed: methodName, argTypes: argTypes)
@@ -83,17 +83,17 @@ extension ExistentialWitnessMethodInst : VHIRLower {
             .withOpaqueParent().cannonicalType(module)
             .usingTypesIn(module)
         
-        var index = LLVMConstInt(LLVMInt32Type(), UInt64(i), false) // i32
+        let index = LLVMValue.constInt(i, size: 32) // i32
         
-        let opaquePtrType = BuiltinType.pointer(to: BuiltinType.opaquePointer).lowerType(module)
-        let arr = LLVMBuildStructGEP(irGen.builder, existential.loweredValue, 1, "\(llvmName)witness_table_ptr") // [n x i8*]*
-        let methodMetadataBasePtr = LLVMBuildBitCast(irGen.builder, arr, opaquePtrType, "\(llvmName)witness_table_base_ptr") // i8**
+        let opaquePtrType = LLVMType.opaquePointer.getPointerType()
+        let arr = try module.loweredBuilder.buildStructGEP(existential.loweredValue!, index: 1, name: "\(llvmName)witness_table_ptr") // [n x i8*]*
+        let methodMetadataBasePtr = try module.loweredBuilder.buildBitcast(value: arr, to: opaquePtrType, name: "\(llvmName)witness_table_base_ptr") // i8**
         
-        let pointerToArrayElement = LLVMBuildGEP(irGen.builder, methodMetadataBasePtr, &index, 1, "") // i8**
-        let functionPointer = LLVMBuildLoad(irGen.builder, pointerToArrayElement, "") // i8*
+        let pointerToArrayElement = try module.loweredBuilder.buildGEP(methodMetadataBasePtr, index: index)
+        let functionPointer = try module.loweredBuilder.buildLoad(from: pointerToArrayElement) // i8*
         
-        let functionType = BuiltinType.pointer(to: fnType).lowerType(module)
-        return LLVMBuildBitCast(irGen.builder, functionPointer, functionType, irName ?? "") // fntype*
+        let functionType = BuiltinType.pointer(to: fnType).lowerType(module) as LLVMType
+        return try module.loweredBuilder.buildBitcast(value: functionPointer, to: functionType, name: irName) // fntype*
     }
 }
 
@@ -101,26 +101,22 @@ extension ExistentialWitnessMethodInst : VHIRLower {
 private extension ConceptType {
     /// Returns the metadata array map, which transforms the protocol's properties
     /// to an element in the `type`. Type `[n * i32]`
-    func existentialPropertyMetadataFor(structType: StructType, module: Module, irGen: IRGen) throws -> LLVMValueRef {
+    func existentialPropertyMetadataFor(structType: StructType, module: Module, irGen: IRGen) throws -> LLVMValue {
         
-        let dataLayout = LLVMCreateTargetData(LLVMGetDataLayout(irGen.module))
-        let conformingType = structType.lowerType(module)
+        let conformingType = structType.lowerType(module) as LLVMType
         
         // a table of offsets
         let offsets = try requiredProperties
             .map { propName, _, _ in try structType.indexOfMemberNamed(propName) }
-            .map { index in LLVMOffsetOfElement(dataLayout, conformingType, UInt32(index)) }
-            .map { LLVMConstInt(LLVMInt32Type(), UInt64($0), false) }
+            .map { index in conformingType.offsetOfElement(index: index, module: module.loweredModule) } // make 'get offset' an extension on aggregate types
+            .map { LLVMValue.constInt($0, size: 32) }
         
-        return try ArrayInst.lowerBuffer(offsets,
-                                         elType: BuiltinType.int(size: 32),
-                                         irName: "metadata",
-                                         module: module,
-                                         irGen: irGen)
+        return try module.loweredBuilder.buildArray(offsets,
+                                                    elType: BuiltinType.int(size: 32).lowerType(module))
     }
     
     /// Returns the metadata array of function pointers. Type `[n * i8*]`
-    func existentialMethodMetadataFor(structType: StructType, module: Module, irGen: IRGen) throws -> LLVMValueRef {
+    func existentialMethodMetadataFor(structType: StructType, module: Module, irGen: IRGen) throws -> LLVMValue {
         
         let opaquePtrType = BuiltinType.opaquePointer
         
@@ -129,14 +125,11 @@ private extension ConceptType {
                 try structType.ptrToMethodNamed(methodName, type: type.withParent(structType, mutating: mutating), module: module)
             }
             .map { ptr in
-                LLVMBuildBitCast(irGen.builder, ptr, opaquePtrType.lowerType(module), LLVMGetValueName(ptr))
+                try module.loweredBuilder.buildBitcast(value: ptr.function, to: opaquePtrType.lowerType(module), name: ptr.name)
         }
         
-        return try ArrayInst.lowerBuffer(ptrs,
-                                         elType: opaquePtrType,
-                                         irName: "witness_table",
-                                         module: module,
-                                         irGen: irGen)
+        return try module.loweredBuilder.buildArray(ptrs,
+                                                    elType: opaquePtrType.lowerType(module))
     }
 }
 

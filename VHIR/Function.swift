@@ -35,7 +35,7 @@ final class Function : VHIRElement {
         }
     }
     /// The block self's errors should jmp to
-    var _condFailBlock: LLVMBasicBlockRef = nil
+    var _condFailBlock: LLVMBasicBlock? = nil
     
     
     private init(name: String, type: FunctionType, module: Module) {

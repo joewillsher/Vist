@@ -30,7 +30,7 @@ func @main : &thin () -> %Builtin.Void {
 $entry:
   %0 = int_literal 1  	// user: %1
   %1 = struct %I (%0: %Builtin.Int64)  	// user: %3
-  %2 = alloc %Int  	// users: %3, %4, %14
+  %2 = alloc %Int  	// users: %3, %4, %17
   store %1 in %2: %*I 
   store %2 in %a.globlstorage: %**I 
   %5 = int_literal 1  	// user: %6
@@ -44,8 +44,11 @@ $entry:
   %isUTF8 = bool_literal true  	// user: %12
   %12 = call @String_topi64b (%11: %Builtin.OpaquePointer, %size: %Builtin.Int64, %isUTF8: %Builtin.Bool)  	// user: %13
   %13 = call @print_tString (%12: %String) 
-  %14 = load %2: %*I  	// user: %15
-  %15 = call @print_tI (%14: %Int) 
+  %14 = int_literal 1  	// user: %15
+  %15 = struct %I (%14: %Builtin.Int64)  	// user: %16
+  %16 = call @print_tI (%15: %Int) 
+  %17 = load %2: %*I  	// user: %18
+  %18 = call @print_tI (%17: %Int) 
   return ()
 }
 
