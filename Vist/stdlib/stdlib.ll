@@ -5,9 +5,9 @@ target triple = "x86_64-apple-macosx10.11.0"
 %struct.__sFILE = type { i8*, i32, i32, i16, i16, %struct.__sbuf, i32, i8*, i32 (i8*)*, i32 (i8*, i8*, i32)*, i64 (i8*, i64, i32)*, i32 (i8*, i8*, i32)*, %struct.__sbuf, %struct.__sFILEX*, i32, [3 x i8], [1 x i8], %struct.__sbuf, i32, i64 }
 %struct.__sFILEX = type opaque
 %struct.__sbuf = type { i8*, i32 }
-%Double = type { double }
-%Int = type { i64 }
 %String = type { i8*, %Int, %Int }
+%Int = type { i64 }
+%Double = type { double }
 %Bool = type { i1 }
 %Range = type { %Int, %Int }
 %Int32 = type { i32 }
@@ -25,6 +25,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 @.str8 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
 @.str9 = private unnamed_addr constant [6 x i8] c"true\0A\00", align 1
 @.str10 = private unnamed_addr constant [7 x i8] c"false\0A\00", align 1
+@str.globl = unnamed_addr global %String zeroinitializer
 
 ; Function Attrs: alwaysinline nounwind ssp uwtable
 define void @_Z17incrementRefCountP16RefcountedObject(%struct.__sbuf* %object) #0 {
@@ -535,6 +536,17 @@ entry:
   ret %Range %.fca.1.0.insert
 }
 
+; Function Attrs: alwaysinline
+define void @print_tString.loop_thunk(%Int %i) #12 {
+entry:
+  %0 = load i8** getelementptr inbounds (%String* @str.globl, i64 0, i32 0), align 16
+  %1 = extractvalue %Int %i, 0
+  %2 = getelementptr i8* %0, i64 %1
+  %3 = load i8* %2, align 1
+  tail call void @vist-Ucshim-Uputchar_ti8(i8 %3)
+  ret void
+}
+
 ; Function Attrs: alwaysinline nounwind
 define void @print_tI32(%Int32 %a) #13 {
 entry:
@@ -684,6 +696,41 @@ if.0:                                             ; preds = %entry
   ret void
 
 else.1:                                           ; preds = %entry
+  store %String %str, %String* @str.globl, align 16
+  %7 = ashr i64 %0, 1
+  %8 = add nsw i64 %7, -1
+  %9 = icmp sgt i64 %7, 1
+  br i1 %9, label %loop.i.preheader, label %generate_mRPtI.exit
+
+loop.i.preheader:                                 ; preds = %else.1
+  br label %loop.i
+
+loop.i:                                           ; preds = %loop.i.preheader, %-P_tII.exit.i
+  %start.fca.0.extract13.i = phi i64 [ %16, %-P_tII.exit.i ], [ 0, %loop.i.preheader ]
+  %start.sink12.i = phi %Int [ %.fca.0.insert.i.i10.i, %-P_tII.exit.i ], [ zeroinitializer, %loop.i.preheader ]
+  %10 = load i8** getelementptr inbounds (%String* @str.globl, i64 0, i32 0), align 16
+  %11 = extractvalue %Int %start.sink12.i, 0
+  %12 = getelementptr i8* %10, i64 %11
+  %13 = load i8* %12, align 1
+  tail call void @vist-Ucshim-Uputchar_ti8(i8 %13)
+  %14 = tail call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %start.fca.0.extract13.i, i64 1) #10
+  %15 = extractvalue { i64, i1 } %14, 1
+  br i1 %15, label %"+.trap.i.i", label %-P_tII.exit.i
+
+"+.trap.i.i":                                     ; preds = %loop.i
+  tail call void @llvm.trap() #10
+  unreachable
+
+-P_tII.exit.i:                                    ; preds = %loop.i
+  %16 = extractvalue { i64, i1 } %14, 0
+  %.fca.0.insert.i.i10.i = insertvalue %Int undef, i64 %16, 0
+  %17 = icmp slt i64 %16, %8
+  br i1 %17, label %loop.i, label %generate_mRPtI.exit.loopexit
+
+generate_mRPtI.exit.loopexit:                     ; preds = %-P_tII.exit.i
+  br label %generate_mRPtI.exit
+
+generate_mRPtI.exit:                              ; preds = %generate_mRPtI.exit.loopexit, %else.1
   ret void
 }
 

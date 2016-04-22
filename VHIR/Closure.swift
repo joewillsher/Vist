@@ -12,11 +12,13 @@
  when the handler is asked to capture this accessor into the scope
  so it can be used as a semantic variable here.
  */
-protocol CaptureHandler {
-    mutating func addCapture(variable: Accessor, scope: Scope, name: String) throws -> Accessor
-//    mutating func removeCapture(variable: Accessor) throws
+protocol CaptureHandler : class {
+    var captured: [Accessor] { get }
+    func addCapture(variable: Accessor, scope: Scope, name: String) throws -> Accessor
 }
 
+/// A thunk object -- wraps a function. Can be used for captruing scopes
+/// and partial application
 protocol ThunkFunction {
     var function: Function { get }
     init(_thunkOf: Function)
@@ -50,10 +52,11 @@ extension ThunkFunction {
  
  Closures can capture variables, and do so by gaining a thick type.
  */
-struct Closure : ThunkFunction, VHIRElement {
+final class Closure : ThunkFunction, VHIRElement {
     let thunk: Function
     var function: Function { return thunk }
-    private(set) var captured: [Accessor] = []
+    var captured: [Accessor] = []
+    private(set) var capturedGlobals: [GlobalValue] = []
     
     var thunkName = ""
     var name: String { return (thunkName+thunk.name).mangle(thunk.type)  }
@@ -63,79 +66,48 @@ struct Closure : ThunkFunction, VHIRElement {
     }
 }
 
-final class GlobalValue : LValue {
-    
-    init(name: String, type: Type) {
-        self.globalType = type
-        self.globalName = name
-    }
-    
-    var globalType: Type, globalName: String
-    
-    var memType: Type? { return globalType }
-    var type: Type? { return BuiltinType.pointer(to: globalType) }
-    
-    weak var parentBlock: BasicBlock? = nil
-    
-    var uses: [Operand] = []
-    
-    var irName: String? {
-        get { return globalName }
-        set { }
-    }
-    var vhir: String { return "\(name): \(globalType)" }
-}
-extension GlobalValue : Hashable, Equatable {
-    var hashValue: Int { return name.hashValue }
-}
-func == (lhs: GlobalValue, rhs: GlobalValue) -> Bool {
-    return lhs.globalName == rhs.globalName
-}
-
 
 
 extension Closure : CaptureHandler {
     
-    mutating func addCapture(variable: Accessor, scope: Scope, name: String) throws -> Accessor {
+    func addCapture(variable: Accessor, scope: Scope, name: String) throws -> Accessor {
         // add to self capture list
-        captured.append(variable)
         // update function
         
         let initialInsert = module.builder.insertPoint
         defer { module.builder.insertPoint = initialInsert }
         module.builder.insertPoint = scope.breakPoint!
 
+        let g: GlobalValue, accessor: GetSetAccessor
+        
         if
-            case let accessor as GetSetAccessor = variable,
+            case let variableAccessor as GetSetAccessor = variable,
             case let decl as GetSetAccessor = try scope.parent?.variableNamed(name),
-            let type = accessor.mem.type {
+            let type = variableAccessor.mem.type {
            
-            let g = GlobalValue(name: "\(name).globlstorage", type: type)
-            try module.builder.buildStore(decl.reference(), in: PtrOperand(g))
-            
-            let accessor = GlobalIndirectRefAccessor(memory: g, module: function.module)
-            
-            scope.add(accessor, name: name)
-            module.globalValues.insert(g)
-            return accessor
+            g = GlobalValue(name: "\(name).globlstorage", type: type)
+            try module.builder.buildStore(decl.aggregateReference(), in: PtrOperand(g))
+            accessor = GlobalIndirectRefAccessor(memory: g, module: function.module)
         }
         else if
             let type = variable.storedType,
             let decl = try scope.parent?.variableNamed(name) {
             
-            let g = GlobalValue(name: "\(name).globl", type: type)
+            g = GlobalValue(name: "\(name).globl", type: type)
             try module.builder.buildStore(Operand(decl.aggregateGetter()), in: PtrOperand(g))
-
-            let accessor = GlobalRefAccessor(memory: g, module: function.module)
-            scope.add(accessor, name: name)
-            module.globalValues.insert(g)
-            return accessor
+            accessor = GlobalRefAccessor(memory: g, module: function.module)
         }
         else {
             fatalError()
         }
         
+        scope.insert(accessor, name: name)
+        captured.append(variable)
+        capturedGlobals.append(g)
+        module.globalValues.insert(g)
+        return accessor
     }
+    
     
     var vhir: String { return thunk.vhir }
     var module: Module { return thunk.module }

@@ -34,6 +34,8 @@ extension Type {
         let dataLayout = LLVMCreateTargetData(LLVMGetDataLayout(emptyModule))
         return Int(LLVMSizeOfTypeInBits(dataLayout, lowerType(module))) / 8
     }
+    
+    func lowerType(module: Module) -> LLVMType { return LLVMType(ref: lowerType(module)) }
 }
 
 

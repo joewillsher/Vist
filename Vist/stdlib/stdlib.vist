@@ -279,8 +279,8 @@ type String {
         return ()
     } else {
         // otherwise we step through, char by char, and putchar it
-//        for i in 0 ..< str.bufferCapacity () do
-//            vist_cshim_putchar (Builtin.opaque_load (str.codeUnitAtIndex i))
+        for i in 0 ..< str.bufferCapacity () do
+            vist_cshim_putchar (Builtin.opaque_load (str.codeUnitAtIndex i))
         return ()
     }
     // there's a CFG bug where implict `return ()` are only added to the exit point

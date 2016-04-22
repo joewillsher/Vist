@@ -5,9 +5,9 @@ target triple = "x86_64-apple-macosx10.11.0"
 %struct.__sFILE = type { i8*, i32, i32, i16, i16, %struct.__sbuf, i32, i8*, i32 (i8*)*, i32 (i8*, i8*, i32)*, i64 (i8*, i64, i32)*, i32 (i8*, i8*, i32)*, %struct.__sbuf, %struct.__sFILEX*, i32, [3 x i8], [1 x i8], %struct.__sbuf, i32, i64 }
 %struct.__sFILEX = type opaque
 %struct.__sbuf = type { i8*, i32 }
-%Double = type { double }
-%Int = type { i64 }
 %String = type { i8*, %Int, %Int }
+%Int = type { i64 }
+%Double = type { double }
 %Bool = type { i1 }
 %Range = type { %Int, %Int }
 %Int32 = type { i32 }
@@ -25,6 +25,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 @.str8 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
 @.str9 = private unnamed_addr constant [6 x i8] c"true\0A\00", align 1
 @.str10 = private unnamed_addr constant [7 x i8] c"false\0A\00", align 1
+@str.globl = unnamed_addr global %String zeroinitializer
 
 ; Function Attrs: alwaysinline nounwind ssp uwtable
 define void @_Z17incrementRefCountP16RefcountedObject(%struct.__sbuf* %object) #0 {
@@ -558,6 +559,16 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
+define void @print_tString.loop_thunk(%Int %i) #11 {
+entry:
+  %0 = load %String* @str.globl
+  %1 = call i8* @codeUnitAtIndex_mStringI(%String %0, %Int %i)
+  %2 = load i8* %1
+  call void @vist-Ucshim-Uputchar_ti8(i8 %2)
+  ret void
+}
+
+; Function Attrs: alwaysinline
 define void @print_tI32(%Int32 %a) #11 {
 entry:
   %0 = extractvalue %Int32 %a, 0
@@ -717,6 +728,10 @@ fail.0:                                           ; preds = %entry
   br label %else.1
 
 else.1:                                           ; preds = %fail.0
+  store %String %str, %String* @str.globl
+  %5 = call %Int @bufferCapacity_mString(%String %str)
+  %6 = call %Range @-D-D-L_tII(%Int zeroinitializer, %Int %5)
+  call void @generate_mRPtI(%Range %6, void (%Int)* @print_tString.loop_thunk)
   ret void
 }
 

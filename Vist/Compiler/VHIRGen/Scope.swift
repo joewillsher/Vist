@@ -27,11 +27,12 @@ final class Scope {
         self.captureHandler = captureHandler ?? parent.captureHandler
         self.breakPoint = breakPoint ?? parent.breakPoint
     }
-    static func capturingScope(parent: Scope, function: Function, captureHandler: CaptureHandler, breakPoint: Builder.InsertPoint) -> Scope {
+    /// Create a scope which captures from `parent`
+    static func capturing(parent: Scope, function: Function, captureHandler: CaptureHandler, breakPoint: Builder.InsertPoint) -> Scope {
         return Scope(parent: parent, function: function, captureHandler: captureHandler, breakPoint: breakPoint)
     }
     
-    func add(variable: Accessor, name: String) {
+    func insert(variable: Accessor, name: String) {
         variables[name] = variable
     }
     
@@ -45,7 +46,7 @@ final class Scope {
             // if we have a capture handler, infor that it 
             // captures this accessor
             let accessor = try handler.addCapture(f, scope: self, name: name)
-            add(accessor, name: name)
+            insert(accessor, name: name)
             return accessor
         }
         return foundInParent
@@ -60,24 +61,14 @@ final class Scope {
         return variables.values.contains { $0 === variable }
     }
     
-    /// Release all refcounted variables in this scope
+    /// Release all refcounted and captuted variables in this scope
     /// - parameter deleting: Whether to delete the scope's variables after releasing
     /// - parameter except: Do not release this variable
     func releaseVariables(deleting deleting: Bool, except: Accessor? = nil) throws {
-        for variable in variables.values
-            where (except.map { $0 !== variable }) ?? true {
-            try variable.release()
-        }
         if deleting { variables.removeAll() }
     }
     func removeVariables() {
         variables.removeAll()
-    }
-    
-    deinit {
-        if !variables.isEmpty { 
-            try! releaseVariables(deleting: true)
-        }
     }
 }
 

@@ -4,8 +4,6 @@ target triple = "x86_64-apple-macosx10.11.0"
 
 %Int = type { i64 }
 %Range = type { %Int, %Int }
-%HalfOpenRange = type { %Int, %Int }
-%Bool = type { i1 }
 %String = type { i8*, %Int, %Int }
 
 @a.globlstorage = unnamed_addr global %Int* null
@@ -13,22 +11,12 @@ target triple = "x86_64-apple-macosx10.11.0"
 
 declare %Range @-D-D-D_tII(%Int, %Int)
 
-; Function Attrs: alwaysinline nounwind readnone
-define %HalfOpenRange @HalfOpenRange_tII(%Int %"$0", %Int %"$1") #0 {
-entry:
-  %"$0.fca.0.extract" = extractvalue %Int %"$0", 0
-  %"$1.fca.0.extract" = extractvalue %Int %"$1", 0
-  %.fca.0.0.insert = insertvalue %HalfOpenRange undef, i64 %"$0.fca.0.extract", 0, 0
-  %.fca.1.0.insert = insertvalue %HalfOpenRange %.fca.0.0.insert, i64 %"$1.fca.0.extract", 1, 0
-  ret %HalfOpenRange %.fca.1.0.insert
-}
+declare void @print_tI(%Int)
 
 declare void @generate_mRPtI(%Range, void (%Int)*)
 
-declare %Bool @-L_tII(%Int, %Int)
-
 ; Function Attrs: alwaysinline
-define void @main.loop_thunk(%Int %x) #1 {
+define void @main.loop_thunk(%Int %x) #0 {
 entry:
   %0 = load %Int** @a.globlstorage, align 8
   %1 = load %Int* %0, align 8
@@ -38,39 +26,9 @@ entry:
   ret void
 }
 
-declare void @print_tI(%Int)
-
 declare %String @String_topi64b(i8*, i64, i1)
 
 declare void @print_tString(%String)
-
-declare %Int @-P_tII(%Int, %Int)
-
-define void @generate_mHalfOpenRangePtI(%HalfOpenRange %self, void (%Int)* nocapture %loop_thunk) {
-entry:
-  %start = extractvalue %HalfOpenRange %self, 0
-  %end = extractvalue %HalfOpenRange %self, 1
-  %0 = tail call %Bool @-L_tII(%Int %start, %Int %end), !stdlib.call.optim !0
-  %cond110 = extractvalue %Bool %0, 0
-  br i1 %cond110, label %loop.preheader, label %loop.exit
-
-loop.preheader:                                   ; preds = %entry
-  br label %loop
-
-loop:                                             ; preds = %loop.preheader, %loop
-  %start.sink11 = phi %Int [ %1, %loop ], [ %start, %loop.preheader ]
-  tail call void %loop_thunk(%Int %start.sink11)
-  %1 = tail call %Int @-P_tII(%Int %start.sink11, %Int { i64 1 }), !stdlib.call.optim !0
-  %2 = tail call %Bool @-L_tII(%Int %1, %Int %end), !stdlib.call.optim !0
-  %cond1 = extractvalue %Bool %2, 0
-  br i1 %cond1, label %loop, label %loop.exit.loopexit
-
-loop.exit.loopexit:                               ; preds = %loop
-  br label %loop.exit
-
-loop.exit:                                        ; preds = %loop.exit.loopexit, %entry
-  ret void
-}
 
 define void @main() {
 entry:
@@ -90,7 +48,6 @@ entry:
 
 declare %Int @-A_tII(%Int, %Int)
 
-attributes #0 = { alwaysinline nounwind readnone }
-attributes #1 = { alwaysinline }
+attributes #0 = { alwaysinline }
 
 !0 = !{!"stdlib.call.optim"}

@@ -4,8 +4,6 @@ target triple = "x86_64-apple-macosx10.11.0"
 
 %Int = type { i64 }
 %Range = type { %Int, %Int }
-%HalfOpenRange = type { %Int, %Int }
-%Bool = type { i1 }
 %String = type { i8*, %Int, %Int }
 
 @a.globlstorage = unnamed_addr global %Int* null
@@ -13,21 +11,9 @@ target triple = "x86_64-apple-macosx10.11.0"
 
 declare %Range @-D-D-D_tII(%Int, %Int)
 
-; Function Attrs: alwaysinline
-define %HalfOpenRange @HalfOpenRange_tII(%Int %"$0", %Int %"$1") #0 {
-entry:
-  %self = alloca %HalfOpenRange
-  %start = getelementptr inbounds %HalfOpenRange* %self, i32 0, i32 0
-  %end = getelementptr inbounds %HalfOpenRange* %self, i32 0, i32 1
-  store %Int %"$0", %Int* %start
-  store %Int %"$1", %Int* %end
-  %0 = load %HalfOpenRange* %self
-  ret %HalfOpenRange %0
-}
+declare void @print_tI(%Int)
 
 declare void @generate_mRPtI(%Range, void (%Int)*)
-
-declare %Bool @-L_tII(%Int, %Int)
 
 ; Function Attrs: alwaysinline
 define void @main.loop_thunk(%Int %x) #0 {
@@ -41,52 +27,21 @@ entry:
   ret void
 }
 
-declare void @print_tI(%Int)
-
 declare %String @String_topi64b(i8*, i64, i1)
 
 declare void @print_tString(%String)
 
-declare %Int @-P_tII(%Int, %Int)
-
-define void @generate_mHalfOpenRangePtI(%HalfOpenRange %self, void (%Int)* %loop_thunk) {
-entry:
-  %start = extractvalue %HalfOpenRange %self, 0
-  %0 = alloca %Int
-  store %Int %start, %Int* %0
-  br label %cond
-
-cond:                                             ; preds = %loop, %entry
-  %1 = load %Int* %0
-  %end = extractvalue %HalfOpenRange %self, 1
-  %2 = call %Bool @-L_tII(%Int %1, %Int %end), !stdlib.call.optim !0
-  %cond1 = extractvalue %Bool %2, 0
-  br i1 %cond1, label %loop, label %loop.exit
-
-loop:                                             ; preds = %cond
-  %3 = load %Int* %0
-  call void %loop_thunk(%Int %3)
-  %4 = load %Int* %0
-  %5 = call %Int @-P_tII(%Int %4, %Int { i64 1 }), !stdlib.call.optim !0
-  store %Int %5, %Int* %0
-  br label %cond
-
-loop.exit:                                        ; preds = %cond
-  ret void
-}
-
 define void @main() {
 entry:
-  %0 = call %HalfOpenRange @HalfOpenRange_tII(%Int { i64 1 }, %Int { i64 10 })
-  %1 = alloca %Int
-  store %Int { i64 1 }, %Int* %1
-  store %Int* %1, %Int** @a.globlstorage
-  %2 = call %Range @-D-D-D_tII(%Int { i64 1 }, %Int { i64 10 }), !stdlib.call.optim !0
-  call void @generate_mRPtI(%Range %2, void (%Int)* @main.loop_thunk)
-  %3 = call %String @String_topi64b(i8* getelementptr inbounds ([4 x i8]* @0, i32 0, i32 0), i64 4, i1 true), !stdlib.call.optim !0
-  call void @print_tString(%String %3), !stdlib.call.optim !0
-  %4 = load %Int* %1
-  call void @print_tI(%Int %4), !stdlib.call.optim !0
+  %0 = alloca %Int
+  store %Int { i64 1 }, %Int* %0
+  store %Int* %0, %Int** @a.globlstorage
+  %1 = call %Range @-D-D-D_tII(%Int { i64 1 }, %Int { i64 10 }), !stdlib.call.optim !0
+  call void @generate_mRPtI(%Range %1, void (%Int)* @main.loop_thunk)
+  %2 = call %String @String_topi64b(i8* getelementptr inbounds ([4 x i8]* @0, i32 0, i32 0), i64 4, i1 true), !stdlib.call.optim !0
+  call void @print_tString(%String %2), !stdlib.call.optim !0
+  %3 = load %Int* %0
+  call void @print_tI(%Int %3), !stdlib.call.optim !0
   ret void
 }
 

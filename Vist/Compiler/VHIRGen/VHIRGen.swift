@@ -90,7 +90,7 @@ extension AST {
             
             try exprs.emitBody(module: module, scope: scope)
             
-            try builder.setInsertPoint(main)
+            builder.insertPoint.function = main
             try scope.releaseVariables(deleting: true)
             try builder.buildReturnVoid()
         }
@@ -154,13 +154,13 @@ extension VariableDecl : ValueEmitter {
         
         if isMutable {
             let variable = try val.getMemCopy()
-            scope.add(variable, name: name)
+            scope.insert(variable, name: name)
             return variable
         }
         else {
             let variable = try module.builder.buildVariableDecl(Operand(val.aggregateGetter()), irName: name).accessor()
             try variable.retain()
-            scope.add(variable, name: name)
+            scope.insert(variable, name: name)
             return variable
         }
     }
@@ -231,7 +231,7 @@ extension FuncDecl : StmtEmitter {
         
         // find proto/make function and move into it
         let function = try module.builder.getOrBuildFunction(mangledName, type: type, paramNames: impl.params, attrs: attrs)
-        try module.builder.setInsertPoint(function)
+        module.builder.insertPoint.function = function
         
         
         // make scope and occupy it with params
@@ -241,7 +241,7 @@ extension FuncDecl : StmtEmitter {
         for paramName in impl.params {
             let paramAccessor = try function.paramNamed(paramName).accessor()
             try paramAccessor.retain()
-            fnScope.add(paramAccessor, name: paramName)
+            fnScope.insert(paramAccessor, name: paramName)
         }
         // A method calling convention means we have to pass `self` in, and tell vars how
         // to access it, and `self`’s properties
@@ -250,7 +250,7 @@ extension FuncDecl : StmtEmitter {
             let selfParam = function.params![0]
             let selfVar = try selfParam.accessor()
             try selfVar.retain()
-            fnScope.add(selfVar, name: "self") // add `self`
+            fnScope.insert(selfVar, name: "self") // add `self`
             
             if case let type as StorageType = selfType {
                 
@@ -261,7 +261,7 @@ extension FuncDecl : StmtEmitter {
                         let pVar = LazyRefAccessor {
                             try module.builder.buildStructElementPtr(selfRef.reference(), property: property.name, irName: property.name)
                         }
-                        fnScope.add(pVar, name: property.name)
+                        fnScope.insert(pVar, name: property.name)
                     }
                 // If it is a value self then we do a struct extract to get self elements
                 case is Accessor:
@@ -269,7 +269,7 @@ extension FuncDecl : StmtEmitter {
                         let pVar = LazyAccessor {
                             try module.builder.buildStructExtract(Operand(selfVar.getter()), property: property.name, irName: property.name)
                         }
-                        fnScope.add(pVar, name: property.name)
+                        fnScope.insert(pVar, name: property.name)
                     }
                 }
                 
@@ -307,7 +307,7 @@ extension VariableExpr : LValueEmitter {
     }
 }
 
-extension ReturnStmt: ValueEmitter {
+extension ReturnStmt : ValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         let retVal = try expr.emitRValue(module: module, scope: scope)
@@ -359,7 +359,7 @@ extension PropertyLookupExpr : LValueEmitter {
         switch object._type {
         case is StructType:
             let object = try self.object.emitRValue(module: module, scope: scope)
-            return try module.builder.buildStructExtract(Operand(try object.getter()), property: propertyName).accessor()
+            return try module.builder.buildStructExtract(Operand(object.getter()), property: propertyName).accessor()
             
         case is ConceptType:
             let object = try self.object.emitRValue(module: module, scope: scope).asReferenceAccessor().reference()
@@ -429,14 +429,14 @@ extension ConditionalStmt: StmtEmitter {
             // move into the if block, and evaluate its expressions
             // in a new scope
             let ifScope = Scope(parent: scope, function: scope.function)
-            try module.builder.setInsertPoint(ifBlock)
+            module.builder.insertPoint.block = ifBlock
             try branch.block.emitStmt(module: module, scope: ifScope)
             
             // once we're done in success, break to the exit and
             // move into the fail for the next round
             if !ifBlock.instructions.contains({$0.instIsTerminator}) {
                 try module.builder.buildBreak(to: exitBlock)
-                try module.builder.setInsertPoint(failBlock)
+                module.builder.insertPoint.block = failBlock
             }
                 // if there is a return or break, we dont jump to exit
                 // if its the last block and the exit is not used, we can remove
@@ -445,7 +445,7 @@ extension ConditionalStmt: StmtEmitter {
             }
                 // otherwise, if its not the end, we move to the exit
             else {
-                try module.builder.setInsertPoint(failBlock)
+                module.builder.insertPoint.block = failBlock
             }
             
         }
@@ -485,7 +485,7 @@ extension ForInLoopStmt : StmtEmitter {
      it to capture state from the loop's scope.
      
      TODO:
-     Returning from the loop requires longjmping out
+     Returning from the loop requires longjmping out -- this is gross
      */
     func emitStmt(module module: Module, scope: Scope) throws {
         
@@ -502,7 +502,7 @@ extension ForInLoopStmt : StmtEmitter {
         let entryInsertPoint = module.builder.insertPoint
 
         // create a loop thunk, which stores the loop body
-        let n = (entryInsertPoint.function?.name).map { "\($0)." } ?? ""
+        let n = (entryInsertPoint.function?.name).map { "\($0)." } ?? "" // name
         let loopThunk = try module.builder.getOrBuildFunction("\(n)loop_thunk",
                                                               type: FunctionType(params: [yieldType]),
                                                               paramNames: [binded.name])
@@ -514,17 +514,18 @@ extension ForInLoopStmt : StmtEmitter {
         // make the semantic scope for the loop
         // if the scope captures from the parent, it goes through a global variable
         let loopClosure = Closure.wrapping(loopThunk), generatorClosure = Closure.wrapping(generatorFunction)
-        let loopScope = Scope.capturingScope(scope,
-                                             function: loopClosure.thunk,
-                                             captureHandler: loopClosure,
-                                             breakPoint: module.builder.insertPoint)
+        let loopScope = Scope.capturing(scope,
+                                        function: loopClosure.thunk,
+                                        captureHandler: loopClosure,
+                                        breakPoint: module.builder.insertPoint)
         let loopVarAccessor = try loopClosure.thunk.paramNamed(binded.name).accessor()
-        loopScope.add(loopVarAccessor, name: binded.name)
+        loopScope.insert(loopVarAccessor, name: binded.name)
         
         // emit body for loop thunk
-        try module.builder.setInsertPoint(loopClosure.thunk) // move to loop thunk
+        module.builder.insertPoint.function = loopClosure.thunk // move to loop thunk
         try block.emitStmt(module: module, scope: loopScope)
         try module.builder.buildReturnVoid()
+        
         // move back out
         module.builder.insertPoint = entryInsertPoint
         
@@ -533,14 +534,23 @@ extension ForInLoopStmt : StmtEmitter {
         loopClosure.thunk.inline = .always
         
         // get the instance of the generator
-        let generator = Operand(try self.generator.emitRValue(module: module, scope: scope).getter())
+        let generator = try Operand(self.generator.emitRValue(module: module, scope: scope).getter())
         
         // call the generator function from loop position
         // apply the scope it requests
         
-        try module.builder.buildFunctionCall(generatorClosure.thunk,
-                                             args: [generator, loopClosure.thunk.buildFunctionPointer()])
+        let call = try module.builder.buildFunctionCall(generatorClosure.thunk,
+                                                        args: [generator, loopClosure.thunk.buildFunctionPointer()])
         
+        if let entryInst = entryInsertPoint.inst, entryFunction = entryInsertPoint.function {
+            // set the captured global values' lifetimes
+            for captured in loopClosure.capturedGlobals {
+                captured.lifetime = GlobalValue.Lifetime(start: entryInst, end: call, owningFunction: entryFunction)
+            }
+        }
+        
+        try loopScope.releaseVariables(deleting: true)
+
     }
 }
 
@@ -584,7 +594,7 @@ extension WhileLoopStmt: StmtEmitter {
         
         // condition check in cond block
         try module.builder.buildBreak(to: condBlock)
-        try module.builder.setInsertPoint(condBlock)
+        module.builder.insertPoint.block = condBlock
         
         let condBool = try condition.emitRValue(module: module, scope: scope).getter()
         let cond = try module.builder.buildStructExtract(Operand(condBool), property: "value", irName: "cond")
@@ -596,11 +606,11 @@ extension WhileLoopStmt: StmtEmitter {
         
         let loopScope = Scope(parent: scope, function: scope.function)
         // build loop block
-        try module.builder.setInsertPoint(loopBlock) // move into
+        module.builder.insertPoint.block = loopBlock // move into
         try block.emitStmt(module: module, scope: loopScope) // gen stmts
         try loopScope.releaseVariables(deleting: true)
         try module.builder.buildBreak(to: condBlock) // break back to condition check
-        try module.builder.setInsertPoint(exitBlock)  // move past -- we're done
+        module.builder.insertPoint.block = exitBlock  // move past -- we're done
     }
 }
 
@@ -660,7 +670,7 @@ extension InitialiserDecl: StmtEmitter {
         
         // make function and move into it
         let function = try module.builder.buildFunction(mangledName, type: initialiserType.cannonicalType(module), paramNames: impl.params)
-        try module.builder.setInsertPoint(function)
+        module.builder.insertPoint.function = function
         
         function.inline = .always
         
@@ -676,19 +686,19 @@ extension InitialiserDecl: StmtEmitter {
              selfVar = try module.builder.buildAlloc(selfType, irName: "self").accessor
         }
         
-        fnScope.add(selfVar, name: "self")
+        fnScope.insert(selfVar, name: "self")
         
         // add self’s elements into the scope, whose accessors are elements of selfvar
         for member in selfType.members {
-            let structElement = try module.builder.buildStructElementPtr(try selfVar.reference(),
+            let structElement = try module.builder.buildStructElementPtr(selfVar.reference(),
                                                                          property: member.name,
                                                                          irName: member.name)
-            fnScope.add(structElement.accessor, name: member.name)
+            fnScope.insert(structElement.accessor, name: member.name)
         }
         
         // add the initialiser’s params
         for param in impl.params {
-            fnScope.add(try function.paramNamed(param).accessor(), name: param)
+            try fnScope.insert(function.paramNamed(param).accessor(), name: param)
         }
         
         // vhir gen for body
@@ -697,7 +707,7 @@ extension InitialiserDecl: StmtEmitter {
         try fnScope.removeVariableNamed("self")?.releaseUnowned()
         try fnScope.releaseVariables(deleting: true)
         
-        try module.builder.buildReturn(Operand(try selfVar.aggregateGetter()))
+        try module.builder.buildReturn(Operand(selfVar.aggregateGetter()))
         
         // move out of function
         module.builder.insertPoint = originalInsertPoint
