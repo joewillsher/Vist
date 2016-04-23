@@ -24,11 +24,14 @@ final class Function : VHIRElement {
     var inline: InlineRequirement = .`default`
     var attributes: Attributes = []
     
+    private(set) var globalLifetimes: [GlobalValue.Lifetime] = []
+    
     /// The LLVM function this is lowered to
-    var loweredFunction: LLVMValueRef = nil {
+    var loweredFunction: LLVMFunction? = nil {
         // update function ref operands
         didSet {
-            for user in uses { user.updateUsesWithLoweredVal(loweredFunction) }
+            guard let loweredFunction = loweredFunction else { return }
+            for user in uses { user.updateUsesWithLoweredVal(loweredFunction.function) }
         }
     }
     /// The block self's errors should jmp to
@@ -175,9 +178,17 @@ extension Function {
         try entryBlock?.addEntryBlockParam(param)
     }
     
-    func dumpIR() {
-        if loweredFunction != nil { LLVMDumpValue(loweredFunction) } else { print("\(name) <NULL>") }
+    func insertGlobalLifetime(lifetime: GlobalValue.Lifetime) {
+        globalLifetimes.append(lifetime)
     }
+    
+    func removeGlobalLifetime(lifetime: GlobalValue.Lifetime) {
+        if let i = globalLifetimes.indexOf({$0===lifetime}) {
+            globalLifetimes.removeAtIndex(i)
+        }
+    }
+    
+    func dumpIR() { loweredFunction?.function.dump() }
     func dump() { print(vhir) }
     var module: Module { return parentModule }
 }
@@ -212,7 +223,7 @@ extension BasicBlock {
     /// Removes this block from the parent function
     func removeFromParent() throws {
         if let p = parentFunction {
-            p.body?.blocks.removeAtIndex(try p.indexOf(self))
+            try p.body?.blocks.removeAtIndex(p.indexOf(self))
         }
     }
     /// Erases `self` from the parent function, cutting all references to
@@ -227,14 +238,14 @@ extension BasicBlock {
     /// Moves `self` after the `after` block
     func move(after after: BasicBlock) throws {
         if let p = parentFunction {
-            p.body?.blocks.removeAtIndex(try p.indexOf(self))
+            try p.body?.blocks.removeAtIndex(p.indexOf(self))
             p.insert(block: self, atIndex: try p.indexOf(after).successor())
         }
     }
     /// Moves `self` before the `before` block
     func move(before before: BasicBlock) throws {
         if let p = parentFunction {
-            p.body?.blocks.removeAtIndex(try p.indexOf(self))
+            try p.body?.blocks.removeAtIndex(p.indexOf(self))
             p.insert(block: self, atIndex: try p.indexOf(before).predecessor())
         }
     }
@@ -267,7 +278,7 @@ extension Builder {
         let bb = BasicBlock(name: "entry", parameters: function.params, parentFunction: function)
         try bb.addEntryApplication(function.params!)
         function.body?.blocks.insert(bb, atIndex: 0)
-        try setInsertPoint(bb)
+        insertPoint.block = bb
         return bb
     }
     

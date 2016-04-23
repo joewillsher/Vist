@@ -13,7 +13,7 @@ class Param : Value {
     weak var parentBlock: BasicBlock?
     var uses: [Operand] = []
     
-    var phi: LLVMValueRef = nil
+    var phi: LLVMValue? = nil
     
     init(paramName: String, type: Type) {
         self.paramName = paramName

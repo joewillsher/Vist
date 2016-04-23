@@ -1,115 +1,18 @@
 
-type %HalfOpenRange = { %Int, %Int }
 type %String = { %Builtin.OpaquePointer, %Int, %Int }
 type %Int = { %Builtin.Int64 }
-<<<<<<< HEAD
-=======
-type %Bool = { %Builtin.Bool }
-type %Range = { %Int, %Int }
->>>>>>> parent of 0bc95a6... Started working on LLVM wrapper
 
 
-<<<<<<< HEAD
-=======
-func @-D-D-D_tII : &thin (%Int, %Int) -> %Range
-
-func @HalfOpenRange_tII : &thin (%Int, %Int) -> %HalfOpenRange {
-$entry(%$0: %Int, %$1: %Int):
-  %self = alloc %HalfOpenRange  	// users: %start, %end, %2
-  %start = struct_element %self: %*HalfOpenRange, #start  	// user: %0
-  %end = struct_element %self: %*HalfOpenRange, #end  	// user: %1
-  store %$0 in %start: %*I 
-  store %$1 in %end: %*I 
-  %2 = load %self: %*HalfOpenRange  	// user: %3
-  return %2
-}
-
-func @generate_mRPtI : &method (%Range, %*tI) -> %Builtin.Void
-
-func @-L_tII : &thin (%Int, %Int) -> %Bool
-
-func @main.loop_thunk : &thin (%Int) -> %Builtin.Void {
-$entry(%x: %Int):
-  %0 = load %a.globlstorage: %**I  	// user: %4
-  %1 = load %0: %*I  	// user: %2
-  %2 = call @-A_tII (%x: %Int, %1: %Int)  	// user: %3
-  store %2 in %0: %*I 
-  %4 = load %0: %*I  	// user: %5
-  %5 = call @print_tI (%4: %Int) 
-  return ()
-}
-
-func @print_tI : &thin (%Int) -> %Builtin.Void
-
-func @String_topi64b : &thin (%Builtin.OpaquePointer, %Builtin.Int64, %Builtin.Bool) -> %String
->>>>>>> parent of 0bc95a6... Started working on LLVM wrapper
 
 func @print_tString : &thin (%String) -> %Builtin.Void
 
-func @-P_tII : &thin (%Int, %Int) -> %Int
-
-func @generate_mHalfOpenRangePtI : &method (%HalfOpenRange, %*tI) -> %Builtin.Void {
-$entry(%self: %HalfOpenRange, %loop_thunk: %*tI):
-  %start = struct_extract %self: %HalfOpenRange, #start  	// user: %1
-  %0 = alloc %Int  	// users: %1, %3, %6, %8, %12
-  store %start in %0: %*I 
-  break $cond
-
-$cond:			// preds: entry, loop
-  %3 = load %0: %*I  	// user: %4
-  %end = struct_extract %self: %HalfOpenRange, #end  	// user: %4
-  %4 = call @-L_tII (%3: %Int, %end: %Int)  	// user: %cond
-  %cond = struct_extract %4: %Bool, #value  	// user: nil
-  break %cond: %Builtin.Bool, $loop, $loop.exit
-
-$loop:			// preds: cond
-  %6 = load %0: %*I  	// user: %7
-  %7 = apply %loop_thunk (%6: %Int) 
-  %8 = load %0: %*I  	// user: %11
-  %9 = int_literal 1  	// user: %10
-  %10 = struct %I (%9: %Builtin.Int64)  	// user: %11
-  %11 = call @-P_tII (%8: %Int, %10: %Int)  	// user: %12
-  store %11 in %0: %*I 
-  break $cond
-
-$loop.exit:			// preds: cond
-  return ()
-}
-
 func @main : &thin () -> %Builtin.Void {
 $entry:
-<<<<<<< HEAD
   %0 = string_literal utf16 "🤔🤔🤔🤔"  	// user: %1
   %size = int_literal 17  	// user: %1
   %isUTF8 = bool_literal false  	// user: %1
   %1 = call @String_topi64b (%0: %Builtin.OpaquePointer, %size: %Builtin.Int64, %isUTF8: %Builtin.Bool)  	// user: %2
   %2 = call @print_tString (%1: %String) 
-=======
-  %0 = int_literal 1  	// user: %1
-  %1 = struct %I (%0: %Builtin.Int64)  	// user: %4
-  %2 = int_literal 10  	// user: %3
-  %3 = struct %I (%2: %Builtin.Int64)  	// user: %4
-  %4 = call @HalfOpenRange_tII (%1: %Int, %3: %Int)  	// user: %range
-  variable_decl %range = %4: %HalfOpenRange 
-  %5 = int_literal 1  	// user: %6
-  %6 = struct %I (%5: %Builtin.Int64)  	// user: %8
-  %7 = alloc %Int  	// users: %8, %9, %19
-  store %6 in %7: %*I 
-  store %7 in %a.globlstorage: %**I 
-  %10 = int_literal 1  	// user: %11
-  %11 = struct %I (%10: %Builtin.Int64)  	// user: %14
-  %12 = int_literal 10  	// user: %13
-  %13 = struct %I (%12: %Builtin.Int64)  	// user: %14
-  %14 = call @-D-D-D_tII (%11: %Int, %13: %Int)  	// user: %15
-  %15 = call @generate_mRPtI (%14: %Range, %main.loop_thunk: %*tI) 
-  %16 = string_literal utf8 "out"  	// user: %17
-  %size = int_literal 4  	// user: %17
-  %isUTF8 = bool_literal true  	// user: %17
-  %17 = call @String_topi64b (%16: %Builtin.OpaquePointer, %size: %Builtin.Int64, %isUTF8: %Builtin.Bool)  	// user: %18
-  %18 = call @print_tString (%17: %String) 
-  %19 = load %7: %*I  	// user: %20
-  %20 = call @print_tI (%19: %Int) 
->>>>>>> parent of 0bc95a6... Started working on LLVM wrapper
   return ()
 }
 

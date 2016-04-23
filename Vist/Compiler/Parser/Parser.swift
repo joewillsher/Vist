@@ -284,7 +284,7 @@ extension Parser {
         }
         
         while case let a = currentToken where a.isValidParamToken {
-            exps.append(try parseOperatorExpr())
+            try exps.append(parseOperatorExpr())
             
             if inTuple {
                 if case .comma = currentToken {
@@ -312,7 +312,7 @@ extension Parser {
         inTuple = true
         
         while case let a = currentToken where a.isValidParamToken {
-            exps.append(try parseOperatorExpr())
+            try exps.append(parseOperatorExpr())
         }
         
         revertInTupleState()
@@ -461,7 +461,7 @@ extension Parser {
     ///
     /// - parameter prec: The precedence of the current token
     private func parseOperatorExpr(exp: Expr? = nil, prec: Int = 0) throws -> Expr {
-        return try parseOperationRHS(prec, lhs: exp ?? (try parsePrimary()))
+        return try parseOperationRHS(prec, lhs: exp ?? parsePrimary())
     }
     
     /// Parses a primary expression
@@ -834,7 +834,7 @@ extension Parser {
         
         while true {
             if case .closeBrace = currentToken { break }
-            exprs.appendContentsOf(try parseExpr(currentToken))
+            try exprs.appendContentsOf(parseExpr(currentToken))
         }
         getNextToken() // eat '}'
         return BlockExpr(exprs: exprs, variables: names)
@@ -867,7 +867,7 @@ extension Parser {
     private func parseBlockExpr(names: [String] = []) throws -> BlockExpr {
         
         switch currentToken {
-        case .openParen:    return try parseBlockExpr(try parseClosureNamesExpr())
+        case .openParen:    return try parseBlockExpr(parseClosureNamesExpr())
         case .openBrace:    return try parseBraceExpr(names)
         case .`do`, .`else`:return try parseBracelessDoExpr(names)
         default:            throw parseError(.notBlock, loc: SourceRange.at(currentPos))
@@ -900,7 +900,7 @@ extension Parser {
                 
             default:
                 
-                elements.append(try parseOperatorExpr())    // param
+                try elements.append(parseOperatorExpr())    // param
             }
         }
         
@@ -1003,13 +1003,13 @@ extension Parser {
         conceptScopeLoop: while true {
             switch currentToken {
             case .`var`, .`let`:
-                properties.appendContentsOf(try parseVariableDecl(.type))
+                try properties.appendContentsOf(parseVariableDecl(.type))
                 
             case .`func`:
-                methods.append(try parseFuncDeclaration(.type))
+                try methods.append(parseFuncDeclaration(.type))
                 
             case .`init`:
-                initialisers.append(try parseInitDecl())
+                try initialisers.append(parseInitDecl())
                 
             case .at:
                 try parseAttrExpr()
@@ -1073,10 +1073,10 @@ extension Parser {
         typeScopeLoop: while true {
             switch currentToken {
             case .`var`, .`let`:
-                properties.appendContentsOf(try parseVariableDecl(.concept))
+                try properties.appendContentsOf(parseVariableDecl(.concept))
                 
             case .`func`:
-                methods.append(try parseFuncDeclaration(.concept))
+                try methods.append(parseFuncDeclaration(.concept))
                 
             case .at:
                 try parseAttrExpr()
@@ -1203,7 +1203,7 @@ extension Parser {
         exprs = []
         
         while let tok = tok() {
-            exprs.appendContentsOf(try parseExpr(tok))
+            try exprs.appendContentsOf(parseExpr(tok))
         }
         
         return AST(exprs: exprs)

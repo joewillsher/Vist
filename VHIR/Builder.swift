@@ -16,39 +16,42 @@ final class Builder {
     
     /// The builder's insert point
     struct InsertPoint {
-        private(set) var inst: Inst?, block: BasicBlock?, function: Function?
+        private var i: Inst?, b: BasicBlock?, f: Function?
+        
+        var inst: Inst? {
+            get {
+                return i
+            }
+            set(inst) {
+                i = inst
+                b = inst?.parentBlock
+                f = inst?.parentBlock?.parentFunction
+            }
+        }
+        var block: BasicBlock? {
+            get {
+                return b
+            }
+            set(block) {
+                i = block?.instructions.last
+                b = block
+                f = block?.parentFunction
+            }
+        }
+        var function: Function? {
+            get {
+                return f
+            }
+            set(function) {
+                i = function?.lastBlock?.instructions.last
+                b = function?.lastBlock
+                f = function
+            }
+        }
     }
 }
 
 extension Builder {
-    
-    // 😣😣 this is 😷, sort out an InsertPoint interface which is stable over changes of IR
-    
-    /// Sets the builder's insert point to `function`
-    func setInsertPoint(function: Function) throws {
-        if insertPoint.function === function { return }
-        guard let b = function.lastBlock else {
-            insertPoint.function = function
-            try buildFunctionEntryBlock(function)
-            insertPoint.block = function.entryBlock
-            return
-        }
-        insertPoint.inst = b.instructions.last
-        insertPoint.block = b
-        insertPoint.function = function
-    }
-    /// Sets the builder's insert point to `block`
-    func setInsertPoint(block: BasicBlock) throws {
-        insertPoint.inst = block.instructions.last
-        insertPoint.block = block
-        insertPoint.function = block.parentFunction
-    }
-    /// Sets the builder's insert point to `inst`
-    func setInsertPoint(inst: Inst) throws {
-        insertPoint.inst = inst
-        insertPoint.block = inst.parentBlock
-        insertPoint.function = inst.parentBlock?.parentFunction
-    }
     
     /// Inserts the instruction to the end of the block, and updates its
     /// parent and the builder's insert point
@@ -56,7 +59,7 @@ extension Builder {
         guard let block = insertPoint.block else { throw VHIRError.noParentBlock }
         inst.parentBlock = block
         block.append(inst)
-        try setInsertPoint(inst)
+        insertPoint.inst = inst
     }
     
     /// Handles adding the instruction to the block -- then returns it

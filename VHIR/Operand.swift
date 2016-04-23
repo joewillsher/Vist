@@ -35,9 +35,9 @@ class Operand : Value {
     @available(*, unavailable, message="`Operand` initialisers should not take `Operand`s")
     init(_ operand: Operand) { fatalError("`Operand` initialisers should not take `Operand`s") }
     
-    private(set) var loweredValue: LLVMValueRef = nil
-    func setLoweredValue(val: LLVMValueRef) { loweredValue = val }
-
+    private(set) var loweredValue: LLVMValue? = nil
+    func setLoweredValue(val: LLVMValue) { loweredValue = val }
+    
     var type: Type? { return value?.type }
 }
 
@@ -61,8 +61,8 @@ extension Operand {
     }
     var operandName: String { return "<operand of \(name) by \(user?.name)>" }
     
-    func dumpIR() { if loweredValue != nil { LLVMDumpValue(loweredValue) } else { print("\(irName) <NULL>") } }
-    func dumpIRType() { if loweredValue != nil { LLVMDumpTypeOf(loweredValue) } else { print("\(irName).type <NULL>") } }
+    func dumpIR() { if let loweredValue = loweredValue { LLVMDumpValue(loweredValue._value) } else { print("\(irName) <NULL>") } }
+    func dumpIRType() { if let loweredValue = loweredValue { LLVMDumpTypeOf(loweredValue._value) } else { print("\(irName).type <NULL>") } }
     
     /// Removes this `Operand` as a user of `value`
     func removeSelfAsUser() {
@@ -117,24 +117,19 @@ final class BlockOperand : Operand {
     override var type: Type? { return param.type }
     
     /// Sets the phi's value for the incoming block `self.predBlock`
-    override func setLoweredValue(val: LLVMValueRef) {
-        guard val != nil else {
+    override func setLoweredValue(val: LLVMValue) {
+        guard val._value != nil else {
             loweredValue = nil
             return
         }
-<<<<<<< HEAD
         var incoming = [val._value], incomingBlocks = [predBlock.loweredBlock!.block]
         LLVMAddIncoming(param.phi!._value, &incoming, &incomingBlocks, 1)
-=======
-        var incoming = [val], incomingBlocks = [predBlock.loweredBlock]
-        LLVMAddIncoming(param.phi, &incoming, &incomingBlocks, 1)
->>>>>>> parent of 0bc95a6... Started working on LLVM wrapper
     }
     
     /// access to the underlying phi switch. Normal `setLoweredValue` 
     /// adds incomings to the phi
-    var phi: LLVMValueRef {
-        get { return loweredValue }
+    var phi: LLVMValue {
+        get { return loweredValue! }
         set(phi) { loweredValue = phi }
     }
 }

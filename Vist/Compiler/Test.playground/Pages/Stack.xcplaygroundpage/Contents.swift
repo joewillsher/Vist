@@ -97,7 +97,7 @@ final class Stack {
     /// Returns from the current function
     func ret<Ret>(val: Ret) throws {
         s.destroyFrame() // destroy stack frame, moves to
-        basePtr = stackBuffer.advancedBy(try pop(Int)) // pop off the old base ptr
+        basePtr = try stackBuffer.advancedBy(pop(Int)) // pop off the old base ptr
         try initialise(val) // flls the mem for the return value
     }
     
