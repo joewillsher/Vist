@@ -71,7 +71,7 @@ extension FuncDecl: DeclTypeProvider {
         
         if isGeneratorFunction {
             // so there are equal number of param names and params in the type
-            // for the VHIRGen phase
+            // for the VIRGen phase
             impl.params.append("loop_thunk")
         }
         

@@ -7,7 +7,7 @@
 //
 
 // Test document -- implementation of a virtual machine
-// stack for use in a VHIR interpreter
+// stack for use in a VIR interpreter
 
 private extension UnsafeMutablePointer {
     mutating func advanceByAlignOf<T>(el: T.Type) { self = advancedBy(alignof(el)) }

@@ -103,7 +103,7 @@ extension MutationExpr : ExprTypeProvider {
             guard let p = parentMutable where p else {
                 // provide nice error -- if its a variable we can put its name in the error message using '.immutableVariable'
                 if case let v as VariableExpr = lookup.object { throw semaError(.immutableVariable(name: v.name, type: v.typeName)) }
-                else { throw semaError(.immutableObject(type: type.vhir)) }
+                else { throw semaError(.immutableObject(type: type.vir)) }
             }
             
             switch lookup {
@@ -111,7 +111,7 @@ extension MutationExpr : ExprTypeProvider {
                 guard mutable else { throw semaError(.immutableTupleMember(index: tuple.index)) }
 
             case let prop as PropertyLookupExpr:
-                guard mutable else { throw semaError(.immutableProperty(p: prop.propertyName, ty: type.vhir)) }
+                guard mutable else { throw semaError(.immutableProperty(p: prop.propertyName, ty: type.vir)) }
                 
             default:
                 throw semaError(.unreachable("All lookup types accounted for"), userVisible: false)

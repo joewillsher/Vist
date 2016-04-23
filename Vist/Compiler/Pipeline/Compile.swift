@@ -17,7 +17,7 @@ struct CompileOptions : OptionSetType {
     init(rawValue: Int) { self.rawValue = rawValue }
     
     static let dumpAST = CompileOptions(rawValue: 1 << 0)
-    static let dumpVHIR = CompileOptions(rawValue: 1 << 1)
+    static let dumpVIR = CompileOptions(rawValue: 1 << 1)
     static let dumpLLVMIR = CompileOptions(rawValue: 1 << 2)
     static let dumpASM = CompileOptions(rawValue: 1 << 3)
     
@@ -26,7 +26,7 @@ struct CompileOptions : OptionSetType {
     static let preserveTempFiles = CompileOptions(rawValue: 1 << 6)
 
     static let disableStdLibInlinePass = CompileOptions(rawValue: 1 << 7)
-    private static let runVHIROptPasses = CompileOptions(rawValue: 1 << 8)
+    private static let runVIROptPasses = CompileOptions(rawValue: 1 << 8)
     private static let runLLVMOptPasses = CompileOptions(rawValue: 1 << 9)
     static let aggressiveOptimisation = CompileOptions(rawValue: 1 << 10)
     /// No optimisations
@@ -34,7 +34,7 @@ struct CompileOptions : OptionSetType {
     /// No optimisations, dont even inline stdlib symbols
     static let O0: CompileOptions = [disableStdLibInlinePass]
     /// Low opt level
-    static let O: CompileOptions = [runVHIROptPasses, runLLVMOptPasses]
+    static let O: CompileOptions = [runVIROptPasses, runLLVMOptPasses]
     /// High opt level
     static let Ohigh: CompileOptions = [O, aggressiveOptimisation]
     
@@ -115,23 +115,23 @@ func compileDocuments(
     
     try sema(ast, globalScope: globalScope)
     if options.contains(.dumpAST) { print(ast.astString); return }
-    if options.contains(.verbose) { print(ast.astString, "\n----------------------------VHIR GEN-------------------------------\n") }
+    if options.contains(.verbose) { print(ast.astString, "\n----------------------------VIR GEN-------------------------------\n") }
     
     let file = fileNames.first!.stringByReplacingOccurrencesOfString(".vist", withString: "")
     
     
-    let vhirModule = Module()
+    let virModule = Module()
     
-    try ast.emitVHIR(module: vhirModule, isLibrary: options.contains(.produceLib))
-    try vhirModule.vhir.writeToFile("\(currentDirectory)/\(file)_.vhir", atomically: true, encoding: NSUTF8StringEncoding)
+    try ast.emitVIR(module: virModule, isLibrary: options.contains(.produceLib))
+    try virModule.vir.writeToFile("\(currentDirectory)/\(file)_.vir", atomically: true, encoding: NSUTF8StringEncoding)
     
-    if options.contains(.verbose) { print(vhirModule.vhir, "\n----------------------------VHIR OPT-------------------------------\n") }
+    if options.contains(.verbose) { print(virModule.vir, "\n----------------------------VIR OPT-------------------------------\n") }
     
-    try vhirModule.runPasses(optLevel: options.optLevel())
-    try vhirModule.vhir.writeToFile("\(currentDirectory)/\(file).vhir", atomically: true, encoding: NSUTF8StringEncoding)
+    try virModule.runPasses(optLevel: options.optLevel())
+    try virModule.vir.writeToFile("\(currentDirectory)/\(file).vir", atomically: true, encoding: NSUTF8StringEncoding)
     
-    if options.contains(.dumpVHIR) { print(vhirModule.vhir); return }
-    if options.contains(.verbose) { print(vhirModule.vhir) }
+    if options.contains(.dumpVIR) { print(virModule.vir); return }
+    if options.contains(.verbose) { print(virModule.vir) }
     
     if options.contains(.buildRuntime) {
         buildRuntime()
@@ -148,14 +148,14 @@ func compileDocuments(
         // remove files
         if !options.contains(.preserveTempFiles) {
             NSTask.execute(.rm,
-                           files: ["\(file).ll", "\(file)_.ll", "\(file).s", "\(file).vhir", "\(file)_.vhir"],
+                           files: ["\(file).ll", "\(file)_.ll", "\(file).s", "\(file).vir", "\(file)_.vir"],
                            cwd: currentDirectory)
         }
     }
     
     // Generate LLVM IR code for program
     if options.contains(.verbose) { print("\n-----------------------------IR LOWER------------------------------\n") }
-    try vhirModule.vhirLower(LLVMModule(ref: llvmModule), isStdLib: options.contains(.parseStdLib))
+    try virModule.virLower(LLVMModule(ref: llvmModule), isStdLib: options.contains(.parseStdLib))
     
     // print and write to file
     try String.fromCString(LLVMPrintModuleToString(llvmModule))?.writeToFile("\(currentDirectory)/\(file)_.ll", atomically: true, encoding: NSUTF8StringEncoding)

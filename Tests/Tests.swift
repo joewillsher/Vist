@@ -16,14 +16,14 @@ protocol VistTest: class {
     var testDir: String { get }
     var stdlibDir: String { get }
     var runtimeDir: String { get }
-    var vhirDir: String { get }
+    var virDir: String { get }
 }
 
 extension VistTest {
     var testDir: String { return "\(SOURCE_ROOT)/Tests/TestCases" }
     var stdlibDir: String { return "\(SOURCE_ROOT)/Vist/stdLib" }
     var runtimeDir: String { return "\(SOURCE_ROOT)/Vist/Runtime" }
-    var vhirDir: String { return "\(SOURCE_ROOT)/Vist/VHIR" }
+    var virDir: String { return "\(SOURCE_ROOT)/Vist/VIR" }
 }
 
 /// Test the compilation and output of code samples

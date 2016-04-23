@@ -22,7 +22,7 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
         "-preserve": .preserveTempFiles,
         "-dump-ast": .dumpAST,
         "-emit-llvm": .dumpLLVMIR,
-        "-emit-vhir": .dumpVHIR,
+        "-emit-vir": .dumpVIR,
         "-emit-asm": .dumpASM,
         "-run": .buildAndRun,
         "-r": .buildAndRun,
@@ -46,7 +46,7 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
                 "  -verbose -v\t\t- Print all stages of the compile\n" +
                 "  -dump-ast\t\t- Dump syntax tree\n" +
                 "  -emit-llvm\t\t- Print the LLVM IR file\n" +
-                "  -emit-vhir\t\t- Print the VHIR file\n" +
+                "  -emit-vir\t\t- Print the VIR file\n" +
                 "  -emit-asm\t\t- print the assembly code\n" +
                 "  -run -r\t\t- Run the program after compilation\n" +
                 "  -build-stdlib\t\t- Build the standard library too\n" +

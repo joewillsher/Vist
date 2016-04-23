@@ -19,9 +19,9 @@ To develop in Xcode, go to ‘Edit Scheme’ (⌘<) and set the *arguments* to `
 
 
 ##Architecture overview
-Vist is a high level strongly typed language aimed at being concise and flexible yet safe. The Vist code compiles to VHIR, a high level intermediary representation which will eventually allow optimisations specific to Vist’s semantics and its type system’s guarantees. 
+Vist is a high level strongly typed language aimed at being concise and flexible yet safe. The Vist code compiles to VIR, a high level intermediary representation which will eventually allow optimisations specific to Vist’s semantics and its type system’s guarantees. 
 
-The VHIR is generated from the parsed and type checked AST; the VHIR is lowered to LLVM IR which is used to generate the program.  
+The VIR is generated from the parsed and type checked AST; the VIR is lowered to LLVM IR which is used to generate the program.  
 
 The Vist compiler is mainly implemented in Swift but much of the functionality is written in vist. All standard types—like ints, floats, bools, and ranges—are implemented in the standard library. The code is still lowered to performant machine code however, as the standard library is able to access native CPU instructions and types and be optimised heavily.
 
