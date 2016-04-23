@@ -22,6 +22,8 @@ protocol Value : class, VHIRElement {
     
     /// The formatted name as shown in IR
     var name: String { get set }
+    
+    var module: Module { get }
 }
 
 /**

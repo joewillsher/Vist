@@ -7,87 +7,81 @@
 //
 
 
-
-
 extension BuiltinInstCall: VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
-        return try LLVMValue(ref: vhirLower(module, irGen: irGen))
-    }
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValueRef {
+    
+    func vhirLower(IGF: IRGenFunction) throws -> LLVMValue {
         
-        var args = self.args.map { $0.loweredValue!._value }
-        let intrinsic: LLVMValueRef
+        // applied args
+        // self provides `lhs` and `rhs` which are lazily computed args[0] and args[1]
+        var args = self.args.map { $0.loweredValue! }
+        // An intrinsic to call with args
+        let intrinsic: LLVMFunction
         
         switch inst {
         // overflowing arithmetic
-        case .iadd: intrinsic = getSinglyOverloadedIntrinsic("llvm.sadd.with.overflow", irGen.module, LLVMTypeOf(l.loweredValue!._value))
-        case .imul: intrinsic = getSinglyOverloadedIntrinsic("llvm.smul.with.overflow", irGen.module, LLVMTypeOf(l.loweredValue!._value))
-        case .isub: intrinsic = getSinglyOverloadedIntrinsic("llvm.ssub.with.overflow", irGen.module, LLVMTypeOf(l.loweredValue!._value))
+        case .iadd: intrinsic = try IGF.module.getIntrinsic("llvm.sadd.with.overflow", overload: lhs.type)
+        case .imul: intrinsic = try IGF.module.getIntrinsic("llvm.smul.with.overflow", overload: lhs.type)
+        case .isub: intrinsic = try IGF.module.getIntrinsic("llvm.ssub.with.overflow", overload: lhs.type)
             
         // other intrinsics
-        case .expect: intrinsic = getSinglyOverloadedIntrinsic("llvm.expect", irGen.module, LLVMTypeOf(l.loweredValue!._value))
-        case .trap:   intrinsic = getRawIntrinsic("llvm.trap", irGen.module)
+        case .expect: intrinsic = try IGF.module.getIntrinsic("llvm.expect", overload: lhs.type)
+        case .trap:   intrinsic = try IGF.module.getIntrinsic("llvm.trap")
         case .memcpy:
             // overload types -- we want `@llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1)`
-            var overloadTypes = [LLVMTypeOf(args[0]), LLVMTypeOf(args[1]), LLVMInt64Type()]
             // construct intrinsic
-            intrinsic = getOverloadedIntrinsic("llvm.memcpy", irGen.module, &overloadTypes, 3)
+            intrinsic = try IGF.module.getIntrinsic("llvm.memcpy",
+                                                    overload: lhs.type, rhs.type, .intType(size: 64))
             // add extra memcpy args
-            args.append(LLVMConstInt(LLVMInt32Type(), 1, false)) // i32 align
-            args.append(LLVMConstInt(LLVMInt1Type(), 0, false)) // i1 isVolatile
+            args.append(.constInt(1, size: 32)) // i32 align -- align 1
+            args.append(.constBool(false)) // i1 isVolatile -- false
+                
+        case .allocstack: return try IGF.builder.buildArrayAlloca(size: lhs, elementType: .intType(size: 8), name: irName)
+        case .allocheap:  return try IGF.builder.buildArrayMalloc(size: lhs, elementType: .intType(size: 8), name: irName)
             
-        case .allocstack: return LLVMBuildArrayAlloca(irGen.builder, LLVMInt8Type(), args[0], irName ?? "")
-        case .allocheap:  return LLVMBuildArrayMalloc(irGen.builder, LLVMInt8Type(), args[0], irName ?? "")
-            
-        case .advancepointer:
-            var index = [r.loweredValue!._value]
-            return LLVMBuildGEP(irGen.builder, l.loweredValue!._value, &index, 1, irName ?? "")
-        case .opaqueload:
-            return LLVMBuildLoad(irGen.builder, l.loweredValue!._value, irName ?? "")
+        case .advancepointer: return try IGF.builder.buildGEP(lhs, index: rhs, name: irName)
+        case .opaqueload:     return try IGF.builder.buildLoad(from: lhs, name: irName)
             
         case .condfail:
             guard let fn = parentFunction, current = parentBlock else { fatalError() }
-            let success = try fn.loweredFunction!.appendBasicBlock(named: "\(current.name).cont"), fail = try fn.buildCondFailBlock(module, irGen: irGen)
+            let success = try fn.loweredFunction!.appendBasicBlock(named: "\(current.name).cont"), fail = try fn.buildCondFailBlock(IGF)
             
             success.move(after: current.loweredBlock!)
-            try module.loweredBuilder.buildCondBr(if: l.loweredValue!, to: fail, elseTo: success)
+            try module.loweredBuilder.buildCondBr(if: lhs, to: fail, elseTo: success)
             module.loweredBuilder.positionAtEnd(success)
-            return nil
+            return .nullptr
             
-            // handle calls which arent intrinsics, but builtin
-        // instructions. Return these directly
-        case .iaddoverflow: return LLVMBuildAdd(irGen.builder, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .ieq:  return LLVMBuildICmp(irGen.builder, LLVMIntEQ, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .ineq: return LLVMBuildICmp(irGen.builder, LLVMIntNE, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .idiv: return LLVMBuildSDiv(irGen.builder, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .irem: return LLVMBuildSRem(irGen.builder, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .ilt:  return LLVMBuildICmp(irGen.builder, LLVMIntSLT, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .ilte: return LLVMBuildICmp(irGen.builder, LLVMIntSLE, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .igte: return LLVMBuildICmp(irGen.builder, LLVMIntSGE, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .igt:  return LLVMBuildICmp(irGen.builder, LLVMIntSGT, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .ishl: return LLVMBuildShl(irGen.builder, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .ishr: return LLVMBuildAShr(irGen.builder, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .iand: return LLVMBuildAnd(irGen.builder, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .ior:  return LLVMBuildOr(irGen.builder, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .ixor: return LLVMBuildXor(irGen.builder, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-            
-        case .and:  return LLVMBuildAnd(irGen.builder, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .or:   return LLVMBuildAnd(irGen.builder, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-            
-        case .fadd: return LLVMBuildFAdd(irGen.builder, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .fsub: return LLVMBuildFAdd(irGen.builder, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .fmul: return LLVMBuildFMul(irGen.builder, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .feq:  return LLVMBuildFCmp(irGen.builder, LLVMRealOEQ, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .fneq: return LLVMBuildFCmp(irGen.builder, LLVMRealONE, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .fdiv: return LLVMBuildFDiv(irGen.builder, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .frem: return LLVMBuildFRem(irGen.builder, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .flt:  return LLVMBuildFCmp(irGen.builder, LLVMRealOLT, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .flte: return LLVMBuildFCmp(irGen.builder, LLVMRealOLE, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .fgte: return LLVMBuildFCmp(irGen.builder, LLVMRealOGE, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
-        case .fgt:  return LLVMBuildFCmp(irGen.builder, LLVMRealOGT, l.loweredValue!._value, r.loweredValue!._value, irName ?? "")
+        // handle calls which arent intrinsics, but builtin
+        // instructions. We can just call them directly, and return
+        case .iaddoverflow: return try IGF.builder.buildIAdd(lhs: lhs, rhs: rhs, name: irName)
+        case .idiv: return try IGF.builder.buildIDiv(lhs: lhs, rhs: rhs, name: irName)
+        case .irem: return try IGF.builder.buildIRem(lhs: lhs, rhs: rhs, name: irName)
+        case .ieq:  return try IGF.builder.buildIntCompare(.equal, lhs: lhs, rhs: rhs, name: irName)
+        case .ineq: return try IGF.builder.buildIntCompare(.notEqual, lhs: lhs, rhs: rhs)
+        case .ilt:  return try IGF.builder.buildIntCompare(.greaterThan, lhs: lhs, rhs: rhs, name: irName)
+        case .igt:  return try IGF.builder.buildIntCompare(.lessThan, lhs: lhs, rhs: rhs, name: irName)
+        case .ilte: return try IGF.builder.buildIntCompare(.lessThanEqual, lhs: lhs, rhs: rhs, name: irName)
+        case .igte: return try IGF.builder.buildIntCompare(.greaterThanEqual, lhs: lhs, rhs: rhs, name: irName)
+        case .ishl: return try IGF.builder.buildIShiftL(lhs: lhs, rhs: rhs, name: irName)
+        case .ishr: return try IGF.builder.buildIShiftR(lhs: lhs, rhs: rhs, name: irName)
+        case .iand, .and: return try IGF.builder.buildAnd(lhs: lhs, rhs: rhs, name: irName)
+        case .ior, .or:  return try IGF.builder.buildOr(lhs: lhs, rhs: rhs, name: irName)
+        case .ixor: return try IGF.builder.buildXor(lhs: lhs, rhs: rhs, name: irName)
+        
+        case .fadd: return try IGF.builder.buildFAdd(lhs: lhs, rhs: rhs, name: irName)
+        case .fsub: return try IGF.builder.buildFSub(lhs: lhs, rhs: rhs, name: irName)
+        case .fmul: return try IGF.builder.buildFMul(lhs: lhs, rhs: rhs, name: irName)
+        case .fdiv: return try IGF.builder.buildFDiv(lhs: lhs, rhs: rhs, name: irName)
+        case .frem: return try IGF.builder.buildFRem(lhs: lhs, rhs: rhs, name: irName)
+        case .feq:  return try IGF.builder.buildFloatCompare(.equal, lhs: lhs, rhs: rhs, name: irName)
+        case .fneq: return try IGF.builder.buildFloatCompare(.notEqual, lhs: lhs, rhs: rhs, name: irName)
+        case .flt:  return try IGF.builder.buildFloatCompare(.lessThan, lhs: lhs, rhs: rhs, name: irName)
+        case .fgt:  return try IGF.builder.buildFloatCompare(.greaterThan, lhs: lhs, rhs: rhs, name: irName)
+        case .flte: return try IGF.builder.buildFloatCompare(.lessThanEqual, lhs: lhs, rhs: rhs, name: irName)
+        case .fgte: return try IGF.builder.buildFloatCompare(.lessThanEqual, lhs: lhs, rhs: rhs, name: irName)
         }
         
-        return LLVMBuildCall(irGen.builder, intrinsic, &args, UInt32(args.count), irName ?? "")
+        // call the intrinsic
+        return try IGF.builder.buildCall(intrinsic, args: args, name: irName)
     }
 }
 
@@ -95,21 +89,21 @@ extension BuiltinInstCall: VHIRLower {
 extension Function {
     
     /// Constructs a function's faluire landing pad, or returns the one defined
-    func buildCondFailBlock(module: Module, irGen: IRGen) throws -> LLVMBasicBlock {
+    func buildCondFailBlock(IGF: IRGenFunction) throws -> LLVMBasicBlock {
         // if its there already, we can use it
         if let condFailBlock = _condFailBlock { return condFailBlock }
         
         // make fail block & save current pos
-        let ins = module.loweredBuilder.getInsertBlock()
+        let ins = IGF.builder.getInsertBlock()
         let block = try loweredFunction!.appendBasicBlock(named: "\(name.demangleName()).trap")
-        module.loweredBuilder.positionAtEnd(block)
+        IGF.builder.positionAtEnd(block)
         
         // Build trap and unreachable
-        try BuiltinInstCall.trapInst().vhirLower(module, irGen: irGen) as LLVMValue
-        try module.loweredBuilder.buildUnreachable()
+        try BuiltinInstCall.trapInst().vhirLower(IGF)
+        try IGF.builder.buildUnreachable()
         
         // move back; save and return the fail block
-        module.loweredBuilder.positionAtEnd(ins!)
+        IGF.builder.positionAtEnd(ins!)
         _condFailBlock = block
         return block
     }

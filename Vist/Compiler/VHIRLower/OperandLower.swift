@@ -8,15 +8,16 @@
 
 extension Operand: VHIRLower {
     
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
+    func vhirLower(IGF: IRGenFunction) throws -> LLVMValue {
         // if already lowered, we use that
         if let loweredValue = loweredValue {
             return loweredValue
         }
             // otherwise we lower it to LLVM IR
         else if case let lowerable as VHIRLower = value {
-            try setLoweredValue(lowerable.vhirLower(module, irGen: irGen))
-            return loweredValue!
+            let v = try lowerable.vhirLower(IGF)
+            setLoweredValue(v)
+            return v
         }
             // if it can't be lowered, throw an error
         else {

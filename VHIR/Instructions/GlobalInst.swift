@@ -9,12 +9,18 @@
 
 final class GlobalValue : LValue {
     
-    init(name: String, type: Type) {
+    init(name: String, type: Type, module: Module) {
         self.globalType = type
         self.globalName = name
+        self.module = module
     }
     
     var globalType: Type, globalName: String
+    unowned var module: Module
+    
+    weak var parentBlock: BasicBlock? = nil
+    var uses: [Operand] = []
+    
     var lifetime: Lifetime? {
         willSet {
             // if setting to a value, tell the parent block to manage the lifetime
@@ -27,10 +33,6 @@ final class GlobalValue : LValue {
             }
         }
     }
-    
-    weak var parentBlock: BasicBlock? = nil
-    
-    var uses: [Operand] = []
 
     /// A global value's lifetime, the global value cannot exist out 
     /// of this range. Useful for the optimiser to lower global 
@@ -52,7 +54,6 @@ extension GlobalValue {
     
     var memType: Type? { return globalType }
     var type: Type? { return BuiltinType.pointer(to: globalType) }
-    
     
     var irName: String? {
         get { return globalName }

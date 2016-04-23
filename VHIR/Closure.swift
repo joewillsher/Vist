@@ -85,7 +85,7 @@ extension Closure : CaptureHandler {
             case let decl as GetSetAccessor = try scope.parent?.variableNamed(name),
             let type = variableAccessor.mem.type {
            
-            g = GlobalValue(name: "\(name).globlstorage", type: type)
+            g = GlobalValue(name: "\(name).globlstorage", type: type, module: module)
             try module.builder.buildStore(decl.aggregateReference(), in: PtrOperand(g))
             accessor = GlobalIndirectRefAccessor(memory: g, module: function.module)
         }
@@ -93,7 +93,7 @@ extension Closure : CaptureHandler {
             let type = variable.storedType,
             let decl = try scope.parent?.variableNamed(name) {
             
-            g = GlobalValue(name: "\(name).globl", type: type)
+            g = GlobalValue(name: "\(name).globl", type: type, module: module)
             try module.builder.buildStore(Operand(decl.aggregateGetter()), in: PtrOperand(g))
             accessor = GlobalRefAccessor(memory: g, module: function.module)
         }

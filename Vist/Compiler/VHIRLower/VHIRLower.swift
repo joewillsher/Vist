@@ -32,40 +32,40 @@ extension LLVMBool : BooleanType, BooleanLiteralConvertible {
 
 
 
-typealias IRGen = (builder: LLVMBuilderRef, module: LLVMModuleRef, isStdLib: Bool)
+typealias IRGenFunction = (builder: LLVMBuilder, module: LLVMModule)
 
 protocol VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue
+    func vhirLower(IGF: IRGenFunction) throws -> LLVMValue
 }
 
 extension Module {
     
     /// Creates or gets a function pointer
-    private func getOrAddFunction(named name: String, type: FunctionType, irGen: IRGen) -> LLVMFunction {
+    private func getOrAddFunction(named name: String, type: FunctionType, IGF: IRGenFunction) -> LLVMFunction {
         // if already defined, we return it
-        let _module = LLVMModule(ref: irGen.module)
-        if let f = _module.function(named: name) {
+        if let f = IGF.module.function(named: name) {
             return f
         }
         
         // otherwise we create a new prototype
-        return LLVMFunction(name: name, type: LLVMType(ref: type.lowerType(module)), module: _module)
+        return LLVMFunction(name: name, type: LLVMType(ref: type.lowerType(module)), module: IGF.module)
     }
     
-    func getOrAddRuntimeFunction(named name: String, irGen: IRGen) -> LLVMFunction {
+    func getOrAddRuntimeFunction(named name: String, IGF: IRGenFunction) -> LLVMFunction {
         let (_, fnType) = Runtime.function(mangledName: name)!
-        return module.getOrAddFunction(named: name, type: fnType, irGen: irGen)
+        return module.getOrAddFunction(named: name, type: fnType, IGF: IGF)
     }
     
     func vhirLower(module: LLVMModule, isStdLib: Bool) throws {
         
-        loweredBuilder = LLVMBuilder()
+        let builder = LLVMBuilder()
+        loweredBuilder = builder
         loweredModule = module
-        let irGen = (loweredBuilder.builder, module.module, isStdLib) as IRGen
+        let IGF = (builder, module) as IRGenFunction
         
         for fn in functions {
             // create function proto
-            let function = getOrAddFunction(named: fn.name, type: fn.type, irGen: irGen)
+            let function = getOrAddFunction(named: fn.name, type: fn.type, IGF: IGF)
             fn.loweredFunction = function
             
             // name the params
@@ -76,12 +76,12 @@ extension Module {
         }
         
         for global in globalValues {
-            try global.updateUsesWithLoweredVal(global.vhirLower(self, irGen: irGen))
+            try global.updateUsesWithLoweredVal(global.vhirLower(IGF))
         }
         
         // lower the function bodies
         for fn in functions {
-            try fn.vhirLower(self, irGen: irGen)
+            try fn.vhirLower(IGF)
         }
         
         try validate()
@@ -125,10 +125,10 @@ extension Function : VHIRLower {
         if attributes.contains(.readnone) { try loweredFunction?.addAttr(LLVMReadNoneAttribute) }
     }
     
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
+    func vhirLower(IGF: IRGenFunction) throws -> LLVMValue {
         
-        let b = module.loweredBuilder.getInsertBlock()
-        guard let fn = module.loweredModule.function(named: name) else { fatalError() }
+        let b = IGF.builder.getInsertBlock()
+        guard let fn = IGF.module.function(named: name) else { fatalError() }
         
         // apply function attributes, linkage, and visibility
         try applyInline()
@@ -141,19 +141,19 @@ extension Function : VHIRLower {
         // declare blocks, so break instructions have something to br to
         for bb in blocks {
             bb.loweredBlock = try fn.appendBasicBlock(named: bb.name)
-            module.loweredBuilder.positionAtEnd(bb.loweredBlock!)
+            IGF.builder.positionAtEnd(bb.loweredBlock!)
             
             for param in bb.parameters ?? [] {
-                let v = try param.vhirLower(module, irGen: irGen)
+                let v = try param.vhirLower(IGF)
                 param.updateUsesWithLoweredVal(v)
             }
         }
         
         for bb in blocks {
-            module.loweredBuilder.positionAtEnd(bb.loweredBlock!)
+            IGF.builder.positionAtEnd(bb.loweredBlock!)
             
             for case let inst as protocol<VHIRLower, Inst> in bb.instructions {
-                let v = try inst.vhirLower(module, irGen: irGen)
+                let v = try inst.vhirLower(IGF)
                 inst.updateUsesWithLoweredVal(v)
             }
         }
@@ -164,7 +164,7 @@ extension Function : VHIRLower {
             
         }
         
-        if let b = b { module.loweredBuilder.positionAtEnd(b) }
+        if let b = b { IGF.builder.positionAtEnd(b) }
         
         try validate()
         
@@ -173,7 +173,9 @@ extension Function : VHIRLower {
     
     private func validate() throws {
         guard !LLVMVerifyFunction(loweredFunction!.function._value, LLVMReturnStatusAction) else {
-            module.loweredModule?.dump()
+            #if DEBUG
+            module.loweredModule.dump()
+            #endif
             throw irGenError(.invalidFunction(name), userVisible: true)
         }
     }
@@ -192,7 +194,7 @@ extension BasicBlock {
 
 extension Param : VHIRLower {
 
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
+    func vhirLower(IGF: IRGenFunction) throws -> LLVMValue {
         guard let function = parentFunction, block = parentBlock else { throw VHIRError.noParentBlock }
         
         if let functionParamIndex = function.params?.indexOf({$0.name == name}) {
@@ -202,7 +204,7 @@ extension Param : VHIRLower {
             return phi
         }
         else {
-            let phi = try module.loweredBuilder.buildPhi(type: type!.lowerType(module), name: paramName)
+            let phi = try IGF.builder.buildPhi(type: type!.lowerType(module), name: paramName)
             
             for operand in try block.appliedArgs(for: self) {
                 operand.phi = phi
@@ -216,19 +218,19 @@ extension Param : VHIRLower {
 
 
 extension VariableInst : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
+    func vhirLower(IGF: IRGenFunction) throws -> LLVMValue {
         guard let type = type else { throw irGenError(.notTyped) }
         
-        let mem = try module.loweredBuilder.buildAlloca(type: type.lowerType(module), name: irName)
-        try module.loweredBuilder.buildStore(value: value.loweredValue!, in: mem)
+        let mem = try IGF.builder.buildAlloca(type: type.lowerType(module), name: irName)
+        try IGF.builder.buildStore(value: value.loweredValue!, in: mem)
         return value.loweredValue!
     }
 }
 
 
 extension GlobalValue : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
-        var global = LLVMGlobalValue(module: module.loweredModule!, type: memType!.lowerType(module), name: globalName)
+    func vhirLower(IGF: IRGenFunction) throws -> LLVMValue {
+        var global = LLVMGlobalValue(module: IGF.module, type: memType!.lowerType(module), name: globalName)
         global.hasUnnamedAddr = true
         global.isExternallyInitialised = false
         global.initialiser = LLVMValue.constNull(type: memType!.lowerType(module))
@@ -238,9 +240,9 @@ extension GlobalValue : VHIRLower {
 
 
 extension ArrayInst : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
+    func vhirLower(IGF: IRGenFunction) throws -> LLVMValue {
         
-        return try module.loweredBuilder.buildArray(values.map { $0.loweredValue! },
+        return try IGF.builder.buildArray(values.map { $0.loweredValue! },
                                                     elType: arrayType.mem.lowerType(module),
                                                     irName: irName)
     }

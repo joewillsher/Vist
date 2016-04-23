@@ -9,12 +9,12 @@
 import Foundation.NSString
 
 extension IntLiteralInst : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
+    func vhirLower(IGF: IRGenFunction) throws -> LLVMValue {
         return LLVMValue.constInt(value.value, size: size)
     }
 }
 extension BoolLiteralInst : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
+    func vhirLower(IGF: IRGenFunction) throws -> LLVMValue {
         return LLVMValue.constBool(value.value)
     }
 }
@@ -40,9 +40,9 @@ extension String.Encoding : CustomStringConvertible {
 }
 
 extension StringLiteralInst : VHIRLower {
-    func vhirLower(module: Module, irGen: IRGen) throws -> LLVMValue {
-        let str = try module.loweredBuilder.buildGlobalString(value.value)
-        return try module.loweredBuilder.buildBitcast(value: str, to: BuiltinType.opaquePointer.lowerType(module))
+    func vhirLower(IGF: IRGenFunction) throws -> LLVMValue {
+        let str = try IGF.builder.buildGlobalString(value.value)
+        return try IGF.builder.buildBitcast(value: str, to: BuiltinType.opaquePointer.lowerType(module))
     }
 }
 

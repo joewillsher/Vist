@@ -28,8 +28,8 @@ final class BuiltinInstCall : InstBase {
     static func trapInst() -> BuiltinInstCall { return BuiltinInstCall(inst: .trap, args: [], irName: nil)! }
     
     // utils for bin instructions
-    var l: Operand { return args[0] }
-    var r: Operand { return args[1] }
+    lazy var lhs: LLVMValue! = { return self.args[0].loweredValue }()
+    lazy var rhs: LLVMValue! = { return self.args[1].loweredValue }()
     
     override var instVHIR: String {
         let a = args.map{$0.valueName}
