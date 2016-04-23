@@ -382,7 +382,7 @@ define %Bool @-G_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
-  %2 = icmp slt i64 %0, %1
+  %2 = icmp sgt i64 %0, %1
   %.fca.0.insert.i = insertvalue %Bool undef, i1 %2, 0
   ret %Bool %.fca.0.insert.i
 }
@@ -401,7 +401,7 @@ entry:
   %start.fca.0.extract11 = extractvalue %Int %start, 0
   %end = extractvalue %Range %self, 1
   %0 = extractvalue %Int %end, 0
-  %1 = icmp sgt i64 %start.fca.0.extract11, %0
+  %1 = icmp slt i64 %start.fca.0.extract11, %0
   br i1 %1, label %loop.preheader, label %loop.exit
 
 loop.preheader:                                   ; preds = %entry
@@ -422,7 +422,7 @@ loop:                                             ; preds = %loop.preheader, %-P
 -P_tII.exit:                                      ; preds = %loop
   %4 = extractvalue { i64, i1 } %2, 0
   %.fca.0.insert.i.i10 = insertvalue %Int undef, i64 %4, 0
-  %5 = icmp sgt i64 %4, %0
+  %5 = icmp slt i64 %4, %0
   br i1 %5, label %loop, label %loop.exit.loopexit
 
 loop.exit.loopexit:                               ; preds = %-P_tII.exit
@@ -662,7 +662,7 @@ define %Bool @-L_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
-  %2 = icmp sgt i64 %0, %1
+  %2 = icmp slt i64 %0, %1
   %.fca.0.insert.i = insertvalue %Bool undef, i1 %2, 0
   ret %Bool %.fca.0.insert.i
 }
@@ -699,7 +699,7 @@ else.1:                                           ; preds = %entry
   store %String %str, %String* @str.globl, align 16
   %7 = ashr i64 %0, 1
   %8 = add nsw i64 %7, -1
-  %9 = icmp slt i64 %7, 1
+  %9 = icmp sgt i64 %7, 1
   br i1 %9, label %loop.i.preheader, label %generate_mRPtI.exit
 
 loop.i.preheader:                                 ; preds = %else.1
@@ -724,7 +724,7 @@ loop.i:                                           ; preds = %loop.i.preheader, %
 -P_tII.exit.i:                                    ; preds = %loop.i
   %16 = extractvalue { i64, i1 } %14, 0
   %.fca.0.insert.i.i10.i = insertvalue %Int undef, i64 %16, 0
-  %17 = icmp sgt i64 %16, %8
+  %17 = icmp slt i64 %16, %8
   br i1 %17, label %loop.i, label %generate_mRPtI.exit.loopexit
 
 generate_mRPtI.exit.loopexit:                     ; preds = %-P_tII.exit.i

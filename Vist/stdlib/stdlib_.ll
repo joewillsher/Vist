@@ -403,7 +403,7 @@ define %Bool @-G_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
-  %2 = icmp slt i64 %0, %1
+  %2 = icmp sgt i64 %0, %1
   %3 = call %Bool @Bool_tb(i1 %2)
   ret %Bool %3
 }
@@ -691,7 +691,7 @@ define %Bool @-L_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
-  %2 = icmp sgt i64 %0, %1
+  %2 = icmp slt i64 %0, %1
   %3 = call %Bool @Bool_tb(i1 %2)
   ret %Bool %3
 }

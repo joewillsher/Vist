@@ -1,19 +1,42 @@
 
-type %String = { %Builtin.OpaquePointer, %Int, %Int }
 type %Int = { %Builtin.Int64 }
+type %Range = { %Int, %Int }
 
+global %a.globlstorage: %*I
 
+func @-D-D-D_tII : &thin (%Int, %Int) -> %Range
 
-func @print_tString : &thin (%String) -> %Builtin.Void
+func @print_tI : &thin (%Int) -> %Builtin.Void
 
-func @main : &thin () -> %Builtin.Void {
-$entry:
-  %0 = string_literal utf16 "🤔🤔🤔🤔"  	// user: %1
-  %size = int_literal 17  	// user: %1
-  %isUTF8 = bool_literal false  	// user: %1
-  %1 = call @String_topi64b (%0: %Builtin.OpaquePointer, %size: %Builtin.Int64, %isUTF8: %Builtin.Bool)  	// user: %2
-  %2 = call @print_tString (%1: %String) 
+func @generate_mRPtI : &method (%Range, %*tI) -> %Builtin.Void
+
+func @main.loop_thunk : &thin (%Int) -> %Builtin.Void {
+$entry(%x: %Int):
+  %0 = load %a.globlstorage: %**I  	// user: %4
+  %1 = load %0: %*I  	// user: %2
+  %2 = call @-A_tII (%x: %Int, %1: %Int)  	// user: %3
+  store %2 in %0: %*I 
+  %4 = load %0: %*I  	// user: %5
+  %5 = call @print_tI (%4: %Int) 
   return ()
 }
 
-func @String_topi64b : &thin (%Builtin.OpaquePointer, %Builtin.Int64, %Builtin.Bool) -> %String
+func @main : &thin () -> %Builtin.Void {
+$entry:
+  %0 = int_literal 1  	// user: %1
+  %1 = struct %I (%0: %Builtin.Int64)  	// user: %3
+  %2 = alloc %Int  	// users: %3, %4, %11
+  store %1 in %2: %*I 
+  store %2 in %a.globlstorage: %**I 
+  %5 = int_literal 1  	// user: %6
+  %6 = struct %I (%5: %Builtin.Int64)  	// user: %9
+  %7 = int_literal 10  	// user: %8
+  %8 = struct %I (%7: %Builtin.Int64)  	// user: %9
+  %9 = call @-D-D-D_tII (%6: %Int, %8: %Int)  	// user: %10
+  %10 = call @generate_mRPtI (%9: %Range, %main.loop_thunk: %*tI) 
+  %11 = load %2: %*I  	// user: %12
+  %12 = call @print_tI (%11: %Int) 
+  return ()
+}
+
+func @-A_tII : &thin (%Int, %Int) -> %Int

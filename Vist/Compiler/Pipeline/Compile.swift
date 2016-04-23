@@ -201,8 +201,6 @@ func compileDocuments(
                        outputName: libVistPath,
                        cwd: currentDirectory,
                        args: "-dynamiclib")
-        
-        // TODO: install the vistc exec as a lib in /usr/local/lib
     }
     else {
         
@@ -253,6 +251,16 @@ func runExecutable(
     
     runTask.launch()
     runTask.waitUntilExit()
+    
+    if case .UncaughtSignal = runTask.terminationReason {
+        let message = "Program terminated with exit code: \(runTask.terminationStatus)"
+        if let o = out {
+            o.fileHandleForWriting.writeData(message.dataUsingEncoding(NSUTF8StringEncoding)!)
+        }
+        else {
+            print(message)
+        }
+    }
 }
 
 
