@@ -6,18 +6,19 @@ printf "//\n//  Utils.h\n//  Vist\n//\n//  Created by Josef Willsher on 03/02/20
 
 printf 'Download LLVM & Clang\n'
 
-brew install llvm --with-clang #--with-lldb
-
-printf 'Install vistlib standard library & runtime\n'
-
-# install stdlib
-/usr/local/Cellar/llvm/3.6.2/bin/clang-3.6 -o /usr/local/lib/libvist.dylib -dynamiclib Vist/stdlib/stdlib.bc
+if [ ! -d /usr/local/cellar/llvm/3.6.2 ]
+    then
+        brew install llvm --with-clang #--with-lldb
+fi
 
 printf 'Build vist compiler\n'
 
-# install vistc
-xcodebuild -scheme Vist -configuration "Release" DEPLOYMENT_LOCATION=YES DSTROOT="" -project Vist.xcodeproj
+# install 'vist'
+xcodebuild -scheme Vist -configuration "Release" DEPLOYMENT_LOCATION=YES DSTROOT="" -project Vist.xcodeproj | sed -nE '/error:/,/^[[:digit:]] errors? generated/ p'
 
+printf 'Install vistlib standard library & runtime\n'
+
+# install 'libvist'
 vist -build-stdlib
 
 printf 'Done\n'

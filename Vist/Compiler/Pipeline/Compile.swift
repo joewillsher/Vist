@@ -185,21 +185,23 @@ func compileDocuments(
     if options.contains(.verbose) { print(llvmIR, "\n\n----------------------------LINK-----------------------------\n") }
     
     let libVistPath = "/usr/local/lib/libvist.dylib"
-    
+//    /usr/local/Cellar/llvm/3.6.2/bin/clang-3.6 -o /usr/local/lib/libvist.dylib -dynamiclib Vist/stdlib/stdlib.bc
     if options.contains(.compileStdLib) {
-        // .ll -> .dylib
-        // to link against program
-        NSTask.execute(.clang,
-                       files: ["\(file).ll"],
-                       outputName: libVistPath,
-                       cwd: currentDirectory,
-                       args: "-dynamiclib")
         
         // .ll -> .bc
         // for optimiser
         NSTask.execute(.assemble,
                        files: ["\(file).ll"],
                        cwd: currentDirectory)
+        
+        // .ll -> .dylib
+        // to link against program
+        NSTask.execute(.clang,
+                       files: ["\(file).bc"],
+                       outputName: libVistPath,
+                       cwd: currentDirectory,
+                       args: "-dynamiclib")
+        
         // TODO: install the vistc exec as a lib in /usr/local/lib
     }
     else {

@@ -110,7 +110,7 @@ extension LLVMBuilder {
     }
     func buildCall(function: LLVMFunction, args: [LLVMValue], name: String? = nil) throws -> LLVMValue {
         var applied = try args.map { try $0.val() }
-        guard function.paramCount == applied.count else { throw error(LLVMError.invalidParamCount(expected: function.paramCount, got: applied.count)) }
+//        guard function.paramCount == applied.count else { throw error(LLVMError.invalidParamCount(expected: function.paramCount, got: applied.count)) }
         return try wrap(
             LLVMBuildCall(builder, function.function.val(), &applied, UInt32(applied.count), name ?? "")
         )
@@ -437,8 +437,8 @@ struct LLVMFunction : Dumpable {
     private (set) var function: LLVMValue
     
 //    private
-    init(ref: LLVMValueRef) throws {
-        guard LLVMIsAFunction(ref) != nil else { throw error(LLVMError.notAFunction) }
+    init(ref: LLVMValueRef) {
+//        guard LLVMIsAFunction(ref) != nil else { throw error(LLVMError.notAFunction) }
         function = LLVMValue(ref: ref)
     }
     init(name: String, type: LLVMType, module: LLVMModule) {

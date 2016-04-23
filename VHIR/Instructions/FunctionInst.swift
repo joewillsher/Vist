@@ -63,7 +63,7 @@ final class FunctionApplyInst: InstBase, VHIRFunctionCall {
     }
     override var hasSideEffects: Bool { return true }
     
-    var functionRef: LLVMFunction { return try! LLVMFunction(ref: function.loweredValue!._value) }
+    var functionRef: LLVMFunction { return LLVMFunction(ref: function.loweredValue!._value) }
     var functionType: FunctionType { return function.memType as! FunctionType }
 }
 

@@ -373,7 +373,7 @@ define %Bool @-O-O_tBB(%Bool %a, %Bool %b) #11 {
 entry:
   %0 = extractvalue %Bool %a, 0
   %1 = extractvalue %Bool %b, 0
-  %2 = and i1 %0, %1
+  %2 = or i1 %0, %1
   %3 = call %Bool @Bool_tb(i1 %2)
   ret %Bool %3
 }
@@ -403,7 +403,7 @@ define %Bool @-G_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
-  %2 = icmp sgt i64 %0, %1
+  %2 = icmp slt i64 %0, %1
   %3 = call %Bool @Bool_tb(i1 %2)
   ret %Bool %3
 }
@@ -541,7 +541,7 @@ define %Bool @-G-E_tDD(%Double %a, %Double %b) #11 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
-  %2 = fcmp oge double %0, %1
+  %2 = fcmp ole double %0, %1
   %3 = call %Bool @Bool_tb(i1 %2)
   ret %Bool %3
 }
@@ -691,7 +691,7 @@ define %Bool @-L_tII(%Int %a, %Int %b) #11 {
 entry:
   %0 = extractvalue %Int %a, 0
   %1 = extractvalue %Int %b, 0
-  %2 = icmp slt i64 %0, %1
+  %2 = icmp sgt i64 %0, %1
   %3 = call %Bool @Bool_tb(i1 %2)
   ret %Bool %3
 }
@@ -754,7 +754,7 @@ define %Double @-M_tDD(%Double %a, %Double %b) #11 {
 entry:
   %0 = extractvalue %Double %a, 0
   %1 = extractvalue %Double %b, 0
-  %2 = fadd double %0, %1
+  %2 = fsub double %0, %1
   %3 = call %Double @Double_tf64(double %2)
   ret %Double %3
 }

@@ -54,15 +54,17 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
                 "  -build-runtime\t- Build the runtime too\n" +
                 "  -preserve\t\t- Keep intermediate IR and ASM files")
     }
-    else if !files.isEmpty {
+    else {
         #if DEBUG
             let s = CFAbsoluteTimeGetCurrent()
         #endif
         
         if flags.contains("-build-stdlib") {
+            var o: CompileOptions = .buildStdLib
+            if o.contains(.verbose) { o.insert(.verbose) }
             try compileDocuments(["stdlib.vist"],
                                  inDirectory: "\(SOURCE_ROOT)/Vist/Stdlib",
-                                 options: .buildStdLib)
+                                 options: o)
         }
         if !files.isEmpty {
             try compileDocuments(files,
