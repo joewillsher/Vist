@@ -21,8 +21,13 @@ final class Module : VHIRElement {
     private(set) var functions: Set<Function> = [], typeList: Set<TypeAlias> = []
     var globalValues: Set<GlobalValue> = []
     var builder: Builder!
+<<<<<<< HEAD
     var loweredModule: LLVMModule! = nil
     var loweredBuilder: LLVMBuilder! = nil
+=======
+    var loweredModule: LLVMModuleRef = nil
+    var loweredBuilder: LLVMModuleRef = nil
+>>>>>>> parent of 0bc95a6... Started working on LLVM wrapper
     
     init() { builder = Builder(module: self) }
     var module: Module { return self }

@@ -6,7 +6,7 @@ type %Double = { %Builtin.Double }
 type %Bool = { %Builtin.Bool }
 type %Range = { %Int, %Int }
 
-global %str.globl: %String
+
 
 func @vist-Uprint_tb : &thin (%Builtin.Bool) -> %Builtin.Void
 
@@ -213,10 +213,6 @@ $entry:
   return ()
 }
 
-func @generate_mRPtI : &method (%Range, %*tI) -> %Builtin.Void
-
-func @vist-Ucshim-Uputchar_ti8 : &thin (%Builtin.Int8) -> %Builtin.Void
-
 func @Int32_tI32 : &thin (%Int32) -> %Int32 {
 $entry(%val: %Int32):
   %self = alloc %Int32  	// users: %value, %2
@@ -281,15 +277,6 @@ $entry(%$0: %Int, %$1: %Int):
   store %$1 in %end: %*I 
   %2 = load %self: %*R  	// user: %3
   return %2
-}
-
-func @print_tString.loop_thunk : &thin (%Int) -> %Builtin.Void {
-$entry(%i: %Int):
-  %0 = load %str.globl: %*String  	// user: %1
-  %1 = call @codeUnitAtIndex_mStringI (%0: %String, %i: %Int)  	// user: %2
-  %2 = builtin opaque_load %1: %Builtin.OpaquePointer  	// user: %3
-  %3 = call @vist-Ucshim-Uputchar_ti8 (%2: %Builtin.Int8) 
-  return ()
 }
 
 func @print_tI32 : &thin (%Int32) -> %Builtin.Void {
@@ -442,12 +429,6 @@ $fail.0:			// preds: entry
   break $else.1
 
 $else.1:			// preds: fail.0
-  store %str in %str.globl: %*String 
-  %10 = int_literal 0  	// user: %11
-  %11 = struct %I (%10: %Builtin.Int64)  	// user: %13
-  %12 = call @bufferCapacity_mString (%str: %String)  	// user: %13
-  %13 = call @-D-D-L_tII (%11: %Int, %12: %Int)  	// user: %14
-  %14 = call @generate_mRPtI (%13: %Range, %print_tString.loop_thunk: %*tI) 
   return ()
 }
 

@@ -20,7 +20,7 @@ final class BasicBlock : VHIRElement {
     private(set) var instructions: [Inst] = []
     
     weak var parentFunction: Function?
-    var loweredBlock: LLVMBasicBlock? = nil
+    var loweredBlock: LLVMValueRef = nil
     
     /// The params passed into the block, a list of params
     var parameters: [Param]?
@@ -114,7 +114,7 @@ extension BasicBlock {
     /// Remove `inst` from self
     /// - precondition: `inst` is a member of `self`
     func remove(inst: Inst) throws {
-        try instructions.removeAtIndex(indexOf(inst))
+        instructions.removeAtIndex(try indexOf(inst))
         inst.parentBlock = nil
     }
     

@@ -12,13 +12,11 @@
  when the handler is asked to capture this accessor into the scope
  so it can be used as a semantic variable here.
  */
-protocol CaptureHandler : class {
-    var captured: [Accessor] { get }
-    func addCapture(variable: Accessor, scope: Scope, name: String) throws -> Accessor
+protocol CaptureHandler {
+    mutating func addCapture(variable: Accessor, scope: Scope, name: String) throws -> Accessor
+//    mutating func removeCapture(variable: Accessor) throws
 }
 
-/// A thunk object -- wraps a function. Can be used for captruing scopes
-/// and partial application
 protocol ThunkFunction {
     var function: Function { get }
     init(_thunkOf: Function)
@@ -52,11 +50,10 @@ extension ThunkFunction {
  
  Closures can capture variables, and do so by gaining a thick type.
  */
-final class Closure : ThunkFunction, VHIRElement {
+struct Closure : ThunkFunction, VHIRElement {
     let thunk: Function
     var function: Function { return thunk }
-    var captured: [Accessor] = []
-    private(set) var capturedGlobals: [GlobalValue] = []
+    private(set) var captured: [Accessor] = []
     
     var thunkName = ""
     var name: String { return (thunkName+thunk.name).mangle(thunk.type)  }
@@ -66,48 +63,89 @@ final class Closure : ThunkFunction, VHIRElement {
     }
 }
 
+final class GlobalValue : LValue {
+    
+    init(name: String, type: Type) {
+        self.globalType = type
+        self.globalName = name
+    }
+    
+    var globalType: Type, globalName: String
+    
+    var memType: Type? { return globalType }
+    var type: Type? { return BuiltinType.pointer(to: globalType) }
+    
+    weak var parentBlock: BasicBlock? = nil
+    
+    var uses: [Operand] = []
+    
+    var irName: String? {
+        get { return globalName }
+        set { }
+    }
+    var vhir: String { return "\(name): \(globalType)" }
+}
+extension GlobalValue : Hashable, Equatable {
+    var hashValue: Int { return name.hashValue }
+}
+func == (lhs: GlobalValue, rhs: GlobalValue) -> Bool {
+    return lhs.globalName == rhs.globalName
+}
+
 
 
 extension Closure : CaptureHandler {
     
-    func addCapture(variable: Accessor, scope: Scope, name: String) throws -> Accessor {
+    mutating func addCapture(variable: Accessor, scope: Scope, name: String) throws -> Accessor {
         // add to self capture list
+        captured.append(variable)
         // update function
         
         let initialInsert = module.builder.insertPoint
         defer { module.builder.insertPoint = initialInsert }
         module.builder.insertPoint = scope.breakPoint!
 
-        let g: GlobalValue, accessor: GetSetAccessor
-        
         if
-            case let variableAccessor as GetSetAccessor = variable,
+            case let accessor as GetSetAccessor = variable,
             case let decl as GetSetAccessor = try scope.parent?.variableNamed(name),
-            let type = variableAccessor.mem.type {
+            let type = accessor.mem.type {
            
+<<<<<<< HEAD
             g = GlobalValue(name: "\(name).globlstorage", type: type, module: module)
             try module.builder.buildStore(decl.aggregateReference(), in: PtrOperand(g))
             accessor = GlobalIndirectRefAccessor(memory: g, module: function.module)
+=======
+            let g = GlobalValue(name: "\(name).globlstorage", type: type)
+            try module.builder.buildStore(decl.reference(), in: PtrOperand(g))
+            
+            let accessor = GlobalIndirectRefAccessor(memory: g, module: function.module)
+            
+            scope.add(accessor, name: name)
+            module.globalValues.insert(g)
+            return accessor
+>>>>>>> parent of 0bc95a6... Started working on LLVM wrapper
         }
         else if
             let type = variable.storedType,
             let decl = try scope.parent?.variableNamed(name) {
             
+<<<<<<< HEAD
             g = GlobalValue(name: "\(name).globl", type: type, module: module)
+=======
+            let g = GlobalValue(name: "\(name).globl", type: type)
+>>>>>>> parent of 0bc95a6... Started working on LLVM wrapper
             try module.builder.buildStore(Operand(decl.aggregateGetter()), in: PtrOperand(g))
-            accessor = GlobalRefAccessor(memory: g, module: function.module)
+
+            let accessor = GlobalRefAccessor(memory: g, module: function.module)
+            scope.add(accessor, name: name)
+            module.globalValues.insert(g)
+            return accessor
         }
         else {
             fatalError()
         }
         
-        scope.insert(accessor, name: name)
-        captured.append(variable)
-        capturedGlobals.append(g)
-        module.globalValues.insert(g)
-        return accessor
     }
-    
     
     var vhir: String { return thunk.vhir }
     var module: Module { return thunk.module }

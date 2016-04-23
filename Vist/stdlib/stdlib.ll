@@ -5,9 +5,9 @@ target triple = "x86_64-apple-macosx10.11.0"
 %struct.__sFILE = type { i8*, i32, i32, i16, i16, %struct.__sbuf, i32, i8*, i32 (i8*)*, i32 (i8*, i8*, i32)*, i64 (i8*, i64, i32)*, i32 (i8*, i8*, i32)*, %struct.__sbuf, %struct.__sFILEX*, i32, [3 x i8], [1 x i8], %struct.__sbuf, i32, i64 }
 %struct.__sFILEX = type opaque
 %struct.__sbuf = type { i8*, i32 }
-%String = type { i8*, %Int, %Int }
-%Int = type { i64 }
 %Double = type { double }
+%Int = type { i64 }
+%String = type { i8*, %Int, %Int }
 %Bool = type { i1 }
 %Range = type { %Int, %Int }
 %Int32 = type { i32 }
@@ -25,7 +25,6 @@ target triple = "x86_64-apple-macosx10.11.0"
 @.str8 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
 @.str9 = private unnamed_addr constant [6 x i8] c"true\0A\00", align 1
 @.str10 = private unnamed_addr constant [7 x i8] c"false\0A\00", align 1
-@str.globl = unnamed_addr global %String zeroinitializer
 
 ; Function Attrs: alwaysinline nounwind ssp uwtable
 define void @_Z17incrementRefCountP16RefcountedObject(%struct.__sbuf* %object) #0 {
@@ -536,17 +535,6 @@ entry:
   ret %Range %.fca.1.0.insert
 }
 
-; Function Attrs: alwaysinline
-define void @print_tString.loop_thunk(%Int %i) #12 {
-entry:
-  %0 = load i8** getelementptr inbounds (%String* @str.globl, i64 0, i32 0), align 16
-  %1 = extractvalue %Int %i, 0
-  %2 = getelementptr i8* %0, i64 %1
-  %3 = load i8* %2, align 1
-  tail call void @vist-Ucshim-Uputchar_ti8(i8 %3)
-  ret void
-}
-
 ; Function Attrs: alwaysinline nounwind
 define void @print_tI32(%Int32 %a) #13 {
 entry:
@@ -696,6 +684,7 @@ if.0:                                             ; preds = %entry
   ret void
 
 else.1:                                           ; preds = %entry
+<<<<<<< HEAD
   store %String %str, %String* @str.globl, align 16
   %7 = ashr i64 %0, 1
   %8 = add nsw i64 %7, -1
@@ -731,6 +720,8 @@ generate_mRPtI.exit.loopexit:                     ; preds = %-P_tII.exit.i
   br label %generate_mRPtI.exit
 
 generate_mRPtI.exit:                              ; preds = %generate_mRPtI.exit.loopexit, %else.1
+=======
+>>>>>>> parent of 0bc95a6... Started working on LLVM wrapper
   ret void
 }
 

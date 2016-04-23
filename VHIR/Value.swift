@@ -68,7 +68,7 @@ extension Value {
     }
     
     /// Adds the lowered val to all users
-    func updateUsesWithLoweredVal(val: LLVMValue) {
+    func updateUsesWithLoweredVal(val: LLVMValueRef) {
         for use in uses { use.setLoweredValue(val) }
     }
     

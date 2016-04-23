@@ -61,13 +61,13 @@ extension StructExpr: ExprTypeProvider {
         }
         
         try errorCollector.run {
-            let definesOwnMemberwiseInit = try initialisers.contains { initialiser in
+            let definesOwnMemberwiseInit = try initialisers.contains({ initialiser in
                 let memberTypes = ty.members.map { $0.type }
                 return try initialiser.ty.params(scope).elementsEqual(memberTypes, isEquivalent: ==)
-            }
+            })
             
             if !definesOwnMemberwiseInit {
-                try initialisers.append(memberwiseInitialiser())
+                initialisers.append(try memberwiseInitialiser())
             }
         }
         try initialisers.walkChildren(errorCollector) { node in

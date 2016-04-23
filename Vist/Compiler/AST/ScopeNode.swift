@@ -43,7 +43,7 @@ extension CollectionType where Generator.Element: ASTNode {
         
         for exp in self {
             do {
-                try res.append(fn(exp))
+                res.append(try fn(exp))
             }
             catch let error as VistError {
                 errorCollector.errors.append(error)
@@ -78,7 +78,7 @@ extension CollectionType where Generator.Element == ASTNode {
         
         for exp in self {
             do {
-                try res.append(fn(exp))
+                res.append(try fn(exp))
             }
             catch let error as VistError {
                 errorCollector.errors.append(error)
