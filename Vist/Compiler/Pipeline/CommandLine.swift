@@ -52,7 +52,7 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
                 "  -build-stdlib\t\t- Build the standard library too\n" +
                 "  -parse-stdlib\t\t- Compile the module as if it were the stdlib. This exposes Builtin functions and links the runtime directly\n" +
                 "  -build-runtime\t- Build the runtime too\n" +
-                "  -preserve\t\t- Keep intermediate IR and ASM files")
+            "  -preserve\t\t- Keep intermediate IR and ASM files")
     }
     else {
         #if DEBUG
@@ -66,12 +66,10 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
                                  inDirectory: "\(SOURCE_ROOT)/Vist/Stdlib",
                                  options: o)
         }
-        if !files.isEmpty {
-            try compileDocuments(files,
-                                 inDirectory: dir,
-                                 out: out,
-                                 options: compileOptions)
-        }
+        try compileDocuments(files,
+                             inDirectory: dir,
+                             out: out,
+                             options: compileOptions)
         
         #if DEBUG
             let f = NSNumberFormatter()

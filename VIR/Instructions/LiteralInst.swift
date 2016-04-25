@@ -14,7 +14,7 @@
 final class IntLiteralInst : InstBase {
     var value: LiteralValue<Int>, size: Int
     
-    override var type: Type? { return BuiltinType.int(size: UInt32(size)) }
+    override var type: Type? { return BuiltinType.int(size: size) }
     
     private init(val: Int, size: Int, irName: String?) {
         self.value = LiteralValue(val: val, irName: nil)

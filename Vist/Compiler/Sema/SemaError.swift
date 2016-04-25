@@ -7,7 +7,7 @@
 //
 
 enum SemaError: VistError {
-    case invalidType(BuiltinType), invalidFloatType(UInt32)
+    case invalidType(BuiltinType), invalidFloatType(Int)
     case invalidRedeclaration(String), invalidTypeRedeclaration(String)
     case noVariable(String)
     case heterogenousArray([Type]), emptyArray

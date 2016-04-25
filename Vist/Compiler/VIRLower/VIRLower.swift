@@ -22,7 +22,7 @@ enum IRLowerError: VistError {
 extension LLVMBool : BooleanType, BooleanLiteralConvertible {
     
     public init(booleanLiteral value: Bool) {
-        self.init(value ? 1: 0)
+        self.init(value.hashValue)
     }
     
     public var boolValue: Bool {
@@ -48,7 +48,7 @@ extension Module {
         }
         
         // otherwise we create a new prototype
-        return LLVMFunction(name: name, type: LLVMType(ref: type.lowerType(module)), module: IGF.module)
+        return LLVMFunction(name: name, type: type.lowerType(module), module: IGF.module)
     }
     
     func getOrAddRuntimeFunction(named name: String, IGF: IRGenFunction) -> LLVMFunction {
@@ -84,15 +84,9 @@ extension Module {
             try fn.virLower(IGF)
         }
         
-        try validate()
+        try loweredModule?.validate()
     }
     
-    private func validate() throws {
-        var err = UnsafeMutablePointer<Int8>.alloc(1)
-        guard !LLVMVerifyModule(loweredModule!.module, LLVMReturnStatusAction, &err) else {
-            throw irGenError(.invalidModule(loweredModule!.module, String.fromCString(err)), userVisible: true)
-        }
-    }
 }
 
 
@@ -162,11 +156,26 @@ extension Function : VIRLower {
         // only in this scope, we define their lifetimes using intrinsics
         for lifetime in globalLifetimes {
             
+            guard let global = IGF.module.global(named: lifetime.globalName),
+                let size = module.globalNamed(lifetime.globalName)?.type?.size(unit: .bits, module: module) else {
+                // the global couldn't be found -- try the next
+                continue
+            }
+            let globalPointer = try IGF.builder.buildBitcast(value: global.value, to: LLVMType.opaquePointer)
+            let constSize = LLVMValue.constInt(size, size: 64)
+            
+            let startIntrinsic = try IGF.module.getIntrinsic("llvm.lifetime.start")
+            let endIntrinsic = try IGF.module.getIntrinsic("llvm.lifetime.end")
+            
+            try IGF.builder.position(after: lifetime.start.loweredValue!)
+            try IGF.builder.buildCall(startIntrinsic, args: [constSize, globalPointer])
+            try IGF.builder.position(after: lifetime.end.loweredValue!)
+            try IGF.builder.buildCall(endIntrinsic, args: [constSize, globalPointer])
         }
         
         if let b = b { IGF.builder.positionAtEnd(b) }
         
-        try validate()
+//        try validate()
         
         return fn.function
     }
@@ -233,6 +242,8 @@ extension GlobalValue : VIRLower {
         var global = LLVMGlobalValue(module: IGF.module, type: memType!.lowerType(module), name: globalName)
         global.hasUnnamedAddr = true
         global.isExternallyInitialised = false
+        global.linkage = LLVMPrivateLinkage
+//        global.isConstant = true
         global.initialiser = LLVMValue.constNull(type: memType!.lowerType(module))
         return global.value
     }

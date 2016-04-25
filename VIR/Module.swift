@@ -66,6 +66,10 @@ extension Module {
         return typeList.find {$0.name == name}
     }
     
+    func globalNamed(name: String) -> GlobalValue? {
+        return globalValues.find { $0.globalName == name }
+    }
+    
     func dumpIR() { loweredModule?.dump() }
     func dump() { print(vir) }
 }

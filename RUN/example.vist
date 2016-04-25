@@ -1,7 +1,13 @@
 
-var a = 1
-for x in 1 ... 10 {
-    a = x * a
-    print a
-}
-print a
+
+
+
+for i in 0 ... 5000 do
+    if i % 3 == 0 do
+        print i * 3
+    else if i % 1000 == 0 do
+        print 1000000
+    else do
+        print i
+
+

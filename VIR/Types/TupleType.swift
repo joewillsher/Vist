@@ -14,9 +14,9 @@ final class TupleType : Type {
         self.members = members
     }
     
-    func lowerType(module: Module) -> LLVMTypeRef {
-        var arr = members.map { $0.lowerType(module) }
-        return LLVMStructType(&arr, UInt32(members.count), false)
+    func lowerType(module: Module) -> LLVMType {
+        var arr = members.map { $0.lowerType(module).type }
+        return LLVMType(ref: LLVMStructType(&arr, UInt32(members.count), false))
     }
     
     func usingTypesIn(module: Module) -> Type {

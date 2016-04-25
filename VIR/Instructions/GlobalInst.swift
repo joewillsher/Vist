@@ -37,14 +37,17 @@ final class GlobalValue : LValue {
     /// A global value's lifetime, the global value cannot exist out 
     /// of this range. Useful for the optimiser to lower global 
     /// vars when inlining functions to stack storage
-    /// - note: lifetime valid `]start end]`
+    /// - note: lifetime valid `]start end]` -- ie. lifetime range is
+    ///         after start and end instructions
     final class Lifetime {
-        let start: Inst, end: Inst
-        private var owningFunction: Function
-        init(start: Inst, end: Inst, owningFunction: Function) {
-            self.start = start
-            self.end = end
+        let start: Operand, end: Operand
+        let globalName: String
+        private unowned let owningFunction: Function
+        init(start: Inst, end: Inst, globalName: String, owningFunction: Function) {
+            self.start = Operand(start)
+            self.end = Operand(end)
             self.owningFunction = owningFunction
+            self.globalName = globalName
         }
     }
     

@@ -1,4 +1,4 @@
-//
+    //
 //  TypeAlias.swift
 //  Vist
 //
@@ -29,7 +29,7 @@ extension TypeAlias : StorageType {
 
 extension TypeAlias {
     
-    func lowerType(module: Module) -> LLVMTypeRef {
+    func lowerType(module: Module) -> LLVMType {
         
         if module.loweredModule == nil {
             // backup if a module isnt lowered
@@ -37,16 +37,16 @@ extension TypeAlias {
         }
         
         // when lowering the alias, we need to get the ref in the LLVM module...
-        let found = getNamedType(targetType.irName, module.loweredModule!.module)
-        if found != nil {
-            return found
+        let found = try? getNamedType(targetType.irName, module.loweredModule!.getModule())
+        if let found = found where found != nil {
+            return LLVMType(ref: found)
         }
         
         // ...and if it isnt already defined we lower the target and add it
         let type = targetType.lowerType(module)
-        let namedType = createNamedType(type, targetType.irName)
+        let namedType = createNamedType(type.type, targetType.irName)
         
-        return namedType
+        return LLVMType(ref: namedType)
     }
     
     func usingTypesIn(module: Module) -> Type {

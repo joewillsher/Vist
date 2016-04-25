@@ -70,6 +70,12 @@ func compileDocuments(
     var head: AST? = nil
     var all: [AST] = []
     
+    if options.contains(.buildRuntime) {
+        buildRuntime()
+    }
+    
+    if fileNames.isEmpty { return }
+    
     let globalScope = SemaScope.globalScope(options.contains(.parseStdLib))
     
     for (index, fileName) in fileNames.enumerate() {
@@ -132,11 +138,7 @@ func compileDocuments(
     
     if options.contains(.dumpVIR) { print(virModule.vir); return }
     if options.contains(.verbose) { print(virModule.vir) }
-    
-    if options.contains(.buildRuntime) {
-        buildRuntime()
-    }
-    
+        
     var llvmModule = LLVMModuleCreateWithName(file)
     
     if options.contains(.linkWithRuntime) {

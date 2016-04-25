@@ -13,7 +13,7 @@ protocol Type : Printable, VIRElement {
     /// Name used in mangling function signatures
     var mangledName: String { get }
     
-    func lowerType(module: Module) -> LLVMTypeRef
+    func lowerType(module: Module) -> LLVMType
     /// Replaces the function's memeber types with the module's typealias
     func usingTypesIn(module: Module) -> Type
     
@@ -23,19 +23,25 @@ protocol Type : Printable, VIRElement {
     var explicitName: String { get }
 }
 
+enum _WidthUnit { case bytes, bits }
+
 extension Type {
     // implement default behaviour
     var explicitName: String {
         return mangledName
     }
     
-    /// the size in bytes of this lowered type
-    func size(module: Module) -> Int {
+    /// the size in `unit` of this lowered type
+    func size(unit unit: _WidthUnit = .bytes, module: Module) -> Int {
         let dataLayout = LLVMCreateTargetData(LLVMGetDataLayout(emptyModule))
-        return Int(LLVMSizeOfTypeInBits(dataLayout, lowerType(module))) / 8
+        let s = Int(LLVMSizeOfTypeInBits(dataLayout, lowerType(module).type))
+        switch unit {
+        case .bits: return s
+        case .bytes: return s / 8
+        }
     }
     
-    func lowerType(module: Module) -> LLVMType { return LLVMType(ref: lowerType(module)) }
+    
 }
 
 

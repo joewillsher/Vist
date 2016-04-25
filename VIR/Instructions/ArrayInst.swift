@@ -11,7 +11,7 @@ final class ArrayInst : InstBase {
     var values: [Operand]
     let arrayType: (mem: Type, size: Int)
     
-    override var type: Type? { return BuiltinType.array(el: arrayType.mem, size: UInt32(arrayType.size)) }
+    override var type: Type? { return BuiltinType.array(el: arrayType.mem, size: arrayType.size) }
     
     private init(values: [Operand], memType: Type, irName: String?) {
         self.values = values

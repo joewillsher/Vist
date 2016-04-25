@@ -10,34 +10,35 @@
 
 enum BuiltinType : Type {
     case null, void
-    case int(size: UInt32), float(size: UInt32), bool
-    indirect case array(el: Type, size: UInt32?)
+    case int(size: Int), float(size: Int), bool
+    indirect case array(el: Type, size: Int?)
     indirect case pointer(to: Type)
     case opaquePointer
     
-    func lowerType(module: Module) -> LLVMTypeRef {
+    func lowerType(module: Module) -> LLVMType {
         switch self {
-        case .null:                     return nil
-        case .void:                     return LLVMVoidType()
-        case .int(let s):               return LLVMIntType(s)
-        case .bool:                     return LLVMInt1Type()
-        case .array(let el, let size):  return LLVMArrayType(el.lowerType(module), size ?? 0)
-        case .pointer(let to):          return LLVMPointerType(to.lowerType(module), 0)
-        case .opaquePointer:            return BuiltinType.pointer(to: BuiltinType.int(size: 8)).lowerType(module)
+        case .null:                     return .null
+        case .void:                     return .void
+        case .int(let s):               return .intType(size: s)
+        case .bool:                     return .bool
+        case .array(let el, let size):  return .arrayType(element: el.lowerType(module), size: size ?? 0)
+        case .pointer(let to):          return to.lowerType(module).getPointerType()
+        case .opaquePointer:            return .opaquePointer
         case .float(let s):
             switch s {
-            case 16:                    return LLVMHalfType()
-            case 32:                    return LLVMFloatType()
-            case 64:                    return LLVMDoubleType()
-            case 128:                   return LLVMFP128Type()
+            case 16:                    return .half
+            case 32:                    return .single
+            case 64:                    return .double
+//            case 128:                   return LLVMFP128Type()
             default:                    fatalError(SemaError.invalidFloatType(s).description)
             }
         }
     }
+
     
     init?(_ str: String) {
         switch str {
-        case "Builtin.Int", "Builtin.Int64":  self = .int(size: 64)
+        case "Builtin.Int", "Builtin.Int64":self = .int(size: 64)
         case "Builtin.Null":               self = .null
         case "Builtin.Int32":              self = .int(size: 32)
         case "Builtin.Int16":              self = .int(size: 16)

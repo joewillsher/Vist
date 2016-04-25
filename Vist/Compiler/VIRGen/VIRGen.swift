@@ -545,7 +545,10 @@ extension ForInLoopStmt : StmtEmitter {
         if let entryInst = entryInsertPoint.inst, entryFunction = entryInsertPoint.function {
             // set the captured global values' lifetimes
             for captured in loopClosure.capturedGlobals {
-                captured.lifetime = GlobalValue.Lifetime(start: entryInst, end: call, owningFunction: entryFunction)
+                captured.lifetime = GlobalValue.Lifetime(start: entryInst,
+                                                         end: call,
+                                                         globalName: captured.globalName,
+                                                         owningFunction: entryFunction)
             }
         }
         

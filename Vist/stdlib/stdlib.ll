@@ -25,7 +25,7 @@ target triple = "x86_64-apple-macosx10.11.0"
 @.str8 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
 @.str9 = private unnamed_addr constant [6 x i8] c"true\0A\00", align 1
 @.str10 = private unnamed_addr constant [7 x i8] c"false\0A\00", align 1
-@str.globl = unnamed_addr global %String zeroinitializer
+@str.globl = private unnamed_addr global %String zeroinitializer
 
 ; Function Attrs: alwaysinline nounwind ssp uwtable
 define void @_Z17incrementRefCountP16RefcountedObject(%struct.__sbuf* %object) #0 {

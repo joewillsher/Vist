@@ -24,7 +24,7 @@ final class Scope {
         self.function = function
         self.variables = [:]
         self.module = parent.module
-        self.captureHandler = captureHandler ?? parent.captureHandler
+        self.captureHandler = captureHandler
         self.breakPoint = breakPoint ?? parent.breakPoint
     }
     /// Create a scope which captures from `parent`

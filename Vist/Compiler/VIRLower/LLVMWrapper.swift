@@ -18,6 +18,7 @@ enum LLVMError : VistError {
     case notAFunction, notAGlobal
     case invalidParamCount(expected: Int, got: Int)
     case invalidParamIndex(Int, function: String?)
+    case noSuccessor
     
     var description: String {
         switch self {
@@ -25,6 +26,7 @@ enum LLVMError : VistError {
         case .notAGlobal: return "Not a LLVM global"
         case .invalidParamCount(let e, let g): return "Expected \(e) params, got \(g)"
         case .invalidParamIndex(let i, let f): return "No param at index \(i)" + (f.map { " for function '\($0)'" } ?? "")
+        case .noSuccessor: return "Inst does not have a successor"
         }
     }
 }
@@ -41,8 +43,13 @@ extension LLVMBuilder {
     func positionAtEnd(block: LLVMBasicBlock) {
         LLVMPositionBuilderAtEnd(builder, block.block)
     }
-    func positionBefore(after: LLVMValue) {
-        LLVMPositionBuilderBefore(builder, after._value)
+    func position(after after: LLVMValue) throws {
+        let successor = LLVMGetNextInstruction(after._value)
+        guard successor != nil else { throw error(LLVMError.noSuccessor) }
+        LLVMPositionBuilderBefore(builder, successor)
+    }
+    func position(before before: LLVMValue) {
+        LLVMPositionBuilderBefore(builder, before._value)
     }
     func getInsertBlock() -> LLVMBasicBlock? {
         let i = LLVMGetInsertBlock(builder)
@@ -299,8 +306,12 @@ struct LLVMBasicBlock : Dumpable {
 }
 
 struct LLVMModule : Dumpable {
-//    private
-    var module: LLVMModuleRef
+    private var module: LLVMModuleRef
+    
+    func getModule() throws -> LLVMModuleRef {
+        guard module != nil else { throw NullLLVMRef() }
+        return module
+    }
     
     init(name: String) {
         module = LLVMModuleCreateWithName(name)
@@ -309,10 +320,17 @@ struct LLVMModule : Dumpable {
         module = ref
     }
     
+    func validate() throws {
+        var err = UnsafeMutablePointer<Int8>.alloc(1)
+        guard !LLVMVerifyModule(module, LLVMReturnStatusAction, &err) else {
+            throw irGenError(.invalidModule(module, String.fromCString(err)), userVisible: true)
+        }
+    }
+
     func function(named name: String) -> LLVMFunction? {
         let f = LLVMGetNamedFunction(module, name)
         if f != nil {
-            return try! LLVMFunction(ref: f)
+            return LLVMFunction(ref: f)
         }
         else { return nil }
     }
@@ -334,7 +352,7 @@ struct LLVMModule : Dumpable {
             intrinsic = getOverloadedIntrinsic(name, module, &overloads, Int32(overload.count))
         }
         guard intrinsic != nil else { throw NullLLVMRef() }
-        return try LLVMFunction(ref: intrinsic)
+        return LLVMFunction(ref: intrinsic)
     }
     
     func dump() { LLVMDumpModule(module) }
@@ -354,6 +372,9 @@ struct LLVMType : Dumpable {
         let dataLayout = LLVMCreateTargetData(module.dataLayout)
         return Int(LLVMOffsetOfElement(dataLayout, type, UInt32(index)))
     }
+    var size: LLVMValue {
+        return LLVMValue(ref: LLVMSizeOf(type))
+    }
     /// get self*
     func getPointerType() -> LLVMType {
         return LLVMType(ref: LLVMPointerType(type, 0))
@@ -364,6 +385,28 @@ struct LLVMType : Dumpable {
     }
     static func intType(size size: Int) -> LLVMType {
         return LLVMType(ref: LLVMIntType(UInt32(size)))
+    }
+    static func arrayType(element element: LLVMType, size: Int) -> LLVMType {
+        return LLVMType(ref: LLVMArrayType(element.type, UInt32(size)))
+    }
+    static var bool: LLVMType {
+        return LLVMType(ref: LLVMInt1Type())
+    }
+    static var void: LLVMType {
+        return LLVMType(ref: LLVMVoidType())
+    }
+    static var null: LLVMType {
+        return LLVMType(ref: nil)
+    }
+    
+    static var half: LLVMType {
+        return LLVMType(ref: LLVMHalfType())
+    }
+    static var single: LLVMType {
+        return LLVMType(ref: LLVMFloatType())
+    }
+    static var double: LLVMType {
+        return LLVMType(ref: LLVMDoubleType())
     }
 }
 
@@ -400,6 +443,7 @@ struct LLVMValue : Dumpable {
     
     func dump() { try! LLVMDumpValue(val()) }
     var type: LLVMType { return LLVMType(ref: try! LLVMTypeOf(val())) }
+    
 }
 
 struct LLVMGlobalValue : Dumpable {
@@ -425,9 +469,21 @@ struct LLVMGlobalValue : Dumpable {
     }
     var initialiser: LLVMValue {
         get { return LLVMValue(ref: LLVMGetInitializer(value._value)) }
-        set { return LLVMSetInitializer(value._value, newValue._value) }
+        set { LLVMSetInitializer(value._value, newValue._value) }
     }
-
+    var linkage: LLVMLinkage {
+        get { return try! LLVMGetLinkage(value.val()) }
+        set(linkage) { try! LLVMSetLinkage(value.val(), linkage) }
+    }
+    var isConstant: Bool {
+        get { return try! LLVMIsConstant(value.val()) != 0 }
+        set { try! LLVMSetGlobalConstant(value.val(), newValue ? 1 : 0) }
+    }
+    
+    var type: LLVMType {
+        return value.type
+    }
+    
     private func dump() { value.dump() }
 }
 
@@ -469,6 +525,8 @@ struct LLVMFunction : Dumpable {
         get { return function.name }
         set { function.name = newValue }
     }
+    
+    var type: LLVMType { return function.type }
     
     func getParam(index: Int) throws -> LLVMValue {
         guard let function = try? function.val() else { throw error(NullLLVMRef()) }

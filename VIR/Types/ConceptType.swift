@@ -14,10 +14,10 @@ struct ConceptType : StorageType {
 
 extension ConceptType {
     
-    func lowerType(module: Module) -> LLVMTypeRef {
+    func lowerType(module: Module) -> LLVMType {
         return StructType.withTypes([
-            BuiltinType.array(el: BuiltinType.int(size: 32), size: UInt32(requiredProperties.count)), // prop offset list
-            BuiltinType.array(el: BuiltinType.opaquePointer, size: UInt32(requiredFunctions.count)), // method witness list
+            BuiltinType.array(el: BuiltinType.int(size: 32), size: requiredProperties.count), // prop offset list
+            BuiltinType.array(el: BuiltinType.opaquePointer, size: requiredFunctions.count), // method witness list
             BuiltinType.opaquePointer // wrapped object
             ]).lowerType(module)
     }

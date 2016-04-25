@@ -281,7 +281,7 @@ extension ArrayExpr : ExprTypeProvider {
         self.elType = elementType
         
         // assign array type to self and return
-        let t = BuiltinType.array(el: elementType, size: UInt32(arr.count))
+        let t = BuiltinType.array(el: elementType, size: arr.count)
         self.type = t
         return t
     }

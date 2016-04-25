@@ -8,7 +8,7 @@
 
 extension AllocObjectInst : VIRLower {
     func virLower(IGF: IRGenFunction) throws -> LLVMValue {
-        let size = LLVMValue.constInt(storedType.size(module), size: 32)
+        let size = LLVMValue.constInt(storedType.size(module: module), size: 32)
         
         let ref = module.getOrAddRuntimeFunction(named: "vist_allocObject", IGF: IGF)
         return try IGF.builder.buildCall(ref,

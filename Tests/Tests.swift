@@ -22,8 +22,11 @@ protocol VistTest: class {
 extension VistTest {
     var testDir: String { return "\(SOURCE_ROOT)/Tests/TestCases" }
     var stdlibDir: String { return "\(SOURCE_ROOT)/Vist/stdLib" }
-    var runtimeDir: String { return "\(SOURCE_ROOT)/Vist/Runtime" }
+    var runtimeDir: String { return "\(SOURCE_ROOT)/Vist/runtime" }
     var virDir: String { return "\(SOURCE_ROOT)/Vist/VIR" }
+    
+    var libDir: String { return "/usr/local/lib" }
+    var binDir: String { return "/usr/local/bin" }
 }
 
 /// Test the compilation and output of code samples
@@ -59,12 +62,7 @@ final class ErrorTests : XCTestCase, VistTest {
 
 
 private func deleteFile(name: String, inDirectory direc: String) {
-    let t = NSTask()
-    t.currentDirectoryPath = direc
-    t.launchPath = "/bin/rm"
-    t.arguments = [name]
-    t.launch()
-    t.waitUntilExit()
+    _ = try? NSFileManager.defaultManager().removeItemAtPath(direc + "/" + name)
 }
 
 
@@ -85,8 +83,8 @@ extension OutputTests {
     func testControlFlow() {
         let file = "Control.vist"
         do {
-            try compileWithOptions(["-Ohigh", "-disable-stdlib-inline¯", file], inDirectory: testDir, out: pipe)
-//            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
+            try compileWithOptions(["-Ohigh", "-disable-stdlib-inline", file], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
@@ -99,7 +97,7 @@ extension OutputTests {
     func testLoops() {
         let file = "Loops.vist"
         do {
-            try compileWithOptions(["-Ohigh", "-disable-stdlib-inline¯", file], inDirectory: testDir, out: pipe)
+            try compileWithOptions(["-Ohigh", "-disable-stdlib-inline", file], inDirectory: testDir, out: pipe)
 //            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
         }
         catch {
@@ -113,7 +111,7 @@ extension OutputTests {
     func testType() {
         let file = "Type.vist"
         do {
-            try compileWithOptions(["-Ohigh", "-disable-stdlib-inline¯", file], inDirectory: testDir, out: pipe)
+            try compileWithOptions(["-Ohigh", "-disable-stdlib-inline", file], inDirectory: testDir, out: pipe)
             XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
         }
         catch {
@@ -127,7 +125,7 @@ extension OutputTests {
     func testIntegerOps() {
         let file = "IntegerOps.vist"
         do {
-            try compileWithOptions(["-Ohigh", "-disable-stdlib-inline¯", file], inDirectory: testDir, out: pipe)
+            try compileWithOptions(["-Ohigh", "-disable-stdlib-inline", file], inDirectory: testDir, out: pipe)
             XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
         }
         catch {
@@ -141,7 +139,7 @@ extension OutputTests {
     func testFunctions() {
         let file = "Function.vist"
         do {
-            try compileWithOptions(["-Ohigh", "-disable-stdlib-inline¯", file], inDirectory: testDir, out: pipe)
+            try compileWithOptions(["-Ohigh", "-disable-stdlib-inline", file], inDirectory: testDir, out: pipe)
             XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
         }
         catch {
@@ -156,7 +154,7 @@ extension OutputTests {
     func testExistential() {
         let file = "Existential.vist"
         do {
-            try compileWithOptions(["-Ohigh", "-disable-stdlib-inline¯", file], inDirectory: testDir, out: pipe)
+            try compileWithOptions(["-Ohigh", "-disable-stdlib-inline", file], inDirectory: testDir, out: pipe)
             XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
         }
         catch {
@@ -168,7 +166,7 @@ extension OutputTests {
     func testExistential2() {
         let file = "Existential.vist"
         do {
-            try compileWithOptions(["-Ohigh", "-disable-stdlib-inline¯", file], inDirectory: testDir, out: pipe)
+            try compileWithOptions(["-Ohigh", "-disable-stdlib-inline", file], inDirectory: testDir, out: pipe)
             XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
         }
         catch {
@@ -181,7 +179,7 @@ extension OutputTests {
     func testTuple() {
         let file = "Tuple.vist"
         do {
-            try compileWithOptions(["-Ohigh", "-disable-stdlib-inline¯", file], inDirectory: testDir, out: pipe)
+            try compileWithOptions(["-Ohigh", "-disable-stdlib-inline", file], inDirectory: testDir, out: pipe)
             XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
         }
         catch {
@@ -193,7 +191,7 @@ extension OutputTests {
     func testString() {
         let file = "String.vist"
         do {
-            try compileWithOptions(["-Ohigh", "-disable-stdlib-inline¯", file], inDirectory: testDir, out: pipe)
+            try compileWithOptions(["-Ohigh", "-disable-stdlib-inline", file], inDirectory: testDir, out: pipe)
             XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
         }
         catch {
@@ -218,7 +216,7 @@ extension RuntimePerformanceTests {
         
         let fileName = "LoopPerf"
         do {
-            try compileWithOptions(["-build-only", "-Ohigh", "-disable-stdlib-inline¯", "\(fileName).vist"], inDirectory: testDir)
+            try compileWithOptions(["-build-only", "-Ohigh", "\(fileName).vist"], inDirectory: testDir)
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
@@ -245,7 +243,7 @@ extension RuntimePerformanceTests {
         
         let fileName = "FunctionPerf"
         do {
-            try compileWithOptions([ "-build-only", "-Ohigh", "-disable-stdlib-inline¯", "\(fileName).vist"], inDirectory: testDir)
+            try compileWithOptions([ "-build-only", "-Ohigh", "-disable-stdlib-inline", "\(fileName).vist"], inDirectory: testDir)
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
@@ -275,11 +273,10 @@ extension CoreTests {
     /// Runs a compilation of the standard library
     func testStdLibCompile() {
         deleteFile("stdlib.bc", inDirectory: stdlibDir)
-        deleteFile("stdlib.o", inDirectory: stdlibDir)
         do {
             try compileWithOptions(["-build-stdlib"], inDirectory: stdlibDir)
             XCTAssertTrue(NSFileManager.defaultManager().fileExistsAtPath("\(stdlibDir)/stdlib.bc")) // file used by optimiser
-            XCTAssertTrue(NSFileManager.defaultManager().fileExistsAtPath("\(stdlibDir)/stdlib.o")) // file used by linker
+            XCTAssertTrue(NSFileManager.defaultManager().fileExistsAtPath("\(libDir)/libvist.dylib")) // file used by linker
         }
         catch {
             XCTFail("Stdlib build failed with error:\n\(error)\n\n")
@@ -307,7 +304,7 @@ extension ErrorTests {
         let file = "VariableError.vist"
         
         do {
-            try compileWithOptions(["-Ohigh", "-disable-stdlib-inline¯", file], inDirectory: testDir)
+            try compileWithOptions(["-Ohigh", "-disable-stdlib-inline", file], inDirectory: testDir)
             XCTFail("Errors not caught")
         }
         catch {
@@ -337,7 +334,7 @@ extension ErrorTests {
         let file = "TypeError.vist"
         
         do {
-            try compileWithOptions(["-Ohigh", "-disable-stdlib-inline¯", file], inDirectory: testDir)
+            try compileWithOptions(["-Ohigh", "-disable-stdlib-inline", file], inDirectory: testDir)
             XCTFail("Errors not caught")
         }
         catch {

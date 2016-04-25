@@ -62,19 +62,19 @@ extension FunctionType {
     }
     var isGeneratorFunction: Bool { return yieldType != nil }
     
-    func lowerType(module: Module) -> LLVMTypeRef {
+    func lowerType(module: Module) -> LLVMType {
         
         let ret: LLVMTypeRef
-        if case _ as FunctionType = returns {
-            ret = BuiltinType.pointer(to: returns).lowerType(module)
+        if returns is FunctionType {
+            ret = BuiltinType.pointer(to: returns).lowerType(module).type
         }
         else {
-            ret = returns.lowerType(module)
+            ret = returns.lowerType(module).type
         }
         
-        var members = nonVoid.map {$0.lowerType(module)}
+        var members = nonVoid.map {$0.lowerType(module).type}
         
-        return LLVMFunctionType(ret, &members, UInt32(members.count), false)
+        return LLVMType(ref: LLVMFunctionType(ret, &members, UInt32(members.count), false))
     }
     
     /// Replaces the function's memeber types with the module's typealias
