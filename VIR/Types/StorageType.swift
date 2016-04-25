@@ -1,5 +1,5 @@
 //
-//  StorageType.swift
+//  NominalType.swift
 //  Vist
 //
 //  Created by Josef Willsher on 16/02/2016.
@@ -11,7 +11,7 @@ typealias StructMethod = (name: String, type: FunctionType, mutating: Bool)
 
 /// A type which can have elements looked up by name,
 /// for example structs and existential protocols
-protocol StorageType : Type {
+protocol NominalType : class, Type {
     /// User visible type name
     var name: String { get }
     
@@ -24,7 +24,7 @@ protocol StorageType : Type {
     var heapAllocated: Bool { get }
 }
 
-extension StorageType {
+extension NominalType {
         
     func indexOfMemberNamed(name: String) throws -> Int {
         guard let i = members.indexOf({ $0.name == name }) else {
@@ -34,8 +34,11 @@ extension StorageType {
     }
     
     func indexOf(methodNamed name: String, argTypes: [Type]) throws -> Int {
-        guard let i = methods.indexOf({ $0.name == name && $0.type.params.elementsEqual(argTypes, isEquivalent: ==)})
-            else { throw semaError(.noPropertyNamed(type: self.name, property: name)) }
+        guard let i = methods.indexOf({
+            $0.name == name && $0.type.params.elementsEqual(argTypes, isEquivalent: ==)
+        }) else {
+            throw semaError(.noPropertyNamed(type: self.name, property: name))
+        }
         return i
     }
     

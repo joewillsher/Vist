@@ -5,9 +5,9 @@ target triple = "x86_64-apple-macosx10.11.0"
 %struct.__sFILE = type { i8*, i32, i32, i16, i16, %struct.__sbuf, i32, i8*, i32 (i8*)*, i32 (i8*, i8*, i32)*, i64 (i8*, i64, i32)*, i32 (i8*, i8*, i32)*, %struct.__sbuf, %struct.__sFILEX*, i32, [3 x i8], [1 x i8], %struct.__sbuf, i32, i64 }
 %struct.__sFILEX = type opaque
 %struct.__sbuf = type { i8*, i32 }
-%String = type { i8*, %Int, %Int }
-%Int = type { i64 }
 %Double = type { double }
+%Int = type { i64 }
+%String = type { i8*, %Int, %Int }
 %Bool = type { i1 }
 %Range = type { %Int, %Int }
 %Int32 = type { i32 }
@@ -25,7 +25,6 @@ target triple = "x86_64-apple-macosx10.11.0"
 @.str8 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
 @.str9 = private unnamed_addr constant [6 x i8] c"true\0A\00", align 1
 @.str10 = private unnamed_addr constant [7 x i8] c"false\0A\00", align 1
-@str.globl = private unnamed_addr global %String zeroinitializer
 
 ; Function Attrs: alwaysinline nounwind ssp uwtable
 define void @_Z17incrementRefCountP16RefcountedObject(%struct.__sbuf* %object) #0 {
@@ -559,12 +558,9 @@ entry:
 }
 
 ; Function Attrs: alwaysinline
-define void @print_tString.loop_thunk(%Int %i) #11 {
+define void @print_tString.loop_thunk(i8 %c) #11 {
 entry:
-  %0 = load %String* @str.globl
-  %1 = call i8* @codeUnitAtIndex_mStringI(%String %0, %Int %i)
-  %2 = load i8* %1
-  call void @vist-Ucshim-Uputchar_ti8(i8 %2)
+  call void @vist-Ucshim-Uputchar_ti8(i8 %c)
   ret void
 }
 
@@ -728,10 +724,7 @@ fail.0:                                           ; preds = %entry
   br label %else.1
 
 else.1:                                           ; preds = %fail.0
-  store %String %str, %String* @str.globl
-  %5 = call %Int @bufferCapacity_mString(%String %str)
-  %6 = call %Range @-D-D-L_tII(%Int zeroinitializer, %Int %5)
-  call void @generate_mRPtI(%Range %6, void (%Int)* @print_tString.loop_thunk)
+  call void @generate_mStringPti8(%String %str, void (i8)* @print_tString.loop_thunk)
   ret void
 }
 
@@ -785,6 +778,33 @@ entry:
   %2 = xor i64 %0, %1
   %3 = call %Int @Int_ti64(i64 %2)
   ret %Int %3
+}
+
+define void @generate_mStringPti8(%String %self, void (i8)* %loop_thunk) {
+entry:
+  %0 = alloca %Int
+  store %Int zeroinitializer, %Int* %0
+  br label %cond
+
+cond:                                             ; preds = %loop, %entry
+  %1 = load %Int* %0
+  %2 = call %Int @bufferCapacity_mString(%String %self)
+  %3 = call %Bool @-L_tII(%Int %1, %Int %2)
+  %cond1 = extractvalue %Bool %3, 0
+  br i1 %cond1, label %loop, label %loop.exit
+
+loop:                                             ; preds = %cond
+  %4 = load %Int* %0
+  %5 = call i8* @codeUnitAtIndex_mStringI(%String %self, %Int %4)
+  %6 = load i8* %5
+  call void %loop_thunk(i8 %6)
+  %7 = load %Int* %0
+  %8 = call %Int @-P_tII(%Int %7, %Int { i64 1 })
+  store %Int %8, %Int* %0
+  br label %cond
+
+loop.exit:                                        ; preds = %cond
+  ret void
 }
 
 ; Function Attrs: alwaysinline

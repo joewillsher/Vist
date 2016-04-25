@@ -42,7 +42,7 @@ final class Scope {
         if let v = variables[name] { return v }
         
         let foundInParent = try parent?.variableNamed(name)
-        if let f = foundInParent, var handler = captureHandler {
+        if let f = foundInParent, let handler = captureHandler {
             // if we have a capture handler, infor that it 
             // captures this accessor
             let accessor = try handler.addCapture(f, scope: self, name: name)

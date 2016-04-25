@@ -91,7 +91,7 @@ extension ForInLoopStmt: StmtTypeProvider {
         let generator = try self.generator.typeForNode(scope)
         
         // check its a generator, and the return type is the loop variable type
-        guard case let storage as StorageType = generator, let generatorFunctionType = storage.generatorFunction(), let yieldType = generatorFunctionType.yieldType
+        guard case let storage as NominalType = generator, let generatorFunctionType = storage.generatorFunction(), let yieldType = generatorFunctionType.yieldType
             else { throw semaError(.notGenerator(generator)) }
         
         // add bound name to scopes

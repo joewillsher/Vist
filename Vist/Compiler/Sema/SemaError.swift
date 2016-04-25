@@ -24,10 +24,12 @@ enum SemaError: VistError {
     case noPropertyNamed(type: String, property: String), cannotStoreInParameterStruct(propertyName: String), notStructType(Type?), notTupleType(Type?)
     
     // not user visible
-    case noStdBoolType, noStdIntType, notTypeProvider, noTypeForStruct, noTypeForTuple
+    case noStdBoolType, noStdIntType, notTypeProvider, noTypeForStruct, noTypeForTuple, noTypeForFunction(name: String)
     case structPropertyNotTyped(type: String, property: String), structMethodNotTyped(type: String, methodName: String), initialiserNotAssociatedWithType
     case typeNotFound, paramsNotTyped, integerNotTyped, boolNotTyped
     case noMemberwiseInit
+    
+    case useExplicitSelf(methodName: String)
     
     case invalidYield, invalidReturn, notGenerator(Type?)
     
@@ -97,6 +99,11 @@ enum SemaError: VistError {
             return "Cannot return from a generator function"
         case .notGenerator(let ty):
             return "\(ty.map { "'\($0)' is not a generator type. "  })You can only loop over generator types"
+        case .noTypeForFunction(let name):
+            return "Function '\(name)' was not typed"
+            
+        case .useExplicitSelf(let name):
+            return "Use explicit self when calling method '\(name)' -- this is a bug"
             
             // not user visible
         case .noStdBoolType: return "Stdlib did not provide a Bool type"

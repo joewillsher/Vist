@@ -6,10 +6,16 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-struct ConceptType : StorageType {
+final class ConceptType : NominalType {
     let name: String
     let requiredFunctions: [StructMethod], requiredProperties: [StructMember]
     let heapAllocated = false
+    
+    init(name: String, requiredFunctions: [StructMethod], requiredProperties: [StructMember]) {
+        self.name = name
+        self.requiredFunctions = requiredFunctions
+        self.requiredProperties = requiredProperties
+    }
 }
 
 extension ConceptType {

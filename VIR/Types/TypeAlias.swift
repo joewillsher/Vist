@@ -12,15 +12,15 @@
 ///
 /// `TypeAlias` simply wraps `targetType` and
 final class TypeAlias : Type {
-    let name: String, targetType: StorageType
+    let name: String, targetType: NominalType
     
-    init(name: String, targetType: StorageType) {
+    init(name: String, targetType: NominalType) {
         self.name = name
         self.targetType = targetType
     }
 }
 
-extension TypeAlias : StorageType {
+extension TypeAlias : NominalType {
     var members: [StructMember] { return targetType.members }
     var methods: [StructMethod] { return targetType.methods }
     var irName: String { return targetType.irName }

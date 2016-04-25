@@ -1,74 +1,35 @@
 
-type %Bool = { %Builtin.Bool }
+type %String = { %Builtin.OpaquePointer, %Int, %Int }
 type %Int = { %Builtin.Int64 }
-type %Range = { %Int, %Int }
 
 
-
-func @-D-D-D_tII : &thin (%Int, %Int) -> %Range
-
-func @-E-E_tII : &thin (%Int, %Int) -> %Bool
 
 func @print_tI : &thin (%Int) -> %Builtin.Void
 
-func @generate_mRPtI : &method (%Range, %*tI) -> %Builtin.Void
-
-func @main.loop_thunk : &thin (%Int) -> %Builtin.Void {
-$entry(%i: %Int):
-  %0 = int_literal 3  	// user: %1
-  %1 = struct %I (%0: %Builtin.Int64)  	// user: %2
-  %2 = call @-C_tII (%i: %Int, %1: %Int)  	// user: %5
-  %3 = int_literal 0  	// user: %4
-  %4 = struct %I (%3: %Builtin.Int64)  	// user: %5
-  %5 = call @-E-E_tII (%2: %Int, %4: %Int)  	// user: %6
-  %6 = struct_extract %5: %Bool, #value  	// user: nil
-  break %6: %Builtin.Bool, $if.0, $fail.0
-
-$if.0:			// preds: entry
-  %8 = int_literal 3  	// user: %9
-  %9 = struct %I (%8: %Builtin.Int64)  	// user: %10
-  %10 = call @-A_tII (%i: %Int, %9: %Int)  	// user: %11
-  %11 = call @print_tI (%10: %Int) 
-  break $exit
-
-$fail.0:			// preds: entry
-  %13 = int_literal 1000  	// user: %14
-  %14 = struct %I (%13: %Builtin.Int64)  	// user: %15
-  %15 = call @-C_tII (%i: %Int, %14: %Int)  	// user: %18
-  %16 = int_literal 0  	// user: %17
-  %17 = struct %I (%16: %Builtin.Int64)  	// user: %18
-  %18 = call @-E-E_tII (%15: %Int, %17: %Int)  	// user: %19
-  %19 = struct_extract %18: %Bool, #value  	// user: nil
-  break %19: %Builtin.Bool, $if.1, $fail.1
-
-$if.1:			// preds: fail.0
-  %21 = int_literal 1000000  	// user: %22
-  %22 = struct %I (%21: %Builtin.Int64)  	// user: %23
-  %23 = call @print_tI (%22: %Int) 
-  break $exit
-
-$fail.1:			// preds: fail.0
-  break $else.2
-
-$else.2:			// preds: fail.1
-  %26 = call @print_tI (%i: %Int) 
-  break $exit
-
-$exit:			// preds: if.0, if.1, else.2
-  return ()
-}
-
-func @-C_tII : &thin (%Int, %Int) -> %Int
+func @print_tString : &thin (%String) -> %Builtin.Void
 
 func @main : &thin () -> %Builtin.Void {
 $entry:
-  %0 = int_literal 0  	// user: %1
-  %1 = struct %I (%0: %Builtin.Int64)  	// user: %4
-  %2 = int_literal 5000  	// user: %3
-  %3 = struct %I (%2: %Builtin.Int64)  	// user: %4
-  %4 = call @-D-D-D_tII (%1: %Int, %3: %Int)  	// user: %5
-  %5 = call @generate_mRPtI (%4: %Range, %main.loop_thunk: %*tI) 
+  %0 = int_literal 1  	// user: %1
+  %1 = struct %I (%0: %Builtin.Int64)  	// user: %2
+  %2 = call @foo_tI (%1: %Int) 
+  %3 = string_literal utf8 "memes"  	// user: %4
+  %size = int_literal 6  	// user: %4
+  %isUTF8 = bool_literal true  	// user: %4
+  %4 = call @String_topi64b (%3: %Builtin.OpaquePointer, %size: %Builtin.Int64, %isUTF8: %Builtin.Bool)  	// user: %5
+  %5 = call @print_tString (%4: %String) 
+  %6 = string_literal utf16 "😎😗memes"  	// user: %7
+  %size = int_literal 14  	// user: %7
+  %isUTF8 = bool_literal false  	// user: %7
+  %7 = call @String_topi64b (%6: %Builtin.OpaquePointer, %size: %Builtin.Int64, %isUTF8: %Builtin.Bool)  	// user: %8
+  %8 = call @print_tString (%7: %String) 
   return ()
 }
 
-func @-A_tII : &thin (%Int, %Int) -> %Int
+func @foo_tI : &thin (%Int) -> %Builtin.Void {
+$entry(%$0: %Int):
+  %0 = call @print_tI (%$0: %Int) 
+  return ()
+}
+
+func @String_topi64b : &thin (%Builtin.OpaquePointer, %Builtin.Int64, %Builtin.Bool) -> %String

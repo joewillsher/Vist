@@ -390,7 +390,7 @@ final class MethodCallExpr: ChainableExpr, FunctionCall {
     
     var argArr: [Expr] { return args.elements }
     
-    var structType: StorageType? = nil
+    var structType: NominalType? = nil
     var fnType: FunctionType? = nil
     var _type: Type? = nil
 }

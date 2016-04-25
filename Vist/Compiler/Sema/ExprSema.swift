@@ -137,7 +137,7 @@ extension ChainableExpr {
             return (type: type, parentMutable: nil, mutable: mutable)
             
         case let propertyLookup as PropertyLookupExpr:
-            guard case let (objectType as StorageType, parentMutable, objectMutable) = try propertyLookup.object.recursiveType(scope) else {
+            guard case let (objectType as NominalType, parentMutable, objectMutable) = try propertyLookup.object.recursiveType(scope) else {
                 throw semaError(.notStructType(propertyLookup._type!))
             }
             return (
@@ -157,7 +157,7 @@ extension ChainableExpr {
             )
 
         case let intLiteral as IntegerLiteral:
-            guard case let t as StorageType = intLiteral.type else { throw semaError(.noStdIntType, userVisible: false) }
+            guard case let t as NominalType = intLiteral.type else { throw semaError(.noStdIntType, userVisible: false) }
             return (type: t, parentMutable: nil, mutable: false)
             
 //        case let tuple as TupleExpr:

@@ -107,7 +107,7 @@ extension BuiltinType {
         return "%\(explicitName)"
     }
 }
-extension StorageType {
+extension NominalType {
     var vir: String {
         return members.map { $0.type }.virTypeStruct()
     }

@@ -165,7 +165,7 @@ extension FunctionType {
     }
     
     /// Returns a version of this type, but with a defined parent
-    func withParent(parent: StorageType, mutating: Bool) -> FunctionType {
+    func withParent(parent: NominalType, mutating: Bool) -> FunctionType {
         return FunctionType(params: params, returns: returns, metadata: metadata, callingConvention: .method(selfType: parent, mutating: mutating), yieldType: yieldType)
     }
     /// Returns a version of this type, but with a parent of type i8 (so ptrs to it are i8*)

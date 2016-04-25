@@ -4,6 +4,7 @@
 // types
 // ----------------------------------------------------
 
+
 type Int {
     var value: Builtin.Int64
     
@@ -219,7 +220,8 @@ type Range {
         end = val.end
     }
     
-    func generate::->Int = {
+    /// A generator -- yields each element in the range
+    func generate:: -> Int = {
         var i = start
         while (i < end) {
             yield i
@@ -267,20 +269,29 @@ type String {
     
     /// Return a pointer to the code unit `index` from `base`
     /// temporary substitute until I have StringCore subscripting
-    func codeUnitAtIndex::Int->Builtin.OpaquePointer = (index) do
+    func codeUnitAtIndex:: Int -> Builtin.OpaquePointer = (index) do
         return base + index
+    
+    /// A genrator -- yields each code unit
+    func generate:: -> Builtin.Int8 = {
+        var i = 0
+        while i < self.bufferCapacity () {
+            yield Builtin.opaque_load (self.codeUnitAtIndex i)
+            i = i + 1
+        }
+    }
 }
 
 
 @public @inline func print :: String = (str) {
     if str.isUTF8Encoded () {
-        /// if its all UTF-8 we can just fwrite the buffer
+        // if its all UTF-8 we can just fwrite the buffer
         vist_cshim_write str.base str.length.value
         return ()
     } else {
         // otherwise we step through, char by char, and putchar it
-        for i in 0 ..< str.bufferCapacity () do
-            vist_cshim_putchar (Builtin.opaque_load (str.codeUnitAtIndex i))
+        for c in str do
+            vist_cshim_putchar c
         return ()
     }
     // there's a CFG bug where implict `return ()` are only added to the exit point

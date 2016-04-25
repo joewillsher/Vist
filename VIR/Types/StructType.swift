@@ -7,7 +7,7 @@
 //
 
 
-struct StructType : StorageType {
+final class StructType : NominalType {
     let name: String
     let members: [StructMember]
     var methods: [StructMethod]

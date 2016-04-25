@@ -7,13 +7,19 @@
 //
 
 
-struct GenericType : StorageType {
+final class GenericType : NominalType {
     
     let name: String
     /// Concepts this generic type implements
     let concepts: [ConceptType] 
     let parentName: String
     let heapAllocated = false
+    
+    init(name: String, concepts: [ConceptType], parentName: String) {
+        self.name = name
+        self.concepts = concepts
+        self.parentName = parentName
+    }
     
     static func fromConstraint(inScope scope: SemaScope) -> (constraint: ConstrainedType) throws -> GenericType {
         return { ty in

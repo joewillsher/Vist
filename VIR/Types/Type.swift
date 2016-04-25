@@ -63,18 +63,18 @@ func != (lhs: Type?, rhs: Type) -> Bool {
 @warn_unused_result
 func == (lhs: Type, rhs: Type) -> Bool {
     switch (lhs, rhs) {
-    case (let l as StorageType, let r as ConceptType):
+    case (let l as NominalType, let r as ConceptType):
         return l.models(r)
-    case (let l as ConceptType, let r as StorageType):
+    case (let l as ConceptType, let r as NominalType):
         return r.models(l)
-    case (let l as StorageType, let r as GenericType):
+    case (let l as NominalType, let r as GenericType):
         return l.validSubstitutionFor(r)
-    case (let l as GenericType, let r as StorageType):
+    case (let l as GenericType, let r as NominalType):
         return r.validSubstitutionFor(l)
         
     case let (l as FunctionType, r as FunctionType):
         return r == l
-    case (let lhs as StorageType, let rhs as StorageType):
+    case (let lhs as NominalType, let rhs as NominalType):
         return lhs.name == rhs.name
     case let (l as BuiltinType, r as BuiltinType):
         return l == r

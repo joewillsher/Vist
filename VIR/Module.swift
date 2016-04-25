@@ -36,7 +36,7 @@ extension Module {
     }
     
     /// Insert a type to the module
-    func insert(targetType: StorageType, name: String) {
+    func insert(targetType: NominalType, name: String) {
         typeList.insert(TypeAlias(name: name, targetType: targetType))
     }
     
@@ -47,7 +47,7 @@ extension Module {
     
     /// Returns the module's definition of `type`
     func getOrInsert(type: Type) -> TypeAlias {
-        if case let t as StorageType = type, let found = typeList.find({$0.targetType.name == t.name}) {
+        if case let t as NominalType = type, let found = typeList.find({$0.targetType.name == t.name}) {
             return found
         }
         else if case let alias as TypeAlias = type, let found = typeList.find(alias) {

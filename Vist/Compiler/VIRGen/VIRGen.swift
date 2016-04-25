@@ -170,7 +170,9 @@ extension VariableDecl : ValueEmitter {
 extension FunctionCall/*: VIRGenerator*/ {
     
     func argOperands(module module: Module, scope: Scope) throws -> [Operand] {
-        guard case let fnType as FunctionType = fnType?.usingTypesIn(module) else { throw VIRError.paramsNotTyped }
+        guard case let fnType as FunctionType = fnType?.usingTypesIn(module) else {
+            throw VIRError.paramsNotTyped
+        }
         
         return try zip(argArr, fnType.params).map { rawArg, paramType in
             let arg = try rawArg.emitRValue(module: module, scope: scope)
@@ -192,7 +194,10 @@ extension FunctionCall/*: VIRGenerator*/ {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         
-        guard case let fnType as FunctionType = fnType?.usingTypesIn(module) else { throw VIRError.paramsNotTyped }
+        guard case let fnType as FunctionType = fnType?.usingTypesIn(module) else {
+            print(name, mangledName, self.fnType, self.dynamicType)
+            throw VIRError.paramsNotTyped
+        }
         let args = try argOperands(module: module, scope: scope)
 
         if let stdlib = try module.getOrInsertStdLibFunction(named: name, argTypes: fnType.params) {
@@ -210,7 +215,9 @@ extension FunctionCall/*: VIRGenerator*/ {
         else if let function = module.functionNamed(mangledName) {
             return try module.builder.buildFunctionCall(function, args: args).accessor()
         }
-        else { fatalError("No function \(name)") }
+        else {
+            fatalError("No function name=\(name), mangledName=\(mangledName)")
+        }
     }
 }
 
@@ -249,10 +256,9 @@ extension FuncDecl : StmtEmitter {
             // We need self to be passed by ref as a `RefParam`
             let selfParam = function.params![0]
             let selfVar = try selfParam.accessor()
-            try selfVar.retain()
             fnScope.insert(selfVar, name: "self") // add `self`
             
-            if case let type as StorageType = selfType {
+            if case let type as NominalType = selfType {
                 
                 switch selfVar {
                 // if it is a ref self the self accessors are lazily calculated struct GEP
@@ -573,19 +579,6 @@ extension YieldStmt : StmtEmitter {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 extension WhileLoopStmt: StmtEmitter {
     
     func emitStmt(module module: Module, scope: Scope) throws {
@@ -737,13 +730,10 @@ extension MethodCallExpr : ValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         
-        // TODO: guarantees about mutating methods only being called on mutable
-        //       (and therefore reference-backed) objects. Maybe make non
-        //       mutating methods take `self` as a value parameter.
-        
         // build self and args' values
         let args = try argOperands(module: module, scope: scope)
         let selfVar = try object.emitRValue(module: module, scope: scope)
+        try selfVar.retain()
         
         guard let fnType = fnType else { fatalError() }
         
@@ -773,8 +763,8 @@ extension MethodCallExpr : ValueEmitter {
             let unboxedSelf = try module.builder.buildExistentialUnbox(selfRef, irName: "unboxed")
             // call the method by applying the opaque ptr to self as the first param
             return try module.builder.buildFunctionApply(PtrOperand(fn),
-                                                        returnType: fnType.returns,
-                                                        args: [PtrOperand(unboxedSelf)] + args).accessor()
+                                                         returnType: fnType.returns,
+                                                         args: [PtrOperand(unboxedSelf)] + args).accessor()
         default:
             fatalError()
         }

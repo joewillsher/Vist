@@ -12,7 +12,7 @@ final class SemaScope {
     
     private var variables: [String: Variable]
     private var functions: [String: FunctionType]
-    private var types: [String: StorageType]
+    private var types: [String: NominalType]
     var concepts: [String: ConceptType]
     let isStdLib: Bool
     var returnType: Type?, isYield: Bool
@@ -61,11 +61,8 @@ final class SemaScope {
         else if let runtime = Runtime.function(name: name, argTypes: argTypes) where isStdLib {
             return runtime
         }
-        else if let localFunctionType = functions[raw: name, paramTypes: argTypes] {
-            return (name.mangle(localFunctionType.params), localFunctionType)
-        }
         else if let f = functions[raw: name, paramTypes: argTypes] {
-            return (name.mangle(f.params), f)
+            return (name.mangle(f), f)
         }
         else if let inParent = try parent?.function(name, argTypes: argTypes) {
             return inParent
@@ -80,7 +77,7 @@ final class SemaScope {
         functions[name.mangle(type)] = type
     }
     
-    subscript(type type: String) -> StorageType? {
+    subscript(type type: String) -> NominalType? {
         get {
             if let t = StdLib.type(name: type) where !isStdLib {
                 return t

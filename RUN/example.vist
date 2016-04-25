@@ -1,13 +1,23 @@
 
 
+func foo::Int = do print $0
+
+foo 1
+
+//
+//type Foo {
+//    
+//    func a:: -> Int = do return 1
+//    
+//    func b:: Int = do print (self.a ()) + $0
+//    
+//}
+//
+//let f = Foo ()
+//    
+//f.b 2
 
 
-for i in 0 ... 5000 do
-    if i % 3 == 0 do
-        print i * 3
-    else if i % 1000 == 0 do
-        print 1000000
-    else do
-        print i
-
+print "memes"
+print "😎😗memes"
 
