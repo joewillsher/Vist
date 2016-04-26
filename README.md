@@ -15,7 +15,7 @@ cd vist
 
 This downloads the LLVM libraries, builds the libvist standard library and runtime and installs the compiler. To use it call `vist` from the command line, use `-h` to see options.
 
-To develop in Xcode, go to ‘Edit Scheme’ (⌘<) and set the *arguments* to `-O -verbose -preserve example.vist` and under *Options* set the ‘Custom Working Directory’ to `$(SRCROOT)/RUN`.
+To develop in Xcode, go to ‘Edit Scheme’ (⌘<) and under *Options* set the ‘Custom Working Directory’ to the location of your test files, and under *arguments* include `-verbose -preserve` to log and save the compiler temp files.
 
 
 ##Architecture overview

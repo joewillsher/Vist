@@ -8,6 +8,7 @@
 
 import class Foundation.NSTask
 import class Foundation.NSPipe
+import class Foundation.NSFileManager
 import Foundation.NSString
 
 
@@ -140,17 +141,17 @@ func compileDocuments(
     let stdlibDirectory = "\(SOURCE_ROOT)/Vist/stdlib"
 
     var llvmModule = LLVMModuleCreateWithName(file)
-    if options.contains(.compileStdLib) {
-        importFile("Shims.c", directory: stdlibDirectory, into: &llvmModule)
+    if options.contains(.linkWithRuntime) {
+        importFile("shims.c", directory: stdlibDirectory, into: &llvmModule)
     }
     configModule(llvmModule)
     
     defer {
         // remove files
         if !options.contains(.preserveTempFiles) {
-            NSTask.execute(.rm,
-                           files: ["\(file).ll", "\(file)_.ll", "\(file).s", "\(file).vir", "\(file)_.vir"],
-                           cwd: currentDirectory)
+            for file in ["\(file).ll", "\(file)_.ll", "\(file).s", "\(file).vir", "\(file)_.vir"] {
+                _ = try? NSFileManager.defaultManager().removeItemAtPath("\(currentDirectory)/\(file)")
+            }
         }
     }
     
@@ -188,7 +189,6 @@ func compileDocuments(
     let libVistPath = "/usr/local/lib/libvist.dylib"
     let libVistRuntimePath = "/usr/local/lib/libvistruntime.dylib"
     
-//    /usr/local/Cellar/llvm/3.6.2/bin/clang-3.6 -o /usr/local/lib/libvist.dylib -dynamiclib Vist/stdlib/stdlib.bc
     if options.contains(.compileStdLib) {
         
         // .ll -> .bc
@@ -271,21 +271,7 @@ func runExecutable(
 func buildRuntime() {
     
     let runtimeDirectory = "\(SOURCE_ROOT)/Vist/runtime"
-    
     let libVistRuntimePath = "/usr/local/lib/libvistruntime.dylib"
-    
-//     // .cpp -> .ll
-//    NSTask.execute(.clang,
-//                   files: ["runtime.cpp"],
-//                   outputName: "runtime.bc",
-//                   cwd: runtimeDirectory,
-//                   args: "-O3", "-S", "-emit-llvm", "-std=c++14")
-//    
-//    // .ll -> .bc
-//    NSTask.execute(.assemble,
-//                   files: ["runtime.ll"],
-//                   outputName: "runtime.bc",
-//                   cwd: runtimeDirectory)
     
     // .cpp -> .dylib
     // to link against program

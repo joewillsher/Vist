@@ -1,5 +1,6 @@
 #!/bin/bash
 
 rm /usr/local/lib/libvist.dylib
+rm /usr/local/lib/libvistruntime.dylib
 rm /usr/local/bin/vist
 rm -rf /usr/local/cellar/llvm

@@ -183,7 +183,7 @@
 		D4A0003A1CCA812B00157D90 /* StmtGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A000381CCA812B00157D90 /* StmtGen.swift */; };
 		D4A0003C1CCA9BC300157D90 /* LLVMWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A0003B1CCA9BC300157D90 /* LLVMWrapper.swift */; };
 		D4A0003D1CCA9BC300157D90 /* LLVMWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A0003B1CCA9BC300157D90 /* LLVMWrapper.swift */; };
-		D4C0900F1CCFC931008B69F1 /* Shims.c in Sources */ = {isa = PBXBuildFile; fileRef = D4C0900E1CCFC931008B69F1 /* Shims.c */; };
+		D4C0900F1CCFC931008B69F1 /* shims.c in Sources */ = {isa = PBXBuildFile; fileRef = D4C0900E1CCFC931008B69F1 /* shims.c */; };
 		D4CB751D1CB4612100FA2D8C /* vist in Copy Files */ = {isa = PBXBuildFile; fileRef = D47FF07A1B812052003F9920 /* vist */; };
 		D4CF76771C8CD4A70058A8EC /* TupleInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF76761C8CD4A70058A8EC /* TupleInst.swift */; };
 		D4CF76781C8CD4A70058A8EC /* TupleInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF76761C8CD4A70058A8EC /* TupleInst.swift */; };
@@ -350,7 +350,7 @@
 		D4BBE4191C4157E7001B8934 /* runtime.bc */ = {isa = PBXFileReference; lastKnownFileType = text; name = runtime.bc; path = Runtime/runtime.bc; sourceTree = "<group>"; };
 		D4BBE41A1C4157E7001B8934 /* runtime.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = runtime.ll; path = Runtime/runtime.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
 		D4BCA8001C90ED470087A98D /* Editor.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Editor.xcodeproj; path = ../Editor/Editor.xcodeproj; sourceTree = "<group>"; };
-		D4C0900E1CCFC931008B69F1 /* Shims.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Shims.c; path = stdlib/Shims.c; sourceTree = "<group>"; };
+		D4C0900E1CCFC931008B69F1 /* shims.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = shims.c; path = stdlib/shims.c; sourceTree = "<group>"; };
 		D4CF76761C8CD4A70058A8EC /* TupleInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TupleInst.swift; path = Instructions/TupleInst.swift; sourceTree = "<group>"; };
 		D4CF767C1C8CF8490058A8EC /* Runtime.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Runtime.swift; path = Compiler/Sema/Expose/Runtime.swift; sourceTree = "<group>"; };
 		D4DB92771C866FF300718B78 /* example.vir */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vir; path = RUN/example.vir; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
@@ -522,7 +522,7 @@
 			isa = PBXGroup;
 			children = (
 				D4644BE51C40619800364B99 /* stdlib.vist */,
-				D4C0900E1CCFC931008B69F1 /* Shims.c */,
+				D4C0900E1CCFC931008B69F1 /* shims.c */,
 				D437F8001CA984860089F5DE /* stdlib_.vir */,
 				D437F8011CA984860089F5DE /* stdlib.vir */,
 				D43DF1EC1C5540AF0049EC2F /* stdlib_.ll */,
@@ -959,7 +959,7 @@
 				D43B3A901C8A12D70039FB2E /* LinkAST.swift in Sources */,
 				D43B39BC1C8A0F140039FB2E /* Type.swift in Sources */,
 				D4326E3E1CA6F0140016E595 /* ExistentialInst.swift in Sources */,
-				D4C0900F1CCFC931008B69F1 /* Shims.c in Sources */,
+				D4C0900F1CCFC931008B69F1 /* shims.c in Sources */,
 				D4A0001D1CC7C46500157D90 /* GlobalInst.swift in Sources */,
 				D4CF76771C8CD4A70058A8EC /* TupleInst.swift in Sources */,
 				D43B3A3E1C8A10C80039FB2E /* Mangle.swift in Sources */,
