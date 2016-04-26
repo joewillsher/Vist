@@ -5,3 +5,13 @@ Vist/Compiler/Include/Utils.h
 
 
 Vist.xcodeproj/xcuserdata/JoeWillsher.xcuserdatad/xcdebugger/Breakpoints_v2.xcbkptlist
+
+*.ll
+
+*.vir
+
+*.s
+
+*.bc
+
+*.ll

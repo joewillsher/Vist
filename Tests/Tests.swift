@@ -275,8 +275,9 @@ extension CoreTests {
         deleteFile("stdlib.bc", inDirectory: stdlibDir)
         do {
             try compileWithOptions(["-build-stdlib"], inDirectory: stdlibDir)
-            XCTAssertTrue(NSFileManager.defaultManager().fileExistsAtPath("\(stdlibDir)/stdlib.bc")) // file used by optimiser
-            XCTAssertTrue(NSFileManager.defaultManager().fileExistsAtPath("\(libDir)/libvist.dylib")) // file used by linker
+            XCTAssertTrue(NSFileManager.defaultManager().fileExistsAtPath("\(stdlibDir)/stdlib.bc")) // bc file used by optimiser
+            XCTAssertTrue(NSFileManager.defaultManager().fileExistsAtPath("\(libDir)/libvist.dylib")) // stdlib used by linker
+            XCTAssertTrue(NSFileManager.defaultManager().fileExistsAtPath("\(libDir)/libvistruntime.dylib")) // the vist runtime
         }
         catch {
             XCTFail("Stdlib build failed with error:\n\(error)\n\n")

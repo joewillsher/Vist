@@ -128,7 +128,7 @@ extension LLVMBuilder {
         )
     }
     func buildInsertValue(value val: LLVMValue, in aggr: LLVMValue, index: Int, name: String? = nil) throws -> LLVMValue {
-        return try LLVMValue(ref:
+        return try wrap(
             LLVMBuildInsertValue(builder, aggr.val(), val.val(), UInt32(index), name ?? "")
         )
     }

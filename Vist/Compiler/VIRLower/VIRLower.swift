@@ -175,7 +175,7 @@ extension Function : VIRLower {
         
         if let b = b { IGF.builder.positionAtEnd(b) }
         
-//        try validate()
+        try validate()
         
         return fn.function
     }

@@ -70,12 +70,6 @@ func compileDocuments(
     var head: AST? = nil
     var all: [AST] = []
     
-    if options.contains(.buildRuntime) {
-        buildRuntime()
-    }
-    
-    if fileNames.isEmpty { return }
-    
     let globalScope = SemaScope.globalScope(options.contains(.parseStdLib))
     
     for (index, fileName) in fileNames.enumerate() {
@@ -138,11 +132,16 @@ func compileDocuments(
     
     if options.contains(.dumpVIR) { print(virModule.vir); return }
     if options.contains(.verbose) { print(virModule.vir) }
-        
-    var llvmModule = LLVMModuleCreateWithName(file)
     
-    if options.contains(.linkWithRuntime) {
-        linkWithRuntime(&llvmModule, withFile: "\(SOURCE_ROOT)/Vist/Runtime/runtime.bc")
+    if options.contains(.buildRuntime) {
+        buildRuntime()
+    }
+
+    let stdlibDirectory = "\(SOURCE_ROOT)/Vist/stdlib"
+
+    var llvmModule = LLVMModuleCreateWithName(file)
+    if options.contains(.compileStdLib) {
+        importFile("Shims.c", directory: stdlibDirectory, into: &llvmModule)
     }
     configModule(llvmModule)
     
@@ -187,6 +186,8 @@ func compileDocuments(
     if options.contains(.verbose) { print(llvmIR, "\n\n----------------------------LINK-----------------------------\n") }
     
     let libVistPath = "/usr/local/lib/libvist.dylib"
+    let libVistRuntimePath = "/usr/local/lib/libvistruntime.dylib"
+    
 //    /usr/local/Cellar/llvm/3.6.2/bin/clang-3.6 -o /usr/local/lib/libvist.dylib -dynamiclib Vist/stdlib/stdlib.bc
     if options.contains(.compileStdLib) {
         
@@ -194,12 +195,13 @@ func compileDocuments(
         // for optimiser
         NSTask.execute(.assemble,
                        files: ["\(file).ll"],
+                       outputName: "\(file).bc",
                        cwd: currentDirectory)
         
         // .ll -> .dylib
         // to link against program
         NSTask.execute(.clang,
-                       files: ["\(file).bc"],
+                       files: [libVistRuntimePath, "\(file).bc"],
                        outputName: libVistPath,
                        cwd: currentDirectory,
                        args: "-dynamiclib")
@@ -270,16 +272,28 @@ func buildRuntime() {
     
     let runtimeDirectory = "\(SOURCE_ROOT)/Vist/runtime"
     
-    // .cpp -> .ll
+    let libVistRuntimePath = "/usr/local/lib/libvistruntime.dylib"
+    
+//     // .cpp -> .ll
+//    NSTask.execute(.clang,
+//                   files: ["runtime.cpp"],
+//                   outputName: "runtime.bc",
+//                   cwd: runtimeDirectory,
+//                   args: "-O3", "-S", "-emit-llvm", "-std=c++14")
+//    
+//    // .ll -> .bc
+//    NSTask.execute(.assemble,
+//                   files: ["runtime.ll"],
+//                   outputName: "runtime.bc",
+//                   cwd: runtimeDirectory)
+    
+    // .cpp -> .dylib
+    // to link against program
     NSTask.execute(.clang,
                    files: ["runtime.cpp"],
+                   outputName: libVistRuntimePath,
                    cwd: runtimeDirectory,
-                   args: "-O3", "-S", "-emit-llvm", "-std=c++14")
-    
-    // .ll -> .bc
-    NSTask.execute(.assemble,
-                   files: ["runtime.ll"],
-                   cwd: runtimeDirectory)
+                   args: "-dynamiclib", "-std=c++14")
     
 }
 
