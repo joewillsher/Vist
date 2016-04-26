@@ -347,7 +347,7 @@
 		D4A000351CCA7FFA00157D90 /* OperandLower.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OperandLower.swift; path = Compiler/VIRLower/OperandLower.swift; sourceTree = "<group>"; };
 		D4A000381CCA812B00157D90 /* StmtGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StmtGen.swift; path = Compiler/VIRGen/StmtGen.swift; sourceTree = "<group>"; };
 		D4A0003B1CCA9BC300157D90 /* LLVMWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LLVMWrapper.swift; path = Compiler/VIRLower/LLVMWrapper.swift; sourceTree = "<group>"; };
-		D4BBE4191C4157E7001B8934 /* runtime.bc */ = {isa = PBXFileReference; lastKnownFileType = file; name = runtime.bc; path = Runtime/runtime.bc; sourceTree = "<group>"; };
+		D4BBE4191C4157E7001B8934 /* runtime.bc */ = {isa = PBXFileReference; lastKnownFileType = text; name = runtime.bc; path = Runtime/runtime.bc; sourceTree = "<group>"; };
 		D4BBE41A1C4157E7001B8934 /* runtime.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = runtime.ll; path = Runtime/runtime.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
 		D4BCA8001C90ED470087A98D /* Editor.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Editor.xcodeproj; path = ../Editor/Editor.xcodeproj; sourceTree = "<group>"; };
 		D4C0900E1CCFC931008B69F1 /* Shims.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Shims.c; path = stdlib/Shims.c; sourceTree = "<group>"; };
@@ -521,8 +521,8 @@
 		D44DB8891C316DB400EBCD9F /* StdLib */ = {
 			isa = PBXGroup;
 			children = (
-				D4C0900E1CCFC931008B69F1 /* Shims.c */,
 				D4644BE51C40619800364B99 /* stdlib.vist */,
+				D4C0900E1CCFC931008B69F1 /* Shims.c */,
 				D437F8001CA984860089F5DE /* stdlib_.vir */,
 				D437F8011CA984860089F5DE /* stdlib.vir */,
 				D43DF1EC1C5540AF0049EC2F /* stdlib_.ll */,
