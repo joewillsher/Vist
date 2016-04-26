@@ -10,6 +10,8 @@
 struct Builtin {
     static let intType = BuiltinType.int(size: 64)
     static let int32Type = BuiltinType.int(size: 32)
+    static let int16Type = BuiltinType.int(size: 16)
+    static let int8Type = BuiltinType.int(size: 8)
     static let doubleType = BuiltinType.float(size: 64)
     static let boolType = BuiltinType.bool
     static let voidType = BuiltinType.void
@@ -67,6 +69,13 @@ struct Builtin {
         ("Builtin.mem_copy", FunctionType(params: [opaquePointerType, opaquePointerType, intType], returns: voidType)),
         ("Builtin.advance_pointer", FunctionType(params: [opaquePointerType, intType], returns: opaquePointerType)),
         ("Builtin.opaque_load", FunctionType(params: [opaquePointerType], returns: BuiltinType.int(size: 8))),
+
+        ("Builtin.trunc_int_8", FunctionType(params: [intType], returns: int8Type)),
+        ("Builtin.trunc_int_8", FunctionType(params: [int32Type], returns: int8Type)),
+        ("Builtin.trunc_int_8", FunctionType(params: [int16Type], returns: int8Type)),
+        ("Builtin.trunc_int_16", FunctionType(params: [intType], returns: int16Type)),
+        ("Builtin.trunc_int_16", FunctionType(params: [int32Type], returns: int16Type)),
+        ("Builtin.trunc_int_32", FunctionType(params: [intType], returns: int32Type)),
     ]
     
     private static let functionContainer = FunctionContainer(functions: functions, types: [])

@@ -95,6 +95,11 @@ extension LLVMBuilder {
             LLVMBuildBitCast(builder, val.val(), type.type, name ?? "")
         )
     }
+    func buildTrunc(val: LLVMValue, size: Int, name: String? = nil) throws -> LLVMValue {
+        return try wrap(
+            LLVMBuildTrunc(builder, val.val(), LLVMIntType(UInt32(size)), name ?? "")
+        )
+    }
     func buildBr(to block: LLVMBasicBlock) throws -> LLVMValue {
         return try wrap(
             LLVMBuildBr(builder, block.block)
@@ -267,7 +272,6 @@ extension LLVMBuilder {
             f(builder: builder, pred: pred, lhs: lhs.val(), rhs: rhs.val(), name: name ?? "")
         )
     }
-
 }
 
 extension LLVMIntPredicate {

@@ -73,13 +73,15 @@ enum BuiltinInst : String {
     case fadd = "f_add", fsub = "f_sub", fmul = "f_mul", fdiv = "f_div", frem = "f_rem", feq = "f_eq", fneq = "f_neq"
     case flte = "f_cmp_lte", fgte = "f_cmp_gte", flt = "f_cmp_lt", fgt = "f_cmp_gt"
     
+    case trunc8 = "trunc_int_8", trunc16 = "trunc_int_16", trunc32 = "trunc_int_32"
+    
     var expectedNumOperands: Int {
         switch  self {
         case .memcpy: return 3
         case .iadd, .isub, .imul, .idiv, .iaddoverflow, .irem, .ilte, .igte, .ilt, .igt,
              .expect, .ieq, .ineq, .ishr, .ishl, .iand, .ior, .ixor, .fgt, .and, .or,
              .fgte, .flt, .flte, .fadd, .fsub, .fmul, .fdiv, .frem, .feq, .fneq, .advancepointer: return 2
-        case .condfail, .allocstack, .allocheap, .opaqueload: return 1
+        case .condfail, .allocstack, .allocheap, .opaqueload, .trunc8, .trunc16, .trunc32: return 1
         case .trap: return 0
         }
     }
@@ -99,8 +101,12 @@ enum BuiltinInst : String {
         case .allocstack, .allocheap, .advancepointer:
             return Builtin.opaquePointerType
             
-        case .opaqueload:
+        case .opaqueload, .trunc8:
             return BuiltinType.int(size: 8)
+        case .trunc16:
+            return BuiltinType.int(size: 16)
+        case .trunc32:
+            return BuiltinType.int(size: 32)
             
         case .condfail, .trap, .memcpy:
             return Builtin.voidType // void return

@@ -78,6 +78,10 @@ extension BuiltinInstCall: VIRLower {
         case .fgt:  return try IGF.builder.buildFloatCompare(.greaterThan, lhs: lhs, rhs: rhs, name: irName)
         case .flte: return try IGF.builder.buildFloatCompare(.lessThanEqual, lhs: lhs, rhs: rhs, name: irName)
         case .fgte: return try IGF.builder.buildFloatCompare(.lessThanEqual, lhs: lhs, rhs: rhs, name: irName)
+            
+        case .trunc8: return try IGF.builder.buildTrunc(lhs, size: 8, name: irName)
+        case .trunc16: return try IGF.builder.buildTrunc(lhs, size: 16, name: irName)
+        case .trunc32: return try IGF.builder.buildTrunc(lhs, size: 32, name: irName)
         }
         
         // call the intrinsic

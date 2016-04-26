@@ -241,6 +241,23 @@ func ..< :: Int Int -> Range = (a b) do
 
 
 
+
+type UTF8CodeUnit {
+    let unit: Builtin.Int8
+    
+    init Int = (u) {
+        unit = Builtin.trunc_int_8 u.value
+    }
+}
+
+type UTF16CodeUnit {
+    let unit: Builtin.Int16
+    
+    init Int = (u) {
+        unit = Builtin.trunc_int_16 u.value
+    }
+}
+
 type String {
     var base: Builtin.OpaquePointer, length: Int, _capacityAndEncoding: Int
     
@@ -259,6 +276,11 @@ type String {
              _capacityAndEncoding = _capacityAndEncoding ~| 1
     }
     
+    //@private init UTF8CodeUnit = (unit) {
+    //    let b = Builtin.heap_alloc 2 // alloc 2 bytes
+    //    let s = String
+    //}
+    
     /// Whether the string has UTF-8 encoding. if true it is a contiguous block of char*
     func isUTF8Encoded:: -> Bool = do
         return _capacityAndEncoding ~& 1 == 1
@@ -273,17 +295,17 @@ type String {
         return base + index
     
     /// A genrator -- yields each code unit
-    func generate:: -> Builtin.Int8 = {
+    func generate:: -> UTF8CodeUnit = {
         var i = 0
         while i < self.bufferCapacity () {
-            yield Builtin.opaque_load (self.codeUnitAtIndex i)
+            yield UTF8CodeUnit (Builtin.opaque_load (self.codeUnitAtIndex i))
             i = i + 1
         }
     }
 }
 
 
-@public @inline func print :: String = (str) {
+@inline func _print :: String = (str) {
     if str.isUTF8Encoded () {
         // if its all UTF-8 we can just fwrite the buffer
         vist_cshim_write str.base str.length.value
@@ -291,10 +313,15 @@ type String {
     } else {
         // otherwise we step through, char by char, and putchar it
         for c in str do
-            vist_cshim_putchar c
+            vist_cshim_putchar c.unit
         return ()
     }
     // there's a CFG bug where implict `return ()` are only added to the exit point
+}
+
+@public func print :: String = (str) {
+    _print str
+    _print "\n"
 }
 
 // TODO: a printing protocol which allows any type to generate its string repr
