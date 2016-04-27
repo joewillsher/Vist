@@ -67,7 +67,7 @@ enum BuiltinInst : String {
     case and = "b_and", or = "b_or"
     
     case expect, trap
-    case allocstack = "stack_alloc", allocheap = "heap_alloc", memcpy = "mem_copy"
+    case allocstack = "stack_alloc", allocheap = "heap_alloc", heapfree = "heap_free", memcpy = "mem_copy"
     case advancepointer = "advance_pointer", opaqueload = "opaque_load"
     
     case fadd = "f_add", fsub = "f_sub", fmul = "f_mul", fdiv = "f_div", frem = "f_rem", feq = "f_eq", fneq = "f_neq"
@@ -80,9 +80,12 @@ enum BuiltinInst : String {
         case .memcpy: return 3
         case .iadd, .isub, .imul, .idiv, .iaddoverflow, .irem, .ilte, .igte, .ilt, .igt,
              .expect, .ieq, .ineq, .ishr, .ishl, .iand, .ior, .ixor, .fgt, .and, .or,
-             .fgte, .flt, .flte, .fadd, .fsub, .fmul, .fdiv, .frem, .feq, .fneq, .advancepointer: return 2
-        case .condfail, .allocstack, .allocheap, .opaqueload, .trunc8, .trunc16, .trunc32: return 1
-        case .trap: return 0
+             .fgte, .flt, .flte, .fadd, .fsub, .fmul, .fdiv, .frem, .feq, .fneq, .advancepointer:
+            return 2
+        case .condfail, .allocstack, .allocheap, .heapfree, .opaqueload, .trunc8, .trunc16, .trunc32:
+            return 1
+        case .trap:
+            return 0
         }
     }
     func returnType(params params: [Type]) -> Type? {
@@ -108,7 +111,7 @@ enum BuiltinInst : String {
         case .trunc32:
             return BuiltinType.int(size: 32)
             
-        case .condfail, .trap, .memcpy:
+        case .condfail, .trap, .memcpy, .heapfree:
             return Builtin.voidType // void return
         }
     }

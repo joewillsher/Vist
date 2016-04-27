@@ -13,6 +13,7 @@ type Int {
         value = v.value
     }
     init Int = (val) do value = val.value
+    
 }
 type Int32 {
     var value: Builtin.Int32

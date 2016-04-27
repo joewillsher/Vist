@@ -96,7 +96,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-build-stdlib"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-parse-stdlib"

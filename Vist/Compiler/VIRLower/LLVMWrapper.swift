@@ -198,6 +198,12 @@ extension LLVMBuilder {
             LLVMBuildArrayMalloc(builder, elementType.type, size.val(), name ?? "")
         )
     }
+    func buildFree(ptr: LLVMValue, name: String? = nil) throws -> LLVMValue {
+        return try wrap(
+            LLVMBuildFree(builder, ptr.val())
+        )
+    }
+
 }
 
 extension LLVMBuilder {

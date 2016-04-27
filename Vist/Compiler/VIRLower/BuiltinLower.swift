@@ -37,6 +37,7 @@ extension BuiltinInstCall: VIRLower {
                 
         case .allocstack: return try IGF.builder.buildArrayAlloca(size: lhs, elementType: .intType(size: 8), name: irName)
         case .allocheap:  return try IGF.builder.buildArrayMalloc(size: lhs, elementType: .intType(size: 8), name: irName)
+        case .heapfree: return try IGF.builder.buildFree(lhs, name: irName)
             
         case .advancepointer: return try IGF.builder.buildGEP(lhs, index: rhs, name: irName)
         case .opaqueload:     return try IGF.builder.buildLoad(from: lhs, name: irName)

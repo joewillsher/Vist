@@ -90,6 +90,45 @@ private enum LexerContext {
 private func == (lhs: Character, rhs: String) -> Bool { return lhs == Character(rhs) }
 private func != (lhs: Character, rhs: String) -> Bool { return !(lhs == rhs) }
 
+
+extension String {
+    
+    private init(escaping: String) {
+        
+        var chars: [Character] = []
+        let count = escaping.characters.count
+        chars.reserveCapacity(count)
+        
+        // '\' character
+        let escapeChar = Character("\\")
+        
+        var escape = false
+        
+        for (i, c) in escaping.characters.enumerate() {
+            
+            if escape {
+                defer { escape = false }
+                switch c {
+                case "\\": chars.append("\\")
+                case "n": chars.append("\n")
+                case "t": chars.append("\t")
+                case "r": chars.append("\r")
+                default: break
+                }
+            }
+            else if c == escapeChar {
+                escape = true
+            }
+            else {
+                chars.append(c)
+            }
+        }
+        
+        self = String(chars)
+    }
+    
+}
+
 //-------------------------------------------------------------------------------------------------------------------------
 //  MARK:                                              Token
 //-------------------------------------------------------------------------------------------------------------------------
@@ -232,7 +271,7 @@ private struct Lexer {
         case .alpha?:           return Token.fromIdentifier(str)
         case .numeric?:         return Token.fromNumberLiteral(str)
         case .symbol?:          return Token.fromSymbol(str)
-        case .stringLiteral?:   return .stringLiteral(str)
+        case .stringLiteral?:   return .stringLiteral(String(escaping: str))
         case .comment?:         return .comment(str)
         case .newLine?:         return .newLine
         default:                throw LexerError.noToken
