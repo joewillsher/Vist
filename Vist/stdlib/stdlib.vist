@@ -4,6 +4,19 @@
 // types
 // ----------------------------------------------------
 
+/*
+type UTF8View {
+    var chars: Builtin.OpaquePointer
+    var size: Int
+    
+    init () = {
+        chars = Builtin.heap_alloc 100
+        size = 0
+    }
+    
+    funcAdd
+}
+*/
 
 type Int {
     var value: Builtin.Int64
@@ -14,6 +27,28 @@ type Int {
     }
     init Int = (val) do value = val.value
     
+    func description :: -> Builtin.OpaquePointer Builtin.Int64 = {
+        let s = 100
+        let buffer = Builtin.heap_alloc s.value
+        var i = 0
+        var val = self
+        
+        while val != 0 {
+            let v = val % 10 + 48 // magic number '48' shifts 0 to the correct unicode code point
+            let char = Builtin.trunc_int_8 v.value
+            
+            let ptr = buffer + i
+            Builtin.opaque_store ptr char
+
+            val = val / 10
+            i = i + 1
+        }
+        
+        let ntSize = i + 1
+        //let isUTF8 = true
+        //return String buffer ntSize.value isUTF8.value
+        return (buffer, ntSize.value)
+    }
 }
 type Int32 {
     var value: Builtin.Int32
@@ -51,7 +86,6 @@ type Double {
 // free functions
 // ----------------------------------------------------
 
-@public @inline func print :: Int = (a) do vist_print a.value
 @public @inline func print :: Int32 = (a) do vist_print a.value
 @public @inline func print :: Bool = (a) do vist_print a.value
 @public @inline func print :: Double = (a) do vist_print a.value
@@ -322,6 +356,13 @@ type String {
 
 @public func print :: String = (str) {
     _print str
+    _print "\n"
+}
+
+@public @inline func print :: Int = (a) {
+    let str = a.description ()
+    vist_cshim_putchar (Builtin.opaque_load str.0)
+    vist_cshim_write str.0 str.1
     _print "\n"
 }
 

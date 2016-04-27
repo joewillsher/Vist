@@ -41,6 +41,7 @@ extension BuiltinInstCall: VIRLower {
             
         case .advancepointer: return try IGF.builder.buildGEP(lhs, index: rhs, name: irName)
         case .opaqueload:     return try IGF.builder.buildLoad(from: lhs, name: irName)
+        case .opaquestore:    return try IGF.builder.buildStore(value: rhs, in: lhs)
             
         case .condfail:
             guard let fn = parentFunction, current = parentBlock else { fatalError() }

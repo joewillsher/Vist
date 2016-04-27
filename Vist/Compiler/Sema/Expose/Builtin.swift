@@ -69,6 +69,8 @@ struct Builtin {
         ("Builtin.mem_copy", FunctionType(params: [opaquePointerType, opaquePointerType, intType], returns: voidType)),
         ("Builtin.advance_pointer", FunctionType(params: [opaquePointerType, intType], returns: opaquePointerType)),
         ("Builtin.opaque_load", FunctionType(params: [opaquePointerType], returns: BuiltinType.int(size: 8))),
+        ("Builtin.opaque_store", FunctionType(params: [opaquePointerType, int8Type], returns: voidType)),
+        ("Builtin.heap_free", FunctionType(params: [opaquePointerType], returns: voidType)),
 
         ("Builtin.trunc_int_8", FunctionType(params: [intType], returns: int8Type)),
         ("Builtin.trunc_int_8", FunctionType(params: [int32Type], returns: int8Type)),

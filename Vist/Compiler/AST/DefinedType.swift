@@ -64,10 +64,14 @@ enum DefinedType {
         case let .type(typeName):
             
             if let builtin = BuiltinType(typeName) {
-                return builtin as Type
+                return builtin
             }
             else if let i = scope[type: typeName] {
                 return i
+            }
+                // prioritise an in scope definition
+            else if let stdlib = StdLib.type(name: typeName) {
+                return stdlib
             }
             else {
                 throw semaError(.noTypeNamed(typeName))

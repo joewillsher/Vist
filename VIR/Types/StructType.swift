@@ -39,7 +39,7 @@ extension StructType {
         let mappedEls = members.map { member in
             (member.name, member.type.usingTypesIn(module), member.isMutable) as StructMember
         }
-        var newTy = StructType(members: mappedEls, methods: methods, name: name, heapAllocated: heapAllocated)
+        let newTy = StructType(members: mappedEls, methods: methods, name: name, heapAllocated: heapAllocated)
         newTy.genericTypes = genericTypes
         newTy.concepts = concepts
         return module.getOrInsert(TypeAlias(name: name, targetType: newTy))

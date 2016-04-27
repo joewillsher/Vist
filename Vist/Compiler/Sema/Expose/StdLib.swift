@@ -8,7 +8,9 @@
 
 struct StdLib {
     
-    static let intType =    StructType(members:   [("value", BuiltinType.int(size: 64), true)],       methods: [], name: "Int")
+    static let intType =    StructType(members:   [("value", BuiltinType.int(size: 64), true)],       methods: [
+//        (name: "description", type: FunctionType(params: [], returns: stringType), mutating: false),
+        ], name: "Int")
     static let int32Type =  StructType(members:   [("value", BuiltinType.int(size: 32), true)],       methods: [], name: "Int32")
     static let boolType =   StructType(members:   [("value", BuiltinType.bool, true)],                methods: [], name: "Bool")
     static let doubleType = StructType(members:   [("value", BuiltinType.float(size: 64), true)],     methods: [], name: "Double")
@@ -17,8 +19,11 @@ struct StdLib {
             ("start", intType, true),
             ("end", intType, true)],
         methods: [
-            (name: "generate", type: FunctionType(params: [], returns: BuiltinType.void, yieldType: intType), mutating: false)
+            (name: "generate", type: FunctionType(params: [], returns: BuiltinType.void, yieldType: intType), mutating: false),
         ], name: "Range")
+
+    static let utf8CodeUnitType = StructType(members:    [("unit", BuiltinType.int(size: 8), true)],     methods: [], name: "UTF8CodeUnit")
+    static let utf16CodeUnitType = StructType(members:   [("unit", BuiltinType.int(size: 8), true)],     methods: [], name: "UTF16CodeUnit")
     static let stringType = StructType(
         members:   [
             ("base", BuiltinType.opaquePointer, true),
@@ -28,10 +33,11 @@ struct StdLib {
             (name: "isUTF8Encoded", type: FunctionType(params: [], returns: boolType), mutating: false),
             (name: "bufferCapacity", type: FunctionType(params: [], returns: intType), mutating: false),
             (name: "codeUnitAtIndex", type: FunctionType(params: [StdLib.intType], returns: BuiltinType.opaquePointer), mutating: false),
+            (name: "generate", type: FunctionType(params: [], returns: BuiltinType.void, yieldType: utf8CodeUnitType), mutating: false),
         ], name: "String")
     private static let voidType = BuiltinType.void
     
-    private static let types: [StructType] = [intType, boolType, doubleType, rangeType, stringType]
+    private static let types = [intType, boolType, doubleType, rangeType, utf8CodeUnitType, utf16CodeUnitType, stringType]
     
 //    private static let concepts: [ConceptType] = [ConceptType(name: "Generator", requiredFunctions: [("generate", FunctionType(params: [], returns: intType))], requiredProperties: [])]
     
