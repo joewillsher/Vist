@@ -111,6 +111,12 @@ type Double {
 func + :: Builtin.OpaquePointer Int -> Builtin.OpaquePointer = (pointer offset) do
     return Builtin.advance_pointer pointer offset.value
 
+@public @inline @operator(80)
+func - :: Builtin.OpaquePointer Int -> Builtin.OpaquePointer = (pointer offset) {
+    let s = 0 - offset
+    return Builtin.advance_pointer pointer s.value
+}
+
 // int
 @public @inline @operator(80)
 func + :: Int Int -> Int = (a b) {
