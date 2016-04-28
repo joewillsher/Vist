@@ -8,9 +8,7 @@
 
 struct StdLib {
     
-    static let intType =    StructType(members:   [("value", BuiltinType.int(size: 64), true)],       methods: [
-//        (name: "description", type: FunctionType(params: [], returns: stringType), mutating: false),
-        ], name: "Int")
+    static let intType =    StructType(members:   [("value", BuiltinType.int(size: 64), true)],       methods: [], name: "Int")
     static let int32Type =  StructType(members:   [("value", BuiltinType.int(size: 32), true)],       methods: [], name: "Int32")
     static let boolType =   StructType(members:   [("value", BuiltinType.bool, true)],                methods: [], name: "Bool")
     static let doubleType = StructType(members:   [("value", BuiltinType.float(size: 64), true)],     methods: [], name: "Double")
@@ -86,6 +84,7 @@ struct StdLib {
         
         // pointer
         ("+", FunctionType(params: [BuiltinType.opaquePointer, intType], returns: BuiltinType.opaquePointer)),
+        ("-", FunctionType(params: [BuiltinType.opaquePointer, intType], returns: BuiltinType.opaquePointer)),
         
         // fns
         ("print",      FunctionType(params: [intType],    returns: voidType)),

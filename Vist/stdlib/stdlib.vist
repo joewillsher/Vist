@@ -18,6 +18,33 @@ type UTF8View {
 }
 */
 
+/// initialises a swift string representing an integer
+func int64ToString :: Int -> String = (number) {
+    
+    let size = 20 // max possibly 64 bit int is 19 chars, plus 1 for null
+    let buffer = Builtin.stack_alloc size.value // alloc buffer
+    
+    var bufferSize = 1 // start with buffer size 1 for the null terminator
+    var val = number
+    var ptr = buffer + size // the end of the buffer
+    
+    while val != 0 {
+        ptr = ptr - 1 // move back a char
+        
+        let v = val % 10 + 48 // magic number '48' shifts 0 to the correct unicode code point
+        let char = Builtin.trunc_int_8 v.value // get a characrer
+        
+        Builtin.opaque_store ptr char // store char in string
+        
+        val = val / 10 // remove the last (just added) digit
+        bufferSize = bufferSize + 1 // inc buffer size
+    }
+    
+    let isUTF8 = true
+    let s = String ptr bufferSize.value isUTF8.value
+    return s
+}
+
 type Int {
     var value: Builtin.Int64
     
@@ -27,27 +54,8 @@ type Int {
     }
     init Int = (val) do value = val.value
     
-    func description :: -> Builtin.OpaquePointer Builtin.Int64 = {
-        let s = 100
-        let buffer = Builtin.heap_alloc s.value
-        var i = 0
-        var val = self
-        
-        while val != 0 {
-            let v = val % 10 + 48 // magic number '48' shifts 0 to the correct unicode code point
-            let char = Builtin.trunc_int_8 v.value
-            
-            let ptr = buffer + i
-            Builtin.opaque_store ptr char
-
-            val = val / 10
-            i = i + 1
-        }
-        
-        let ntSize = i + 1
-        //let isUTF8 = true
-        //return String buffer ntSize.value isUTF8.value
-        return (buffer, ntSize.value)
+    func description :: -> String = {
+        return int64ToString self
     }
 }
 type Int32 {
@@ -366,9 +374,7 @@ type String {
 }
 
 @public @inline func print :: Int = (a) {
-    let str = a.description ()
-    vist_cshim_putchar (Builtin.opaque_load str.0)
-    vist_cshim_write str.0 str.1
+    _print (a.description ())
     _print "\n"
 }
 

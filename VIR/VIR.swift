@@ -17,7 +17,7 @@ extension VIRElement {
     var debugDescription: String { return vir }
 }
 
-enum VIRError: ErrorType {
+enum VIRError : ErrorType {
     case noFunctionBody, hasBody, instNotInBB, bbNotInFn, cannotMoveBuilderHere, noParentBlock, noParamNamed(String), noUse, noType(StaticString), noModule
     case notGenerator, paramsNotTyped, wrongBlockParams
     case builtinIncorrectOperands(inst: BuiltinInst, recieved: Int)

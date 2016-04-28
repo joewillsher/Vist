@@ -44,7 +44,7 @@ final class BuiltinInstCall : InstBase {
     
     override var hasSideEffects: Bool {
         switch inst {
-        case .condfail, .memcpy, .trap: return true
+        case .condfail, .memcpy, .trap, .opaquestore, .heapfree: return true
         default: return false
         }
     }
