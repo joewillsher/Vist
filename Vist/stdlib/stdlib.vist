@@ -397,10 +397,9 @@ type String {
 
 
 @inline func _print :: String = (str) {
-    let core = str.core
-    if (core._isUTF8Encoded) {
+    if (str.core._isUTF8Encoded) {
         // if its all UTF-8 we can just fwrite the buffer
-        vist_cshim_write str.core._base core._length.value
+        vist_cshim_write str.core._base str.core._length.value
         return ()
     } else {
         // otherwise we step through, char by char, and putchar it

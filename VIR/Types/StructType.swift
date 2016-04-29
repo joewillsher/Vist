@@ -23,6 +23,41 @@ final class StructType : NominalType {
     }
 }
 
+final class RefcountedType : NominalType {
+    let box: NominalType
+    
+    init(box: NominalType) {
+        self.box = box
+    }
+    
+    /// Name used in mangling function signatures
+    var mangledName: String { return "\(box.mangledName).rc" }
+    
+    func lowerType(module: Module) -> LLVMType {
+        let t = StructType(members: [
+            ("object", BuiltinType.pointer(to: self), true),
+            ("refCount", BuiltinType.int(size: 32), false),
+            ], methods: [], name: name, heapAllocated: true)
+        return BuiltinType.pointer(to: t).lowerType(module)
+    }
+    /// Replaces the function's memeber types with the module's typealias
+    func usingTypesIn(module: Module) -> Type {
+        return RefcountedType(box: box.usingTypesIn(module) as! NominalType)
+    }
+    
+    /// User visible type name
+    var name: String { return "\(box.name).refcounted" }
+    
+    var members: [StructMember] { return box.members }
+    var methods: [StructMethod] { return box.methods }
+    
+    /// Name this type is given at the global scope of IR
+    var irName: String { return "\(box.irName).refcounted" }
+    
+    var heapAllocated: Bool { return true }
+}
+
+
 extension StructType {
     
     func lowerType(module: Module) -> LLVMType {
@@ -30,11 +65,9 @@ extension StructType {
         return LLVMType(ref: LLVMStructType(&arr, UInt32(members.count), false))
     }
     func refCountedBox(module: Module) -> TypeAlias {
-        let t = StructType(members: [
-            ("object", BuiltinType.pointer(to: self), true),
-            ("refCount", BuiltinType.int(size: 32), false),
-            ], methods: [], name: "\(name).refcounted", heapAllocated: true)
-        return module.getOrInsert(t)
+        let n = "\(name).refcounted"
+        let t = RefcountedType(box: self)
+        return module.getOrInsert(TypeAlias(name: n, targetType: t))
     }
     
     func usingTypesIn(module: Module) -> Type {
@@ -44,6 +77,7 @@ extension StructType {
         let newTy = StructType(members: mappedEls, methods: methods, name: name, heapAllocated: heapAllocated)
         newTy.genericTypes = genericTypes
         newTy.concepts = concepts
+        if heapAllocated { return BuiltinType.pointer(to: newTy.refCountedBox(module)) }
         return module.getOrInsert(TypeAlias(name: name, targetType: newTy))
     }
     

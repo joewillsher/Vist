@@ -201,6 +201,12 @@ final class RefCountedAccessor : GetSetAccessor {
     }
     
     var _reference: Value? // lazy member reference
+    
+    /// Get the refcounted object
+    private func _object() throws -> Value {
+        return try module.builder.buildLoad(from: aggregateReference())
+    }
+    
     func reference() throws -> PtrOperand {
         if let r = _reference { return try PtrOperand.fromReferenceRValue(r) }
         
@@ -210,10 +216,13 @@ final class RefCountedAccessor : GetSetAccessor {
         return try PtrOperand.fromReferenceRValue(load)
     }
     
+    /// A reference to the whole object
     func aggregateReference() -> PtrOperand {
         return PtrOperand(mem)
     }
     
+    /// Getting the whole of a refcounted object means you are passing its structure.
+    /// - returns: The identity of a ref counted object, which is its backing pointer
     func aggregateGetter() throws -> Value {
         return mem
     }
@@ -278,11 +287,24 @@ final class LazyRefAccessor : GetSetAccessor {
     private lazy var val: LValue? = try? self.build()
     
     var mem: LValue {
-        guard let v = val else { fatalError() }
+        guard let v = val else {
+            do {
+                try build()
+                fatalError()
+            } catch {
+                fatalError(String(error))
+            }
+            
+        }
         return v
     }
     
-    init(fn: () throws -> LValue) { build = fn }
+    init(module: Module, fn: () throws -> LValue) {
+        build = fn
+        self.module = module
+    }
+    
+    var module: Module
 }
 
 
@@ -302,7 +324,12 @@ final class LazyAccessor : Accessor {
         return try v.allocGetSetAccessor()
     }
     
-    init(fn: () throws -> Value) { build = fn }
+    init(module: Module, fn: () throws -> Value) {
+        build = fn
+        self.module = module
+    }
+    
+    var module: Module
 }
 
 

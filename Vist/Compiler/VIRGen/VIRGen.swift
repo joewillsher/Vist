@@ -266,8 +266,9 @@ extension FuncDecl : StmtEmitter {
                 // if it is a ref self the self accessors are lazily calculated struct GEP
                 case let selfRef as GetSetAccessor:
                     for property in type.members {
-                        let pVar = LazyRefAccessor {
-                            try module.builder.buildStructElementPtr(selfRef.reference(), property: property.name, irName: property.name)
+                        let pVar = LazyRefAccessor(module: module) {
+                            function.dump()
+                            return try module.builder.buildStructElementPtr(selfRef.reference(), property: property.name, irName: property.name)
                         }
                         fnScope.insert(pVar, name: property.name)
                     }
@@ -275,7 +276,7 @@ extension FuncDecl : StmtEmitter {
                 // case is Accessor:
                 default:
                     for property in type.members {
-                        let pVar = LazyAccessor {
+                        let pVar = LazyAccessor(module: module) {
                             try module.builder.buildStructExtract(Operand(selfVar.getter()), property: property.name, irName: property.name)
                         }
                         fnScope.insert(pVar, name: property.name)
@@ -744,8 +745,17 @@ extension MethodCallExpr : ValueEmitter {
         switch object._type {
         case is StructType:
             guard case .method(_, let mutating) = fnType.callingConvention else { fatalError() }
-            let selfObject = try mutating ? selfVar.asReferenceAccessor().aggregateReference() : Operand(selfVar.aggregateGetter())
-
+            
+            let selfObject: Operand
+            if case let rc as RefCountedAccessor = selfVar {
+                selfObject = rc.aggregateReference()
+            }
+            else if case let gsa as GetSetAccessor = selfVar where mutating {
+                selfObject = gsa.aggregateReference()
+            }
+            else {
+                selfObject = try Operand(selfVar.aggregateGetter())
+            }
             let function = try module.getOrInsertFunction(named: mangledName, type: fnType)
             return try module.builder.buildFunctionCall(function, args: [selfObject] + args).accessor()
             
