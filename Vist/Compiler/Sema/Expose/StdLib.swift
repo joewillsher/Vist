@@ -19,29 +19,25 @@ struct StdLib {
         methods: [
             (name: "generate", type: FunctionType(params: [], returns: BuiltinType.void, yieldType: intType), mutating: false),
         ], name: "Range")
-
+    
     static let utf8CodeUnitType = StructType(members:    [("unit", BuiltinType.int(size: 8), true)],     methods: [], name: "UTF8CodeUnit")
     static let utf16CodeUnitType = StructType(members:   [("unit", BuiltinType.int(size: 8), true)],     methods: [], name: "UTF16CodeUnit")
-    static let _stringCoreType = StructType(members: [
-        ("_base", BuiltinType.opaquePointer, true),
-        ("_capacity", intType, true),
-        ("_isUTF8Encoded", boolType, true),
-        ("_length", intType, true),
-        ], methods: [
-            (name: "codeUnitAtOffset", type: FunctionType(params: [StdLib.intType], returns: BuiltinType.opaquePointer), mutating: false),
-//            (name: "getCoreCopy", type: FunctionType(params: [], returns: _stringCoreType), mutating: false),
-        ], name: "_StringCore", heapAllocated: true)
     static let stringType = StructType(
-        members: [
-            ("core", _stringCoreType, true),
-        ], methods: [
+        members:   [
+            ("base", BuiltinType.opaquePointer, true),
+            ("length", intType, true),
+            ("_capacityAndEncoding", intType, true)],
+        methods: [
+            (name: "isUTF8Encoded", type: FunctionType(params: [], returns: boolType), mutating: false),
+            (name: "bufferCapacity", type: FunctionType(params: [], returns: intType), mutating: false),
+            (name: "codeUnitAtIndex", type: FunctionType(params: [StdLib.intType], returns: BuiltinType.opaquePointer), mutating: false),
             (name: "generate", type: FunctionType(params: [], returns: BuiltinType.void, yieldType: utf8CodeUnitType), mutating: false),
         ], name: "String")
     private static let voidType = BuiltinType.void
     
     private static let types = [intType, boolType, doubleType, rangeType, utf8CodeUnitType, utf16CodeUnitType, stringType]
     
-//    private static let concepts: [ConceptType] = [ConceptType(name: "Generator", requiredFunctions: [("generate", FunctionType(params: [], returns: intType))], requiredProperties: [])]
+    //    private static let concepts: [ConceptType] = [ConceptType(name: "Generator", requiredFunctions: [("generate", FunctionType(params: [], returns: intType))], requiredProperties: [])]
     
     private static let functions: [(String, FunctionType)] = [
         // int
@@ -81,7 +77,7 @@ struct StdLib {
         ("<=", FunctionType(params: [doubleType, doubleType], returns: boolType)),
         ("==", FunctionType(params: [doubleType, doubleType], returns: boolType)),
         ("!=", FunctionType(params: [doubleType, doubleType], returns: boolType)),
-
+        
         // range
         ("...", FunctionType(params: [intType, intType], returns: rangeType)),
         ("..<", FunctionType(params: [intType, intType], returns: rangeType)),
@@ -100,7 +96,7 @@ struct StdLib {
         ("fatalError", FunctionType(params: [],           returns: voidType)),
         
         
-//         initialisers
+        //         initialisers
         // ones which take Builtin types are used to wrap literals
         ("Int",     FunctionType(params: [BuiltinType.int(size: 64)],   returns: intType)),
         ("Int",     FunctionType(params: [intType],                     returns: intType)),
@@ -113,7 +109,7 @@ struct StdLib {
         ("Range",   FunctionType(params: [intType, intType],            returns: rangeType)),
         ("Range",   FunctionType(params: [rangeType],                   returns: rangeType)),
         ("String",  FunctionType(params: [BuiltinType.opaquePointer, BuiltinType.int(size: 64), BuiltinType.bool], returns: stringType)),
-    ]
+        ]
     
     /// Container initialised with functions, provides subscript to look up functions by name and type
     ///
@@ -132,12 +128,12 @@ struct StdLib {
     static func type(name id: String) -> StructType? {
         return functionContainer[type: id]
     }
-
+    
     /// Get the type of a function from the standard library by mangled name
     /// - parameter mangledName: Mangled function name
     static func function(mangledName name: String) -> FunctionType? {
         return functionContainer[mangledName: name]?.type
-    }    
+    }
     
     /// Get a named function from the standard library
     /// - parameter name: Unmangled name
@@ -146,10 +142,4 @@ struct StdLib {
     static func function(name name: String, args: [Type]) -> (mangledName: String, type: FunctionType)? {
         return functionContainer[fn: name, types: args]
     }
-    
-
 }
-
-
-
-
