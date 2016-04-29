@@ -74,14 +74,18 @@ extension Builder {
     
     /// Builds a Struct Extract instruction, which gets an element of a struct by value
     func buildStructExtract(object: Operand, property: String, irName: String? = nil) throws -> StructExtractInst {
-        guard case let alias as TypeAlias = object.type, case let structType as StructType = alias.targetType else { throw VIRError.noType(#file) }
+        guard case let alias as TypeAlias = object.type, case let structType as StructType = alias.targetType else {
+            throw VIRError.noType(#file)
+        }
         let elType = try structType.propertyType(property)
         return try _add(StructExtractInst(object: object, property: property, propertyType: elType.usingTypesIn(module), structType: structType, irName: irName))
     }
     
     /// Builds a Struct element ptr instruction, which gets a ptr to the element of a struct
     func buildStructElementPtr(object: PtrOperand, property: String, irName: String? = nil) throws -> StructElementPtrInst {
-        guard case let alias as TypeAlias = object.memType, case let structType as StructType = alias.targetType else { throw VIRError.noType(#file) }
+        guard case let alias as TypeAlias = object.memType, case let structType as StructType = alias.targetType else {
+            throw VIRError.noType(#file)
+        }
         let elType = try structType.propertyType(property).usingTypesIn(module)
         return try _add(StructElementPtrInst(object: object, property: property, propertyType: elType, structType: structType, irName: irName))
     }

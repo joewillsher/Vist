@@ -76,14 +76,11 @@ extension Value {
     /// box then the accessor accesses the stored value.
     func accessor() throws -> Accessor {
         
-        let returnAccessor = ValAccessor(value: self)
-        
-        if case let s as TypeAlias = returnAccessor.storedType where s.heapAllocated {
-            let ref = try returnAccessor.asReferenceAccessor().reference()
-            return RefCountedAccessor(refcountedBox: ref)
+        if case BuiltinType.pointer(let to)? = type, case let nominal as NominalType = to where nominal.heapAllocated {
+            return try RefCountedAccessor(refcountedBox: PtrOperand.fromReferenceRValue(self))
         }
         else {
-            return returnAccessor
+            return ValAccessor(value: self)
         }
     }
     

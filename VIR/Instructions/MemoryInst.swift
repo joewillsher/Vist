@@ -97,7 +97,7 @@ extension Builder {
         return try _add(AllocInst(memType: ty, irName: irName))
     }
     func buildStore(val: Operand, in address: PtrOperand) throws -> StoreInst {
-        guard val.type == address.memType else { fatalError() }
+//        guard val.type == address.memType else { fatalError() }
         return try _add(StoreInst(address: address, value: val))
     }
     func buildLoad(from address: PtrOperand, irName: String? = nil) throws -> LoadInst {

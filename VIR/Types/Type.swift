@@ -21,6 +21,8 @@ protocol Type : Printable, VIRElement {
     /// mangled name, unless the mangled name uses a different
     /// naming system, like the builtin types
     var explicitName: String { get }
+    
+    var heapAllocated: Bool { get }
 }
 
 enum _WidthUnit { case bytes, bits }
@@ -30,6 +32,8 @@ extension Type {
     var explicitName: String {
         return mangledName
     }
+    
+    var heapAllocated: Bool { return false }
     
     /// the size in `unit` of this lowered type
     func size(unit unit: _WidthUnit = .bytes, module: Module) -> Int {

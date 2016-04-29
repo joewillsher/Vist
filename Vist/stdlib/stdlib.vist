@@ -62,6 +62,9 @@ type Int32 {
     var value: Builtin.Int32
     init Int32 = (val) do value = val.value
 }
+type Int8 {
+    var value: Builtin.Int8
+}
 
 type Bool {
     var value: Builtin.Bool
@@ -307,22 +310,70 @@ type UTF16CodeUnit {
     }
 }
 
+/*
+type Pointer {
+    var memory: Builtin.OpaquePointer
+    
+    init Int = (size) {
+        memory = Builtin.heap_alloc size.value
+    }
+    
+    func store :: Int = (val) {
+        let char = Builtin.trunc_int_8 val.value
+        Builtin.opaque_store memory char
+    }
+    
+}
+*/
+
+ref type _StringCore {
+    var _base: Builtin.OpaquePointer, _capacity: Int, _isUTF8Encoded: Bool, _length: Int
+    
+    @mutating func growBufferTo:: Int = (newSize) {
+        let newBuffer = Builtin.heap_alloc newSize.value
+        
+        Builtin.mem_copy newBuffer _base _capacity.value
+        Builtin.heap_free _base
+        
+        _base = newBuffer
+        _capacity = newSize
+    }
+    
+    /*
+    func getCoreCopy:: -> _StringCore = {
+        // copy buffer
+        let newBuffer = Builtin.heap_alloc _capacity.value
+        Builtin.mem_copy newBuffer _base _capacity.value
+        // construct new core
+        return _StringCore newBuffer _capacity _isUTF8Encoded _length
+    }
+    
+    func addUTF8CodeUnit:: UTF8CodeUnit = (unit) {
+        
+    }
+    func addUTF16CodeUnit:: UTF16CodeUnit = (unit) {
+        
+    }
+     */
+    
+    /// Return a pointer to the code unit `offset` from `base`
+    /// temporary substitute until I have StringCore subscripting
+    func codeUnitAtOffset:: Int -> Builtin.OpaquePointer = (offset) do
+        return _base + offset
+}
+
 type String {
-    var base: Builtin.OpaquePointer, length: Int, _capacityAndEncoding: Int
+    var core: _StringCore
     
     init Builtin.OpaquePointer Builtin.Int Builtin.Bool = (ptr count isUTF8Encoded) {
         // allocate the string buffer and copy in from the string ptr we are given
-        base = Builtin.heap_alloc count
+        let base = Builtin.heap_alloc count
         Builtin.mem_copy base ptr count
         
         let c = Int count
-        length = c - 1
-        // store the capacity in the most significant 63 bits of _capacityAndEncoding
-        _capacityAndEncoding = c << 1
-        
-        // if it is UTF-8 we store true in the least significant bit of _capacityAndEncoding
-        if (Bool isUTF8Encoded) do
-             _capacityAndEncoding = _capacityAndEncoding ~| 1
+        let l = c - 1
+        let isutf8 = Bool isUTF8Encoded
+        core = _StringCore base c isutf8 l
     }
     
     //@private init UTF8CodeUnit = (unit) {
@@ -330,24 +381,15 @@ type String {
     //    let s = String
     //}
     
-    /// Whether the string has UTF-8 encoding. if true it is a contiguous block of char*
-    func isUTF8Encoded:: -> Bool = do
-        return _capacityAndEncoding ~& 1 == 1
-    
-    /// The size of the allocated string buffer
-    func bufferCapacity:: -> Int = do
-        return _capacityAndEncoding >> 1
-    
-    /// Return a pointer to the code unit `index` from `base`
-    /// temporary substitute until I have StringCore subscripting
-    func codeUnitAtIndex:: Int -> Builtin.OpaquePointer = (index) do
-        return base + index
+    func _checkUniquelyReferencedCore:: () = {
+        
+    }
     
     /// A genrator -- yields each code unit
     func generate:: -> UTF8CodeUnit = {
         var i = 0
-        while i < self.bufferCapacity () {
-            yield UTF8CodeUnit (Builtin.opaque_load (self.codeUnitAtIndex i))
+        while (i < core._capacity) {
+            yield UTF8CodeUnit (Builtin.opaque_load (core.codeUnitAtOffset i))
             i = i + 1
         }
     }
@@ -355,9 +397,10 @@ type String {
 
 
 @inline func _print :: String = (str) {
-    if str.isUTF8Encoded () {
+    let core = str.core
+    if (core._isUTF8Encoded) {
         // if its all UTF-8 we can just fwrite the buffer
-        vist_cshim_write str.base str.length.value
+        vist_cshim_write str.core._base core._length.value
         return ()
     } else {
         // otherwise we step through, char by char, and putchar it

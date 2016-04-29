@@ -177,13 +177,16 @@ extension FunctionCall/*: VIRGenerator*/ {
         return try zip(argArr, fnType.params).map { rawArg, paramType in
             let arg = try rawArg.emitRValue(module: module, scope: scope)
             
-            // retain the parameters -- pass them in at +1 so the function can release them at its end
             try arg.retain()
             
             // if the function expects an existential, we construct one
             if case let alias as TypeAlias = paramType, case let existentialType as ConceptType = alias.targetType {
-                let existentialRef = try arg.asReferenceAccessor().reference()
+                let existentialRef = try arg.asReferenceAccessor().aggregateReference()
                 return try module.builder.buildExistentialBox(existentialRef, existentialType: existentialType)
+            }
+            else if case let refCounted as RefCountedAccessor = arg {
+                // retain the parameters -- pass them in at +1 so the function can release them at its end
+                return refCounted.aggregateReference()
             }
                 // if its a nominal type we get the object and pass it in
             else {
@@ -247,7 +250,6 @@ extension FuncDecl : StmtEmitter {
         // add the explicit method parameters
         for paramName in impl.params {
             let paramAccessor = try function.paramNamed(paramName).accessor()
-            try paramAccessor.retain()
             fnScope.insert(paramAccessor, name: paramName)
         }
         // A method calling convention means we have to pass `self` in, and tell vars how
@@ -270,7 +272,8 @@ extension FuncDecl : StmtEmitter {
                         fnScope.insert(pVar, name: property.name)
                     }
                 // If it is a value self then we do a struct extract to get self elements
-                case is Accessor:
+                // case is Accessor:
+                default:
                     for property in type.members {
                         let pVar = LazyAccessor {
                             try module.builder.buildStructExtract(Operand(selfVar.getter()), property: property.name, irName: property.name)
@@ -741,7 +744,7 @@ extension MethodCallExpr : ValueEmitter {
         switch object._type {
         case is StructType:
             guard case .method(_, let mutating) = fnType.callingConvention else { fatalError() }
-            let selfObject = try mutating ? selfVar.asReferenceAccessor().reference() : Operand(selfVar.getter())
+            let selfObject = try mutating ? selfVar.asReferenceAccessor().aggregateReference() : Operand(selfVar.aggregateGetter())
 
             let function = try module.getOrInsertFunction(named: mangledName, type: fnType)
             return try module.builder.buildFunctionCall(function, args: [selfObject] + args).accessor()
@@ -749,7 +752,7 @@ extension MethodCallExpr : ValueEmitter {
         case let existentialType as ConceptType:
             
             guard let argTypes = args.optionalMap({$0.type}) else { fatalError() }
-            let selfRef = try selfVar.asReferenceAccessor().reference()
+            let selfRef = try selfVar.asReferenceAccessor().aggregateReference()
             
             // get the witness from the existential
             let fn = try module.builder.buildExistentialWitnessMethod(selfRef,

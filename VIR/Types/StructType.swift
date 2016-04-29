@@ -30,8 +30,10 @@ extension StructType {
         return LLVMType(ref: LLVMStructType(&arr, UInt32(members.count), false))
     }
     func refCountedBox(module: Module) -> TypeAlias {
-        let t = StructType(members: [("object", BuiltinType.pointer(to: self), true), ("refCount", BuiltinType.int(size: 32), false)],
-                           methods: [], name: "\(name).refcounted", heapAllocated: true)
+        let t = StructType(members: [
+            ("object", BuiltinType.pointer(to: self), true),
+            ("refCount", BuiltinType.int(size: 32), false),
+            ], methods: [], name: "\(name).refcounted", heapAllocated: true)
         return module.getOrInsert(t)
     }
     

@@ -333,6 +333,9 @@ struct LLVMModule : Dumpable {
     func validate() throws {
         var err = UnsafeMutablePointer<Int8>.alloc(1)
         guard !LLVMVerifyModule(module, LLVMReturnStatusAction, &err) else {
+            #if DEBUG
+                dump()
+            #endif
             throw irGenError(.invalidModule(module, String.fromCString(err)), userVisible: true)
         }
     }

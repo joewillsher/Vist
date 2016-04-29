@@ -214,6 +214,10 @@ final class RefCountedAccessor : GetSetAccessor {
         return PtrOperand(mem)
     }
     
+    func aggregateGetter() throws -> Value {
+        return mem
+    }
+    
     /// Retain a reference, increment the ref count
     func retain() throws {
         try module.builder.buildRetain(aggregateReference())

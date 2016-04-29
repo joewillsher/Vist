@@ -65,7 +65,11 @@ final class Scope {
     /// - parameter deleting: Whether to delete the scope's variables after releasing
     /// - parameter except: Do not release this variable
     func releaseVariables(deleting deleting: Bool, except: Accessor? = nil) throws {
-        if deleting { variables.removeAll() }
+        if deleting {
+            for (name, _) in variables {
+                try variables.removeValueForKey(name)?.release()
+            }
+        }
     }
     func removeVariables() {
         variables.removeAll()

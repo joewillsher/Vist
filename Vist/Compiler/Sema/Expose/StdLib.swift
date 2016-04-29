@@ -22,15 +22,19 @@ struct StdLib {
 
     static let utf8CodeUnitType = StructType(members:    [("unit", BuiltinType.int(size: 8), true)],     methods: [], name: "UTF8CodeUnit")
     static let utf16CodeUnitType = StructType(members:   [("unit", BuiltinType.int(size: 8), true)],     methods: [], name: "UTF16CodeUnit")
+    static let _stringCoreType = StructType(members: [
+        ("_base", BuiltinType.opaquePointer, true),
+        ("_capacity", intType, true),
+        ("_isUTF8Encoded", boolType, true),
+        ("_length", intType, true),
+        ], methods: [
+            (name: "codeUnitAtOffset", type: FunctionType(params: [StdLib.intType], returns: BuiltinType.opaquePointer), mutating: false),
+//            (name: "getCoreCopy", type: FunctionType(params: [], returns: _stringCoreType), mutating: false),
+        ], name: "_StringCore", heapAllocated: true)
     static let stringType = StructType(
-        members:   [
-            ("base", BuiltinType.opaquePointer, true),
-            ("length", intType, true),
-            ("_capacityAndEncoding", intType, true)],
-        methods: [
-            (name: "isUTF8Encoded", type: FunctionType(params: [], returns: boolType), mutating: false),
-            (name: "bufferCapacity", type: FunctionType(params: [], returns: intType), mutating: false),
-            (name: "codeUnitAtIndex", type: FunctionType(params: [StdLib.intType], returns: BuiltinType.opaquePointer), mutating: false),
+        members: [
+            ("core", _stringCoreType, true),
+        ], methods: [
             (name: "generate", type: FunctionType(params: [], returns: BuiltinType.void, yieldType: utf8CodeUnitType), mutating: false),
         ], name: "String")
     private static let voidType = BuiltinType.void

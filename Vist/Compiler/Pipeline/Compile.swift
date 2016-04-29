@@ -221,7 +221,7 @@ func compileDocuments(
         if options.contains(.verbose) { print(asm) }
         
         
-        let inputFiles = options.contains(.doNotLinkStdLib) ? ["\(file).ll"] : [libVistPath, "\(file).ll"]
+        let inputFiles = options.contains(.doNotLinkStdLib) ? ["\(file).ll"] : [libVistRuntimePath, libVistPath, "\(file).ll"]
         // .ll -> exec
         NSTask.execute(.clang,
                        files: inputFiles,

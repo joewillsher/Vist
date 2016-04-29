@@ -175,7 +175,7 @@ extension Function : VIRLower {
         
         if let b = b { IGF.builder.positionAtEnd(b) }
         
-        try validate()
+//        try validate()
         
         return fn.function
     }
@@ -183,7 +183,7 @@ extension Function : VIRLower {
     private func validate() throws {
         guard !LLVMVerifyFunction(loweredFunction!.function._value, LLVMReturnStatusAction) else {
             #if DEBUG
-            module.loweredModule.dump()
+                try module.loweredModule.validate()
             #endif
             throw irGenError(.invalidFunction(name), userVisible: true)
         }

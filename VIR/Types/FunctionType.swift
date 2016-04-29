@@ -102,7 +102,7 @@ extension FunctionType {
         
         let ret: Type
         if case let s as StructType = returns where s.heapAllocated {
-            ret = s.refCountedBox(module)
+            ret = BuiltinType.pointer(to: s.refCountedBox(module))
         }
         else {
             ret = returns
@@ -110,6 +110,13 @@ extension FunctionType {
         
         var t: FunctionType = self
         t.returns = ret
+        
+        t.params = params.map { param in
+            if case let s as StructType = param where s.heapAllocated {
+                return BuiltinType.pointer(to: s.refCountedBox(module))
+            }
+            else { return param }
+        }
         
         switch callingConvention {
         case .thin:
