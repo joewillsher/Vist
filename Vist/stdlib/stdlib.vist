@@ -8,7 +8,7 @@
 /// initialises a swift string representing an integer
 func int64ToString :: Int -> String = (number) {
     
-    let size = 20 // max possibly 64 bit int is 19 chars, plus 1 for null
+    let size = 20 // max possible 64 bit int is 19 chars, plus 1 for null
     let buffer = Builtin.stack_alloc size.value // alloc buffer
     
     var bufferSize = 1 // start with buffer size 1 for the null terminator
