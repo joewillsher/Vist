@@ -8,31 +8,31 @@
 /// initialises a swift string representing an integer
 func int64ToString :: Int -> String = (number) {
     
-    let size = 20 // max possible 64 bit int is 19 chars, plus 1 for null
+    let size = 21 // max possible 64 bit int is 19 chars,
+                  // plus 1 for null and 1 possible sign char
     let buffer = Builtin.stack_alloc size.value // alloc buffer
     
     var bufferSize = 1 // start with buffer size 1 for the null terminator
     var val = number
     var ptr = buffer + size // the end of the buffer
 
-    // if our num is 0, we return "0"
-    if number == 0 { return "0" }
+    // if its negative, print the normalised val, then later print a - sign
     let isNegative = number < 0
-    
-    if (isNegative) {
+    if (isNegative) do
         val = 0 - val
-    }
 
-    while val != 0 {
+    // until the val is 0 we add new chars to the buffer
+    // if it is initially 0 we put one '0' in
+    while val != 0 || (number == 0 && bufferSize == 1) {
         ptr = ptr - 1 // move back a char
         
-        let v = val % 10 + 48 // magic number '48' shifts 0 to the correct unicode code point
-        let char = Builtin.trunc_int_8 v.value // get a characrer
+        let v = val % 10 + 48 // magic number 48 shifts 0 to the correct unicode code point for '0'
+        let char = Builtin.trunc_int_8 v.value // get an i8
         
         Builtin.opaque_store ptr char // store char in string
         
-        val = val / 10 // remove the last (just added) digit
-        bufferSize = bufferSize + 1 // inc buffer size
+        val = val / 10 // remove the last digit we just added
+        bufferSize = bufferSize + 1 // increment buffer size
     }
     
     if (isNegative) {

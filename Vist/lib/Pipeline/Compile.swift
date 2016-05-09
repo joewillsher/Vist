@@ -17,19 +17,19 @@ struct CompileOptions : OptionSetType {
     let rawValue: Int
     init(rawValue: Int) { self.rawValue = rawValue }
     
-    static let dumpAST = CompileOptions(rawValue: 1 << 0)
-    static let dumpVIR = CompileOptions(rawValue: 1 << 1)
-    static let dumpLLVMIR = CompileOptions(rawValue: 1 << 2)
-    static let dumpASM = CompileOptions(rawValue: 1 << 3)
+    static let dumpAST = CompileOptions(rawValue: 1 << 1)
+    static let dumpVIR = CompileOptions(rawValue: 1 << 2)
+    static let dumpLLVMIR = CompileOptions(rawValue: 1 << 3)
+    static let dumpASM = CompileOptions(rawValue: 1 << 4)
     
-    static let buildAndRun = CompileOptions(rawValue: 1 << 4)
-    static let verbose = CompileOptions(rawValue: 1 << 5)
-    static let preserveTempFiles = CompileOptions(rawValue: 1 << 6)
+    static let buildAndRun = CompileOptions(rawValue: 1 << 5)
+    static let verbose = CompileOptions(rawValue: 1 << 6)
+    static let preserveTempFiles = CompileOptions(rawValue: 1 << 7)
 
-    static let disableStdLibInlinePass = CompileOptions(rawValue: 1 << 7)
-    private static let runVIROptPasses = CompileOptions(rawValue: 1 << 8)
-    private static let runLLVMOptPasses = CompileOptions(rawValue: 1 << 9)
-    static let aggressiveOptimisation = CompileOptions(rawValue: 1 << 10)
+    static let disableStdLibInlinePass = CompileOptions(rawValue: 1 << 8)
+    private static let runVIROptPasses = CompileOptions(rawValue: 1 << 9)
+    private static let runLLVMOptPasses = CompileOptions(rawValue: 1 << 10)
+    static let aggressiveOptimisation = CompileOptions(rawValue: 1 << 11)
     /// No optimisations
     static let Onone: CompileOptions = []
     /// No optimisations, dont even inline stdlib symbols
@@ -39,20 +39,20 @@ struct CompileOptions : OptionSetType {
     /// High opt level
     static let Ohigh: CompileOptions = [O, aggressiveOptimisation]
     
-    static let produceLib = CompileOptions(rawValue: 1 << 11)
+    static let produceLib = CompileOptions(rawValue: 1 << 12)
     /// Compiles stdlib.vist
-    private static let compileStdLib = CompileOptions(rawValue: 1 << 12)
+    private static let compileStdLib = CompileOptions(rawValue: 1 << 13)
     /// Parses the document as if it were the stdlib, exposing Builtin types and functions
-    private static let parseStdLib = CompileOptions(rawValue: 1 << 13)
+    private static let parseStdLib = CompileOptions(rawValue: 1 << 14)
     /// Compiles the standard libary before the input files
     static let buildStdLib: CompileOptions = [compileStdLib, parseStdLib, produceLib, buildRuntime, linkWithRuntime, Ohigh, disableStdLibInlinePass,
                                               verbose, preserveTempFiles]
     
     /// Compiles the runtime
-    static let buildRuntime = CompileOptions(rawValue: 1 << 14)
-    static let debugRuntime = CompileOptions(rawValue: 1 << 15)
+    static let buildRuntime = CompileOptions(rawValue: 1 << 15)
+    static let debugRuntime = CompileOptions(rawValue: 1 << 16)
     /// Links the input files with the runtime
-    private static let linkWithRuntime = CompileOptions(rawValue: 1 << 16)
+    private static let linkWithRuntime = CompileOptions(rawValue: 1 << 17)
     /// Parse this file as stdlib code and link manually with runtime
     static let doNotLinkStdLib: CompileOptions = [buildRuntime, linkWithRuntime, parseStdLib]
 }

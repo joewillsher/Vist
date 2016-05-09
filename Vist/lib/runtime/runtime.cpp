@@ -7,7 +7,8 @@
 //
 
 //  The runtime is exposed to the compiler, and allows it to inspect details
-//  of the runtime, like type metadata and reference counts
+//  of the program state, like type metadata and reference counts, as well as
+//  being responsible for allocating and deallocating objects
 
 #include <stdio.h>
 #include <stdint.h>
