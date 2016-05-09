@@ -50,8 +50,9 @@ struct CompileOptions : OptionSetType {
     
     /// Compiles the runtime
     static let buildRuntime = CompileOptions(rawValue: 1 << 14)
+    static let debugRuntime = CompileOptions(rawValue: 1 << 15)
     /// Links the input files with the runtime
-    private static let linkWithRuntime = CompileOptions(rawValue: 1 << 15)
+    private static let linkWithRuntime = CompileOptions(rawValue: 1 << 16)
     /// Parse this file as stdlib code and link manually with runtime
     static let doNotLinkStdLib: CompileOptions = [buildRuntime, linkWithRuntime, parseStdLib]
 }
@@ -135,7 +136,7 @@ func compileDocuments(
     if options.contains(.verbose) { print(virModule.vir) }
     
     if options.contains(.buildRuntime) {
-        buildRuntime()
+        buildRuntime(debugRuntime: options.contains(.debugRuntime))
     }
 
     let stdlibDirectory = "\(SOURCE_ROOT)/Vist/stdlib"
@@ -268,7 +269,7 @@ func runExecutable(
 }
 
 
-func buildRuntime() {
+func buildRuntime(debugRuntime debug: Bool) {
     
     let runtimeDirectory = "\(SOURCE_ROOT)/Vist/lib/runtime"
     let libVistRuntimePath = "/usr/local/lib/libvistruntime.dylib"
@@ -279,7 +280,7 @@ func buildRuntime() {
                    files: ["runtime.cpp"],
                    outputName: libVistRuntimePath,
                    cwd: runtimeDirectory,
-                   args: "-dynamiclib", "-std=c++14")
+                   args: "-dynamiclib", "-std=c++14", debug ? "-DREFCOUNT_DEBUG" : "")
     
 }
 

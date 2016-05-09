@@ -33,6 +33,7 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
         "-lib": .produceLib,
         "-parse-stdlib": .doNotLinkStdLib,
         "-build-runtime": .buildRuntime,
+        "-debug-runtime": .debugRuntime,
     ]
     
     for flag in flags.flatMap({map[$0]}) {
@@ -51,7 +52,8 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
                 "  -run -r\t\t- Run the program after compilation\n" +
                 "  -build-stdlib\t\t- Build the standard library too\n" +
                 "  -parse-stdlib\t\t- Compile the module as if it were the stdlib. This exposes Builtin functions and links the runtime directly\n" +
-                "  -build-runtime\t- Build the runtime too\n" +
+                "  -build-runtime\t- Build the runtime\n" +
+                "  -debug-runtime\t- The runtime logs reference counting operations\n" +
                 "  -preserve\t\t- Keep intermediate IR and ASM files")
     }
     else {
@@ -73,7 +75,7 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
                                  options: compileOptions)
         }
         else if compileOptions.contains(.buildRuntime) {
-            buildRuntime()
+            buildRuntime(debugRuntime: compileOptions.contains(.debugRuntime))
         }
         
         #if DEBUG

@@ -6,9 +6,8 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-//  This file implements the Vist runtime. It exposes functions to Vist code
-//  by calling to C APIs
-
+//  The runtime is exposed to the compiler, and allows it to inspect details
+//  of the runtime, like type metadata and reference counts
 
 #include <stdio.h>
 #include <stdint.h>
@@ -28,8 +27,6 @@
 ///     - Note that any `-` has to be replaced with a `$`. The importer will switch it back
 ///     - All functions in this namespace should be prefixed with vist_
 ///     - If the function is just for the compiler to call, dont mangle it, eg. `vist_getAccessor`
-
-#define REFCOUNT_DEBUG
 
 struct RefcountedObject {
     void *object;

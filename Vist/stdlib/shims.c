@@ -6,6 +6,8 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
+// these shims expose to the stdlib compiler c untility functions
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
