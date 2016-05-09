@@ -28,13 +28,6 @@ vist$Ucshim$Uputchar_ti8(char c) {
     putchar_unlocked(c);
 };
 
-ALWAYSINLINE
-void
-vist$Ucshim$Uwrite_charbuffer_topi64(const void *str, int64_t num) {
-    fwrite(str, sizeof(char), num, stdout);
-};
-
-
 
 // Legacy shims:
 

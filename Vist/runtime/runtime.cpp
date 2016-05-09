@@ -64,7 +64,7 @@ vist_allocObject(uint32_t size) {
     refCountedObject->object = object;
     refCountedObject->refCount = 0;
 #ifdef REFCOUNT_DEBUG
-    printf(">alloc %p, %i\n", refCountedObject->object, refCountedObject->refCount);
+    printf(">alloc  \t%p, rc=%i\n", refCountedObject->object, refCountedObject->refCount);
 #endif
     // return heap pointer to ref counted box
     return refCountedObject;
@@ -75,7 +75,7 @@ NOMANGLE ALWAYSINLINE
 void
 vist_deallocObject(RefcountedObject *object) {
 #ifdef REFCOUNT_DEBUG
-    printf(">dealloc %p\n", object->object);
+    printf(">dealloc\t%p\n", object->object);
 #endif
     free(object->object);
     // this is probably leaking -- `object` is on the heap and we can't dispose of it
@@ -86,7 +86,7 @@ NOMANGLE ALWAYSINLINE
 void
 vist_releaseObject(RefcountedObject *object) {
 #ifdef REFCOUNT_DEBUG
-    printf(">release %p, %i\n", object->object, object->refCount-1);
+    printf(">release\t%p, rc=%i\n", object->object, object->refCount-1);
 #endif
     // if no more references, we dealloc it
     if (object->refCount == 1)
@@ -102,7 +102,7 @@ void
 vist_retainObject(RefcountedObject *object) {
     incrementRefCount(object);
 #ifdef REFCOUNT_DEBUG
-    printf(">retain %p, %i\n", object->object, object->refCount);
+    printf(">retain \t%p, rc=%i\n", object->object, object->refCount);
 #endif
 };
 
@@ -112,7 +112,7 @@ void
 vist_releaseUnownedObject(RefcountedObject *object) {
     decrementRefCount(object);
 #ifdef REFCOUNT_DEBUG
-    printf(">release-unowned %p, %i\n", object->object, object->refCount);
+    printf(">release-unowned \t%p, rc=%i\n", object->object, object->refCount);
 #endif
 };
 
@@ -121,7 +121,7 @@ NOMANGLE ALWAYSINLINE
 void
 vist_deallocUnownedObject(RefcountedObject *object) {
 #ifdef REFCOUNT_DEBUG
-    printf(">dealloc-unowned %p, %i\n", object->object, object->refCount);
+    printf(">dealloc-unowned\t%p, rc=%i\n", object->object, object->refCount);
 #endif
     if (object->refCount == 0)
         vist_deallocObject(object);
@@ -161,15 +161,6 @@ bool
 vist_setYieldTarget() {
     return setjmp(yieldTarget);
 }
-
-
-int main() {
-
-
-
-    return 0;
-}
-
 
 
 
