@@ -16,49 +16,55 @@
 
 // Printing
 
-NOINLINE
-void
-vist$Uprint_ti64(int64_t i) {
-    printf("%lli\n", i);
-};
-
-NOINLINE
-void
-vist$Uprint_ti32(int32_t i) {
-    printf("%i\n", i);
-};
-
-NOINLINE
-void
-vist$Uprint_tf64(double d)
-{
-    printf("%f\n", d);
-};
-
-NOINLINE
-void
-vist$Uprint_tf32(float d) {
-    printf("%f\n", d);
-};
-
-NOINLINE
-void
-vist$Uprint_tb(bool b) {
-    printf(b ? "true\n" : "false\n");
-};
-
-
-// MARK: vist c-shim functions
-
 ALWAYSINLINE
 void
 vist$Ucshim$Uwrite_topi64(const void *str, int64_t size) {
     fwrite(str, size, 1, stdout);
 };
 
-NOINLINE
+ALWAYSINLINE
 void
 vist$Ucshim$Uputchar_ti8(char c) {
     putchar_unlocked(c);
 };
 
+ALWAYSINLINE
+void
+vist$Ucshim$Uwrite_charbuffer_topi64(const void *str, int64_t num) {
+    fwrite(str, sizeof(char), num, stdout);
+};
+
+
+
+// Legacy shims:
+
+NOINLINE
+void
+vist$Ucshim$Uprint_ti64(int64_t i) {
+    printf("%lli\n", i);
+};
+
+NOINLINE
+void
+vist$Ucshim$Uprint_ti32(int32_t i) {
+    printf("%i\n", i);
+};
+
+NOINLINE
+void
+vist$Ucshim$Uprint_tf64(double d)
+{
+    printf("%f\n", d);
+};
+
+NOINLINE
+void
+vist$Ucshim$Uprint_tf32(float d) {
+    printf("%f\n", d);
+};
+
+NOINLINE
+void
+vist$Ucshim$Uprint_tb(bool b) {
+    printf(b ? "true\n" : "false\n");
+};

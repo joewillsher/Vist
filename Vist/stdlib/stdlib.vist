@@ -14,7 +14,15 @@ func int64ToString :: Int -> String = (number) {
     var bufferSize = 1 // start with buffer size 1 for the null terminator
     var val = number
     var ptr = buffer + size // the end of the buffer
+
+    // if our num is 0, we return "0"
+    if number == 0 { return "0" }
+    let isNegative = number < 0
     
+    if (isNegative) {
+        val = 0 - val
+    }
+
     while val != 0 {
         ptr = ptr - 1 // move back a char
         
@@ -24,6 +32,15 @@ func int64ToString :: Int -> String = (number) {
         Builtin.opaque_store ptr char // store char in string
         
         val = val / 10 // remove the last (just added) digit
+        bufferSize = bufferSize + 1 // inc buffer size
+    }
+    
+    if (isNegative) {
+        ptr = ptr - 1
+        let minus = 45 
+        let char = Builtin.trunc_int_8 minus.value
+        
+        Builtin.opaque_store ptr char
         bufferSize = bufferSize + 1 // inc buffer size
     }
     
@@ -41,9 +58,9 @@ type Int {
     }
     init Int = (val) do value = val.value
     
-    func description :: -> String = {
+    func description :: -> String = do
         return int64ToString self
-    }
+    
 }
 type Int32 {
     var value: Builtin.Int32
@@ -58,6 +75,10 @@ type Bool {
         value = b.value
     }
     init Bool = (val) do value = val.value
+
+    func description :: -> String = do
+        if self do return "true"
+           else do return "false"
 }
 
 type Double {
@@ -70,9 +91,8 @@ type Double {
 // free functions
 // ----------------------------------------------------
 
-@public @inline func print :: Int32 = (a) do vist_print a.value
-@public @inline func print :: Bool = (a) do vist_print a.value
-@public @inline func print :: Double = (a) do vist_print a.value
+@public @inline func print :: Int32 = (a) do vist_cshim_print a.value
+@public @inline func print :: Double = (a) do vist_cshim_print a.value
 
 
 // TODO: print message
@@ -353,6 +373,11 @@ type String {
     _print (a.description ())
     _print "\n"
 }
+@public @inline func print :: Bool = (b) {
+    _print (b.description ())
+    _print "\n"
+}
+
 
 // TODO: a printing protocol which allows any type to generate its string repr
 //       then the print function steps through that string and prints it,

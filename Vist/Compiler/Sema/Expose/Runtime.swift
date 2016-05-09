@@ -20,10 +20,10 @@ struct Runtime {
     
     private static let functions: [(String, FunctionType)] = [
         // runtime fns
-        ("vist_print", FunctionType(params: [intType], returns: voidType)),
-        ("vist_print", FunctionType(params: [doubleType], returns: voidType)),
-        ("vist_print", FunctionType(params: [boolType], returns: voidType)),
-        ("vist_print", FunctionType(params: [int32Type], returns: voidType)),
+        ("vist_cshim_print", FunctionType(params: [intType], returns: voidType)),
+        ("vist_cshim_print", FunctionType(params: [doubleType], returns: voidType)),
+        ("vist_cshim_print", FunctionType(params: [boolType], returns: voidType)),
+        ("vist_cshim_print", FunctionType(params: [int32Type], returns: voidType)),
         ("vist_cshim_putchar", FunctionType(params: [BuiltinType.int(size: 8)], returns: voidType)),
         ("vist_cshim_write", FunctionType(params: [opaquePointerType, intType], returns: voidType)),
     ]
