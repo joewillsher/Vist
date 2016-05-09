@@ -14,20 +14,6 @@
 #include <stdlib.h>
 #include <setjmp.h>
 
-#define NOMANGLE extern "C"
-#define NORETURN __attribute__((noreturn))
-#define NOINLINE __attribute__((noinline))
-#define ALWAYSINLINE __attribute__((always_inline))
-
-// Currently all exposed functions NOINLINE because optimiser cant copy over the string data across modules
-
-/// Name Mangling:
-///     - If you want the function to be called by vist users, write the full, mangled name
-///       like `vist$Uprint_i64` can be called as `vist_print`.
-///     - Note that any `-` has to be replaced with a `$`. The importer will switch it back
-///     - All functions in this namespace should be prefixed with vist_
-///     - If the function is just for the compiler to call, dont mangle it, eg. `vist_getAccessor`
-
 struct RefcountedObject {
     void *object;
     uint32_t refCount;
@@ -35,12 +21,12 @@ struct RefcountedObject {
 
 // Private
 
-ALWAYSINLINE
+__attribute__((always_inline))
 void incrementRefCount(RefcountedObject *object) {
     __atomic_fetch_add(&object->refCount, 1, __ATOMIC_RELAXED);
 }
 
-ALWAYSINLINE
+__attribute__((always_inline))
 void decrementRefCount(RefcountedObject *object) {
     __atomic_fetch_sub(&object->refCount, 1, __ATOMIC_RELAXED);
 }
@@ -49,7 +35,7 @@ void decrementRefCount(RefcountedObject *object) {
 // Ref counting
 
 /// allocates a new heap object and returns the refcounted box
-NOMANGLE ALWAYSINLINE
+extern "C"
 RefcountedObject *
 vist_allocObject(uint32_t size) {
     // malloc the object storage
@@ -68,9 +54,8 @@ vist_allocObject(uint32_t size) {
 };
 
 /// Deallocs a heap object
-NOMANGLE ALWAYSINLINE
-void
-vist_deallocObject(RefcountedObject *object) {
+extern "C"
+void vist_deallocObject(RefcountedObject *object) {
 #ifdef REFCOUNT_DEBUG
     printf(">dealloc\t%p\n", object->object);
 #endif
@@ -79,9 +64,8 @@ vist_deallocObject(RefcountedObject *object) {
 };
 
 /// Releases this capture. If its now unowned we dealloc
-NOMANGLE ALWAYSINLINE
-void
-vist_releaseObject(RefcountedObject *object) {
+extern "C"
+void vist_releaseObject(RefcountedObject *object) {
 #ifdef REFCOUNT_DEBUG
     printf(">release\t%p, rc=%i\n", object->object, object->refCount-1);
 #endif
@@ -94,9 +78,8 @@ vist_releaseObject(RefcountedObject *object) {
 };
 
 /// Retain an object
-NOMANGLE ALWAYSINLINE
-void
-vist_retainObject(RefcountedObject *object) {
+extern "C"
+void vist_retainObject(RefcountedObject *object) {
     incrementRefCount(object);
 #ifdef REFCOUNT_DEBUG
     printf(">retain \t%p, rc=%i\n", object->object, object->refCount);
@@ -104,9 +87,8 @@ vist_retainObject(RefcountedObject *object) {
 };
 
 /// Release an object without deallocating
-NOMANGLE ALWAYSINLINE
-void
-vist_releaseUnownedObject(RefcountedObject *object) {
+extern "C"
+void vist_releaseUnownedObject(RefcountedObject *object) {
     decrementRefCount(object);
 #ifdef REFCOUNT_DEBUG
     printf(">release-unowned \t%p, rc=%i\n", object->object, object->refCount);
@@ -114,9 +96,8 @@ vist_releaseUnownedObject(RefcountedObject *object) {
 };
 
 /// Deallocate a -1 object if it is unowned
-NOMANGLE ALWAYSINLINE
-void
-vist_deallocUnownedObject(RefcountedObject *object) {
+extern "C"
+void vist_deallocUnownedObject(RefcountedObject *object) {
 #ifdef REFCOUNT_DEBUG
     printf(">dealloc-unowned\t%p, rc=%i\n", object->object, object->refCount);
 #endif
@@ -125,16 +106,14 @@ vist_deallocUnownedObject(RefcountedObject *object) {
 };
 
 /// Get the ref count
-NOMANGLE ALWAYSINLINE
-uint32_t
-vist_getObjectRefcount(RefcountedObject *object) {
+extern "C"
+uint32_t vist_getObjectRefcount(RefcountedObject *object) {
     return object->refCount;
 };
 
 /// Check if the object is singly referenced
-NOMANGLE ALWAYSINLINE
-bool
-vist_objectHasUniqueReference(RefcountedObject *object) {
+extern "C"
+bool vist_objectHasUniqueReference(RefcountedObject *object) {
     return object->refCount == 1;
 };
 
@@ -145,19 +124,50 @@ vist_objectHasUniqueReference(RefcountedObject *object) {
 static jmp_buf yieldTarget;
 
 /// Returns to the saved stack position
-NOMANGLE ALWAYSINLINE
-void
-vist_yieldUnwind() {
+extern "C"
+void vist_yieldUnwind() {
     return longjmp(yieldTarget, 1);
 }
 
 /// Sets this stack state as the target state
 /// \returns whether we got to this spot by yielding
-NOMANGLE ALWAYSINLINE
-bool
-vist_setYieldTarget() {
+extern "C"
+bool vist_setYieldTarget() {
     return setjmp(yieldTarget);
 }
+
+
+
+//// Type metadata
+//
+//struct VistInt_t {
+//    int64_t value;
+//};
+//struct VistBool_t {
+//    bool value;
+//};
+//struct VistInt32_t {
+//    int32_t value;
+//};
+//struct VistString_t {
+//    void *base;
+//    int64_t size;
+//    int64_t _capacityAndEncoding;
+//};
+//
+//
+//struct TypeMetadata_t {
+//    ...
+//};
+//
+//extern "C"
+//getSpecialisedType ...
+
+
+
+
+
+
 
 
 
