@@ -270,7 +270,7 @@ func runExecutable(
 
 func buildRuntime() {
     
-    let runtimeDirectory = "\(SOURCE_ROOT)/Vist/runtime"
+    let runtimeDirectory = "\(SOURCE_ROOT)/Vist/lib/runtime"
     let libVistRuntimePath = "/usr/local/lib/libvistruntime.dylib"
     
     // .cpp -> .dylib
