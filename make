@@ -6,7 +6,7 @@ printf 'Configure\n'
 printf
 if [ ! -a Vist/Compiler/Include/Utils.h ]
     then
-         printf "//\n//  Utils.h\n//  Vist\n//\n//  Created by Josef Willsher on 03/02/2016.\n//  Copyright © 2016 vistlang. All rights reserved.\n//\n\n#ifndef Utils_h\n#define Utils_h\n\n#define SOURCE_ROOT \"$(pwd)\"\n\n#endif /* Utils_h */\n" > Vist/Compiler/Include/Utils.h
+         printf "//\n//  Utils.h\n//  Vist\n//\n//  Created by Josef Willsher on 03/02/2016.\n//  Copyright © 2016 vistlang. All rights reserved.\n//\n\n#ifndef Utils_h\n#define Utils_h\n\n#define SOURCE_ROOT \"$(pwd)\"\n\n#endif /* Utils_h */\n" > Vist/lib/Include/Utils.h
 fi
 
 printf 'Download LLVM & Clang\n'

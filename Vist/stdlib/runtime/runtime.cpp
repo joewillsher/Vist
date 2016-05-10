@@ -14,6 +14,8 @@
 // Existential logic
 
 #include <setjmp.h>
+#include <stdint.h>
+#include <stdlib.h>
 
 // setjmp functions
 
