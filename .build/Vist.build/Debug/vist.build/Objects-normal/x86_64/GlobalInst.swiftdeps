@@ -1,0 +1,396 @@
+### Swift dependencies file v0 ###
+provides-top-level:
+- "GlobalValue"
+- "=="
+provides-nominal:
+- "C4vist11GlobalValue"
+- "CC4vist11GlobalValue8Lifetime"
+provides-member:
+- ["C4vist11GlobalValue", ""]
+- ["CC4vist11GlobalValue8Lifetime", ""]
+- ["C4vist11GlobalValue", "memType"]
+- ["C4vist11GlobalValue", "type"]
+- ["C4vist11GlobalValue", "irName"]
+- ["C4vist11GlobalValue", "vir"]
+provides-dynamic-lookup:
+depends-top-level:
+- "GlobalValue"
+- "Type"
+- "Module"
+- "Function"
+- "Operand"
+- "=="
+- !private "BuiltinType"
+- "BasicBlock"
+- !private "StringLiteralType"
+- "String"
+- "Equatable"
+- "Bool"
+- "Int"
+- "Hashable"
+- "Inst"
+- "LValue"
+depends-member:
+- !private ["Ps9AnyObject", "BuiltinType"]
+- !private ["Ps9AnyObject", "Operand"]
+- ["Ps9AnyObject", "debugDescription"]
+- !private ["Ps9AnyObject", "end"]
+- !private ["Ps9AnyObject", "globalName"]
+- !private ["Ps9AnyObject", "globalType"]
+- ["Ps9AnyObject", "hashValue"]
+- !private ["Ps9AnyObject", "init"]
+- !private ["Ps9AnyObject", "insertGlobalLifetime"]
+- ["Ps9AnyObject", "irName"]
+- !private ["Ps9AnyObject", "lifetime"]
+- ["Ps9AnyObject", "memType"]
+- ["Ps9AnyObject", "module"]
+- ["Ps9AnyObject", "name"]
+- !private ["Ps9AnyObject", "owningFunction"]
+- ["Ps9AnyObject", "parentBlock"]
+- !private ["Ps9AnyObject", "removeGlobalLifetime"]
+- !private ["Ps9AnyObject", "start"]
+- ["Ps9AnyObject", "type"]
+- ["Ps9AnyObject", "uses"]
+- ["Ps9AnyObject", "vir"]
+- ["Ps9AnyObject", ""]
+- !private ["Sb", "deinit"]
+- !private ["O4vist11BuiltinType", "deinit"]
+- !private ["O4vist11BuiltinType", "pointer"]
+- !private ["Ps11CVarArgType", "hashValue"]
+- !private ["Ps11CVarArgType", "init"]
+- !private ["Vs9Character", "deinit"]
+- !private ["Ps10Comparable", "hashValue"]
+- !private ["Ps10Comparable", "init"]
+- !private ["Ps28CustomDebugStringConvertible", "BuiltinType"]
+- !private ["Ps28CustomDebugStringConvertible", "Operand"]
+- ["Ps28CustomDebugStringConvertible", "Some"]
+- ["Ps28CustomDebugStringConvertible", "debugDescription"]
+- !private ["Ps28CustomDebugStringConvertible", "globalName"]
+- !private ["Ps28CustomDebugStringConvertible", "globalType"]
+- ["Ps28CustomDebugStringConvertible", "hashValue"]
+- !private ["Ps28CustomDebugStringConvertible", "init"]
+- !private ["Ps28CustomDebugStringConvertible", "insertGlobalLifetime"]
+- ["Ps28CustomDebugStringConvertible", "irName"]
+- !private ["Ps28CustomDebugStringConvertible", "lifetime"]
+- ["Ps28CustomDebugStringConvertible", "memType"]
+- ["Ps28CustomDebugStringConvertible", "module"]
+- ["Ps28CustomDebugStringConvertible", "name"]
+- ["Ps28CustomDebugStringConvertible", "parentBlock"]
+- !private ["Ps28CustomDebugStringConvertible", "pointer"]
+- !private ["Ps28CustomDebugStringConvertible", "removeGlobalLifetime"]
+- ["Ps28CustomDebugStringConvertible", "type"]
+- ["Ps28CustomDebugStringConvertible", "uses"]
+- ["Ps28CustomDebugStringConvertible", "vir"]
+- ["Ps28CustomDebugStringConvertible", ""]
+- !private ["Ps23CustomStringConvertible", "hashValue"]
+- !private ["Ps23CustomStringConvertible", "init"]
+- !private ["Sd", "deinit"]
+- !private ["Ps9Equatable", "BuiltinType"]
+- !private ["Ps9Equatable", "Operand"]
+- ["Ps9Equatable", "debugDescription"]
+- !private ["Ps9Equatable", "globalName"]
+- !private ["Ps9Equatable", "globalType"]
+- ["Ps9Equatable", "hashValue"]
+- !private ["Ps9Equatable", "init"]
+- !private ["Ps9Equatable", "insertGlobalLifetime"]
+- ["Ps9Equatable", "irName"]
+- !private ["Ps9Equatable", "lifetime"]
+- ["Ps9Equatable", "memType"]
+- ["Ps9Equatable", "module"]
+- ["Ps9Equatable", "name"]
+- ["Ps9Equatable", "parentBlock"]
+- !private ["Ps9Equatable", "pointer"]
+- !private ["Ps9Equatable", "removeGlobalLifetime"]
+- ["Ps9Equatable", "type"]
+- ["Ps9Equatable", "uses"]
+- ["Ps9Equatable", "vir"]
+- ["Ps9Equatable", ""]
+- !private ["Ps41ExtendedGraphemeClusterLiteralConvertible", "hashValue"]
+- !private ["Ps41ExtendedGraphemeClusterLiteralConvertible", "init"]
+- !private ["Sf", "deinit"]
+- !private ["C4vist8Function", "insertGlobalLifetime"]
+- !private ["C4vist8Function", "removeGlobalLifetime"]
+- ["C4vist11GlobalValue", "BasicBlock"]
+- !private ["C4vist11GlobalValue", "BuiltinType"]
+- ["C4vist11GlobalValue", "Function"]
+- ["C4vist11GlobalValue", "Inst"]
+- ["C4vist11GlobalValue", "Int"]
+- ["C4vist11GlobalValue", "Lifetime"]
+- ["C4vist11GlobalValue", "Module"]
+- ["C4vist11GlobalValue", "Operand"]
+- ["C4vist11GlobalValue", "String"]
+- ["C4vist11GlobalValue", "Type"]
+- ["C4vist11GlobalValue", "debugDescription"]
+- ["C4vist11GlobalValue", "deinit"]
+- ["C4vist11GlobalValue", "globalName"]
+- ["C4vist11GlobalValue", "globalType"]
+- ["C4vist11GlobalValue", "hashValue"]
+- ["C4vist11GlobalValue", "init"]
+- ["C4vist11GlobalValue", "irName"]
+- ["C4vist11GlobalValue", "lifetime"]
+- ["C4vist11GlobalValue", "memType"]
+- ["C4vist11GlobalValue", "module"]
+- ["C4vist11GlobalValue", "name"]
+- ["C4vist11GlobalValue", "parentBlock"]
+- ["C4vist11GlobalValue", "type"]
+- ["C4vist11GlobalValue", "uses"]
+- ["C4vist11GlobalValue", "vir"]
+- !private ["Ps8Hashable", "BuiltinType"]
+- !private ["Ps8Hashable", "Operand"]
+- ["Ps8Hashable", "debugDescription"]
+- !private ["Ps8Hashable", "globalName"]
+- !private ["Ps8Hashable", "globalType"]
+- ["Ps8Hashable", "hashValue"]
+- !private ["Ps8Hashable", "init"]
+- !private ["Ps8Hashable", "insertGlobalLifetime"]
+- ["Ps8Hashable", "irName"]
+- !private ["Ps8Hashable", "lifetime"]
+- ["Ps8Hashable", "memType"]
+- ["Ps8Hashable", "module"]
+- ["Ps8Hashable", "name"]
+- ["Ps8Hashable", "parentBlock"]
+- !private ["Ps8Hashable", "removeGlobalLifetime"]
+- ["Ps8Hashable", "type"]
+- ["Ps8Hashable", "uses"]
+- ["Ps8Hashable", "vir"]
+- ["Ps8Hashable", ""]
+- !private ["Si", "deinit"]
+- !private ["Vs5Int16", "deinit"]
+- !private ["Vs5Int32", "deinit"]
+- !private ["Vs5Int64", "deinit"]
+- !private ["Vs4Int8", "deinit"]
+- !private ["P4vist6LValue", "BuiltinType"]
+- !private ["P4vist6LValue", "Operand"]
+- ["P4vist6LValue", "debugDescription"]
+- !private ["P4vist6LValue", "globalName"]
+- !private ["P4vist6LValue", "globalType"]
+- ["P4vist6LValue", "hashValue"]
+- ["P4vist6LValue", "irName"]
+- !private ["P4vist6LValue", "lifetime"]
+- ["P4vist6LValue", "memType"]
+- ["P4vist6LValue", "module"]
+- ["P4vist6LValue", "name"]
+- ["P4vist6LValue", "parentBlock"]
+- ["P4vist6LValue", "type"]
+- ["P4vist6LValue", "uses"]
+- ["P4vist6LValue", "vir"]
+- ["P4vist6LValue", ""]
+- ["CC4vist11GlobalValue8Lifetime", "Function"]
+- ["CC4vist11GlobalValue8Lifetime", "Inst"]
+- ["CC4vist11GlobalValue8Lifetime", "Operand"]
+- ["CC4vist11GlobalValue8Lifetime", "String"]
+- ["CC4vist11GlobalValue8Lifetime", "deinit"]
+- ["CC4vist11GlobalValue8Lifetime", "end"]
+- ["CC4vist11GlobalValue8Lifetime", "globalName"]
+- ["CC4vist11GlobalValue8Lifetime", "init"]
+- !private ["CC4vist11GlobalValue8Lifetime", "owningFunction"]
+- ["CC4vist11GlobalValue8Lifetime", "start"]
+- !private ["Ps14MirrorPathType", "hashValue"]
+- !private ["Ps14MirrorPathType", "init"]
+- !private ["PSo8NSCoding", "hashValue"]
+- !private ["PSo8NSCoding", "init"]
+- !private ["PSo9NSCopying", "hashValue"]
+- !private ["PSo9NSCopying", "init"]
+- !private ["PSo16NSMutableCopying", "hashValue"]
+- !private ["PSo16NSMutableCopying", "init"]
+- !private ["CSo8NSObject", "hashValue"]
+- !private ["CSo8NSObject", "init"]
+- !private ["PSo16NSObjectProtocol", "hashValue"]
+- !private ["PSo16NSObjectProtocol", "init"]
+- !private ["PSo14NSSecureCoding", "hashValue"]
+- !private ["PSo14NSSecureCoding", "init"]
+- !private ["CSo8NSString", "hashValue"]
+- !private ["CSo8NSString", "init"]
+- ["Ps21NilLiteralConvertible", "Some"]
+- !private ["C4vist7Operand", "init"]
+- ["Sq", "Some"]
+- !private ["Ps16OutputStreamType", "hashValue"]
+- !private ["Ps16OutputStreamType", "init"]
+- ["P4vist9Printable", "Some"]
+- !private ["P4vist9Printable", "hashValue"]
+- !private ["P4vist9Printable", "init"]
+- !private ["P4vist9Printable", "pointer"]
+- !private ["Ps10Streamable", "hashValue"]
+- !private ["Ps10Streamable", "init"]
+- !private ["SS", "hashValue"]
+- !private ["SS", "init"]
+- !private ["Ps30StringInterpolationConvertible", "hashValue"]
+- !private ["Ps30StringInterpolationConvertible", "init"]
+- !private ["Ps24StringLiteralConvertible", "hashValue"]
+- !private ["Ps24StringLiteralConvertible", "init"]
+- !private ["P4vist4Type", "pointer"]
+- !private ["Su", "deinit"]
+- !private ["Vs6UInt16", "deinit"]
+- !private ["Vs6UInt32", "deinit"]
+- !private ["Vs6UInt64", "deinit"]
+- !private ["Vs5UInt8", "deinit"]
+- !private ["Sc", "deinit"]
+- !private ["Ps31UnicodeScalarLiteralConvertible", "hashValue"]
+- !private ["Ps31UnicodeScalarLiteralConvertible", "init"]
+- !private ["P4vist10VIRElement", "BuiltinType"]
+- !private ["P4vist10VIRElement", "Operand"]
+- ["P4vist10VIRElement", "debugDescription"]
+- !private ["P4vist10VIRElement", "globalName"]
+- !private ["P4vist10VIRElement", "globalType"]
+- ["P4vist10VIRElement", "hashValue"]
+- !private ["P4vist10VIRElement", "init"]
+- !private ["P4vist10VIRElement", "insertGlobalLifetime"]
+- ["P4vist10VIRElement", "irName"]
+- !private ["P4vist10VIRElement", "lifetime"]
+- ["P4vist10VIRElement", "memType"]
+- ["P4vist10VIRElement", "module"]
+- ["P4vist10VIRElement", "name"]
+- ["P4vist10VIRElement", "parentBlock"]
+- !private ["P4vist10VIRElement", "pointer"]
+- !private ["P4vist10VIRElement", "removeGlobalLifetime"]
+- ["P4vist10VIRElement", "type"]
+- ["P4vist10VIRElement", "uses"]
+- ["P4vist10VIRElement", "vir"]
+- ["P4vist10VIRElement", ""]
+- !private ["P4vist8VIRLower", "BuiltinType"]
+- !private ["P4vist8VIRLower", "Operand"]
+- ["P4vist8VIRLower", "debugDescription"]
+- !private ["P4vist8VIRLower", "globalName"]
+- !private ["P4vist8VIRLower", "globalType"]
+- ["P4vist8VIRLower", "hashValue"]
+- !private ["P4vist8VIRLower", "init"]
+- !private ["P4vist8VIRLower", "insertGlobalLifetime"]
+- ["P4vist8VIRLower", "irName"]
+- !private ["P4vist8VIRLower", "lifetime"]
+- ["P4vist8VIRLower", "memType"]
+- ["P4vist8VIRLower", "module"]
+- ["P4vist8VIRLower", "name"]
+- ["P4vist8VIRLower", "parentBlock"]
+- !private ["P4vist8VIRLower", "removeGlobalLifetime"]
+- ["P4vist8VIRLower", "type"]
+- ["P4vist8VIRLower", "uses"]
+- ["P4vist8VIRLower", "vir"]
+- !private ["P4vist5Value", "BuiltinType"]
+- !private ["P4vist5Value", "Operand"]
+- ["P4vist5Value", "debugDescription"]
+- !private ["P4vist5Value", "globalName"]
+- !private ["P4vist5Value", "globalType"]
+- ["P4vist5Value", "hashValue"]
+- !private ["P4vist5Value", "init"]
+- ["P4vist5Value", "irName"]
+- !private ["P4vist5Value", "lifetime"]
+- ["P4vist5Value", "memType"]
+- ["P4vist5Value", "module"]
+- ["P4vist5Value", "name"]
+- ["P4vist5Value", "parentBlock"]
+- ["P4vist5Value", "type"]
+- ["P4vist5Value", "uses"]
+- ["P4vist5Value", "vir"]
+- ["P4vist5Value", ""]
+- !private ["Ps49_BuiltinExtendedGraphemeClusterLiteralConvertible", "hashValue"]
+- !private ["Ps49_BuiltinExtendedGraphemeClusterLiteralConvertible", "init"]
+- !private ["Ps32_BuiltinStringLiteralConvertible", "hashValue"]
+- !private ["Ps32_BuiltinStringLiteralConvertible", "init"]
+- !private ["Ps37_BuiltinUTF16StringLiteralConvertible", "hashValue"]
+- !private ["Ps37_BuiltinUTF16StringLiteralConvertible", "init"]
+- !private ["Ps39_BuiltinUnicodeScalarLiteralConvertible", "hashValue"]
+- !private ["Ps39_BuiltinUnicodeScalarLiteralConvertible", "init"]
+- !private ["Ps21_ObjectiveCBridgeable", "hashValue"]
+- !private ["Ps21_ObjectiveCBridgeable", "init"]
+- ["Ps12_Reflectable", "Some"]
+- !private ["Ps12_Reflectable", "hashValue"]
+- !private ["Ps12_Reflectable", "init"]
+depends-nominal:
+- "Ps9AnyObject"
+- !private "Sb"
+- !private "O4vist11BuiltinType"
+- !private "Ps11CVarArgType"
+- !private "Vs9Character"
+- !private "Ps10Comparable"
+- "Ps28CustomDebugStringConvertible"
+- !private "Ps23CustomStringConvertible"
+- !private "Sd"
+- "Ps9Equatable"
+- !private "Ps41ExtendedGraphemeClusterLiteralConvertible"
+- !private "Sf"
+- !private "C4vist8Function"
+- "C4vist11GlobalValue"
+- "Ps8Hashable"
+- !private "Si"
+- !private "Vs5Int16"
+- !private "Vs5Int32"
+- !private "Vs5Int64"
+- !private "Vs4Int8"
+- "P4vist6LValue"
+- "CC4vist11GlobalValue8Lifetime"
+- !private "Ps14MirrorPathType"
+- !private "PSo8NSCoding"
+- !private "PSo9NSCopying"
+- !private "PSo16NSMutableCopying"
+- !private "CSo8NSObject"
+- !private "PSo16NSObjectProtocol"
+- !private "PSo14NSSecureCoding"
+- !private "CSo8NSString"
+- "Ps21NilLiteralConvertible"
+- !private "C4vist7Operand"
+- "Sq"
+- !private "Ps16OutputStreamType"
+- "P4vist9Printable"
+- !private "Ps10Streamable"
+- !private "SS"
+- !private "Ps30StringInterpolationConvertible"
+- !private "Ps24StringLiteralConvertible"
+- !private "P4vist4Type"
+- !private "Su"
+- !private "Vs6UInt16"
+- !private "Vs6UInt32"
+- !private "Vs6UInt64"
+- !private "Vs5UInt8"
+- !private "Sc"
+- !private "Ps31UnicodeScalarLiteralConvertible"
+- "P4vist10VIRElement"
+- "P4vist8VIRLower"
+- "P4vist5Value"
+- !private "Ps49_BuiltinExtendedGraphemeClusterLiteralConvertible"
+- !private "Ps32_BuiltinStringLiteralConvertible"
+- !private "Ps37_BuiltinUTF16StringLiteralConvertible"
+- !private "Ps39_BuiltinUnicodeScalarLiteralConvertible"
+- !private "Ps21_ObjectiveCBridgeable"
+- "Ps12_Reflectable"
+depends-dynamic-lookup:
+depends-external:
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Swift.swiftmodule"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/Include/Vist-Bridging-Header.h"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/Include/LLVM.h"
+- "/usr/local/opt/llvm/include/llvm-c/Core.h"
+- "/usr/local/opt/llvm/include/llvm-c/Support.h"
+- "/usr/local/opt/llvm/include/llvm/Support/DataTypes.h"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Darwin.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/clang/include/inttypes.h"
+- "/usr/local/opt/llvm/include/llvm-c/Analysis.h"
+- "/usr/local/opt/llvm/include/llvm-c/BitReader.h"
+- "/usr/local/opt/llvm/include/llvm-c/BitWriter.h"
+- "/usr/local/opt/llvm/include/llvm-c/Disassembler.h"
+- "/usr/local/opt/llvm/include/llvm-c/ExecutionEngine.h"
+- "/usr/local/opt/llvm/include/llvm-c/Target.h"
+- "/usr/local/opt/llvm/include/llvm/Config/llvm-config.h"
+- "/usr/local/opt/llvm/include/llvm/Config/Targets.def"
+- "/usr/local/opt/llvm/include/llvm/Config/AsmPrinters.def"
+- "/usr/local/opt/llvm/include/llvm/Config/AsmParsers.def"
+- "/usr/local/opt/llvm/include/llvm/Config/Disassemblers.def"
+- "/usr/local/opt/llvm/include/llvm-c/TargetMachine.h"
+- "/usr/local/opt/llvm/include/llvm-c/Initialization.h"
+- "/usr/local/opt/llvm/include/llvm-c/IRReader.h"
+- "/usr/local/opt/llvm/include/llvm-c/Linker.h"
+- "/usr/local/opt/llvm/include/llvm-c/LinkTimeOptimizer.h"
+- "/usr/local/opt/llvm/include/llvm-c/lto.h"
+- "/usr/local/opt/llvm/include/llvm-c/Object.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/IPO.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/PassManagerBuilder.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/Scalar.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/Vectorize.h"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/VIRLower/Intrinsic.hpp"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/LLVMOptimiser/Optimiser.hpp"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/Include/Utils.h"
+- "/Users/JoeWillsher/Developer/Vist/VIR/Types/CreateType.hpp"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Foundation.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Dispatch.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/ObjectiveC.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/CoreGraphics.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/IOKit.swiftmodule"
+interface-hash: "e287a7e242841aae51ae97fce962ebf7"

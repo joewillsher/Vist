@@ -1,0 +1,279 @@
+### Swift dependencies file v0 ###
+provides-top-level:
+- "IRError"
+provides-nominal:
+- "O4vist7IRError"
+provides-member:
+- ["O4vist7IRError", ""]
+provides-dynamic-lookup:
+depends-top-level:
+- !private "UnicodeScalarType"
+- "Expr"
+- "VistError"
+- !private "StringLiteralType"
+- "ASTNode"
+- "LLVMModuleRef"
+- !private "??"
+- "Int"
+- "String"
+- "IRError"
+depends-member:
+- !private ["Ps9AnyObject", "init"]
+- !private ["Ps9AnyObject", "stringByReplacingOccurrencesOfString"]
+- !private ["Sb", "deinit"]
+- !private ["Ps11CVarArgType", "init"]
+- !private ["Ps11CVarArgType", "stringByReplacingOccurrencesOfString"]
+- !private ["Vs9Character", "deinit"]
+- !private ["Ps10Comparable", "init"]
+- !private ["Ps10Comparable", "stringByReplacingOccurrencesOfString"]
+- !private ["Ps28CustomDebugStringConvertible", "init"]
+- !private ["Ps28CustomDebugStringConvertible", "stringByReplacingOccurrencesOfString"]
+- ["Ps23CustomStringConvertible", "_code"]
+- ["Ps23CustomStringConvertible", "_domain"]
+- ["Ps23CustomStringConvertible", "cannotAssignToType"]
+- ["Ps23CustomStringConvertible", "cannotAssignToVoid"]
+- ["Ps23CustomStringConvertible", "cannotGetPtrFromParamStruct"]
+- ["Ps23CustomStringConvertible", "cannotLookupElementFromNonTuple"]
+- ["Ps23CustomStringConvertible", "cannotLookupPropertyFromNonVariable"]
+- ["Ps23CustomStringConvertible", "cannotLookupPropertyFromThis"]
+- ["Ps23CustomStringConvertible", "cannotMutateParam"]
+- ["Ps23CustomStringConvertible", "description"]
+- !private ["Ps23CustomStringConvertible", "init"]
+- ["Ps23CustomStringConvertible", "invalidFunction"]
+- ["Ps23CustomStringConvertible", "invalidModule"]
+- ["Ps23CustomStringConvertible", "noFunction"]
+- ["Ps23CustomStringConvertible", "noMethod"]
+- ["Ps23CustomStringConvertible", "noParentType"]
+- ["Ps23CustomStringConvertible", "noProperty"]
+- ["Ps23CustomStringConvertible", "noTupleMemberAt"]
+- ["Ps23CustomStringConvertible", "noType"]
+- ["Ps23CustomStringConvertible", "noVariable"]
+- ["Ps23CustomStringConvertible", "notIRGenerator"]
+- ["Ps23CustomStringConvertible", "notMutable"]
+- ["Ps23CustomStringConvertible", "notMutableProp"]
+- ["Ps23CustomStringConvertible", "notStructType"]
+- ["Ps23CustomStringConvertible", "notTupleType"]
+- ["Ps23CustomStringConvertible", "notTyped"]
+- !private ["Ps23CustomStringConvertible", "stringByReplacingOccurrencesOfString"]
+- ["Ps23CustomStringConvertible", "subscriptingNonVariableTypeNotAllowed"]
+- ["Ps23CustomStringConvertible", "typeNotFound"]
+- ["Ps23CustomStringConvertible", "unreachable"]
+- ["Ps23CustomStringConvertible", "wrongFunctionApplication"]
+- ["Ps23CustomStringConvertible", ""]
+- !private ["Sd", "deinit"]
+- !private ["Ps9Equatable", "init"]
+- !private ["Ps9Equatable", "stringByReplacingOccurrencesOfString"]
+- ["Ps9ErrorType", "_code"]
+- ["Ps9ErrorType", "_domain"]
+- ["Ps9ErrorType", "cannotAssignToType"]
+- ["Ps9ErrorType", "cannotAssignToVoid"]
+- ["Ps9ErrorType", "cannotGetPtrFromParamStruct"]
+- ["Ps9ErrorType", "cannotLookupElementFromNonTuple"]
+- ["Ps9ErrorType", "cannotLookupPropertyFromNonVariable"]
+- ["Ps9ErrorType", "cannotLookupPropertyFromThis"]
+- ["Ps9ErrorType", "cannotMutateParam"]
+- ["Ps9ErrorType", "description"]
+- ["Ps9ErrorType", "invalidFunction"]
+- ["Ps9ErrorType", "invalidModule"]
+- ["Ps9ErrorType", "noFunction"]
+- ["Ps9ErrorType", "noMethod"]
+- ["Ps9ErrorType", "noParentType"]
+- ["Ps9ErrorType", "noProperty"]
+- ["Ps9ErrorType", "noTupleMemberAt"]
+- ["Ps9ErrorType", "noType"]
+- ["Ps9ErrorType", "noVariable"]
+- ["Ps9ErrorType", "notIRGenerator"]
+- ["Ps9ErrorType", "notMutable"]
+- ["Ps9ErrorType", "notMutableProp"]
+- ["Ps9ErrorType", "notStructType"]
+- ["Ps9ErrorType", "notTupleType"]
+- ["Ps9ErrorType", "notTyped"]
+- ["Ps9ErrorType", "subscriptingNonVariableTypeNotAllowed"]
+- ["Ps9ErrorType", "typeNotFound"]
+- ["Ps9ErrorType", "unreachable"]
+- ["Ps9ErrorType", "wrongFunctionApplication"]
+- ["Ps9ErrorType", ""]
+- !private ["Ps41ExtendedGraphemeClusterLiteralConvertible", "init"]
+- !private ["Ps41ExtendedGraphemeClusterLiteralConvertible", "stringByReplacingOccurrencesOfString"]
+- !private ["Sf", "deinit"]
+- !private ["Ps8Hashable", "init"]
+- !private ["Ps8Hashable", "stringByReplacingOccurrencesOfString"]
+- ["O4vist7IRError", "ASTNode"]
+- ["O4vist7IRError", "Expr"]
+- ["O4vist7IRError", "Int"]
+- ["O4vist7IRError", "LLVMModuleRef"]
+- ["O4vist7IRError", "String"]
+- ["O4vist7IRError", "_code"]
+- ["O4vist7IRError", "_domain"]
+- ["O4vist7IRError", "cannotAssignToType"]
+- ["O4vist7IRError", "cannotAssignToVoid"]
+- ["O4vist7IRError", "cannotGetPtrFromParamStruct"]
+- ["O4vist7IRError", "cannotLookupElementFromNonTuple"]
+- ["O4vist7IRError", "cannotLookupPropertyFromNonVariable"]
+- ["O4vist7IRError", "cannotLookupPropertyFromThis"]
+- ["O4vist7IRError", "cannotMutateParam"]
+- ["O4vist7IRError", "deinit"]
+- ["O4vist7IRError", "description"]
+- ["O4vist7IRError", "invalidFunction"]
+- ["O4vist7IRError", "invalidModule"]
+- ["O4vist7IRError", "noFunction"]
+- ["O4vist7IRError", "noMethod"]
+- ["O4vist7IRError", "noParentType"]
+- ["O4vist7IRError", "noProperty"]
+- ["O4vist7IRError", "noTupleMemberAt"]
+- ["O4vist7IRError", "noType"]
+- ["O4vist7IRError", "noVariable"]
+- ["O4vist7IRError", "notIRGenerator"]
+- ["O4vist7IRError", "notMutable"]
+- ["O4vist7IRError", "notMutableProp"]
+- ["O4vist7IRError", "notStructType"]
+- ["O4vist7IRError", "notTupleType"]
+- ["O4vist7IRError", "notTyped"]
+- ["O4vist7IRError", "subscriptingNonVariableTypeNotAllowed"]
+- ["O4vist7IRError", "typeNotFound"]
+- ["O4vist7IRError", "unreachable"]
+- ["O4vist7IRError", "wrongFunctionApplication"]
+- !private ["Si", "deinit"]
+- !private ["Vs5Int16", "deinit"]
+- !private ["Vs5Int32", "deinit"]
+- !private ["Vs5Int64", "deinit"]
+- !private ["Vs4Int8", "deinit"]
+- !private ["Ps14MirrorPathType", "init"]
+- !private ["Ps14MirrorPathType", "stringByReplacingOccurrencesOfString"]
+- !private ["PSo8NSCoding", "init"]
+- !private ["PSo8NSCoding", "stringByReplacingOccurrencesOfString"]
+- !private ["PSo9NSCopying", "init"]
+- !private ["PSo9NSCopying", "stringByReplacingOccurrencesOfString"]
+- !private ["PSo16NSMutableCopying", "init"]
+- !private ["PSo16NSMutableCopying", "stringByReplacingOccurrencesOfString"]
+- !private ["CSo8NSObject", "init"]
+- !private ["CSo8NSObject", "stringByReplacingOccurrencesOfString"]
+- !private ["PSo16NSObjectProtocol", "init"]
+- !private ["PSo16NSObjectProtocol", "stringByReplacingOccurrencesOfString"]
+- !private ["PSo14NSSecureCoding", "init"]
+- !private ["PSo14NSSecureCoding", "stringByReplacingOccurrencesOfString"]
+- !private ["CSo8NSString", "init"]
+- !private ["CSo8NSString", "stringByReplacingOccurrencesOfString"]
+- !private ["Sq", "deinit"]
+- !private ["Ps16OutputStreamType", "init"]
+- !private ["Ps16OutputStreamType", "stringByReplacingOccurrencesOfString"]
+- !private ["P4vist9Printable", "init"]
+- !private ["P4vist9Printable", "stringByReplacingOccurrencesOfString"]
+- !private ["Ps10Streamable", "init"]
+- !private ["Ps10Streamable", "stringByReplacingOccurrencesOfString"]
+- !private ["SS", "init"]
+- !private ["SS", "stringByReplacingOccurrencesOfString"]
+- !private ["Ps30StringInterpolationConvertible", "init"]
+- !private ["Ps30StringInterpolationConvertible", "stringByReplacingOccurrencesOfString"]
+- !private ["Ps24StringLiteralConvertible", "init"]
+- !private ["Ps24StringLiteralConvertible", "stringByReplacingOccurrencesOfString"]
+- !private ["Su", "deinit"]
+- !private ["Vs6UInt16", "deinit"]
+- !private ["Vs6UInt32", "deinit"]
+- !private ["Vs6UInt64", "deinit"]
+- !private ["Vs5UInt8", "deinit"]
+- !private ["Sc", "deinit"]
+- !private ["Ps31UnicodeScalarLiteralConvertible", "init"]
+- !private ["Ps31UnicodeScalarLiteralConvertible", "stringByReplacingOccurrencesOfString"]
+- !private ["Ps49_BuiltinExtendedGraphemeClusterLiteralConvertible", "init"]
+- !private ["Ps49_BuiltinExtendedGraphemeClusterLiteralConvertible", "stringByReplacingOccurrencesOfString"]
+- !private ["Ps32_BuiltinStringLiteralConvertible", "init"]
+- !private ["Ps32_BuiltinStringLiteralConvertible", "stringByReplacingOccurrencesOfString"]
+- !private ["Ps37_BuiltinUTF16StringLiteralConvertible", "init"]
+- !private ["Ps37_BuiltinUTF16StringLiteralConvertible", "stringByReplacingOccurrencesOfString"]
+- !private ["Ps39_BuiltinUnicodeScalarLiteralConvertible", "init"]
+- !private ["Ps39_BuiltinUnicodeScalarLiteralConvertible", "stringByReplacingOccurrencesOfString"]
+- !private ["Ps21_ObjectiveCBridgeable", "init"]
+- !private ["Ps21_ObjectiveCBridgeable", "stringByReplacingOccurrencesOfString"]
+- !private ["Ps12_Reflectable", "init"]
+- !private ["Ps12_Reflectable", "stringByReplacingOccurrencesOfString"]
+depends-nominal:
+- !private "Ps9AnyObject"
+- !private "Sb"
+- !private "Ps11CVarArgType"
+- !private "Vs9Character"
+- !private "Ps10Comparable"
+- !private "Ps28CustomDebugStringConvertible"
+- "Ps23CustomStringConvertible"
+- !private "Sd"
+- !private "Ps9Equatable"
+- "Ps9ErrorType"
+- !private "Ps41ExtendedGraphemeClusterLiteralConvertible"
+- !private "Sf"
+- !private "Ps8Hashable"
+- "O4vist7IRError"
+- !private "Si"
+- !private "Vs5Int16"
+- !private "Vs5Int32"
+- !private "Vs5Int64"
+- !private "Vs4Int8"
+- !private "Ps14MirrorPathType"
+- !private "PSo8NSCoding"
+- !private "PSo9NSCopying"
+- !private "PSo16NSMutableCopying"
+- !private "CSo8NSObject"
+- !private "PSo16NSObjectProtocol"
+- !private "PSo14NSSecureCoding"
+- !private "CSo8NSString"
+- !private "Sq"
+- !private "Ps16OutputStreamType"
+- !private "P4vist9Printable"
+- !private "Ps10Streamable"
+- !private "SS"
+- !private "Ps30StringInterpolationConvertible"
+- !private "Ps24StringLiteralConvertible"
+- !private "Su"
+- !private "Vs6UInt16"
+- !private "Vs6UInt32"
+- !private "Vs6UInt64"
+- !private "Vs5UInt8"
+- !private "Sc"
+- !private "Ps31UnicodeScalarLiteralConvertible"
+- !private "Ps49_BuiltinExtendedGraphemeClusterLiteralConvertible"
+- !private "Ps32_BuiltinStringLiteralConvertible"
+- !private "Ps37_BuiltinUTF16StringLiteralConvertible"
+- !private "Ps39_BuiltinUnicodeScalarLiteralConvertible"
+- !private "Ps21_ObjectiveCBridgeable"
+- !private "Ps12_Reflectable"
+depends-dynamic-lookup:
+depends-external:
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Swift.swiftmodule"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/Include/Vist-Bridging-Header.h"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/Include/LLVM.h"
+- "/usr/local/opt/llvm/include/llvm-c/Core.h"
+- "/usr/local/opt/llvm/include/llvm-c/Support.h"
+- "/usr/local/opt/llvm/include/llvm/Support/DataTypes.h"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Darwin.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/clang/include/inttypes.h"
+- "/usr/local/opt/llvm/include/llvm-c/Analysis.h"
+- "/usr/local/opt/llvm/include/llvm-c/BitReader.h"
+- "/usr/local/opt/llvm/include/llvm-c/BitWriter.h"
+- "/usr/local/opt/llvm/include/llvm-c/Disassembler.h"
+- "/usr/local/opt/llvm/include/llvm-c/ExecutionEngine.h"
+- "/usr/local/opt/llvm/include/llvm-c/Target.h"
+- "/usr/local/opt/llvm/include/llvm/Config/llvm-config.h"
+- "/usr/local/opt/llvm/include/llvm/Config/Targets.def"
+- "/usr/local/opt/llvm/include/llvm/Config/AsmPrinters.def"
+- "/usr/local/opt/llvm/include/llvm/Config/AsmParsers.def"
+- "/usr/local/opt/llvm/include/llvm/Config/Disassemblers.def"
+- "/usr/local/opt/llvm/include/llvm-c/TargetMachine.h"
+- "/usr/local/opt/llvm/include/llvm-c/Initialization.h"
+- "/usr/local/opt/llvm/include/llvm-c/IRReader.h"
+- "/usr/local/opt/llvm/include/llvm-c/Linker.h"
+- "/usr/local/opt/llvm/include/llvm-c/LinkTimeOptimizer.h"
+- "/usr/local/opt/llvm/include/llvm-c/lto.h"
+- "/usr/local/opt/llvm/include/llvm-c/Object.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/IPO.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/PassManagerBuilder.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/Scalar.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/Vectorize.h"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/VIRLower/Intrinsic.hpp"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/LLVMOptimiser/Optimiser.hpp"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/Include/Utils.h"
+- "/Users/JoeWillsher/Developer/Vist/VIR/Types/CreateType.hpp"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Foundation.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Dispatch.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/ObjectiveC.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/CoreGraphics.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/IOKit.swiftmodule"
+interface-hash: "7f75fe4493a290910b3527e81c1f025b"

@@ -35,7 +35,6 @@
 		D43B399A1C8A0EDF0039FB2E /* Module.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B398B1C8A0EDF0039FB2E /* Module.swift */; };
 		D43B399B1C8A0EDF0039FB2E /* Operand.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B398C1C8A0EDF0039FB2E /* Operand.swift */; };
 		D43B399C1C8A0EDF0039FB2E /* Operand.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B398C1C8A0EDF0039FB2E /* Operand.swift */; };
-		D43B399D1C8A0EDF0039FB2E /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = D43B398D1C8A0EDF0039FB2E /* README.md */; };
 		D43B399E1C8A0EDF0039FB2E /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = D43B398D1C8A0EDF0039FB2E /* README.md */; };
 		D43B39A11C8A0EDF0039FB2E /* Value.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B398F1C8A0EDF0039FB2E /* Value.swift */; };
 		D43B39A21C8A0EDF0039FB2E /* Value.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B398F1C8A0EDF0039FB2E /* Value.swift */; };
@@ -184,6 +183,7 @@
 		D4A0003C1CCA9BC300157D90 /* LLVMWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A0003B1CCA9BC300157D90 /* LLVMWrapper.swift */; };
 		D4A0003D1CCA9BC300157D90 /* LLVMWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A0003B1CCA9BC300157D90 /* LLVMWrapper.swift */; };
 		D4C0900F1CCFC931008B69F1 /* shims.c in Sources */ = {isa = PBXBuildFile; fileRef = D4C0900E1CCFC931008B69F1 /* shims.c */; };
+		D4CB751D1CB4612100FA2D8C /* vist in Copy Files */ = {isa = PBXBuildFile; fileRef = D47FF07A1B812052003F9920 /* vist */; };
 		D4CF76771C8CD4A70058A8EC /* TupleInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF76761C8CD4A70058A8EC /* TupleInst.swift */; };
 		D4CF76781C8CD4A70058A8EC /* TupleInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF76761C8CD4A70058A8EC /* TupleInst.swift */; };
 		D4CF767D1C8CF8490058A8EC /* Runtime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF767C1C8CF8490058A8EC /* Runtime.swift */; };
@@ -223,13 +223,14 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		D47FF0781B812052003F9920 /* Copy Files */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
+			buildActionMask = 12;
 			dstPath = /usr/local/bin;
 			dstSubfolderSpec = 0;
 			files = (
+				D4CB751D1CB4612100FA2D8C /* vist in Copy Files */,
 			);
 			name = "Copy Files";
-			runOnlyForDeploymentPostprocessing = 1;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -1003,7 +1004,6 @@
 				D43B3A871C8A11F80039FB2E /* StdLibInline.cpp in Sources */,
 				D4A0002A1CCA7EFA00157D90 /* ExistentialLower.swift in Sources */,
 				D4A000301CCA7F7000157D90 /* BuiltinLower.swift in Sources */,
-				D43B399D1C8A0EDF0039FB2E /* README.md in Sources */,
 				D43B39E01C8A0F3A0039FB2E /* StructInst.swift in Sources */,
 				D4A0002D1CCA7F4F00157D90 /* RefCountingLower.swift in Sources */,
 				D43B3A1D1C8A105B0039FB2E /* Expr.swift in Sources */,
@@ -1235,8 +1235,7 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
-				DEPLOYMENT_LOCATION = NO;
-				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
+				EMBEDDED_CONTENT_CONTAINS_SWIFT = NO;
 				ENABLE_TESTABILITY = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					__STDC_CONSTANT_MACROS,
@@ -1384,6 +1383,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SYMROOT = build;
 				USER_HEADER_SEARCH_PATHS = "";
+				VALID_ARCHS = x86_64;
 			};
 			name = Debug;
 		};
@@ -1392,8 +1392,7 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
-				DEPLOYMENT_LOCATION = NO;
-				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
+				EMBEDDED_CONTENT_CONTAINS_SWIFT = NO;
 				ENABLE_TESTABILITY = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					__STDC_CONSTANT_MACROS,
@@ -1406,6 +1405,7 @@
 				LLVM_LTO = YES;
 				MODULE_NAME = vist;
 				MODULE_VERSION = 1.0;
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-fno-exceptions",
@@ -1540,6 +1540,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SYMROOT = build;
 				USER_HEADER_SEARCH_PATHS = "";
+				VALID_ARCHS = x86_64;
 			};
 			name = Release;
 		};

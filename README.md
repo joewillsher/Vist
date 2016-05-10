@@ -10,7 +10,7 @@ To install, run
 ``` bash
 git clone https://github.com/joewillsher/Vist.git
 cd vist
-./build
+./make
 ``` 
 
 This downloads the LLVM libraries, builds the libvist standard library and runtime and installs the compiler. To use it call `vist` from the command line, use `-h` to see options.

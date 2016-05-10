@@ -1,0 +1,459 @@
+### Swift dependencies file v0 ###
+provides-top-level:
+- "Operand"
+- "PtrOperand"
+- "BlockOperand"
+provides-nominal:
+- "C4vist7Operand"
+- "C4vist10PtrOperand"
+- "C4vist12BlockOperand"
+provides-member:
+- ["C4vist7Operand", ""]
+- ["C4vist10PtrOperand", ""]
+- ["C4vist12BlockOperand", ""]
+- ["C4vist7Operand", "irName"]
+- ["C4vist7Operand", "parentBlock"]
+- ["C4vist7Operand", "uses"]
+- ["C4vist7Operand", "name"]
+- ["C4vist7Operand", "operandName"]
+- ["C4vist7Operand", "dumpIR"]
+- ["C4vist7Operand", "dumpIRType"]
+- ["C4vist7Operand", "removeSelfAsUser"]
+provides-dynamic-lookup:
+depends-top-level:
+- "LLVMValue"
+- "PtrOperand"
+- "Type"
+- !private "??"
+- "String"
+- "Operand"
+- !private "!="
+- !private "print"
+- "Value"
+- "Param"
+- "BasicBlock"
+- !private "UnicodeScalarType"
+- !private "Array"
+- !private "StringLiteralType"
+- !private "BuiltinType"
+- !private "LLVMDumpValue"
+- "BlockOperand"
+- !private "fatalError"
+- !private "LLVMDumpTypeOf"
+- !private "LLVMAddIncoming"
+- "Inst"
+- "LValue"
+depends-member:
+- !private ["Ps9AnyObject", "LLVMAddIncoming"]
+- !private ["Ps9AnyObject", "LLVMDumpTypeOf"]
+- !private ["Ps9AnyObject", "LLVMDumpValue"]
+- !private ["Ps9AnyObject", "PtrOperand"]
+- ["Ps9AnyObject", "debugDescription"]
+- !private ["Ps9AnyObject", "fatalError"]
+- ["Ps9AnyObject", "fromReferenceRValue"]
+- ["Ps9AnyObject", "init"]
+- ["Ps9AnyObject", "irName"]
+- !private ["Ps9AnyObject", "loweredBlock"]
+- !private ["Ps9AnyObject", "loweredValue"]
+- ["Ps9AnyObject", "memType"]
+- ["Ps9AnyObject", "module"]
+- ["Ps9AnyObject", "name"]
+- ["Ps9AnyObject", "param"]
+- ["Ps9AnyObject", "parentBlock"]
+- ["Ps9AnyObject", "phi"]
+- ["Ps9AnyObject", "predBlock"]
+- !private ["Ps9AnyObject", "print"]
+- ["Ps9AnyObject", "setLoweredValue"]
+- ["Ps9AnyObject", "type"]
+- !private ["Ps9AnyObject", "user"]
+- ["Ps9AnyObject", "uses"]
+- !private ["Ps9AnyObject", "value"]
+- ["Ps9AnyObject", "vir"]
+- ["Ps9AnyObject", ""]
+- !private ["Sa", "Element"]
+- !private ["Ps23ArrayLiteralConvertible", "Element"]
+- !private ["C4vist10BasicBlock", "loweredBlock"]
+- ["C4vist12BlockOperand", "BasicBlock"]
+- !private ["C4vist12BlockOperand", "LLVMAddIncoming"]
+- ["C4vist12BlockOperand", "LLVMValue"]
+- ["C4vist12BlockOperand", "Param"]
+- ["C4vist12BlockOperand", "Type"]
+- ["C4vist12BlockOperand", "Value"]
+- ["C4vist12BlockOperand", "deinit"]
+- ["C4vist12BlockOperand", "init"]
+- !private ["C4vist12BlockOperand", "loweredValue"]
+- ["C4vist12BlockOperand", "param"]
+- ["C4vist12BlockOperand", "phi"]
+- !private ["C4vist12BlockOperand", "predBlock"]
+- ["C4vist12BlockOperand", "setLoweredValue"]
+- ["C4vist12BlockOperand", "type"]
+- !private ["Sb", "_getBuiltinLogicValue"]
+- !private ["Sb", "deinit"]
+- !private ["Ps25BooleanLiteralConvertible", "_getBuiltinLogicValue"]
+- !private ["Ps11BooleanType", "_getBuiltinLogicValue"]
+- ["O4vist11BuiltinType", "pointer"]
+- !private ["Vs14COpaquePointer", "deinit"]
+- !private ["Ps11CVarArgType", "init"]
+- !private ["Vs9Character", "deinit"]
+- !private ["Ps14CollectionType", "Element"]
+- !private ["Ps10Comparable", "init"]
+- !private ["Ps28CustomDebugStringConvertible", "Element"]
+- !private ["Ps28CustomDebugStringConvertible", "LLVMAddIncoming"]
+- !private ["Ps28CustomDebugStringConvertible", "LLVMDumpTypeOf"]
+- !private ["Ps28CustomDebugStringConvertible", "LLVMDumpValue"]
+- !private ["Ps28CustomDebugStringConvertible", "PtrOperand"]
+- ["Ps28CustomDebugStringConvertible", "Some"]
+- !private ["Ps28CustomDebugStringConvertible", "addUse"]
+- ["Ps28CustomDebugStringConvertible", "debugDescription"]
+- !private ["Ps28CustomDebugStringConvertible", "fatalError"]
+- ["Ps28CustomDebugStringConvertible", "fromReferenceRValue"]
+- ["Ps28CustomDebugStringConvertible", "init"]
+- ["Ps28CustomDebugStringConvertible", "irName"]
+- !private ["Ps28CustomDebugStringConvertible", "loweredBlock"]
+- !private ["Ps28CustomDebugStringConvertible", "loweredValue"]
+- ["Ps28CustomDebugStringConvertible", "memType"]
+- ["Ps28CustomDebugStringConvertible", "module"]
+- ["Ps28CustomDebugStringConvertible", "name"]
+- ["Ps28CustomDebugStringConvertible", "param"]
+- ["Ps28CustomDebugStringConvertible", "parentBlock"]
+- ["Ps28CustomDebugStringConvertible", "phi"]
+- ["Ps28CustomDebugStringConvertible", "pointer"]
+- ["Ps28CustomDebugStringConvertible", "predBlock"]
+- !private ["Ps28CustomDebugStringConvertible", "print"]
+- !private ["Ps28CustomDebugStringConvertible", "removeUse"]
+- ["Ps28CustomDebugStringConvertible", "setLoweredValue"]
+- ["Ps28CustomDebugStringConvertible", "type"]
+- !private ["Ps28CustomDebugStringConvertible", "user"]
+- ["Ps28CustomDebugStringConvertible", "uses"]
+- !private ["Ps28CustomDebugStringConvertible", "value"]
+- ["Ps28CustomDebugStringConvertible", "vir"]
+- ["Ps28CustomDebugStringConvertible", ""]
+- !private ["Ps23CustomStringConvertible", "Element"]
+- !private ["Ps23CustomStringConvertible", "_getBuiltinLogicValue"]
+- !private ["Ps23CustomStringConvertible", "init"]
+- !private ["Sd", "deinit"]
+- !private ["Ps9Equatable", "_getBuiltinLogicValue"]
+- !private ["Ps9Equatable", "init"]
+- ["Ps9Equatable", "pointer"]
+- !private ["Ps41ExtendedGraphemeClusterLiteralConvertible", "init"]
+- !private ["Sf", "deinit"]
+- !private ["Ps8Hashable", "_getBuiltinLogicValue"]
+- !private ["Ps8Hashable", "init"]
+- !private ["Ps9Indexable", "Element"]
+- !private ["P4vist4Inst", "name"]
+- !private ["Si", "deinit"]
+- !private ["Vs5Int16", "deinit"]
+- !private ["Vs5Int32", "deinit"]
+- !private ["Vs5Int64", "deinit"]
+- !private ["Vs4Int8", "deinit"]
+- !private ["V4vist14LLVMBasicBlock", "block"]
+- !private ["V4vist9LLVMValue", "_value"]
+- !private ["P4vist6LValue", "PtrOperand"]
+- !private ["P4vist6LValue", "fatalError"]
+- !private ["P4vist6LValue", "init"]
+- ["P4vist6LValue", "memType"]
+- ["P4vist6LValue", ""]
+- !private ["Ps14MirrorPathType", "init"]
+- !private ["Ps21MutableCollectionType", "Element"]
+- !private ["Ps16MutableIndexable", "Element"]
+- !private ["Ps16MutableSliceable", "Element"]
+- !private ["PSo8NSCoding", "init"]
+- !private ["PSo9NSCopying", "init"]
+- !private ["PSo16NSMutableCopying", "init"]
+- !private ["CSo8NSObject", "init"]
+- !private ["PSo16NSObjectProtocol", "init"]
+- !private ["PSo14NSSecureCoding", "init"]
+- !private ["CSo8NSString", "deinit"]
+- !private ["CSo8NSString", "init"]
+- ["Ps21NilLiteralConvertible", "Some"]
+- ["C4vist7Operand", "BasicBlock"]
+- !private ["C4vist7Operand", "BuiltinType"]
+- ["C4vist7Operand", "Inst"]
+- !private ["C4vist7Operand", "LLVMAddIncoming"]
+- !private ["C4vist7Operand", "LLVMDumpTypeOf"]
+- !private ["C4vist7Operand", "LLVMDumpValue"]
+- ["C4vist7Operand", "LLVMValue"]
+- ["C4vist7Operand", "LValue"]
+- ["C4vist7Operand", "Operand"]
+- ["C4vist7Operand", "Param"]
+- ["C4vist7Operand", "PtrOperand"]
+- ["C4vist7Operand", "String"]
+- ["C4vist7Operand", "Type"]
+- ["C4vist7Operand", "Value"]
+- ["C4vist7Operand", "debugDescription"]
+- ["C4vist7Operand", "deinit"]
+- ["C4vist7Operand", "dumpIR"]
+- ["C4vist7Operand", "dumpIRType"]
+- !private ["C4vist7Operand", "fatalError"]
+- ["C4vist7Operand", "fromReferenceRValue"]
+- ["C4vist7Operand", "init"]
+- ["C4vist7Operand", "irName"]
+- ["C4vist7Operand", "loweredValue"]
+- ["C4vist7Operand", "memType"]
+- ["C4vist7Operand", "module"]
+- ["C4vist7Operand", "name"]
+- ["C4vist7Operand", "operandName"]
+- ["C4vist7Operand", "param"]
+- ["C4vist7Operand", "parentBlock"]
+- ["C4vist7Operand", "phi"]
+- ["C4vist7Operand", "predBlock"]
+- !private ["C4vist7Operand", "print"]
+- ["C4vist7Operand", "removeSelfAsUser"]
+- ["C4vist7Operand", "setLoweredValue"]
+- ["C4vist7Operand", "type"]
+- ["C4vist7Operand", "user"]
+- ["C4vist7Operand", "uses"]
+- ["C4vist7Operand", "value"]
+- ["C4vist7Operand", "vir"]
+- ["C4vist7Operand", ""]
+- ["Sq", "Some"]
+- !private ["Sq", "deinit"]
+- !private ["Ps16OutputStreamType", "init"]
+- !private ["C4vist5Param", "deinit"]
+- !private ["C4vist5Param", "phi"]
+- !private ["C4vist5Param", "type"]
+- !private ["P4vist9Printable", "Element"]
+- ["P4vist9Printable", "Some"]
+- !private ["P4vist9Printable", "_getBuiltinLogicValue"]
+- !private ["P4vist9Printable", "init"]
+- ["P4vist9Printable", "pointer"]
+- !private ["C4vist10PtrOperand", "BuiltinType"]
+- ["C4vist10PtrOperand", "LValue"]
+- ["C4vist10PtrOperand", "PtrOperand"]
+- ["C4vist10PtrOperand", "Type"]
+- ["C4vist10PtrOperand", "Value"]
+- ["C4vist10PtrOperand", "deinit"]
+- !private ["C4vist10PtrOperand", "fatalError"]
+- ["C4vist10PtrOperand", "fromReferenceRValue"]
+- ["C4vist10PtrOperand", "init"]
+- ["C4vist10PtrOperand", "memType"]
+- !private ["Ps30RangeReplaceableCollectionType", "Element"]
+- !private ["Ps12SequenceType", "Element"]
+- !private ["Vs12StaticString", "deinit"]
+- !private ["Ps10Streamable", "init"]
+- !private ["SS", "init"]
+- !private ["Ps30StringInterpolationConvertible", "init"]
+- !private ["Ps24StringLiteralConvertible", "init"]
+- ["P4vist4Type", "pointer"]
+- !private ["Su", "deinit"]
+- !private ["Vs6UInt16", "deinit"]
+- !private ["Vs6UInt32", "deinit"]
+- !private ["Vs6UInt64", "deinit"]
+- !private ["Vs5UInt8", "deinit"]
+- !private ["Sc", "deinit"]
+- !private ["Ps31UnicodeScalarLiteralConvertible", "init"]
+- !private ["P4vist10VIRElement", "LLVMAddIncoming"]
+- !private ["P4vist10VIRElement", "LLVMDumpTypeOf"]
+- !private ["P4vist10VIRElement", "LLVMDumpValue"]
+- !private ["P4vist10VIRElement", "PtrOperand"]
+- !private ["P4vist10VIRElement", "addUse"]
+- ["P4vist10VIRElement", "debugDescription"]
+- !private ["P4vist10VIRElement", "fatalError"]
+- ["P4vist10VIRElement", "fromReferenceRValue"]
+- ["P4vist10VIRElement", "init"]
+- ["P4vist10VIRElement", "irName"]
+- !private ["P4vist10VIRElement", "loweredBlock"]
+- !private ["P4vist10VIRElement", "loweredValue"]
+- ["P4vist10VIRElement", "memType"]
+- ["P4vist10VIRElement", "module"]
+- ["P4vist10VIRElement", "name"]
+- ["P4vist10VIRElement", "param"]
+- ["P4vist10VIRElement", "parentBlock"]
+- ["P4vist10VIRElement", "phi"]
+- ["P4vist10VIRElement", "pointer"]
+- ["P4vist10VIRElement", "predBlock"]
+- !private ["P4vist10VIRElement", "print"]
+- !private ["P4vist10VIRElement", "removeUse"]
+- ["P4vist10VIRElement", "setLoweredValue"]
+- ["P4vist10VIRElement", "type"]
+- !private ["P4vist10VIRElement", "user"]
+- ["P4vist10VIRElement", "uses"]
+- !private ["P4vist10VIRElement", "value"]
+- ["P4vist10VIRElement", "vir"]
+- ["P4vist10VIRElement", ""]
+- !private ["P4vist8VIRLower", "LLVMAddIncoming"]
+- !private ["P4vist8VIRLower", "LLVMDumpTypeOf"]
+- !private ["P4vist8VIRLower", "LLVMDumpValue"]
+- !private ["P4vist8VIRLower", "PtrOperand"]
+- ["P4vist8VIRLower", "debugDescription"]
+- !private ["P4vist8VIRLower", "fatalError"]
+- ["P4vist8VIRLower", "fromReferenceRValue"]
+- ["P4vist8VIRLower", "init"]
+- ["P4vist8VIRLower", "irName"]
+- !private ["P4vist8VIRLower", "loweredValue"]
+- ["P4vist8VIRLower", "memType"]
+- ["P4vist8VIRLower", "module"]
+- ["P4vist8VIRLower", "name"]
+- ["P4vist8VIRLower", "param"]
+- ["P4vist8VIRLower", "parentBlock"]
+- ["P4vist8VIRLower", "phi"]
+- ["P4vist8VIRLower", "predBlock"]
+- !private ["P4vist8VIRLower", "print"]
+- ["P4vist8VIRLower", "setLoweredValue"]
+- ["P4vist8VIRLower", "type"]
+- !private ["P4vist8VIRLower", "user"]
+- ["P4vist8VIRLower", "uses"]
+- !private ["P4vist8VIRLower", "value"]
+- ["P4vist8VIRLower", "vir"]
+- ["P4vist8VIRLower", ""]
+- !private ["P4vist5Value", "LLVMAddIncoming"]
+- !private ["P4vist5Value", "LLVMDumpTypeOf"]
+- !private ["P4vist5Value", "LLVMDumpValue"]
+- !private ["P4vist5Value", "PtrOperand"]
+- !private ["P4vist5Value", "addUse"]
+- ["P4vist5Value", "debugDescription"]
+- !private ["P4vist5Value", "deinit"]
+- !private ["P4vist5Value", "fatalError"]
+- ["P4vist5Value", "fromReferenceRValue"]
+- ["P4vist5Value", "init"]
+- ["P4vist5Value", "irName"]
+- !private ["P4vist5Value", "loweredValue"]
+- ["P4vist5Value", "memType"]
+- ["P4vist5Value", "module"]
+- ["P4vist5Value", "name"]
+- ["P4vist5Value", "param"]
+- ["P4vist5Value", "parentBlock"]
+- ["P4vist5Value", "phi"]
+- ["P4vist5Value", "predBlock"]
+- !private ["P4vist5Value", "print"]
+- !private ["P4vist5Value", "removeUse"]
+- ["P4vist5Value", "setLoweredValue"]
+- ["P4vist5Value", "type"]
+- !private ["P4vist5Value", "user"]
+- ["P4vist5Value", "uses"]
+- !private ["P4vist5Value", "value"]
+- ["P4vist5Value", "vir"]
+- ["P4vist5Value", ""]
+- !private ["Ps10_ArrayType", "Element"]
+- !private ["Ps33_BuiltinBooleanLiteralConvertible", "_getBuiltinLogicValue"]
+- !private ["Ps49_BuiltinExtendedGraphemeClusterLiteralConvertible", "init"]
+- !private ["Ps32_BuiltinStringLiteralConvertible", "init"]
+- !private ["Ps37_BuiltinUTF16StringLiteralConvertible", "init"]
+- !private ["Ps39_BuiltinUnicodeScalarLiteralConvertible", "init"]
+- !private ["Ps24_DestructorSafeContainer", "Element"]
+- !private ["Ps21_ObjectiveCBridgeable", "Element"]
+- !private ["Ps21_ObjectiveCBridgeable", "_getBuiltinLogicValue"]
+- !private ["Ps21_ObjectiveCBridgeable", "init"]
+- !private ["Ps12_Reflectable", "Element"]
+- ["Ps12_Reflectable", "Some"]
+- !private ["Ps12_Reflectable", "_getBuiltinLogicValue"]
+- !private ["Ps12_Reflectable", "init"]
+depends-nominal:
+- "Ps9AnyObject"
+- !private "Sa"
+- !private "Ps23ArrayLiteralConvertible"
+- !private "C4vist10BasicBlock"
+- "C4vist12BlockOperand"
+- !private "Sb"
+- !private "Ps25BooleanLiteralConvertible"
+- !private "Ps11BooleanType"
+- "O4vist11BuiltinType"
+- !private "Vs14COpaquePointer"
+- !private "Ps11CVarArgType"
+- !private "Vs9Character"
+- !private "Ps14CollectionType"
+- !private "Ps10Comparable"
+- "Ps28CustomDebugStringConvertible"
+- !private "Ps23CustomStringConvertible"
+- !private "Sd"
+- "Ps9Equatable"
+- !private "Ps41ExtendedGraphemeClusterLiteralConvertible"
+- !private "Sf"
+- !private "Ps8Hashable"
+- !private "Ps9Indexable"
+- !private "P4vist4Inst"
+- !private "Si"
+- !private "Vs5Int16"
+- !private "Vs5Int32"
+- !private "Vs5Int64"
+- !private "Vs4Int8"
+- !private "V4vist14LLVMBasicBlock"
+- !private "V4vist9LLVMValue"
+- "P4vist6LValue"
+- !private "Ps14MirrorPathType"
+- !private "Ps21MutableCollectionType"
+- !private "Ps16MutableIndexable"
+- !private "Ps16MutableSliceable"
+- !private "PSo8NSCoding"
+- !private "PSo9NSCopying"
+- !private "PSo16NSMutableCopying"
+- !private "CSo8NSObject"
+- !private "PSo16NSObjectProtocol"
+- !private "PSo14NSSecureCoding"
+- !private "CSo8NSString"
+- "Ps21NilLiteralConvertible"
+- "C4vist7Operand"
+- "Sq"
+- !private "Ps16OutputStreamType"
+- !private "C4vist5Param"
+- "P4vist9Printable"
+- "C4vist10PtrOperand"
+- !private "Ps30RangeReplaceableCollectionType"
+- !private "Ps12SequenceType"
+- !private "Vs12StaticString"
+- !private "Ps10Streamable"
+- !private "SS"
+- !private "Ps30StringInterpolationConvertible"
+- !private "Ps24StringLiteralConvertible"
+- "P4vist4Type"
+- !private "Su"
+- !private "Vs6UInt16"
+- !private "Vs6UInt32"
+- !private "Vs6UInt64"
+- !private "Vs5UInt8"
+- !private "Sc"
+- !private "Ps31UnicodeScalarLiteralConvertible"
+- "P4vist10VIRElement"
+- "P4vist8VIRLower"
+- "P4vist5Value"
+- !private "Ps10_ArrayType"
+- !private "Ps33_BuiltinBooleanLiteralConvertible"
+- !private "Ps49_BuiltinExtendedGraphemeClusterLiteralConvertible"
+- !private "Ps32_BuiltinStringLiteralConvertible"
+- !private "Ps37_BuiltinUTF16StringLiteralConvertible"
+- !private "Ps39_BuiltinUnicodeScalarLiteralConvertible"
+- !private "Ps24_DestructorSafeContainer"
+- !private "Ps21_ObjectiveCBridgeable"
+- "Ps12_Reflectable"
+depends-dynamic-lookup:
+depends-external:
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Swift.swiftmodule"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/Include/Vist-Bridging-Header.h"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/Include/LLVM.h"
+- "/usr/local/opt/llvm/include/llvm-c/Core.h"
+- "/usr/local/opt/llvm/include/llvm-c/Support.h"
+- "/usr/local/opt/llvm/include/llvm/Support/DataTypes.h"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Darwin.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/clang/include/inttypes.h"
+- "/usr/local/opt/llvm/include/llvm-c/Analysis.h"
+- "/usr/local/opt/llvm/include/llvm-c/BitReader.h"
+- "/usr/local/opt/llvm/include/llvm-c/BitWriter.h"
+- "/usr/local/opt/llvm/include/llvm-c/Disassembler.h"
+- "/usr/local/opt/llvm/include/llvm-c/ExecutionEngine.h"
+- "/usr/local/opt/llvm/include/llvm-c/Target.h"
+- "/usr/local/opt/llvm/include/llvm/Config/llvm-config.h"
+- "/usr/local/opt/llvm/include/llvm/Config/Targets.def"
+- "/usr/local/opt/llvm/include/llvm/Config/AsmPrinters.def"
+- "/usr/local/opt/llvm/include/llvm/Config/AsmParsers.def"
+- "/usr/local/opt/llvm/include/llvm/Config/Disassemblers.def"
+- "/usr/local/opt/llvm/include/llvm-c/TargetMachine.h"
+- "/usr/local/opt/llvm/include/llvm-c/Initialization.h"
+- "/usr/local/opt/llvm/include/llvm-c/IRReader.h"
+- "/usr/local/opt/llvm/include/llvm-c/Linker.h"
+- "/usr/local/opt/llvm/include/llvm-c/LinkTimeOptimizer.h"
+- "/usr/local/opt/llvm/include/llvm-c/lto.h"
+- "/usr/local/opt/llvm/include/llvm-c/Object.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/IPO.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/PassManagerBuilder.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/Scalar.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/Vectorize.h"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/VIRLower/Intrinsic.hpp"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/LLVMOptimiser/Optimiser.hpp"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/Include/Utils.h"
+- "/Users/JoeWillsher/Developer/Vist/VIR/Types/CreateType.hpp"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Foundation.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Dispatch.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/ObjectiveC.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/CoreGraphics.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/IOKit.swiftmodule"
+interface-hash: "468a1fd6b595ee830234bfdbe3d9de2e"

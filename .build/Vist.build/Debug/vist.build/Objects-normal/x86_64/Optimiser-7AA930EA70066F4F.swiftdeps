@@ -1,0 +1,502 @@
+### Swift dependencies file v0 ###
+provides-top-level:
+- "OptLevel"
+- "OptimisationPass"
+provides-nominal:
+- "O4vist8OptLevel"
+- "P4vist16OptimisationPass"
+provides-member:
+- ["O4vist8OptLevel", ""]
+- ["V4vist14CompileOptions", ""]
+- ["C4vist6Module", ""]
+- ["P4vist16OptimisationPass", ""]
+- ["C4vist8Function", ""]
+- ["V4vist14CompileOptions", "optLevel"]
+- ["C4vist6Module", "runPasses"]
+- ["P4vist16OptimisationPass", "create"]
+- ["C4vist8Function", "instructions"]
+provides-dynamic-lookup:
+depends-top-level:
+- "OptimisationPass"
+- !private "CFGSimplificationPass"
+- "Module"
+- !private "ConstantFoldingPass"
+- "Int"
+- "=="
+- !private "~="
+- !private ">="
+- "OptLevel"
+- !private "??"
+- "Function"
+- !private "DCEPass"
+- !private "DeadFunctionPass"
+- "CompileOptions"
+- !private "Array"
+- "Inst"
+- "LazyCollection"
+depends-member:
+- !private ["Ps9AnyObject", "CFGSimplificationPass"]
+- !private ["Ps9AnyObject", "ConstantFoldingPass"]
+- !private ["Ps9AnyObject", "DCEPass"]
+- !private ["Ps9AnyObject", "DeadFunctionPass"]
+- !private ["Ps9AnyObject", "Element"]
+- !private ["Ps9AnyObject", "LazyCollection"]
+- !private ["Ps9AnyObject", "blocks"]
+- !private ["Ps9AnyObject", "create"]
+- !private ["Ps9AnyObject", "functions"]
+- !private ["Ps9AnyObject", "instructions"]
+- !private ["Sa", "Element"]
+- !private ["Sa", "Generator"]
+- !private ["Sa", "Index"]
+- !private ["Sa", "SubSequence"]
+- !private ["Sa", "_Element"]
+- !private ["Sa", "deinit"]
+- !private ["Sa", "flatMap"]
+- !private ["Sa", "lazy"]
+- !private ["Ps23ArrayLiteralConvertible", "Element"]
+- !private ["Ps23ArrayLiteralConvertible", "Generator"]
+- !private ["Ps23ArrayLiteralConvertible", "Index"]
+- !private ["Ps23ArrayLiteralConvertible", "O"]
+- !private ["Ps23ArrayLiteralConvertible", "Ohigh"]
+- !private ["Ps23ArrayLiteralConvertible", "SubSequence"]
+- !private ["Ps23ArrayLiteralConvertible", "_Element"]
+- !private ["Ps23ArrayLiteralConvertible", "contains"]
+- !private ["Ps23ArrayLiteralConvertible", "flatMap"]
+- !private ["Ps23ArrayLiteralConvertible", "lazy"]
+- !private ["Vs10ArraySlice", "Generator"]
+- !private ["Vs10ArraySlice", "Index"]
+- !private ["C4vist10BasicBlock", "instructions"]
+- !private ["Ps22BidirectionalIndexType", "Distance"]
+- !private ["Ps22BidirectionalIndexType", "IntegerLiteralType"]
+- !private ["Ps22BidirectionalIndexType", "hashValue"]
+- !private ["Ps21BitwiseOperationsType", "Distance"]
+- !private ["Ps21BitwiseOperationsType", "IntegerLiteralType"]
+- !private ["Ps21BitwiseOperationsType", "hashValue"]
+- !private ["Sb", "_getBuiltinLogicValue"]
+- !private ["Ps25BooleanLiteralConvertible", "_getBuiltinLogicValue"]
+- !private ["Ps11BooleanType", "_getBuiltinLogicValue"]
+- !private ["C4vist21CFGSimplificationPass", "Element"]
+- !private ["C4vist21CFGSimplificationPass", "create"]
+- !private ["C4vist21CFGSimplificationPass", "deinit"]
+- !private ["Ps11CVarArgType", "Distance"]
+- !private ["Ps11CVarArgType", "IntegerLiteralType"]
+- !private ["Ps11CVarArgType", "hashValue"]
+- !private ["Ps14CollectionType", "Element"]
+- !private ["Ps14CollectionType", "Generator"]
+- !private ["Ps14CollectionType", "Index"]
+- !private ["Ps14CollectionType", "SubSequence"]
+- !private ["Ps14CollectionType", "_Element"]
+- !private ["Ps14CollectionType", "flatMap"]
+- !private ["Ps14CollectionType", "init"]
+- !private ["Ps14CollectionType", "lazy"]
+- !private ["Ps10Comparable", "Distance"]
+- !private ["Ps10Comparable", "IntegerLiteralType"]
+- !private ["Ps10Comparable", "hashValue"]
+- !private ["V4vist14CompileOptions", "Element"]
+- !private ["V4vist14CompileOptions", "O"]
+- !private ["V4vist14CompileOptions", "Ohigh"]
+- ["V4vist14CompileOptions", "OptLevel"]
+- !private ["V4vist14CompileOptions", "contains"]
+- !private ["V4vist14CompileOptions", "deinit"]
+- ["V4vist14CompileOptions", "optLevel"]
+- !private ["C4vist19ConstantFoldingPass", "Element"]
+- !private ["C4vist19ConstantFoldingPass", "create"]
+- !private ["C4vist19ConstantFoldingPass", "deinit"]
+- !private ["Ps28CustomDebugStringConvertible", "CFGSimplificationPass"]
+- !private ["Ps28CustomDebugStringConvertible", "ConstantFoldingPass"]
+- !private ["Ps28CustomDebugStringConvertible", "DCEPass"]
+- !private ["Ps28CustomDebugStringConvertible", "DeadFunctionPass"]
+- !private ["Ps28CustomDebugStringConvertible", "Element"]
+- !private ["Ps28CustomDebugStringConvertible", "Generator"]
+- !private ["Ps28CustomDebugStringConvertible", "Index"]
+- !private ["Ps28CustomDebugStringConvertible", "LazyCollection"]
+- !private ["Ps28CustomDebugStringConvertible", "SubSequence"]
+- !private ["Ps28CustomDebugStringConvertible", "_Element"]
+- !private ["Ps28CustomDebugStringConvertible", "blocks"]
+- !private ["Ps28CustomDebugStringConvertible", "flatMap"]
+- !private ["Ps28CustomDebugStringConvertible", "functions"]
+- !private ["Ps28CustomDebugStringConvertible", "instructions"]
+- !private ["Ps28CustomDebugStringConvertible", "lazy"]
+- !private ["Ps28CustomDebugStringConvertible", "map"]
+- !private ["Ps23CustomStringConvertible", "Distance"]
+- !private ["Ps23CustomStringConvertible", "Element"]
+- !private ["Ps23CustomStringConvertible", "Generator"]
+- !private ["Ps23CustomStringConvertible", "Index"]
+- !private ["Ps23CustomStringConvertible", "IntegerLiteralType"]
+- !private ["Ps23CustomStringConvertible", "SubSequence"]
+- !private ["Ps23CustomStringConvertible", "_Element"]
+- !private ["Ps23CustomStringConvertible", "_getBuiltinLogicValue"]
+- !private ["Ps23CustomStringConvertible", "flatMap"]
+- !private ["Ps23CustomStringConvertible", "hashValue"]
+- !private ["Ps23CustomStringConvertible", "lazy"]
+- !private ["C4vist7DCEPass", "Element"]
+- !private ["C4vist7DCEPass", "create"]
+- !private ["C4vist7DCEPass", "deinit"]
+- !private ["C4vist16DeadFunctionPass", "Element"]
+- !private ["C4vist16DeadFunctionPass", "create"]
+- !private ["C4vist16DeadFunctionPass", "deinit"]
+- !private ["Sd", "deinit"]
+- !private ["Ps9Equatable", "Distance"]
+- !private ["Ps9Equatable", "Element"]
+- !private ["Ps9Equatable", "Generator"]
+- !private ["Ps9Equatable", "IntegerLiteralType"]
+- !private ["Ps9Equatable", "LazyCollection"]
+- !private ["Ps9Equatable", "O"]
+- !private ["Ps9Equatable", "Ohigh"]
+- ["Ps9Equatable", "RawValue"]
+- !private ["Ps9Equatable", "_getBuiltinLogicValue"]
+- !private ["Ps9Equatable", "blocks"]
+- !private ["Ps9Equatable", "contains"]
+- ["Ps9Equatable", "hashValue"]
+- !private ["Ps9Equatable", "high"]
+- ["Ps9Equatable", "init"]
+- !private ["Ps9Equatable", "low"]
+- !private ["Ps9Equatable", "off"]
+- ["Ps9Equatable", "rawValue"]
+- ["Ps9Equatable", ""]
+- !private ["Ps16ForwardIndexType", "Distance"]
+- !private ["Ps16ForwardIndexType", "IntegerLiteralType"]
+- !private ["Ps16ForwardIndexType", "hashValue"]
+- ["C4vist8Function", "Inst"]
+- ["C4vist8Function", "LazyCollection"]
+- !private ["C4vist8Function", "blocks"]
+- !private ["C4vist8Function", "deinit"]
+- ["C4vist8Function", "instructions"]
+- !private ["Ps13GeneratorType", "Element"]
+- !private ["Ps8Hashable", "Distance"]
+- !private ["Ps8Hashable", "Generator"]
+- !private ["Ps8Hashable", "IntegerLiteralType"]
+- !private ["Ps8Hashable", "LazyCollection"]
+- ["Ps8Hashable", "RawValue"]
+- !private ["Ps8Hashable", "_getBuiltinLogicValue"]
+- !private ["Ps8Hashable", "blocks"]
+- ["Ps8Hashable", "hashValue"]
+- !private ["Ps8Hashable", "high"]
+- ["Ps8Hashable", "init"]
+- !private ["Ps8Hashable", "low"]
+- !private ["Ps8Hashable", "off"]
+- ["Ps8Hashable", "rawValue"]
+- ["Ps8Hashable", ""]
+- !private ["Ps9Indexable", "Element"]
+- !private ["Ps9Indexable", "Generator"]
+- !private ["Ps9Indexable", "Index"]
+- !private ["Ps9Indexable", "SubSequence"]
+- !private ["Ps9Indexable", "_Element"]
+- !private ["Ps9Indexable", "flatMap"]
+- !private ["Ps9Indexable", "init"]
+- !private ["Ps9Indexable", "lazy"]
+- !private ["Vs17IndexingGenerator", "Element"]
+- !private ["Si", "Distance"]
+- !private ["Si", "IntegerLiteralType"]
+- !private ["Si", "deinit"]
+- !private ["Si", "hashValue"]
+- !private ["Ps21IntegerArithmeticType", "Distance"]
+- !private ["Ps21IntegerArithmeticType", "IntegerLiteralType"]
+- !private ["Ps21IntegerArithmeticType", "hashValue"]
+- !private ["Ps25IntegerLiteralConvertible", "Distance"]
+- !private ["Ps25IntegerLiteralConvertible", "IntegerLiteralType"]
+- !private ["Ps25IntegerLiteralConvertible", "hashValue"]
+- !private ["Ps11IntegerType", "Distance"]
+- !private ["Ps11IntegerType", "IntegerLiteralType"]
+- !private ["Ps11IntegerType", "hashValue"]
+- !private ["Vs14LazyCollection", "init"]
+- !private ["Ps18LazyCollectionType", "init"]
+- !private ["Ps16LazySequenceType", "init"]
+- !private ["Ps14MirrorPathType", "Distance"]
+- !private ["Ps14MirrorPathType", "IntegerLiteralType"]
+- !private ["Ps14MirrorPathType", "hashValue"]
+- !private ["C4vist6Module", "CFGSimplificationPass"]
+- !private ["C4vist6Module", "ConstantFoldingPass"]
+- !private ["C4vist6Module", "DCEPass"]
+- !private ["C4vist6Module", "DeadFunctionPass"]
+- ["C4vist6Module", "OptLevel"]
+- !private ["C4vist6Module", "functions"]
+- ["C4vist6Module", "runPasses"]
+- !private ["Ps21MutableCollectionType", "Element"]
+- !private ["Ps21MutableCollectionType", "Generator"]
+- !private ["Ps21MutableCollectionType", "Index"]
+- !private ["Ps21MutableCollectionType", "SubSequence"]
+- !private ["Ps21MutableCollectionType", "_Element"]
+- !private ["Ps21MutableCollectionType", "flatMap"]
+- !private ["Ps21MutableCollectionType", "lazy"]
+- !private ["Ps16MutableIndexable", "Element"]
+- !private ["Ps16MutableIndexable", "Generator"]
+- !private ["Ps16MutableIndexable", "Index"]
+- !private ["Ps16MutableIndexable", "SubSequence"]
+- !private ["Ps16MutableIndexable", "_Element"]
+- !private ["Ps16MutableIndexable", "flatMap"]
+- !private ["Ps16MutableIndexable", "lazy"]
+- !private ["Ps16MutableSliceable", "Element"]
+- !private ["Ps16MutableSliceable", "Generator"]
+- !private ["Ps16MutableSliceable", "Index"]
+- !private ["Ps16MutableSliceable", "SubSequence"]
+- !private ["Ps16MutableSliceable", "_Element"]
+- !private ["Ps16MutableSliceable", "flatMap"]
+- !private ["Ps16MutableSliceable", "lazy"]
+- !private ["CSo8NSNumber", "deinit"]
+- !private ["CSo8NSObject", "deinit"]
+- !private ["CSo7NSValue", "deinit"]
+- !private ["Ps21NilLiteralConvertible", "map"]
+- ["O4vist8OptLevel", "RawValue"]
+- ["O4vist8OptLevel", "deinit"]
+- ["O4vist8OptLevel", "hashValue"]
+- ["O4vist8OptLevel", "high"]
+- ["O4vist8OptLevel", "init"]
+- ["O4vist8OptLevel", "low"]
+- ["O4vist8OptLevel", "off"]
+- ["O4vist8OptLevel", "rawValue"]
+- ["P4vist16OptimisationPass", "Element"]
+- ["P4vist16OptimisationPass", "OptLevel"]
+- !private ["P4vist16OptimisationPass", "Self"]
+- ["P4vist16OptimisationPass", "create"]
+- ["P4vist16OptimisationPass", "init"]
+- ["P4vist16OptimisationPass", "minOptLevel"]
+- ["P4vist16OptimisationPass", "runOn"]
+- !private ["Ps13OptionSetType", "Element"]
+- !private ["Ps13OptionSetType", "O"]
+- !private ["Ps13OptionSetType", "Ohigh"]
+- !private ["Ps13OptionSetType", "contains"]
+- !private ["Sq", "deinit"]
+- !private ["Sq", "map"]
+- !private ["P4vist9Printable", "Distance"]
+- !private ["P4vist9Printable", "Element"]
+- !private ["P4vist9Printable", "Generator"]
+- !private ["P4vist9Printable", "Index"]
+- !private ["P4vist9Printable", "IntegerLiteralType"]
+- !private ["P4vist9Printable", "SubSequence"]
+- !private ["P4vist9Printable", "_Element"]
+- !private ["P4vist9Printable", "_getBuiltinLogicValue"]
+- !private ["P4vist9Printable", "flatMap"]
+- !private ["P4vist9Printable", "hashValue"]
+- !private ["P4vist9Printable", "lazy"]
+- !private ["P4vist9Printable", "map"]
+- !private ["Ps21RandomAccessIndexType", "Distance"]
+- !private ["Ps21RandomAccessIndexType", "IntegerLiteralType"]
+- !private ["Ps21RandomAccessIndexType", "hashValue"]
+- !private ["Vs5Range", "deinit"]
+- !private ["Ps30RangeReplaceableCollectionType", "Element"]
+- !private ["Ps30RangeReplaceableCollectionType", "Generator"]
+- !private ["Ps30RangeReplaceableCollectionType", "Index"]
+- !private ["Ps30RangeReplaceableCollectionType", "SubSequence"]
+- !private ["Ps30RangeReplaceableCollectionType", "_Element"]
+- !private ["Ps30RangeReplaceableCollectionType", "flatMap"]
+- !private ["Ps30RangeReplaceableCollectionType", "lazy"]
+- !private ["Ps16RawRepresentable", "Element"]
+- !private ["Ps16RawRepresentable", "O"]
+- !private ["Ps16RawRepresentable", "Ohigh"]
+- ["Ps16RawRepresentable", "RawValue"]
+- !private ["Ps16RawRepresentable", "contains"]
+- ["Ps16RawRepresentable", "hashValue"]
+- !private ["Ps16RawRepresentable", "high"]
+- ["Ps16RawRepresentable", "init"]
+- !private ["Ps16RawRepresentable", "low"]
+- !private ["Ps16RawRepresentable", "off"]
+- ["Ps16RawRepresentable", "rawValue"]
+- ["Ps16RawRepresentable", ""]
+- !private ["Ps12SequenceType", "Element"]
+- !private ["Ps12SequenceType", "Generator"]
+- !private ["Ps12SequenceType", "Index"]
+- !private ["Ps12SequenceType", "SubSequence"]
+- !private ["Ps12SequenceType", "_Element"]
+- !private ["Ps12SequenceType", "flatMap"]
+- !private ["Ps12SequenceType", "init"]
+- !private ["Ps12SequenceType", "lazy"]
+- !private ["Vs3Set", "Generator"]
+- !private ["Ps14SetAlgebraType", "Element"]
+- !private ["Ps14SetAlgebraType", "O"]
+- !private ["Ps14SetAlgebraType", "Ohigh"]
+- !private ["Ps14SetAlgebraType", "contains"]
+- !private ["Vs12SetGenerator", "Element"]
+- !private ["Ps17SignedIntegerType", "Distance"]
+- !private ["Ps17SignedIntegerType", "IntegerLiteralType"]
+- !private ["Ps17SignedIntegerType", "hashValue"]
+- !private ["Ps16SignedNumberType", "Distance"]
+- !private ["Ps16SignedNumberType", "IntegerLiteralType"]
+- !private ["Ps16SignedNumberType", "hashValue"]
+- !private ["Ps10Strideable", "Distance"]
+- !private ["Ps10Strideable", "IntegerLiteralType"]
+- !private ["Ps10Strideable", "hashValue"]
+- !private ["P4vist10VIRElement", "CFGSimplificationPass"]
+- !private ["P4vist10VIRElement", "ConstantFoldingPass"]
+- !private ["P4vist10VIRElement", "DCEPass"]
+- !private ["P4vist10VIRElement", "DeadFunctionPass"]
+- !private ["P4vist10VIRElement", "LazyCollection"]
+- !private ["P4vist10VIRElement", "blocks"]
+- !private ["P4vist10VIRElement", "functions"]
+- !private ["P4vist10VIRElement", "instructions"]
+- !private ["P4vist8VIRLower", "LazyCollection"]
+- !private ["P4vist8VIRLower", "blocks"]
+- !private ["Ps10_ArrayType", "Element"]
+- !private ["Ps10_ArrayType", "Generator"]
+- !private ["Ps10_ArrayType", "Index"]
+- !private ["Ps10_ArrayType", "SubSequence"]
+- !private ["Ps10_ArrayType", "_Element"]
+- !private ["Ps10_ArrayType", "flatMap"]
+- !private ["Ps10_ArrayType", "lazy"]
+- !private ["Ps33_BuiltinBooleanLiteralConvertible", "_getBuiltinLogicValue"]
+- !private ["Ps33_BuiltinIntegerLiteralConvertible", "Distance"]
+- !private ["Ps33_BuiltinIntegerLiteralConvertible", "IntegerLiteralType"]
+- !private ["Ps33_BuiltinIntegerLiteralConvertible", "hashValue"]
+- !private ["Ps24_DestructorSafeContainer", "Element"]
+- !private ["Ps24_DestructorSafeContainer", "Generator"]
+- !private ["Ps24_DestructorSafeContainer", "Index"]
+- !private ["Ps24_DestructorSafeContainer", "SubSequence"]
+- !private ["Ps24_DestructorSafeContainer", "_Element"]
+- !private ["Ps24_DestructorSafeContainer", "flatMap"]
+- !private ["Ps24_DestructorSafeContainer", "lazy"]
+- !private ["Ps14_Incrementable", "Distance"]
+- !private ["Ps14_Incrementable", "IntegerLiteralType"]
+- !private ["Ps14_Incrementable", "hashValue"]
+- !private ["Ps22_IntegerArithmeticType", "Distance"]
+- !private ["Ps22_IntegerArithmeticType", "IntegerLiteralType"]
+- !private ["Ps22_IntegerArithmeticType", "hashValue"]
+- !private ["Ps12_IntegerType", "Distance"]
+- !private ["Ps12_IntegerType", "IntegerLiteralType"]
+- !private ["Ps12_IntegerType", "hashValue"]
+- !private ["Ps21_ObjectiveCBridgeable", "Distance"]
+- !private ["Ps21_ObjectiveCBridgeable", "Element"]
+- !private ["Ps21_ObjectiveCBridgeable", "Generator"]
+- !private ["Ps21_ObjectiveCBridgeable", "Index"]
+- !private ["Ps21_ObjectiveCBridgeable", "IntegerLiteralType"]
+- !private ["Ps21_ObjectiveCBridgeable", "SubSequence"]
+- !private ["Ps21_ObjectiveCBridgeable", "_Element"]
+- !private ["Ps21_ObjectiveCBridgeable", "_getBuiltinLogicValue"]
+- !private ["Ps21_ObjectiveCBridgeable", "flatMap"]
+- !private ["Ps21_ObjectiveCBridgeable", "hashValue"]
+- !private ["Ps21_ObjectiveCBridgeable", "lazy"]
+- !private ["Vs26_OptionalNilComparisonType", "deinit"]
+- !private ["Ps22_RandomAccessAmbiguity", "Distance"]
+- !private ["Ps22_RandomAccessAmbiguity", "IntegerLiteralType"]
+- !private ["Ps22_RandomAccessAmbiguity", "hashValue"]
+- !private ["Ps12_Reflectable", "Distance"]
+- !private ["Ps12_Reflectable", "Element"]
+- !private ["Ps12_Reflectable", "Generator"]
+- !private ["Ps12_Reflectable", "Index"]
+- !private ["Ps12_Reflectable", "IntegerLiteralType"]
+- !private ["Ps12_Reflectable", "SubSequence"]
+- !private ["Ps12_Reflectable", "_Element"]
+- !private ["Ps12_Reflectable", "_getBuiltinLogicValue"]
+- !private ["Ps12_Reflectable", "flatMap"]
+- !private ["Ps12_Reflectable", "hashValue"]
+- !private ["Ps12_Reflectable", "lazy"]
+- !private ["Ps12_Reflectable", "map"]
+- !private ["Ps18_SignedIntegerType", "Distance"]
+- !private ["Ps18_SignedIntegerType", "IntegerLiteralType"]
+- !private ["Ps18_SignedIntegerType", "hashValue"]
+depends-nominal:
+- !private "Ps9AnyObject"
+- !private "Sa"
+- !private "Ps23ArrayLiteralConvertible"
+- !private "Vs10ArraySlice"
+- !private "C4vist10BasicBlock"
+- !private "Ps22BidirectionalIndexType"
+- !private "Ps21BitwiseOperationsType"
+- !private "Sb"
+- !private "Ps25BooleanLiteralConvertible"
+- !private "Ps11BooleanType"
+- !private "C4vist21CFGSimplificationPass"
+- !private "Ps11CVarArgType"
+- !private "Ps14CollectionType"
+- !private "Ps10Comparable"
+- "V4vist14CompileOptions"
+- !private "C4vist19ConstantFoldingPass"
+- !private "Ps28CustomDebugStringConvertible"
+- !private "Ps23CustomStringConvertible"
+- !private "C4vist7DCEPass"
+- !private "C4vist16DeadFunctionPass"
+- !private "Sd"
+- "Ps9Equatable"
+- !private "Ps16ForwardIndexType"
+- "C4vist8Function"
+- !private "Ps13GeneratorType"
+- "Ps8Hashable"
+- !private "Ps9Indexable"
+- !private "Vs17IndexingGenerator"
+- !private "Si"
+- !private "Ps21IntegerArithmeticType"
+- !private "Ps25IntegerLiteralConvertible"
+- !private "Ps11IntegerType"
+- !private "Vs14LazyCollection"
+- !private "Ps18LazyCollectionType"
+- !private "Ps16LazySequenceType"
+- !private "Ps14MirrorPathType"
+- "C4vist6Module"
+- !private "Ps21MutableCollectionType"
+- !private "Ps16MutableIndexable"
+- !private "Ps16MutableSliceable"
+- !private "CSo8NSNumber"
+- !private "CSo8NSObject"
+- !private "CSo7NSValue"
+- !private "Ps21NilLiteralConvertible"
+- "O4vist8OptLevel"
+- "P4vist16OptimisationPass"
+- !private "Ps13OptionSetType"
+- !private "Sq"
+- !private "P4vist9Printable"
+- !private "Ps21RandomAccessIndexType"
+- !private "Vs5Range"
+- !private "Ps30RangeReplaceableCollectionType"
+- "Ps16RawRepresentable"
+- !private "Ps12SequenceType"
+- !private "Vs3Set"
+- !private "Ps14SetAlgebraType"
+- !private "Vs12SetGenerator"
+- !private "Ps17SignedIntegerType"
+- !private "Ps16SignedNumberType"
+- !private "Ps10Strideable"
+- !private "P4vist10VIRElement"
+- !private "P4vist8VIRLower"
+- !private "Ps10_ArrayType"
+- !private "Ps33_BuiltinBooleanLiteralConvertible"
+- !private "Ps33_BuiltinIntegerLiteralConvertible"
+- !private "Ps24_DestructorSafeContainer"
+- !private "Ps14_Incrementable"
+- !private "Ps22_IntegerArithmeticType"
+- !private "Ps12_IntegerType"
+- !private "Ps21_ObjectiveCBridgeable"
+- !private "Vs26_OptionalNilComparisonType"
+- !private "Ps22_RandomAccessAmbiguity"
+- !private "Ps12_Reflectable"
+- !private "Ps18_SignedIntegerType"
+depends-dynamic-lookup:
+depends-external:
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Swift.swiftmodule"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/Include/Vist-Bridging-Header.h"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/Include/LLVM.h"
+- "/usr/local/opt/llvm/include/llvm-c/Core.h"
+- "/usr/local/opt/llvm/include/llvm-c/Support.h"
+- "/usr/local/opt/llvm/include/llvm/Support/DataTypes.h"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Darwin.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/clang/include/inttypes.h"
+- "/usr/local/opt/llvm/include/llvm-c/Analysis.h"
+- "/usr/local/opt/llvm/include/llvm-c/BitReader.h"
+- "/usr/local/opt/llvm/include/llvm-c/BitWriter.h"
+- "/usr/local/opt/llvm/include/llvm-c/Disassembler.h"
+- "/usr/local/opt/llvm/include/llvm-c/ExecutionEngine.h"
+- "/usr/local/opt/llvm/include/llvm-c/Target.h"
+- "/usr/local/opt/llvm/include/llvm/Config/llvm-config.h"
+- "/usr/local/opt/llvm/include/llvm/Config/Targets.def"
+- "/usr/local/opt/llvm/include/llvm/Config/AsmPrinters.def"
+- "/usr/local/opt/llvm/include/llvm/Config/AsmParsers.def"
+- "/usr/local/opt/llvm/include/llvm/Config/Disassemblers.def"
+- "/usr/local/opt/llvm/include/llvm-c/TargetMachine.h"
+- "/usr/local/opt/llvm/include/llvm-c/Initialization.h"
+- "/usr/local/opt/llvm/include/llvm-c/IRReader.h"
+- "/usr/local/opt/llvm/include/llvm-c/Linker.h"
+- "/usr/local/opt/llvm/include/llvm-c/LinkTimeOptimizer.h"
+- "/usr/local/opt/llvm/include/llvm-c/lto.h"
+- "/usr/local/opt/llvm/include/llvm-c/Object.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/IPO.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/PassManagerBuilder.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/Scalar.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/Vectorize.h"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/VIRLower/Intrinsic.hpp"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/LLVMOptimiser/Optimiser.hpp"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/Include/Utils.h"
+- "/Users/JoeWillsher/Developer/Vist/VIR/Types/CreateType.hpp"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Foundation.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Dispatch.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/ObjectiveC.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/CoreGraphics.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/IOKit.swiftmodule"
+interface-hash: "d84ef486ff84b78a321a82d16a0616e0"

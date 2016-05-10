@@ -1,0 +1,711 @@
+### Swift dependencies file v0 ###
+provides-top-level:
+provides-nominal:
+provides-member:
+- ["C4vist10StructExpr", ""]
+- ["C4vist10StructExpr", "implicitIntialiser"]
+- ["C4vist10StructExpr", "memberwiseInitialiser"]
+provides-dynamic-lookup:
+depends-top-level:
+- !private "semaError"
+- !private "zip"
+- !private "=="
+- !private "BlockExpr"
+- !private "VariableExpr"
+- !private "Array"
+- !private "DefinedFunctionType"
+- !private "FunctionImplementationExpr"
+- !private "StringLiteralType"
+- !private "implicitParamName"
+- !private "DefinedType"
+- "InitialiserDecl"
+- !private "ASTNode"
+- !private "..<"
+- !private "BooleanLiteralType"
+- "StructExpr"
+- !private "!"
+- !private "NullExpr"
+- !private "MutationExpr"
+depends-member:
+- !private ["P4vist7ASTNode", "BlockExpr"]
+- !private ["P4vist7ASTNode", "DefinedFunctionType"]
+- !private ["P4vist7ASTNode", "DefinedType"]
+- !private ["P4vist7ASTNode", "FunctionImplementationExpr"]
+- !private ["P4vist7ASTNode", "InitialiserDecl"]
+- !private ["P4vist7ASTNode", "MutationExpr"]
+- !private ["P4vist7ASTNode", "VariableExpr"]
+- !private ["P4vist7ASTNode", "_type"]
+- !private ["P4vist7ASTNode", "implicitParamName"]
+- !private ["P4vist7ASTNode", "init"]
+- !private ["P4vist7ASTNode", "name"]
+- !private ["P4vist7ASTNode", "properties"]
+- !private ["P4vist7ASTNode", "semaError"]
+- !private ["P4vist7ASTNode", "value"]
+- !private ["P4vist7ASTNode", "zip"]
+- !private ["Ps9AnyObject", "BlockExpr"]
+- !private ["Ps9AnyObject", "DefinedFunctionType"]
+- !private ["Ps9AnyObject", "DefinedType"]
+- !private ["Ps9AnyObject", "FunctionImplementationExpr"]
+- !private ["Ps9AnyObject", "InitialiserDecl"]
+- !private ["Ps9AnyObject", "MutationExpr"]
+- !private ["Ps9AnyObject", "VariableExpr"]
+- !private ["Ps9AnyObject", "implicitParamName"]
+- !private ["Ps9AnyObject", "init"]
+- !private ["Ps9AnyObject", "name"]
+- !private ["Ps9AnyObject", "properties"]
+- !private ["Ps9AnyObject", "semaError"]
+- !private ["Ps9AnyObject", "value"]
+- !private ["Ps9AnyObject", "zip"]
+- !private ["Sa", "Element"]
+- !private ["Sa", "Generator"]
+- !private ["Sa", "Index"]
+- !private ["Sa", "SubSequence"]
+- !private ["Sa", "_Element"]
+- !private ["Sa", "append"]
+- !private ["Sa", "count"]
+- !private ["Sa", "deinit"]
+- !private ["Sa", "enumerate"]
+- !private ["Sa", "filter"]
+- !private ["Sa", "map"]
+- !private ["Sa", "optionalMap"]
+- !private ["Ps23ArrayLiteralConvertible", "Element"]
+- !private ["Ps23ArrayLiteralConvertible", "Generator"]
+- !private ["Ps23ArrayLiteralConvertible", "Index"]
+- !private ["Ps23ArrayLiteralConvertible", "SubSequence"]
+- !private ["Ps23ArrayLiteralConvertible", "_Element"]
+- !private ["Ps23ArrayLiteralConvertible", "append"]
+- !private ["Ps23ArrayLiteralConvertible", "count"]
+- !private ["Ps23ArrayLiteralConvertible", "enumerate"]
+- !private ["Ps23ArrayLiteralConvertible", "filter"]
+- !private ["Ps23ArrayLiteralConvertible", "map"]
+- !private ["Ps23ArrayLiteralConvertible", "optionalMap"]
+- !private ["Vs10ArraySlice", "Generator"]
+- !private ["Vs10ArraySlice", "Index"]
+- !private ["Ps22BidirectionalIndexType", "Distance"]
+- !private ["Ps22BidirectionalIndexType", "IntegerLiteralType"]
+- !private ["Ps22BidirectionalIndexType", "Stride"]
+- !private ["Ps22BidirectionalIndexType", "_DisabledRangeIndex"]
+- !private ["Ps22BidirectionalIndexType", "implicitParamName"]
+- !private ["Ps21BitwiseOperationsType", "Distance"]
+- !private ["Ps21BitwiseOperationsType", "IntegerLiteralType"]
+- !private ["Ps21BitwiseOperationsType", "Stride"]
+- !private ["Ps21BitwiseOperationsType", "_DisabledRangeIndex"]
+- !private ["Ps21BitwiseOperationsType", "implicitParamName"]
+- !private ["C4vist9BlockExpr", "init"]
+- !private ["Sb", "_getBuiltinLogicValue"]
+- !private ["Ps25BooleanLiteralConvertible", "_getBuiltinLogicValue"]
+- !private ["Ps11BooleanType", "_getBuiltinLogicValue"]
+- !private ["Ps11CVarArgType", "Distance"]
+- !private ["Ps11CVarArgType", "IntegerLiteralType"]
+- !private ["Ps11CVarArgType", "Stride"]
+- !private ["Ps11CVarArgType", "_DisabledRangeIndex"]
+- !private ["Ps11CVarArgType", "implicitParamName"]
+- !private ["P4vist13ChainableExpr", "init"]
+- !private ["Ps14CollectionType", "Element"]
+- !private ["Ps14CollectionType", "Generator"]
+- !private ["Ps14CollectionType", "Index"]
+- !private ["Ps14CollectionType", "SubSequence"]
+- !private ["Ps14CollectionType", "_Element"]
+- !private ["Ps14CollectionType", "append"]
+- !private ["Ps14CollectionType", "count"]
+- !private ["Ps14CollectionType", "enumerate"]
+- !private ["Ps14CollectionType", "filter"]
+- !private ["Ps14CollectionType", "map"]
+- !private ["Ps14CollectionType", "optionalMap"]
+- !private ["Ps10Comparable", "Distance"]
+- !private ["Ps10Comparable", "IntegerLiteralType"]
+- !private ["Ps10Comparable", "Stride"]
+- !private ["Ps10Comparable", "_DisabledRangeIndex"]
+- !private ["Ps10Comparable", "implicitParamName"]
+- !private ["Ps28CustomDebugStringConvertible", "Element"]
+- !private ["Ps28CustomDebugStringConvertible", "Generator"]
+- !private ["Ps28CustomDebugStringConvertible", "Index"]
+- ["Ps28CustomDebugStringConvertible", "Some"]
+- !private ["Ps28CustomDebugStringConvertible", "SubSequence"]
+- !private ["Ps28CustomDebugStringConvertible", "_Element"]
+- !private ["Ps28CustomDebugStringConvertible", "append"]
+- !private ["Ps28CustomDebugStringConvertible", "count"]
+- !private ["Ps28CustomDebugStringConvertible", "enumerate"]
+- !private ["Ps28CustomDebugStringConvertible", "explicitName"]
+- !private ["Ps28CustomDebugStringConvertible", "filter"]
+- !private ["Ps28CustomDebugStringConvertible", "map"]
+- !private ["Ps28CustomDebugStringConvertible", "optionalMap"]
+- !private ["Ps23CustomStringConvertible", "Distance"]
+- !private ["Ps23CustomStringConvertible", "Element"]
+- !private ["Ps23CustomStringConvertible", "Generator"]
+- !private ["Ps23CustomStringConvertible", "Index"]
+- !private ["Ps23CustomStringConvertible", "IntegerLiteralType"]
+- !private ["Ps23CustomStringConvertible", "Stride"]
+- !private ["Ps23CustomStringConvertible", "SubSequence"]
+- !private ["Ps23CustomStringConvertible", "_DisabledRangeIndex"]
+- !private ["Ps23CustomStringConvertible", "_Element"]
+- !private ["Ps23CustomStringConvertible", "_getBuiltinLogicValue"]
+- !private ["Ps23CustomStringConvertible", "append"]
+- !private ["Ps23CustomStringConvertible", "count"]
+- !private ["Ps23CustomStringConvertible", "enumerate"]
+- !private ["Ps23CustomStringConvertible", "filter"]
+- !private ["Ps23CustomStringConvertible", "implicitParamName"]
+- !private ["Ps23CustomStringConvertible", "map"]
+- !private ["Ps23CustomStringConvertible", "noMemberwiseInit"]
+- !private ["Ps23CustomStringConvertible", "optionalMap"]
+- !private ["P4vist4Decl", "init"]
+- !private ["P4vist4Decl", "name"]
+- !private ["P4vist4Decl", "value"]
+- !private ["P4vist16DeclTypeProvider", "init"]
+- !private ["P4vist16DeclTypeProvider", "name"]
+- !private ["P4vist16DeclTypeProvider", "value"]
+- !private ["C4vist19DefinedFunctionType", "init"]
+- !private ["O4vist11DefinedType", "init"]
+- !private ["O4vist11DefinedType", "type"]
+- !private ["O4vist11DefinedType", "void"]
+- !private ["Vs18EnumerateGenerator", "Element"]
+- !private ["Vs17EnumerateSequence", "Generator"]
+- !private ["Ps9Equatable", "Distance"]
+- !private ["Ps9Equatable", "Generator"]
+- !private ["Ps9Equatable", "Index"]
+- !private ["Ps9Equatable", "IntegerLiteralType"]
+- !private ["Ps9Equatable", "Stride"]
+- !private ["Ps9Equatable", "SubSequence"]
+- !private ["Ps9Equatable", "_DisabledRangeIndex"]
+- !private ["Ps9Equatable", "_Element"]
+- !private ["Ps9Equatable", "_getBuiltinLogicValue"]
+- !private ["Ps9Equatable", "implicitParamName"]
+- !private ["Ps9Equatable", "map"]
+- !private ["Ps9ErrorType", "noMemberwiseInit"]
+- !private ["P4vist4Expr", "BlockExpr"]
+- !private ["P4vist4Expr", "DefinedFunctionType"]
+- !private ["P4vist4Expr", "DefinedType"]
+- !private ["P4vist4Expr", "FunctionImplementationExpr"]
+- !private ["P4vist4Expr", "InitialiserDecl"]
+- !private ["P4vist4Expr", "MutationExpr"]
+- !private ["P4vist4Expr", "VariableExpr"]
+- !private ["P4vist4Expr", "_type"]
+- !private ["P4vist4Expr", "implicitParamName"]
+- !private ["P4vist4Expr", "init"]
+- !private ["P4vist4Expr", "name"]
+- !private ["P4vist4Expr", "properties"]
+- !private ["P4vist4Expr", "semaError"]
+- !private ["P4vist4Expr", "zip"]
+- !private ["P4vist16ExprTypeProvider", "BlockExpr"]
+- !private ["P4vist16ExprTypeProvider", "DefinedFunctionType"]
+- !private ["P4vist16ExprTypeProvider", "DefinedType"]
+- !private ["P4vist16ExprTypeProvider", "FunctionImplementationExpr"]
+- !private ["P4vist16ExprTypeProvider", "InitialiserDecl"]
+- !private ["P4vist16ExprTypeProvider", "MutationExpr"]
+- !private ["P4vist16ExprTypeProvider", "VariableExpr"]
+- !private ["P4vist16ExprTypeProvider", "_type"]
+- !private ["P4vist16ExprTypeProvider", "implicitParamName"]
+- !private ["P4vist16ExprTypeProvider", "init"]
+- !private ["P4vist16ExprTypeProvider", "name"]
+- !private ["P4vist16ExprTypeProvider", "properties"]
+- !private ["P4vist16ExprTypeProvider", "semaError"]
+- !private ["P4vist16ExprTypeProvider", "zip"]
+- !private ["Ps16ForwardIndexType", "Distance"]
+- !private ["Ps16ForwardIndexType", "IntegerLiteralType"]
+- !private ["Ps16ForwardIndexType", "Stride"]
+- !private ["Ps16ForwardIndexType", "_DisabledRangeIndex"]
+- !private ["Ps16ForwardIndexType", "implicitParamName"]
+- !private ["C4vist26FunctionImplementationExpr", "init"]
+- !private ["Ps13GeneratorType", "Element"]
+- !private ["Vs16HalfOpenInterval", "map"]
+- !private ["Ps8Hashable", "Distance"]
+- !private ["Ps8Hashable", "IntegerLiteralType"]
+- !private ["Ps8Hashable", "Stride"]
+- !private ["Ps8Hashable", "_DisabledRangeIndex"]
+- !private ["Ps8Hashable", "_getBuiltinLogicValue"]
+- !private ["Ps8Hashable", "implicitParamName"]
+- !private ["Ps9Indexable", "Element"]
+- !private ["Ps9Indexable", "Generator"]
+- !private ["Ps9Indexable", "Index"]
+- !private ["Ps9Indexable", "SubSequence"]
+- !private ["Ps9Indexable", "_Element"]
+- !private ["Ps9Indexable", "append"]
+- !private ["Ps9Indexable", "count"]
+- !private ["Ps9Indexable", "enumerate"]
+- !private ["Ps9Indexable", "filter"]
+- !private ["Ps9Indexable", "map"]
+- !private ["Ps9Indexable", "optionalMap"]
+- !private ["Vs17IndexingGenerator", "Element"]
+- !private ["C4vist15InitialiserDecl", "init"]
+- !private ["Si", "Distance"]
+- !private ["Si", "IntegerLiteralType"]
+- !private ["Si", "Stride"]
+- !private ["Si", "_DisabledRangeIndex"]
+- !private ["Si", "deinit"]
+- !private ["Si", "implicitParamName"]
+- !private ["Ps21IntegerArithmeticType", "Distance"]
+- !private ["Ps21IntegerArithmeticType", "IntegerLiteralType"]
+- !private ["Ps21IntegerArithmeticType", "Stride"]
+- !private ["Ps21IntegerArithmeticType", "_DisabledRangeIndex"]
+- !private ["Ps21IntegerArithmeticType", "implicitParamName"]
+- !private ["Ps25IntegerLiteralConvertible", "Distance"]
+- !private ["Ps25IntegerLiteralConvertible", "IntegerLiteralType"]
+- !private ["Ps25IntegerLiteralConvertible", "Stride"]
+- !private ["Ps25IntegerLiteralConvertible", "_DisabledRangeIndex"]
+- !private ["Ps25IntegerLiteralConvertible", "implicitParamName"]
+- !private ["Ps11IntegerType", "Distance"]
+- !private ["Ps11IntegerType", "IntegerLiteralType"]
+- !private ["Ps11IntegerType", "Stride"]
+- !private ["Ps11IntegerType", "_DisabledRangeIndex"]
+- !private ["Ps11IntegerType", "implicitParamName"]
+- !private ["Ps12IntervalType", "map"]
+- !private ["P4vist13LValueEmitter", "init"]
+- !private ["P4vist15LibraryTopLevel", "BlockExpr"]
+- !private ["P4vist15LibraryTopLevel", "DefinedFunctionType"]
+- !private ["P4vist15LibraryTopLevel", "DefinedType"]
+- !private ["P4vist15LibraryTopLevel", "FunctionImplementationExpr"]
+- !private ["P4vist15LibraryTopLevel", "InitialiserDecl"]
+- !private ["P4vist15LibraryTopLevel", "MutationExpr"]
+- !private ["P4vist15LibraryTopLevel", "VariableExpr"]
+- !private ["P4vist15LibraryTopLevel", "implicitParamName"]
+- !private ["P4vist15LibraryTopLevel", "name"]
+- !private ["P4vist15LibraryTopLevel", "properties"]
+- !private ["P4vist15LibraryTopLevel", "semaError"]
+- !private ["P4vist15LibraryTopLevel", "zip"]
+- !private ["Ps14MirrorPathType", "Distance"]
+- !private ["Ps14MirrorPathType", "IntegerLiteralType"]
+- !private ["Ps14MirrorPathType", "Stride"]
+- !private ["Ps14MirrorPathType", "_DisabledRangeIndex"]
+- !private ["Ps14MirrorPathType", "implicitParamName"]
+- !private ["Ps21MutableCollectionType", "Element"]
+- !private ["Ps21MutableCollectionType", "Generator"]
+- !private ["Ps21MutableCollectionType", "Index"]
+- !private ["Ps21MutableCollectionType", "SubSequence"]
+- !private ["Ps21MutableCollectionType", "_Element"]
+- !private ["Ps21MutableCollectionType", "append"]
+- !private ["Ps21MutableCollectionType", "count"]
+- !private ["Ps21MutableCollectionType", "enumerate"]
+- !private ["Ps21MutableCollectionType", "filter"]
+- !private ["Ps21MutableCollectionType", "map"]
+- !private ["Ps21MutableCollectionType", "optionalMap"]
+- !private ["Ps16MutableIndexable", "Element"]
+- !private ["Ps16MutableIndexable", "Generator"]
+- !private ["Ps16MutableIndexable", "Index"]
+- !private ["Ps16MutableIndexable", "SubSequence"]
+- !private ["Ps16MutableIndexable", "_Element"]
+- !private ["Ps16MutableIndexable", "append"]
+- !private ["Ps16MutableIndexable", "count"]
+- !private ["Ps16MutableIndexable", "enumerate"]
+- !private ["Ps16MutableIndexable", "filter"]
+- !private ["Ps16MutableIndexable", "map"]
+- !private ["Ps16MutableIndexable", "optionalMap"]
+- !private ["Ps16MutableSliceable", "Element"]
+- !private ["Ps16MutableSliceable", "Generator"]
+- !private ["Ps16MutableSliceable", "Index"]
+- !private ["Ps16MutableSliceable", "SubSequence"]
+- !private ["Ps16MutableSliceable", "_Element"]
+- !private ["Ps16MutableSliceable", "append"]
+- !private ["Ps16MutableSliceable", "count"]
+- !private ["Ps16MutableSliceable", "enumerate"]
+- !private ["Ps16MutableSliceable", "filter"]
+- !private ["Ps16MutableSliceable", "map"]
+- !private ["Ps16MutableSliceable", "optionalMap"]
+- !private ["C4vist12MutationExpr", "deinit"]
+- !private ["C4vist12MutationExpr", "init"]
+- ["Ps21NilLiteralConvertible", "Some"]
+- ["Sq", "Some"]
+- !private ["Sq", "deinit"]
+- !private ["P4vist9Printable", "BlockExpr"]
+- !private ["P4vist9Printable", "DefinedFunctionType"]
+- !private ["P4vist9Printable", "DefinedType"]
+- !private ["P4vist9Printable", "Distance"]
+- !private ["P4vist9Printable", "Element"]
+- !private ["P4vist9Printable", "FunctionImplementationExpr"]
+- !private ["P4vist9Printable", "Generator"]
+- !private ["P4vist9Printable", "Index"]
+- !private ["P4vist9Printable", "InitialiserDecl"]
+- !private ["P4vist9Printable", "IntegerLiteralType"]
+- !private ["P4vist9Printable", "MutationExpr"]
+- ["P4vist9Printable", "Some"]
+- !private ["P4vist9Printable", "Stride"]
+- !private ["P4vist9Printable", "SubSequence"]
+- !private ["P4vist9Printable", "VariableExpr"]
+- !private ["P4vist9Printable", "_DisabledRangeIndex"]
+- !private ["P4vist9Printable", "_Element"]
+- !private ["P4vist9Printable", "_getBuiltinLogicValue"]
+- !private ["P4vist9Printable", "_type"]
+- !private ["P4vist9Printable", "append"]
+- !private ["P4vist9Printable", "count"]
+- !private ["P4vist9Printable", "enumerate"]
+- !private ["P4vist9Printable", "explicitName"]
+- !private ["P4vist9Printable", "filter"]
+- !private ["P4vist9Printable", "implicitParamName"]
+- !private ["P4vist9Printable", "init"]
+- !private ["P4vist9Printable", "map"]
+- !private ["P4vist9Printable", "name"]
+- !private ["P4vist9Printable", "optionalMap"]
+- !private ["P4vist9Printable", "properties"]
+- !private ["P4vist9Printable", "semaError"]
+- !private ["P4vist9Printable", "value"]
+- !private ["P4vist9Printable", "zip"]
+- !private ["Ps21RandomAccessIndexType", "Distance"]
+- !private ["Ps21RandomAccessIndexType", "IntegerLiteralType"]
+- !private ["Ps21RandomAccessIndexType", "Stride"]
+- !private ["Ps21RandomAccessIndexType", "_DisabledRangeIndex"]
+- !private ["Ps21RandomAccessIndexType", "implicitParamName"]
+- !private ["Vs5Range", "Generator"]
+- !private ["Vs5Range", "Index"]
+- !private ["Vs5Range", "SubSequence"]
+- !private ["Vs5Range", "_Element"]
+- !private ["Vs5Range", "deinit"]
+- !private ["Vs5Range", "map"]
+- !private ["Vs14RangeGenerator", "Element"]
+- !private ["Ps30RangeReplaceableCollectionType", "Element"]
+- !private ["Ps30RangeReplaceableCollectionType", "Generator"]
+- !private ["Ps30RangeReplaceableCollectionType", "Index"]
+- !private ["Ps30RangeReplaceableCollectionType", "SubSequence"]
+- !private ["Ps30RangeReplaceableCollectionType", "_Element"]
+- !private ["Ps30RangeReplaceableCollectionType", "append"]
+- !private ["Ps30RangeReplaceableCollectionType", "count"]
+- !private ["Ps30RangeReplaceableCollectionType", "enumerate"]
+- !private ["Ps30RangeReplaceableCollectionType", "filter"]
+- !private ["Ps30RangeReplaceableCollectionType", "map"]
+- !private ["Ps30RangeReplaceableCollectionType", "optionalMap"]
+- !private ["P4vist9ScopeNode", "BlockExpr"]
+- !private ["P4vist9ScopeNode", "DefinedFunctionType"]
+- !private ["P4vist9ScopeNode", "DefinedType"]
+- !private ["P4vist9ScopeNode", "FunctionImplementationExpr"]
+- !private ["P4vist9ScopeNode", "InitialiserDecl"]
+- !private ["P4vist9ScopeNode", "MutationExpr"]
+- !private ["P4vist9ScopeNode", "VariableExpr"]
+- !private ["P4vist9ScopeNode", "implicitParamName"]
+- !private ["P4vist9ScopeNode", "init"]
+- !private ["P4vist9ScopeNode", "name"]
+- !private ["P4vist9ScopeNode", "properties"]
+- !private ["P4vist9ScopeNode", "semaError"]
+- !private ["P4vist9ScopeNode", "zip"]
+- !private ["O4vist9SemaError", "noMemberwiseInit"]
+- !private ["Ps12SequenceType", "Element"]
+- !private ["Ps12SequenceType", "Generator"]
+- !private ["Ps12SequenceType", "Index"]
+- !private ["Ps12SequenceType", "SubSequence"]
+- !private ["Ps12SequenceType", "_Element"]
+- !private ["Ps12SequenceType", "append"]
+- !private ["Ps12SequenceType", "count"]
+- !private ["Ps12SequenceType", "enumerate"]
+- !private ["Ps12SequenceType", "filter"]
+- !private ["Ps12SequenceType", "map"]
+- !private ["Ps12SequenceType", "optionalMap"]
+- !private ["Ps17SignedIntegerType", "Distance"]
+- !private ["Ps17SignedIntegerType", "IntegerLiteralType"]
+- !private ["Ps17SignedIntegerType", "Stride"]
+- !private ["Ps17SignedIntegerType", "_DisabledRangeIndex"]
+- !private ["Ps17SignedIntegerType", "implicitParamName"]
+- !private ["Ps16SignedNumberType", "Distance"]
+- !private ["Ps16SignedNumberType", "IntegerLiteralType"]
+- !private ["Ps16SignedNumberType", "Stride"]
+- !private ["Ps16SignedNumberType", "_DisabledRangeIndex"]
+- !private ["Ps16SignedNumberType", "implicitParamName"]
+- !private ["Vs5Slice", "Generator"]
+- !private ["Vs5Slice", "Index"]
+- !private ["Vs12StaticString", "deinit"]
+- !private ["P4vist11StmtEmitter", "init"]
+- !private ["P4vist11StmtEmitter", "name"]
+- !private ["P4vist11StmtEmitter", "value"]
+- !private ["Ps10Strideable", "Distance"]
+- !private ["Ps10Strideable", "IntegerLiteralType"]
+- !private ["Ps10Strideable", "Stride"]
+- !private ["Ps10Strideable", "_DisabledRangeIndex"]
+- !private ["Ps10Strideable", "implicitParamName"]
+- !private ["C4vist10StructExpr", "ASTNode"]
+- !private ["C4vist10StructExpr", "BlockExpr"]
+- !private ["C4vist10StructExpr", "DefinedFunctionType"]
+- !private ["C4vist10StructExpr", "DefinedType"]
+- !private ["C4vist10StructExpr", "FunctionImplementationExpr"]
+- ["C4vist10StructExpr", "InitialiserDecl"]
+- !private ["C4vist10StructExpr", "MutationExpr"]
+- !private ["C4vist10StructExpr", "NullExpr"]
+- !private ["C4vist10StructExpr", "VariableExpr"]
+- !private ["C4vist10StructExpr", "deinit"]
+- ["C4vist10StructExpr", "implicitIntialiser"]
+- !private ["C4vist10StructExpr", "implicitParamName"]
+- ["C4vist10StructExpr", "memberwiseInitialiser"]
+- !private ["C4vist10StructExpr", "name"]
+- !private ["C4vist10StructExpr", "properties"]
+- !private ["C4vist10StructExpr", "semaError"]
+- !private ["C4vist10StructExpr", "zip"]
+- !private ["P4vist16StructMemberExpr", "init"]
+- !private ["P4vist16StructMemberExpr", "name"]
+- !private ["P4vist16StructMemberExpr", "value"]
+- !private ["P4vist4Type", "deinit"]
+- !private ["P4vist4Type", "explicitName"]
+- !private ["P4vist8TypeExpr", "BlockExpr"]
+- !private ["P4vist8TypeExpr", "DefinedFunctionType"]
+- !private ["P4vist8TypeExpr", "DefinedType"]
+- !private ["P4vist8TypeExpr", "FunctionImplementationExpr"]
+- !private ["P4vist8TypeExpr", "InitialiserDecl"]
+- !private ["P4vist8TypeExpr", "MutationExpr"]
+- !private ["P4vist8TypeExpr", "VariableExpr"]
+- !private ["P4vist8TypeExpr", "implicitParamName"]
+- !private ["P4vist8TypeExpr", "name"]
+- !private ["P4vist8TypeExpr", "properties"]
+- !private ["P4vist8TypeExpr", "semaError"]
+- !private ["P4vist8TypeExpr", "zip"]
+- !private ["P4vist5Typed", "BlockExpr"]
+- !private ["P4vist5Typed", "DefinedFunctionType"]
+- !private ["P4vist5Typed", "DefinedType"]
+- !private ["P4vist5Typed", "FunctionImplementationExpr"]
+- !private ["P4vist5Typed", "InitialiserDecl"]
+- !private ["P4vist5Typed", "MutationExpr"]
+- !private ["P4vist5Typed", "VariableExpr"]
+- !private ["P4vist5Typed", "implicitParamName"]
+- !private ["P4vist5Typed", "init"]
+- !private ["P4vist5Typed", "name"]
+- !private ["P4vist5Typed", "properties"]
+- !private ["P4vist5Typed", "semaError"]
+- !private ["P4vist5Typed", "zip"]
+- !private ["P4vist9TypedExpr", "init"]
+- !private ["P4vist10VIRElement", "explicitName"]
+- !private ["P4vist12ValueEmitter", "BlockExpr"]
+- !private ["P4vist12ValueEmitter", "DefinedFunctionType"]
+- !private ["P4vist12ValueEmitter", "DefinedType"]
+- !private ["P4vist12ValueEmitter", "FunctionImplementationExpr"]
+- !private ["P4vist12ValueEmitter", "InitialiserDecl"]
+- !private ["P4vist12ValueEmitter", "MutationExpr"]
+- !private ["P4vist12ValueEmitter", "VariableExpr"]
+- !private ["P4vist12ValueEmitter", "_type"]
+- !private ["P4vist12ValueEmitter", "implicitParamName"]
+- !private ["P4vist12ValueEmitter", "init"]
+- !private ["P4vist12ValueEmitter", "name"]
+- !private ["P4vist12ValueEmitter", "properties"]
+- !private ["P4vist12ValueEmitter", "semaError"]
+- !private ["P4vist12ValueEmitter", "value"]
+- !private ["P4vist12ValueEmitter", "zip"]
+- !private ["C4vist12VariableDecl", "name"]
+- !private ["C4vist12VariableDecl", "value"]
+- !private ["C4vist12VariableExpr", "deinit"]
+- !private ["C4vist12VariableExpr", "init"]
+- !private ["Vs13Zip2Generator", "Element"]
+- !private ["Vs12Zip2Sequence", "Generator"]
+- !private ["Ps10_ArrayType", "Element"]
+- !private ["Ps10_ArrayType", "Generator"]
+- !private ["Ps10_ArrayType", "Index"]
+- !private ["Ps10_ArrayType", "SubSequence"]
+- !private ["Ps10_ArrayType", "_Element"]
+- !private ["Ps10_ArrayType", "append"]
+- !private ["Ps10_ArrayType", "count"]
+- !private ["Ps10_ArrayType", "enumerate"]
+- !private ["Ps10_ArrayType", "filter"]
+- !private ["Ps10_ArrayType", "map"]
+- !private ["Ps10_ArrayType", "optionalMap"]
+- !private ["Ps33_BuiltinBooleanLiteralConvertible", "_getBuiltinLogicValue"]
+- !private ["Ps33_BuiltinIntegerLiteralConvertible", "Distance"]
+- !private ["Ps33_BuiltinIntegerLiteralConvertible", "IntegerLiteralType"]
+- !private ["Ps33_BuiltinIntegerLiteralConvertible", "Stride"]
+- !private ["Ps33_BuiltinIntegerLiteralConvertible", "_DisabledRangeIndex"]
+- !private ["Ps33_BuiltinIntegerLiteralConvertible", "implicitParamName"]
+- !private ["Ps24_DestructorSafeContainer", "Element"]
+- !private ["Ps24_DestructorSafeContainer", "Generator"]
+- !private ["Ps24_DestructorSafeContainer", "Index"]
+- !private ["Ps24_DestructorSafeContainer", "SubSequence"]
+- !private ["Ps24_DestructorSafeContainer", "_Element"]
+- !private ["Ps24_DestructorSafeContainer", "append"]
+- !private ["Ps24_DestructorSafeContainer", "count"]
+- !private ["Ps24_DestructorSafeContainer", "enumerate"]
+- !private ["Ps24_DestructorSafeContainer", "filter"]
+- !private ["Ps24_DestructorSafeContainer", "map"]
+- !private ["Ps24_DestructorSafeContainer", "optionalMap"]
+- !private ["Ps14_Incrementable", "Distance"]
+- !private ["Ps14_Incrementable", "IntegerLiteralType"]
+- !private ["Ps14_Incrementable", "Stride"]
+- !private ["Ps14_Incrementable", "_DisabledRangeIndex"]
+- !private ["Ps14_Incrementable", "implicitParamName"]
+- !private ["Ps22_IntegerArithmeticType", "Distance"]
+- !private ["Ps22_IntegerArithmeticType", "IntegerLiteralType"]
+- !private ["Ps22_IntegerArithmeticType", "Stride"]
+- !private ["Ps22_IntegerArithmeticType", "_DisabledRangeIndex"]
+- !private ["Ps22_IntegerArithmeticType", "implicitParamName"]
+- !private ["Ps12_IntegerType", "Distance"]
+- !private ["Ps12_IntegerType", "IntegerLiteralType"]
+- !private ["Ps12_IntegerType", "Stride"]
+- !private ["Ps12_IntegerType", "_DisabledRangeIndex"]
+- !private ["Ps12_IntegerType", "implicitParamName"]
+- !private ["Ps21_ObjectiveCBridgeable", "Distance"]
+- !private ["Ps21_ObjectiveCBridgeable", "Element"]
+- !private ["Ps21_ObjectiveCBridgeable", "Generator"]
+- !private ["Ps21_ObjectiveCBridgeable", "Index"]
+- !private ["Ps21_ObjectiveCBridgeable", "IntegerLiteralType"]
+- !private ["Ps21_ObjectiveCBridgeable", "Stride"]
+- !private ["Ps21_ObjectiveCBridgeable", "SubSequence"]
+- !private ["Ps21_ObjectiveCBridgeable", "_DisabledRangeIndex"]
+- !private ["Ps21_ObjectiveCBridgeable", "_Element"]
+- !private ["Ps21_ObjectiveCBridgeable", "_getBuiltinLogicValue"]
+- !private ["Ps21_ObjectiveCBridgeable", "append"]
+- !private ["Ps21_ObjectiveCBridgeable", "count"]
+- !private ["Ps21_ObjectiveCBridgeable", "enumerate"]
+- !private ["Ps21_ObjectiveCBridgeable", "filter"]
+- !private ["Ps21_ObjectiveCBridgeable", "implicitParamName"]
+- !private ["Ps21_ObjectiveCBridgeable", "map"]
+- !private ["Ps21_ObjectiveCBridgeable", "optionalMap"]
+- !private ["Ps22_RandomAccessAmbiguity", "Distance"]
+- !private ["Ps22_RandomAccessAmbiguity", "IntegerLiteralType"]
+- !private ["Ps22_RandomAccessAmbiguity", "Stride"]
+- !private ["Ps22_RandomAccessAmbiguity", "_DisabledRangeIndex"]
+- !private ["Ps22_RandomAccessAmbiguity", "implicitParamName"]
+- !private ["Ps12_Reflectable", "Distance"]
+- !private ["Ps12_Reflectable", "Element"]
+- !private ["Ps12_Reflectable", "Generator"]
+- !private ["Ps12_Reflectable", "Index"]
+- !private ["Ps12_Reflectable", "IntegerLiteralType"]
+- ["Ps12_Reflectable", "Some"]
+- !private ["Ps12_Reflectable", "Stride"]
+- !private ["Ps12_Reflectable", "SubSequence"]
+- !private ["Ps12_Reflectable", "_DisabledRangeIndex"]
+- !private ["Ps12_Reflectable", "_Element"]
+- !private ["Ps12_Reflectable", "_getBuiltinLogicValue"]
+- !private ["Ps12_Reflectable", "append"]
+- !private ["Ps12_Reflectable", "count"]
+- !private ["Ps12_Reflectable", "enumerate"]
+- !private ["Ps12_Reflectable", "filter"]
+- !private ["Ps12_Reflectable", "implicitParamName"]
+- !private ["Ps12_Reflectable", "map"]
+- !private ["Ps12_Reflectable", "optionalMap"]
+- !private ["Ps18_SignedIntegerType", "Distance"]
+- !private ["Ps18_SignedIntegerType", "IntegerLiteralType"]
+- !private ["Ps18_SignedIntegerType", "Stride"]
+- !private ["Ps18_SignedIntegerType", "_DisabledRangeIndex"]
+- !private ["Ps18_SignedIntegerType", "implicitParamName"]
+- !private ["P4vist6_Typed", "BlockExpr"]
+- !private ["P4vist6_Typed", "DefinedFunctionType"]
+- !private ["P4vist6_Typed", "DefinedType"]
+- !private ["P4vist6_Typed", "FunctionImplementationExpr"]
+- !private ["P4vist6_Typed", "InitialiserDecl"]
+- !private ["P4vist6_Typed", "MutationExpr"]
+- !private ["P4vist6_Typed", "VariableExpr"]
+- !private ["P4vist6_Typed", "_type"]
+- !private ["P4vist6_Typed", "implicitParamName"]
+- !private ["P4vist6_Typed", "init"]
+- !private ["P4vist6_Typed", "name"]
+- !private ["P4vist6_Typed", "properties"]
+- !private ["P4vist6_Typed", "semaError"]
+- !private ["P4vist6_Typed", "zip"]
+depends-nominal:
+- !private "P4vist7ASTNode"
+- !private "Ps9AnyObject"
+- !private "Sa"
+- !private "Ps23ArrayLiteralConvertible"
+- !private "Vs10ArraySlice"
+- !private "Ps22BidirectionalIndexType"
+- !private "Ps21BitwiseOperationsType"
+- !private "C4vist9BlockExpr"
+- !private "Sb"
+- !private "Ps25BooleanLiteralConvertible"
+- !private "Ps11BooleanType"
+- !private "Ps11CVarArgType"
+- !private "P4vist13ChainableExpr"
+- !private "Ps14CollectionType"
+- !private "Ps10Comparable"
+- "Ps28CustomDebugStringConvertible"
+- !private "Ps23CustomStringConvertible"
+- !private "P4vist4Decl"
+- !private "P4vist16DeclTypeProvider"
+- !private "C4vist19DefinedFunctionType"
+- !private "O4vist11DefinedType"
+- !private "Vs18EnumerateGenerator"
+- !private "Vs17EnumerateSequence"
+- !private "Ps9Equatable"
+- !private "Ps9ErrorType"
+- !private "P4vist4Expr"
+- !private "P4vist16ExprTypeProvider"
+- !private "Ps16ForwardIndexType"
+- !private "C4vist26FunctionImplementationExpr"
+- !private "Ps13GeneratorType"
+- !private "Vs16HalfOpenInterval"
+- !private "Ps8Hashable"
+- !private "Ps9Indexable"
+- !private "Vs17IndexingGenerator"
+- !private "C4vist15InitialiserDecl"
+- !private "Si"
+- !private "Ps21IntegerArithmeticType"
+- !private "Ps25IntegerLiteralConvertible"
+- !private "Ps11IntegerType"
+- !private "Ps12IntervalType"
+- !private "P4vist13LValueEmitter"
+- !private "P4vist15LibraryTopLevel"
+- !private "Ps14MirrorPathType"
+- !private "Ps21MutableCollectionType"
+- !private "Ps16MutableIndexable"
+- !private "Ps16MutableSliceable"
+- !private "C4vist12MutationExpr"
+- "Ps21NilLiteralConvertible"
+- "Sq"
+- "P4vist9Printable"
+- !private "Ps21RandomAccessIndexType"
+- !private "Vs5Range"
+- !private "Vs14RangeGenerator"
+- !private "Ps30RangeReplaceableCollectionType"
+- !private "P4vist9ScopeNode"
+- !private "O4vist9SemaError"
+- !private "Ps12SequenceType"
+- !private "Ps17SignedIntegerType"
+- !private "Ps16SignedNumberType"
+- !private "Vs5Slice"
+- !private "Vs12StaticString"
+- !private "P4vist11StmtEmitter"
+- !private "Ps10Strideable"
+- "C4vist10StructExpr"
+- !private "P4vist16StructMemberExpr"
+- !private "P4vist4Type"
+- !private "P4vist8TypeExpr"
+- !private "P4vist5Typed"
+- !private "P4vist9TypedExpr"
+- !private "P4vist10VIRElement"
+- !private "P4vist12ValueEmitter"
+- !private "C4vist12VariableDecl"
+- !private "C4vist12VariableExpr"
+- !private "Vs13Zip2Generator"
+- !private "Vs12Zip2Sequence"
+- !private "Ps10_ArrayType"
+- !private "Ps33_BuiltinBooleanLiteralConvertible"
+- !private "Ps33_BuiltinIntegerLiteralConvertible"
+- !private "Ps24_DestructorSafeContainer"
+- !private "Ps14_Incrementable"
+- !private "Ps22_IntegerArithmeticType"
+- !private "Ps12_IntegerType"
+- !private "Ps21_ObjectiveCBridgeable"
+- !private "Ps22_RandomAccessAmbiguity"
+- "Ps12_Reflectable"
+- !private "Ps18_SignedIntegerType"
+- !private "P4vist6_Typed"
+depends-dynamic-lookup:
+depends-external:
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Swift.swiftmodule"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/Include/Vist-Bridging-Header.h"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/Include/LLVM.h"
+- "/usr/local/opt/llvm/include/llvm-c/Core.h"
+- "/usr/local/opt/llvm/include/llvm-c/Support.h"
+- "/usr/local/opt/llvm/include/llvm/Support/DataTypes.h"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Darwin.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/clang/include/inttypes.h"
+- "/usr/local/opt/llvm/include/llvm-c/Analysis.h"
+- "/usr/local/opt/llvm/include/llvm-c/BitReader.h"
+- "/usr/local/opt/llvm/include/llvm-c/BitWriter.h"
+- "/usr/local/opt/llvm/include/llvm-c/Disassembler.h"
+- "/usr/local/opt/llvm/include/llvm-c/ExecutionEngine.h"
+- "/usr/local/opt/llvm/include/llvm-c/Target.h"
+- "/usr/local/opt/llvm/include/llvm/Config/llvm-config.h"
+- "/usr/local/opt/llvm/include/llvm/Config/Targets.def"
+- "/usr/local/opt/llvm/include/llvm/Config/AsmPrinters.def"
+- "/usr/local/opt/llvm/include/llvm/Config/AsmParsers.def"
+- "/usr/local/opt/llvm/include/llvm/Config/Disassemblers.def"
+- "/usr/local/opt/llvm/include/llvm-c/TargetMachine.h"
+- "/usr/local/opt/llvm/include/llvm-c/Initialization.h"
+- "/usr/local/opt/llvm/include/llvm-c/IRReader.h"
+- "/usr/local/opt/llvm/include/llvm-c/Linker.h"
+- "/usr/local/opt/llvm/include/llvm-c/LinkTimeOptimizer.h"
+- "/usr/local/opt/llvm/include/llvm-c/lto.h"
+- "/usr/local/opt/llvm/include/llvm-c/Object.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/IPO.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/PassManagerBuilder.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/Scalar.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/Vectorize.h"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/VIRLower/Intrinsic.hpp"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/LLVMOptimiser/Optimiser.hpp"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/Include/Utils.h"
+- "/Users/JoeWillsher/Developer/Vist/VIR/Types/CreateType.hpp"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Foundation.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Dispatch.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/ObjectiveC.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/CoreGraphics.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/IOKit.swiftmodule"
+interface-hash: "88e5dbaf49070d9a955102651ec891a3"

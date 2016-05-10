@@ -1,0 +1,188 @@
+### Swift dependencies file v0 ###
+provides-top-level:
+provides-nominal:
+- "C4vist9AllocInst"
+- "C4vist9StoreInst"
+- "C4vist8LoadInst"
+- "C4vist11BitcastInst"
+provides-member:
+- ["C4vist9AllocInst", ""]
+- ["C4vist9StoreInst", ""]
+- ["C4vist8LoadInst", ""]
+- ["C4vist11BitcastInst", ""]
+provides-dynamic-lookup:
+depends-top-level:
+- "StoreInst"
+- "VIRLower"
+- "AllocInst"
+- "BitcastInst"
+- "LoadInst"
+- "LLVMValue"
+- "IRGenFunction"
+depends-member:
+- ["C4vist9AllocInst", "IRGenFunction"]
+- ["C4vist9AllocInst", "LLVMValue"]
+- ["C4vist9AllocInst", "deinit"]
+- !private ["C4vist9AllocInst", "irName"]
+- !private ["C4vist9AllocInst", "module"]
+- !private ["C4vist9AllocInst", "storedType"]
+- ["C4vist9AllocInst", "virLower"]
+- !private ["Ps9AnyObject", "address"]
+- !private ["Ps9AnyObject", "irName"]
+- !private ["Ps9AnyObject", "loweredValue"]
+- !private ["Ps9AnyObject", "module"]
+- !private ["Ps9AnyObject", "pointerType"]
+- !private ["Ps9AnyObject", "storedType"]
+- !private ["Ps9AnyObject", "value"]
+- ["Ps9AnyObject", "virLower"]
+- ["C4vist11BitcastInst", "IRGenFunction"]
+- ["C4vist11BitcastInst", "LLVMValue"]
+- !private ["C4vist11BitcastInst", "address"]
+- ["C4vist11BitcastInst", "deinit"]
+- !private ["C4vist11BitcastInst", "irName"]
+- !private ["C4vist11BitcastInst", "module"]
+- !private ["C4vist11BitcastInst", "pointerType"]
+- ["C4vist11BitcastInst", "virLower"]
+- !private ["O4vist11BuiltinType", "deinit"]
+- !private ["O4vist11BuiltinType", "lowerType"]
+- !private ["Ps28CustomDebugStringConvertible", "address"]
+- !private ["Ps28CustomDebugStringConvertible", "irName"]
+- !private ["Ps28CustomDebugStringConvertible", "lowerType"]
+- !private ["Ps28CustomDebugStringConvertible", "loweredValue"]
+- !private ["Ps28CustomDebugStringConvertible", "module"]
+- !private ["Ps28CustomDebugStringConvertible", "pointerType"]
+- !private ["Ps28CustomDebugStringConvertible", "storedType"]
+- !private ["Ps28CustomDebugStringConvertible", "value"]
+- ["Ps28CustomDebugStringConvertible", "virLower"]
+- !private ["Ps9Equatable", "lowerType"]
+- !private ["P4vist4Inst", "address"]
+- !private ["P4vist4Inst", "irName"]
+- !private ["P4vist4Inst", "module"]
+- !private ["P4vist4Inst", "pointerType"]
+- !private ["P4vist4Inst", "storedType"]
+- !private ["P4vist4Inst", "value"]
+- ["P4vist4Inst", "virLower"]
+- ["C4vist8InstBase", "IRGenFunction"]
+- ["C4vist8InstBase", "LLVMValue"]
+- !private ["C4vist8InstBase", "address"]
+- !private ["C4vist8InstBase", "irName"]
+- !private ["C4vist8InstBase", "module"]
+- !private ["C4vist8InstBase", "pointerType"]
+- !private ["C4vist8InstBase", "storedType"]
+- !private ["C4vist8InstBase", "value"]
+- ["C4vist8InstBase", "virLower"]
+- !private ["V4vist11LLVMBuilder", "buildAlloca"]
+- !private ["V4vist11LLVMBuilder", "buildBitcast"]
+- !private ["V4vist11LLVMBuilder", "buildLoad"]
+- !private ["V4vist11LLVMBuilder", "buildStore"]
+- !private ["P4vist6LValue", "address"]
+- !private ["P4vist6LValue", "irName"]
+- !private ["P4vist6LValue", "loweredValue"]
+- !private ["P4vist6LValue", "module"]
+- !private ["P4vist6LValue", "pointerType"]
+- !private ["P4vist6LValue", "storedType"]
+- ["P4vist6LValue", "virLower"]
+- ["C4vist8LoadInst", "IRGenFunction"]
+- ["C4vist8LoadInst", "LLVMValue"]
+- !private ["C4vist8LoadInst", "address"]
+- ["C4vist8LoadInst", "deinit"]
+- !private ["C4vist8LoadInst", "irName"]
+- ["C4vist8LoadInst", "virLower"]
+- !private ["C4vist7Operand", "loweredValue"]
+- !private ["P4vist9Printable", "lowerType"]
+- !private ["C4vist10PtrOperand", "loweredValue"]
+- ["C4vist9StoreInst", "IRGenFunction"]
+- ["C4vist9StoreInst", "LLVMValue"]
+- !private ["C4vist9StoreInst", "address"]
+- ["C4vist9StoreInst", "deinit"]
+- !private ["C4vist9StoreInst", "value"]
+- ["C4vist9StoreInst", "virLower"]
+- !private ["P4vist4Type", "lowerType"]
+- !private ["P4vist10VIRElement", "address"]
+- !private ["P4vist10VIRElement", "irName"]
+- !private ["P4vist10VIRElement", "lowerType"]
+- !private ["P4vist10VIRElement", "loweredValue"]
+- !private ["P4vist10VIRElement", "module"]
+- !private ["P4vist10VIRElement", "pointerType"]
+- !private ["P4vist10VIRElement", "storedType"]
+- !private ["P4vist10VIRElement", "value"]
+- ["P4vist10VIRElement", "virLower"]
+- !private ["P4vist8VIRLower", "address"]
+- !private ["P4vist8VIRLower", "irName"]
+- !private ["P4vist8VIRLower", "loweredValue"]
+- !private ["P4vist8VIRLower", "module"]
+- !private ["P4vist8VIRLower", "pointerType"]
+- !private ["P4vist8VIRLower", "storedType"]
+- !private ["P4vist8VIRLower", "value"]
+- ["P4vist8VIRLower", "virLower"]
+- ["P4vist8VIRLower", ""]
+- !private ["P4vist5Value", "address"]
+- !private ["P4vist5Value", "irName"]
+- !private ["P4vist5Value", "loweredValue"]
+- !private ["P4vist5Value", "module"]
+- !private ["P4vist5Value", "pointerType"]
+- !private ["P4vist5Value", "storedType"]
+- !private ["P4vist5Value", "value"]
+- ["P4vist5Value", "virLower"]
+depends-nominal:
+- "C4vist9AllocInst"
+- "Ps9AnyObject"
+- "C4vist11BitcastInst"
+- !private "O4vist11BuiltinType"
+- "Ps28CustomDebugStringConvertible"
+- !private "Ps9Equatable"
+- "P4vist4Inst"
+- "C4vist8InstBase"
+- !private "V4vist11LLVMBuilder"
+- "P4vist6LValue"
+- "C4vist8LoadInst"
+- !private "C4vist7Operand"
+- !private "P4vist9Printable"
+- !private "C4vist10PtrOperand"
+- "C4vist9StoreInst"
+- !private "P4vist4Type"
+- "P4vist10VIRElement"
+- "P4vist8VIRLower"
+- "P4vist5Value"
+depends-dynamic-lookup:
+depends-external:
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Swift.swiftmodule"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/Include/Vist-Bridging-Header.h"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/Include/LLVM.h"
+- "/usr/local/opt/llvm/include/llvm-c/Core.h"
+- "/usr/local/opt/llvm/include/llvm-c/Support.h"
+- "/usr/local/opt/llvm/include/llvm/Support/DataTypes.h"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Darwin.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/clang/include/inttypes.h"
+- "/usr/local/opt/llvm/include/llvm-c/Analysis.h"
+- "/usr/local/opt/llvm/include/llvm-c/BitReader.h"
+- "/usr/local/opt/llvm/include/llvm-c/BitWriter.h"
+- "/usr/local/opt/llvm/include/llvm-c/Disassembler.h"
+- "/usr/local/opt/llvm/include/llvm-c/ExecutionEngine.h"
+- "/usr/local/opt/llvm/include/llvm-c/Target.h"
+- "/usr/local/opt/llvm/include/llvm/Config/llvm-config.h"
+- "/usr/local/opt/llvm/include/llvm/Config/Targets.def"
+- "/usr/local/opt/llvm/include/llvm/Config/AsmPrinters.def"
+- "/usr/local/opt/llvm/include/llvm/Config/AsmParsers.def"
+- "/usr/local/opt/llvm/include/llvm/Config/Disassemblers.def"
+- "/usr/local/opt/llvm/include/llvm-c/TargetMachine.h"
+- "/usr/local/opt/llvm/include/llvm-c/Initialization.h"
+- "/usr/local/opt/llvm/include/llvm-c/IRReader.h"
+- "/usr/local/opt/llvm/include/llvm-c/Linker.h"
+- "/usr/local/opt/llvm/include/llvm-c/LinkTimeOptimizer.h"
+- "/usr/local/opt/llvm/include/llvm-c/lto.h"
+- "/usr/local/opt/llvm/include/llvm-c/Object.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/IPO.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/PassManagerBuilder.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/Scalar.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/Vectorize.h"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/VIRLower/Intrinsic.hpp"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/LLVMOptimiser/Optimiser.hpp"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/Include/Utils.h"
+- "/Users/JoeWillsher/Developer/Vist/VIR/Types/CreateType.hpp"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Foundation.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Dispatch.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/ObjectiveC.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/CoreGraphics.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/IOKit.swiftmodule"
+interface-hash: "5e6a92cb67b980bbf083b124ef67a359"

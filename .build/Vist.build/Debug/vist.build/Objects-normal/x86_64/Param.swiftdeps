@@ -1,0 +1,191 @@
+### Swift dependencies file v0 ###
+provides-top-level:
+- "Param"
+- "RefParam"
+provides-nominal:
+- "C4vist5Param"
+- "C4vist8RefParam"
+provides-member:
+- ["C4vist5Param", ""]
+- ["C4vist8RefParam", ""]
+provides-dynamic-lookup:
+depends-top-level:
+- "Type"
+- "String"
+- "Operand"
+- !private "BuiltinType"
+- "Value"
+- "LLVMValue"
+- "RefParam"
+- !private "StringLiteralType"
+- "BasicBlock"
+- "Param"
+- "LValue"
+depends-member:
+- !private ["Ps9AnyObject", "BuiltinType"]
+- ["Ps9AnyObject", "debugDescription"]
+- ["Ps9AnyObject", "init"]
+- ["Ps9AnyObject", "irName"]
+- ["Ps9AnyObject", "memType"]
+- ["Ps9AnyObject", "module"]
+- ["Ps9AnyObject", "name"]
+- !private ["Ps9AnyObject", "paramName"]
+- ["Ps9AnyObject", "parentBlock"]
+- ["Ps9AnyObject", "type"]
+- ["Ps9AnyObject", "uses"]
+- ["Ps9AnyObject", "vir"]
+- ["Ps9AnyObject", ""]
+- !private ["O4vist11BuiltinType", "deinit"]
+- !private ["O4vist11BuiltinType", "pointer"]
+- !private ["Ps28CustomDebugStringConvertible", "BuiltinType"]
+- ["Ps28CustomDebugStringConvertible", "Some"]
+- ["Ps28CustomDebugStringConvertible", "debugDescription"]
+- ["Ps28CustomDebugStringConvertible", "init"]
+- ["Ps28CustomDebugStringConvertible", "irName"]
+- ["Ps28CustomDebugStringConvertible", "memType"]
+- ["Ps28CustomDebugStringConvertible", "module"]
+- ["Ps28CustomDebugStringConvertible", "name"]
+- !private ["Ps28CustomDebugStringConvertible", "paramName"]
+- ["Ps28CustomDebugStringConvertible", "parentBlock"]
+- !private ["Ps28CustomDebugStringConvertible", "pointer"]
+- ["Ps28CustomDebugStringConvertible", "type"]
+- ["Ps28CustomDebugStringConvertible", "uses"]
+- ["Ps28CustomDebugStringConvertible", "vir"]
+- ["Ps28CustomDebugStringConvertible", ""]
+- !private ["Ps9Equatable", "pointer"]
+- !private ["P4vist6LValue", "BuiltinType"]
+- ["P4vist6LValue", "memType"]
+- ["P4vist6LValue", ""]
+- ["Ps21NilLiteralConvertible", "Some"]
+- ["Sq", "Some"]
+- !private ["Sq", "deinit"]
+- ["C4vist5Param", "BasicBlock"]
+- !private ["C4vist5Param", "BuiltinType"]
+- ["C4vist5Param", "LLVMValue"]
+- ["C4vist5Param", "Operand"]
+- ["C4vist5Param", "String"]
+- ["C4vist5Param", "Type"]
+- ["C4vist5Param", "debugDescription"]
+- ["C4vist5Param", "deinit"]
+- ["C4vist5Param", "init"]
+- ["C4vist5Param", "irName"]
+- ["C4vist5Param", "memType"]
+- ["C4vist5Param", "module"]
+- ["C4vist5Param", "name"]
+- ["C4vist5Param", "paramName"]
+- ["C4vist5Param", "parentBlock"]
+- ["C4vist5Param", "phi"]
+- ["C4vist5Param", "type"]
+- ["C4vist5Param", "uses"]
+- ["C4vist5Param", "vir"]
+- ["C4vist5Param", ""]
+- ["P4vist9Printable", "Some"]
+- !private ["P4vist9Printable", "pointer"]
+- !private ["C4vist8RefParam", "BuiltinType"]
+- ["C4vist8RefParam", "String"]
+- ["C4vist8RefParam", "Type"]
+- ["C4vist8RefParam", "deinit"]
+- ["C4vist8RefParam", "init"]
+- ["C4vist8RefParam", "memType"]
+- !private ["Vs12StaticString", "deinit"]
+- !private ["P4vist4Type", "pointer"]
+- !private ["P4vist10VIRElement", "BuiltinType"]
+- ["P4vist10VIRElement", "debugDescription"]
+- ["P4vist10VIRElement", "init"]
+- ["P4vist10VIRElement", "irName"]
+- ["P4vist10VIRElement", "memType"]
+- ["P4vist10VIRElement", "module"]
+- ["P4vist10VIRElement", "name"]
+- !private ["P4vist10VIRElement", "paramName"]
+- ["P4vist10VIRElement", "parentBlock"]
+- !private ["P4vist10VIRElement", "pointer"]
+- ["P4vist10VIRElement", "type"]
+- ["P4vist10VIRElement", "uses"]
+- ["P4vist10VIRElement", "vir"]
+- ["P4vist10VIRElement", ""]
+- !private ["P4vist8VIRLower", "BuiltinType"]
+- ["P4vist8VIRLower", "debugDescription"]
+- ["P4vist8VIRLower", "init"]
+- ["P4vist8VIRLower", "irName"]
+- ["P4vist8VIRLower", "memType"]
+- ["P4vist8VIRLower", "module"]
+- ["P4vist8VIRLower", "name"]
+- !private ["P4vist8VIRLower", "paramName"]
+- ["P4vist8VIRLower", "parentBlock"]
+- ["P4vist8VIRLower", "type"]
+- ["P4vist8VIRLower", "uses"]
+- ["P4vist8VIRLower", "vir"]
+- ["P4vist8VIRLower", ""]
+- !private ["P4vist5Value", "BuiltinType"]
+- ["P4vist5Value", "debugDescription"]
+- ["P4vist5Value", "init"]
+- ["P4vist5Value", "irName"]
+- ["P4vist5Value", "memType"]
+- ["P4vist5Value", "module"]
+- ["P4vist5Value", "name"]
+- !private ["P4vist5Value", "paramName"]
+- ["P4vist5Value", "parentBlock"]
+- ["P4vist5Value", "type"]
+- ["P4vist5Value", "uses"]
+- ["P4vist5Value", "vir"]
+- ["P4vist5Value", ""]
+- ["Ps12_Reflectable", "Some"]
+depends-nominal:
+- "Ps9AnyObject"
+- !private "O4vist11BuiltinType"
+- "Ps28CustomDebugStringConvertible"
+- !private "Ps9Equatable"
+- "P4vist6LValue"
+- "Ps21NilLiteralConvertible"
+- "Sq"
+- "C4vist5Param"
+- "P4vist9Printable"
+- "C4vist8RefParam"
+- !private "Vs12StaticString"
+- !private "P4vist4Type"
+- "P4vist10VIRElement"
+- "P4vist8VIRLower"
+- "P4vist5Value"
+- "Ps12_Reflectable"
+depends-dynamic-lookup:
+depends-external:
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Swift.swiftmodule"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/Include/Vist-Bridging-Header.h"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/Include/LLVM.h"
+- "/usr/local/opt/llvm/include/llvm-c/Core.h"
+- "/usr/local/opt/llvm/include/llvm-c/Support.h"
+- "/usr/local/opt/llvm/include/llvm/Support/DataTypes.h"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Darwin.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/clang/include/inttypes.h"
+- "/usr/local/opt/llvm/include/llvm-c/Analysis.h"
+- "/usr/local/opt/llvm/include/llvm-c/BitReader.h"
+- "/usr/local/opt/llvm/include/llvm-c/BitWriter.h"
+- "/usr/local/opt/llvm/include/llvm-c/Disassembler.h"
+- "/usr/local/opt/llvm/include/llvm-c/ExecutionEngine.h"
+- "/usr/local/opt/llvm/include/llvm-c/Target.h"
+- "/usr/local/opt/llvm/include/llvm/Config/llvm-config.h"
+- "/usr/local/opt/llvm/include/llvm/Config/Targets.def"
+- "/usr/local/opt/llvm/include/llvm/Config/AsmPrinters.def"
+- "/usr/local/opt/llvm/include/llvm/Config/AsmParsers.def"
+- "/usr/local/opt/llvm/include/llvm/Config/Disassemblers.def"
+- "/usr/local/opt/llvm/include/llvm-c/TargetMachine.h"
+- "/usr/local/opt/llvm/include/llvm-c/Initialization.h"
+- "/usr/local/opt/llvm/include/llvm-c/IRReader.h"
+- "/usr/local/opt/llvm/include/llvm-c/Linker.h"
+- "/usr/local/opt/llvm/include/llvm-c/LinkTimeOptimizer.h"
+- "/usr/local/opt/llvm/include/llvm-c/lto.h"
+- "/usr/local/opt/llvm/include/llvm-c/Object.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/IPO.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/PassManagerBuilder.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/Scalar.h"
+- "/usr/local/opt/llvm/include/llvm-c/Transforms/Vectorize.h"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/VIRLower/Intrinsic.hpp"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/LLVMOptimiser/Optimiser.hpp"
+- "/Users/JoeWillsher/Developer/Vist/Vist/lib/Include/Utils.h"
+- "/Users/JoeWillsher/Developer/Vist/VIR/Types/CreateType.hpp"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Foundation.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/Dispatch.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/ObjectiveC.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/CoreGraphics.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/x86_64/IOKit.swiftmodule"
+interface-hash: "f4a192cfbebaa4895f9b4ca0d1221409"

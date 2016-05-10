@@ -3,6 +3,8 @@ Vist/Compiler/Include/Utils.h
 
 RUN/
 
+build/
+
 *.xcuserstate
 
 
