@@ -337,6 +337,7 @@
 		D49BC2971CE25B1C0071D3AD /* Metadata.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Metadata.cpp; path = stdlib/runtime/Metadata.cpp; sourceTree = "<group>"; };
 		D49BC2981CE25B1C0071D3AD /* RefcountedObject.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = RefcountedObject.cpp; path = stdlib/runtime/RefcountedObject.cpp; sourceTree = "<group>"; };
 		D49BC2991CE25B1C0071D3AD /* runtime.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = runtime.cpp; path = stdlib/runtime/runtime.cpp; sourceTree = "<group>"; };
+		D49BC29B1CE27F8C0071D3AD /* Casting.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Casting.cpp; path = stdlib/runtime/Casting.cpp; sourceTree = "<group>"; };
 		D4A0001C1CC7C46500157D90 /* GlobalInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GlobalInst.swift; path = Instructions/GlobalInst.swift; sourceTree = "<group>"; };
 		D4A000201CCA7E4D00157D90 /* LiteralLower.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LiteralLower.swift; path = Vist/lib/VIRLower/LiteralLower.swift; sourceTree = SOURCE_ROOT; };
 		D4A000231CCA7E8F00157D90 /* CFGLower.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CFGLower.swift; path = lib/VIRLower/CFGLower.swift; sourceTree = "<group>"; };
@@ -512,6 +513,7 @@
 			children = (
 				D49BC2971CE25B1C0071D3AD /* Metadata.cpp */,
 				D49BC2981CE25B1C0071D3AD /* RefcountedObject.cpp */,
+				D49BC29B1CE27F8C0071D3AD /* Casting.cpp */,
 				D49BC2991CE25B1C0071D3AD /* runtime.cpp */,
 			);
 			name = Runtime;
