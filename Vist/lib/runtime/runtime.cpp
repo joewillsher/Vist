@@ -207,11 +207,6 @@ bool vist_setYieldTarget() {
 //    int64_t _capacityAndEncoding;
 //};
 //
-//
-//struct TypeMetadata_t {
-//    ...
-//};
-//
 //extern "C"
 //getSpecialisedType ...
 
