@@ -6,45 +6,125 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-/// A witness function to a concept
-struct ValueWitness {
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <stdlib.h>
+#include <vector>
+#include <map>
+
+
+
+///// A witness function
+class ValueWitness {
     void *witness;
-}
+public:
+    ValueWitness(void *v) : witness(v) {}
+};
 
 /// A concept witness table
-template <uint32_t NumWitnesses>
-struct WitnessTable {
-    /// the witnessing concept
-    void *concept;
+class WitnessTable {
     /// The witnesses
-    const ValueWitness *witnesses[NumWitnesses];
+    std::vector<ValueWitness> witnesses;
+public:
+    WitnessTable(ValueWitness *witnesses, int64_t numWitnesses) : witnesses(witnesses, witnesses + numWitnesses) {}
 };
 
-template <uint32_t NumWitnessTables>
-struct TypeMetadata {
-    WitnessTable *witnessTables;
-    const WitnessTable *witnessTables[NumWitnessTables]
+class ConceptConformance;
+
+class TypeMetadata {
+    /// witness tables
+    std::vector<ConceptConformance *> conceptConformances;
+    char *name;
+//    std::vector<TypeMetadata *> members;
+    
+public:
+    TypeMetadata(std::vector<ConceptConformance *> conformances, char *n)
+    : conceptConformances(conformances), name(n) {}
 };
 
-struct ExistentialObject {
-    void *object
-    int32_t *propWitnessOffsets;
-    WitnessTable *wittnessTables;
+//class NominalTypeMetadata : public TypeMetadata {
+//
+//};
+
+/// The modeling of a concept -- the concept and witness table
+class ConceptConformance {
+    TypeMetadata *concept; /// the concept we are conforming to
+    std::vector<int32_t> propWitnessOffsets;
+    WitnessTable witnessTable;
+    
+public:
+    ConceptConformance(TypeMetadata *md,
+                       int32_t *offsets,
+                       int32_t numOffsets,
+                       ValueWitness *witnesses,
+                       int64_t numWitnesses)
+    : concept(md), propWitnessOffsets(offsets, offsets+numOffsets), witnessTable(witnesses, numWitnesses) {}
 };
-//static std::map<char *, TypeMetadata *> typeCache;
+
+
+class ExistentialObject {
+    void *object;
+    int32_t numConformances;
+    ConceptConformance *conformances;
+};
+
+
+//extern "C"
+//WitnessTable *
+//vist_getWitnessTable(TypeMetadata *metadata) {
+//    return nullptr;
+//};
+//
+
+template <class ValueTy>
+class MetadataCache {
+    std::map<char *, ValueTy *> map;
+};
+
 
 
 extern "C"
-ExistentialObject *
-vist_constructExistential() {
-    return nullptr;
+ConceptConformance vist_constructConceptConformance(TypeMetadata *concept,
+                                                    int32_t *offsets,
+                                                    int32_t numOffsets,
+                                                    ValueWitness *witnesses,
+                                                    int32_t numWitnesses) {
+    return ConceptConformance(concept, offsets, numOffsets, witnesses, numWitnesses);
 }
 
 extern "C"
-WitnessTable *
-vist_getWitnessTable(TypeMetadata *metadata) {
+ExistentialObject *vist_constructExistential(int32_t *offsets,
+                                             int32_t numOffsets,
+                                             void *witnesses,
+                                             int32_t numWitnesses,
+                                             char *name,
+                                             void *instance) {
     return nullptr;
 }
+
+
+#ifdef TESTING
+
+void print() {
+    printf("memmes");
+}
+
+int main() {
+        
+    std::vector<ConceptConformance *> empty;
+    auto type = TypeMetadata(empty, "Foo");
+    int32_t offsets = 0;
+    ValueWitness valueWitness = ValueWitness((void*)(print));
+    auto conformance = vist_constructConceptConformance(&type, &offsets, 1, &valueWitness, 1);
+    
+    
+    
+    return 0;
+}
+
+
+#endif
 
 
 
