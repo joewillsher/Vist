@@ -1,52 +1,19 @@
 //
-//  runtime.cpp
+//  RefcountedObject.cpp
 //  Vist
 //
-//  Created by Josef Willsher on 13/12/2015.
+//  Created by Josef Willsher on 10/5/2016.
 //  Copyright © 2015 vistlang. All rights reserved.
 //
-
-//  The runtime is exposed to the compiler, and allows it to inspect details
-//  of the program state, like type metadata and reference counts, as well as
-//  being responsible for allocating and deallocating objects
 
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <setjmp.h>
 
 struct RefcountedObject {
     void *object;
     uint32_t refCount;
 };
-
-/// A witness function to a concept
-struct ValueWitness {
-    void *witness;
-}
-
-/// A concept witness table
-template <uint32_t NumWitnesses>
-struct WitnessTable {
-    /// the witnessing concept
-    void *concept;
-    /// The witnesses
-    const ValueWitness *witnesses[NumWitnesses];
-};
-
-template <uint32_t NumWitnessTables>
-struct TypeMetadata {
-    WitnessTable *witnessTables;
-    const WitnessTable *witnessTables[NumWitnessTables]
-};
-
-struct ExistentialObject {
-    void *object
-    int32_t *propWitnessOffsets;
-    WitnessTable *wittnessTables;
-};
-//static std::map<char *, TypeMetadata *> typeCache;
-
 
 
 // Private
@@ -72,7 +39,7 @@ vist_allocObject(uint32_t size) {
     // malloc the object storage
     void *object = malloc(size);
     // calloc the box storage -- need calloc so it is initialised
-    auto refCountedObject = (RefcountedObject *)(malloc(sizeof(RefcountedObject)));
+    auto refCountedObject = reinterpret_cast<RefcountedObject *>(malloc(sizeof(RefcountedObject)));
     
     // store the object and initial ref count in the box
     refCountedObject->object = object;
@@ -147,74 +114,5 @@ extern "C"
 bool vist_objectHasUniqueReference(RefcountedObject *object) {
     return object->refCount == 1;
 };
-
-
-
-// Existential logic
-
-
-extern "C" 
-ExistentialObject *
-vist_constructExistential() {
-    return nullptr;
-}
-
-extern "C"
-WitnessTable *
-vist_getWitnessTable(TypeMetadata *metadata) {
-    return nullptr;
-}
-
-
-
-
-
-
-
-// Generator logic
-
-static jmp_buf yieldTarget;
-
-/// Returns to the saved stack position
-extern "C"
-void vist_yieldUnwind() {
-    return longjmp(yieldTarget, 1);
-}
-
-/// Sets this stack state as the target state
-/// \returns whether we got to this spot by yielding
-extern "C"
-bool vist_setYieldTarget() {
-    return setjmp(yieldTarget);
-}
-
-
-
-//// Type metadata
-//
-//struct VistInt_t {
-//    int64_t value;
-//};
-//struct VistBool_t {
-//    bool value;
-//};
-//struct VistInt32_t {
-//    int32_t value;
-//};
-//struct VistString_t {
-//    void *base;
-//    int64_t size;
-//    int64_t _capacityAndEncoding;
-//};
-//
-//extern "C"
-//getSpecialisedType ...
-
-
-
-
-
-
-
 
 

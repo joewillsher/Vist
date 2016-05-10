@@ -271,13 +271,13 @@ func runExecutable(
 
 func buildRuntime(debugRuntime debug: Bool) {
     
-    let runtimeDirectory = "\(SOURCE_ROOT)/Vist/lib/runtime"
+    let runtimeDirectory = "\(SOURCE_ROOT)/Vist/stdlib/runtime"
     let libVistRuntimePath = "/usr/local/lib/libvistruntime.dylib"
     
     // .cpp -> .dylib
     // to link against program
     NSTask.execute(.clang,
-                   files: ["runtime.cpp"],
+                   files: ["runtime.cpp", "Metadata.cpp", "RefcountedObject.cpp"],
                    outputName: libVistRuntimePath,
                    cwd: runtimeDirectory,
                    args: "-dynamiclib", "-std=c++14", debug ? "-DREFCOUNT_DEBUG" : "")

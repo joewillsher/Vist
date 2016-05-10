@@ -334,6 +334,9 @@
 		D48739581C9D4E0B00D4D1C2 /* example_.vir */ = {isa = PBXFileReference; lastKnownFileType = text; name = example_.vir; path = RUN/example_.vir; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D489F3BD1C1E392D00254FFC /* example.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vist; path = RUN/example.vist; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		D489F3C01C1E396E00254FFC /* example */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = example; path = RUN/example; sourceTree = "<group>"; };
+		D49BC2971CE25B1C0071D3AD /* Metadata.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Metadata.cpp; path = stdlib/runtime/Metadata.cpp; sourceTree = "<group>"; };
+		D49BC2981CE25B1C0071D3AD /* RefcountedObject.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = RefcountedObject.cpp; path = stdlib/runtime/RefcountedObject.cpp; sourceTree = "<group>"; };
+		D49BC2991CE25B1C0071D3AD /* runtime.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = runtime.cpp; path = stdlib/runtime/runtime.cpp; sourceTree = "<group>"; };
 		D4A0001C1CC7C46500157D90 /* GlobalInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GlobalInst.swift; path = Instructions/GlobalInst.swift; sourceTree = "<group>"; };
 		D4A000201CCA7E4D00157D90 /* LiteralLower.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LiteralLower.swift; path = Vist/lib/VIRLower/LiteralLower.swift; sourceTree = SOURCE_ROOT; };
 		D4A000231CCA7E8F00157D90 /* CFGLower.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CFGLower.swift; path = lib/VIRLower/CFGLower.swift; sourceTree = "<group>"; };
@@ -355,7 +358,6 @@
 		D4E35B7E1C5D216600683486 /* Pipe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pipe.swift; sourceTree = "<group>"; };
 		D4E35B801C5E3EC600683486 /* Expected.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Expected.swift; sourceTree = "<group>"; };
 		D4E5E32F1C8367D900457B73 /* VIRTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VIRTests.swift; sourceTree = "<group>"; };
-		D4E9F8A11CE13C190034F6B2 /* runtime.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = runtime.cpp; path = lib/runtime/runtime.cpp; sourceTree = "<group>"; };
 		D4F3D7F91CAC35AE005A3B07 /* Attribute.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Attribute.swift; path = lib/AST/Attribute.swift; sourceTree = "<group>"; };
 		D4F3D7FC1CAC419E005A3B07 /* CreateType.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CreateType.cpp; path = VIR/Types/CreateType.cpp; sourceTree = SOURCE_ROOT; };
 		D4F3D7FD1CAC419E005A3B07 /* CreateType.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = CreateType.hpp; path = VIR/Types/CreateType.hpp; sourceTree = SOURCE_ROOT; };
@@ -508,7 +510,9 @@
 		D44DB8881C316DA500EBCD9F /* Runtime */ = {
 			isa = PBXGroup;
 			children = (
-				D4E9F8A11CE13C190034F6B2 /* runtime.cpp */,
+				D49BC2971CE25B1C0071D3AD /* Metadata.cpp */,
+				D49BC2981CE25B1C0071D3AD /* RefcountedObject.cpp */,
+				D49BC2991CE25B1C0071D3AD /* runtime.cpp */,
 			);
 			name = Runtime;
 			sourceTree = "<group>";
@@ -518,6 +522,7 @@
 			children = (
 				D4644BE51C40619800364B99 /* stdlib.vist */,
 				D4C0900E1CCFC931008B69F1 /* shims.c */,
+				D44DB8881C316DA500EBCD9F /* Runtime */,
 				D437F8001CA984860089F5DE /* stdlib_.vir */,
 				D437F8011CA984860089F5DE /* stdlib.vir */,
 				D43DF1EC1C5540AF0049EC2F /* stdlib_.ll */,
@@ -605,7 +610,6 @@
 			isa = PBXGroup;
 			children = (
 				D43B39EC1C8A0FEB0039FB2E /* Compiler */,
-				D44DB8881C316DA500EBCD9F /* Runtime */,
 				D44DB8891C316DB400EBCD9F /* StdLib */,
 			);
 			path = Vist;

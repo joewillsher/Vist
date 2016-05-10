@@ -22,7 +22,7 @@ protocol VistTest: class {
 extension VistTest {
     var testDir: String { return "\(SOURCE_ROOT)/Tests/TestCases" }
     var stdlibDir: String { return "\(SOURCE_ROOT)/Vist/stdLib" }
-    var runtimeDir: String { return "\(SOURCE_ROOT)/Vist/lib/runtime" }
+    var runtimeDir: String { return "\(SOURCE_ROOT)/Vist/stdlib/runtime" }
     var virDir: String { return "\(SOURCE_ROOT)/Vist/VIR" }
     
     var libDir: String { return "/usr/local/lib" }
