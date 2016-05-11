@@ -63,6 +63,13 @@ extension Module {
         loweredModule = module
         let IGF = (builder, module) as IRGenFunction
         
+        for type in typeList {
+//            let ref = module.getOrAddRuntimeFunction(named: "vist_retainObject", IGF: IGF)
+//            return try IGF.builder.buildCall(ref,
+//                                             args: [object.bitcastToOpaqueRefCountedType()],
+//                                             name: irName)
+        }
+        
         for fn in functions {
             // create function proto
             let function = getOrAddFunction(named: fn.name, type: fn.type, IGF: IGF)

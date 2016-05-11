@@ -661,14 +661,14 @@ extension InitialiserDecl: StmtEmitter {
         
         // if has body
         guard let impl = impl else {
-            try module.builder.createFunctionPrototype(mangledName, type: initialiserType.cannonicalType(module))
+            try module.builder.createFunctionPrototype(mangledName, type: initialiserType)
             return
         }
         
         let originalInsertPoint = module.builder.insertPoint
         
         // make function and move into it
-        let function = try module.builder.buildFunction(mangledName, type: initialiserType.cannonicalType(module), paramNames: impl.params)
+        let function = try module.builder.buildFunction(mangledName, type: initialiserType, paramNames: impl.params)
         module.builder.insertPoint.function = function
         
         function.inline = .always
@@ -737,22 +737,21 @@ extension MethodCallExpr : ValueEmitter {
         let args = try argOperands(module: module, scope: scope)
         let selfVar = try object.emitRValue(module: module, scope: scope)
         try selfVar.retain()
+        let selfRef = try selfVar.asReferenceAccessor().aggregateReference()
         
         guard let fnType = fnType else { fatalError() }
         
         // construct function call
         switch object._type {
         case is StructType:
-            guard case .method(_, let mutating) = fnType.callingConvention else { fatalError() }
-            let selfObject = try mutating ? selfVar.asReferenceAccessor().aggregateReference() : Operand(selfVar.aggregateGetter())
-
+            guard case .method = fnType.callingConvention else { fatalError() }
+            
             let function = try module.getOrInsertFunction(named: mangledName, type: fnType)
-            return try module.builder.buildFunctionCall(function, args: [selfObject] + args).accessor()
+            return try module.builder.buildFunctionCall(function, args: [selfRef] + args).accessor()
             
         case let existentialType as ConceptType:
             
             guard let argTypes = args.optionalMap({$0.type}) else { fatalError() }
-            let selfRef = try selfVar.asReferenceAccessor().aggregateReference()
             
             // get the witness from the existential
             let fn = try module.builder.buildExistentialWitnessMethod(selfRef,

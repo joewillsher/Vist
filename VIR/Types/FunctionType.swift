@@ -122,12 +122,8 @@ extension FunctionType {
         case .thin:
             break
             
-        case .method(let selfType, let mutating):
-            // if ref type or mutating method pass self by ref
-            let selfPtr = mutating || ((selfType as? StructType)?.heapAllocated ?? true)
-                ? BuiltinType.pointer(to: selfType)
-                : selfType
-            t.params.insert(selfPtr, atIndex: 0)
+        case .method(let selfType, _):
+            t.params.insert(BuiltinType.pointer(to: selfType), atIndex: 0)
         }
         t.isCanonicalType = true
         return t

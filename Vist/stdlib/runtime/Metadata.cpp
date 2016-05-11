@@ -16,54 +16,70 @@
 
 
 ///// A witness function
-class ValueWitness {
+struct ValueWitness {
     void *witness;
 public:
     ValueWitness(void *v) : witness(v) {}
 };
 
 /// A concept witness table
-class WitnessTable {
+struct WitnessTable {
     /// The witnesses
-    std::vector<ValueWitness> witnesses;
+    ValueWitness *witnesses;
+    int32_t numWitnesses;
 public:
-    WitnessTable(ValueWitness *witnesses, int64_t numWitnesses) : witnesses(witnesses, witnesses + numWitnesses) {}
+    WitnessTable(ValueWitness *witnesses, int64_t numWitnesses) : witnesses(witnesses), numWitnesses(numWitnesses) {}
 };
 
-class ConceptConformance;
+struct ConceptConformance;
 
 class TypeMetadata {
     /// witness tables
-    std::vector<ConceptConformance *> conceptConformances;
+    ConceptConformance **conceptConformances;
+    int32_t numConformances;
     char *name;
 //    std::vector<TypeMetadata *> members;
     
 public:
-    TypeMetadata(std::vector<ConceptConformance *> conformances, char *n)
-    : conceptConformances(conformances), name(n) {}
+    TypeMetadata(ConceptConformance **conformances, int32_t s, char *n)
+        : conceptConformances(conformances), numConformances(s), name(n) {}
 };
+
+//
+//template<int32_t NumConformances>
+//class TypeMetadata__ {
+//    /// witness tables
+//    ConceptConformance *conceptConformances;
+//    char *name;
+//
+//public:
+//    TypeMetadata__(ConceptConformance *conformances, char *n)
+//        : conceptConformances(conformances), name(n) {}
+//};
+
 
 //class NominalTypeMetadata : public TypeMetadata {
 //
 //};
 
 /// The modeling of a concept -- the concept and witness table
-class ConceptConformance {
+struct ConceptConformance {
     TypeMetadata *concept; /// the concept we are conforming to
-    std::vector<int32_t> propWitnessOffsets;
+    int32_t *propWitnessOffsets;
+    int32_t numOffsets;
     WitnessTable witnessTable;
     
 public:
     ConceptConformance(TypeMetadata *md,
                        int32_t *offsets,
-                       int32_t numOffsets,
+                       int32_t numOffs,
                        ValueWitness *witnesses,
                        int64_t numWitnesses)
-    : concept(md), propWitnessOffsets(offsets, offsets+numOffsets), witnessTable(witnesses, numWitnesses) {}
+    : concept(md), propWitnessOffsets(offsets), numOffsets(numOffs), witnessTable(witnesses, numWitnesses) {}
 };
 
 
-class ExistentialObject {
+struct ExistentialObject {
     void *object;
     int32_t numConformances;
     ConceptConformance *conformances;
@@ -80,11 +96,18 @@ class ExistentialObject {
 template <class ValueTy>
 class MetadataCache {
     std::map<char *, ValueTy *> map;
+    
+public:
+    void insert(ValueTy *value, char *key) {
+        map.insert(std::pair<char *, ValueTy *>(key, value));
+        printf("insert %p for %s\n", value, key);
+    }
 };
 
+static MetadataCache<TypeMetadata> cache;
 
 
-extern "C"
+//extern "C"
 ConceptConformance vist_constructConceptConformance(TypeMetadata *concept,
                                                     int32_t *offsets,
                                                     int32_t numOffsets,
@@ -93,32 +116,43 @@ ConceptConformance vist_constructConceptConformance(TypeMetadata *concept,
     return ConceptConformance(concept, offsets, numOffsets, witnesses, numWitnesses);
 }
 
-extern "C"
-ExistentialObject *vist_constructExistential(int32_t *offsets,
-                                             int32_t numOffsets,
-                                             void *witnesses,
-                                             int32_t numWitnesses,
-                                             char *name,
-                                             void *instance) {
-    return nullptr;
+//extern "C"
+TypeMetadata
+vist_constructConceptMetadata(ConceptConformance **conformances,
+                              int32_t numConformances,
+                              char *name) {
+    return TypeMetadata(conformances, numConformances, name);
 }
+
+/// Called by VIRLower to generate the metadata for a nominal type
+extern "C"
+TypeMetadata *
+vist_constructNominalTypeMetadata(ConceptConformance **conformances,
+                                  int32_t numConformances,
+                                  char *name) {
+    auto metadata = new TypeMetadata(conformances, numConformances, name);
+    // cache it
+    cache.insert(metadata, name);
+    return metadata;
+}
+
+
+//extern "C"
+//ExistentialObject *vist_constructExistential(int32_t *offsets,
+//                                             int32_t numOffsets,
+//                                             void *witnesses,
+//                                             int32_t numWitnesses,
+//                                             char *name,
+//                                             void *instance) {
+//    return nullptr;
+//}
 
 
 #ifdef TESTING
 
-void print() {
-    printf("memmes");
-}
-
 int main() {
-        
-    std::vector<ConceptConformance *> empty;
-    auto type = TypeMetadata(empty, "Foo");
-    int32_t offsets = 0;
-    ValueWitness valueWitness = ValueWitness((void*)(print));
-    auto conformance = vist_constructConceptConformance(&type, &offsets, 1, &valueWitness, 1);
     
-    
+    auto md = vist_constructNominalTypeMetadata(nullptr, 0, "Foo");
     
     return 0;
 }

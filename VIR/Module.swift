@@ -50,16 +50,12 @@ extension Module {
         if case let t as NominalType = type, let found = typeList.find({$0.targetType.name == t.name}) {
             return found
         }
-        else if case let alias as TypeAlias = type, let found = typeList.find(alias) {
+        else if case let alias as TypeAlias = type, let found = typeList.find({$0.targetType.name == alias.name}) {
             return found
         }
-        else if case let t as TypeAlias = type.usingTypesIn(module) {
-            insert(t)
-            return t
-        }
-        else {
-            fatalError("Not storage type")
-        }
+        let t = type.usingTypesIn(module) as! TypeAlias
+        insert(t)
+        return t
     }
     
     func typeNamed(name: String) -> TypeAlias? {
