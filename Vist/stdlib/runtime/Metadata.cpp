@@ -10,7 +10,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdlib.h>
-#include <map>
 
 
 
@@ -92,21 +91,6 @@ struct ExistentialObject {
 //};
 //
 
-template <class ValueTy>
-class MetadataCache {
-    std::map<char *, ValueTy *> map;
-    
-public:
-    void insert(ValueTy *value, char *key) {
-        map.insert(std::pair<char *, ValueTy *>(key, value));
-#ifdef REFCOUNT_DEBUG
-        printf("insert %p for %s\n", value, key);
-#endif
-    }
-};
-
-static MetadataCache<TypeMetadata> cache;
-
 
 //extern "C"
 ConceptConformance vist_constructConceptConformance(TypeMetadata *concept,
@@ -132,8 +116,6 @@ vist_constructNominalTypeMetadata(ConceptConformance **conformances,
                                   int32_t numConformances,
                                   char *name) {
     auto metadata = new TypeMetadata(conformances, numConformances, name);
-    // cache it
-    cache.insert(metadata, name);
     return metadata;
 }
 
