@@ -9,6 +9,12 @@
 extension ExistentialConstructInst : VIRLower {
     func virLower(IGF: IRGenFunction) throws -> LLVMValue {
         
+        
+        // also we do runtime shit
+        
+        
+        
+        
         guard case let aliasType as TypeAlias = value.memType, case let structType as StructType = aliasType.targetType else { fatalError() }
         
         let exType = existentialType.usingTypesIn(module).lowerType(module) as LLVMType

@@ -10,7 +10,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdlib.h>
-#include <vector>
 #include <map>
 
 
@@ -100,7 +99,9 @@ class MetadataCache {
 public:
     void insert(ValueTy *value, char *key) {
         map.insert(std::pair<char *, ValueTy *>(key, value));
+#ifdef REFCOUNT_DEBUG
         printf("insert %p for %s\n", value, key);
+#endif
     }
 };
 

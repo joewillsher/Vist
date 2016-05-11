@@ -10,6 +10,8 @@
 struct Runtime {
     private static let intType = BuiltinType.int(size: 64)
     private static let int32Type = BuiltinType.int(size: 32)
+    private static let int16Type = BuiltinType.int(size: 16)
+    private static let int8Type = BuiltinType.int(size: 8)
     private static let doubleType = BuiltinType.float(size: 64)
     private static let boolType = BuiltinType.bool
     private static let voidType = BuiltinType.void
@@ -17,6 +19,13 @@ struct Runtime {
     
     static let refcountedObjectType = StructType.withTypes([BuiltinType.opaquePointer, int32Type], name: "RefcountedObject")
     static let refcountedObjectPointerType = BuiltinType.pointer(to: refcountedObjectType)
+
+    static let valueWitnessType = StructType.withTypes([BuiltinType.opaquePointer], name: "ValueWitness")
+    static let conceptConformanceType = StructType.withTypes([BuiltinType.opaquePointer/*TypeMetadata *concept*/, BuiltinType.pointer(to: int32Type), int32Type, witnessTableType], name: "ConceptConformance")
+    static let witnessTableType = StructType.withTypes([BuiltinType.pointer(to: valueWitnessType), int32Type], name: "WitnessTable")
+    static let typeMetadataType = StructType.withTypes([BuiltinType.pointer(to: BuiltinType.pointer(to: conceptConformanceType)), int32Type, BuiltinType.pointer(to: int8Type)], name: "TypeMetadata")
+    static let existentialObjectType = StructType.withTypes([BuiltinType.opaquePointer, int32Type, BuiltinType.pointer(to: conceptConformanceType)], name: "ExistentialObject")
+    
     
     private static let functions: [(String, FunctionType)] = [
         // runtime fns
@@ -34,8 +43,11 @@ struct Runtime {
         ("vist_releaseObject", FunctionType(params: [refcountedObjectPointerType], returns: voidType)),
         ("vist_releaseUnownedObject", FunctionType(params: [refcountedObjectPointerType], returns: voidType)),
         ("vist_deallocUnownedObject", FunctionType(params: [refcountedObjectPointerType], returns: voidType)),
+        
         ("vist_setYieldTarget", FunctionType(params: [], returns: boolType)),
         ("vist_yieldUnwind", FunctionType(params: [], returns: voidType)),
+        
+        ("vist_constructNominalTypeMetadata", FunctionType(params: [BuiltinType.pointer(to: BuiltinType.pointer(to: conceptConformanceType)), int32Type, BuiltinType.pointer(to: int8Type)], returns: BuiltinType.pointer(to: typeMetadataType))),
     ]
     
     private static let functionContainer = FunctionContainer(functions: functions, types: [])

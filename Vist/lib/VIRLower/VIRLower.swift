@@ -63,12 +63,13 @@ extension Module {
         loweredModule = module
         let IGF = (builder, module) as IRGenFunction
         
-        for type in typeList {
-//            let ref = module.getOrAddRuntimeFunction(named: "vist_retainObject", IGF: IGF)
-//            return try IGF.builder.buildCall(ref,
-//                                             args: [object.bitcastToOpaqueRefCountedType()],
-//                                             name: irName)
-        }
+//        for type in typeList {
+//            let ref = getOrAddRuntimeFunction(named: "vist_constructNominalTypeMetadata", IGF: IGF)
+//            let metadataPtrType = Runtime.typeMetadataType.lowerType(self).getPointerType()
+//            let str = LLVMValue.constString(type.mangledName)
+//            try IGF.builder.buildCall(ref,
+//                                      args: [LLVMValue.constNull(type: metadataPtrType), LLVMValue.constInt(0, size: 32), str])
+//        }
         
         for fn in functions {
             // create function proto

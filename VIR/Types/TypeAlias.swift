@@ -14,6 +14,8 @@
 final class TypeAlias : Type {
     let name: String, targetType: NominalType
     
+    var loweredTypeMetadata: LLVMValue? = nil
+    
     init(name: String, targetType: NominalType) {
         self.name = name
         self.targetType = targetType

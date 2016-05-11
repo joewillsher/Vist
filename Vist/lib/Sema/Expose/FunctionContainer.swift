@@ -34,7 +34,7 @@ struct FunctionContainer {
         }
         
         let typesWithMethods = types.map { t -> StructType in
-            var type = t
+            let type = t
             type.methods = type.methods.map { m in (m.name,  m.type.withParent(t, mutating: m.mutating), m.mutating) }
             for m in type.methods { // add methods to function table
                 var type = m.type

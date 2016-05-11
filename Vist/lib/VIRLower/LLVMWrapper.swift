@@ -95,6 +95,12 @@ extension LLVMBuilder {
             LLVMBuildBitCast(builder, val.val(), type.type, name ?? "")
         )
     }
+    func buildConstBitcast(value val: LLVMValue, to type: LLVMType) throws -> LLVMValue {
+        return try wrap(
+            LLVMConstBitCast(val.val(), type.type)
+        )
+
+    }
     func buildTrunc(val: LLVMValue, size: Int, name: String? = nil) throws -> LLVMValue {
         return try wrap(
             LLVMBuildTrunc(builder, val.val(), LLVMIntType(UInt32(size)), name ?? "")
@@ -448,6 +454,9 @@ struct LLVMValue : Dumpable {
     }
     static func constBool(value: Bool) -> LLVMValue {
         return LLVMValue(ref: LLVMConstInt(LLVMInt1Type(), UInt64(value.hashValue), false))
+    }
+    static func constString(value: String) -> LLVMValue {
+        return LLVMValue(ref: LLVMConstString(value, UInt32(value.utf8.count), false))
     }
     static func undef(type: LLVMType) -> LLVMValue {
         return LLVMValue(ref: LLVMGetUndef(type.type))
