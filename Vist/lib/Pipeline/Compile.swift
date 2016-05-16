@@ -147,6 +147,20 @@ func compileDocuments(
     }
     configModule(llvmModule)
     
+    
+    
+//    var t = "meme".withCString { c in
+//        TypeMetadata(conceptConformances: nil, numConformances: 0, name: UnsafeMutablePointer(c))
+//    }
+//    t.__lower()
+//    
+//    let IGF: IRGenFunction = (LLVMBuilder(), LLVMModule(name: ""))
+//    var wt = UnsafeMutablePointer<ValueWitness>.alloc(1)
+//    let witnessTable = WitnessTable(witnesses: wt, numWitnesses: 1)
+//    witnessTable.__lower(IGF)
+    
+    
+    
     defer {
         // remove files
         if !options.contains(.preserveTempFiles) {
@@ -280,7 +294,7 @@ func buildRuntime(debugRuntime debug: Bool) {
                    files: ["runtime.cpp", "Metadata.cpp", "RefcountedObject.cpp"],
                    outputName: libVistRuntimePath,
                    cwd: runtimeDirectory,
-                   args: "-dynamiclib", "-std=c++14", "-lstdc++", debug ? "-DREFCOUNT_DEBUG" : "")
+                   args: "-dynamiclib", "-std=c++14", "-lstdc++", "-includeruntime.h", "-DRUNTIME", debug ? "-DREFCOUNT_DEBUG" : "")
     
 }
 
