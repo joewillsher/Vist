@@ -10,18 +10,18 @@
 extension TupleCreateInst : VIRLower {
     func virLower(IGF: IRGenFunction) throws -> LLVMValue {
         guard let t = type else { throw irGenError(.notStructType) }
-        return try IGF.builder.buildAggregateType(t.lowerType(module),
-                                                  elements: args.map { $0.loweredValue! },
-                                                  irName: irName)
+        return try IGF.builder.buildAggregate(type: t.lowerType(module),
+                                              elements: args.map { $0.loweredValue! },
+                                              irName: irName)
     }
 }
 
 extension StructInitInst : VIRLower {
     func virLower(IGF: IRGenFunction) throws -> LLVMValue {
         guard case let t as TypeAlias = type else { throw irGenError(.notStructType) }
-        return try IGF.builder.buildAggregateType(t.lowerType(module),
-                                                  elements: args.map { $0.loweredValue! },
-                                                  irName: irName)
+        return try IGF.builder.buildAggregate(type: t.lowerType(module),
+                                              elements: args.map { $0.loweredValue! },
+                                              irName: irName)
     }
 }
 

@@ -143,6 +143,10 @@ extension LLVMBuilder {
             LLVMBuildInsertValue(builder, aggr.val(), val.val(), UInt32(index), name ?? "")
         )
     }
+    static func constInsertValue(value val: LLVMValue, in aggr: LLVMValue, index: Int, name: String? = nil) throws -> LLVMValue {
+        var v = [UInt32(index)]
+        return try LLVMValue(ref: LLVMConstInsertValue(aggr.val(), val.val(), &v, 1))
+    }
     func buildExtractValue(val: LLVMValue, index: Int, name: String? = nil) throws -> LLVMValue {
         return try wrap(
             LLVMBuildExtractValue(builder, val.val(), UInt32(index), name ?? "")
@@ -164,7 +168,18 @@ extension LLVMBuilder {
             LLVMBuildGlobalString(builder, str, "")
         )
     }
-    func buildAggregateType(type: LLVMType, elements: [LLVMValue], irName: String? = nil) throws -> LLVMValue {
+    static func constAggregate(type type: LLVMType, elements: [LLVMValue]) throws -> LLVMValue {
+        // creates an undef, then for each element in type, inserts the next element into it
+        return try elements
+            .enumerate()
+            .reduce(LLVMValue.undef(type)) { aggr, el in
+                return try constInsertValue(value: el.element,
+                                            in: aggr,
+                                            index: el.index)
+        }
+    }
+    
+    func buildAggregate(type type: LLVMType, elements: [LLVMValue], irName: String? = nil) throws -> LLVMValue {
         // creates an undef, then for each element in type, inserts the next element into it
         return try elements
             .enumerate()
@@ -175,6 +190,7 @@ extension LLVMBuilder {
                                             name: irName)
         }
     }
+
     func buildArray(buffer: [LLVMValue], elType: LLVMType, irName: String? = nil) throws -> LLVMValue {
         let elPtrType = LLVMPointerType(elType.type, 0)
         
