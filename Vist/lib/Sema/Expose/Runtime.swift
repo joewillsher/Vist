@@ -20,8 +20,11 @@ struct Runtime {
     static let refcountedObjectType = StructType.withTypes([BuiltinType.opaquePointer, int32Type], name: "RefcountedObject")
     static let refcountedObjectPointerType = BuiltinType.pointer(to: refcountedObjectType)
 
+    private static let __typeMetadataType = StructType.withTypes([BuiltinType.pointer(to: BuiltinType.pointer(to: conceptConformanceType)), int32Type, BuiltinType.pointer(to: int8Type)], name: "TypeMetadata")
+
+    
     static let valueWitnessType = StructType.withTypes([BuiltinType.opaquePointer], name: "ValueWitness")
-    static let conceptConformanceType = StructType.withTypes([BuiltinType.opaquePointer/*TypeMetadata *concept*/, BuiltinType.pointer(to: int32Type), int32Type, witnessTableType], name: "ConceptConformance")
+    static let conceptConformanceType = StructType.withTypes([BuiltinType.opaquePointer/*TypeMetadata *concept*/, BuiltinType.pointer(to: int32Type), int32Type, BuiltinType.pointer(to: witnessTableType)], name: "ConceptConformance")
     static let witnessTableType = StructType.withTypes([BuiltinType.pointer(to: valueWitnessType), int32Type], name: "WitnessTable")
     static let typeMetadataType = StructType.withTypes([BuiltinType.pointer(to: BuiltinType.pointer(to: conceptConformanceType)), int32Type, BuiltinType.pointer(to: int8Type)], name: "TypeMetadata")
     static let existentialObjectType = StructType.withTypes([BuiltinType.opaquePointer, int32Type, BuiltinType.pointer(to: conceptConformanceType)], name: "ExistentialObject")
@@ -47,7 +50,7 @@ struct Runtime {
         ("vist_setYieldTarget", FunctionType(params: [], returns: boolType)),
         ("vist_yieldUnwind", FunctionType(params: [], returns: voidType)),
         
-        ("vist_constructNominalTypeMetadata", FunctionType(params: [BuiltinType.pointer(to: BuiltinType.pointer(to: conceptConformanceType)), int32Type, BuiltinType.pointer(to: int8Type)], returns: BuiltinType.pointer(to: typeMetadataType))),
+        ("vist_constructConceptConformance", FunctionType(params: [BuiltinType.pointer(to: typeMetadataType), BuiltinType.pointer(to: int32Type), int32Type, BuiltinType.pointer(to: valueWitnessType), int32Type], returns: conceptConformanceType)),
     ]
     
     private static let functionContainer = FunctionContainer(functions: functions, types: [])

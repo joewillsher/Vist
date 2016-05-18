@@ -12,23 +12,12 @@
 #include <stdlib.h>
 
 
-
-
-//extern "C"
-//WitnessTable *
-//vist_getWitnessTable(TypeMetadata *metadata) {
-//    return nullptr;
-//};
-//
-
-
 //extern "C"
 ConceptConformance vist_constructConceptConformance(TypeMetadata *concept,
                                                     int32_t *offsets,
                                                     int32_t numOffsets,
-                                                    ValueWitness *witnesses,
-                                                    int32_t numWitnesses) {
-    return ConceptConformance(concept, offsets, numOffsets, witnesses, numWitnesses);
+                                                    WitnessTable *witnessTable) {
+    return ConceptConformance(concept, offsets, numOffsets, witnessTable);
 }
 
 //extern "C"
@@ -39,26 +28,16 @@ vist_constructConceptMetadata(ConceptConformance **conformances,
     return TypeMetadata(conformances, numConformances, name);
 }
 
-/// Called by VIRLower to generate the metadata for a nominal type
 extern "C"
-TypeMetadata *
-vist_constructNominalTypeMetadata(ConceptConformance **conformances,
-                                  int32_t numConformances,
-                                  char *name) {
-    auto metadata = new TypeMetadata(conformances, numConformances, name);
-    return metadata;
+ExistentialObject *
+vist_constructExistential(TypeMetadata *concept,
+                          void *instance,
+                          int32_t *offsets,
+                          int32_t numOffsets,
+                          WitnessTable *witness) {
+    auto conformance = ConceptConformance(concept, offsets, numOffsets, witness);
+    return new ExistentialObject(instance, 1, &conformance);
 }
-
-
-//extern "C"
-//ExistentialObject *vist_constructExistential(int32_t *offsets,
-//                                             int32_t numOffsets,
-//                                             void *witnesses,
-//                                             int32_t numWitnesses,
-//                                             char *name,
-//                                             void *instance) {
-//    return nullptr;
-//}
 
 
 #ifdef TESTING
@@ -69,7 +48,6 @@ int main() {
     
     return 0;
 }
-
 
 #endif
 

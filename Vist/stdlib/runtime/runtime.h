@@ -61,19 +61,19 @@ public:
 
 /// The modeling of a concept -- the concept and witness table
 struct ConceptConformance {
-    struct TypeMetadata *concept; /// the concept we are conforming to
-    int32_t *propWitnessOffsets;
-    int32_t numOffsets;
-    struct WitnessTable witnessTable;
+    struct TypeMetadata *concept;   /// The concept we are conforming to
+    int32_t *propWitnessOffsets;    /// Offset of concept elements
+    int32_t numOffsets;             /// Number of offsets in `propWitnessOffsets`
+    struct WitnessTable *witnessTable; /// Pointer to the conformant's witness table
+                                       /// for this concept
     
 #ifdef RUNTIME
 public:
     ConceptConformance(TypeMetadata *md,
                        int32_t *offsets,
                        int32_t numOffs,
-                       ValueWitness *witnesses,
-                       int64_t numWitnesses)
-    : concept(md), propWitnessOffsets(offsets), numOffsets(numOffs), witnessTable(witnesses, numWitnesses) {}
+                       WitnessTable *witnessTable)
+    : concept(md), propWitnessOffsets(offsets), numOffsets(numOffs), witnessTable(witnessTable) {}
 #endif
 };
 
@@ -82,6 +82,14 @@ struct ExistentialObject {
     void *object;
     int32_t numConformances;
     struct ConceptConformance *conformances;
+    
+#ifdef RUNTIME
+public:
+    ExistentialObject(void *object,
+                      int32_t numConformances,
+                      ConceptConformance *conformances)
+    : object(object), numConformances(numConformances), conformances(conformances) {}
+#endif
 };
 
 

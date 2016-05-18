@@ -34,6 +34,7 @@ enum LLVMError : VistError {
 
 struct LLVMBuilder {
     private var builder: LLVMBuilderRef = nil
+//    var metadata: Set<RuntimeObject> = []
     
     init() { builder = LLVMCreateBuilder() }
     private init(ref: LLVMBuilderRef) { builder = ref }
@@ -95,8 +96,8 @@ extension LLVMBuilder {
             LLVMBuildBitCast(builder, val.val(), type.type, name ?? "")
         )
     }
-    func buildConstBitcast(value val: LLVMValue, to type: LLVMType) throws -> LLVMValue {
-        return try wrap(
+    static func buildConstBitcast(value val: LLVMValue, to type: LLVMType) throws -> LLVMValue {
+        return try LLVMValue(ref:
             LLVMConstBitCast(val.val(), type.type)
         )
 
@@ -145,7 +146,23 @@ extension LLVMBuilder {
     }
     static func constInsertValue(value val: LLVMValue, in aggr: LLVMValue, index: Int, name: String? = nil) throws -> LLVMValue {
         var v = [UInt32(index)]
-        return try LLVMValue(ref: LLVMConstInsertValue(aggr.val(), val.val(), &v, 1))
+        
+        var value = val
+        
+        if LLVMGetTypeKind(val.type.type) == LLVMPointerTypeKind {
+            let ptr = LLVMGetElementType(val.type.type)
+            if ptr != nil {
+                
+                var els = [LLVMTypeRef](count: Int(LLVMCountStructElementTypes(aggr.type.type)), repeatedValue: nil)
+                LLVMGetStructElementTypes(aggr.type.type, &els)
+                if els[index] != val.type.type {
+                    value = try buildConstBitcast(value: value, to: LLVMType(ref: els[index]))
+                    
+                }
+            }
+        }
+        
+        return try LLVMValue(ref: LLVMConstInsertValue(aggr.val(), value.val(), &v, 1))
     }
     func buildExtractValue(val: LLVMValue, index: Int, name: String? = nil) throws -> LLVMValue {
         return try wrap(

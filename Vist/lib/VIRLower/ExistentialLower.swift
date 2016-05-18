@@ -12,6 +12,7 @@ extension ExistentialConstructInst : VIRLower {
         
         // also we do runtime shit
         
+
         
         
         
@@ -38,9 +39,95 @@ extension ExistentialConstructInst : VIRLower {
         let opaqueValueMem = try IGF.builder.buildBitcast(value: valueMem, to: BuiltinType.opaquePointer.lowerType(module))
         try IGF.builder.buildStore(value: opaqueValueMem, in: structPtr)
         
-        return try IGF.builder.buildLoad(from: ptr, name: irName)
+        let ret = try IGF.builder.buildLoad(from: ptr, name: irName)
+        
+        
+        
+        
+        
+        
+        var wt = UnsafeMutablePointer<ValueWitness>.alloc(1)
+        let witnessTable = WitnessTable(witnesses: wt, numWitnesses: 0)
+//        let table = try witnessTable.__lower(IGF)
+        
+        let ref = module.getOrAddRuntimeFunction(named: "vist_constructConceptConformance", IGF: IGF)
+        
+        
+        
+        let tt = try structType.generateTypeMetadata(IGF)
+//        let t = try existentialType.generateTypeMetadata(IGF)
+        
+//        return try IGF.builder.buildCall(ref,
+//                                         args: [size],
+//                                         name: irName)
+
+        
+//        ConceptConformance vist_constructConceptConformance(TypeMetadata *concept,
+//                                                            int32_t *offsets,
+//                                                            int32_t numOffsets,
+//                                                            ValueWitness *witnesses,
+//                                                            int32_t numWitnesses)
+        
+        
+        
+        
+        return ret
     }
 }
+
+extension ConceptType {
+    
+    // TODO: move this metadata creation as an extension of type
+    
+    private func _conceptConformances(IGF: IRGenFunction) -> [ConceptConformance] {
+        return []
+    }
+    /// - returns: Metadata listing concept conformances for self
+    private func conceptConformances(IGF: IRGenFunction) throws -> LLVMValue {
+        var conformances = _conceptConformances(IGF)
+        return try conformances.withUnsafeMutableBufferPointer { conformancesBase in
+            try conformancesBase.baseAddress.allocConstMetadata(IGF, name: "_g\(name)c").value
+        }
+    }
+    
+    
+    func generateTypeMetadata(IGF: IRGenFunction) throws -> LLVMValue {
+        
+        let wt = UnsafeMutablePointer<ValueWitness>.alloc(1)
+        var witnessTable = [WitnessTable(witnesses: wt, numWitnesses: 0)]
+        
+        var offsetTable: [Int32] = [1]
+            
+//        let confomances = try conceptConformances(IGF)
+        
+        
+        return try ConceptConformance(concept: nil, propWitnessOffsets: &offsetTable, numOffsets: 1, witnessTable: &witnessTable)
+            .allocConstMetadata(IGF, name: "meme")
+            .value
+    }
+    
+}
+
+extension StructType {
+    
+    private func withConformancesMetadata<T>(apply: (UnsafeMutablePointer<UnsafeMutablePointer<ConceptConformance>>) throws -> T) rethrows -> T {
+        var cs: [UnsafeMutablePointer<ConceptConformance>] = [nil]
+        return try cs.withUnsafeMutableBufferPointer { buffer -> T in try apply(buffer.baseAddress) }
+    }
+    
+    func generateTypeMetadata(IGF: IRGenFunction) throws -> LLVMValue {
+        
+        let metadata = name.withCString { name in
+            TypeMetadata(conceptConformances: nil, numConformances: 0, name: UnsafeMutablePointer(name))
+        }
+        
+        return try metadata.allocConstMetadata(IGF, name: "_g\(name)s").value
+    }
+}
+
+
+
+
 
 extension ExistentialPropertyInst : VIRLower {
     

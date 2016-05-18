@@ -148,19 +148,6 @@ func compileDocuments(
     configModule(llvmModule)
     
     
-    
-//    var t = "meme".withCString { c in
-//        TypeMetadata(conceptConformances: nil, numConformances: 0, name: UnsafeMutablePointer(c))
-//    }
-//    t.__lower()
-    
-    let IGF: IRGenFunction = (LLVMBuilder(), LLVMModule(name: ""))
-    var wt = UnsafeMutablePointer<ValueWitness>.alloc(1)
-    let witnessTable = WitnessTable(witnesses: wt, numWitnesses: 0)
-    try witnessTable.__lower(IGF)
-    
-    
-    
     defer {
         // remove files
         if !options.contains(.preserveTempFiles) {
