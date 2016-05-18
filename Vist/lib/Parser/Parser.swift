@@ -994,6 +994,13 @@ extension Parser {
         getNextToken() // eat name
         
         let genericParameters = try parseGenericParameterList(objName: typeName)
+        var concepts: [String] = []
+        
+        if case .bar = currentToken {
+            while case .identifier(let concept) = getNextToken() {
+                concepts.append(concept)
+            }
+        }
         
         guard case .openBrace = currentToken else { throw parseError(.expectedOpenBrace, loc: SourceRange.at(currentPos)) }
         getNextToken() // eat '{'
@@ -1032,6 +1039,7 @@ extension Parser {
                            initialisers: initialisers,
                            attrs: a,
                            genericParameters: genericParameters,
+                           concepts: concepts,
                            byRef: refType)
         // associate functions with the struct
         for i in s.initialisers {

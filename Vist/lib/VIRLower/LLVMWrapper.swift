@@ -149,6 +149,7 @@ extension LLVMBuilder {
         
         var value = val
         
+        // cast the pointer if its the wrong target
         if LLVMGetTypeKind(val.type.type) == LLVMPointerTypeKind {
             let ptr = LLVMGetElementType(val.type.type)
             if ptr != nil {
@@ -180,9 +181,9 @@ extension LLVMBuilder {
             LLVMBuildGEP(builder, val.val(), &v, 1, name ?? "")
         )
     }
-    func buildGlobalString(str: String) throws -> LLVMValue {
+    func buildGlobalString(str: String, name: String? = nil) throws -> LLVMValue {
         return try wrap(
-            LLVMBuildGlobalString(builder, str, "")
+            LLVMBuildGlobalString(builder, str, name ?? "")
         )
     }
     static func constAggregate(type type: LLVMType, elements: [LLVMValue]) throws -> LLVMValue {

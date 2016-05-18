@@ -330,6 +330,7 @@ final class StructExpr: Typed, ScopeNode, TypeExpr, LibraryTopLevel {
     let byRef: Bool
     
     let genericParameters: [ConstrainedType]
+    let concepts: [String]
     
     init(name: String,
          properties: [VariableDecl],
@@ -337,6 +338,7 @@ final class StructExpr: Typed, ScopeNode, TypeExpr, LibraryTopLevel {
          initialisers: [InitialiserDecl],
          attrs: [AttributeExpr],
          genericParameters: [ConstrainedType],
+         concepts: [String],
          byRef: Bool) {
         self.name = name
         self.properties = properties
@@ -345,6 +347,7 @@ final class StructExpr: Typed, ScopeNode, TypeExpr, LibraryTopLevel {
         self.attrs = attrs
         self.genericParameters = genericParameters
         self.byRef = byRef
+        self.concepts = concepts
     }
     
     var type: StructType? = nil

@@ -7,6 +7,7 @@
 //
 
 extension ExistentialConstructInst : VIRLower {
+    
     func virLower(IGF: IRGenFunction) throws -> LLVMValue {
         
         
@@ -70,7 +71,6 @@ extension ExistentialConstructInst : VIRLower {
         
         
         
-        
         return ret
     }
 }
@@ -78,17 +78,17 @@ extension ExistentialConstructInst : VIRLower {
 extension ConceptType {
     
     // TODO: move this metadata creation as an extension of type
-    
-    private func _conceptConformances(IGF: IRGenFunction) -> [ConceptConformance] {
-        return []
-    }
-    /// - returns: Metadata listing concept conformances for self
-    private func conceptConformances(IGF: IRGenFunction) throws -> LLVMValue {
-        var conformances = _conceptConformances(IGF)
-        return try conformances.withUnsafeMutableBufferPointer { conformancesBase in
-            try conformancesBase.baseAddress.allocConstMetadata(IGF, name: "_g\(name)c").value
-        }
-    }
+//    
+//    private func _conceptConformances(IGF: IRGenFunction) -> [ConceptConformance] {
+//        return []
+//    }
+//    /// - returns: Metadata listing concept conformances for self
+//    private func conceptConformances(IGF: IRGenFunction) throws -> LLVMValue {
+//        var conformances = _conceptConformances(IGF)
+//        return try conformances.withUnsafeMutableBufferPointer { conformancesBase in
+//            try conformancesBase.baseAddress.allocConstMetadata(IGF, name: "_g\(name)c").value
+//        }
+//    }
     
     
     func generateTypeMetadata(IGF: IRGenFunction) throws -> LLVMValue {
@@ -106,22 +106,33 @@ extension ConceptType {
             .value
     }
     
+    
+    
 }
 
 extension StructType {
     
-    private func withConformancesMetadata<T>(apply: (UnsafeMutablePointer<UnsafeMutablePointer<ConceptConformance>>) throws -> T) rethrows -> T {
-        var cs: [UnsafeMutablePointer<ConceptConformance>] = [nil]
-        return try cs.withUnsafeMutableBufferPointer { buffer -> T in try apply(buffer.baseAddress) }
-    }
+//    private func withConformancesMetadata<T>(apply: (UnsafeMutablePointer<UnsafeMutablePointer<ConceptConformance>>) throws -> T) rethrows -> T {
+//        var cs: [UnsafeMutablePointer<ConceptConformance>] = [nil]
+//        return try cs.withUnsafeMutableBufferPointer { buffer -> T in try apply(buffer.baseAddress) }
+//    }
     
     func generateTypeMetadata(IGF: IRGenFunction) throws -> LLVMValue {
         
-        let metadata = name.withCString { name in
-            TypeMetadata(conceptConformances: nil, numConformances: 0, name: UnsafeMutablePointer(name))
+        var n = name.nulTerminatedUTF8
+        var c: [UnsafeMutablePointer<ConceptConformance>] = []
+        
+        
+        let metadata = c.withUnsafeMutableBufferPointer { conformances in
+            n.withUnsafeMutableBufferPointer { name in
+                TypeMetadata(conceptConformances: conformances.baseAddress, numConformances: Int32(c.count), name: UnsafeMutablePointer<Int8>(name.baseAddress))
+            }
         }
         
-        return try metadata.allocConstMetadata(IGF, name: "_g\(name)s").value
+        let l = try metadata.allocConstMetadata(IGF, name: "_g\(name)s").value
+        IGF.module.dump()
+        
+        return l
     }
 }
 

@@ -22,6 +22,7 @@ enum SemaError: VistError {
     case wrongFunctionApplications(name: String, applied: [Type], expected: [Type])
     case noTypeNamed(String)
     case noPropertyNamed(type: String, property: String), cannotStoreInParameterStruct(propertyName: String), notStructType(Type?), notTupleType(Type?)
+    case noModel(type: StructType, concept: ConceptType)
     
     // not user visible
     case noStdBoolType, noStdIntType, notTypeProvider, noTypeForStruct, noTypeForTuple, noTypeForFunction(name: String)
@@ -101,6 +102,8 @@ enum SemaError: VistError {
             return "\(ty.map { "'\($0)' is not a generator type. "  })You can only loop over generator types"
         case .noTypeForFunction(let name):
             return "Function '\(name)' was not typed"
+        case .noModel(let type, let concept):
+            return "Type '\(type.name)' does not conform to concept '\(concept.name)'"
             
         case .useExplicitSelf(let name):
             return "Use explicit self when calling method '\(name)' -- this is a bug"

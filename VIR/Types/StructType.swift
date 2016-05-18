@@ -15,10 +15,11 @@ final class StructType : NominalType {
     var concepts: [ConceptType] = []
     let heapAllocated: Bool
         
-    init(members: [StructMember], methods: [StructMethod], name: String, heapAllocated: Bool = false) {
+    init(members: [StructMember], methods: [StructMethod], name: String, concepts: [ConceptType] = [], heapAllocated: Bool = false) {
         self.name = name
         self.members = members
         self.methods = methods
+        self.concepts = concepts
         self.heapAllocated = heapAllocated
     }
 }
@@ -33,7 +34,7 @@ extension StructType {
         let t = StructType(members: [
             ("object", BuiltinType.pointer(to: self), true),
             ("refCount", BuiltinType.int(size: 32), false),
-            ], methods: [], name: "\(name).refcounted", heapAllocated: true)
+            ], methods: [], name: "\(name).refcounted", concepts: concepts, heapAllocated: true)
         return module.getOrInsert(t)
     }
     
@@ -41,7 +42,7 @@ extension StructType {
         let mappedEls = members.map { member in
             (member.name, member.type.usingTypesIn(module), member.isMutable) as StructMember
         }
-        let newTy = StructType(members: mappedEls, methods: methods, name: name, heapAllocated: heapAllocated)
+        let newTy = StructType(members: mappedEls, methods: methods, name: name, concepts: concepts, heapAllocated: heapAllocated)
         newTy.genericTypes = genericTypes
         newTy.concepts = concepts
         return module.getOrInsert(TypeAlias(name: name, targetType: newTy))

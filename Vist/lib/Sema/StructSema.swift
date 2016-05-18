@@ -35,7 +35,8 @@ extension StructExpr : ExprTypeProvider {
             }
         }
         
-        let ty = StructType(members: members, methods: [], name: name, heapAllocated: byRef)
+        let cs = concepts.optionalMap { scope[concept: $0] }!
+        let ty = StructType(members: members, methods: [], name: name, concepts: cs, heapAllocated: byRef)
         self.type = ty
         
         try errorCollector.run {
@@ -87,6 +88,13 @@ extension StructExpr : ExprTypeProvider {
         for i in initialisers {
             if let initialiserType = i.ty.type {
                 scope.addFunction(name, type: initialiserType)
+            }
+        }
+        
+        // check it satisfies its constraints
+        for c in ty.concepts {
+            guard ty.models(c) else {
+                throw semaError(.noModel(type: ty, concept: c))
             }
         }
         
