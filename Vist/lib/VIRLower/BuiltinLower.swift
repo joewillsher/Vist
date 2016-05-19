@@ -9,7 +9,7 @@
 
 extension BuiltinInstCall: VIRLower {
     
-    func virLower(IGF: IRGenFunction) throws -> LLVMValue {
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
         
         // applied args
         // self provides `lhs` and `rhs` which are lazily computed args[0] and args[1]
@@ -45,7 +45,7 @@ extension BuiltinInstCall: VIRLower {
             
         case .condfail:
             guard let fn = parentFunction, current = parentBlock else { fatalError() }
-            let success = try fn.loweredFunction!.appendBasicBlock(named: "\(current.name).cont"), fail = try fn.buildCondFailBlock(IGF)
+            let success = try fn.loweredFunction!.appendBasicBlock(named: "\(current.name).cont"), fail = try fn.buildCondFailBlock(&IGF)
             
             success.move(after: current.loweredBlock!)
             try module.loweredBuilder.buildCondBr(if: lhs, to: fail, elseTo: success)
@@ -95,7 +95,7 @@ extension BuiltinInstCall: VIRLower {
 extension Function {
     
     /// Constructs a function's faluire landing pad, or returns the one defined
-    func buildCondFailBlock(IGF: IRGenFunction) throws -> LLVMBasicBlock {
+    func buildCondFailBlock(inout IGF: IRGenFunction) throws -> LLVMBasicBlock {
         // if its there already, we can use it
         if let condFailBlock = _condFailBlock { return condFailBlock }
         
@@ -105,7 +105,7 @@ extension Function {
         IGF.builder.positionAtEnd(block)
         
         // Build trap and unreachable
-        try BuiltinInstCall.trapInst().virLower(IGF)
+        try BuiltinInstCall.trapInst().virLower(&IGF)
         try IGF.builder.buildUnreachable()
         
         // move back; save and return the fail block

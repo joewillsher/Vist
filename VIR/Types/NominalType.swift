@@ -21,11 +21,13 @@ protocol NominalType : class, Type {
     /// Name this type is given at the global scope of IR
     var irName: String { get }
     
+    var concepts: [ConceptType] { get }
+    
     var heapAllocated: Bool { get }
 }
 
 extension NominalType {
-        
+    
     func indexOfMemberNamed(name: String) throws -> Int {
         guard let i = members.indexOf({ $0.name == name }) else {
             throw semaError(.noPropertyNamed(type: self.name, property: name))
@@ -40,6 +42,9 @@ extension NominalType {
             throw semaError(.noPropertyNamed(type: self.name, property: name))
         }
         return i
+    }
+    func ptrToMethod(named name: String, type: FunctionType, inout IGF: IRGenFunction) -> LLVMFunction {
+        return IGF.module.function(named: name.mangle(type))!
     }
     
     func ptrToMethodNamed(name: String, type: FunctionType, module: Module) throws -> LLVMFunction {

@@ -35,13 +35,13 @@ extension LLVMBool : BooleanType, BooleanLiteralConvertible {
 typealias IRGenFunction = (builder: LLVMBuilder, module: LLVMModule)
 
 protocol VIRLower {
-    func virLower(IGF: IRGenFunction) throws -> LLVMValue
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue
 }
 
 extension Module {
     
     /// Creates or gets a function pointer
-    private func getOrAddFunction(named name: String, type: FunctionType, IGF: IRGenFunction) -> LLVMFunction {
+    private func getOrAddFunction(named name: String, type: FunctionType, inout IGF: IRGenFunction) -> LLVMFunction {
         // if already defined, we return it
         if let f = IGF.module.function(named: name) {
             return f
@@ -51,9 +51,9 @@ extension Module {
         return LLVMFunction(name: name, type: type.lowerType(module), module: IGF.module)
     }
     
-    func getOrAddRuntimeFunction(named name: String, IGF: IRGenFunction) -> LLVMFunction {
+    func getOrAddRuntimeFunction(named name: String, inout IGF: IRGenFunction) -> LLVMFunction {
         let (_, fnType) = Runtime.function(mangledName: name)!
-        return module.getOrAddFunction(named: name, type: fnType, IGF: IGF)
+        return module.getOrAddFunction(named: name, type: fnType, IGF: &IGF)
     }
     
     func virLower(module: LLVMModule, isStdLib: Bool) throws {
@@ -61,19 +61,15 @@ extension Module {
         let builder = LLVMBuilder()
         loweredBuilder = builder
         loweredModule = module
-        let IGF = (builder, module) as IRGenFunction
+        var IGF = (builder, module) as IRGenFunction
         
-//        for type in typeList {
-//            let ref = getOrAddRuntimeFunction(named: "vist_constructNominalTypeMetadata", IGF: IGF)
-//            let metadataPtrType = Runtime.typeMetadataType.lowerType(self).getPointerType()
-//            let str = LLVMValue.constString(type.mangledName)
-//            try IGF.builder.buildCall(ref,
-//                                      args: [LLVMValue.constNull(type: metadataPtrType), LLVMValue.constInt(0, size: 32), str])
-//        }
+        for type in typeList {
+            _ = try type.generateTypeMetadata(&IGF)
+        }
         
         for fn in functions {
             // create function proto
-            let function = getOrAddFunction(named: fn.name, type: fn.type, IGF: IGF)
+            let function = getOrAddFunction(named: fn.name, type: fn.type, IGF: &IGF)
             fn.loweredFunction = function
             
             // name the params
@@ -84,12 +80,12 @@ extension Module {
         }
         
         for global in globalValues {
-            try global.updateUsesWithLoweredVal(global.virLower(IGF))
+            try global.updateUsesWithLoweredVal(global.virLower(&IGF))
         }
         
         // lower the function bodies
         for fn in functions {
-            try fn.virLower(IGF)
+            try fn.virLower(&IGF)
         }
         
         try loweredModule?.validate()
@@ -127,7 +123,7 @@ extension Function : VIRLower {
         if attributes.contains(.readnone) { try loweredFunction?.addAttr(LLVMReadNoneAttribute) }
     }
     
-    func virLower(IGF: IRGenFunction) throws -> LLVMValue {
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
         
         let b = IGF.builder.getInsertBlock()
         guard let fn = IGF.module.function(named: name) else { fatalError() }
@@ -146,7 +142,7 @@ extension Function : VIRLower {
             IGF.builder.positionAtEnd(bb.loweredBlock!)
             
             for param in bb.parameters ?? [] {
-                let v = try param.virLower(IGF)
+                let v = try param.virLower(&IGF)
                 param.updateUsesWithLoweredVal(v)
             }
         }
@@ -155,7 +151,7 @@ extension Function : VIRLower {
             IGF.builder.positionAtEnd(bb.loweredBlock!)
             
             for case let inst as protocol<VIRLower, Inst> in bb.instructions {
-                let v = try inst.virLower(IGF)
+                let v = try inst.virLower(&IGF)
                 inst.updateUsesWithLoweredVal(v)
             }
         }
@@ -211,7 +207,7 @@ extension BasicBlock {
 
 extension Param : VIRLower {
 
-    func virLower(IGF: IRGenFunction) throws -> LLVMValue {
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
         guard let function = parentFunction, block = parentBlock else { throw VIRError.noParentBlock }
         
         if let functionParamIndex = function.params?.indexOf({$0.name == name}) {
@@ -235,7 +231,7 @@ extension Param : VIRLower {
 
 
 extension VariableInst : VIRLower {
-    func virLower(IGF: IRGenFunction) throws -> LLVMValue {
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
         guard let type = type else { throw irGenError(.notTyped) }
         
         let mem = try IGF.builder.buildAlloca(type: type.lowerType(module), name: irName)
@@ -246,7 +242,7 @@ extension VariableInst : VIRLower {
 
 
 extension GlobalValue : VIRLower {
-    func virLower(IGF: IRGenFunction) throws -> LLVMValue {
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
         var global = LLVMGlobalValue(module: IGF.module, type: memType!.lowerType(module), name: globalName)
         global.hasUnnamedAddr = true
         global.isExternallyInitialised = false
@@ -259,7 +255,7 @@ extension GlobalValue : VIRLower {
 
 
 extension ArrayInst : VIRLower {
-    func virLower(IGF: IRGenFunction) throws -> LLVMValue {
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
         
         return try IGF.builder.buildArray(values.map { $0.loweredValue! },
                                                     elType: arrayType.mem.lowerType(module),

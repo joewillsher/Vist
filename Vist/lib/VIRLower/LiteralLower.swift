@@ -9,12 +9,12 @@
 import Foundation.NSString
 
 extension IntLiteralInst : VIRLower {
-    func virLower(IGF: IRGenFunction) throws -> LLVMValue {
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
         return LLVMValue.constInt(value.value, size: size)
     }
 }
 extension BoolLiteralInst : VIRLower {
-    func virLower(IGF: IRGenFunction) throws -> LLVMValue {
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
         return LLVMValue.constBool(value.value)
     }
 }
@@ -40,7 +40,7 @@ extension String.Encoding : CustomStringConvertible {
 }
 
 extension StringLiteralInst : VIRLower {
-    func virLower(IGF: IRGenFunction) throws -> LLVMValue {
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
         let str = try IGF.builder.buildGlobalString(value.value)
         return try IGF.builder.buildBitcast(value: str, to: BuiltinType.opaquePointer.lowerType(module))
     }

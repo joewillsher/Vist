@@ -22,11 +22,11 @@ protocol RuntimeObject {
     /// - note: Default implementation introspects the Self Swift type and 
     ///         generates a const LLVM aggregate pointer if the child types
     ///         also conform to RuntimeObject
-    func lower(IGF: IRGenFunction, baseName: String) throws -> LLVMValue
+    func lower(inout IGF: IRGenFunction, baseName: String) throws -> LLVMValue
     
     /// - returns: The LLVM type of self
     /// - note: A helper function, implemented by all types
-    func type(IGF: IRGenFunction) -> LLVMType
+    func type(inout IGF: IRGenFunction) -> LLVMType
     
     /// The global's is applied this suffix
     var uniquingSuffix: String { get }
@@ -37,23 +37,23 @@ protocol RuntimeObject {
 
 extension RuntimeObject {
     
-    func lower(IGF: IRGenFunction, baseName: String) throws -> LLVMValue {
-        return try lowerAggr(IGF, baseName: baseName)
+    func lower(inout IGF: IRGenFunction, baseName: String) throws -> LLVMValue {
+        return try lowerAggr(&IGF, baseName: baseName)
     }
     
     func shouldDescend(label: String?) -> Bool { return true }
     
     /// If we're not descending -- look for a current impl or just use a null value
-    func getAlreadyDefinedOrNull(IGF: IRGenFunction, baseName: String) -> LLVMValue {
+    func getAlreadyDefinedOrNull(inout IGF: IRGenFunction, baseName: String) -> LLVMValue {
         if let g = IGF.module.global(named: baseName + uniquingSuffix) {
             return g.value
         }
         else {
-            return LLVMValue.constNull(type: type(IGF))
+            return LLVMValue.constNull(type: type(&IGF))
         }
     }
     
-    func lowerAggr(IGF: IRGenFunction, baseName: String) throws -> LLVMValue {
+    func lowerAggr(inout IGF: IRGenFunction, baseName: String) throws -> LLVMValue {
         
         // Will this fail because it returns type * ???
         if let g = IGF.module.global(named: baseName + uniquingSuffix) {
@@ -67,37 +67,37 @@ extension RuntimeObject {
             .map { label, value -> LLVMValue in
                 
                 if shouldDescend(label) {
-                    return try value.lower(IGF, baseName: baseName)
+                    return try value.lower(&IGF, baseName: baseName)
                 }
                 else {
-                    return value.getAlreadyDefinedOrNull(IGF, baseName: baseName)
+                    return value.getAlreadyDefinedOrNull(&IGF, baseName: baseName)
                 }
         }
         
-        return try LLVMBuilder.constAggregate(type: type(IGF),
+        return try LLVMBuilder.constAggregate(type: type(&IGF),
                                               elements: children)
     }
     
     /// Creates a global LLVM metadata pointer from a const value
-    private func getGlobalPointer(val: LLVMValue, baseName: String, IGF: IRGenFunction) -> LLVMGlobalValue {
+    private func getGlobalPointer(val: LLVMValue, baseName: String, inout IGF: IRGenFunction) -> LLVMGlobalValue {
         var global = LLVMGlobalValue(module: IGF.module, type: val.type, name: baseName + uniquingSuffix)
         global.initialiser = val
         global.isConstant = true
         return global
     }
     
-    func allocConstMetadata(IGF: IRGenFunction, name: String) throws -> LLVMGlobalValue {
-        return getGlobalPointer(try lower(IGF, baseName: name), baseName: name, IGF: IGF)
+    func allocConstMetadata(inout IGF: IRGenFunction, name: String) throws -> LLVMGlobalValue {
+        return getGlobalPointer(try lower(&IGF, baseName: name), baseName: name, IGF: &IGF)
     }
     
 }
 // MARK: Runtime types
 extension ValueWitness : RuntimeObject {
-    func type(IGF: IRGenFunction) -> LLVMType { return Runtime.valueWitnessType.lowerType(Module()) }
+    func type(inout IGF: IRGenFunction) -> LLVMType { return Runtime.valueWitnessType.lowerType(Module()) }
     var uniquingSuffix: String { return "valwit" }
 }
 extension TypeMetadata : RuntimeObject {
-    func type(IGF: IRGenFunction) -> LLVMType { return Runtime.typeMetadataType.lowerType(Module()) }
+    func type(inout IGF: IRGenFunction) -> LLVMType { return Runtime.typeMetadataType.lowerType(Module()) }
     var uniquingSuffix: String { return "typemd" }
     
     func shouldDescend(label: String?) -> Bool {
@@ -105,21 +105,21 @@ extension TypeMetadata : RuntimeObject {
     }
 }
 extension ConceptConformance : RuntimeObject {
-    func type(IGF: IRGenFunction) -> LLVMType { return Runtime.conceptConformanceType.lowerType(Module()) }
+    func type(inout IGF: IRGenFunction) -> LLVMType { return Runtime.conceptConformanceType.lowerType(Module()) }
     var uniquingSuffix: String { return "conf" }
 }
 extension ExistentialObject : RuntimeObject {
-    func type(IGF: IRGenFunction) -> LLVMType { return Runtime.existentialObjectType.lowerType(Module()) }
+    func type(inout IGF: IRGenFunction) -> LLVMType { return Runtime.existentialObjectType.lowerType(Module()) }
     var uniquingSuffix: String { return "exist" }
 }
 extension WitnessTable : RuntimeObject {
-    func type(IGF: IRGenFunction) -> LLVMType { return Runtime.witnessTableType.lowerType(Module()) }
+    func type(inout IGF: IRGenFunction) -> LLVMType { return Runtime.witnessTableType.lowerType(Module()) }
     var uniquingSuffix: String { return "wittab" }
     
     // hook for testing
-    func __lower(IGF: IRGenFunction, baseName: String) throws -> LLVMGlobalValue {
-        let v = try lower(IGF, baseName: baseName)
-        return getGlobalPointer(v, baseName: baseName, IGF: IGF)
+    func __lower(inout IGF: IRGenFunction, baseName: String) throws -> LLVMGlobalValue {
+        let v = try lower(&IGF, baseName: baseName)
+        return getGlobalPointer(v, baseName: baseName, IGF: &IGF)
 //        IGF.module.dump()
         
         // # Empty witness table lowered to LLVM globals:
@@ -133,28 +133,29 @@ extension WitnessTable : RuntimeObject {
 
 extension UnsafeMutablePointer : RuntimeObject {
     
-    func type(IGF: IRGenFunction) -> LLVMType {
+    func type(inout IGF: IRGenFunction) -> LLVMType {
         switch Memory.self {
         case is RuntimeObject:
-            return (memory as! RuntimeObject).type(IGF).getPointerType()
+            return (memory as! RuntimeObject).type(&IGF).getPointerType()
         default:
             return LLVMType.opaquePointer
         }
     }
     
     // pointer runtime vals allocate their pointee as a new LLVM global, then return the ptr
-    func lower(IGF: IRGenFunction, baseName: String) throws -> LLVMValue {
+    func lower(inout IGF: IRGenFunction, baseName: String) throws -> LLVMValue {
         
         if self == nil {
-            return LLVMValue.constNull(type: type(IGF))
+            return LLVMValue.constNull(type: type(&IGF))
         }
         
         switch memory {
         case is Int8:
-            return try IGF.builder.buildGlobalString(String.fromCString(UnsafeMutablePointer<CChar>(self))!, name: "\(baseName)name")
+            let str = LLVMValue.constString(String.fromCString(UnsafePointer<CChar>(self))!)
+            return getGlobalPointer(str, baseName: "\(baseName)name", IGF: &IGF).value
             
         case let r as RuntimeObject:
-            return getGlobalPointer(try r.lower(IGF, baseName: baseName), baseName: "ptr", IGF: IGF).value
+            return getGlobalPointer(try r.lower(&IGF, baseName: baseName), baseName: "ptr", IGF: &IGF).value
             
         case is Swift.Void: // Swift's void pointers are opaque LLVM ones
             return LLVMValue.constNull(type: LLVMType.opaquePointer)
@@ -170,16 +171,24 @@ extension UnsafeMutablePointer : RuntimeObject {
 }
 
 extension Int32 : RuntimeObject {
-    func type(IGF: IRGenFunction) -> LLVMType { return LLVMType.intType(size: 32) }
-    func lower(IGF: IRGenFunction, baseName: String) -> LLVMValue { return LLVMValue.constInt(Int(self), size: 32) }
+    func type(inout IGF: IRGenFunction) -> LLVMType { return LLVMType.intType(size: 32) }
+    func lower(inout IGF: IRGenFunction, baseName: String) -> LLVMValue { return LLVMValue.constInt(Int(self), size: 32) }
     
     var uniquingSuffix: String { return "" }
 }
 //extension Int64 : RuntimeObject {
-//    private func type(IGF: IRGenFunction) -> LLVMType { return LLVMType.intType(size: 64) }
-//    private func lower(IGF: IRGenFunction, baseName: String) -> LLVMValue { return LLVMValue.constInt(Int(self), size: 64) }
+//    private func type(inout IGF: IRGenFunction) -> LLVMType { return LLVMType.intType(size: 64) }
+//    private func lower(inout IGF: IRGenFunction, baseName: String) -> LLVMValue { return LLVMValue.constInt(Int(self), size: 64) }
 //}
 
+
+extension TypeMetadata {
+    
+    func getName() -> String {
+        return String.fromCString(name)!
+    }
+    
+}
 
 
 

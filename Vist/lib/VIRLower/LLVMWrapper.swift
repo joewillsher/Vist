@@ -96,11 +96,10 @@ extension LLVMBuilder {
             LLVMBuildBitCast(builder, val.val(), type.type, name ?? "")
         )
     }
-    static func buildConstBitcast(value val: LLVMValue, to type: LLVMType) throws -> LLVMValue {
+    static func constBitcast(value val: LLVMValue, to type: LLVMType) throws -> LLVMValue {
         return try LLVMValue(ref:
             LLVMConstBitCast(val.val(), type.type)
         )
-
     }
     func buildTrunc(val: LLVMValue, size: Int, name: String? = nil) throws -> LLVMValue {
         return try wrap(
@@ -150,15 +149,20 @@ extension LLVMBuilder {
         var value = val
         
         // cast the pointer if its the wrong target
-        if LLVMGetTypeKind(val.type.type) == LLVMPointerTypeKind {
+        let kind = LLVMGetTypeKind(val.type.type)
+        if kind == LLVMPointerTypeKind || kind == LLVMArrayTypeKind {
             let ptr = LLVMGetElementType(val.type.type)
             if ptr != nil {
                 
                 var els = [LLVMTypeRef](count: Int(LLVMCountStructElementTypes(aggr.type.type)), repeatedValue: nil)
                 LLVMGetStructElementTypes(aggr.type.type, &els)
                 if els[index] != val.type.type {
-                    value = try buildConstBitcast(value: value, to: LLVMType(ref: els[index]))
-                    
+                    if kind == LLVMPointerTypeKind {
+                        value = try constBitcast(value: value, to: LLVMType(ref: els[index]))
+                    }
+                    else if kind == LLVMArrayTypeKind {
+                        value = try constGEP(value, index: LLVMValue.constInt(0, size: 32))
+                    }
                 }
             }
         }
@@ -181,7 +185,18 @@ extension LLVMBuilder {
             LLVMBuildGEP(builder, val.val(), &v, 1, name ?? "")
         )
     }
+    static func constGEP(val: LLVMValue, index: LLVMValue) throws -> LLVMValue {
+        var v = try [index.val()]
+        return try LLVMValue(ref:
+            LLVMConstInBoundsGEP(val.val(), &v, 1)
+        )
+    }
     func buildGlobalString(str: String, name: String? = nil) throws -> LLVMValue {
+        return try wrap(
+            LLVMBuildGlobalString(builder, str, name ?? "")
+        )
+    }
+    func buildGlobalString(str: UnsafeMutablePointer<CChar>, name: String? = nil) throws -> LLVMValue {
         return try wrap(
             LLVMBuildGlobalString(builder, str, name ?? "")
         )
@@ -357,6 +372,7 @@ struct LLVMBasicBlock : Dumpable {
 
 struct LLVMModule : Dumpable {
     private var module: LLVMModuleRef
+    var typeMetadata: [String: TypeMetadata] = [:]
     
     func getModule() throws -> LLVMModuleRef {
         guard module != nil else { throw NullLLVMRef() }

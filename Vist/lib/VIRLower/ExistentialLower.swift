@@ -8,7 +8,7 @@
 
 extension ExistentialConstructInst : VIRLower {
     
-    func virLower(IGF: IRGenFunction) throws -> LLVMValue {
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
         
         
         // also we do runtime shit
@@ -29,10 +29,10 @@ extension ExistentialConstructInst : VIRLower {
         let methodArrayPtr = try IGF.builder.buildStructGEP(ptr, index: 1, name: "\(llvmName)method_metadata") // [n x i8*]*
         let structPtr = try IGF.builder.buildStructGEP(ptr, index: 2, name: "\(llvmName)opaque")  // i8**
         
-        let propArr = try existentialType.existentialPropertyMetadataFor(structType, IGF: IGF, module: module)
+        let propArr = try existentialType.existentialPropertyMetadataFor(structType, IGF: &IGF, module: module)
         try IGF.builder.buildStore(value: propArr, in: propArrayPtr)
         
-        let methodArr = try existentialType.existentialMethodMetadataFor(structType, IGF: IGF, module: module)
+        let methodArr = try existentialType.existentialMethodMetadataFor(structType, IGF: &IGF, module: module)
         try IGF.builder.buildStore(value: methodArr, in: methodArrayPtr)
         
         let v = try IGF.builder.buildLoad(from: value.loweredValue!)
@@ -45,29 +45,13 @@ extension ExistentialConstructInst : VIRLower {
         
         
         
+        let ref = module.getOrAddRuntimeFunction(named: "vist_constructConceptConformance", IGF: &IGF)
+        
+        let conf = try structType.generateConformanceMetadata(&IGF, concept: existentialType)
         
         
-        var wt = UnsafeMutablePointer<ValueWitness>.alloc(1)
-        let witnessTable = WitnessTable(witnesses: wt, numWitnesses: 0)
-//        let table = try witnessTable.__lower(IGF)
+        IGF.module.dump()
         
-        let ref = module.getOrAddRuntimeFunction(named: "vist_constructConceptConformance", IGF: IGF)
-        
-        
-        
-        let tt = try structType.generateTypeMetadata(IGF)
-//        let t = try existentialType.generateTypeMetadata(IGF)
-        
-//        return try IGF.builder.buildCall(ref,
-//                                         args: [size],
-//                                         name: irName)
-
-        
-//        ConceptConformance vist_constructConceptConformance(TypeMetadata *concept,
-//                                                            int32_t *offsets,
-//                                                            int32_t numOffsets,
-//                                                            ValueWitness *witnesses,
-//                                                            int32_t numWitnesses)
         
         
         
@@ -75,74 +59,82 @@ extension ExistentialConstructInst : VIRLower {
     }
 }
 
-extension ConceptType {
+extension NominalType {
     
-    // TODO: move this metadata creation as an extension of type
-//    
-//    private func _conceptConformances(IGF: IRGenFunction) -> [ConceptConformance] {
-//        return []
-//    }
-//    /// - returns: Metadata listing concept conformances for self
-//    private func conceptConformances(IGF: IRGenFunction) throws -> LLVMValue {
-//        var conformances = _conceptConformances(IGF)
-//        return try conformances.withUnsafeMutableBufferPointer { conformancesBase in
-//            try conformancesBase.baseAddress.allocConstMetadata(IGF, name: "_g\(name)c").value
-//        }
-//    }
-    
-    
-    func generateTypeMetadata(IGF: IRGenFunction) throws -> LLVMValue {
+    func getTypeMetadata(inout IGF: IRGenFunction) throws -> TypeMetadata {
         
-        let wt = UnsafeMutablePointer<ValueWitness>.alloc(1)
-        var witnessTable = [WitnessTable(witnesses: wt, numWitnesses: 0)]
+        if let g = IGF.module.typeMetadata[name] {
+            return g
+        }
         
-        var offsetTable: [Int32] = [1]
-            
-//        let confomances = try conceptConformances(IGF)
+        var n = name.nulTerminatedUTF8
+        var conformances: [UnsafeMutablePointer<ConceptConformance>] = []
         
+        // if its a struct, we can emit the conformance tables
+        if case let s as StructType = self {
+            conformances = try concepts
+                .map { concept in try s.generateConformanceMetadata(&IGF, concept: concept) }
+                .map { UnsafeMutablePointer.allocInit($0) }
+        }
         
-        return try ConceptConformance(concept: nil, propWitnessOffsets: &offsetTable, numOffsets: 1, witnessTable: &witnessTable)
-            .allocConstMetadata(IGF, name: "meme")
-            .value
+        let md = conformances.withUnsafeMutableBufferPointer { conformances in
+            n.withUnsafeMutableBufferPointer { name in
+                TypeMetadata(conceptConformances: conformances.baseAddress, numConformances: Int32(conformances.count), name: UnsafeMutablePointer<Int8>(name.baseAddress))
+            }
+        }
+        
+        IGF.module.typeMetadata[name] = md
+        _ = try generateTypeMetadata(&IGF)
+        
+        return md
     }
     
-    
+    func generateTypeMetadata(inout IGF: IRGenFunction) throws -> LLVMValue {
+        
+        let metadataName = "_g\(name)s"
+        
+        if let g = IGF.module.global(named: metadataName) {
+            return g.value
+        }
+        
+        return try getTypeMetadata(&IGF).allocConstMetadata(&IGF, name: metadataName).value
+    }
     
 }
 
 extension StructType {
     
-//    private func withConformancesMetadata<T>(apply: (UnsafeMutablePointer<UnsafeMutablePointer<ConceptConformance>>) throws -> T) rethrows -> T {
-//        var cs: [UnsafeMutablePointer<ConceptConformance>] = [nil]
-//        return try cs.withUnsafeMutableBufferPointer { buffer -> T in try apply(buffer.baseAddress) }
-//    }
-    
-    func generateTypeMetadata(IGF: IRGenFunction) throws -> LLVMValue {
+    func generateConformanceMetadata(inout IGF: IRGenFunction, concept: ConceptType) throws -> ConceptConformance {
         
-        var n = name.nulTerminatedUTF8
-        var c: [UnsafeMutablePointer<ConceptConformance>] = []
-        
-        
-        let metadata = c.withUnsafeMutableBufferPointer { conformances in
-            n.withUnsafeMutableBufferPointer { name in
-                TypeMetadata(conceptConformances: conformances.baseAddress, numConformances: Int32(c.count), name: UnsafeMutablePointer<Int8>(name.baseAddress))
+        var valueWitnesses = try concept.existentialValueWitnesses(self, IGF: &IGF)
+        return try valueWitnesses.withUnsafeMutableBufferPointer { valueWitnesses in
+            
+            let witnessTable = WitnessTable(witnesses: valueWitnesses.baseAddress, numWitnesses: Int32(valueWitnesses.count))
+            var witnessOffsets = try concept.existentialWitnessOffsets(self, IGF: &IGF)
+            
+            return try witnessOffsets.withUnsafeMutableBufferPointer { witnessOffsets in
+                ConceptConformance(concept: UnsafeMutablePointer.allocInit(try concept.getTypeMetadata(&IGF)),
+                    propWitnessOffsets: witnessOffsets.baseAddress,
+                    numOffsets: Int32(witnessOffsets.count),
+                    witnessTable: UnsafeMutablePointer.allocInit(witnessTable))
             }
         }
-        
-        let l = try metadata.allocConstMetadata(IGF, name: "_g\(name)s").value
-        IGF.module.dump()
-        
-        return l
+    }
+}
+
+private extension UnsafeMutablePointer {
+    static func allocInit(val: Memory) -> UnsafeMutablePointer<Memory> {
+        let v = UnsafeMutablePointer<Memory>.alloc(1)
+        v.initialize(val)
+        return v
     }
 }
 
 
 
-
-
 extension ExistentialPropertyInst : VIRLower {
     
-    func virLower(IGF: IRGenFunction) throws -> LLVMValue {
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
         
         guard case let aliasType as TypeAlias = existential.memType, case let conceptType as ConceptType = aliasType.targetType, let propertyType = type else { fatalError() }
         
@@ -171,14 +163,14 @@ extension ExistentialPropertyInst : VIRLower {
 }
 
 extension ExistentialUnboxInst : VIRLower {
-    func virLower(IGF: IRGenFunction) throws -> LLVMValue {
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
         let p = try IGF.builder.buildStructGEP(existential.loweredValue!, index: 2, name: name)
         return try IGF.builder.buildLoad(from: p, name: irName)
     }
 }
 
 extension ExistentialWitnessMethodInst : VIRLower {
-    func virLower(IGF: IRGenFunction) throws -> LLVMValue {
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
         
         let llvmName = irName.map { "\($0)." } ?? ""
         let i = try existentialType.indexOf(methodNamed: methodName, argTypes: argTypes)
@@ -203,9 +195,25 @@ extension ExistentialWitnessMethodInst : VIRLower {
 
 
 private extension ConceptType {
+    
+    func existentialWitnessOffsets(structType: StructType, inout IGF: IRGenFunction) throws -> [Int32] {
+        let conformingType = structType.lowerType(Module()) as LLVMType
+        
+        // a table of offsets
+        return try requiredProperties
+            .map { propName, _, _ in try structType.indexOfMemberNamed(propName) }
+            .map { index in Int32(conformingType.offsetOfElement(index: index, module: IGF.module)) } // make 'get offset' an extension on aggregate types
+    }
+    
+    func existentialValueWitnesses(structType: StructType, inout IGF: IRGenFunction) throws -> [ValueWitness] {
+        return requiredFunctions
+            .map { methodName, type, mutating in structType.ptrToMethod(named: methodName, type: type.withParent(structType, mutating: mutating), IGF: &IGF) }
+            .map { f in ValueWitness(witness: UnsafeMutablePointer<Void>(f.function._value)) }
+    }
+    
     /// Returns the metadata array map, which transforms the protocol's properties
     /// to an element in the `type`. Type `[n * i32]`
-    func existentialPropertyMetadataFor(structType: StructType, IGF: IRGenFunction, module: Module) throws -> LLVMValue {
+    func existentialPropertyMetadataFor(structType: StructType, inout IGF: IRGenFunction, module: Module) throws -> LLVMValue {
         
         let conformingType = structType.lowerType(module) as LLVMType
         
@@ -220,7 +228,7 @@ private extension ConceptType {
     }
     
     /// Returns the metadata array of function pointers. Type `[n * i8*]`
-    func existentialMethodMetadataFor(structType: StructType, IGF: IRGenFunction, module: Module) throws -> LLVMValue {
+    func existentialMethodMetadataFor(structType: StructType, inout IGF: IRGenFunction, module: Module) throws -> LLVMValue {
         
         let opaquePtrType = BuiltinType.opaquePointer
         

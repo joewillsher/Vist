@@ -14,8 +14,6 @@
 final class TypeAlias : Type {
     let name: String, targetType: NominalType
     
-    var loweredTypeMetadata: LLVMValue? = nil
-    
     init(name: String, targetType: NominalType) {
         self.name = name
         self.targetType = targetType
@@ -27,10 +25,11 @@ extension TypeAlias : NominalType {
     var methods: [StructMethod] { return targetType.methods }
     var irName: String { return targetType.irName }
     var heapAllocated: Bool { return targetType.heapAllocated }
+    var concepts: [ConceptType] { return targetType.concepts }
 }
 
 extension TypeAlias {
-    
+
     func lowerType(module: Module) -> LLVMType {
         
         if module.loweredModule == nil {

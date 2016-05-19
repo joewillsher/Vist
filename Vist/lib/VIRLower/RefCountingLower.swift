@@ -7,10 +7,10 @@
 //
 
 extension AllocObjectInst : VIRLower {
-    func virLower(IGF: IRGenFunction) throws -> LLVMValue {
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
         let size = LLVMValue.constInt(storedType.size(module: module), size: 32)
         
-        let ref = module.getOrAddRuntimeFunction(named: "vist_allocObject", IGF: IGF)
+        let ref = module.getOrAddRuntimeFunction(named: "vist_allocObject", IGF: &IGF)
         return try IGF.builder.buildCall(ref,
                                          args: [size],
                                          name: irName)
@@ -19,8 +19,8 @@ extension AllocObjectInst : VIRLower {
 }
 
 extension RetainInst : VIRLower {
-    func virLower(IGF: IRGenFunction) throws -> LLVMValue {
-        let ref = module.getOrAddRuntimeFunction(named: "vist_retainObject", IGF: IGF)
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
+        let ref = module.getOrAddRuntimeFunction(named: "vist_retainObject", IGF: &IGF)
         return try IGF.builder.buildCall(ref,
                                          args: [object.bitcastToOpaqueRefCountedType()],
                                          name: irName)
@@ -28,9 +28,9 @@ extension RetainInst : VIRLower {
 }
 
 extension ReleaseInst : VIRLower {
-    func virLower(IGF: IRGenFunction) throws -> LLVMValue {
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
         let functionName = unowned ? "vist_releaseUnownedObject" : "vist_releaseObject"
-        let ref = module.getOrAddRuntimeFunction(named: functionName, IGF: IGF)
+        let ref = module.getOrAddRuntimeFunction(named: functionName, IGF: &IGF)
         return try IGF.builder.buildCall(ref,
                                          args: [object.bitcastToOpaqueRefCountedType()],
                                          name: irName)
@@ -39,9 +39,9 @@ extension ReleaseInst : VIRLower {
 
 
 extension DeallocObjectInst : VIRLower {
-    func virLower(IGF: IRGenFunction) throws -> LLVMValue {
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
         let functionName = unowned ? "vist_deallocUnownedObject" : "vist_deallocObject"
-        let ref = module.getOrAddRuntimeFunction(named: functionName, IGF: IGF)
+        let ref = module.getOrAddRuntimeFunction(named: functionName, IGF: &IGF)
         return try IGF.builder.buildCall(ref,
                                          args: [object.bitcastToOpaqueRefCountedType()],
                                          name: irName)

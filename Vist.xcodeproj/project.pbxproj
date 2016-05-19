@@ -205,13 +205,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		D4BCA8041C90ED470087A98D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = D4BCA8001C90ED470087A98D /* Editor.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = D4BCA7E41C9069FB0087A98D;
-			remoteInfo = Editor;
-		};
 		D4E35B4C1C5D0C0700683486 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = D47FF0721B812052003F9920 /* Project object */;
@@ -350,7 +343,6 @@
 		D4A000351CCA7FFA00157D90 /* OperandLower.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OperandLower.swift; path = lib/VIRLower/OperandLower.swift; sourceTree = "<group>"; };
 		D4A000381CCA812B00157D90 /* StmtGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StmtGen.swift; path = lib/VIRGen/StmtGen.swift; sourceTree = "<group>"; };
 		D4A0003B1CCA9BC300157D90 /* LLVMWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LLVMWrapper.swift; path = lib/VIRLower/LLVMWrapper.swift; sourceTree = "<group>"; };
-		D4BCA8001C90ED470087A98D /* Editor.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Editor.xcodeproj; path = ../Editor/Editor.xcodeproj; sourceTree = "<group>"; };
 		D4C0900E1CCFC931008B69F1 /* shims.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = shims.c; path = stdlib/shims.c; sourceTree = "<group>"; };
 		D4CA32071CEA7013009C2B10 /* runtime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = runtime.h; path = stdlib/runtime/runtime.h; sourceTree = "<group>"; };
 		D4CA32091CEA71F3009C2B10 /* RuntimeObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RuntimeObject.swift; path = stdlib/runtime/RuntimeObject.swift; sourceTree = "<group>"; };
@@ -591,7 +583,6 @@
 		D47FF0711B812052003F9920 = {
 			isa = PBXGroup;
 			children = (
-				D4BCA8001C90ED470087A98D /* Editor.xcodeproj */,
 				D4DB9D641C1DFB8700503153 /* Source */,
 				D43B39E71C8A0F920039FB2E /* Include */,
 				D47D4BE01C38427200B22B3C /* Docs */,
@@ -681,14 +672,6 @@
 				D43B39F21C8A100E0039FB2E /* LinkRuntime.swift */,
 			);
 			name = Pipeline;
-			sourceTree = "<group>";
-		};
-		D4BCA8011C90ED470087A98D /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				D4BCA8051C90ED470087A98D /* Editor.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		D4C4FEAD1C4C11B3009DE28C /* Parser */ = {
@@ -805,12 +788,6 @@
 			mainGroup = D47FF0711B812052003F9920;
 			productRefGroup = D47FF07B1B812052003F9920 /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = D4BCA8011C90ED470087A98D /* Products */;
-					ProjectRef = D4BCA8001C90ED470087A98D /* Editor.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 				D47FF0791B812052003F9920 /* vist */,
@@ -818,16 +795,6 @@
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXReferenceProxy section */
-		D4BCA8051C90ED470087A98D /* Editor.app */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.application;
-			path = Editor.app;
-			remoteRef = D4BCA8041C90ED470087A98D /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		D41BF5481C5CD797004A1962 /* Resources */ = {
