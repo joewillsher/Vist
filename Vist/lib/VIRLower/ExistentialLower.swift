@@ -97,7 +97,7 @@ extension NominalType {
             return g.value
         }
         
-        return try getTypeMetadata(&IGF).allocConstMetadata(&IGF, name: metadataName).value
+        return try getTypeMetadata(&IGF).getConstMetadata(&IGF, name: metadataName)
     }
     
 }
@@ -112,11 +112,13 @@ extension StructType {
             let witnessTable = WitnessTable(witnesses: valueWitnesses.baseAddress, numWitnesses: Int32(valueWitnesses.count))
             var witnessOffsets = try concept.existentialWitnessOffsets(self, IGF: &IGF)
             
-            return try witnessOffsets.withUnsafeMutableBufferPointer { witnessOffsets in
-                ConceptConformance(concept: UnsafeMutablePointer.allocInit(try concept.getTypeMetadata(&IGF)),
-                    propWitnessOffsets: witnessOffsets.baseAddress,
+            return try witnessOffsets.withUnsafeMutableBufferPointer { offsets in
+                let c = ConceptConformance(concept: UnsafeMutablePointer.allocInit(try concept.getTypeMetadata(&IGF)),
+                    propWitnessOffsets: offsets.baseAddress,
                     numOffsets: Int32(witnessOffsets.count),
                     witnessTable: UnsafeMutablePointer.allocInit(witnessTable))
+                _ = try c.getConstMetadata(&IGF, name: "_g\(name)conf\(concept.name)")
+                return c
             }
         }
     }
