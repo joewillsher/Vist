@@ -1,3 +1,5 @@
+// vim: set filetype=vist:
+
 
 
 // ----------------------------------------------------
@@ -388,4 +390,3 @@ type String {
 //}
 //
 //func print::Printable = (thing) do
-
