@@ -64,7 +64,7 @@ extension Module {
         var IGF = (builder, module) as IRGenFunction
         
         for type in typeList {
-            _ = try type.generateTypeMetadata(&IGF)
+            _ = try type.getLLVMTypeMetadata(&IGF)
         }
         
         for fn in functions {

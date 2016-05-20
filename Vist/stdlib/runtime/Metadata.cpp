@@ -30,13 +30,10 @@ vist_constructConceptMetadata(ConceptConformance **conformances,
 
 extern "C"
 ExistentialObject *
-vist_constructExistential(TypeMetadata *concept,
+vist_constructExistential(ConceptConformance *conformance,
                           void *instance,
-                          int32_t *offsets,
-                          int32_t numOffsets,
                           WitnessTable *witness) {
-    auto conformance = ConceptConformance(concept, offsets, numOffsets, witness);
-    return new ExistentialObject(instance, 1, &conformance);
+    return new ExistentialObject(instance, 1, conformance);
 }
 
 

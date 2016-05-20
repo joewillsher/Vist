@@ -511,6 +511,11 @@ struct LLVMValue : Dumpable {
     static func undef(type: LLVMType) -> LLVMValue {
         return LLVMValue(ref: LLVMGetUndef(type.type))
     }
+    static func constArray(of type: LLVMType, vals: [LLVMValue]) -> LLVMValue {
+        var els = vals.map { $0._value }
+        let s = UInt32(els.count)
+        return LLVMValue(ref: LLVMConstArray(type.type, &els, s))
+    }
     static var nullptr: LLVMValue { return LLVMValue(ref: nil) }
     
     func dump() { try! LLVMDumpValue(val()) }
@@ -590,6 +595,10 @@ struct LLVMFunction : Dumpable {
         return LLVMBasicBlock(ref:
             try LLVMAppendBasicBlock(function.val(), name)
         )
+    }
+    
+    var unsafePointer: UnsafeMutablePointer<Void> {
+        return UnsafeMutablePointer(function._value)
     }
     
     var paramCount: Int { return try! Int(LLVMCountParams(function.val())) }
