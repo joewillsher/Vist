@@ -1,3 +1,5 @@
+// au BufRead,BufNewFile *.vist set filetype=vist 
+// au! Syntax vist source ../../utils/vist.vim
 // vim: set filetype=vist:
 
 
