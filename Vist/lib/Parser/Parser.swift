@@ -1194,7 +1194,7 @@ extension Parser {
         case .floatingPointLiteral(let x):  return [parseFloatingPointExpr(x)]
         case .stringLiteral(let str):       return [parseStringExpr(str)]
         case .at:                   try parseAttrExpr(); return []
-        case .void:                 index += 1; return [Void()]
+        case .void:                 index += 1; return [VoidExpr()]
         case .EOF, .closeBrace:     index += 1; return []
         case .newLine:              getNextToken(); return []
         default:                    throw parseError(.noToken(token), loc: SourceRange.at(currentPos))

@@ -63,10 +63,13 @@ extension Module {
         loweredModule = module
         var IGF = (builder, module) as IRGenFunction
         
-        for type in typeList {
+        for type in typeList where type.targetType is ConceptType {
             _ = try type.getLLVMTypeMetadata(&IGF)
         }
-        
+        for type in typeList where type.targetType is StructType {
+            _ = try type.getLLVMTypeMetadata(&IGF)
+        }
+
         for fn in functions {
             // create function proto
             let function = getOrAddFunction(named: fn.name, type: fn.type, IGF: &IGF)

@@ -370,9 +370,36 @@ struct LLVMBasicBlock : Dumpable {
     private func dump() { LLVMDumpValue(block) }
 }
 
+
+
+/// Any indirectly stored `RuntimeVariable`s are lowered to a global LLVMValue.
+/// `GlobalMetadataCache` stores the globals which have been generated
+struct GlobalMetadataCache {
+    private var cachedGlobals: [UnsafeMutablePointer<Void>: LLVMGlobalValue] = [:]
+}
+
 struct LLVMModule : Dumpable {
     private var module: LLVMModuleRef
     var typeMetadata: [String: TypeMetadata] = [:]
+    
+    private(set) var globals = GlobalMetadataCache()
+    
+    mutating func createLLVMGlobal<T>(forPointer value: UnsafeMutablePointer<T>, baseName: String, inout IGF: IRGenFunction) throws -> LLVMGlobalValue {
+        if let global = globals.cachedGlobals[value] {
+            return global
+        }
+        let v = try value.lowerMemory(&IGF, baseName: baseName)
+        return createGlobal(v, forPtr: value, baseName: baseName, IGF: &IGF)
+    }
+    
+    /// Add a LLVM global value to the module
+    mutating func createGlobal(val: LLVMValue, forPtr: UnsafeMutablePointer<Void>, baseName: String, inout IGF: IRGenFunction) -> LLVMGlobalValue {
+        var global = LLVMGlobalValue(module: IGF.module, type: val.type, name: baseName)
+        global.initialiser = val
+        global.isConstant = true
+        if forPtr != nil { globals.cachedGlobals[forPtr] = global }
+        return global
+    }
     
     func getModule() throws -> LLVMModuleRef {
         guard module != nil else { throw NullLLVMRef() }

@@ -452,7 +452,7 @@ struct CommentExpr: Expr {
     var _type: Type? = nil
 }
 
-final class Void: TypedExpr {
+final class VoidExpr: TypedExpr {
     var type: BuiltinType? = .void
 }
 

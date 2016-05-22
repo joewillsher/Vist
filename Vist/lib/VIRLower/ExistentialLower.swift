@@ -8,8 +8,7 @@
 
 extension ExistentialConstructInst : VIRLower {
     
-    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {        
-        
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
         
         guard case let aliasType as TypeAlias = value.memType, case let structType as StructType = aliasType.targetType else { fatalError() }
         
@@ -38,14 +37,11 @@ extension ExistentialConstructInst : VIRLower {
         
         
         
-//        
+        
 //        let ref = module.getOrAddRuntimeFunction(named: "vist_constructConceptConformance", IGF: &IGF)
-//        
-//        let conf = try structType.generateConformanceMetadata(&IGF, concept: existentialType)
-//        
-//        print(conf)
-//        IGF.module.dump()
-//        
+        
+        let conf = try structType.generateConformanceMetadata(&IGF, concept: existentialType)
+        
 //        var conformances = [UnsafeMutablePointer.allocInit(conf)]
 //        let f = ExistentialObject(object: UnsafeMutablePointer(
 //            value.loweredValue!._value // can't have non const values in metadata -- this needs to 
@@ -125,7 +121,7 @@ extension StructType {
     }
 }
 
-private extension UnsafeMutablePointer {
+extension UnsafeMutablePointer {
     static func allocInit(val: Memory) -> UnsafeMutablePointer<Memory> {
         let v = UnsafeMutablePointer<Memory>.alloc(1)
         v.initialize(val)

@@ -214,7 +214,7 @@ extension VariableDecl : DeclTypeProvider {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-extension Void : ExprTypeProvider {
+extension VoidExpr : ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Type {
         self.type = BuiltinType.void
