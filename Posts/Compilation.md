@@ -17,7 +17,7 @@ _main:                                  ## @main
 	movl	$3, %eax
 	movl	%eax, %edi
 	popq	%rbp
-	jmp	"_-Uprint_i64"          ## TAILCALL
+	jmp		"_-Uprint_i64"          ## TAILCALL
 ```
 
 ### The standard library
