@@ -70,16 +70,21 @@ From the type annotated AST I generate VIR — an SSA representation of the prog
 ```
 type %Int = { %Builtin.Int64 }
 
-func @main : () -> %Builtin.Void {
+func @main : &thin () -> %Builtin.Void {
 $entry:
-  %0 = int_literal 1  	// uses: %1
-  %1 = struct %Int (%0: %Builtin.Int64)  	// uses: %a, %2
-  variable_decl %a = %1: %Int 
-  %2 = call @print_Int (%1: %Int) 
+  %0 = int_literal 1  	// user: %1
+  %1 = struct %I (%0: %Builtin.Int64)  	// user: %a
+  variable_decl %a = %1: %Int  	// user: %4
+  %2 = int_literal 2  	// user: %3
+  %3 = struct %I (%2: %Builtin.Int64)  	// user: %4
+  %4 = call @-P_tII (%a: %Int, %3: %Int)  	// user: %5
+  %5 = call @print_tI (%4: %Int) 
   return ()
 }
 
-func @print_Int : (%Int) -> %Builtin.Void
+func @-P_tII : &thin (%Int, %Int) -> %Int
+
+func @print_tI : &thin (%Int) -> %Builtin.Void
 ```
 
 The VIR is lowered to LLVM by mapping VIR instructions into explosions of LLVM ones. Low level concepts like function calls, less than operations, or stack allocations are transformed directly into the respective LLVM instructions/intrinsics, and higher level operations become sequences of LLVM instructions; reference counting operations become bitcasts and calls to runtime functions which modify the reference count, VIR’s basic block parameters become LLVM phi instructions, string literals become calls to stdlib initialisers, existential concept operations become operations boxing and unboxing the value and its metadata.
@@ -90,9 +95,7 @@ The VIR is lowered to LLVM by mapping VIR instructions into explosions of LLVM o
 
 define void @main() {
 entry:
-  %a = alloca %Int.st
-  store %Int.st { i64 1 }, %Int.st* %a
-  call void @print_tI(%Int.st { i64 1 })
+  call void @print_tI(%Int.st { i64 3 })
   ret void
 }
 
