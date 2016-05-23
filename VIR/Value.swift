@@ -76,8 +76,17 @@ extension Value {
     /// box then the accessor accesses the stored value.
     func accessor() throws -> Accessor {
         
-        if case BuiltinType.pointer(let to)? = type, case let nominal as NominalType = to where nominal.heapAllocated {
-            return try RefCountedAccessor(refcountedBox: PtrOperand.fromReferenceRValue(self))
+        if case BuiltinType.pointer(let to)? = type, case let nominal as NominalType = to {
+            let lVal = try PtrOperand.fromReferenceRValue(self)
+            if nominal.heapAllocated {
+                return RefCountedAccessor(refcountedBox: lVal)
+            }
+            else {
+                
+                // BUG: Accessing self in a method and using it in if expressions breaks
+                // stuff -- the accessor is a ValAccessor so self has type Self*
+                return RefAccessor(memory: lVal)
+            }
         }
         else {
             return ValAccessor(value: self)
