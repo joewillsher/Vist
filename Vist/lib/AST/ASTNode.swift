@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-protocol ASTNode: Printable { }
+protocol ASTNode : ASTPrintable { }
 
 // use behaviour delegates (when released in swift 3) to make `let (delated) type: Type { get }`
 ///
@@ -25,6 +25,8 @@ final class AST : ASTNode, ScopeNode {
     var childNodes: [ASTNode] {
         return exprs
     }
+    
+    var astName: String { return "AST" }
 }
 
 /// Type erased `Typed` protocol

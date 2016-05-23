@@ -93,8 +93,8 @@ func compileDocuments(
         // parse tokens & generate AST
         let ast = try Parser.parseWith(tokens, isStdLib: options.contains(.parseStdLib))
         
-        if options.contains(.dumpAST) { print(ast.astString); return }
-        if options.contains(.verbose) { print(ast.astString) }
+        if options.contains(.dumpAST) { ast.dump(); return }
+        if options.contains(.verbose) { ast.dump() }
         
         if let h = head {
             head = try astLink(h, other: [ast])
@@ -116,11 +116,10 @@ func compileDocuments(
     // TODO: parralelise file compilation
     
     try sema(ast, globalScope: globalScope)
-    if options.contains(.dumpAST) { print(ast.astString); return }
-    if options.contains(.verbose) { print(ast.astString, "\n----------------------------VIR GEN-------------------------------\n") }
+    if options.contains(.dumpAST) { print(ast.astDescription()); return }
+    if options.contains(.verbose) { print(ast.astDescription(), "\n----------------------------VIR GEN-------------------------------\n") }
     
     let file = fileNames.first!.stringByReplacingOccurrencesOfString(".vist", withString: "")
-    
     
     let virModule = Module()
     

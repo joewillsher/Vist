@@ -8,7 +8,7 @@
 
 private var emptyModule = LLVMModuleCreateWithName("___null___")
 
-protocol Type : Printable, VIRElement {
+protocol Type : VIRElement {
     
     /// Name used in mangling function signatures
     var mangledName: String { get }
