@@ -33,18 +33,32 @@ A vist program is first transformed into a series of tokens: `let`, `identifier=
 These are then parsed to form an AST (abstract syntax tree).
 
 ```
-(declaration:
-    name="a",
-    (value:
-        (int_literal value=1)
+(AST:
+  exprs=([]:
+    #0=(variable_decl:
+      name=("a"),
+      isMutable=(false),
+      value=(int_literal:
+        val=(1),
+        size=(64),
+      ),
     ),
-)
-(function_call:
-    name="print",
-    [args:
-        (0):
-            (variable: name="a")
-    ],
+    #1=(func_call_expr:
+      name=("print"),
+      args=(tuple_expr:
+        elements=([]:
+          #0=(binary_operator_expr:
+            op=("+"),
+            lhs=(variable_expr: name=("a")),
+            rhs=(int_literal:
+              val=(2),
+              size=(64),
+            ),
+          ),
+        ),
+      ),
+    ),
+  ),
 )
 
 ```
@@ -89,7 +103,7 @@ declare void @print_tI(%Int.st)
 
 Vist has many dynamic features which benefit from having the static type information — analysing concept conformances allows Vist to generate witness tables as metadata. A witness table is an array of the functions in a type which *witness* a concept’s required methods, it is a record of the conformance.
 
-Constructing a protocol existential
+Constructing a protocol existential … 
 
 
 The runtime also implements Vist’s memory management system: automatic reference counting. When declaring a `ref type` the instance is stored in the heap along with a reference count. As the  shared instance can outlive the life of a function, the compiler cannot know when to deallocate the object; instead, when a variable captures an instance it *retains* it, and when the variable dies it gets *released*. These operations incrememnt and decrement the reference count respectively, and when the count falls to 0 (and the object is no longer referenced) it is deallocated. 
