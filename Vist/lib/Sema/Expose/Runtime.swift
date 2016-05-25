@@ -27,7 +27,7 @@ struct Runtime {
     static let conceptConformanceType = StructType.withTypes([BuiltinType.opaquePointer/*TypeMetadata *concept*/, BuiltinType.pointer(to: int32Type), int32Type, BuiltinType.pointer(to: witnessTableType)], name: "ConceptConformance")
     static let witnessTableType = StructType.withTypes([BuiltinType.pointer(to: valueWitnessType), int32Type], name: "WitnessTable")
     static let typeMetadataType = StructType.withTypes([BuiltinType.pointer(to: BuiltinType.pointer(to: conceptConformanceType)), int32Type, BuiltinType.pointer(to: int8Type)], name: "TypeMetadata")
-    static let existentialObjectType = StructType.withTypes([BuiltinType.opaquePointer, int32Type, BuiltinType.pointer(to: conceptConformanceType)], name: "ExistentialObject")
+    static let existentialObjectType = StructType.withTypes([BuiltinType.opaquePointer, int32Type, BuiltinType.pointer(to: BuiltinType.pointer(to: conceptConformanceType))], name: "ExistentialObject")
     
     
     private static let functions: [(String, FunctionType)] = [
@@ -50,7 +50,7 @@ struct Runtime {
         ("vist_setYieldTarget", FunctionType(params: [], returns: boolType)),
         ("vist_yieldUnwind", FunctionType(params: [], returns: voidType)),
         
-        ("vist_constructConceptConformance", FunctionType(params: [BuiltinType.pointer(to: typeMetadataType), BuiltinType.pointer(to: int32Type), int32Type, BuiltinType.pointer(to: valueWitnessType), int32Type], returns: conceptConformanceType)),
+        ("vist_constructExistential", FunctionType(params: [BuiltinType.pointer(to: conceptConformanceType), BuiltinType.opaquePointer], returns: BuiltinType.pointer(to: existentialObjectType))),
     ]
     
     private static let functionContainer = FunctionContainer(functions: functions, types: [])

@@ -110,7 +110,7 @@ extern "C" {
     public:
         ExistentialObject(void *object,
                           int32_t numConformances,
-                          ConceptConformance *conformances)
+                          ConceptConformance **conformances)
             : object(object), numConformances(numConformances), conformances(conformances) {}
 #endif
     };

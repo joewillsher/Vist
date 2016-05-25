@@ -23,7 +23,8 @@ protocol ASTPrintable {
     
     func _astDescription(indentLevel n: Int) -> _ASTPrintGroup
 
-    var _astName: String { get }
+    static var _astName: String { get }
+    var _astName_instance: String { get }
 }
 
 extension ASTNode {
@@ -43,18 +44,20 @@ struct _ASTPrintGroup {
         
         switch els.count {
         case 0:
-            return (desc: "(\(nodeName))", isTrivial: true)
-        case 1 where parentIsTrivial:
-            let e = els[0]
-            return (desc: "(\(nodeName): \(e.name)=\(e.valueString))", isTrivial: parentIsTrivial)
+            return (desc: "\(nodeName)", isTrivial: true)
+        case _ where parentIsTrivial:
+            let s = els.map { el in "\(el.name)=\(el.valueString)" }.joinWithSeparator(" ")
+            return (desc: "(\(nodeName): \(s))",
+                    isTrivial: false)
         case _:
-            let s = els.map { el in "\((n+1)*tab)\(el.name)=\(el.valueString)," }.joinWithSeparator("\n")
-            return (desc: "(\(nodeName):\n\(s)\n\(n*tab))",
+            let s = els.map { el in "\((n+1)*tab)\(el.name)=\(el.valueString)" }.joinWithSeparator(",\n")
+            return (desc: "(\(nodeName):\n\(s))",
                     isTrivial: false)
 
         }
         
     }
+    
 }
 
 extension ASTPrintable {
@@ -79,8 +82,10 @@ extension ASTPrintable {
             return (name: v.0, valueString: x.desc)
         }
         
-        return _ASTPrintGroup(nodeName: _astName, parentIsTrivial: isTrivial, els: s)
+        return _ASTPrintGroup(nodeName: _astName_instance, parentIsTrivial: isTrivial, els: s)
     }
+    
+    var _astName_instance: String { return Self._astName }
 }
 
 
@@ -93,132 +98,140 @@ extension Array : ASTPrintable {
             .enumerate()
             .map { (name: "#\($0.index)", valueString: $0.element.desc(indentLevel: n+1).desc) }
         
-        return _ASTPrintGroup(nodeName: _astName, parentIsTrivial: isEmpty, els: des)
+        return _ASTPrintGroup(nodeName: Array._astName, parentIsTrivial: isEmpty, els: des)
     }
     
-    var _astName: String { return "[]" }
+    static var _astName: String {
+        let t = Element.self as? ASTPrintable.Type
+        return "[\(t?._astName ?? "")]"
+    }
     
 }
 
 extension AST : ASTPrintable {
-    var _astName: String { return "AST" }
+    static var _astName: String { return "AST" }
 }
 extension ConceptExpr : ASTPrintable {
-    var _astName: String { return "concept_decl" }
+    static var _astName: String { return "concept_decl" }
 }
 extension StructExpr : ASTPrintable {
-    var _astName: String { return "struct_decl" }
+    static var _astName: String { return "struct_decl" }
 }
 extension FuncDecl : ASTPrintable {
-    var _astName: String { return "func_decl" }
+    static var _astName: String { return "func_decl" }
 }
 extension VariableDeclGroup : ASTPrintable {
-    var _astName: String { return "variable_decl_group" }
+    static var _astName: String { return "variable_decl_group" }
 }
 extension InitialiserDecl : ASTPrintable {
-    var _astName: String { return "initialiser_decl" }
+    static var _astName: String { return "initialiser_decl" }
 }
 extension FunctionImplementationExpr : ASTPrintable {
-    var _astName: String { return "func_impl_expr" }
+    static var _astName: String { return "func_impl_expr" }
 }
 extension FunctionCallExpr : ASTPrintable {
-    var _astName: String { return "func_call_expr" }
+    static var _astName: String { return "func_call_expr" }
 }
 extension VariableDecl : ASTPrintable {
-    var _astName: String { return "variable_decl" }
+    static var _astName: String { return "variable_decl" }
 }
 extension IntegerLiteral : ASTPrintable {
-    var _astName: String { return "int_literal" }
+    static var _astName: String { return "int_literal" }
 }
 extension BooleanLiteral : ASTPrintable {
-    var _astName: String { return "bool_literal" }
+    static var _astName: String { return "bool_literal" }
 }
 extension StringLiteral : ASTPrintable {
-    var _astName: String { return "string_literal" }
+    static var _astName: String { return "string_literal" }
 }
 extension FloatingPointLiteral : ASTPrintable {
-    var _astName: String { return "float_literal" }
+    static var _astName: String { return "float_literal" }
 }
 extension Int : ASTPrintable {
-    var _astName: String { return "\(self)" }
+    var _astName_instance: String { return "\(self)" }
+    static var _astName: String { return "int" }
 }
 extension UInt32 : ASTPrintable {
-    var _astName: String { return "\(self)" }
+    var _astName_instance: String { return "\(self)" }
+    static var _astName: String { return "uint" }
 }
 extension Bool : ASTPrintable {
-    var _astName: String { return "\(self)" }
+    var _astName_instance: String { return "\(self)" }
+    static var _astName: String { return "bool" }
 }
 extension String : ASTPrintable {
-    var _astName: String { return "\"\(self)\"" }
+    var _astName_instance: String { return "\"\(self)\"" }
+    static var _astName: String { return "string" }
 }
 extension Float : ASTPrintable {
-    var _astName: String { return "\(self)" }
+    var _astName_instance: String { return "\(self)" }
+    static var _astName: String { return "float" }
 }
 extension VoidExpr : ASTPrintable {
-    var _astName: String { return "void_expr" }
+    static var _astName: String { return "void_expr" }
 }
 extension NullExpr : ASTPrintable {
-    var _astName: String { return "null" }
+    static var _astName: String { return "null" }
 }
 extension BinaryExpr : ASTPrintable {
-    var _astName: String { return "binary_operator_expr" }
+    static var _astName: String { return "binary_operator_expr" }
 }
 extension PrefixExpr : ASTPrintable {
-    var _astName: String { return "prefix_operator_expr" }
+    static var _astName: String { return "prefix_operator_expr" }
 }
 extension PostfixExpr : ASTPrintable {
-    var _astName: String { return "postfix_operator_expr" }
+    static var _astName: String { return "postfix_operator_expr" }
 }
 extension BlockExpr : ASTPrintable {
-    var _astName: String { return "block_expr" }
+    static var _astName: String { return "block_expr" }
 }
 extension ConditionalStmt : ASTPrintable {
-    var _astName: String { return "if_stmt" }
+    static var _astName: String { return "if_stmt" }
 }
 extension ElseIfBlockStmt : ASTPrintable {
-    var _astName: String { return "if_clause_stmt" }
+    static var _astName: String { return "if_clause_stmt" }
 }
 extension VariableExpr : ASTPrintable {
-    var _astName: String { return "variable_expr" }
+    static var _astName: String { return "variable_expr" }
 }
 extension TupleExpr : ASTPrintable {
-    var _astName: String { return "tuple_expr" }
+    static var _astName: String { return "tuple_expr" }
 }
 extension MutationExpr : ASTPrintable {
-    var _astName: String { return "mutation_expr" }
+    static var _astName: String { return "mutation_expr" }
 }
 extension PropertyLookupExpr : ASTPrintable {
-    var _astName: String { return "property_lookup_expr" }
+    static var _astName: String { return "property_lookup_expr" }
 }
 extension TupleMemberLookupExpr : ASTPrintable {
-    var _astName: String { return "tuple_member_lookup_expr" }
+    static var _astName: String { return "tuple_member_lookup_expr" }
 }
 extension ArrayExpr : ASTPrintable {
-    var _astName: String { return "array_expr" }
+    static var _astName: String { return "array_expr" }
 }
 extension ArraySubscriptExpr : ASTPrintable {
-    var _astName: String { return "array_subscript_expr" }
+    static var _astName: String { return "array_subscript_expr" }
 }
 extension MethodCallExpr : ASTPrintable {
-    var _astName: String { return "method_call_expr" }
+    static var _astName: String { return "method_call_expr" }
 }
 extension CommentExpr : ASTPrintable {
-    var _astName: String { return "comment_expr" }
+    static var _astName: String { return "comment_expr" }
 }
 extension ForInLoopStmt : ASTPrintable {
-    var _astName: String { return "for_in_loop_stmt" }
+    static var _astName: String { return "for_in_loop_stmt" }
 }
 extension WhileLoopStmt : ASTPrintable {
-    var _astName: String { return "while_loop_stmt" }
+    static var _astName: String { return "while_loop_stmt" }
 }
 extension ReturnStmt : ASTPrintable {
-    var _astName: String { return "return_stmt" }
+    static var _astName: String { return "return_stmt" }
 }
 extension YieldStmt : ASTPrintable {
-    var _astName: String { return "yield_stmt" }
+    static var _astName: String { return "yield_stmt" }
 }
 extension ClosureExpr : ASTPrintable {
-    var _astName: String { return "closure_expr" }
+    static var _astName: String { return "closure_expr" }
 }
 
 
