@@ -16,6 +16,8 @@ utils/llvm.vim
 
 *.vir
 
+*.swp
+
 *.vhir
 
 *.s
