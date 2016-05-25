@@ -19,13 +19,6 @@ extension ReturnInst : VIRLower {
     }
 }
 
-extension YieldInst : VIRLower {
-    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
-        return try IGF.builder.buildCall(targetThunk!.loweredFunction!, args: [value.loweredValue!], name: irName)
-    }
-}
-
-
 extension BreakInst : VIRLower {
     func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
         return try IGF.builder.buildBr(to: call.block.loweredBlock!)

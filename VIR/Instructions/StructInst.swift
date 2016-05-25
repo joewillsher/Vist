@@ -38,7 +38,7 @@ final class StructExtractInst : InstBase {
     override var type: Type? { return propertyType }
     
     override var instVIR: String {
-        return "\(name) = struct_extract \(object.vir), #\(propertyName) \(useComment)"
+        return "\(name) = struct_extract \(object.vir), !\(propertyName) \(useComment)"
     }
 }
 
@@ -59,7 +59,7 @@ final class StructElementPtrInst : InstBase, LValue {
     var memType: Type? { return propertyType }
     
     override var instVIR: String {
-        return "\(name) = struct_element \(object.vir), #\(propertyName) \(useComment)"
+        return "\(name) = struct_element \(object.vir), !\(propertyName) \(useComment)"
     }
 }
 
@@ -91,8 +91,7 @@ extension Builder {
     }
     
     // TODO: compound extracting
-    // TODO: make stdlib struct messing in the compiler nicer
-
+    
 //    func buildStdlibStructExtract(object: Operand, type: String, property: String, irName: String? = nil) throws -> StructExtractInst {
 //        guard case let alias as TypeAlias = object.type, case let structType as StructType = alias.targetType else { throw VIRError.noType(#file) }
 //        let elType = try structType.propertyType(property)

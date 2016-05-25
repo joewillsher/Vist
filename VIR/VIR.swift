@@ -104,7 +104,7 @@ extension FunctionType {
 }
 extension BuiltinType {
     var vir: String {
-        return "%\(explicitName)"
+        return "#\(explicitName)"
     }
 }
 extension NominalType {
@@ -125,10 +125,10 @@ extension TupleType {
 }
 extension TypeAlias {
     var declVIR: String {
-        return "type %\(name) = \(targetType.vir)"
+        return "type #\(name) = \(targetType.vir)"
     }
     var vir: String {
-        return "%\(name)"
+        return "#\(name)"
     }
 }
 

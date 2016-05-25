@@ -22,7 +22,7 @@ final class ExistentialPropertyInst: InstBase {
     }
     
     override var instVIR: String {
-        return "\(name) = existential_open \(existential) #\(propertyName) \(useComment)"
+        return "\(name) = existential_open \(existential), !\(propertyName) \(useComment)"
     }
 }
 
@@ -42,7 +42,7 @@ final class ExistentialConstructInst : InstBase {
     }
     
     override var instVIR: String {
-        return "\(name) = existential_box \(value) in %\(existentialType.name) \(useComment)"
+        return "\(name) = existential_box \(value) in #\(existentialType.name) \(useComment)"
     }
     
 }
@@ -64,7 +64,7 @@ final class ExistentialWitnessMethodInst : InstBase, LValue {
     }
     
     override var instVIR: String {
-        return "\(name) = existential_witness \(existential) #\(methodName) \(useComment)"
+        return "\(name) = existential_witness \(existential), !\(methodName) \(useComment)"
     }
     
 }

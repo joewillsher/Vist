@@ -78,7 +78,9 @@ extension ASTPrintable {
         var isTrivial = true
         let s = inside.map { v -> (name: String, valueString: String) in
             let x = v.1.desc(indentLevel: n+1)
-            if !x.isTrivial { isTrivial = false }
+            if !x.isTrivial {
+                isTrivial = false
+            }
             return (name: v.0, valueString: x.desc)
         }
         
@@ -98,7 +100,7 @@ extension Array : ASTPrintable {
             .enumerate()
             .map { (name: "#\($0.index)", valueString: $0.element.desc(indentLevel: n+1).desc) }
         
-        return _ASTPrintGroup(nodeName: Array._astName, parentIsTrivial: isEmpty, els: des)
+        return _ASTPrintGroup(nodeName: Array._astName, parentIsTrivial: count <= 1, els: des)
     }
     
     static var _astName: String {

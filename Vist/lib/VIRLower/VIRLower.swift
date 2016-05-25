@@ -250,7 +250,6 @@ extension GlobalValue : VIRLower {
         global.hasUnnamedAddr = true
         global.isExternallyInitialised = false
         global.linkage = LLVMPrivateLinkage
-//        global.isConstant = true
         global.initialiser = LLVMValue.constNull(type: memType!.lowerType(module))
         return global.value
     }
