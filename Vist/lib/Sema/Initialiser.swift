@@ -39,8 +39,7 @@ extension StructExpr {
         guard let types = properties.optionalMap({ $0.value._type }) else { throw semaError(.noMemberwiseInit, userVisible: false) }
         
         // FIXME: we dont emit memberwise inits for types which dont contain just nominal types
-        guard !types.contains({type in (type is TupleType)}) else {
-            return nil }
+        guard !types.contains({type in (type is TupleType)}) else { return nil }
         
         let typeNames = types.map { $0.explicitName }
         
