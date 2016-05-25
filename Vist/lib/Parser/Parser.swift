@@ -209,9 +209,29 @@ extension Parser {
     private func parseTypeExpr() throws -> DefinedType {
         
         // if () type
-        if case .openParen = currentToken, case .closeParen = getNextToken() {
-            getNextToken() // eat ')'
-            return DefinedType.void
+        if case .openParen = currentToken {
+            getNextToken() // eat '('
+            
+            if case .closeParen = currentToken {
+                getNextToken() // eat ')' if its void literal '()'
+                return DefinedType.void
+            }
+            else {
+                var types: [DefinedType] = []
+                do {
+                    while true {
+                        try types.append(parseTypeExpr())
+                        if case .closeParen = currentToken {
+                            getNextToken() // eat ')'
+                            return DefinedType.tuple(types)
+                        }
+                        getNextToken() // eat ','
+                    }
+                }
+                catch _ {
+                    throw parseError(ParseError.expectedCloseBracket)
+                }
+            }
         }
         
         var elements = [String]()
@@ -818,7 +838,7 @@ extension Parser {
             names = try parseClosureNamesExpr()
         }
         else {
-            names = (0..<type.paramType.typeNames().count).map(implicitParamName)
+            names = (0..<type.paramType.typeNames().count).map { "$\($0)" }
         }
         
         guard currentToken.isControlToken() else { throw parseError(.notBlock, loc: SourceRange.at(currentPos)) }

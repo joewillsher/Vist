@@ -78,7 +78,9 @@ extension StructExpr : ExprTypeProvider {
             }
             
             if !definesOwnMemberwiseInit {
-                try initialisers.append(memberwiseInitialiser())
+                if let memberwiseInit = try memberwiseInitialiser() {
+                    initialisers.append(memberwiseInit)
+                }
             }
         }
         try initialisers.walkChildren(errorCollector) { node in

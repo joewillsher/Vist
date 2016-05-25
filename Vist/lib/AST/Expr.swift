@@ -101,22 +101,8 @@ final class StringLiteral: TypedExpr {
         self.str = str
     }
     
-//    var arr: ArrayExpr? = nil
-    
     var type: StructType? = nil
 }
-//final class CharacterExpr: Expr {
-//    let val: Character
-//    
-//    init(c: Character) {
-//        val =  c
-//    }
-//    
-//    var type: Type? = nil
-//}
-
-
-
 
 
 //-------------------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,54 @@
+
+concept RandomNumberGenerator {
+  let seed: Int
+  func nextRandom :: -> Int
+}
+
+
+type Lfsr176 | RandomNumberGenerator {
+  
+  // constants
+  let k: (Int, Int, Int)
+  let q: (Int, Int, Int)
+  let s: (Int, Int, Int)
+  let Int64max: Int
+  
+  var state0: Int, state1: Int, state2: Int
+  
+  let seed: Int
+  
+  init Int = (sd) {
+    state0 = 1384142
+    state1 = 1939622
+    state2 = 1235977
+    Int64max = 9223372036854775807
+    k = (1, 6, 9)
+    q = (5, 19, 24)
+    s = (24, 13, 17)
+    seed = sd
+  }  
+  
+  @mutating func nextRandom :: -> Int = {
+    let l = 64
+    let x0 = (((state0 << q.0) ~^ state0) >> (l - k.0 - s.0))
+    state0 = ((state0 ~& (Int64max << k.0)) << s.0) ~| x0
+    let x1 = (((state1 << q.1) ~^ state1) >> (l - k.1 - s.1))
+    state1 = ((state1 ~& (Int64max << k.1)) << s.1) ~| x1
+    let x2 = (((state2 << q.2) ~^ state2) >> (l - k.2 - s.2))
+    state2 = ((state2 ~& (Int64max << k.2)) << s.2) ~| x2
+    return (state0 ~^ state1 ~^ state2)
+  }
+}
+
+
+var gen = Lfsr176 14603539
+
+print (gen.nextRandom ())
+print (gen.nextRandom ())
+print (gen.nextRandom ())
+
+
+
+
+
+

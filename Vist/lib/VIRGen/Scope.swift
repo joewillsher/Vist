@@ -13,23 +13,26 @@ final class Scope {
     private(set) weak var parent: Scope?
     private unowned var module: Module
     private(set) var function: Function?
-    var captureHandler: CaptureHandler?, breakPoint: Builder.InsertPoint?
+    /// Deleagte for managing captured variables 
+    var captureDelegate: CaptureDelegate?
+    /// The point from which we entered this scope
+    var breakPoint: Builder.InsertPoint?
     
     init(module: Module) {
         self.module = module
         self.variables = [:]
     }
-    init(parent: Scope, function: Function?, captureHandler: CaptureHandler? = nil, breakPoint: Builder.InsertPoint? = nil) {
+    init(parent: Scope, function: Function?, captureDelegate: CaptureDelegate? = nil, breakPoint: Builder.InsertPoint? = nil) {
         self.parent = parent
         self.function = function
         self.variables = [:]
         self.module = parent.module
-        self.captureHandler = captureHandler
+        self.captureDelegate = captureDelegate
         self.breakPoint = breakPoint ?? parent.breakPoint
     }
     /// Create a scope which captures from `parent`
-    static func capturing(parent: Scope, function: Function, captureHandler: CaptureHandler, breakPoint: Builder.InsertPoint) -> Scope {
-        return Scope(parent: parent, function: function, captureHandler: captureHandler, breakPoint: breakPoint)
+    static func capturing(parent: Scope, function: Function, captureDelegate: CaptureDelegate, breakPoint: Builder.InsertPoint) -> Scope {
+        return Scope(parent: parent, function: function, captureDelegate: captureDelegate, breakPoint: breakPoint)
     }
     
     func insert(variable: Accessor, name: String) {
@@ -42,7 +45,7 @@ final class Scope {
         if let v = variables[name] { return v }
         
         let foundInParent = try parent?.variableNamed(name)
-        if let f = foundInParent, let handler = captureHandler {
+        if let f = foundInParent, let handler = captureDelegate {
             // if we have a capture handler, infor that it 
             // captures this accessor
             let accessor = try handler.addCapture(f, scope: self, name: name)

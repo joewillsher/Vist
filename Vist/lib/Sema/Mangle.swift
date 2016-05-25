@@ -80,9 +80,3 @@ extension String {
     
 }
 
-func implicitParamName<I: IntegerType>(n: I) -> String { return "$\(n)"}
-
-extension IntegerType {
-    func implicitParamName() -> String { return "$\(self)"}
-}
-

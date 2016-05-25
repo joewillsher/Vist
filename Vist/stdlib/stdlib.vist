@@ -286,6 +286,37 @@ func ..< :: Int Int -> Range = (a b) do
 
 
 
+/*
+type pointer {
+  var base: builtin.opaquepointer
+
+  
+}
+
+@public @inline @operator(80)
+func + :: pointer int -> pointer = (p i) {
+  return pointer p.base + i
+}
+
+type _arraybuffer {
+  var base: pointer
+  var objectsize: int
+  
+  func elementatindex :: int -> int = (index) {
+    return builtin.opaque_load (base + index)
+  }
+}
+*/
+
+
+
+
+
+
+
+
+
+
 type UTF8CodeUnit {
     let unit: Builtin.Int8
     
@@ -363,16 +394,20 @@ type String {
     // there's a CFG bug where implict `return ()` are only added to the exit point
 }
 
-@public func print :: String = (str) {
+
+@public @noinline
+func print :: String = (str) {
     _print str
     _print "\n"
 }
 
-@public @inline func print :: Int = (a) {
+@public @noinline
+func print :: Int = (a) {
     _print (a.description ())
     _print "\n"
 }
-@public @inline func print :: Bool = (b) {
+@public @noinline
+@inline func print :: Bool = (b) {
     _print (b.description ())
     _print "\n"
 }

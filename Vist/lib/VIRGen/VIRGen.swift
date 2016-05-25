@@ -525,7 +525,7 @@ extension ForInLoopStmt : StmtEmitter {
         let loopClosure = Closure.wrapping(loopThunk), generatorClosure = Closure.wrapping(generatorFunction)
         let loopScope = Scope.capturing(scope,
                                         function: loopClosure.thunk,
-                                        captureHandler: loopClosure,
+                                        captureDelegate: loopClosure,
                                         breakPoint: module.builder.insertPoint)
         let loopVarAccessor = try loopClosure.thunk.paramNamed(binded.name).accessor()
         loopScope.insert(loopVarAccessor, name: binded.name)
@@ -543,7 +543,7 @@ extension ForInLoopStmt : StmtEmitter {
         loopClosure.thunk.inline = .always
         
         // get the instance of the generator
-        let generator = try Operand(self.generator.emitRValue(module: module, scope: scope).getter())
+        let generator = try self.generator.emitRValue(module: module, scope: scope).asReferenceAccessor().aggregateReference()
         
         // call the generator function from loop position
         // apply the scope it requests

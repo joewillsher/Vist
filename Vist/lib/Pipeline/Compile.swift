@@ -208,7 +208,6 @@ func compileDocuments(
                        args: "-dynamiclib")
     }
     else {
-        
         // .ll -> .s
         // for printing/saving
         NSTask.execute(.clang,
@@ -273,15 +272,14 @@ func buildRuntime(debugRuntime debug: Bool) {
     
     let runtimeDirectory = "\(SOURCE_ROOT)/Vist/stdlib/runtime"
     let libVistRuntimePath = "/usr/local/lib/libvistruntime.dylib"
-    
+        
     // .cpp -> .dylib
     // to link against program
     NSTask.execute(.clang,
                    files: ["runtime.cpp", "Metadata.cpp", "RefcountedObject.cpp"],
                    outputName: libVistRuntimePath,
                    cwd: runtimeDirectory,
-                   args: "-dynamiclib", "-std=c++14", "-lstdc++", "-includeruntime.h", "-DRUNTIME", debug ? "-DREFCOUNT_DEBUG" : "")
-    
+                   args: "-dynamiclib", "-std=c++14", "-lstdc++", "-includeruntime.hh", "-DRUNTIME", debug ? "-DREFCOUNT_DEBUG" : "")
 }
 
 

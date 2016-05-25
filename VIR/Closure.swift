@@ -12,7 +12,7 @@
  when the handler is asked to capture this accessor into the scope
  so it can be used as a semantic variable here.
  */
-protocol CaptureHandler : class {
+protocol CaptureDelegate : class {
     var captured: [Accessor] { get }
     func addCapture(variable: Accessor, scope: Scope, name: String) throws -> Accessor
 }
@@ -23,6 +23,8 @@ protocol ThunkFunction {
     var function: Function { get }
     init(_thunkOf: Function)
 }
+
+
 extension ThunkFunction {
     /// Form a thunk which wraps `function`
     /// - note: Changing this will affect the wrapped function, only
@@ -68,7 +70,7 @@ final class Closure : ThunkFunction, VIRElement {
 
 
 
-extension Closure : CaptureHandler {
+extension Closure : CaptureDelegate {
     
     func addCapture(variable: Accessor, scope: Scope, name: String) throws -> Accessor {
         // add to self capture list

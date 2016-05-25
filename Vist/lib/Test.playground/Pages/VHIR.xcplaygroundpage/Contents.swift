@@ -1,5 +1,3 @@
 
 
-"1".utf8
-
-Int.max
+print(Int.max)

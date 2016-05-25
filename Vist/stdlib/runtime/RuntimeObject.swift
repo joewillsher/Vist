@@ -9,7 +9,7 @@
 import Foundation.NSString
 
 /**
- runtime.h defines a bunch of structs for use in the runtime
+ runtime.hh defines a bunch of structs for use in the runtime
  
  We conform these types (as well as types they use, like `UnsafeMutablePointer`, `Int32` etc.) to `RuntimeObject`
  

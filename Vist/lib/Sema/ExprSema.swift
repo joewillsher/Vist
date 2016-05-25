@@ -92,7 +92,13 @@ extension MutationExpr : ExprTypeProvider {
         case let variable as VariableExpr:
             
             guard let v = scope[variable: variable.name] else { throw semaError(.noVariable(variable.name)) }
-            guard v.mutable else { throw semaError(.immutableVariable(name: variable.name, type: variable.typeName)) }
+            guard v.mutable else {
+                
+                // Variable 'state0' of type 'Int' is immutable
+                // FIXME: Diagnose non @mutable lookups -- specify this is why it failed
+                
+                throw semaError(.immutableVariable(name: variable.name, type: variable.typeName))
+            }
             
         case let lookup as LookupExpr:
             // if its a lookup expression we can 
@@ -243,7 +249,7 @@ extension ClosureExpr : ExprTypeProvider {
         innerScope.returnType = ty.returns
         
         for (i, t) in ty.params.enumerate() {
-            let name = parameters.isEmpty ? i.implicitParamName() : parameters[i]
+            let name = parameters.isEmpty ? String(i) : parameters[i]
             innerScope[variable: name] = (type: t, mutable: false)
         }
         

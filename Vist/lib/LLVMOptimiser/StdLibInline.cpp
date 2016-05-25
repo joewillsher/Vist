@@ -95,16 +95,11 @@ FunctionPass *createStdLibInlinePass() {
 // TODO: fix recursive bullshit i've done
 // http://comments.gmane.org/gmane.comp.compilers.llvm.devel/31198
 //
-//First, you may be invalidating the iterator i by erasing the value
-//inside the loop.  In my code, I almost always iterate through the
-//instructions once and record them in a std::vector.  I think loop
-//through the std::vector, processing the end element and then remove it
-//from the std::vector.  It is less efficient but ensures no nasty
-//iterator invalidation errors.
-//
 
+// TODO: this is a hack too
 StringRef truncatedName(StringRef fromString) {
     auto idx = fromString.rfind("."); // remove the .0 suffix
+    if (idx == StringRef::npos) return fromString;
     return fromString.drop_back(fromString.size() - idx);
 }
 
@@ -226,25 +221,51 @@ bool StdLibInline::runOnFunction(Function &function) {
                 
                 for (Instruction &inst: fnBlock) {
                     
+                    /// Import a type from another module
+                    /// - note: We must recurse through member types and modify them to be a member
+                    ///         of this module too
+                    std::function<void(Type*)> importType = [&](Type *t) {
+                        
+                        if (!(t->isPointerTy() || t->isStructTy()))
+                            return;
+                        
+                        if (auto ty = dyn_cast<StructType>(t)) {
+                            if (ty->hasName()) {
+                                inst.mutateType(getNamedType(truncatedName(ty->getStructName()), module));
+                            }
+                            if (ty->isStructTy())
+                                for (unsigned c = 0; c < ty->getStructNumElements(); c++)
+                                    if (auto el = dyn_cast<StructType>(ty->getStructElementType(c)))
+                                        importType(el);
+                        }
+                        else {
+                            
+                            if (auto p = dyn_cast<PointerType>(t))
+                                if (!p->isIntegerTy())
+                                    return importType(p->getElementType());
+                            
+                        }
+                        
+                    };
+                    
+
                     // insert value instructions dont get types replaced, so we do it manually
                     if (auto *insertVal = dyn_cast<InsertValueInst>(&inst)) {
                         
                         if (auto undef = dyn_cast<UndefValue>(insertVal->getAggregateOperand())) {
                             
-                            StructType *ty = dyn_cast<StructType>(undef->getType());
-                            if (!ty->hasName())
-                                break;
-                            
-                            Type *undefType = getNamedType(truncatedName(ty->getStructName()), module);
-                            UndefValue *undefValue = UndefValue::get(undefType); // the undef val
+                            auto ty = undef->getType();
+                            importType(ty);
+                            UndefValue *undefValue = UndefValue::get(ty); // the undef val
                             inst.setOperand(0, undefValue);
                         }
                     }
                     
+                    if (auto store = dyn_cast<StoreInst>(&inst))
+                        importType(store->getPointerOperand()->getType());
+                    
                     // replace global types in stdlib with this module
-                    if (StructType *ty = dyn_cast<StructType>(inst.getType()))
-                        if (ty->hasName())
-                            inst.mutateType(getNamedType(truncatedName(ty->getStructName()), module));
+                    importType(inst.getType());
                     
                     // if the instruction is a return, assign to
                     // the `returnValueStorage` and jump out of temp block
