@@ -26,6 +26,16 @@
 					<string>7 Feb 2016, 12:30:51 am</string>
 				</dict>
 			</dict>
+			<key>testRandomNumber()</key>
+			<dict>
+				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
+				<dict>
+					<key>baselineAverage</key>
+					<real>7.3866</real>
+					<key>baselineIntegrationDisplayName</key>
+					<string>26 May 2016, 10:57:44 pm</string>
+				</dict>
+			</dict>
 		</dict>
 	</dict>
 </dict>

@@ -148,6 +148,7 @@
 		D43B3A911C8A12D70039FB2E /* LinkAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A8D1C8A12D70039FB2E /* LinkAST.swift */; };
 		D44529561CB00A6F00AFA099 /* RefCountInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44529551CB00A6F00AFA099 /* RefCountInst.swift */; };
 		D44529571CB00A6F00AFA099 /* RefCountInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44529551CB00A6F00AFA099 /* RefCountInst.swift */; };
+		D4536E101CF7A2E3000C7382 /* RuntimeObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CA32091CEA71F3009C2B10 /* RuntimeObject.swift */; };
 		D4728BDD1C944397003294B0 /* Accessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BDC1C944397003294B0 /* Accessor.swift */; };
 		D4728BDE1C944397003294B0 /* Accessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BDC1C944397003294B0 /* Accessor.swift */; };
 		D4728BE11C9475A5003294B0 /* Optimiser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BE01C9475A5003294B0 /* Optimiser.swift */; };
@@ -821,6 +822,7 @@
 				D4A000311CCA7F7000157D90 /* BuiltinLower.swift in Sources */,
 				D43B3A8F1C8A12D70039FB2E /* ASTInterface.swift in Sources */,
 				D43B39FD1C8A100E0039FB2E /* Config.swift in Sources */,
+				D4536E101CF7A2E3000C7382 /* RuntimeObject.swift in Sources */,
 				D43B3A091C8A10390039FB2E /* Token.swift in Sources */,
 				D49248551CF7788A009FD509 /* StdLibInline.swift in Sources */,
 				D43B39E31C8A0F3A0039FB2E /* VariableInst.swift in Sources */,

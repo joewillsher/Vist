@@ -14,6 +14,7 @@ type Lfsr176 | RandomNumberGenerator {
   let Int64max: Int
   
   var state: (Int, Int, Int)
+  
   let seed: Int
   
   init Int = (sd) {
@@ -40,11 +41,14 @@ type Lfsr176 | RandomNumberGenerator {
 }
 
 
-var gen = Lfsr176 14603539
+var gen = Lfsr176 1460353
 
-print (gen.nextRandom ())
-print (gen.nextRandom ())
-print (gen.nextRandom ())
+var i = 0
+while i < 100000000 {
+  i = i + 1
+  gen.nextRandom ()
+}
+
 
 
 

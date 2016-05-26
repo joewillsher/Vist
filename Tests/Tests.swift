@@ -262,7 +262,33 @@ extension RuntimePerformanceTests {
             self.stopMeasuring()
         }
     }
-    
+    /// FunctionPerf.vist
+    ///
+    /// Test non memoised fibbonaci
+    func testRandomNumber() {
+        
+        let fileName = "Random"
+        do {
+            try compileWithOptions(["-preserve", "\(fileName).vist"], inDirectory: testDir)
+        }
+        catch {
+            XCTFail("Compilation failed with error:\n\(error)\n\n")
+        }
+        
+        measureMetrics(RuntimePerformanceTests.defaultPerformanceMetrics(), automaticallyStartMeasuring: false) {
+            
+            let runTask = NSTask()
+            runTask.currentDirectoryPath = self.testDir
+            runTask.launchPath = "\(self.testDir)/\(fileName)"
+            runTask.standardOutput = NSFileHandle.fileHandleWithNullDevice()
+            
+            self.startMeasuring()
+            runTask.launch()
+            runTask.waitUntilExit()
+            self.stopMeasuring()
+        }
+    }
+
 }
 
 

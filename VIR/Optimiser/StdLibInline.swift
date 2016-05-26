@@ -43,6 +43,7 @@ struct StdLibInlinePass : OptimisationPass {
                     explosion.insert(StructInitInst(type: structType, args: [virInst], irName: call.irName))
                 }
             }
+            
             func replaceWithOverflowCheckedBuiltin(inst: BuiltinInst, elType: BuiltinType) throws {
                 try call.replace { explosion in
                     let structType = try call.function.type.returns.getAsStructType()
@@ -68,9 +69,14 @@ struct StdLibInlinePass : OptimisationPass {
                 try replaceWithOverflowCheckedBuiltin(.isub, elType: .int(size: 64))
             case "-T-R_tII": // l ~^ r
                 try replaceWithBuiltin(.ixor, elType: .int(size: 64))
-                
-                // TODO: all ops
-                
+            case "-L-L_tII": // l << r
+                try replaceWithBuiltin(.ishl, elType: .int(size: 64))
+            case "-G-G_tII": // l >> r
+                try replaceWithBuiltin(.ishr, elType: .int(size: 64))
+            case "-T-N_tII": // l ~^ r
+                try replaceWithBuiltin(.iand, elType: .int(size: 64))
+            case "-T-O_tII": // l ~| r
+                try replaceWithBuiltin(.ior, elType: .int(size: 64))
             default:
                 break // not a stdlib function
             }
