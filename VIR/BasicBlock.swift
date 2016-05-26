@@ -59,9 +59,11 @@ extension BasicBlock {
     
     func insert(inst: Inst, after: Inst) throws {
         instructions.insert(inst, atIndex: try indexOf(after).successor())
+        inst.parentBlock = self
     }
     func append(inst: Inst) {
         instructions.append(inst)
+        inst.parentBlock = self
     }
     
     /// Get param named `name` or throw

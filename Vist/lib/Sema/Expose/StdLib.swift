@@ -114,7 +114,7 @@ struct StdLib {
     /// Container initialised with functions, provides subscript to look up functions by name and type
     ///
     /// Adds the `stdlib.call.optim` metadata tag to all of them
-    private static let functionContainer = FunctionContainer(functions: functions, types: types, metadata: ["stdlib.call.optim"])
+    private static let functionContainer = FunctionContainer(functions: functions, types: types)
     
     
     private static func getStdLibFunctionWithInitInfo(id: String, args: [Type]) -> (String, FunctionType)? {

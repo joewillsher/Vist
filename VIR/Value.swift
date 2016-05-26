@@ -49,13 +49,7 @@ extension Value {
     
     /// Removes all `Operand` instances which point to `self`
     func removeAllUses() { uses.forEach(removeUse)  }
-    
-    /// Replaces all `Operand` instances which point to `self`
-    /// with `val`
-    func replaceAllUses(with val: Value) {
-         for use in uses { use.value = val }
-    }
-    
+        
     /// Adds record of a user `use` to self’s users list
     func addUse(use: Operand) { uses.append(use) }
     

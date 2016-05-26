@@ -8,7 +8,7 @@
 
 
 /// Dead code elimination pass
-final class DCEPass : OptimisationPass {
+struct DCEPass : OptimisationPass {
     
     static var minOptLevel: OptLevel = .low
     
@@ -22,7 +22,7 @@ final class DCEPass : OptimisationPass {
     }
 }
 
-final class DeadFunctionPass : OptimisationPass {
+struct DeadFunctionPass : OptimisationPass {
     
     static var minOptLevel: OptLevel = .low
     
@@ -34,7 +34,7 @@ final class DeadFunctionPass : OptimisationPass {
     }
 }
 
-final class CFGSimplificationPass : OptimisationPass {
+struct CFGSimplificationPass : OptimisationPass {
     static var minOptLevel: OptLevel = .high
     
     func runOn(function: Function) throws {

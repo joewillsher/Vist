@@ -54,7 +54,8 @@ extension String {
     /// returns the raw name, getting rid of type info at end, 
     /// (and type prefix for methods)
     func demangleName() -> String {
-        let nameString = String(characters[startIndex..<characters.indexOf("_")!])
+        guard let ui = characters.indexOf("_") else { return self }
+        let nameString = String(characters[startIndex..<ui])
         
         var resStr: [Character] = []
         var pred: Character? = nil

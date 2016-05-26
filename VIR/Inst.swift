@@ -15,7 +15,7 @@ protocol Inst : Value {
     var instIsTerminator: Bool { get }
 }
 
-/** 
+/**
  An instruction. Must be overriden but is used to remove
  a lot of the state boilerplate that cant be defaulted
  using just protocols
@@ -70,5 +70,27 @@ extension Inst {
         try removeFromParent()
     }
     
+    /// Replaces all `Operand` instances which point to `self`
+    /// with `val`
+    func replaceAllUses(with val: Inst) {
+        for use in uses {
+            use.value = val
+            val.addUse(use)
+        }
+        uses.removeAll()
+        args.removeAll()
+    }
 }
+
+// We have to add it to instbase (not inst) because we can't use Inst protocol
+// as a conformant of Inst in the generic parameter list
+extension InstBase {
+    /// Replace self by applying a function and a
+    final func replace(with explode: (inout Explosion<InstBase>) throws -> Void) throws {
+        var e = Explosion(inst: self)
+        try explode(&e)
+        try e.replaceInst()
+    }
+}
+
 

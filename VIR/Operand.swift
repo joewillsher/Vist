@@ -30,6 +30,7 @@ class Operand : Value {
     
     deinit {
         value?.removeUse(self)
+        
     }
 
     @available(*, unavailable, message="`Operand` initialisers should not take `Operand`s")

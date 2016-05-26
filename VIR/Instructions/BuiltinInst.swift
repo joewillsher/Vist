@@ -18,7 +18,7 @@ final class BuiltinInstCall : InstBase {
     var instName: String { return inst.rawValue }
     var returnType: Type
     
-    private init?(inst: BuiltinInst, args: [Operand], irName: String?) {
+    init?(inst: BuiltinInst, args: [Operand], irName: String? = nil) {
         self.inst = inst
         guard let argTypes = try? args.map(InstBase.getType(_:)), let retTy = inst.returnType(params: argTypes) else { return nil }
         self.returnType = retTy

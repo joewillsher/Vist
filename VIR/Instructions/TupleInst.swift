@@ -27,7 +27,7 @@ final class TupleExtractInst : InstBase {
     var tuple: Operand, elementIndex: Int
     var elementType: Type
     
-    private init(tuple: Operand, index: Int, elementType: Type, irName: String?) {
+    init(tuple: Operand, index: Int, elementType: Type, irName: String?) {
         self.tuple = tuple
         self.elementIndex = index
         self.elementType = elementType

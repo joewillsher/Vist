@@ -45,6 +45,11 @@ extension Type {
         }
     }
     
+    func getAsStructType() throws -> StructType {
+        if case let s as TypeAlias = self { return try s.targetType.getAsStructType() }
+        else if case let s as StructType = self { return s }
+        else { fatalError("throw error -- not struct type") }
+    }
     
 }
 

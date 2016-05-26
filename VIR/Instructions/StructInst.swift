@@ -12,7 +12,7 @@ final class StructInitInst : InstBase {
     override var type: Type? { return module.getOrInsert(structType) }
     var structType: StructType
     
-    private init(type: StructType, args: [Operand], irName: String?) {
+    init(type: StructType, args: [Operand], irName: String?) {
         self.structType = type
         super.init(args: args, irName: irName)
     }
@@ -27,7 +27,7 @@ final class StructExtractInst : InstBase {
     var object: Operand, propertyName: String
     var propertyType: Type, structType: StructType
     
-    private init(object: Operand, property: String, propertyType: Type, structType: StructType, irName: String? = nil) {
+    init(object: Operand, property: String, propertyType: Type, structType: StructType, irName: String? = nil) {
         self.object = object
         self.propertyName = property
         self.propertyType = propertyType
