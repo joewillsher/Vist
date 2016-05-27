@@ -25,4 +25,3 @@ utils/llvm.vim
 *.bc
 
 *.o
-*.xcscheme
