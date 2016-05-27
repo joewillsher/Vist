@@ -334,8 +334,17 @@ extension Lexer {
             }
         }
         else {
-            try lexWhilePredicate {
-                $0.isNumOr_()
+            var hadPeriod = false
+            try lexWhilePredicate { c in
+                if case "." = c {
+                    // if we've seen a '.' already, this is not a decimal point
+                    guard !hadPeriod else { return false }
+                    // if the next char isn't a number this isnt a decimal point
+                    guard charPtr(1)?.isNum() ?? false else { return false }
+                    // if its a decimal point, mark we cant see another
+                    hadPeriod = true
+                }
+                return c.isNumOr_()
             }
         }
         try resetContext()
@@ -383,7 +392,7 @@ extension Lexer {
 //        try lexWhilePredicate({$0 != "\""})
 //    }
 //    
-    mutating private func lexWhilePredicate(p: (Character) throws -> Bool) throws {
+    mutating private func lexWhilePredicate(@noescape p: (Character) throws -> Bool) throws {
         while try p(currentChar) {
             addChar()
             guard let _ = try? consumeChar() else { return }
