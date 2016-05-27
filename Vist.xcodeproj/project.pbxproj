@@ -76,8 +76,6 @@
 		D43B39F91C8A100E0039FB2E /* CommandLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39EF1C8A100E0039FB2E /* CommandLine.swift */; };
 		D43B39FA1C8A100E0039FB2E /* Compile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39F01C8A100E0039FB2E /* Compile.swift */; };
 		D43B39FB1C8A100E0039FB2E /* Compile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39F01C8A100E0039FB2E /* Compile.swift */; };
-		D43B39FC1C8A100E0039FB2E /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39F11C8A100E0039FB2E /* Config.swift */; };
-		D43B39FD1C8A100E0039FB2E /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39F11C8A100E0039FB2E /* Config.swift */; };
 		D43B39FE1C8A100E0039FB2E /* LinkRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39F21C8A100E0039FB2E /* LinkRuntime.swift */; };
 		D43B39FF1C8A100E0039FB2E /* LinkRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39F21C8A100E0039FB2E /* LinkRuntime.swift */; };
 		D43B3A001C8A100E0039FB2E /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39F31C8A100E0039FB2E /* main.swift */; };
@@ -122,8 +120,6 @@
 		D43B3A411C8A10C80039FB2E /* SemaError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A321C8A10C80039FB2E /* SemaError.swift */; };
 		D43B3A421C8A10C80039FB2E /* SemaScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A331C8A10C80039FB2E /* SemaScope.swift */; };
 		D43B3A431C8A10C80039FB2E /* SemaScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A331C8A10C80039FB2E /* SemaScope.swift */; };
-		D43B3A441C8A10C80039FB2E /* SemaTypeCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A341C8A10C80039FB2E /* SemaTypeCheck.swift */; };
-		D43B3A451C8A10C80039FB2E /* SemaTypeCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A341C8A10C80039FB2E /* SemaTypeCheck.swift */; };
 		D43B3A461C8A10C80039FB2E /* StmtSema.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A351C8A10C80039FB2E /* StmtSema.swift */; };
 		D43B3A471C8A10C80039FB2E /* StmtSema.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A351C8A10C80039FB2E /* StmtSema.swift */; };
 		D43B3A481C8A10C80039FB2E /* StructSema.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A361C8A10C80039FB2E /* StructSema.swift */; };
@@ -140,10 +136,6 @@
 		D43B3A861C8A11F80039FB2E /* Optimiser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A811C8A11F80039FB2E /* Optimiser.cpp */; };
 		D43B3A8A1C8A12090039FB2E /* Interpreter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A891C8A12090039FB2E /* Interpreter.swift */; };
 		D43B3A8B1C8A12090039FB2E /* Interpreter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A891C8A12090039FB2E /* Interpreter.swift */; };
-		D43B3A8E1C8A12D70039FB2E /* ASTInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A8C1C8A12D70039FB2E /* ASTInterface.swift */; };
-		D43B3A8F1C8A12D70039FB2E /* ASTInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A8C1C8A12D70039FB2E /* ASTInterface.swift */; };
-		D43B3A901C8A12D70039FB2E /* LinkAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A8D1C8A12D70039FB2E /* LinkAST.swift */; };
-		D43B3A911C8A12D70039FB2E /* LinkAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A8D1C8A12D70039FB2E /* LinkAST.swift */; };
 		D44529561CB00A6F00AFA099 /* RefCountInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44529551CB00A6F00AFA099 /* RefCountInst.swift */; };
 		D44529571CB00A6F00AFA099 /* RefCountInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44529551CB00A6F00AFA099 /* RefCountInst.swift */; };
 		D4536E101CF7A2E3000C7382 /* RuntimeObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CA32091CEA71F3009C2B10 /* RuntimeObject.swift */; };
@@ -270,7 +262,6 @@
 		D43B39EB1C8A0FAB0039FB2E /* Test.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; name = Test.playground; path = Vist/lib/Test.playground; sourceTree = "<group>"; };
 		D43B39EF1C8A100E0039FB2E /* CommandLine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CommandLine.swift; path = lib/Pipeline/CommandLine.swift; sourceTree = "<group>"; };
 		D43B39F01C8A100E0039FB2E /* Compile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Compile.swift; path = lib/Pipeline/Compile.swift; sourceTree = "<group>"; };
-		D43B39F11C8A100E0039FB2E /* Config.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Config.swift; path = lib/Pipeline/Config.swift; sourceTree = "<group>"; };
 		D43B39F21C8A100E0039FB2E /* LinkRuntime.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LinkRuntime.swift; path = lib/Pipeline/LinkRuntime.swift; sourceTree = "<group>"; };
 		D43B39F31C8A100E0039FB2E /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = main.swift; path = lib/Pipeline/main.swift; sourceTree = "<group>"; };
 		D43B3A041C8A10390039FB2E /* Lexer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Lexer.swift; path = lib/Lexer/Lexer.swift; sourceTree = "<group>"; };
@@ -293,7 +284,6 @@
 		D43B3A311C8A10C80039FB2E /* Mangle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Mangle.swift; path = lib/Sema/Mangle.swift; sourceTree = "<group>"; };
 		D43B3A321C8A10C80039FB2E /* SemaError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SemaError.swift; path = lib/Sema/SemaError.swift; sourceTree = "<group>"; };
 		D43B3A331C8A10C80039FB2E /* SemaScope.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SemaScope.swift; path = lib/Sema/SemaScope.swift; sourceTree = "<group>"; };
-		D43B3A341C8A10C80039FB2E /* SemaTypeCheck.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SemaTypeCheck.swift; path = lib/Sema/SemaTypeCheck.swift; sourceTree = "<group>"; };
 		D43B3A351C8A10C80039FB2E /* StmtSema.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StmtSema.swift; path = lib/Sema/StmtSema.swift; sourceTree = "<group>"; };
 		D43B3A361C8A10C80039FB2E /* StructSema.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StructSema.swift; path = lib/Sema/StructSema.swift; sourceTree = "<group>"; };
 		D43B3A371C8A10C80039FB2E /* TypeProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TypeProvider.swift; path = lib/Sema/TypeProvider.swift; sourceTree = "<group>"; };
@@ -303,8 +293,6 @@
 		D43B3A811C8A11F80039FB2E /* Optimiser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Optimiser.cpp; path = lib/LLVMOptimiser/Optimiser.cpp; sourceTree = "<group>"; };
 		D43B3A821C8A11F80039FB2E /* Optimiser.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Optimiser.hpp; path = lib/LLVMOptimiser/Optimiser.hpp; sourceTree = "<group>"; };
 		D43B3A891C8A12090039FB2E /* Interpreter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Interpreter.swift; path = lib/Interpreter/Interpreter.swift; sourceTree = "<group>"; };
-		D43B3A8C1C8A12D70039FB2E /* ASTInterface.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ASTInterface.swift; path = lib/AST/Link/ASTInterface.swift; sourceTree = "<group>"; };
-		D43B3A8D1C8A12D70039FB2E /* LinkAST.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LinkAST.swift; path = lib/AST/Link/LinkAST.swift; sourceTree = "<group>"; };
 		D43DF1EC1C5540AF0049EC2F /* stdlib_.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib_.ll; path = stdlib/stdlib_.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D44529551CB00A6F00AFA099 /* RefCountInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RefCountInst.swift; path = Instructions/RefCountInst.swift; sourceTree = "<group>"; };
 		D45D4CFE1C74F5E400918E04 /* stdlib.bc */ = {isa = PBXFileReference; lastKnownFileType = file; name = stdlib.bc; path = stdlib/stdlib.bc; sourceTree = "<group>"; };
@@ -485,15 +473,6 @@
 			name = Compiler;
 			sourceTree = "<group>";
 		};
-		D43B3A921C8A12DA0039FB2E /* Link AST */ = {
-			isa = PBXGroup;
-			children = (
-				D43B3A8C1C8A12D70039FB2E /* ASTInterface.swift */,
-				D43B3A8D1C8A12D70039FB2E /* LinkAST.swift */,
-			);
-			name = "Link AST";
-			sourceTree = "<group>";
-		};
 		D44DB8881C316DA500EBCD9F /* Runtime */ = {
 			isa = PBXGroup;
 			children = (
@@ -633,7 +612,6 @@
 				D43B3A151C8A105B0039FB2E /* ScopeNode.swift */,
 				D4F3D7F91CAC35AE005A3B07 /* Attribute.swift */,
 				D43B3A141C8A105B0039FB2E /* Print.swift */,
-				D43B3A921C8A12DA0039FB2E /* Link AST */,
 			);
 			name = AST;
 			sourceTree = "<group>";
@@ -643,7 +621,6 @@
 			children = (
 				D43B3A321C8A10C80039FB2E /* SemaError.swift */,
 				D43B3A331C8A10C80039FB2E /* SemaScope.swift */,
-				D43B3A341C8A10C80039FB2E /* SemaTypeCheck.swift */,
 				D43B3A311C8A10C80039FB2E /* Mangle.swift */,
 				D408D9A81C8A0B03002E364D /* Expose */,
 				D4E347291C6254E200CC2F8E /* Type Check */,
@@ -658,7 +635,6 @@
 				D43B39EF1C8A100E0039FB2E /* CommandLine.swift */,
 				D43B39F01C8A100E0039FB2E /* Compile.swift */,
 				D4326E3A1CA5FB7E0016E595 /* NSTask.swift */,
-				D43B39F11C8A100E0039FB2E /* Config.swift */,
 				D43B39F21C8A100E0039FB2E /* LinkRuntime.swift */,
 			);
 			name = Pipeline;
@@ -814,8 +790,6 @@
 				D43B39A41C8A0EDF0039FB2E /* VIR.swift in Sources */,
 				D43B39DD1C8A0F3A0039FB2E /* LiteralInst.swift in Sources */,
 				D4A000311CCA7F7000157D90 /* BuiltinLower.swift in Sources */,
-				D43B3A8F1C8A12D70039FB2E /* ASTInterface.swift in Sources */,
-				D43B39FD1C8A100E0039FB2E /* Config.swift in Sources */,
 				D4536E101CF7A2E3000C7382 /* RuntimeObject.swift in Sources */,
 				D43B3A091C8A10390039FB2E /* Token.swift in Sources */,
 				D49248551CF7788A009FD509 /* StdLibInline.swift in Sources */,
@@ -876,7 +850,6 @@
 				D4A0003D1CCA9BC300157D90 /* LLVMWrapper.swift in Sources */,
 				D43B3A4F1C8A11180039FB2E /* Scope.swift in Sources */,
 				D43B3A861C8A11F80039FB2E /* Optimiser.cpp in Sources */,
-				D43B3A911C8A12D70039FB2E /* LinkAST.swift in Sources */,
 				D4A000221CCA7E4D00157D90 /* LiteralLower.swift in Sources */,
 				D43B39A21C8A0EDF0039FB2E /* Value.swift in Sources */,
 				D43B3A1E1C8A105B0039FB2E /* Expr.swift in Sources */,
@@ -887,7 +860,6 @@
 				D4F3D7FF1CAC419E005A3B07 /* CreateType.cpp in Sources */,
 				D43B39FB1C8A100E0039FB2E /* Compile.swift in Sources */,
 				D43B39B31C8A0F140039FB2E /* FunctionType.swift in Sources */,
-				D43B3A451C8A10C80039FB2E /* SemaTypeCheck.swift in Sources */,
 				D43B39BF1C8A0F140039FB2E /* TypeAlias.swift in Sources */,
 				D41BF54D1C5CD797004A1962 /* Tests.swift in Sources */,
 				D43B3A8B1C8A12090039FB2E /* Interpreter.swift in Sources */,
@@ -920,7 +892,6 @@
 				D43B39D81C8A0F3A0039FB2E /* BuiltinInst.swift in Sources */,
 				D43B39B21C8A0F140039FB2E /* FunctionType.swift in Sources */,
 				D4CA320A1CEA71F3009C2B10 /* RuntimeObject.swift in Sources */,
-				D43B3A901C8A12D70039FB2E /* LinkAST.swift in Sources */,
 				D43B39BC1C8A0F140039FB2E /* Type.swift in Sources */,
 				D4326E3E1CA6F0140016E595 /* ExistentialInst.swift in Sources */,
 				D4C0900F1CCFC931008B69F1 /* shims.c in Sources */,
@@ -946,7 +917,6 @@
 				D4F3D8051CAC4243005A3B07 /* LowerError.swift in Sources */,
 				D43B3A381C8A10C80039FB2E /* ExprSema.swift in Sources */,
 				D43B39BE1C8A0F140039FB2E /* TypeAlias.swift in Sources */,
-				D43B3A441C8A10C80039FB2E /* SemaTypeCheck.swift in Sources */,
 				D43B39E21C8A0F3A0039FB2E /* VariableInst.swift in Sources */,
 				D4A000361CCA7FFA00157D90 /* OperandLower.swift in Sources */,
 				D43B39F81C8A100E0039FB2E /* CommandLine.swift in Sources */,
@@ -984,7 +954,6 @@
 				D43B3A3A1C8A10C80039FB2E /* FunctionSema.swift in Sources */,
 				D43B3A481C8A10C80039FB2E /* StructSema.swift in Sources */,
 				D43B39911C8A0EDF0039FB2E /* BasicBlock.swift in Sources */,
-				D43B39FC1C8A100E0039FB2E /* Config.swift in Sources */,
 				D43B3A061C8A10390039FB2E /* Lexer.swift in Sources */,
 				D4F3D7FE1CAC419E005A3B07 /* CreateType.cpp in Sources */,
 				D43B3A401C8A10C80039FB2E /* SemaError.swift in Sources */,
@@ -996,7 +965,6 @@
 				D437F7FD1CA95E7F0089F5DE /* ArrayInst.swift in Sources */,
 				D4A000241CCA7E8F00157D90 /* CFGLower.swift in Sources */,
 				D4728BE71C960E22003294B0 /* Folding.swift in Sources */,
-				D43B3A8E1C8A12D70039FB2E /* ASTInterface.swift in Sources */,
 				D4728BDD1C944397003294B0 /* Accessor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

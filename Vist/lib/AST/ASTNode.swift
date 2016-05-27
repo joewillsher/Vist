@@ -29,6 +29,15 @@ final class AST : ASTNode, ScopeNode {
     var astName: String { return "AST" }
 }
 
+
+extension AST {
+    func sema(globalScope globalScope: SemaScope) throws {
+        try walkChildren { node in
+            try node.typeForNode(globalScope)
+        }
+    }
+}
+
 /// Type erased `Typed` protocol
 ///
 /// Conformants have a `_type` member which is an existential type

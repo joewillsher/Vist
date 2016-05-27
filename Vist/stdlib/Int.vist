@@ -1,0 +1,75 @@
+
+// ----------------------------------------------------
+// types
+// ----------------------------------------------------
+
+
+/// initialises a swift string representing an integer
+func int64ToString :: Int -> String = (number) {
+    
+    let size = 21 // max possible 64 bit int is 19 chars,
+                  // plus 1 for null and 1 possible sign char
+    let buffer = Builtin.stack_alloc size.value // alloc buffer
+    
+    var bufferSize = 1 // start with buffer size 1 for the null terminator
+    var val = number
+    var ptr = buffer + size // the end of the buffer
+
+    // if its negative, print the normalised val, then later print a - sign
+    let isNegative = number < 0
+    if (isNegative) do
+        val = 0 - val
+
+    // until the val is 0 we add new chars to the buffer
+    // if it is initially 0 we put one '0' in
+    while val != 0 || (number == 0 && bufferSize == 1) {
+        ptr = ptr - 1 // move back a char
+        
+        let v = val % 10 + 48 // magic number 48 shifts 0 to the correct unicode code point for '0'
+        let char = Builtin.trunc_int_8 v.value // get an i8
+        
+        Builtin.opaque_store ptr char // store char in string
+        
+        val = val / 10 // remove the last digit we just added
+        bufferSize = bufferSize + 1 // increment buffer size
+    }
+    
+    if (isNegative) {
+        ptr = ptr - 1
+        let minus = 45 
+        let char = Builtin.trunc_int_8 minus.value
+        
+        Builtin.opaque_store ptr char
+        bufferSize = bufferSize + 1 // inc buffer size
+    }
+    
+    let isUTF8 = true
+    let s = String ptr bufferSize.value isUTF8.value
+    return s
+}
+
+type Int {
+    var value: Builtin.Int64
+    
+    init () = {
+        let v = 0
+        value = v.value
+    }
+    init Int = (val) do value = val.value
+    
+    func description :: -> String = do
+        return int64ToString self
+    
+}
+type Int32 {
+    var value: Builtin.Int32
+    init Int32 = (val) do value = val.value
+}
+
+
+@public @noinline
+func print :: Int = (a) {
+    _print (a.description ())
+    _print "\n"
+}
+

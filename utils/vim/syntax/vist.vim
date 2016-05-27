@@ -19,7 +19,7 @@ syn keyword vistBoolean true false
 syn match vistDecimal /[+\-]\?\<\([0-9][0-9_]*\)\([.][0-9_]*\)\?)\?\>/
 syn match vistHex /[+\-]\?\<0x[0-9A-Fa-f][0-9A-Fa-f_]*\(\([.][0-9A-Fa-f_]*\)\?[pP][+\-]\?[0-9][0-9_]*\)\?\>/
 
-syn region vistComment <D-§>start="//" end="$"
+syn region vistComment start="//" end="$"
 syn region vistComment start="/\*" end="\*/"
 syn region vistString start=/"/ skip=/\\\\\|\\"/ end=/"/
 

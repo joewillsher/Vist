@@ -11,7 +11,7 @@ import class Foundation.NSFileManager
 
 /// Link the module with another IR file
 /// - note: The file extension matters, the file is compiled to a bc file and linked
-func importFile(file: String, directory: String, inout into module: LLVMModuleRef, demanglingSymbols: Bool = true) {
+func importFile(file: String, directory: String, inout into module: LLVMModule, demanglingSymbols: Bool = true) {
     
     let path: String
 
@@ -36,30 +36,23 @@ func importFile(file: String, directory: String, inout into module: LLVMModuleRe
         path = "\(directory)/\(file).bc"
     }
     
-    let buffer = UnsafeMutablePointer<LLVMMemoryBufferRef>.alloc(1)
-    let str = UnsafeMutablePointer<UnsafeMutablePointer<Int8>>.alloc(1)
+    let sourceModule = LLVMModule(path: path, name: file)
     
-    LLVMCreateMemoryBufferWithContentsOfFile(path, buffer, str)
-    
-    var runtimeModule = LLVMModuleCreateWithName(file)
-    
-    LLVMGetBitcodeModule(buffer.memory, &runtimeModule, str)
-    
-    // mangle names
-    if demanglingSymbols {
-        var function = LLVMGetFirstFunction(runtimeModule)
-        
-        while function != nil {
-            defer { function = LLVMGetNextFunction(function) }
-            
-            let name = String.fromCString(LLVMGetValueName(function))!
-            guard name.hasPrefix("vist$U") else { continue }
-            
-            LLVMSetValueName(function, name.demangleRuntimeName())
-        }
+    defer {
+        // we import the source into the target
+        module.importFrom(sourceModule)
+        _ = try? NSFileManager.defaultManager().removeItemAtPath(path)
     }
     
-    LLVMLinkModules(module, runtimeModule, LLVMLinkerDestroySource, str)
+    // mangle names
+    guard demanglingSymbols else { return }
     
-    _ = try? NSFileManager.defaultManager().removeItemAtPath(path)
+    for function in sourceModule.functions {
+        let name = String.fromCString(function.name!)!
+        guard name.hasPrefix("vist$U") else { continue }
+        function.name = name.demangleRuntimeName()
+    }
+    
 }
+
+

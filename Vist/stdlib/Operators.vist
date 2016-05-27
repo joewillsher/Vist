@@ -1,0 +1,155 @@
+
+@public @inline @operator(80)
+func + :: Builtin.OpaquePointer Int -> Builtin.OpaquePointer = (pointer offset) do
+    return Builtin.advance_pointer pointer offset.value
+
+@public @inline @operator(80)
+func - :: Builtin.OpaquePointer Int -> Builtin.OpaquePointer = (pointer offset) {
+    let s = 0 - offset
+    return Builtin.advance_pointer pointer s.value
+}
+
+// int
+@public @inline @operator(80)
+func + :: Int Int -> Int = (a b) {
+    let v = Builtin.i_add a.value b.value
+    Builtin.cond_fail v.1
+    return Int v.0
+}
+
+@public @inline @operator(80)
+func - :: Int Int -> Int = (a b) {
+    let v = Builtin.i_sub a.value b.value
+    Builtin.cond_fail v.1
+    return Int v.0
+}
+
+@public @inline @operator(100)
+func * :: Int Int -> Int = (a b) {
+    let v = Builtin.i_mul a.value b.value
+    Builtin.cond_fail v.1
+    return Int v.0
+}
+
+@public @inline @operator(20)
+func == :: Int Int -> Bool = (a b) do
+    return Bool (Builtin.i_eq a.value b.value)
+
+@public @inline @operator(20)
+func != :: Int Int -> Bool = (a b) do
+    return Bool (Builtin.i_neq a.value b.value)
+
+@public @inline @operator(100)
+func / :: Int Int -> Int = (a b) {
+    //assert b != 0
+    return Int (Builtin.i_div a.value b.value)
+}
+@public @inline @operator(90)
+func % :: Int Int -> Int = (a b) do
+    return Int (Builtin.i_rem a.value b.value)
+
+@public @inline @operator(30)
+func < :: Int Int -> Bool = (a b) do
+    return Bool (Builtin.i_cmp_lt a.value b.value)
+
+@public @inline @operator(30)
+func <= :: Int Int -> Bool = (a b) do
+    return Bool (Builtin.i_cmp_lte a.value b.value)
+
+@public @inline @operator(30)
+func >= :: Int Int -> Bool = (a b) do
+    return Bool (Builtin.i_cmp_gte a.value b.value)
+
+@public @inline @operator(30)
+func > :: Int Int -> Bool = (a b) do
+    return Bool (Builtin.i_cmp_gt a.value b.value)
+
+@public @inline @operator(50)
+func << :: Int Int -> Int = (a b) do
+    return Int (Builtin.i_shl a.value b.value)
+
+@public @inline @operator(50)
+func >> :: Int Int -> Int = (a b) do
+    return Int (Builtin.i_shr a.value b.value)
+
+@public @inline @operator(95)
+func ~& :: Int Int -> Int = (a b) do
+    return Int (Builtin.i_and a.value b.value)
+
+@public @inline @operator(90)
+func ~| :: Int Int -> Int = (a b) do
+    return Int (Builtin.i_or a.value b.value)
+
+@public @inline @operator(90)
+func ~^ :: Int Int -> Int = (a b) do
+    return Int (Builtin.i_xor a.value b.value)
+
+
+
+// bool
+@public @inline @operator(15)
+func && :: Bool Bool -> Bool = (a b) do
+    return Bool (Builtin.b_and a.value b.value)
+
+@public @inline @operator(10)
+func || :: Bool Bool -> Bool = (a b) do
+    return Bool (Builtin.b_or a.value b.value)
+// TODO:: ! prefix operator
+
+
+// float
+@public @inline @operator(80)
+func + :: Double Double -> Double = (a b) do
+    return Double (Builtin.f_add a.value b.value)
+
+@public @inline @operator(80)
+func - :: Double Double -> Double = (a b) do
+    return Double (Builtin.f_sub a.value b.value)
+
+@public @inline @operator(100)
+func * :: Double Double -> Double = (a b) do
+    return Double (Builtin.f_mul a.value b.value)
+
+@public @inline @operator(100)
+func / :: Double Double -> Double = (a b) do
+    return Double (Builtin.f_div a.value b.value)
+
+@public @inline @operator(90)
+func % :: Double Double -> Double = (a b) do
+    return Double (Builtin.f_rem a.value b.value)
+
+@public @inline @operator(30)
+func < :: Double Double -> Bool = (a b) do
+    return Bool (Builtin.f_cmp_lt a.value b.value)
+
+@public @inline @operator(30)
+func <= :: Double Double -> Bool = (a b) do
+    return Bool (Builtin.f_cmp_lte a.value b.value)
+
+@public @inline @operator(30)
+func > :: Double Double -> Bool = (a b) do
+    return Bool (Builtin.f_cmp_gt a.value b.value)
+
+@public @inline @operator(30)
+func >= :: Double Double -> Bool = (a b) do
+    return Bool (Builtin.f_cmp_gte a.value b.value)
+
+@public @inline @operator(20)
+func == :: Double Double -> Bool = (a b) do
+    return Bool (Builtin.f_eq a.value b.value)
+
+@public @inline @operator(20)
+func != :: Double Double -> Bool = (a b) do
+    return Bool (Builtin.f_neq a.value b.value)
+
+
+
+// ranges
+@public @inline @operator(40)
+func ... :: Int Int -> Range = (a b) do
+    return Range a b
+
+@public @inline @operator(40)
+func ..< :: Int Int -> Range = (a b) do
+    return Range a b-1
+

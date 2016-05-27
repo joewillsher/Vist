@@ -378,11 +378,32 @@ struct GlobalMetadataCache {
     private var cachedGlobals: [UnsafeMutablePointer<Void>: LLVMGlobalValue] = [:]
 }
 
+/// A collection which iterates over a module's linked list of functions
+final class FunctionsCollection : SequenceType {
+    typealias Element = LLVMFunction
+    
+    private var function: LLVMValueRef
+    
+    private init(function: LLVMValueRef) { self.function = function }
+    
+    func generate() -> AnyGenerator<LLVMFunction> {
+        return AnyGenerator {
+            if self.function == nil { return nil }
+            defer { self.function = LLVMGetNextFunction(self.function) }
+            return LLVMFunction(ref: self.function)
+        }
+    }
+}
+
 struct LLVMModule : Dumpable {
     private var module: LLVMModuleRef
     var typeMetadata: [String: TypeMetadata] = [:]
     
     private(set) var globals = GlobalMetadataCache()
+    
+    var functions: FunctionsCollection {
+        return FunctionsCollection(function: LLVMGetFirstFunction(module))
+    }
     
     mutating func createLLVMGlobal<T>(forPointer value: UnsafeMutablePointer<T>, baseName: String, inout IGF: IRGenFunction) throws -> LLVMGlobalValue {
         if let global = globals.cachedGlobals[value] {
@@ -394,7 +415,7 @@ struct LLVMModule : Dumpable {
     
     /// Add a LLVM global value to the module
     mutating func createGlobal(val: LLVMValue, forPtr: UnsafeMutablePointer<Void>, baseName: String, inout IGF: IRGenFunction) -> LLVMGlobalValue {
-        var global = LLVMGlobalValue(module: IGF.module, type: val.type, name: baseName)
+        let global = LLVMGlobalValue(module: IGF.module, type: val.type, name: baseName)
         global.initialiser = val
         global.isConstant = true
         if forPtr != nil { globals.cachedGlobals[forPtr] = global }
@@ -452,8 +473,38 @@ struct LLVMModule : Dumpable {
     }
     
     func dump() { LLVMDumpModule(module) }
+    func description() -> String { return String.fromCString(LLVMPrintModuleToString(module))! }
     
-    var dataLayout: String { return String.fromCString(LLVMGetDataLayout(module))! }
+    var dataLayout: String {
+        get { return String.fromCString(LLVMGetDataLayout(module))! }
+        nonmutating set { LLVMSetDataLayout(module, newValue) }
+    }
+    var target: String {
+        get { return String.fromCString(LLVMGetTarget(module))! }
+        nonmutating set { LLVMSetTarget(module, newValue) }
+    }
+    
+    /// An initialiser which loads from a bitcode file
+    /// - precondition: path points at a bitcode file
+    init(path: String, name: String) {
+        precondition(path.hasSuffix(".bc"))
+        
+        let buffer = UnsafeMutablePointer<LLVMMemoryBufferRef>.alloc(1)
+        let str = UnsafeMutablePointer<UnsafeMutablePointer<Int8>>.alloc(1)
+        
+        var runtimeModule = LLVMModuleCreateWithName(name)
+        
+        LLVMCreateMemoryBufferWithContentsOfFile(path, buffer, str)
+        LLVMGetBitcodeModule(buffer.memory, &runtimeModule, str)
+        module = runtimeModule
+    }
+    
+    /// Links modules, importing from `otherModule`
+    func importFrom(otherModule: LLVMModule) {
+        let str = UnsafeMutablePointer<UnsafeMutablePointer<Int8>>.alloc(1)
+        LLVMLinkModules(module, otherModule.module, LLVMLinkerDestroySource, str)
+    }
+    
 }
 
 struct LLVMType : Dumpable {
@@ -520,7 +571,7 @@ struct LLVMValue : Dumpable {
     
     var name: String? {
         get { return String.fromCString(LLVMGetValueName(_value)) }
-        set { if let name = newValue { LLVMSetValueName(_value, name) } }
+        nonmutating set { if let name = newValue { LLVMSetValueName(_value, name) } }
     }
     
     static func constNull(type type: LLVMType) -> LLVMValue {
@@ -565,23 +616,23 @@ struct LLVMGlobalValue : Dumpable {
     
     var hasUnnamedAddr: Bool {
         get { return Bool(LLVMHasUnnamedAddr(value._value)) }
-        set { LLVMSetUnnamedAddr(value._value, LLVMBool(booleanLiteral: newValue)) }
+        nonmutating set { LLVMSetUnnamedAddr(value._value, LLVMBool(booleanLiteral: newValue)) }
     }
     var isExternallyInitialised: Bool {
         get { return Bool(LLVMIsExternallyInitialized(value._value)) }
-        set { LLVMSetExternallyInitialized(value._value, LLVMBool(booleanLiteral: newValue)) }
+        nonmutating set { LLVMSetExternallyInitialized(value._value, LLVMBool(booleanLiteral: newValue)) }
     }
     var initialiser: LLVMValue {
         get { return LLVMValue(ref: LLVMGetInitializer(value._value)) }
-        set { LLVMSetInitializer(value._value, newValue._value) }
+        nonmutating set { LLVMSetInitializer(value._value, newValue._value) }
     }
     var linkage: LLVMLinkage {
         get { return try! LLVMGetLinkage(value.val()) }
-        set(linkage) { try! LLVMSetLinkage(value.val(), linkage) }
+        nonmutating set(linkage) { try! LLVMSetLinkage(value.val(), linkage) }
     }
     var isConstant: Bool {
         get { return try! LLVMIsConstant(value.val()) != 0 }
-        set { try! LLVMSetGlobalConstant(value.val(), newValue ? 1 : 0) }
+        nonmutating set { try! LLVMSetGlobalConstant(value.val(), newValue ? 1 : 0) }
     }
     
     var type: LLVMType {
@@ -611,11 +662,11 @@ struct LLVMFunction : Dumpable {
     }
     var visibility: LLVMVisibility {
         get { return try! LLVMGetVisibility(function.val()) }
-        set(vis) { try! LLVMSetVisibility(function.val(), vis) }
+        nonmutating set(vis) { try! LLVMSetVisibility(function.val(), vis) }
     }
     var linkage: LLVMLinkage {
         get { return try! LLVMGetLinkage(function.val()) }
-        set(linkage) { try! LLVMSetLinkage(function.val(), linkage) }
+        nonmutating set(linkage) { try! LLVMSetLinkage(function.val(), linkage) }
     }
 
     func appendBasicBlock(named name: String) throws -> LLVMBasicBlock {
@@ -631,7 +682,7 @@ struct LLVMFunction : Dumpable {
     var paramCount: Int { return try! Int(LLVMCountParams(function.val())) }
     var name: String? {
         get { return function.name }
-        set { function.name = newValue }
+        nonmutating set { function.name = newValue }
     }
     
     var type: LLVMType { return function.type }

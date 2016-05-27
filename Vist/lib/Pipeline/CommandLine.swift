@@ -9,6 +9,7 @@
 import class Foundation.NSPipe
 import class Foundation.NSNumberFormatter
 import CoreFoundation.CFDate
+import class Foundation.NSString
 
 public func compileWithOptions(flags: [String], inDirectory dir: String, out: NSPipe? = nil) throws {
     
@@ -38,7 +39,10 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
     for flag in flags.flatMap({map[$0]}) {
         compileOptions.insert(flag)
     }
-        
+    let explicitName = flags
+        .find { flag in flag.hasPrefix("-o") }
+        .map { name in name.stringByReplacingOccurrencesOfString("-o", withString: "") }
+    
     if flags.contains("-h") || flags.contains("-help") {
         print(
             "\nUSAGE:  vist [options] <input.vist>\n\nOPTIONS:\n" +
@@ -49,6 +53,7 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
                 "  -emit-vir\t\t- Print the VIR file\n" +
                 "  -emit-asm\t\t- print the assembly code\n" +
                 "  -run -r\t\t- Run the program after compilation\n" +
+                "  -oNAME -r\t\t- Define the output name to be NAME\n" +
                 "  -build-stdlib\t\t- Build the standard library too\n" +
                 "  -parse-stdlib\t\t- Compile the module as if it were the stdlib. This exposes Builtin functions and links the runtime directly\n" +
                 "  -build-runtime\t- Build the runtime\n" +
@@ -63,13 +68,15 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
         if flags.contains("-build-stdlib") {
             var o: CompileOptions = [.buildStdLib, .Ohigh]
             if o.contains(.verbose) { o.insert(.verbose) }
-            try compileDocuments(["stdlib.vist"],
+            try compileDocuments(["Int.vist", "Operators.vist", "Other.vist", "String.vist" ],
                                  inDirectory: "\(SOURCE_ROOT)/Vist/Stdlib",
+                                 explicitName: "stdlib",
                                  options: o)
         }
         if !files.isEmpty {
             try compileDocuments(files,
                                  inDirectory: dir,
+                                 explicitName: explicitName,
                                  out: out,
                                  options: compileOptions)
         }
@@ -78,7 +85,7 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
         }
         
         #if DEBUG
-            let f = NSNumberFormatter()
+            let f = NSNumberFormatter() 
             f.maximumFractionDigits = 2
             f.minimumFractionDigits = 2
             print("\nCompile took: \(f.stringFromNumber(CFAbsoluteTimeGetCurrent() - s)!)s")

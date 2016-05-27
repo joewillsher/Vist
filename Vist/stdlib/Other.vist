@@ -1,0 +1,76 @@
+
+type Bool {
+    var value: Builtin.Bool
+    
+    init () = {
+        let b = false
+        value = b.value
+    }
+    init Bool = (val) do value = val.value
+
+    func description :: -> String = do
+        if self do return "true"
+           else do return "false"
+}
+
+type Double {
+    var value: Builtin.Double
+    init Double = (val) do value = val.value
+}
+
+type Range {
+    var start: Int, end: Int
+    init Range = (val) {
+        start = val.start
+        end = val.end
+    }
+    
+    /// A generator -- yields each element in the range
+    func generate:: -> Int = {
+        var i = start
+        while (i < end) {
+            yield i
+            i = i + 1
+        }
+    }
+}
+
+// ----------------------------------------------------
+// free functions
+// ----------------------------------------------------
+
+@public @inline func print :: Int32 = (a) do vist_cshim_print a.value
+@public @inline func print :: Double = (a) do vist_cshim_print a.value
+
+
+// TODO: print message
+
+@inline func _expect :: Bool Bool -> Bool = (val assume) do
+    return Bool (Builtin.expect val.value assume.value)
+
+@public @inline @noreturn func fatalError :: () = do Builtin.trap ()
+
+
+
+
+
+// ranges
+@public @inline @operator(40)
+func ... :: Int Int -> Range = (a b) do
+    return Range a b
+
+@public @inline @operator(40)
+func ..< :: Int Int -> Range = (a b) do
+    return Range a b-1
+
+
+
+
+@public @noinline
+@inline func print :: Bool = (b) {
+    _print (b.description ())
+    _print "\n"
+}
+
+
+

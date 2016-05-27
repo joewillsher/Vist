@@ -35,7 +35,7 @@ struct StdLib {
         ], name: "String")
     private static let voidType = BuiltinType.void
     
-    private static let types = [intType, boolType, doubleType, rangeType, utf8CodeUnitType, utf16CodeUnitType, stringType]
+    private static let types = [intType, int32Type, boolType, doubleType, rangeType, utf8CodeUnitType, utf16CodeUnitType, stringType]
     
     //    private static let concepts: [ConceptType] = [ConceptType(name: "Generator", requiredFunctions: [("generate", FunctionType(params: [], returns: intType))], requiredProperties: [])]
     
@@ -95,7 +95,10 @@ struct StdLib {
         ("assert",     FunctionType(params: [boolType],   returns: voidType)),
         ("fatalError", FunctionType(params: [],           returns: voidType)),
         
-        
+        // TODO: when we can link parallel compiled files' AST we 
+        //       won't need to expose private stdlib function
+        ("_print",      FunctionType(params: [stringType], returns: voidType)),
+
         //         initialisers
         // ones which take Builtin types are used to wrap literals
         ("Int",     FunctionType(params: [BuiltinType.int(size: 64)],   returns: intType)),
@@ -104,8 +107,8 @@ struct StdLib {
         ("Int32",   FunctionType(params: [int32Type],                   returns: int32Type)),
         ("Bool",    FunctionType(params: [BuiltinType.bool],            returns: boolType)),
         ("Bool",    FunctionType(params: [boolType],                    returns: intType)),
-        ("Float",   FunctionType(params: [BuiltinType.float(size: 64)], returns: doubleType)),
-        ("Float",   FunctionType(params: [doubleType],                  returns: intType)),
+        ("Double",  FunctionType(params: [BuiltinType.float(size: 64)], returns: doubleType)),
+        ("Double",  FunctionType(params: [doubleType],                  returns: intType)),
         ("Range",   FunctionType(params: [intType, intType],            returns: rangeType)),
         ("Range",   FunctionType(params: [rangeType],                   returns: rangeType)),
         ("String",  FunctionType(params: [BuiltinType.opaquePointer, BuiltinType.int(size: 64), BuiltinType.bool], returns: stringType)),

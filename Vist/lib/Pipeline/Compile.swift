@@ -58,6 +58,7 @@ struct CompileOptions : OptionSetType {
 func compileDocuments(
     fileNames: [String],
     inDirectory currentDirectory: String,
+    explicitName: String? = nil,
     out: NSPipe? = nil,
     options: CompileOptions
     ) throws {
@@ -71,7 +72,8 @@ func compileDocuments(
         
         let path = "\(currentDirectory)/\(fileName)"
         let doc = try String(contentsOfFile: path, encoding: NSUTF8StringEncoding)
-        if options.contains(.verbose) { print("----------------------------SOURCE-----------------------------", doc, "\n\n-----------------------------TOKS------------------------------\n") }
+        if options.contains(.verbose) {
+            print("----------------------------SOURCE-----------------------------", doc, "\n\n-----------------------------TOKS------------------------------\n") }
         
         // Lex code
         let tokens = try doc.getTokens()
@@ -90,7 +92,7 @@ func compileDocuments(
         if options.contains(.verbose) { ast.dump() }
         
         if let h = head {
-            head = try astLink(h, other: [ast])
+            h.exprs.appendContentsOf(ast.exprs)
         }
         
         if index == 0 {
@@ -101,25 +103,37 @@ func compileDocuments(
         }
     }
     
-    if options.contains(.verbose) { print("\n------------------------SEMA & LINK AST----------------------------\n") }
+    if options.contains(.verbose) {
+        print("\n------------------------SEMA & LINK AST----------------------------\n")
+    }
     
-    guard let main = head else { fatalError("No main file supplied") }
+    guard let main = head else {
+        fatalError("No main file supplied")
+    }
     let ast = main
     
     // TODO: parralelise file compilation
     
-    try sema(ast, globalScope: globalScope)
-    if options.contains(.dumpAST) { print(ast.astDescription()); return }
-    if options.contains(.verbose) { print(ast.astDescription(), "\n----------------------------VIR GEN-------------------------------\n") }
+    try ast.sema(globalScope: globalScope)
+    if options.contains(.dumpAST) {
+        ast.dump()
+        return
+    }
+    if options.contains(.verbose) {
+        ast.dump()
+        print("\n----------------------------VIR GEN-------------------------------\n")
+    }
     
-    let file = fileNames.first!.stringByReplacingOccurrencesOfString(".vist", withString: "")
+    let file = explicitName ?? fileNames.first!.stringByReplacingOccurrencesOfString(".vist", withString: "")
     
     let virModule = Module()
     
     try ast.emitVIR(module: virModule, isLibrary: options.contains(.produceLib))
     try virModule.vir.writeToFile("\(currentDirectory)/\(file)_.vir", atomically: true, encoding: NSUTF8StringEncoding)
     
-    if options.contains(.verbose) { print(virModule.vir, "\n----------------------------VIR OPT-------------------------------\n") }
+    if options.contains(.verbose) {
+        print(virModule.vir, "\n----------------------------VIR OPT-------------------------------\n")
+    }
     
     try virModule.runPasses(optLevel: options.optLevel())
     try virModule.vir.writeToFile("\(currentDirectory)/\(file).vir", atomically: true, encoding: NSUTF8StringEncoding)
@@ -133,12 +147,12 @@ func compileDocuments(
 
     let stdlibDirectory = "\(SOURCE_ROOT)/Vist/stdlib"
 
-    var llvmModule = LLVMModuleCreateWithName(file)
+    var llvmModule = LLVMModule(name: file)
     if options.contains(.linkWithRuntime) {
         importFile("shims.c", directory: stdlibDirectory, into: &llvmModule)
     }
-    configModule(llvmModule)
-    
+    llvmModule.dataLayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
+    llvmModule.target = "x86_64-apple-macosx10.11.0"
     
     defer {
         // remove files
@@ -150,26 +164,34 @@ func compileDocuments(
     }
     
     // Generate LLVM IR code for program
-    if options.contains(.verbose) { print("\n-----------------------------IR LOWER------------------------------\n") }
-    try virModule.virLower(LLVMModule(ref: llvmModule), isStdLib: options.contains(.parseStdLib))
+    if options.contains(.verbose) {
+        print("\n-----------------------------IR LOWER------------------------------\n")
+    }
+    try virModule.virLower(llvmModule, isStdLib: options.contains(.parseStdLib))
     
     // print and write to file
-    try String.fromCString(LLVMPrintModuleToString(llvmModule))?.writeToFile("\(currentDirectory)/\(file)_.ll", atomically: true, encoding: NSUTF8StringEncoding)
+    let unoptimisedIR = llvmModule.description()
+    try unoptimisedIR.writeToFile("\(currentDirectory)/\(file)_.ll", atomically: true, encoding: NSUTF8StringEncoding)
     
-    if options.contains(.verbose) { LLVMDumpModule(llvmModule); print("\n\n----------------------------OPTIM----------------------------\n") }
-    
+    if options.contains(.verbose) {
+        print(unoptimisedIR, "\n\n----------------------------OPTIM----------------------------\n")
+    }
     
     //run my optimisation passes
     
-    try String.fromCString(LLVMPrintModuleToString(llvmModule))?.writeToFile("\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
+    try performLLVMOptimisations(llvmModule.getModule(),
+                                 Int32(options.optLevel().rawValue),
+                                 options.contains(.compileStdLib))
     
-    performLLVMOptimisations(llvmModule,
-                             Int32(options.optLevel().rawValue),
-                             options.contains(.compileStdLib))
+    let optimisedIR = llvmModule.description()
+    try optimisedIR.writeToFile("\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
     
-    let llvmIR = try String(contentsOfFile: "\(currentDirectory)/\(file).ll", encoding: NSUTF8StringEncoding) ?? ""
-    if options.contains(.dumpLLVMIR) { print(llvmIR); return }
-    if options.contains(.verbose) { print(llvmIR, "\n\n----------------------------LINK-----------------------------\n") }
+    if options.contains(.dumpLLVMIR) {
+        print(optimisedIR); return
+    }
+    if options.contains(.verbose) {
+        print(optimisedIR, "\n\n----------------------------LINK-----------------------------\n")
+    }
     
     let libVistPath = "/usr/local/lib/libvist.dylib"
     let libVistRuntimePath = "/usr/local/lib/libvistruntime.dylib"

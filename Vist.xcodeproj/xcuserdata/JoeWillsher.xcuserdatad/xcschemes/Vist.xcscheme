@@ -96,7 +96,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-build-stdlib"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-parse-stdlib"
@@ -108,7 +108,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-debug-runtime"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-run"
@@ -121,6 +121,10 @@
          <CommandLineArgument
             argument = "Random.vist"
             isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "test.vist"
+            isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>

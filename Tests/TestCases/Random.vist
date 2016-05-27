@@ -53,6 +53,20 @@ while i < 100000000 {
 
 
 
+/*
+type Foo {
+  
+  @mutating func foo :: Int = do ...
+  func [mutating] foo :: Int = do ...
+  [mutating] func foo :: Int = do ...
+
+}
+
+@inline @operator(80) func + :: Int Int -> Int = do ...
+func [inline, operator=80] + :: Int Int -> Int = do ...
+[inline, operator=80] func + :: Int Int -> Int = do ...
+*/
+
 
 
 
