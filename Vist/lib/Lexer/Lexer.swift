@@ -9,6 +9,7 @@
 import class Foundation.NSString
 import class Foundation.NSNumberFormatter
 import enum Foundation.NSNumberFormatterStyle
+import class Foundation.NSScanner
 
 //-------------------------------------------------------------------------------------------------------------------------
 //  MARK:                                              Helpers
@@ -63,9 +64,15 @@ private extension Character {
     
     func isNumOr_() -> Bool {
         return isdigit(value) != 0 || self == "_" || self == "."
-        
+    }
+    func isHexNumOr_() -> Bool {
+        return ishexnumber(value) != 0 || self == "_"
+    }
+    func isBinNumOr_() -> Bool {
+        return self == "0" || self == "1" || self == "_"
     }
     
+
     func isSymbol() -> Bool {
         return (isblank(value) != 1) && isOperatorCodeUnit() || stdlibOperators.reduce("", combine: +).characters.contains(self)
     }
@@ -161,6 +168,18 @@ private extension Token {
     }
     
     static func fromNumberLiteral(numeric: String) -> Token {
+        
+        guard !numeric.hasPrefix("0x") else {
+            var int: UInt64 = 0
+            NSScanner(string: numeric).scanHexLongLong(&int)
+            return .integerLiteral(Int(int))
+        }
+//        guard !numeric.hasPrefix("0b") else {
+//            var int: UInt64 = 0
+//            NSScanner(string: numeric).scan
+//            return .integerLiteral(Int(int))
+//        }
+        
         //number literal
         let numberFormatter = NSNumberFormatter()
         numberFormatter.numberStyle = NSNumberFormatterStyle.DecimalStyle
@@ -304,10 +323,20 @@ extension Lexer {
     }
     
     mutating private func lexNumber() throws {
-        try lexWhilePredicate {
-            
-            $0.isNumOr_()
-        
+        addChar()
+        let initial = currentChar
+        try consumeChar()
+        if case "x" = currentChar, case "0" = initial {
+            addChar()
+            try consumeChar()
+            try lexWhilePredicate {
+                $0.isHexNumOr_()
+            }
+        }
+        else {
+            try lexWhilePredicate {
+                $0.isNumOr_()
+            }
         }
         try resetContext()
         

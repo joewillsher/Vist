@@ -21,7 +21,7 @@ type Lfsr176 | RandomNumberGenerator {
     state.0 = 1384142
     state.1 = 1939622
     state.2 = 1235977
-    Int64max = 9223372036854775807
+    Int64max = 0x7FFFFFFFFFFFFFFF
     k = (1, 6, 9)
     q = (5, 19, 24)
     s = (24, 13, 17)

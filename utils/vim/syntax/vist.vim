@@ -17,8 +17,9 @@ syn match vistTypeName /\<[A-Za-z_][A-Za-z_0-9\.]*\>/ skipwhite contained nextgr
 
 syn keyword vistBoolean true false
 syn match vistDecimal /[+\-]\?\<\([0-9][0-9_]*\)\([.][0-9_]*\)\?)\?\>/
+syn match vistHex /[+\-]\?\<0x[0-9A-Fa-f][0-9A-Fa-f_]*\(\([.][0-9A-Fa-f_]*\)\?[pP][+\-]\?[0-9][0-9_]*\)\?\>/
 
-syn region vistComment start="//" end="$"
+syn region vistComment <D-§>start="//" end="$"
 syn region vistComment start="/\*" end="\*/"
 syn region vistString start=/"/ skip=/\\\\\|\\"/ end=/"/
 
@@ -56,6 +57,7 @@ hi def link vistTypeName Type
 hi def link vistTypeKeyword Statement
 hi def link vistRefKeyword Statement
 hi def link vistDecimal Number
+hi def link vistHex Number
 hi def link vistTypeInstanceName Type
 hi def link vistTypeConstraint Special
 hi def link vistReturnTypeDeclaration Special

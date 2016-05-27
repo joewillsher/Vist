@@ -63,6 +63,7 @@ struct Explosion<InstType : Inst> {
     private(set) var explodedInstructions: [Inst] = []
     init(inst: InstType) { self.inst = inst }
     
+//    @discardibleResult
     mutating func insert(inst: Inst) -> Operand {
         explodedInstructions.append(inst)
         return Operand(inst)
