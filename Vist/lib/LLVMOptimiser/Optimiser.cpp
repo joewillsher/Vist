@@ -8,7 +8,6 @@
 //
 
 #include "Optimiser.hpp"
-#include "StdLibInline.hpp"
 
 #include "llvm/PassManager.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
@@ -64,10 +63,6 @@ void performLLVMOptimisations(Module *Module, int optLevel, bool isStdLib) {
         PMBuilder.OptLevel = 0;
         PMBuilder.Inliner = createAlwaysInlinerPass(false);
     }
-    
-//    if (!isStdLib)
-//        PMBuilder.addExtension(PassManagerBuilder::EP_ModuleOptimizerEarly,  // Run first thing
-//                               addStdLibInlinePass);                         // The initialiaser pass
     
     // Configure the function passes.
     legacy::FunctionPassManager FunctionPasses(Module);

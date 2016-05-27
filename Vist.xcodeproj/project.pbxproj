@@ -138,8 +138,6 @@
 		D43B3A541C8A11410039FB2E /* VIRLower.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A521C8A11410039FB2E /* VIRLower.swift */; };
 		D43B3A851C8A11F80039FB2E /* Optimiser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A811C8A11F80039FB2E /* Optimiser.cpp */; };
 		D43B3A861C8A11F80039FB2E /* Optimiser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A811C8A11F80039FB2E /* Optimiser.cpp */; };
-		D43B3A871C8A11F80039FB2E /* StdLibInline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A831C8A11F80039FB2E /* StdLibInline.cpp */; };
-		D43B3A881C8A11F80039FB2E /* StdLibInline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A831C8A11F80039FB2E /* StdLibInline.cpp */; };
 		D43B3A8A1C8A12090039FB2E /* Interpreter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A891C8A12090039FB2E /* Interpreter.swift */; };
 		D43B3A8B1C8A12090039FB2E /* Interpreter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A891C8A12090039FB2E /* Interpreter.swift */; };
 		D43B3A8E1C8A12D70039FB2E /* ASTInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A8C1C8A12D70039FB2E /* ASTInterface.swift */; };
@@ -304,8 +302,6 @@
 		D43B3A521C8A11410039FB2E /* VIRLower.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VIRLower.swift; path = lib/VIRLower/VIRLower.swift; sourceTree = "<group>"; };
 		D43B3A811C8A11F80039FB2E /* Optimiser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Optimiser.cpp; path = lib/LLVMOptimiser/Optimiser.cpp; sourceTree = "<group>"; };
 		D43B3A821C8A11F80039FB2E /* Optimiser.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Optimiser.hpp; path = lib/LLVMOptimiser/Optimiser.hpp; sourceTree = "<group>"; };
-		D43B3A831C8A11F80039FB2E /* StdLibInline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StdLibInline.cpp; path = lib/LLVMOptimiser/StdLibInline.cpp; sourceTree = "<group>"; };
-		D43B3A841C8A11F80039FB2E /* StdLibInline.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = StdLibInline.hpp; path = lib/LLVMOptimiser/StdLibInline.hpp; sourceTree = "<group>"; };
 		D43B3A891C8A12090039FB2E /* Interpreter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Interpreter.swift; path = lib/Interpreter/Interpreter.swift; sourceTree = "<group>"; };
 		D43B3A8C1C8A12D70039FB2E /* ASTInterface.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ASTInterface.swift; path = lib/AST/Link/ASTInterface.swift; sourceTree = "<group>"; };
 		D43B3A8D1C8A12D70039FB2E /* LinkAST.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LinkAST.swift; path = lib/AST/Link/LinkAST.swift; sourceTree = "<group>"; };
@@ -437,8 +433,6 @@
 			children = (
 				D43B3A811C8A11F80039FB2E /* Optimiser.cpp */,
 				D43B3A821C8A11F80039FB2E /* Optimiser.hpp */,
-				D43B3A831C8A11F80039FB2E /* StdLibInline.cpp */,
-				D43B3A841C8A11F80039FB2E /* StdLibInline.hpp */,
 			);
 			name = "LLVM Optimiser";
 			sourceTree = "<group>";
@@ -833,7 +827,6 @@
 				D4CF767E1C8CF8490058A8EC /* Runtime.swift in Sources */,
 				D43B3A071C8A10390039FB2E /* Lexer.swift in Sources */,
 				D437F7FE1CA95E7F0089F5DE /* ArrayInst.swift in Sources */,
-				D43B3A881C8A11F80039FB2E /* StdLibInline.cpp in Sources */,
 				D44529571CB00A6F00AFA099 /* RefCountInst.swift in Sources */,
 				D4A000281CCA7EC200157D90 /* AggregateLower.swift in Sources */,
 				D43B3A2B1C8A10A50039FB2E /* FunctionContainer.swift in Sources */,
@@ -975,7 +968,6 @@
 				D43B39E91C8A0FA60039FB2E /* Error.swift in Sources */,
 				D4F3D8021CAC41EB005A3B07 /* Intrinsic.cpp in Sources */,
 				D43B3A1B1C8A105B0039FB2E /* DefinedType.swift in Sources */,
-				D43B3A871C8A11F80039FB2E /* StdLibInline.cpp in Sources */,
 				D4A0002A1CCA7EFA00157D90 /* ExistentialLower.swift in Sources */,
 				D4A000301CCA7F7000157D90 /* BuiltinLower.swift in Sources */,
 				D43B39E01C8A0F3A0039FB2E /* StructInst.swift in Sources */,
