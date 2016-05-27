@@ -22,98 +22,49 @@
 
 #include "llvm/Transforms/Instrumentation.h"
 #include "llvm/Transforms/IPO.h"
-#include "llvm/LTO/LTOModule.h"
-#include "llvm/LTO/LTOCodeGenerator.h"
-#include "llvm/Transforms/Scalar.h"
-#include "llvm/Transforms/Vectorize.h"
-#include "llvm/IR/Verifier.h"
 #include "llvm/Analysis/Passes.h"
 
 #include <iostream>
 
-
 using namespace llvm;
 
-// swift impl here
-// https://github.com/apple/swift/blob/master/lib/IRGen/IRGen.cpp
-// https://github.com/apple/swift/blob/master/tools/swift-llvm-opt/LLVMOpt.cpp
-
 /// Runs the optimisations
-void performLLVMOptimisations(Module *Module, int optLevel, bool isStdLib) {
+void performLLVMOptimisations(Module *module, int optLevel, bool isStdLib) {
     
-    PassManagerBuilder PMBuilder;
+    PassManagerBuilder pmBuilder;
+    PassManager passManager;
     
     if (optLevel != 0) {
-        PMBuilder.OptLevel = 3;
-        PMBuilder.Inliner = createFunctionInliningPass(3, 0);
-        PMBuilder.DisableTailCalls = false;
-        PMBuilder.DisableUnitAtATime = false;
-        PMBuilder.DisableUnrollLoops = false;
-        PMBuilder.BBVectorize = true;
-        PMBuilder.SLPVectorize = true;
-        PMBuilder.LoopVectorize = true;
-        PMBuilder.RerollLoops = true;
-        PMBuilder.LoadCombine = true;
-        PMBuilder.DisableGVNLoadPRE = true;
-        PMBuilder.VerifyInput = true;
-        PMBuilder.VerifyOutput = true;
-        PMBuilder.MergeFunctions = true;
+        pmBuilder.OptLevel = optLevel;
+        pmBuilder.Inliner = createFunctionInliningPass();
+        pmBuilder.DisableTailCalls = false;
+        pmBuilder.DisableUnitAtATime = false;
+        pmBuilder.DisableUnrollLoops = false;
+        pmBuilder.BBVectorize = true;
+        pmBuilder.SLPVectorize = true;
+        pmBuilder.LoopVectorize = true;
+        pmBuilder.RerollLoops = true;
+        pmBuilder.LoadCombine = true;
+        pmBuilder.DisableGVNLoadPRE = true;
+        pmBuilder.VerifyInput = true;
+        pmBuilder.VerifyOutput = true;
+        pmBuilder.MergeFunctions = true;
     }
-    else { // we want some optimisations, even at -O0
-        PMBuilder.OptLevel = 0;
-        PMBuilder.Inliner = createAlwaysInlinerPass(false);
+    else { // we want some optimisations, even at -Onone
+        pmBuilder.OptLevel = 0;
+        pmBuilder.LoadCombine = true;
+        pmBuilder.DisableUnrollLoops = true;
+        pmBuilder.Inliner = createAlwaysInlinerPass(false);
     }
     
-    // Configure the function passes.
-    legacy::FunctionPassManager FunctionPasses(Module);
-    
-    FunctionPasses.add(createVerifierPass());
-    
-    if (optLevel == 0) { // we want some optimisations, even at -O0
-        FunctionPasses.add(createInstructionCombiningPass());
-        
-        // needed as compiler produces a lot of redundant memory code assuming it will be optimied away
-        FunctionPasses.add(createPromoteMemoryToRegisterPass());
-        
-        FunctionPasses.add(createReassociatePass());
-        FunctionPasses.add(createConstantPropagationPass());
-    }
-    else {
-        FunctionPasses.add(createPromoteMemoryToRegisterPass());
-    }
-    PMBuilder.populateFunctionPassManager(FunctionPasses);
-        
-    FunctionPasses.doInitialization();
-    for (auto I = Module->begin(), E = Module->end(); I != E; ++I)
-        if (!I->isDeclaration())
-            FunctionPasses.run(*I);
-    FunctionPasses.doFinalization();
-    
-    // Configure the module passes.
-    legacy::PassManager ModulePasses;
-    PMBuilder.populateModulePassManager(ModulePasses);
-    
-    // then run optimisations
-    ModulePasses.run(*Module);
+    // add default opt passes
+    initializeTargetPassConfigPass(*PassRegistry::getPassRegistry());
+    pmBuilder.populateModulePassManager(passManager);
+    // and run them
+    passManager.run(*module);
 }
 
 /// Called from swift code
 void performLLVMOptimisations(LLVMModuleRef mod, int optLevel, bool isStdLib) {
     performLLVMOptimisations(unwrap(mod), optLevel, isStdLib);
 }
-
-
-void LLVMAddMetadata(LLVMValueRef val, const char * String) {
-    auto s = StringRef(String);
-    auto id = LLVMGetMDKindID(s.data(), int32_t(s.size()));
-    
-    LLVMValueRef md = LLVMMDString(s.data(), uint(s.size()));
-    LLVMSetMetadata(val, id, md);
-}
-
-int LLVMMetadataID(const char * String) {
-    auto s = StringRef(String);
-    return LLVMGetMDKindID(s.data(), int32_t(s.size()));
-}
-
-

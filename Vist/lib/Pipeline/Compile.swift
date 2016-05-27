@@ -26,33 +26,26 @@ struct CompileOptions : OptionSetType {
     static let verbose = CompileOptions(rawValue: 1 << 6)
     static let preserveTempFiles = CompileOptions(rawValue: 1 << 7)
 
-    static let disableStdLibInlinePass = CompileOptions(rawValue: 1 << 8)
-    private static let runVIROptPasses = CompileOptions(rawValue: 1 << 9)
-    private static let runLLVMOptPasses = CompileOptions(rawValue: 1 << 10)
-    static let aggressiveOptimisation = CompileOptions(rawValue: 1 << 11)
     /// No optimisations
-    static let Onone: CompileOptions = []
-    /// No optimisations, dont even inline stdlib symbols
-    static let O0: CompileOptions = [disableStdLibInlinePass]
+    static let O0: CompileOptions = CompileOptions(rawValue: 1 << 8)
     /// Low opt level
-    static let O: CompileOptions = [runVIROptPasses, runLLVMOptPasses]
+    static let O: CompileOptions = CompileOptions(rawValue: 1 << 9)
     /// High opt level
-    static let Ohigh: CompileOptions = [O, aggressiveOptimisation]
+    static let Ohigh: CompileOptions = CompileOptions(rawValue: 1 << 10)
     
-    static let produceLib = CompileOptions(rawValue: 1 << 12)
+    static let produceLib = CompileOptions(rawValue: 1 << 11)
     /// Compiles stdlib.vist
-    private static let compileStdLib = CompileOptions(rawValue: 1 << 13)
+    private static let compileStdLib = CompileOptions(rawValue: 1 << 12)
     /// Parses the document as if it were the stdlib, exposing Builtin types and functions
-    private static let parseStdLib = CompileOptions(rawValue: 1 << 14)
+    private static let parseStdLib = CompileOptions(rawValue: 1 << 13)
     /// Compiles the standard libary before the input files
-    static let buildStdLib: CompileOptions = [compileStdLib, parseStdLib, produceLib, buildRuntime, linkWithRuntime, Ohigh, disableStdLibInlinePass,
-                                              verbose, preserveTempFiles]
+    static let buildStdLib: CompileOptions = [compileStdLib, parseStdLib, produceLib, buildRuntime, linkWithRuntime, Ohigh, verbose, preserveTempFiles]
     
     /// Compiles the runtime
-    static let buildRuntime = CompileOptions(rawValue: 1 << 15)
-    static let debugRuntime = CompileOptions(rawValue: 1 << 16)
+    static let buildRuntime = CompileOptions(rawValue: 1 << 14)
+    static let debugRuntime = CompileOptions(rawValue: 1 << 15)
     /// Links the input files with the runtime
-    private static let linkWithRuntime = CompileOptions(rawValue: 1 << 17)
+    private static let linkWithRuntime = CompileOptions(rawValue: 1 << 16)
     /// Parse this file as stdlib code and link manually with runtime
     static let doNotLinkStdLib: CompileOptions = [buildRuntime, linkWithRuntime, parseStdLib]
 }
@@ -168,20 +161,11 @@ func compileDocuments(
     
     //run my optimisation passes
     
-    if !options.contains(.disableStdLibInlinePass) {
-        performLLVMOptimisations(llvmModule,
-                                 Int32(options.optLevel().rawValue),
-                                 options.contains(.compileStdLib))
-    }
     try String.fromCString(LLVMPrintModuleToString(llvmModule))?.writeToFile("\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
     
-    if options.contains(.runLLVMOptPasses) {
-        NSTask.execute(.opt,
-                       files: ["\(file).ll"],
-                       outputName: "\(file).ll",
-                       cwd: currentDirectory,
-                       args: "-S", "-O3")
-    }
+    performLLVMOptimisations(llvmModule,
+                             Int32(options.optLevel().rawValue),
+                             options.contains(.compileStdLib))
     
     let llvmIR = try String(contentsOfFile: "\(currentDirectory)/\(file).ll", encoding: NSUTF8StringEncoding) ?? ""
     if options.contains(.dumpLLVMIR) { print(llvmIR); return }
@@ -192,17 +176,10 @@ func compileDocuments(
     
     if options.contains(.compileStdLib) {
         
-        // .ll -> .bc
-        // for optimiser
-        NSTask.execute(.assemble,
-                       files: ["\(file).ll"],
-                       outputName: "\(file).bc",
-                       cwd: currentDirectory)
-        
         // .ll -> .dylib
         // to link against program
         NSTask.execute(.clang,
-                       files: [libVistRuntimePath, "\(file).bc"],
+                       files: [libVistRuntimePath, "\(file).ll"],
                        outputName: libVistPath,
                        cwd: currentDirectory,
                        args: "-dynamiclib")

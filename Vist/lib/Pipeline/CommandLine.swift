@@ -29,7 +29,6 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
         "-O0": .O0,
         "-O": .O,
         "-Ohigh": .Ohigh,
-        "-disable-stdlib-inline": .disableStdLibInlinePass,
         "-lib": .produceLib,
         "-parse-stdlib": .doNotLinkStdLib,
         "-build-runtime": .buildRuntime,
@@ -62,7 +61,7 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
         #endif
         
         if flags.contains("-build-stdlib") {
-            var o: CompileOptions = [.buildStdLib, .disableStdLibInlinePass, .Ohigh]
+            var o: CompileOptions = [.buildStdLib, .Ohigh]
             if o.contains(.verbose) { o.insert(.verbose) }
             try compileDocuments(["stdlib.vist"],
                                  inDirectory: "\(SOURCE_ROOT)/Vist/Stdlib",
