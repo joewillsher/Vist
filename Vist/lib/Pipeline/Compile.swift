@@ -48,6 +48,8 @@ struct CompileOptions : OptionSetType {
     private static let linkWithRuntime = CompileOptions(rawValue: 1 << 16)
     /// Parse this file as stdlib code and link manually with runtime
     static let doNotLinkStdLib: CompileOptions = [buildRuntime, linkWithRuntime, parseStdLib]
+    
+    static let runPreprocessor = CompileOptions(rawValue: 1 << 16)
 }
 
 /// Compiles series of files
@@ -64,11 +66,16 @@ func compileDocuments(
     ) throws {
     
     var head: AST? = nil
-    var all: [AST] = []
+    var all: [AST] = [], names: [String] = []
     
     let globalScope = SemaScope.globalScope(options.contains(.parseStdLib))
     
-    for (index, fileName) in fileNames.enumerate() {
+    for (index, name) in fileNames.enumerate() {
+        
+        var fileName = name
+        if options.contains(.runPreprocessor) {
+            runPreprocessor(&fileName, cwd: currentDirectory)
+        }
         
         let path = "\(currentDirectory)/\(fileName)"
         let doc = try String(contentsOfFile: path, encoding: NSUTF8StringEncoding)
@@ -101,6 +108,7 @@ func compileDocuments(
         else {
             all.append(ast)
         }
+        names.append(fileName)
     }
     
     if options.contains(.verbose) {
@@ -124,8 +132,9 @@ func compileDocuments(
         print("\n----------------------------VIR GEN-------------------------------\n")
     }
     
-    let file = explicitName ?? fileNames.first!.stringByReplacingOccurrencesOfString(".vist", withString: "")
-    
+    let file = explicitName ?? names.first!
+        .stringByReplacingOccurrencesOfString(".vist", withString: "")
+        .stringByReplacingOccurrencesOfString(".previst", withString: "")
     let virModule = Module()
     
     try ast.emitVIR(module: virModule, isLibrary: options.contains(.produceLib))

@@ -34,6 +34,7 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
         "-parse-stdlib": .doNotLinkStdLib,
         "-build-runtime": .buildRuntime,
         "-debug-runtime": .debugRuntime,
+        "-run-preprocessor": .runPreprocessor,
     ]
     
     for flag in flags.flatMap({map[$0]}) {
@@ -64,6 +65,10 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
         #if DEBUG
             let s = CFAbsoluteTimeGetCurrent()
         #endif
+        
+        if flags.contains("-run-preprocessor") {
+            
+        }
         
         if flags.contains("-build-stdlib") {
             var o: CompileOptions = [.buildStdLib, .Ohigh]

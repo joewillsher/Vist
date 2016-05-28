@@ -1,0 +1,86 @@
+
+
+
+type UTF8CodeUnit {
+    let unit: Builtin.Int8
+
+    init Int = (u) {
+        unit = Builtin.trunc_int_8 u.value
+    }
+}
+
+type UTF16CodeUnit {
+    let unit: Builtin.Int16
+
+    init Int = (u) {
+        unit = Builtin.trunc_int_16 u.value
+    }
+}
+
+type String {
+    var base: Builtin.OpaquePointer, length: Int, _capacityAndEncoding: Int
+
+    init Builtin.OpaquePointer Builtin.Int Builtin.Bool = (ptr count isUTF8Encoded) {
+
+        base = Builtin.heap_alloc count
+        Builtin.mem_copy base ptr count
+
+        let c = Int count
+        length = c - 1
+
+        _capacityAndEncoding = c << 1
+
+
+        if (Bool isUTF8Encoded) do
+             _capacityAndEncoding = _capacityAndEncoding ~| 1
+    }
+
+
+
+
+
+
+
+    func isUTF8Encoded:: -> Bool = do
+        return _capacityAndEncoding ~& 1 == 1
+
+
+    func bufferCapacity:: -> Int = do
+        return _capacityAndEncoding >> 1
+
+
+
+    func codeUnitAtIndex:: Int -> Builtin.OpaquePointer = (index) do
+        return base + index
+
+
+    func generate:: -> UTF8CodeUnit = {
+        var i = 0
+        while i < self.bufferCapacity () {
+            yield UTF8CodeUnit (Builtin.opaque_load (self.codeUnitAtIndex i))
+            i = i + 1
+        }
+    }
+}
+
+
+@inline func _print :: String = (str) {
+    if str.isUTF8Encoded () {
+
+        vist_cshim_write str.base str.length.value
+        return ()
+    } else {
+
+        for c in str do
+            vist_cshim_putchar c.unit
+        return ()
+    }
+
+}
+
+
+@public @noinline
+func print :: String = (str) {
+    _print str
+    _print "\n"
+}

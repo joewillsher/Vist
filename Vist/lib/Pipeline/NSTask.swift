@@ -1,11 +1,3 @@
-//
-//  NSTask.swift
-//  Vist
-//
-//  Created by Josef Willsher on 25/03/2016.
-//  Copyright © 2016 vistlang. All rights reserved.
-//
-
 import class Foundation.NSTask
 
 enum Exec: String {
@@ -16,7 +8,7 @@ enum Exec: String {
 }
 
 extension NSTask {
-    class func execute(exec: Exec, files: [String], outputName: String? = nil, cwd: String, args: String...) {
+    class func execute(execName exec: String, files: [String], outputName: String? = nil, cwd: String, args: [String]) {
         
         var a = args
         if let n = outputName { a.appendContentsOf(["-o", n]) }
@@ -24,12 +16,13 @@ extension NSTask {
         
         let task = NSTask()
         task.currentDirectoryPath = cwd
-        task.launchPath = exec.rawValue
+        task.launchPath = exec
         task.arguments = a
         
         task.launch()
         task.waitUntilExit()
     }
+    class func execute(exec: Exec, files: [String], outputName: String? = nil, cwd: String, args: String...) {
+        NSTask.execute(execName: exec.rawValue, files: files, outputName: outputName, cwd: cwd, args: args)
+    }
 }
-
-
