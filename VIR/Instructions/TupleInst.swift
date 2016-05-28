@@ -10,10 +10,13 @@
 final class TupleCreateInst : InstBase {
     var tupleType: TupleType, elements: [Operand]
     
-    private init(type: TupleType, elements: [Operand], irName: String?) {
-        self.tupleType = type
-        self.elements = elements
-        super.init(args: elements, irName: irName)
+    /// - precondition: `type` has been included in the module using
+    ///                 `type.usingTypesIn(module)`
+    init(type: TupleType, elements: [Value], irName: String? = nil) {
+        self.tupleType = type//.usingTypesIn(module) as! TupleType
+        let els = elements.map(Operand.init)
+        self.elements = els
+        super.init(args: els, irName: irName)
     }
     
     override var type: Type? { return tupleType }
@@ -27,11 +30,18 @@ final class TupleExtractInst : InstBase {
     var tuple: Operand, elementIndex: Int
     var elementType: Type
     
-    init(tuple: Operand, index: Int, elementType: Type, irName: String?) {
-        self.tuple = tuple
+    /// - precondition: Tuple has an element at `index`
+    init(tuple: Value, index: Int, irName: String? = nil) throws {
+        
+        guard let elType = try tuple.type?.getAsTupleType().propertyType(index) else {
+            throw VIRError.noType(#file)
+        }
+        
+        let op = Operand(tuple)
+        self.tuple = op
         self.elementIndex = index
-        self.elementType = elementType
-        super.init(args: [tuple], irName: irName)
+        self.elementType = elType
+        super.init(args: [op], irName: irName)
     }
     
     override var type: Type? { return elementType }
@@ -63,15 +73,6 @@ final class TupleElementPtrInst : InstBase, LValue {
 
 
 extension Builder {
-    /// Builds a tuple with specified elements
-    func buildTupleCreate(type: TupleType, elements: [Operand], irName: String? = nil) throws -> TupleCreateInst {
-        return try _add(TupleCreateInst(type: type.usingTypesIn(module) as! TupleType, elements: elements, irName: irName))
-    }
-    /// Extracts an element from a tuple by value
-    func buildTupleExtract(tuple: Operand, index: Int, irName: String? = nil) throws -> TupleExtractInst {
-        guard let elType = try (tuple.type as? TupleType)?.propertyType(index) else { throw VIRError.noType(#file) }
-        return try _add(TupleExtractInst(tuple: tuple, index: index, elementType: elType.usingTypesIn(module), irName: irName))
-    }
     /// Get the ptr to a tuple’s element
     func buildTupleElementPtr(tuple: PtrOperand, index: Int, irName: String? = nil) throws -> TupleElementPtrInst {
         guard let elType = try (tuple.memType as? TupleType)?.propertyType(index) else { throw VIRError.noType(#file) }

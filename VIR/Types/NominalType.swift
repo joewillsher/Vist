@@ -48,7 +48,7 @@ extension NominalType {
     }
     
     func ptrToMethodNamed(name: String, type: FunctionType, module: Module) throws -> LLVMFunction {
-        guard let function = module.functionNamed(name.mangle(type)) else { fatalError() }
+        guard let function = module.function(named: name.mangle(type)) else { fatalError() }
         return function.loweredFunction!
     }
     

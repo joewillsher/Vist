@@ -40,14 +40,7 @@ extension ExistentialConstructInst : VIRLower {
         
 //        let ref = module.getOrAddRuntimeFunction(named: "vist_constructConceptConformance", IGF: &IGF)
         
-        let conf = try structType.generateConformanceMetadata(&IGF, concept: existentialType)
-        
-//        var conformances = [UnsafeMutablePointer.allocInit(conf)]
-//        let f = ExistentialObject(object: UnsafeMutablePointer(
-//            value.loweredValue!._value // can't have non const values in metadata -- this needs to 
-//                                       // either be a function call, or generate it non constly
-//            ), conformanceArrCount: Int32(conformances.count), conformanceArr: &conformances)
-//        try f.getConstMetadata(&IGF, name: "eee")
+//        let conf = try structType.generateConformanceMetadata(&IGF, concept: existentialType)
         
         return ret
     }

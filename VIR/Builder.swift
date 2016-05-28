@@ -68,4 +68,9 @@ extension Builder {
         return instruction
     }
     
+    func build<I : Inst>(inst: I) throws -> I {
+        try addToCurrentBlock(inst)
+        return inst
+    }
+    
 }

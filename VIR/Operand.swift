@@ -82,21 +82,6 @@ final class PtrOperand : Operand, LValue {
         self.memType = value.memType
         super.init(value)
     }
-    
-    /// Init from rvalue
-    /// - precondition: `memType` is the type of `rvalue`'s memory and 
-    ///                 is guaranteed to be a pointer type
-    private init(rvalue: Value, memType: Type) {
-        self.memType = memType
-        super.init(rvalue)
-    }
-    
-    /// - precondition: `rval` is guaranteed to be an lvalue
-    static func fromReferenceRValue(rval: Value) throws -> PtrOperand {
-        if case let lval as LValue = rval { return PtrOperand(lval) }
-        guard case let type as BuiltinType = rval.type, case .pointer(let to) = type else { fatalError() }
-        return PtrOperand(rvalue: rval, memType: to)
-    }
 }
 
 

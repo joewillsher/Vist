@@ -255,7 +255,7 @@ extension Builder {
     
     /// Builds a function and adds it to the module. Declares a body and entry block
     func buildFunction(name: String, type: FunctionType, paramNames: [String], attrs: [FunctionAttributeExpr] = []) throws -> Function {
-        let f = try createFunctionPrototype(name, type: type, attrs: attrs)
+        let f = try createFunctionPrototype(name: name, type: type, attrs: attrs)
         try f.defineBody(paramNames: paramNames)
         return f
     }
@@ -263,7 +263,7 @@ extension Builder {
     func getOrBuildFunction(name: String, type: FunctionType, paramNames: [String], attrs: [FunctionAttributeExpr] = []) throws -> Function {
         assert(paramNames.count == type.params.count)
         
-        if let f = module.functionNamed(name) where !f.hasBody {
+        if let f = module.function(named: name) where !f.hasBody {
             try f.defineBody(paramNames: paramNames)
             return f
         }
@@ -283,7 +283,7 @@ extension Builder {
     }
     
     /// Creates function prototype an adds to module
-    func createFunctionPrototype(name: String, type: FunctionType, attrs: [FunctionAttributeExpr] = []) throws -> Function {
+    func createFunctionPrototype(name name: String, type: FunctionType, attrs: [FunctionAttributeExpr] = []) throws -> Function {
         let type = type.cannonicalType(module).usingTypesIn(module) as! FunctionType
         let function = Function(name: name, type: type, module: module)
         function.applyAttributes(attrs)
@@ -297,8 +297,8 @@ extension Module {
     
     /// Returns the function from the module. Adds prototype it if not already there
     func getOrInsertFunction(named name: String, type: FunctionType, attrs: [FunctionAttributeExpr] = []) throws -> Function {
-        if let f = functionNamed(name) { return f }
-        return try builder.createFunctionPrototype(name, type: type, attrs: attrs)
+        if let f = function(named: name) { return f }
+        return try builder.createFunctionPrototype(name: name, type: type, attrs: attrs)
     }
     
     /// Returns a stdlib function, updating the module fn list if needed
@@ -324,7 +324,7 @@ extension Module {
     }
     
     /// Returns a function from the module by name
-    func functionNamed(name: String) -> Function? {
+    func function(named name: String) -> Function? {
         return functions.find {$0.name == name}
     }
 }

@@ -14,7 +14,8 @@
 final class AllocInst : InstBase, LValue {
     var storedType: Type
     
-    private init(memType: Type, irName: String?) {
+    /// - precondition: newType has types in this module
+    init(memType: Type, irName: String? = nil) {
         self.storedType = memType
         super.init(args: [], irName: irName)
     }
@@ -32,14 +33,15 @@ final class AllocInst : InstBase, LValue {
  `store %0 in %a: %*Int`
  */
 final class StoreInst : InstBase {
-    override var type: Type? { return address.type }
     private(set) var address: PtrOperand, value: Operand
     
-    private init(address: PtrOperand, value: Operand) {
-        self.address = address
-        self.value = value
-        super.init(args: [value, address], irName: nil)
+    init(address: LValue, value: Value) {
+        self.address = PtrOperand(address)
+        self.value = Operand(value)
+        super.init(args: [self.value, self.address], irName: nil)
     }
+    
+    override var type: Type? { return address.type }
     
     override var hasSideEffects: Bool { return true }
     
@@ -56,9 +58,9 @@ final class LoadInst : InstBase {
     override var type: Type? { return address.memType }
     private(set) var address: PtrOperand
     
-    private init(address: PtrOperand, irName: String?) {
-        self.address = address
-        super.init(args: [address], irName: irName)
+    init(address: LValue, irName: String? = nil) {
+        self.address = PtrOperand(address)
+        super.init(args: [self.address], irName: irName)
     }
     
     override var instVIR: String {
@@ -79,10 +81,13 @@ final class BitcastInst : InstBase, LValue {
     /// The new memory type of the cast
     private(set) var newType: Type
     
-    private init(address: PtrOperand, newType: Type, irName: String?) {
-        self.address = address
+    /// - precondition: newType has types in this module
+    /// - note: the ptr will have type newType*
+    init(address: LValue, newType: Type, irName: String? = nil) {
+        let op = PtrOperand(address)
+        self.address = op
         self.newType = newType
-        super.init(args: [address], irName: irName)
+        super.init(args: [op], irName: irName)
     }
     
     override var instVIR: String {
@@ -90,26 +95,6 @@ final class BitcastInst : InstBase, LValue {
     }
 }
 
-extension Builder {
-    
-    func buildAlloc(type: Type, irName: String? = nil) throws -> AllocInst {
-        let ty = type.usingTypesIn(module)
-        return try _add(AllocInst(memType: ty, irName: irName))
-    }
-    func buildStore(val: Operand, in address: PtrOperand) throws -> StoreInst {
-//        guard val.type == address.memType else { fatalError() }
-        return try _add(StoreInst(address: address, value: val))
-    }
-    func buildLoad(from address: PtrOperand, irName: String? = nil) throws -> LoadInst {
-        return try _add(LoadInst(address: address, irName: irName))
-    }
-    /// Builds a bitcast instruction
-    /// - parameter newType: The memory type to be cast to -- the ptr will have type newType*
-    func buildBitcast(from address: PtrOperand, newType: Type, irName: String? = nil) throws -> BitcastInst {
-        return try _add(BitcastInst(address: address, newType: newType.usingTypesIn(module), irName: irName))
-    }
-    
-}
 
 
 

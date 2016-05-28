@@ -38,7 +38,6 @@ extension VIRFunctionCall {
         let call = try IGF.builder.buildCall(functionRef,
                                              args: args.map { $0.loweredValue! },
                                              name: irName)
-        functionType.addMetadataTo(call)
         return call
     }
     

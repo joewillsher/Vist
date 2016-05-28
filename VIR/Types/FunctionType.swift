@@ -8,7 +8,7 @@
 
 struct FunctionType : Type {
     var params: [Type], returns: Type
-    var metadata: [String]
+    var metadata: [String] // TODO: remove this, we're not using it
     var callingConvention: CallingConvention
     
     init(params: [Type], returns: Type = BuiltinType.void, metadata: [String] = [], callingConvention: CallingConvention? = nil, yieldType: Type? = nil) {
@@ -138,20 +138,6 @@ extension FunctionType {
     
     var nonVoid: [Type]  {
         return params.filter { if case BuiltinType.void = $0 { return false } else { return true } }
-    }
-    
-    func addMetadataTo(call: LLVMValue) {
-        
-        for metadata in self.metadata {
-            
-            let attrLength = UInt32(metadata.characters.count)
-            var mdString = [LLVMMDString(metadata, attrLength)]
-            let mdNode = LLVMMDNode(&mdString, 1)
-            
-            let kindID = LLVMGetMDKindID(metadata, attrLength)
-            
-            LLVMSetMetadata(call._value, kindID, mdNode)
-        }
     }
     
     var mangledName: String {

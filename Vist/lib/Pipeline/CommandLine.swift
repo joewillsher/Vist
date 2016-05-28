@@ -73,6 +73,7 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
                                  explicitName: "stdlib",
                                  options: o)
         }
+        
         if !files.isEmpty {
             try compileDocuments(files,
                                  inDirectory: dir,

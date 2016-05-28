@@ -88,7 +88,7 @@ extension Closure : CaptureDelegate {
             let type = variableAccessor.mem.type {
            
             g = GlobalValue(name: "\(name).globlstorage", type: type, module: module)
-            try module.builder.buildStore(decl.aggregateReference(), in: PtrOperand(g))
+            try module.builder.build(StoreInst(address: g, value: decl.aggregateReference()))
             accessor = GlobalIndirectRefAccessor(memory: g, module: function.module)
         }
         else if
@@ -96,7 +96,7 @@ extension Closure : CaptureDelegate {
             let decl = try scope.parent?.variableNamed(name) {
             
             g = GlobalValue(name: "\(name).globl", type: type, module: module)
-            try module.builder.buildStore(Operand(decl.aggregateGetter()), in: PtrOperand(g))
+            try module.builder.build(StoreInst(address: g, value: decl.aggregateGetter()))
             accessor = GlobalRefAccessor(memory: g, module: function.module)
         }
         else {

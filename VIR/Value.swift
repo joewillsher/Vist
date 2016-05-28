@@ -71,12 +71,11 @@ extension Value {
     func accessor() throws -> Accessor {
         
         if case BuiltinType.pointer(let to)? = type, case let nominal as NominalType = to {
-            let lVal = try PtrOperand.fromReferenceRValue(self)
+            let lVal = try OpaqueLValue(rvalue: self)
             if nominal.heapAllocated {
                 return RefCountedAccessor(refcountedBox: lVal)
             }
             else {
-                
                 // BUG: Accessing self in a method and using it in if expressions breaks
                 // stuff -- the accessor is a ValAccessor so self has type Self*
                 return RefAccessor(memory: lVal)
@@ -121,4 +120,38 @@ extension LValue {
 }
 
 
+
+/// A value known to be an LValue, but some other function just 
+/// returns an rvalue with a pointer type
+final class OpaqueLValue : LValue {
+    
+    private(set) var value: Value
+    private var storedType: Type
+    
+    /// Init from rvalue
+    /// - precondition: `memType` is the type of `rvalue`'s memory and
+    ///                 is guaranteed to be a pointer type
+    init(rvalue: Value) throws {
+        self.value = rvalue
+        guard case let type as BuiltinType = rvalue.type, case .pointer(let to) = type else { throw VIRError.noType(#file) }
+        self.storedType = to
+    }
+    
+    weak var parentBlock: BasicBlock? = nil
+    
+    var type: Type? { return BuiltinType.pointer(to: storedType) }
+    var memType: Type? { return storedType }
+    var name: String {
+        get { return value.name }
+        set { value.name = newValue }
+    }
+    var uses: [Operand] {
+        get { return value.uses }
+        set { value.uses = newValue }
+    }
+    var irName: String? {
+        get { return value.irName }
+        set { value.irName = newValue }
+    }
+}
 

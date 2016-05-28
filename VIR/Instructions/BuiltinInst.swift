@@ -18,14 +18,23 @@ final class BuiltinInstCall : InstBase {
     var instName: String { return inst.rawValue }
     var returnType: Type
     
-    init?(inst: BuiltinInst, args: [Operand], irName: String? = nil) {
+    init(inst: BuiltinInst, args: [Value], irName: String? = nil) throws {
+        
+        guard args.count == inst.expectedNumOperands else {
+            throw VIRError.builtinIncorrectOperands(inst: inst, recieved: args.count)
+        }
+        guard
+            let argTypes = try? args.map(InstBase.getType(_:)),
+            let retTy = inst.returnType(params: argTypes) else {
+            throw VIRError.noType(#file)
+        }
+
         self.inst = inst
-        guard let argTypes = try? args.map(InstBase.getType(_:)), let retTy = inst.returnType(params: argTypes) else { return nil }
         self.returnType = retTy
-        super.init(args: args, irName: irName)
+        super.init(args: args.map(Operand.init), irName: irName)
     }
     
-    static func trapInst() -> BuiltinInstCall { return BuiltinInstCall(inst: .trap, args: [], irName: nil)! }
+    static func trapInst() -> BuiltinInstCall { return try! BuiltinInstCall(inst: .trap, args: [], irName: nil) }
     
     // utils for bin instructions
     lazy var lhs: LLVMValue! = { return self.args[0].loweredValue }()
@@ -118,16 +127,3 @@ enum BuiltinInst : String {
     }
 }
 
-
-extension Builder {
-    
-    // change name back when not crashing
-    func buildBuiltinInstructionCall(i: BuiltinInst, args: Operand..., irName: String? = nil) throws -> BuiltinInstCall {
-        return try buildBuiltinInstruction(i, args: args, irName: irName)
-    }
-    
-    func buildBuiltinInstruction(i: BuiltinInst, args: [Operand], irName: String? = nil) throws -> BuiltinInstCall {
-        guard args.count == i.expectedNumOperands, let binInst = BuiltinInstCall(inst: i, args: args, irName: irName) else { throw VIRError.builtinIncorrectOperands(inst: i, recieved: args.count) }
-        return try _add(binInst)
-    }
-}

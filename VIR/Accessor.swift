@@ -59,8 +59,9 @@ extension Value {
     /// Builds a reference accessor which can store into & load from
     /// the memory it allocates
     func allocGetSetAccessor() throws -> GetSetAccessor {
-        let accessor = RefAccessor(memory: try module.builder.buildAlloc(type!))
-        try accessor.setter(Operand(self))
+        guard let memType = type?.usingTypesIn(module) else { throw VIRError.noType(#file) }
+        let accessor = RefAccessor(memory: try module.builder.build(AllocInst(memType: memType)))
+        try accessor.setter(self)
         return accessor
     }
 }
@@ -92,13 +93,13 @@ extension Accessor {
 protocol GetSetAccessor : Accessor {
     var mem: LValue { get }
     /// Stores `val` in the stored object
-    func setter(val: Operand) throws
+    func setter(val: Value) throws
     /// The pointer to the stored object
-    func reference() throws -> PtrOperand
+    func reference() throws -> LValue
     
     /// Return the aggregate reference -- not guaranteed to be the same
     /// as the location `reference` uses to access elements
-    func aggregateReference() -> PtrOperand
+    func aggregateReference() -> LValue
         
     var module: Module { get }
 }
@@ -110,27 +111,24 @@ extension GetSetAccessor {
     var storedType: Type? { return mem.memType }
     
     func getter() throws -> Value {
-        return try module.builder.buildLoad(from: reference())
+        return try module.builder.build(LoadInst(address: reference()))
     }
     
-    func setter(val: Operand) throws {
-        try module.builder.buildStore(val, in: reference())
+    func setter(val: Value) throws {
+        try module.builder.build(StoreInst(address: reference(), value: val))
     }
     
     // default impl of `reference` is a projection of the storage
-    func reference() -> PtrOperand {
-        return PtrOperand(mem)
-    }
+    func reference() -> LValue { return mem }
+    
     // default impl of `aggregateReference` is the same as `reference`
-    func aggregateReference() -> PtrOperand {
-        return PtrOperand(mem)
-    }
+    func aggregateReference() -> LValue { return mem }
     
     func aggregateGetter() throws -> Value {
-        return try module.builder.buildLoad(from: aggregateReference())
+        return try module.builder.build(LoadInst(address: aggregateReference()))
     }
     func aggregateSetter(val: Operand) throws {
-        try module.builder.buildStore(val, in: aggregateReference())
+        try module.builder.build(StoreInst(address: aggregateReference(), value: val))
     }
     
     var module: Module { return mem.module }
@@ -172,19 +170,21 @@ final class GlobalIndirectRefAccessor : GetSetAccessor {
         self.module = module
     }
     
-    private lazy var memsubsc: PtrOperand = { [unowned self] in
-        try! PtrOperand.fromReferenceRValue(self.module.builder.buildLoad(from: PtrOperand(self.mem)))
+    private lazy var memsubsc: LValue = { [unowned self] in
+        let mem = try! self.module.builder.build(LoadInst(address: self.mem))
+        return try! OpaqueLValue(rvalue: mem)
     }()
     
     // the object reference is stored in self.mem, load it from there
-    func reference() throws -> PtrOperand {
+    func reference() throws -> LValue {
         return memsubsc
     }
     
-    func aggregateReference() -> PtrOperand {
+    func aggregateReference() -> LValue {
         return memsubsc
     }
 }
+
 
 /**
  An accessor whose memory is reference counted
@@ -193,25 +193,27 @@ final class GlobalIndirectRefAccessor : GetSetAccessor {
  heap pointers.
 */
 final class RefCountedAccessor : GetSetAccessor {
-    var mem: LValue
     
-    init(refcountedBox: LValue, _reference: Value? = nil) {
+    var mem: LValue
+    init(refcountedBox: LValue, _reference: OpaqueLValue? = nil) {
         self.mem = refcountedBox
         self._reference = _reference
     }
     
-    var _reference: Value? // lazy member reference
-    func reference() throws -> PtrOperand {
-        if let r = _reference { return try PtrOperand.fromReferenceRValue(r) }
+    var _reference: OpaqueLValue? // lazy member reference
+    func reference() throws -> LValue {
+        if let r = _reference { return r }
+
+        let irName = mem.irName.map { "\($0).instance" }
         
-        let ref = try module.builder.buildStructElementPtr(aggregateReference(), property: "object")
-        let load = try module.builder.buildLoad(from: PtrOperand(ref), irName: mem.irName.map { "\($0).instance" })
+        let ref = try module.builder.build(StructElementPtrInst(object: mem, property: "object"))
+        let load = try module.builder.build(LoadInst(address: ref, irName: irName))
         
-        return try PtrOperand.fromReferenceRValue(load)
+        return try OpaqueLValue(rvalue: load)
     }
     
-    func aggregateReference() -> PtrOperand {
-        return PtrOperand(mem)
+    func aggregateReference() -> LValue {
+        return mem
     }
     
     func aggregateGetter() throws -> Value {
@@ -220,29 +222,29 @@ final class RefCountedAccessor : GetSetAccessor {
     
     /// Retain a reference, increment the ref count
     func retain() throws {
-        try module.builder.buildRetain(aggregateReference())
+        try module.builder.buildRetain(PtrOperand(aggregateReference()))
     }
     
     /// Releases the object without decrementing the ref count.
     /// - note: Used in returns as the user of the return is expected
     ///         to either `retain` it or `deallocUnowned` it
     func releaseUnowned() throws {
-        try module.builder.buildReleaseUnowned(aggregateReference())
+        try module.builder.buildReleaseUnowned(PtrOperand(aggregateReference()))
     }
     
     /// Release a reference, decrement the ref count
     func release() throws {
-        try module.builder.buildRelease(aggregateReference())
+        try module.builder.buildRelease(PtrOperand(aggregateReference()))
     }
     
     /// Deallocates the object
     func dealloc() throws {
-        try module.builder.buildDeallocObject(aggregateReference())
+        try module.builder.buildDeallocObject(PtrOperand(aggregateReference()))
     }
     
     /// Deallocates an unowned object if the ref count is 0
     func deallocUnowned() throws {
-        try module.builder.buildDeallocUnownedObject(aggregateReference())
+        try module.builder.buildDeallocUnownedObject(PtrOperand(aggregateReference()))
     }
     
     /// Capture another reference to the object and retain it
@@ -261,7 +263,8 @@ final class RefCountedAccessor : GetSetAccessor {
     static func allocObject(type type: StructType, module: Module) throws -> RefCountedAccessor {
         
         let val = try module.builder.buildAllocObject(type, irName: "storage")
-        let bc = try module.builder.buildBitcast(from: PtrOperand(val), newType: type.refCountedBox(module))
+        let targetType = type.refCountedBox(module).usingTypesIn(module)
+        let bc = try module.builder.build(BitcastInst(address: val, newType: targetType))
         
         let accessor = RefCountedAccessor(refcountedBox: bc)
         try accessor.retain()

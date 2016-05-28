@@ -50,7 +50,12 @@ extension Type {
         else if case let s as StructType = self { return s }
         else { fatalError("throw error -- not struct type") }
     }
-    
+    func getAsTupleType() throws -> TupleType {
+        if case let s as TypeAlias = self { return try s.targetType.getAsTupleType() }
+        else if case let s as TupleType = self { return s }
+        else { fatalError("throw error -- not tuple type") }
+    }
+
 }
 
 

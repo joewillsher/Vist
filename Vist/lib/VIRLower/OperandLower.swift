@@ -25,3 +25,18 @@ extension Operand: VIRLower {
         }
     }
 }
+
+
+extension OpaqueLValue : VIRLower {
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
+        if case let lowerable as VIRLower = value {
+            return try lowerable.virLower(&IGF)
+        }
+            // if it can't be lowered, throw an error
+        else {
+            throw error(IRLowerError.notLowerable(self))
+        }
+    }
+}
+
+

@@ -64,9 +64,9 @@ struct Explosion<InstType : Inst> {
     init(inst: InstType) { self.inst = inst }
     
 //    @discardibleResult
-    mutating func insert(inst: Inst) -> Operand {
+    mutating func insert<I : Inst>(inst: I) -> I {
         explodedInstructions.append(inst)
-        return Operand(inst)
+        return inst
     }
     
     var tail: Inst { return explodedInstructions.last ?? inst }

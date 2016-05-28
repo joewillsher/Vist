@@ -18,16 +18,31 @@ This downloads the LLVM libraries, builds the libvist standard library and runti
 To develop in Xcode, go to ‘Edit Scheme’ (⌘<) and under *Options* set the ‘Custom Working Directory’ to the location of your test files, and under *arguments* include `-verbose -preserve` to log and save the compiler temp files.
 
 
-##Architecture overview
-Vist is a high level strongly typed language aimed at being concise and flexible yet safe. The Vist code compiles to VIR, a high level intermediary representation which will eventually allow optimisations specific to Vist’s semantics and its type system’s guarantees. 
-
-The VIR is generated from the parsed and type checked AST; the VIR is lowered to LLVM IR which is used to generate the program.  
-
-The Vist compiler is mainly implemented in Swift but much of the functionality is written in vist. All standard types—like ints, floats, bools, and ranges—are implemented in the standard library. The code is still lowered to performant machine code however, as the standard library is able to access native CPU instructions and types and be optimised heavily.
-
-
 ##The Language
+
+Vist’s syntax is lightweight; a hello world is as simple as
+
+```swift
+print “Hello Vist!”
+```
+
+```swift
+func factorial :: Int -> Int = (n) do
+    if n <= 1 do return 1
+    else do return n * factorial n - 1
+```
+
+
+##Architecture
+
+Vist is a high level and strongly typed language aimed at being concise, flexible, and safe. The Vist code compiles to VIR, a high level intermediary representation which will allows optimisations specific to Vist’s semantics and its type system’s guarantees. Vist code is lowered to native, performant machine code and provides efficient abstractions.
+
+The Vist compiler is mainly implemented in Swift but much of the functionality is written in Vist itself. All standard types—like ints, floats, and bools—are implemented in the standard library, as well as core language functionality like printing.
+
+##Design
+
 Function definitions require a type signature and can label the arguments using names in parentheses before the block
+
 ```swift
 func add :: Int Int -> Int = (a b) {
     return a + b
