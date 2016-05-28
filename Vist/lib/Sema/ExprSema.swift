@@ -94,9 +94,6 @@ extension MutationExpr : ExprTypeProvider {
             guard let v = scope[variable: variable.name] else { throw semaError(.noVariable(variable.name)) }
             guard v.mutable else {
                 
-                // Variable 'state0' of type 'Int' is immutable
-                // FIXME: Diagnose non @mutable lookups -- specify this is why it failed
-                
                 if v.isImmutableCapture {
                     // if we are mutating self
                     throw semaError(.immutableCapture(name: variable.name))
@@ -139,7 +136,6 @@ extension MutationExpr : ExprTypeProvider {
 }
 
 
-// TODO: Define rvalue and lvalue prototol to constrain assignments and stuff
 extension ChainableExpr {
     
     func recursiveType(scope: SemaScope) throws -> (type: Type, parentMutable: Bool?, mutable: Bool) {
@@ -172,6 +168,8 @@ extension ChainableExpr {
         case let intLiteral as IntegerLiteral:
             guard case let t as NominalType = intLiteral.type else { throw semaError(.noStdIntType, userVisible: false) }
             return (type: t, parentMutable: nil, mutable: false)
+            
+            
             
 //        case let tuple as TupleExpr:
 //            return (type: _type, )

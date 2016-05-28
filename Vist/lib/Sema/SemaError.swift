@@ -24,6 +24,8 @@ enum SemaError: VistError {
     case noPropertyNamed(type: String, property: String), cannotStoreInParameterStruct(propertyName: String), notStructType(Type?), notTupleType(Type?)
     case noModel(type: StructType, concept: ConceptType)
     
+    case functionNotMethod, mutatingMethodOnImmutable(method: String, baseType: String)
+    
     // not user visible
     case noStdBoolType, noStdIntType, notTypeProvider, noTypeForStruct, noTypeForTuple, noTypeForFunction(name: String)
     case structPropertyNotTyped(type: String, property: String), structMethodNotTyped(type: String, methodName: String), initialiserNotAssociatedWithType
@@ -109,8 +111,11 @@ enum SemaError: VistError {
             
         case .useExplicitSelf(let name):
             return "Use explicit self when calling method '\(name)' -- this is a bug"
+        case .mutatingMethodOnImmutable(let method, let baseType):
+            return "Cannot call mutating method '\(method)' on immutable object of type '\(baseType)'"
             
             // not user visible
+        case .functionNotMethod: return "No method found"
         case .noStdBoolType: return "Stdlib did not provide a Bool type"
         case .noStdIntType: return "Stdlib did not provide an Int type"
         case .notTypeProvider: return "ASTNode does not conform to `TypeProvider` and does not provide an implementation of `typeForNode(_:)"

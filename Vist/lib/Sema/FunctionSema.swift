@@ -8,7 +8,7 @@
 
 
 
-extension FuncDecl: DeclTypeProvider {
+extension FuncDecl : DeclTypeProvider {
     
     /// Generate the function type and mangled name for a function
     /// - note: call `typeForNode(_:)` to sema the body 
@@ -99,7 +99,7 @@ extension FuncDecl: DeclTypeProvider {
     
 }
 
-extension BinaryExpr: ExprTypeProvider {
+extension BinaryExpr : ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Type {
         let t = try semaFunctionCall(scope)
@@ -109,7 +109,7 @@ extension BinaryExpr: ExprTypeProvider {
 }
 
 
-extension FunctionCallExpr: ExprTypeProvider {
+extension FunctionCallExpr : ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Type {
         let t = try semaFunctionCall(scope)

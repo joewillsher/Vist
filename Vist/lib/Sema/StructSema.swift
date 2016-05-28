@@ -215,6 +215,13 @@ extension MethodCallExpr : ExprTypeProvider {
         let fnType = try parentType.methodType(methodNamed: name, argTypes: args)
         mangledName = name.mangle(fnType)
         
+        guard case .method(_, let mutatingMethod) = fnType.callingConvention else { throw semaError(.functionNotMethod, userVisible: false) }
+        let (baseType, _, allowsMutation) = try object.recursiveType(scope)
+        
+        if mutatingMethod && !allowsMutation {
+            throw semaError(.mutatingMethodOnImmutable(method: name, baseType: baseType.explicitName))
+        }
+        
         // gen types for objects in call
         for arg in self.args.elements {
             try arg.typeForNode(scope)
