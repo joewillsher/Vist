@@ -26,6 +26,8 @@ extension TypeAlias : NominalType {
     var irName: String { return targetType.irName }
     var heapAllocated: Bool { return targetType.heapAllocated }
     var concepts: [ConceptType] { return targetType.concepts }
+    var explicitName: String { return targetType.explicitName }
+    var mangledName: String { return targetType.mangledName }
 }
 
 extension TypeAlias {
@@ -52,9 +54,6 @@ extension TypeAlias {
     
     func usingTypesIn(module: Module) -> Type {
         return self
-    }
-    var mangledName: String {
-        return targetType.mangledName
     }
 }
 

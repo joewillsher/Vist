@@ -63,6 +63,7 @@ struct StdLib {
         // bool
         ("&&", FunctionType(params: [boolType, boolType], returns: boolType)),
         ("||", FunctionType(params: [boolType, boolType], returns: boolType)),
+        ("==", FunctionType(params: [boolType, boolType], returns: boolType)),
         
         // double
         ("+", FunctionType(params: [doubleType, doubleType], returns: doubleType)),

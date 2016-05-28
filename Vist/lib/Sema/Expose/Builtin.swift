@@ -44,6 +44,7 @@ struct Builtin {
         // bool fns
         ("Builtin.b_and", FunctionType(params: [boolType, boolType], returns: boolType)),
         ("Builtin.b_or", FunctionType(params: [boolType, boolType], returns: boolType)),
+        ("Builtin.b_eq", FunctionType(params: [boolType, boolType], returns: boolType)),
         
         // float fns
         ("Builtin.f_add", FunctionType(params: [doubleType, doubleType], returns: doubleType)),

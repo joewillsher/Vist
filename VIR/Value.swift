@@ -121,10 +121,11 @@ extension LValue {
 
 
 
-/// A value known to be an LValue, but some other function just 
-/// returns an rvalue with a pointer type
+/// A value known to be an LValue, under the hood is an 
+/// rvalue with a pointer type
 final class OpaqueLValue : LValue {
     
+    /// The rvalue
     private(set) var value: Value
     private var storedType: Type
     
@@ -137,10 +138,13 @@ final class OpaqueLValue : LValue {
         self.storedType = to
     }
     
-    weak var parentBlock: BasicBlock? = nil
-    
     var type: Type? { return BuiltinType.pointer(to: storedType) }
     var memType: Type? { return storedType }
+
+    var parentBlock: BasicBlock? {
+        get { return value.parentBlock }
+        set { value.parentBlock = newValue }
+    }
     var name: String {
         get { return value.name }
         set { value.name = newValue }

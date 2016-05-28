@@ -68,7 +68,7 @@ final class BuiltinInstCall : InstBase {
 /// A builtin VIR function. Each can be called in Vist code (stdlib only)
 /// by doing Builtin.intrinsic
 enum BuiltinInst : String {
-    case iadd = "i_add", isub = "i_sub", imul = "i_mul", idiv = "i_div", irem = "i_rem", ieq = "i_eq", ineq = "i_neq"
+    case iadd = "i_add", isub = "i_sub", imul = "i_mul", idiv = "i_div", irem = "i_rem", ieq = "i_eq", ineq = "i_neq", beq = "b_eq"
     case iaddoverflow = "i_add_overflow"
     case condfail = "cond_fail"
     case ilte = "i_cmp_lte", igte = "i_cmp_gte", ilt = "i_cmp_lt", igt = "i_cmp_gt"
@@ -89,7 +89,7 @@ enum BuiltinInst : String {
         case .memcpy: return 3
         case .iadd, .isub, .imul, .idiv, .iaddoverflow, .irem, .ilte, .igte, .ilt, .igt,
              .expect, .ieq, .ineq, .ishr, .ishl, .iand, .ior, .ixor, .fgt, .and, .or,
-             .fgte, .flt, .flte, .fadd, .fsub, .fmul, .fdiv, .frem, .feq, .fneq,
+             .fgte, .flt, .flte, .fadd, .fsub, .fmul, .fdiv, .frem, .feq, .fneq, .beq,
              .opaquestore, .advancepointer:
             return 2
         case .condfail, .allocstack, .allocheap, .heapfree, .opaqueload, .trunc8, .trunc16, .trunc32:
@@ -108,7 +108,7 @@ enum BuiltinInst : String {
             return params.first // normal arithmetic
             
         case .ilte, .igte, .ilt, .igt, .flte, .fgte, .flt,
-             .fgt, .expect, .ieq, .ineq, .and, .or:
+             .fgt, .expect, .ieq, .ineq, .and, .or, .beq:
             return Builtin.boolType // bool ops
            
         case .allocstack, .allocheap, .advancepointer:

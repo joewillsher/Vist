@@ -93,10 +93,12 @@ extension StructExpr : ExprTypeProvider {
             }
         }
         
-        // check it satisfies its constraints
+        // check it satisfies its explicit constraints
         for c in ty.concepts {
-            guard ty.models(c) else {
-                throw semaError(.noModel(type: ty, concept: c))
+            try errorCollector.run {
+                guard ty.models(c) else {
+                    throw semaError(.noModel(type: ty, concept: c))
+                }
             }
         }
         

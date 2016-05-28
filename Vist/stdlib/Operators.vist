@@ -36,6 +36,10 @@ func == :: Int Int -> Bool = (a b) do
     return Bool (Builtin.i_eq a.value b.value)
 
 @public @inline @operator(20)
+func == :: Bool Bool -> Bool = (a b) do
+    return Bool (Builtin.b_eq a.value b.value)
+
+@public @inline @operator(20)
 func != :: Int Int -> Bool = (a b) do
     return Bool (Builtin.i_neq a.value b.value)
 

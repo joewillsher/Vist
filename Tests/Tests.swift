@@ -262,14 +262,14 @@ extension RuntimePerformanceTests {
             self.stopMeasuring()
         }
     }
-    /// FunctionPerf.vist
+    /// Random.vist
     ///
-    /// Test non memoised fibbonaci
+    /// Test a PRNG, very heavy on integer ops
     func testRandomNumber() {
         
         let fileName = "Random"
         do {
-            try compileWithOptions(["-preserve", "\(fileName).vist"], inDirectory: testDir)
+            try compileWithOptions(["-Ohigh", "\(fileName).vist"], inDirectory: testDir)
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")

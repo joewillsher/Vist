@@ -213,7 +213,8 @@ extension FunctionCall/*: VIRGenerator*/ {
             let prefixRange = name.rangeOfString("Builtin."),
             let instruction = BuiltinInst(rawValue: name.stringByReplacingCharactersInRange(prefixRange, withString: "")) {
             
-            return try module.builder.build(BuiltinInstCall(inst: instruction, args: args)).accessor()
+            let a = args.map { $0.value! }
+            return try module.builder.build(BuiltinInstCall(inst: instruction, args: a)).accessor()
         }
         else if let function = module.function(named: mangledName) {
             return try module.builder.buildFunctionCall(function, args: args).accessor()

@@ -57,7 +57,7 @@ extension BuiltinInstCall: VIRLower {
         case .iaddoverflow: return try IGF.builder.buildIAdd(lhs: lhs, rhs: rhs, name: irName)
         case .idiv: return try IGF.builder.buildIDiv(lhs: lhs, rhs: rhs, name: irName)
         case .irem: return try IGF.builder.buildIRem(lhs: lhs, rhs: rhs, name: irName)
-        case .ieq:  return try IGF.builder.buildIntCompare(.equal, lhs: lhs, rhs: rhs, name: irName)
+        case .ieq, .beq:  return try IGF.builder.buildIntCompare(.equal, lhs: lhs, rhs: rhs, name: irName)
         case .ineq: return try IGF.builder.buildIntCompare(.notEqual, lhs: lhs, rhs: rhs)
         case .ilt:  return try IGF.builder.buildIntCompare(.lessThan, lhs: lhs, rhs: rhs, name: irName)
         case .igt:  return try IGF.builder.buildIntCompare(.greaterThan, lhs: lhs, rhs: rhs, name: irName)
