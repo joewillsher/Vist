@@ -1,5 +1,5 @@
 //
-//  preprocessor.swift
+//  Preprocessor.swift
 //  Vist
 //
 //  Created by Igor Timofeev on 28/05/2016.
@@ -16,3 +16,4 @@ func runPreprocessor(inout file: String, cwd: String) {
     
     file = "\(file).previst"
 }
+
