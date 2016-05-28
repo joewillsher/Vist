@@ -6,7 +6,7 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-typealias Variable = (type: Type, mutable: Bool)
+typealias Variable = (type: Type, mutable: Bool, isImmutableCapture: Bool)
 
 final class SemaScope {
     

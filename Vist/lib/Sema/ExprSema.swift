@@ -97,7 +97,14 @@ extension MutationExpr : ExprTypeProvider {
                 // Variable 'state0' of type 'Int' is immutable
                 // FIXME: Diagnose non @mutable lookups -- specify this is why it failed
                 
-                throw semaError(.immutableVariable(name: variable.name, type: variable.typeName))
+                if v.isImmutableCapture {
+                    // if we are mutating self
+                    throw semaError(.immutableCapture(name: variable.name))
+                }
+                else {
+                    throw semaError(.immutableVariable(name: variable.name, type: variable.name))
+                }
+                
             }
             
         case let lookup as LookupExpr:
@@ -139,7 +146,7 @@ extension ChainableExpr {
         
         switch self {
         case let variable as VariableExpr:
-            guard let (type, mutable) = scope[variable: variable.name] else { throw semaError(.noVariable(variable.name)) }
+            guard let (type, mutable, _) = scope[variable: variable.name] else { throw semaError(.noVariable(variable.name)) }
             return (type: type, parentMutable: nil, mutable: mutable)
             
         case let propertyLookup as PropertyLookupExpr:
@@ -200,7 +207,7 @@ extension VariableDecl : DeclTypeProvider {
         }
         else {
             let type = explicitType ?? objectType
-            scope[variable: name] = (type, isMutable) // store in arr
+            scope[variable: name] = (type, isMutable, false) // store in arr
         }
         
         // if its a null expression
@@ -250,7 +257,7 @@ extension ClosureExpr : ExprTypeProvider {
         
         for (i, t) in ty.params.enumerate() {
             let name = parameters.isEmpty ? String(i) : parameters[i]
-            innerScope[variable: name] = (type: t, mutable: false)
+            innerScope[variable: name] = (type: t, mutable: false, isImmutableCapture: false)
         }
         
         // TODO: Implementation relying on parameters

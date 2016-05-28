@@ -95,7 +95,7 @@ extension ForInLoopStmt: StmtTypeProvider {
             else { throw semaError(.notGenerator(generator)) }
         
         // add bound name to scopes
-        loopScope[variable: binded.name] = (type: yieldType, mutable: false)
+        loopScope[variable: binded.name] = (type: yieldType, mutable: false, isImmutableCapture: false)
         
         self.generatorFunctionName = "generate".mangle(generatorFunctionType.withParent(storage, mutating: false))
         

@@ -176,11 +176,11 @@ extension InitialiserDecl : DeclTypeProvider {
         // ad scope properties to initScope
         for p in parentProperties {
             guard let propType = p.value._type else { throw semaError(.paramsNotTyped, userVisible: false) }
-            initScope[variable: p.name] = (type: propType, mutable: true)
+            initScope[variable: p.name] = (type: propType, mutable: true, isImmutableCapture: false)
         }
         
         for (p, type) in zip(impl.params, try ty.params(scope)) {
-            initScope[variable: p] = (type: type, mutable: false)
+            initScope[variable: p] = (type: type, mutable: false, isImmutableCapture: false)
         }
         
         try impl.body.walkChildren { ex in

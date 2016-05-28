@@ -8,13 +8,9 @@
 
 
 /// Able to be printed as a VIR instruction
-protocol VIRElement : CustomDebugStringConvertible {
+protocol VIRElement {
     /// VIR code to print
     var vir: String { get }
-}
-
-extension VIRElement {
-    var debugDescription: String { return vir }
 }
 
 enum VIRError : ErrorType {

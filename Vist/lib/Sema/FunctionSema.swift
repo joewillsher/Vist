@@ -69,18 +69,18 @@ extension FuncDecl: DeclTypeProvider {
         guard impl.params.count == ty.params.count || isGeneratorFunction else { throw semaError(.wrongFuncParamList(applied: impl.params, forType: ty.params)) }
         
         for (index, name) in impl.params.enumerate() {
-            fnScope[variable: name] = (type: ty.params[index], mutable: false)
+            fnScope[variable: name] = (type: ty.params[index], mutable: false, isImmutableCapture: false)
         }
         
         // if is a method
         if case let parentType as NominalType = parent?._type {
             
             // add self
-            fnScope[variable: "self"] = (type: parentType, mutable: mutableSelf)
+            fnScope[variable: "self"] = (type: parentType, mutable: mutableSelf, isImmutableCapture: !mutableSelf)
             
             // add self's memebrs implicitly
             for (memberName, memberType, mutable) in parentType.members {
-                fnScope[variable: memberName] = (type: memberType, mutable: mutable && mutableSelf)
+                fnScope[variable: memberName] = (type: memberType, mutable: mutable && mutableSelf, isImmutableCapture: !mutableSelf)
             }
         }
         

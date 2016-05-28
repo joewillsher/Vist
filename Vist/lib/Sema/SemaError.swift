@@ -13,7 +13,7 @@ enum SemaError: VistError {
     case heterogenousArray([Type]), emptyArray
     case cannotSubscriptNonArrayVariable, nonIntegerSubscript
     case nonBooleanCondition, notRangeType, differentTypeForMutation(name: String?, from: Type, to: Type)
-    case immutableVariable(name: String, type: String), immutableProperty(p: String, ty: String), immutableObject(type: String), immutableTupleMember(index: Int)
+    case immutableVariable(name: String, type: String), immutableCapture(name: String), immutableProperty(p: String, ty: String), immutableObject(type: String), immutableTupleMember(index: Int)
     case cannotAssignToNullExpression(String)
     case noTupleElement(index: Int, size: Int)
     
@@ -65,6 +65,8 @@ enum SemaError: VistError {
             return (name.map { "Cannot change type of '\($0)'" } ?? "Could not change type") + " from '\(from.explicitName)' to '\(to.explicitName)'"
         case .immutableVariable(let name, let type):
             return "Variable '\(name)' of type '\(type)' is immutable"
+        case .immutableCapture(let name):
+            return "Cannot mutate 'self' in non mutating method. Make method '@mutable' to modify '\(name)'"
         case let .immutableProperty(p, ty):
             return "Variable of type '\(ty)' does not have mutable property '\(p)'"
         case .immutableObject(let ty):
