@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		20FC1B991CFA594500E567AA /* preprocessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20FC1B981CFA594500E567AA /* preprocessor.swift */; };
+		20FC1B9A1CFA594500E567AA /* preprocessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20FC1B981CFA594500E567AA /* preprocessor.swift */; };
 		D400E84C1CC127DF003E6BEC /* Closure.swift in Sources */ = {isa = PBXBuildFile; fileRef = D400E84B1CC127DF003E6BEC /* Closure.swift */; };
 		D400E84D1CC127DF003E6BEC /* Closure.swift in Sources */ = {isa = PBXBuildFile; fileRef = D400E84B1CC127DF003E6BEC /* Closure.swift */; };
 		D411C8951C8DB61D00478988 /* BreakInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D411C8941C8DB61D00478988 /* BreakInst.swift */; };
@@ -218,6 +220,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		20FC1B981CFA594500E567AA /* preprocessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = preprocessor.swift; path = lib/Pipeline/preprocessor.swift; sourceTree = "<group>"; };
 		D400E84B1CC127DF003E6BEC /* Closure.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = Closure.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		D40239011CFA2E8800BBF0AA /* Int.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = Int.vist; path = stdlib/Int.vist; sourceTree = "<group>"; };
 		D40239021CFA2E8800BBF0AA /* Operators.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = Operators.vist; path = stdlib/Operators.vist; sourceTree = "<group>"; };
@@ -642,6 +645,7 @@
 				D43B39F01C8A100E0039FB2E /* Compile.swift */,
 				D4326E3A1CA5FB7E0016E595 /* NSTask.swift */,
 				D43B39F21C8A100E0039FB2E /* LinkRuntime.swift */,
+				20FC1B981CFA594500E567AA /* preprocessor.swift */,
 			);
 			name = Pipeline;
 			sourceTree = "<group>";
@@ -863,6 +867,7 @@
 				D43B3A411C8A10C80039FB2E /* SemaError.swift in Sources */,
 				D43B3A3D1C8A10C80039FB2E /* Initialiser.swift in Sources */,
 				D4A000341CCA7FD500157D90 /* PtrLower.swift in Sources */,
+				20FC1B9A1CFA594500E567AA /* preprocessor.swift in Sources */,
 				D4F3D7FF1CAC419E005A3B07 /* CreateType.cpp in Sources */,
 				D43B39FB1C8A100E0039FB2E /* Compile.swift in Sources */,
 				D43B39B31C8A0F140039FB2E /* FunctionType.swift in Sources */,
@@ -958,6 +963,7 @@
 				D43B3A081C8A10390039FB2E /* Token.swift in Sources */,
 				D43B39931C8A0EDF0039FB2E /* Builder.swift in Sources */,
 				D43B3A3A1C8A10C80039FB2E /* FunctionSema.swift in Sources */,
+				20FC1B991CFA594500E567AA /* preprocessor.swift in Sources */,
 				D43B3A481C8A10C80039FB2E /* StructSema.swift in Sources */,
 				D43B39911C8A0EDF0039FB2E /* BasicBlock.swift in Sources */,
 				D43B3A061C8A10390039FB2E /* Lexer.swift in Sources */,
