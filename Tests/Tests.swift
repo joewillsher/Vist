@@ -61,16 +61,6 @@ final class ErrorTests : XCTestCase, VistTest {
 }
 
 
-private func deleteFile(name: String, inDirectory direc: String) {
-    _ = try? NSFileManager.defaultManager().removeItemAtPath(direc + "/" + name)
-}
-
-
-
-
-
-
-
 
 
 // MARK: Test Cases
@@ -310,7 +300,8 @@ extension CoreTests {
     
     /// Runs a compilation of the standard library
     func testStdLibCompile() {
-        deleteFile("stdlib.bc", inDirectory: stdlibDir)
+        _ = try? NSFileManager.defaultManager().removeItemAtPath("\(libDir)/libvist.dylib")
+        _ = try? NSFileManager.defaultManager().removeItemAtPath("\(libDir)/libvistruntime.dylib")
         do {
             try compileWithOptions(["-build-stdlib"], inDirectory: stdlibDir)
             XCTAssertTrue(NSFileManager.defaultManager().fileExistsAtPath("\(libDir)/libvist.dylib")) // stdlib used by linker
@@ -323,10 +314,10 @@ extension CoreTests {
     
     /// Builds the runtime
     func testRuntimeBuild() {
-        deleteFile("runtime.bc", inDirectory: runtimeDir)
+        _ = try? NSFileManager.defaultManager().removeItemAtPath("\(libDir)/libvistruntime.dylib")
         do {
             try compileWithOptions(["-build-runtime"], inDirectory: runtimeDir)
-            XCTAssertTrue(NSFileManager.defaultManager().fileExistsAtPath("\(runtimeDir)/runtime.bc"))
+            XCTAssertTrue(NSFileManager.defaultManager().fileExistsAtPath("\(libDir)/libvistruntime.dylib")) // the vist runtime
         }
         catch {
             XCTFail("Runtime build failed with error:\n\(error)\n\n")

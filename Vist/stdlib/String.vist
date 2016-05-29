@@ -56,7 +56,8 @@ type String {
     /// A genrator -- yields each code unit
     func generate:: -> UTF8CodeUnit = {
         var i = 0
-        while i < self.bufferCapacity () {
+        // FIXME: we go to the end of the buffer, even if it's not full
+        while i < self.bufferCapacity () - 1 {
             yield UTF8CodeUnit (Builtin.opaque_load (self.codeUnitAtIndex i))
             i = i + 1
         }

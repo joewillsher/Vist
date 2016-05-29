@@ -4,12 +4,12 @@ print meme.length // test: 4
 print (meme.bufferCapacity ()) // test: 5
 print (meme.isUTF8Encoded ()) // test: true
 
-print meme // test: meme0
-print 0 // 0 for new line ^
+print meme // test: meme
+print 0 // test: 0
 
-let b = "🔥 test 🔥"
-print b.length // test: 14
-print (b.bufferCapacity ()) // test: 15
+let b = "🔥test🔥"
+print b.length // test: 12
+print (b.bufferCapacity ()) // test: 13
 print (b.isUTF8Encoded ()) // test: false
 
-print b // test: 🔥 test 🔥
+print b // test: 🔥test🔥
