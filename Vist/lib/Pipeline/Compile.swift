@@ -49,7 +49,7 @@ struct CompileOptions : OptionSetType {
     /// Parse this file as stdlib code and link manually with runtime
     static let doNotLinkStdLib: CompileOptions = [buildRuntime, linkWithRuntime, parseStdLib]
     
-    static let runPreprocessor = CompileOptions(rawValue: 1 << 16)
+    static let runPreprocessor = CompileOptions(rawValue: 1 << 17)
 }
 
 /// Compiles series of files

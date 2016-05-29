@@ -49,3 +49,7 @@ foreach(a,
 // test: 3
 // test: 4
 
+print __FILE__ // test: Preprocessor.c
+print __LINE__ // test: 53
+
+
