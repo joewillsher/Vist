@@ -54,6 +54,7 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
                 "  -emit-vir\t\t- Print the VIR file\n" +
                 "  -emit-asm\t\t- print the assembly code\n" +
                 "  -run -r\t\t- Run the program after compilation\n" +
+                "  -run-preprocessor\t- Run the C preprocessor on the source\n" +
                 "  -oNAME -r\t\t- Define the output name to be NAME\n" +
                 "  -build-stdlib\t\t- Build the standard library too\n" +
                 "  -parse-stdlib\t\t- Compile the module as if it were the stdlib. This exposes Builtin functions and links the runtime directly\n" +
@@ -65,10 +66,6 @@ public func compileWithOptions(flags: [String], inDirectory dir: String, out: NS
         #if DEBUG
             let s = CFAbsoluteTimeGetCurrent()
         #endif
-        
-        if flags.contains("-run-preprocessor") {
-            
-        }
         
         if flags.contains("-build-stdlib") {
             var o: CompileOptions = [.buildStdLib, .Ohigh]
