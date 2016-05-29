@@ -22,7 +22,7 @@ final class StructInitInst : InstBase {
     }
     
     override var instVIR: String {
-        return "\(name) = struct %\(type!.explicitName), \(args.virValueTuple()) \(useComment)"
+        return "\(name) = struct %\(structType.name), \(args.virValueTuple()) \(useComment)"
     }
 }
 

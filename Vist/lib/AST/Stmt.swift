@@ -86,6 +86,8 @@ final class ReturnStmt : ScopeEscapeStmt {
     init(expr: Expr) {
         self.expr = expr
     }
+    
+    var expectedReturnType: Type?
 }
 final class YieldStmt : ScopeEscapeStmt {
     let expr: Expr

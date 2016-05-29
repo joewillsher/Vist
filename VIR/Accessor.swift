@@ -35,6 +35,8 @@ protocol Accessor : class {
     func releaseUnowned() throws
     func dealloc() throws
     func deallocUnowned() throws
+    
+    var module: Module { get }
 }
 
 /// Provides access to values by exposing a getter which returns the value
@@ -52,6 +54,7 @@ final class ValAccessor : Accessor {
     }
     
     var storedType: Type? { return value.type }
+    var module: Module { return value.module }
 }
 
 // Helper function for constructing a reference copy
@@ -81,6 +84,33 @@ extension Accessor {
     func aggregateGetter() throws -> Value {
         return try getter()
     }
+    
+    /// The type system needs to coerce a type into another. Here we insert the
+    /// instructions to do so. For example:
+    ///
+    /// `func foo :: AConcept = ...` is called as `foo aConformant`. If aConformant
+    /// is not already an existential we must construct one.
+    func boxedAggregateGetter(expectedType: Type?) throws -> Value {
+        
+        // if the function expects an existential, we construct one
+        if case let existentialType as ConceptType = expectedType?.getConcreteNominalType() {
+            if storedType?.mangledName == existentialType.mangledName {
+                return try aggregateGetter() // dont box it if its the same concept
+            }
+            else {
+                let existentialRef = try asReferenceAccessor().aggregateReference()
+                return try module.builder.buildExistentialBox(PtrOperand(existentialRef), existentialType: existentialType)
+            }
+        }
+        else if case let refCounted as RefCountedAccessor = self {
+            // retain the parameters -- pass them in at +1 so the function can release them at its end
+            return refCounted.aggregateReference()
+        }
+            // if its a nominal type we get the object and pass it in
+        else {
+            return try aggregateGetter()
+        }
+    }
 }
 
 
@@ -101,7 +131,6 @@ protocol GetSetAccessor : Accessor {
     /// as the location `reference` uses to access elements
     func aggregateReference() -> LValue
         
-    var module: Module { get }
 }
 
 extension GetSetAccessor {
@@ -305,7 +334,11 @@ final class LazyAccessor : Accessor {
         return try v.allocGetSetAccessor()
     }
     
-    init(fn: () throws -> Value) { build = fn }
+    init(module: Module, fn: () throws -> Value) {
+        self.build = fn
+        self.module = module
+    }
+    var module: Module
 }
 
 

@@ -166,7 +166,6 @@ extension VariableDecl : ValueEmitter {
     }
 }
 
-
 extension FunctionCall/*: VIRGenerator*/ {
     
     func argOperands(module module: Module, scope: Scope) throws -> [Operand] {
@@ -176,23 +175,10 @@ extension FunctionCall/*: VIRGenerator*/ {
         
         return try zip(argArr, fnType.params).map { rawArg, paramType in
             let arg = try rawArg.emitRValue(module: module, scope: scope)
-            
             try arg.retain()
-            
-            // if the function expects an existential, we construct one
-            if case let alias as TypeAlias = paramType, case let existentialType as ConceptType = alias.targetType {
-                let existentialRef = try arg.asReferenceAccessor().aggregateReference()
-                return try module.builder.buildExistentialBox(PtrOperand(existentialRef), existentialType: existentialType)
+            return try arg.boxedAggregateGetter(paramType)
             }
-            else if case let refCounted as RefCountedAccessor = arg {
-                // retain the parameters -- pass them in at +1 so the function can release them at its end
-                return refCounted.aggregateReference()
-            }
-                // if its a nominal type we get the object and pass it in
-            else {
-                return try arg.aggregateGetter()
-            }
-            }.map(Operand.init)
+            .map(Operand.init)
     }
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
@@ -276,7 +262,7 @@ extension FuncDecl : StmtEmitter {
                 // case is Accessor:
                 default:
                     for property in type.members {
-                        let pVar = LazyAccessor {
+                        let pVar = LazyAccessor(module: module) {
                             try module.builder.build(StructExtractInst(object: selfVar.getter(), property: property.name, irName: property.name))
                         }
                         fnScope.insert(pVar, name: property.name)
@@ -331,7 +317,8 @@ extension ReturnStmt : ValueEmitter {
             try retVal.releaseUnowned()
         }
         
-        return try module.builder.buildReturn(Operand(retVal.aggregateGetter())).accessor()
+        let boxed = try retVal.boxedAggregateGetter(expectedReturnType)
+        return try module.builder.buildReturn(Operand(boxed)).accessor()
     }
 }
 
@@ -761,7 +748,7 @@ extension MethodCallExpr : ValueEmitter {
                                                                       argTypes: argTypes,
                                                                       existentialType: existentialType,
                                                                       irName: "witness")
-            guard case let fnType as FunctionType = fn.memType else { fatalError() }
+            guard case let fnType as FunctionType = fn.memType?.usingTypesIn(module) else { fatalError() }
             
             // get the instance from the existential
             let unboxedSelf = try module.builder.buildExistentialUnbox(selfRef, irName: "unboxed")

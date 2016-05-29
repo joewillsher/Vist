@@ -23,6 +23,7 @@ extension ReturnStmt : StmtTypeProvider {
     
     func typeForNode(scope: SemaScope) throws {
         guard !scope.isYield else { throw semaError(.invalidReturn) }
+        self.expectedReturnType = scope.returnType
         try checkScopeEscapeStmt(scope)
     }
 }

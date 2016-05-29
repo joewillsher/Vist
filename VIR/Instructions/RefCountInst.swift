@@ -27,7 +27,7 @@ final class AllocObjectInst : InstBase, LValue {
     var memType: Type? { return Runtime.refcountedObjectType.usingTypesIn(module) }
     
     override var instVIR: String {
-        return "\(name) = alloc_object \(refType) \(useComment)"
+        return "\(name) = alloc_object \(refType.explicitName) \(useComment)"
     }
 }
 
@@ -51,7 +51,7 @@ final class RetainInst : InstBase {
     override var instHasSideEffects: Bool { return true }
     
     override var instVIR: String {
-        return "\(name) = retain_object \(object) \(useComment)"
+        return "\(name) = retain_object \(object.valueName) \(useComment)"
     }
 }
 
@@ -80,7 +80,7 @@ final class ReleaseInst : InstBase {
     override var instHasSideEffects: Bool { return true }
     
     override var instVIR: String {
-        return "\(name) = \(unowned ? "release_unowned_object" : "release_object") \(object) \(useComment)"
+        return "\(name) = \(unowned ? "release_unowned_object" : "release_object") \(object.valueName) \(useComment)"
     }
 }
 
@@ -108,7 +108,7 @@ final class DeallocObjectInst : InstBase {
     override var instHasSideEffects: Bool { return true }
     
     override var instVIR: String {
-        return "\(name) = \(unowned ? "dealloc_unowned_object" : "dealloc_object") \(object) \(useComment)"
+        return "\(name) = \(unowned ? "dealloc_unowned_object" : "dealloc_object") \(object.valueName) \(useComment)"
     }
 }
 
