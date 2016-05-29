@@ -1,0 +1,51 @@
+
+#define foreach(range, code) \
+while (range.empty ()) == false { \
+let elem = (range.popFront ()) \
+code \
+}
+
+concept InputRange {
+    func empty :: -> Bool
+    func front :: -> Int
+    func popFront :: -> Int
+}
+
+type NumericRange {
+    var start: Int, end: Int
+    
+    init Range = (val) {
+        start = val.start
+        end = val.end
+    }
+    
+    func empty :: -> Bool = do return start >= end
+    
+    func front :: -> Int = do return start
+    
+    @mutating
+    func popFront :: -> Int = {
+        start = start + 1
+        return start - 1
+    }
+}
+
+
+// ranges
+@inline
+func MakeRange :: Int Int -> NumericRange = (a b) do
+    return NumericRange a b
+
+var a = MakeRange 1 5
+
+print (a.popFront ())
+print (a.popFront ())
+
+foreach(a,
+    print elem
+)
+// test: 1
+// test: 2
+// test: 3
+// test: 4
+

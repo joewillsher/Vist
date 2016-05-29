@@ -33,7 +33,7 @@ void performLLVMOptimisations(Module *module, int optLevel, bool isStdLib) {
     
     PassManagerBuilder pmBuilder;
     PassManager passManager;
-    
+        
     if (optLevel != 0) {
         pmBuilder.OptLevel = optLevel;
         pmBuilder.Inliner = createFunctionInliningPass();

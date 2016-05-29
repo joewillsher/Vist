@@ -153,9 +153,9 @@ func compileDocuments(
     if options.contains(.buildRuntime) {
         buildRuntime(debugRuntime: options.contains(.debugRuntime))
     }
-
+    
     let stdlibDirectory = "\(SOURCE_ROOT)/Vist/stdlib"
-
+    
     var llvmModule = LLVMModule(name: file)
     if options.contains(.linkWithRuntime) {
         importFile("shims.c", directory: stdlibDirectory, into: &llvmModule)
@@ -168,6 +168,11 @@ func compileDocuments(
         if !options.contains(.preserveTempFiles) {
             for file in ["\(file).ll", "\(file)_.ll", "\(file).s", "\(file).vir", "\(file)_.vir"] {
                 _ = try? NSFileManager.defaultManager().removeItemAtPath("\(currentDirectory)/\(file)")
+            }
+            if options.contains(.runPreprocessor) {
+                for file in names {
+                    _ = try? NSFileManager.defaultManager().removeItemAtPath("\(currentDirectory)/\(file)")
+                }
             }
         }
     }
