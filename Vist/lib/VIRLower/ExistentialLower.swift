@@ -18,7 +18,7 @@ extension ExistentialConstructInst : VIRLower {
         let conf = try structType.generateConformanceMetadata(&IGF, concept: existentialType).metadata
        
         let ex = try IGF.builder.buildCall(ref, args: [conf, mem])
-                
+        
         let exType = existentialType.usingTypesIn(module).lowerType(module).getPointerType()
         let bc = try IGF.builder.buildBitcast(value: ex, to: exType)
         

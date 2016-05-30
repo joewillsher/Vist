@@ -171,7 +171,7 @@ extension UnsafeMutablePointer : RuntimeObject, ArrayGenerator {
         if let c = arrayCount {
             
             let children = try stride(to: advancedBy(c), by: 1).enumerate().map { index, element in
-                try IGF.module.createLLVMGlobal(forPointer: self, baseName: "\(baseName)\(index)", IGF: &IGF).value
+                try IGF.module.createLLVMGlobal(forPointer: element, baseName: "\(baseName)\(index)", IGF: &IGF).value
             }
             
             let v = LLVMValue.constArray(of: type(&IGF), vals: children)

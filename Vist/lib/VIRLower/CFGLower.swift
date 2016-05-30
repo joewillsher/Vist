@@ -35,15 +35,6 @@ extension CondBreakInst : VIRLower {
 
 extension VIRFunctionCall {
     func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
-        
-        print("\n\n\n")
-        
-        IGF.module.dump()
-        
-        for a in args {
-            a.value!.dump()
-        }
-        
         let call = try IGF.builder.buildCall(functionRef,
                                              args: args.map { $0.loweredValue! },
                                              name: irName)
