@@ -336,6 +336,8 @@
 		D4CA32091CEA71F3009C2B10 /* RuntimeObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RuntimeObject.swift; path = stdlib/runtime/RuntimeObject.swift; sourceTree = "<group>"; };
 		D4CF76761C8CD4A70058A8EC /* TupleInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TupleInst.swift; path = Instructions/TupleInst.swift; sourceTree = "<group>"; };
 		D4CF767C1C8CF8490058A8EC /* Runtime.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Runtime.swift; path = lib/Sema/Expose/Runtime.swift; sourceTree = "<group>"; };
+		D4D369D91CFC6FFA007E802D /* vir.vim */ = {isa = PBXFileReference; lastKnownFileType = text; name = vir.vim; path = utils/vim/syntax/vir.vim; sourceTree = "<group>"; };
+		D4D369DA1CFC6FFA007E802D /* vist.vim */ = {isa = PBXFileReference; lastKnownFileType = text; name = vist.vim; path = utils/vim/syntax/vist.vim; sourceTree = "<group>"; };
 		D4DB92771C866FF300718B78 /* example.vir */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vir; path = RUN/example.vir; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
 		D4DE28181C5969830096E798 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
@@ -567,6 +569,8 @@
 				D457F6221C83658C0095EDED /* VIR */,
 				D47FF07C1B812052003F9920 /* Vist */,
 				D43B39E81C8A0FA60039FB2E /* Error.swift */,
+				D4D369D91CFC6FFA007E802D /* vir.vim */,
+				D4D369DA1CFC6FFA007E802D /* vist.vim */,
 				D43B39EB1C8A0FAB0039FB2E /* Test.playground */,
 				D41BF54B1C5CD797004A1962 /* Tests */,
 				D47FF07B1B812052003F9920 /* Products */,

@@ -88,6 +88,10 @@ extension RuntimeObject {
 // MARK: Runtime types
 extension ValueWitness : RuntimeObject {
     func type(inout IGF: IRGenFunction) -> LLVMType { return Runtime.valueWitnessType.lowerType(Module()) }
+    
+    func lower(inout IGF: IRGenFunction, baseName: String) throws -> LLVMValue {
+        return try LLVMBuilder.constAggregate(type: type(&IGF), elements: [LLVMValue(ref: LLVMValueRef(witness))])
+    }
 }
 extension TypeMetadata : RuntimeObject {
     func type(inout IGF: IRGenFunction) -> LLVMType { return Runtime.typeMetadataType.lowerType(Module()) }

@@ -726,7 +726,7 @@ extension MethodCallExpr : ValueEmitter {
         let args = try argOperands(module: module, scope: scope)
         let selfVar = try object.emitRValue(module: module, scope: scope)
         try selfVar.retain()
-        let selfRef = PtrOperand(try selfVar.asReferenceAccessor().aggregateReference())
+        let selfRef = try PtrOperand(selfVar.asReferenceAccessor().aggregateReference())
         
         guard let fnType = fnType else { fatalError() }
         

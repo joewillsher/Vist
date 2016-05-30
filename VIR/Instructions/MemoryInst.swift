@@ -16,6 +16,7 @@ final class AllocInst : InstBase, LValue {
     
     /// - precondition: newType has types in this module
     init(memType: Type, irName: String? = nil) {
+        precondition(memType is TypeAlias)
         self.storedType = memType
         super.init(args: [], irName: irName)
     }
@@ -59,6 +60,7 @@ final class LoadInst : InstBase {
     private(set) var address: PtrOperand
     
     init(address: LValue, irName: String? = nil) {
+        precondition(address.memType is TypeAlias)
         self.address = PtrOperand(address)
         super.init(args: [self.address], irName: irName)
     }
@@ -84,6 +86,7 @@ final class BitcastInst : InstBase, LValue {
     /// - precondition: newType has types in this module
     /// - note: the ptr will have type newType*
     init(address: LValue, newType: Type, irName: String? = nil) {
+        precondition(newType is TypeAlias)
         let op = PtrOperand(address)
         self.address = op
         self.newType = newType

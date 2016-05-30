@@ -39,28 +39,14 @@ extern "C" {
     /// A witness function
     struct ValueWitness {
         void *witness;
-        
-#ifdef RUNTIME
-    public:
-        ValueWitness(void *v)
-            : witness(v) {}
-#endif
     };
-    
     
     
     /// A concept witness table
     struct WitnessTable {
         /// The witnesses
-        
-        ValueWitness * SWIFT_NAME(witnessArr) witnesses;
+        ValueWitness ** SWIFT_NAME(witnessArr) witnesses;
         int32_t SWIFT_NAME(witnessArrCount) numWitnesses;
-        
-#ifdef RUNTIME
-    public:
-        WitnessTable(ValueWitness *witnesses, int64_t numWitnesses)
-            : witnesses(witnesses), numWitnesses(numWitnesses) {}
-#endif
     };
     
     
@@ -70,12 +56,6 @@ extern "C" {
         ConceptConformance ** SWIFT_NAME(conceptConformanceArr) conceptConformances;
         int32_t SWIFT_NAME(conceptConformanceArrCount) numConformances;
         const char *name;
-        
-#ifdef RUNTIME
-    public:
-        TypeMetadata(ConceptConformance **conformances, int32_t s, const char *n)
-            : conceptConformances(conformances), numConformances(s), name(n) {}
-#endif
     };
     
     
@@ -87,16 +67,6 @@ extern "C" {
         int32_t * SWIFT_NAME(propWitnessOffsetArr) propWitnessOffsets;  /// Offset of concept elements
         int32_t SWIFT_NAME(propWitnessOffsetArrCount) numOffsets;       /// Number of offsets in `propWitnessOffsets`
         WitnessTable *witnessTable; /// Pointer to the conformant's witness table
-        /// for this concept
-        
-#ifdef RUNTIME
-    public:
-        ConceptConformance(TypeMetadata *md,
-                           int32_t *offsets,
-                           int32_t numOffs,
-                           WitnessTable *witnessTable)
-            : concept(md), propWitnessOffsets(offsets), numOffsets(numOffs), witnessTable(witnessTable) {}
-#endif
     };
     
     

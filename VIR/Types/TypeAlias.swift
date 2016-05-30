@@ -34,6 +34,10 @@ extension TypeAlias {
 
     func lowerType(module: Module) -> LLVMType {
         
+        if targetType is ConceptType {
+            return TypeAlias(name: "", targetType: Runtime.existentialObjectType).lowerType(module)
+        }
+        
         if module.loweredModule == nil {
             // backup if a module isnt lowered
             return targetType.lowerType(module)

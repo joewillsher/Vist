@@ -42,12 +42,12 @@ final class ExistentialConstructInst : InstBase {
     }
     
     override var instVIR: String {
-        return "\(name) = existential_box \(value.valueName) in #\(existentialType.explicitName) \(useComment)"
+        return "\(name) = existential \(value.valueName) in #\(existentialType.explicitName) \(useComment)"
     }
     
 }
 
-final class ExistentialWitnessMethodInst : InstBase, LValue {
+final class ExistentialWitnessInst : InstBase, LValue {
     var existential: PtrOperand
     let methodName: String, argTypes: [Type], existentialType: ConceptType
     
@@ -70,7 +70,7 @@ final class ExistentialWitnessMethodInst : InstBase, LValue {
 }
 
 /// Get the instance from the existential box, an i8*
-final class ExistentialUnboxInst : InstBase, LValue {
+final class ExistentialProjectInst : InstBase, LValue {
     var existential: PtrOperand
     
     override var type: Type? { return BuiltinType.opaquePointer }
@@ -82,7 +82,7 @@ final class ExistentialUnboxInst : InstBase, LValue {
     }
     
     override var instVIR: String {
-        return "\(name) = existential_unbox \(existential.valueName) \(useComment)"
+        return "\(name) = existential_project \(existential.valueName) \(useComment)"
     }
     
 }
@@ -99,11 +99,11 @@ extension Builder {
         return try _add(ExistentialConstructInst(value: value, existentialType: existentialType, irName: irName))
     }
     /// Builds an existential from a definite object.
-    func buildExistentialWitnessMethod(existential: PtrOperand, methodName: String, argTypes: [Type], existentialType: ConceptType, irName: String? = nil) throws -> ExistentialWitnessMethodInst {
-        return try _add(ExistentialWitnessMethodInst(existential: existential, methodName: methodName, argTypes: argTypes, existentialType: existentialType, irName: irName))
+    func buildExistentialWitnessMethod(existential: PtrOperand, methodName: String, argTypes: [Type], existentialType: ConceptType, irName: String? = nil) throws -> ExistentialWitnessInst {
+        return try _add(ExistentialWitnessInst(existential: existential, methodName: methodName, argTypes: argTypes, existentialType: existentialType, irName: irName))
     }
-    func buildExistentialUnbox(value: PtrOperand, irName: String? = nil) throws -> ExistentialUnboxInst {
-        return try _add(ExistentialUnboxInst(existential: value, irName: irName))
+    func buildExistentialUnbox(value: PtrOperand, irName: String? = nil) throws -> ExistentialProjectInst {
+        return try _add(ExistentialProjectInst(existential: value, irName: irName))
     }
 
 }
