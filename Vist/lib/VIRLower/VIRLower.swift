@@ -77,8 +77,7 @@ extension Module {
             
             // name the params
             for (i, p) in (fn.params ?? []).enumerate() where p.irName != nil {
-                var param = try function.getParam(i)
-                param.name = p.irName
+                try function.getParam(i).name = p.irName
             }
         }
         

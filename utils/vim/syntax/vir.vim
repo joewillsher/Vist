@@ -7,7 +7,7 @@ if exists("b:current_syntax")
 	finish
 endif
 
-syn keyword virOperations struct struct_extract variable_decl builtin return call tuple tuple_extract int_literal bool_literal break i_add i_sub i_mul cond_fail func type store in load alloc tuple_element struct_element existential_box existential_witness existential_unbox apply string_literal utf8 utf16 skipwhite 
+syn keyword virOperations struct struct_extract variable_decl builtin return call tuple tuple_extract int_literal bool_literal break i_add i_sub i_mul cond_fail func type store in load alloc tuple_element struct_element existential existential_witness existential_project apply string_literal utf8 utf16 skipwhite
 
 syn keyword virTypeDecl type existential skipwhite
 syn keyword virFuncKeyword func skipwhite

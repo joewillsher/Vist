@@ -48,7 +48,15 @@ type Range {
 @inline func _expect :: Bool Bool -> Bool = (val assume) do
     return Bool (Builtin.expect val.value assume.value)
 
-@public @inline @noreturn func fatalError :: () = do Builtin.trap ()
+@public @noreturn func fatalError :: String = (message) {
+    _print "Fatal error: "
+    _print message
+    Builtin.trap ()
+}
+@public @noreturn func fatalError :: () = {
+    _print "Fatal error"
+    Builtin.trap ()
+}
 
 
 

@@ -10,39 +10,78 @@ extension ExistentialConstructInst : VIRLower {
     
     func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
         
-        guard case let aliasType as TypeAlias = value.memType, case let structType as StructType = aliasType.targetType else { fatalError() }
+        guard let structType = try value.memType?.getAsStructType() else { fatalError() }
         
-        let exType = existentialType.usingTypesIn(module).lowerType(module) as LLVMType
-        let valueMem = try IGF.builder.buildAlloca(type: aliasType.lowerType(module)) // allocate the struct
-        let ptr = try IGF.builder.buildAlloca(type: exType)
+        let ref = module.getOrAddRuntimeFunction(named: "vist_constructExistential", IGF: &IGF)
         
-        let llvmName = irName.map { "\($0)." }
+        let mem = try IGF.builder.buildBitcast(value: value.loweredValue!, to: LLVMType.opaquePointer)
+        let conf = try structType.generateConformanceMetadata(&IGF, concept: existentialType).metadata
+       
+        let ex = try IGF.builder.buildCall(ref, args: [conf, mem])
         
-        let propArrayPtr = try IGF.builder.buildStructGEP(ptr, index: 0, name: "\(llvmName)prop_metadata") // [n x i32]*
-        let methodArrayPtr = try IGF.builder.buildStructGEP(ptr, index: 1, name: "\(llvmName)method_metadata") // [n x i8*]*
-        let structPtr = try IGF.builder.buildStructGEP(ptr, index: 2, name: "\(llvmName)opaque")  // i8**
+        let exType = existentialType.usingTypesIn(module).lowerType(module).getPointerType()
+        let bc = try IGF.builder.buildBitcast(value: ex, to: exType)
         
-        let propArr = try existentialType.existentialPropertyMetadataFor(structType, IGF: &IGF, module: module)
-        try IGF.builder.buildStore(value: propArr, in: propArrayPtr)
+        return try IGF.builder.buildLoad(from: bc, name: irName)
+    }
+}
+
+extension ExistentialWitnessInst : VIRLower {
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
         
-        let methodArr = try existentialType.existentialMethodMetadataFor(structType, IGF: &IGF, module: module)
-        try IGF.builder.buildStore(value: methodArr, in: methodArrayPtr)
+        let i = try existentialType.indexOf(methodNamed: methodName, argTypes: argTypes)
+        let fnType = try existentialType
+            .methodType(methodNamed: methodName, argTypes: argTypes)
+            .withOpaqueParent().cannonicalType(module)
+            .usingTypesIn(module)
         
-        let v = try IGF.builder.buildLoad(from: value.loweredValue!)
-        try IGF.builder.buildStore(value: v, in: valueMem)
-        let opaqueValueMem = try IGF.builder.buildBitcast(value: valueMem, to: BuiltinType.opaquePointer.lowerType(module))
-        try IGF.builder.buildStore(value: opaqueValueMem, in: structPtr)
+        let ref = module.getOrAddRuntimeFunction(named: "vist_getWitnessMethod", IGF: &IGF)
         
-        let ret = try IGF.builder.buildLoad(from: ptr, name: irName)
+        let exType = Runtime.existentialObjectType.lowerType(module).getPointerType()
+        let conformanceIndex = LLVMValue.constInt(0, size: 32), methodIndex = LLVMValue.constInt(i, size: 32)
+        let ex = try IGF.builder.buildBitcast(value: existential.loweredValue!, to: exType)
+        let functionPointer = try IGF.builder.buildCall(ref, args: [ex, conformanceIndex, methodIndex])
         
+        let functionType = BuiltinType.pointer(to: fnType).lowerType(module)
+        return try IGF.builder.buildBitcast(value: functionPointer, to: functionType, name: irName) // fntype*
+    }
+}
+
+extension OpenExistentialPropertyInst : VIRLower {
+    
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
         
+        guard
+            case let aliasType as TypeAlias = existential.memType,
+            case let conceptType as ConceptType = aliasType.targetType,
+            let propertyPtrType = type else { fatalError() }
         
+        // index of property in the concept's table
+        // use this to look up the index in self by getting the ixd from the runtime's array
+        let i = try conceptType.indexOfMemberNamed(propertyName)
         
-//        let ref = module.getOrAddRuntimeFunction(named: "vist_constructConceptConformance", IGF: &IGF)
-        
-//        let conf = try structType.generateConformanceMetadata(&IGF, concept: existentialType)
-        
-        return ret
+        let exType = Runtime.existentialObjectType.lowerType(module).getPointerType()
+        let ex = try IGF.builder.buildBitcast(value: existential.loweredValue!, to: exType)
+        let conformanceIndex = LLVMValue.constInt(0, size: 32), propertyIndex = LLVMValue.constInt(i, size: 32)
+
+        let ref = module.getOrAddRuntimeFunction(named: "vist_getPropertyOffset", IGF: &IGF)
+        let offset = try IGF.builder.buildCall(ref, args: [ex, conformanceIndex, propertyIndex])
+
+        let elementPtrType = propertyPtrType.lowerType(module) // ElTy*.Type
+        let structElementPointer = try IGF.builder.buildStructGEP(existential.loweredValue!, index: 0, name: irName.+"element_pointer") // i8**
+        let opaqueInstancePointer = try IGF.builder.buildLoad(from: structElementPointer, name: irName.+"opaque_instance_pointer")  // i8*
+        let instanceMemberPtr = try IGF.builder.buildGEP(opaqueInstancePointer, index: offset)
+        return try IGF.builder.buildBitcast(value: instanceMemberPtr, to: elementPtrType, name: irName.+"ptr")  // ElTy*
+    }
+}
+
+
+
+extension ExistentialProjectInst : VIRLower {
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
+        let p = try IGF.builder.buildStructGEP(existential.loweredValue!, index: 0, name: irName.+"projection")
+        let v = try IGF.builder.buildLoad(from: p)
+        return try IGF.builder.buildBitcast(value: v, to: LLVMType.opaquePointer, name: irName)
     }
 }
 
@@ -62,7 +101,7 @@ extension NominalType {
         // if its a struct, we can emit the conformance tables
         if case let s as StructType = self {
             conformances = try concepts
-                .map { concept in try s.generateConformanceMetadata(&IGF, concept: concept) }
+                .map { concept in try s.generateConformanceMetadata(&IGF, concept: concept).conformance }
                 .map { UnsafeMutablePointer.allocInit($0) }
         }
         
@@ -96,9 +135,9 @@ extension NominalType {
 
 extension StructType {
     
-    func generateConformanceMetadata(inout IGF: IRGenFunction, concept: ConceptType) throws -> ConceptConformance {
+    func generateConformanceMetadata(inout IGF: IRGenFunction, concept: ConceptType) throws -> (conformance: ConceptConformance, metadata: LLVMValue) {
         
-        var valueWitnesses = try concept.existentialValueWitnesses(self, IGF: &IGF)
+        var valueWitnesses = try concept.existentialValueWitnesses(self, IGF: &IGF).map(UnsafeMutablePointer.allocInit)
         var witnessTable = WitnessTable(witnessArr: &valueWitnesses, witnessArrCount: Int32(valueWitnesses.count))
         
         var witnessOffsets = try concept.existentialWitnessOffsets(self, IGF: &IGF)
@@ -110,7 +149,7 @@ extension StructType {
         
         let md = try c.getConstMetadata(&IGF, name: "_g\(name)conf\(concept.name)")
         
-        return c
+        return (c, md)
     }
 }
 
@@ -160,68 +199,6 @@ private extension ConceptType {
 
 
 
-
-
-extension ExistentialPropertyInst : VIRLower {
-    
-    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
-        
-        guard case let aliasType as TypeAlias = existential.memType, case let conceptType as ConceptType = aliasType.targetType, let propertyType = type else { fatalError() }
-        
-        // index of property in the concept's table
-        // use this to look up the index in self by getting the ixd from the runtime's array
-        let i = try conceptType.indexOfMemberNamed(propertyName)
-        let index = LLVMValue.constInt(i, size: 32) // i32
-        
-        let llvmName = irName.map { "\($0)." } ?? ""
-        
-        let i32PtrType = BuiltinType.pointer(to: BuiltinType.int(size: 32)).lowerType(module) as LLVMType
-        let arr = try IGF.builder.buildStructGEP(existential.loweredValue!, index: 0, name: "\(llvmName)metadata_ptr") // [n x i32]*
-        let propertyMetadataBasePtr = try IGF.builder.buildBitcast(value: arr, to: i32PtrType, name: "\(llvmName)metadata_base_ptr") // i32*
-        
-        let pointerToArrayElement = try IGF.builder.buildGEP(propertyMetadataBasePtr, index: index) // i32*
-        let offset = try IGF.builder.buildLoad(from: pointerToArrayElement) // i32
-        
-        let elementPtrType = propertyType.lowerType(module).getPointerType() // ElTy*.Type
-        let structElementPointer = try IGF.builder.buildStructGEP(existential.loweredValue!, index: 2, name: "\(llvmName)element_pointer") // i8**
-        let opaqueInstancePointer = try IGF.builder.buildLoad(from: structElementPointer, name: "\(llvmName)opaque_instance_pointer")  // i8*
-        let instanceMemberPtr = try IGF.builder.buildGEP(opaqueInstancePointer, index: offset)
-        let elPtr = try IGF.builder.buildBitcast(value: instanceMemberPtr, to: elementPtrType, name: "\(llvmName)ptr")  // ElTy*
-        
-        return try IGF.builder.buildLoad(from: elPtr, name: irName)
-    }
-}
-
-extension ExistentialUnboxInst : VIRLower {
-    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
-        let p = try IGF.builder.buildStructGEP(existential.loweredValue!, index: 2, name: name)
-        return try IGF.builder.buildLoad(from: p, name: irName)
-    }
-}
-
-extension ExistentialWitnessMethodInst : VIRLower {
-    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
-        
-        let llvmName = irName.map { "\($0)." } ?? ""
-        let i = try existentialType.indexOf(methodNamed: methodName, argTypes: argTypes)
-        let fnType = try existentialType
-            .methodType(methodNamed: methodName, argTypes: argTypes)
-            .withOpaqueParent().cannonicalType(module)
-            .usingTypesIn(module)
-        
-        let index = LLVMValue.constInt(i, size: 32) // i32
-        
-        let opaquePtrType = LLVMType.opaquePointer.getPointerType()
-        let arr = try IGF.builder.buildStructGEP(existential.loweredValue!, index: 1, name: "\(llvmName)witness_table_ptr") // [n x i8*]*
-        let methodMetadataBasePtr = try IGF.builder.buildBitcast(value: arr, to: opaquePtrType, name: "\(llvmName)witness_table_base_ptr") // i8**
-        
-        let pointerToArrayElement = try IGF.builder.buildGEP(methodMetadataBasePtr, index: index)
-        let functionPointer = try IGF.builder.buildLoad(from: pointerToArrayElement) // i8*
-        
-        let functionType = BuiltinType.pointer(to: fnType).lowerType(module) as LLVMType
-        return try IGF.builder.buildBitcast(value: functionPointer, to: functionType, name: irName) // fntype*
-    }
-}
 
 
 private extension ConceptType {

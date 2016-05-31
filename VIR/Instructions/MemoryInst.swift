@@ -16,6 +16,7 @@ final class AllocInst : InstBase, LValue {
     
     /// - precondition: newType has types in this module
     init(memType: Type, irName: String? = nil) {
+        precondition(memType.isInModule())
         self.storedType = memType
         super.init(args: [], irName: irName)
     }
@@ -84,6 +85,7 @@ final class BitcastInst : InstBase, LValue {
     /// - precondition: newType has types in this module
     /// - note: the ptr will have type newType*
     init(address: LValue, newType: Type, irName: String? = nil) {
+        precondition(newType.isInModule())
         let op = PtrOperand(address)
         self.address = op
         self.newType = newType

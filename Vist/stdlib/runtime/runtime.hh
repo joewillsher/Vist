@@ -14,13 +14,12 @@
 #include <stdlib.h>
 #include <stdlib.h>
 
-// Define arr
-
-
 
 #ifdef __cplusplus
+
 #define SWIFT_NAME(X)
 extern "C" {
+    
 #else
     
 #define SWIFT_NAME(X) __attribute__((swift_name(#X)))
@@ -39,47 +38,21 @@ extern "C" {
     /// A witness function
     struct ValueWitness {
         void *witness;
-        
-#ifdef RUNTIME
-    public:
-        ValueWitness(void *v)
-            : witness(v) {}
-#endif
     };
-    
-    
     
     /// A concept witness table
     struct WitnessTable {
         /// The witnesses
-        
-        ValueWitness * SWIFT_NAME(witnessArr) witnesses;
+        ValueWitness ** SWIFT_NAME(witnessArr) witnesses;
         int32_t SWIFT_NAME(witnessArrCount) numWitnesses;
-        
-#ifdef RUNTIME
-    public:
-        WitnessTable(ValueWitness *witnesses, int64_t numWitnesses)
-            : witnesses(witnesses), numWitnesses(numWitnesses) {}
-#endif
     };
-    
-    
     
     struct TypeMetadata {
         /// witness tables
         ConceptConformance ** SWIFT_NAME(conceptConformanceArr) conceptConformances;
         int32_t SWIFT_NAME(conceptConformanceArrCount) numConformances;
         const char *name;
-        
-#ifdef RUNTIME
-    public:
-        TypeMetadata(ConceptConformance **conformances, int32_t s, const char *n)
-            : conceptConformances(conformances), numConformances(s), name(n) {}
-#endif
     };
-    
-    
-    
     
     /// The modeling of a concept -- the concept and witness table
     struct ConceptConformance {
@@ -87,26 +60,14 @@ extern "C" {
         int32_t * SWIFT_NAME(propWitnessOffsetArr) propWitnessOffsets;  /// Offset of concept elements
         int32_t SWIFT_NAME(propWitnessOffsetArrCount) numOffsets;       /// Number of offsets in `propWitnessOffsets`
         WitnessTable *witnessTable; /// Pointer to the conformant's witness table
-        /// for this concept
-        
-#ifdef RUNTIME
-    public:
-        ConceptConformance(TypeMetadata *md,
-                           int32_t *offsets,
-                           int32_t numOffs,
-                           WitnessTable *witnessTable)
-            : concept(md), propWitnessOffsets(offsets), numOffsets(numOffs), witnessTable(witnessTable) {}
-#endif
     };
-    
-    
     
     struct ExistentialObject {
         void *object;
         int32_t SWIFT_NAME(conformanceArrCount) numConformances;
         ConceptConformance ** SWIFT_NAME(conformanceArr) conformances;
         
-#ifdef RUNTIME
+#ifdef __cplusplus
     public:
         ExistentialObject(void *object,
                           int32_t numConformances,

@@ -95,6 +95,7 @@ struct StdLib {
         ("print",      FunctionType(params: [stringType], returns: voidType)),
         ("assert",     FunctionType(params: [boolType],   returns: voidType)),
         ("fatalError", FunctionType(params: [],           returns: voidType)),
+        ("fatalError", FunctionType(params: [stringType], returns: voidType)),
         
         // TODO: when we can link parallel compiled files' AST we 
         //       won't need to expose private stdlib function

@@ -80,7 +80,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-run-preprocessor"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-disable-stdlib-inline"
