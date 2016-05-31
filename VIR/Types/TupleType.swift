@@ -33,6 +33,10 @@ final class TupleType : Type {
             .map { $0.mangledName }
             .joinWithSeparator("") + "_"
     }
+    
+    func isInModule() -> Bool {
+        return !members.map { $0.isInModule() }.contains(false)
+    }
 
 }
 

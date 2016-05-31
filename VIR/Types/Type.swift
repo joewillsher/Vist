@@ -23,6 +23,10 @@ protocol Type : VIRElement {
     var explicitName: String { get }
     
     var heapAllocated: Bool { get }
+    
+    /// Whether this type is representible in a module
+    /// - whether it is a structrual type or module defined type alias
+    func isInModule() -> Bool
 }
 
 enum _WidthUnit { case bytes, bits }
@@ -34,6 +38,10 @@ extension Type {
     }
     
     var heapAllocated: Bool { return false }
+    
+    func isInModule() -> Bool {
+        return false
+    }
     
     /// the size in `unit` of this lowered type
     func size(unit unit: _WidthUnit = .bytes, module: Module) -> Int {

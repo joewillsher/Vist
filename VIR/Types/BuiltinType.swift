@@ -48,7 +48,6 @@ enum BuiltinType : Type {
         case "Builtin.Float":              self = .float(size: 32)
         case "Void":                       self = .void
         case "Builtin.OpaquePointer":      self = .opaquePointer
-        case "Builtin.String":             self = .array(el: BuiltinType.int(size: 8), size: nil)
         case _ where str.characters.first == "[" && str.characters.last == "]":
             guard let el = BuiltinType(String(str.characters.dropFirst().dropLast())) else { return nil }
             self = .array(el: el, size: nil)
@@ -94,6 +93,15 @@ enum BuiltinType : Type {
         switch self {
         case .pointer(let pointee): return BuiltinType.pointer(to: pointee.usingTypesIn(module))
         default: return self
+        }
+    }
+    
+    func isInModule() -> Bool {
+        switch self {
+        case .pointer(let to):
+            return to.isInModule()
+        default:
+            return true
         }
     }
 }

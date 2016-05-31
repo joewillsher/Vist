@@ -59,6 +59,10 @@ extension TypeAlias {
     func usingTypesIn(module: Module) -> Type {
         return self
     }
+    
+    func isInModule() -> Bool {
+        return true
+    }
 }
 
 // we need a hash for the type so it can sit in the the type table set
