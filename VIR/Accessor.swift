@@ -156,7 +156,7 @@ extension GetSetAccessor {
     func aggregateGetter() throws -> Value {
         return try module.builder.build(LoadInst(address: aggregateReference()))
     }
-    func aggregateSetter(val: Operand) throws {
+    func aggregateSetter(val: Value) throws {
         try module.builder.build(StoreInst(address: aggregateReference(), value: val))
     }
     
@@ -164,12 +164,6 @@ extension GetSetAccessor {
 }
 
 
-
-
-
-
-
-// MARK: Implementations
 
 
 /// Provides access to a value with backing memory
@@ -187,6 +181,7 @@ final class GlobalRefAccessor : GetSetAccessor {
         self.module = module
     }
 }
+
 /// Provides access to a global value with backing memory which
 /// is a pointer to the object. Global object has type storedType**
 /// and loads are

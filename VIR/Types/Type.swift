@@ -55,6 +55,11 @@ extension Type {
         else if case let s as TupleType = self { return s }
         else { fatalError("throw error -- not tuple type") }
     }
+    func getAsConceptType() throws -> ConceptType {
+        if case let s as TypeAlias = self { return try s.targetType.getAsConceptType() }
+        else if case let s as ConceptType = self { return s }
+        else { fatalError("throw error -- not concept type") }
+    }
     func getConcreteNominalType() -> NominalType? {
         if case let s as TypeAlias = self { return s.targetType.getConcreteNominalType() }
         else if case let s as StructType = self { return s }

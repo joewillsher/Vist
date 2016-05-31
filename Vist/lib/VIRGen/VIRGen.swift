@@ -70,6 +70,13 @@ extension CollectionType where Generator.Element == ASTNode {
     
 }
 
+infix operator .+ {}
+/// Used for constructing string descriptions
+/// eg `irName: irName .+ "subexpr"`
+func .+ (lhs: String?, rhs: String) -> String? {
+    guard let l = lhs else { return nil }
+    return "\(l).\(rhs)"
+}
 
 extension AST {
     
@@ -361,7 +368,8 @@ extension PropertyLookupExpr : LValueEmitter {
             
         case is ConceptType:
             let object = try self.object.emitRValue(module: module, scope: scope).asReferenceAccessor().reference()
-            return try module.builder.buildOpenExistential(PtrOperand(object), propertyName: propertyName).accessor()
+            let ptr = try module.builder.build(OpenExistentialPropertyInst(existential: object, propertyName: propertyName))
+            return try module.builder.build(LoadInst(address: ptr)).accessor()
             
         default:
             fatalError()
@@ -371,8 +379,19 @@ extension PropertyLookupExpr : LValueEmitter {
     func emitLValue(module module: Module, scope: Scope) throws -> GetSetAccessor {
         guard case let o as LValueEmitter = object else { fatalError() }
         
-        let str = try o.emitLValue(module: module, scope: scope)
-        return try module.builder.build(StructElementPtrInst(object: str.reference(), property: propertyName)).accessor
+        switch object._type {
+        case is StructType:
+            let str = try o.emitLValue(module: module, scope: scope)
+            return try module.builder.build(StructElementPtrInst(object: str.reference(), property: propertyName)).accessor
+            
+        case is ConceptType:
+            let object = try self.object.emitRValue(module: module, scope: scope).asReferenceAccessor().reference()
+            return try module.builder.build(OpenExistentialPropertyInst(existential: object, propertyName: propertyName)).accessor
+            
+        default:
+            fatalError()
+        }
+        
     }
     
 }
@@ -384,7 +403,7 @@ extension BlockExpr : StmtEmitter {
     }
 }
 
-extension ConditionalStmt: StmtEmitter {
+extension ConditionalStmt : StmtEmitter {
     
     func emitStmt(module module: Module, scope: Scope) throws {
         
@@ -707,8 +726,10 @@ extension MutationExpr : ValueEmitter {
     
     func emitRValue(module module: Module, scope: Scope) throws -> Accessor {
         
-        let rval = try value.emitRValue(module: module, scope: scope).getter()
+        let rval = try value.emitRValue(module: module, scope: scope).boxedAggregateGetter(object._type)
         guard case let lhs as LValueEmitter = object else { fatalError() }
+        
+        // TODO: test aggregate stuff
         
         // set the lhs to rval
         try lhs.emitLValue(module: module, scope: scope).setter(rval)

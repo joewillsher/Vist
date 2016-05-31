@@ -52,6 +52,7 @@ struct Runtime {
         
         ("vist_constructExistential", FunctionType(params: [BuiltinType.pointer(to: conceptConformanceType), BuiltinType.opaquePointer], returns: BuiltinType.pointer(to: existentialObjectType))),
         ("vist_getWitnessMethod", FunctionType(params: [BuiltinType.pointer(to: existentialObjectType), int32Type, int32Type], returns: Builtin.opaquePointerType)),
+        ("vist_getPropertyOffset", FunctionType(params: [BuiltinType.pointer(to: existentialObjectType), int32Type, int32Type], returns: Builtin.int32Type)),
     ]
     
     private static let functionContainer = FunctionContainer(functions: functions, types: [])

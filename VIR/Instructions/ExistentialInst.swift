@@ -7,18 +7,25 @@
 //
 
 
-/// Opening an existential box to extract a member
-final class ExistentialPropertyInst: InstBase {
+/// Opening an existential box to get a pointer to a member
+final class OpenExistentialPropertyInst: InstBase, LValue {
     var existential: PtrOperand
     let propertyName: String, existentialType: ConceptType
     
-    override var type: Type? { return try? existentialType.propertyType(propertyName) }
+    var propertyType: Type { return try! existentialType.propertyType(propertyName) }
     
-    private init(existential: PtrOperand, propertyName: String, existentialType: ConceptType, irName: String?) {
-        self.existential = existential
+    var memType: Type? { return propertyType }
+    override var type: Type? { return BuiltinType.pointer(to: propertyType) }
+    
+    init(existential: LValue, propertyName: String, irName: String? = nil) throws {
+        
+        guard let existentialType = try existential.memType?.getAsConceptType() else { fatalError() }
+        
+        let op = PtrOperand(existential)
+        self.existential = op
         self.propertyName = propertyName
         self.existentialType = existentialType
-        super.init(args: [existential], irName: irName)
+        super.init(args: [op], irName: irName)
     }
     
     override var instVIR: String {
@@ -90,10 +97,6 @@ final class ExistentialProjectInst : InstBase, LValue {
 
 extension Builder {
     
-    func buildOpenExistential(value: PtrOperand, propertyName: String, irName: String? = nil) throws -> ExistentialPropertyInst {
-        guard case let alias as TypeAlias = value.memType, case let existentialType as ConceptType = alias.targetType else { fatalError() }
-        return try _add(ExistentialPropertyInst(existential: value, propertyName: propertyName, existentialType: existentialType, irName: irName))
-    }
     /// Builds an existential from a definite object.
     func buildExistentialBox(value: PtrOperand, existentialType: ConceptType, irName: String? = nil) throws -> ExistentialConstructInst {
         return try _add(ExistentialConstructInst(value: value, existentialType: existentialType, irName: irName))

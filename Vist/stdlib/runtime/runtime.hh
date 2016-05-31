@@ -14,13 +14,12 @@
 #include <stdlib.h>
 #include <stdlib.h>
 
-// Define arr
-
-
 
 #ifdef __cplusplus
+
 #define SWIFT_NAME(X)
 extern "C" {
+    
 #else
     
 #define SWIFT_NAME(X) __attribute__((swift_name(#X)))
@@ -41,7 +40,6 @@ extern "C" {
         void *witness;
     };
     
-    
     /// A concept witness table
     struct WitnessTable {
         /// The witnesses
@@ -49,17 +47,12 @@ extern "C" {
         int32_t SWIFT_NAME(witnessArrCount) numWitnesses;
     };
     
-    
-    
     struct TypeMetadata {
         /// witness tables
         ConceptConformance ** SWIFT_NAME(conceptConformanceArr) conceptConformances;
         int32_t SWIFT_NAME(conceptConformanceArrCount) numConformances;
         const char *name;
     };
-    
-    
-    
     
     /// The modeling of a concept -- the concept and witness table
     struct ConceptConformance {
@@ -69,14 +62,12 @@ extern "C" {
         WitnessTable *witnessTable; /// Pointer to the conformant's witness table
     };
     
-    
-    
     struct ExistentialObject {
         void *object;
         int32_t SWIFT_NAME(conformanceArrCount) numConformances;
         ConceptConformance ** SWIFT_NAME(conformanceArr) conformances;
         
-#ifdef RUNTIME
+#ifdef __cplusplus
     public:
         ExistentialObject(void *object,
                           int32_t numConformances,

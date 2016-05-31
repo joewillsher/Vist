@@ -47,10 +47,39 @@ extension ExistentialWitnessInst : VIRLower {
     }
 }
 
+extension OpenExistentialPropertyInst : VIRLower {
+    
+    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
+        
+        guard
+            case let aliasType as TypeAlias = existential.memType,
+            case let conceptType as ConceptType = aliasType.targetType,
+            let propertyPtrType = type else { fatalError() }
+        
+        // index of property in the concept's table
+        // use this to look up the index in self by getting the ixd from the runtime's array
+        let i = try conceptType.indexOfMemberNamed(propertyName)
+        
+        let exType = Runtime.existentialObjectType.lowerType(module).getPointerType()
+        let ex = try IGF.builder.buildBitcast(value: existential.loweredValue!, to: exType)
+        let conformanceIndex = LLVMValue.constInt(0, size: 32), propertyIndex = LLVMValue.constInt(i, size: 32)
+
+        let ref = module.getOrAddRuntimeFunction(named: "vist_getPropertyOffset", IGF: &IGF)
+        let offset = try IGF.builder.buildCall(ref, args: [ex, conformanceIndex, propertyIndex])
+
+        let elementPtrType = propertyPtrType.lowerType(module) // ElTy*.Type
+        let structElementPointer = try IGF.builder.buildStructGEP(existential.loweredValue!, index: 0, name: irName.+"element_pointer") // i8**
+        let opaqueInstancePointer = try IGF.builder.buildLoad(from: structElementPointer, name: irName.+"opaque_instance_pointer")  // i8*
+        let instanceMemberPtr = try IGF.builder.buildGEP(opaqueInstancePointer, index: offset)
+        return try IGF.builder.buildBitcast(value: instanceMemberPtr, to: elementPtrType, name: irName.+"ptr")  // ElTy*
+    }
+}
+
+
 
 extension ExistentialProjectInst : VIRLower {
     func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
-        let p = try IGF.builder.buildStructGEP(existential.loweredValue!, index: 0, name: irName.map { "\($0).projection" })
+        let p = try IGF.builder.buildStructGEP(existential.loweredValue!, index: 0, name: irName.+"projection")
         let v = try IGF.builder.buildLoad(from: p)
         return try IGF.builder.buildBitcast(value: v, to: LLVMType.opaquePointer, name: irName)
     }
@@ -171,36 +200,6 @@ private extension ConceptType {
 
 
 
-
-extension ExistentialPropertyInst : VIRLower {
-    
-    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
-        
-        guard case let aliasType as TypeAlias = existential.memType, case let conceptType as ConceptType = aliasType.targetType, let propertyType = type else { fatalError() }
-        
-        // index of property in the concept's table
-        // use this to look up the index in self by getting the ixd from the runtime's array
-        let i = try conceptType.indexOfMemberNamed(propertyName)
-        let index = LLVMValue.constInt(i, size: 32) // i32
-        
-        let llvmName = irName.map { "\($0)." } ?? ""
-        
-        let i32PtrType = BuiltinType.pointer(to: BuiltinType.int(size: 32)).lowerType(module) as LLVMType
-        let arr = try IGF.builder.buildStructGEP(existential.loweredValue!, index: 0, name: "\(llvmName)metadata_ptr") // [n x i32]*
-        let propertyMetadataBasePtr = try IGF.builder.buildBitcast(value: arr, to: i32PtrType, name: "\(llvmName)metadata_base_ptr") // i32*
-        
-        let pointerToArrayElement = try IGF.builder.buildGEP(propertyMetadataBasePtr, index: index) // i32*
-        let offset = try IGF.builder.buildLoad(from: pointerToArrayElement) // i32
-        
-        let elementPtrType = propertyType.lowerType(module).getPointerType() // ElTy*.Type
-        let structElementPointer = try IGF.builder.buildStructGEP(existential.loweredValue!, index: 2, name: "\(llvmName)element_pointer") // i8**
-        let opaqueInstancePointer = try IGF.builder.buildLoad(from: structElementPointer, name: "\(llvmName)opaque_instance_pointer")  // i8*
-        let instanceMemberPtr = try IGF.builder.buildGEP(opaqueInstancePointer, index: offset)
-        let elPtr = try IGF.builder.buildBitcast(value: instanceMemberPtr, to: elementPtrType, name: "\(llvmName)ptr")  // ElTy*
-        
-        return try IGF.builder.buildLoad(from: elPtr, name: irName)
-    }
-}
 
 private extension ConceptType {
         
