@@ -1,0 +1,249 @@
+
+
+concept InputRange {
+    func empty :: -> Bool
+    func front :: -> Int
+    func popFront :: ()
+}
+concept BidirectionalRange {
+    func empty :: -> Bool
+    func front :: -> Int
+    func popFront :: ()
+    func back :: -> Int
+    func popBack :: ()
+}
+type NumericRange {
+    var start: Int, end: Int
+    func empty :: -> Bool = do return start > end
+    
+    func front :: -> Int = do 
+        if (self.empty ()) == false {
+            return start
+        } else {
+            let errorLine = __LINE__
+            _print "Error occured on line: "
+            print errorLine
+            fatalError ()
+            return 0
+        }
+    
+    @mutating
+    func popFront :: () = {
+        if (self.empty ()) == false {
+            start = start + 1
+        } else {
+            let errorLine = __LINE__
+            _print "Error occured on line: "
+            print errorLine
+            fatalError ()
+        }
+    }
+    
+    func back :: -> Int = do 
+        if (self.empty ()) == false {
+            return end
+        } else {
+            let errorLine = __LINE__
+            _print "Error occured on line: "
+            print errorLine
+            fatalError ()
+            return 0
+        }
+    
+    @mutating
+    func popBack :: () = {
+        if (self.empty ()) == false {
+            end = end - 1
+        } else {
+            let errorLine = __LINE__
+            _print "Error occured on line: "
+            print errorLine
+            fatalError ()
+        }
+    }
+}
+    
+type ReversedRange {
+    var baseRange: BidirectionalRange
+    
+    func empty :: -> Bool = do return baseRange.empty ()
+    
+    func front :: -> Int = do return baseRange.back ()
+    
+    @mutating
+    func popFront :: () = {
+        baseRange.popBack ()
+    }
+    
+    func back :: -> Int = do return baseRange.front ()
+    
+    @mutating
+    func popBack :: () = do baseRange.popFront ()
+}
+func reverse :: BidirectionalRange -> ReversedRange = (range) do return (ReversedRange range)
+type JoinedRange {
+    var baseRange1: InputRange
+    var baseRange2: InputRange
+    
+    func empty :: -> Bool = {
+	print "inn"
+        let x = (baseRange1.empty ()) && (baseRange2.empty ())
+        print x
+        return x
+    }
+    
+    func front :: -> Int = {
+        if (baseRange1.empty ()) == false {
+            return baseRange1.front ()
+        } else {
+            return baseRange2.front ()
+        }
+    }
+    
+    @mutating
+    func popFront :: () = {
+        if (baseRange1.empty ()) == false {
+            baseRange1.popFront ()
+        } else {
+            baseRange2.popFront ()
+        }
+    }
+}
+func join :: InputRange InputRange -> JoinedRange = (range1 range2) do return (JoinedRange range1 range2)
+type MonoRange {
+    var elem: Int
+    var empty: Bool
+    
+    func empty :: -> Bool = do return empty
+    
+    func front :: -> Int = do return elem
+    
+    @mutating
+    func popFront :: () = do empty = true
+    
+    func back :: -> Int = do return elem
+    
+    @mutating
+    func popBack :: () = do empty = true
+    
+    init Int = (x) {
+        elem = x
+        empty = false
+    }
+}
+type LessThanFilterRange {
+    var pivot: Int
+    var baseRange: InputRange
+    
+    func empty :: -> Bool = do return (baseRange.empty ())
+    
+    func front :: -> Int = do return (baseRange.front ())
+    
+    func popFront :: () = {
+        if (baseRange.empty ()) == false {
+            baseRange.popFront ()
+        }
+        
+        var value = 0
+        if (baseRange.empty ()) == false do
+            value = baseRange.front ()
+        
+        
+        while ((baseRange.empty ()) == false) && (value >= pivot) {
+            baseRange.popFront ()
+            if (baseRange.empty ()) == false {
+                value = baseRange.front ()
+            }
+        }
+    }
+}
+type MoreThanEqualFilterRange {
+    var pivot: Int
+    var baseRange: InputRange
+    
+    func empty :: -> Bool = do return (baseRange.empty ())
+    
+    func front :: -> Int = do return (baseRange.front ())
+    
+    func popFront :: () = {
+        if (baseRange.empty ()) == false {
+            baseRange.popFront ()
+        }
+        
+        var value = 0
+        if (baseRange.empty ()) == false do
+            value = baseRange.front ()
+        
+        
+        while ((baseRange.empty ()) == false) && (value < pivot) {
+            baseRange.popFront ()
+            if (baseRange.empty ()) == false {
+                value = baseRange.front ()
+            }
+        }
+    }
+}
+func lessFilter :: Int InputRange -> LessThanFilterRange = (val range) {
+    var baseRange = range
+    
+    var value = 0
+        if (baseRange.empty ()) == false do
+            value = baseRange.front ()
+        
+        
+        while ((baseRange.empty ()) == false) && (value >= val) {
+            baseRange.popFront ()
+            if (baseRange.empty ()) == false {
+                value = baseRange.front ()
+            }
+        }
+        
+    return LessThanFilterRange val baseRange
+}
+    
+func mequalFilter :: Int InputRange -> MoreThanEqualFilterRange = (val range) {
+    var baseRange = range 
+    
+    var value = 0
+
+    if (baseRange.empty ()) == false do
+        value = baseRange.front ()
+        
+        
+    while ((baseRange.empty ()) == false) && (value < val) {
+        baseRange.popFront ()
+        if (baseRange.empty ()) == false {
+            value = baseRange.front ()
+        }
+    }
+    
+    return MoreThanEqualFilterRange val baseRange
+}
+
+
+var a = NumericRange 1 5
+var b = join a (reverse a)
+var c = MonoRange 5
+func quickSort :: InputRange -> JoinedRange = (range) {
+    print "quicksort entry"
+    if (range.empty ()) {
+        return (join range range)
+    }
+    
+    
+    let tempRange = range
+    let pivot = tempRange.front ()
+    tempRange.popFront ()
+    
+    print pivot
+
+    let pivotRange = MonoRange pivot
+    
+    return join (quickSort (lessFilter pivot tempRange)) (join pivotRange (quickSort (mequalFilter pivot tempRange)))
+}
+
+print "hi"
+
+var d = quickSort a
+//print (d.front ())
+print (d.empty ())

@@ -87,13 +87,14 @@ func print :: String = (str) {
 }
 
 
+concept Printable {
+    func description :: -> String
+}
 
-// TODO: a printing protocol which allows any type to generate its string repr
-//       then the print function steps through that string and prints it,
-//       appending terminators and doing any formatting
+func print :: Printable = (val) {
+    _print (val.description ())
+    _print "\n"
+}
 
-//concept Printable {
-//    func description::->String
-//}
-//
-//func print::Printable = (thing) do
+
+

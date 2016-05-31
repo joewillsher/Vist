@@ -37,6 +37,8 @@ struct StdLib {
     
     private static let types = [intType, int32Type, boolType, doubleType, rangeType, utf8CodeUnitType, utf16CodeUnitType, stringType]
     
+    private static let printableConcept = ConceptType(name: "Printable", requiredFunctions: [(name: "description", type: FunctionType(params: [], returns: stringType), mutating: false)], requiredProperties: [])
+    
     //    private static let concepts: [ConceptType] = [ConceptType(name: "Generator", requiredFunctions: [("generate", FunctionType(params: [], returns: intType))], requiredProperties: [])]
     
     private static let functions: [(String, FunctionType)] = [
@@ -93,6 +95,7 @@ struct StdLib {
         ("print",      FunctionType(params: [boolType],   returns: voidType)),
         ("print",      FunctionType(params: [doubleType], returns: voidType)),
         ("print",      FunctionType(params: [stringType], returns: voidType)),
+        ("print",      FunctionType(params: [printableConcept], returns: voidType)),
         ("assert",     FunctionType(params: [boolType],   returns: voidType)),
         ("fatalError", FunctionType(params: [],           returns: voidType)),
         ("fatalError", FunctionType(params: [stringType], returns: voidType)),
@@ -119,7 +122,7 @@ struct StdLib {
     /// Container initialised with functions, provides subscript to look up functions by name and type
     ///
     /// Adds the `stdlib.call.optim` metadata tag to all of them
-    private static let functionContainer = FunctionContainer(functions: functions, types: types)
+    private static let functionContainer = FunctionContainer(functions: functions, types: types, concepts: [printableConcept])
     
     
     private static func getStdLibFunctionWithInitInfo(id: String, args: [Type]) -> (String, FunctionType)? {

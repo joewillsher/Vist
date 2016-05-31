@@ -29,4 +29,4 @@ let baz = Baz 2 3
 
 print (foo bar 2) // test: 17
 print (foo2 bar 2) // test: 28
-print (foo baz 2) // test: 3
+print (foo baz 2) // test: 6
