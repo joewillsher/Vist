@@ -23,7 +23,7 @@ To develop in Xcode, go to ‘Edit Scheme’ (⌘<) and under *Options* set the 
 Vist’s syntax is lightweight; a hello world is as simple as
 
 ```swift
-print “Hello Vist!”
+print "Hello Vist!"
 ```
 
 ```swift
