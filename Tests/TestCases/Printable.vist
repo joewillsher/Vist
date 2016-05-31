@@ -1,0 +1,11 @@
+
+type X {
+    let x = 0
+    func description :: -> String = {
+        return "Hi"
+    }
+}
+
+let x = X ()
+print x // test: Hi
+

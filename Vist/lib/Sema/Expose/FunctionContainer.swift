@@ -56,26 +56,20 @@ struct FunctionContainer {
     /// - parameter types: Applied arg types
     /// - returns: An optional tuple of `(mangledName, type)`
     subscript(fn fn: String, types types: [Type]) -> (mangledName: String, type: FunctionType)? {
-        get {
-            guard let t = functions[raw: fn, paramTypes: types] else { return nil }
-            return (fn.mangle(t.params), t)
-        }
+        guard let t = functions[raw: fn, paramTypes: types] else { return nil }
+        return (fn.mangle(t.params), t)
     }
     /// unmangled
     subscript(mangledName mangledName: String) -> (mangledName: String, type: FunctionType)? {
-        get {
-            return functions[mangledName].map { (mangledName, $0) }
-        }
+        return functions[mangledName].map { (mangledName, $0) }
     }
     
     
     /// Returns type from type name
     subscript(type type: String) -> StructType? {
-        get {
-            return types
-                .indexOf { $0.name == type }
-                .map { types[$0] }
-        }
+        return types
+            .indexOf { $0.name == type }
+            .map { types[$0] }
     }
     
 }

@@ -81,14 +81,14 @@ struct Builtin {
         ("Builtin.trunc_int_32", FunctionType(params: [intType], returns: int32Type)),
     ]
     
-    private static let functionContainer = FunctionContainer(functions: functions, types: [])
+    private static let functionContainer = FunctionContainer(functions: functions, types: [], mangleFunctionNames: false)
 
     /// Get a builtin function by name
     /// - parameter name: Unmangled name
     /// - parameter args: Applied arg types
     /// - returns: An optional tuple of `(mangledName, type)`
     static func function(name name: String, argTypes args: [Type]) -> (mangledName: String, type: FunctionType)? {
-        return functionContainer[fn: name, types: args]
+        return functionContainer[mangledName: name]
     }
 }
 

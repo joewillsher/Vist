@@ -200,6 +200,17 @@ extension OutputTests {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
         }
     }
+    /// Printable.vist
+    func testPrintable() {
+        let file = "Printable.vist"
+        do {
+            try compileWithOptions(["-Ohigh", "-r", file], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
+        }
+        catch {
+            XCTFail("Compilation failed with error:\n\(error)\n\n")
+        }
+    }
     
 
 }
