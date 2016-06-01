@@ -1,0 +1,15 @@
+
+
+
+concept Any { }
+
+type Box {
+    var a: Any
+}
+
+var b = Box 1
+
+b.a = "sup"
+
+
+

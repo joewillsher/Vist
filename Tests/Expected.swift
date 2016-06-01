@@ -19,3 +19,50 @@ func expectedTestCaseOutput(path path: String) -> String? {
     
     return comments.joinWithSeparator("\n") + "\n"
 }
+
+func getCommentsForFile(path path: String) throws -> [String] {
+    let contents = try String(contentsOfFile: path)
+    let toks = try contents.getTokens()
+    
+    return toks.flatMap { tok in
+        if case .comment(let c) = tok.0 { return c } else { return nil }
+    }
+}
+
+//struct TestCommentCommandParser {
+//    var configurationFlags: [String] = []
+//    var output: String = "", vir: String = "", llvm: String = ""
+//    
+//    
+//    enum CommandOutput {
+//        case output
+//        case vir
+//        case llvm
+//    }
+//    
+//    mutating func parseComment(comment: String) {
+//        
+//        let c = comment.componentsSeparatedByString(" ")
+//        guard let f = c.first else { return }
+//        let tokens = Array(c.dropFirst())
+//        
+//        switch f {
+//        case "RUN:":
+//            configurationFlags.appendContentsOf(tokens)
+//        case "PRINT:":
+//            output += "\n"
+//            output += tokens.joinWithSeparator(" ")
+//            
+//        default:
+//            return
+//        }
+//    }
+//    
+//    func compareWithOutput() {
+//        
+//    }
+//    
+//}
+
+
+

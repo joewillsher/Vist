@@ -211,6 +211,16 @@ extension OutputTests {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
         }
     }
+    /// Any.vist
+    func testAny() {
+        let file = "Any.vist"
+        do {
+            try compileWithOptions(["-Ohigh", "-r", file], inDirectory: testDir, out: pipe)
+        }
+        catch {
+            XCTFail("Compilation failed with error:\n\(error)\n\n")
+        }
+    }
     
 
 }

@@ -245,7 +245,7 @@ extension VariableInst : VIRLower {
 
 extension GlobalValue : VIRLower {
     func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
-        var global = LLVMGlobalValue(module: IGF.module, type: memType!.lowerType(module), name: globalName)
+        let global = LLVMGlobalValue(module: IGF.module, type: memType!.lowerType(module), name: globalName)
         global.hasUnnamedAddr = true
         global.isExternallyInitialised = false
         global.linkage = LLVMPrivateLinkage

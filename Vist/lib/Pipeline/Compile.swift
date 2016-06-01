@@ -65,6 +65,12 @@ func compileDocuments(
     options: CompileOptions
     ) throws {
     
+    /// Custom print that writes into the out pipe if its specifed
+    func print(string: String...) {
+        if let o = out { o.fileHandleForWriting.writeData((string.joinWithSeparator("\n")+"\n").dataUsingEncoding(NSUTF8StringEncoding)!) }
+        else { Swift.print(string) }
+    }
+    
     var head: AST? = nil
     var all: [AST] = [], names: [String] = []
     
@@ -80,7 +86,8 @@ func compileDocuments(
         let path = "\(currentDirectory)/\(fileName)"
         let doc = try String(contentsOfFile: path, encoding: NSUTF8StringEncoding)
         if options.contains(.verbose) {
-            print("----------------------------SOURCE-----------------------------", doc, "\n\n-----------------------------TOKS------------------------------\n") }
+            print("----------------------------SOURCE-----------------------------", doc, "\n\n-----------------------------TOKS------------------------------\n")
+        }
         
         // Lex code
         let tokens = try doc.getTokens()
