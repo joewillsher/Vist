@@ -58,7 +58,11 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "-v"
+            argument = "-build-runtime"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-Ohigh"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
@@ -66,8 +70,12 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "-irgen-old"
+            argument = "-build-stdlib"
             isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-verbose"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-preserve"
@@ -78,7 +86,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "-O"
+            argument = "-r"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument

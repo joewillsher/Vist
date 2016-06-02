@@ -16,19 +16,21 @@ protocol Accessor : class {
     /// Gets the value from the stored object
     /// - note: If the stored instance of type `storedType` is a
     ///         box then this is not equal to the result of calling
-    ///         `aggregateGetter()`
-    func getter() throws -> Value
+    ///         `aggregateGetValue()`
+    func getValue() throws -> Value
     
-    /// Returns copy of this acccessor with reference semantics
-    /// - note: not guaranteed to be a reference to the original.
-    func asReferenceAccessor() throws -> GetSetAccessor
+    /// Returns the stored value, including its box
+    func aggregateGetValue() throws -> Value
     
     var storedType: Type? { get }
     
-    /// Retrieve an independent copy of the object
+    /// Form a copy of `self`, the restult
     func getMemCopy() throws -> GetSetAccessor
-    /// Get the whole object as-is
-    func aggregateGetter() throws -> Value
+    
+    /// Returns an accessor abstracring the same value but with reference semantics
+    /// - note: the returned accessor is not guaranteed to be a reference to the
+    ///          original, mutating it may not affect `self`
+    func referenceBacked() throws -> GetSetAccessor
     
     func release() throws
     func retain() throws
@@ -45,12 +47,12 @@ final class ValAccessor : Accessor {
     private var value: Value
     init(value: Value) { self.value = value }
     
-    func getter() -> Value { return value }
+    func getValue() -> Value { return value }
     
     /// Alloc a new accessor and store self into it.
     /// - returns: a reference backed *copy* of `self`
-    func asReferenceAccessor() throws -> GetSetAccessor {
-        return try value.allocGetSetAccessor()
+    func referenceBacked() throws -> GetSetAccessor {
+        return try value.allocReferenceBackedAccessor()
     }
     
     var storedType: Type? { return value.type }
@@ -59,12 +61,13 @@ final class ValAccessor : Accessor {
 
 // Helper function for constructing a reference copy
 extension Value {
+    
     /// Builds a reference accessor which can store into & load from
     /// the memory it allocates
-    func allocGetSetAccessor() throws -> GetSetAccessor {
-        guard let memType = type?.usingTypesIn(module) else { throw VIRError.noType(#file) }
-        let accessor = RefAccessor(memory: try module.builder.build(AllocInst(memType: memType)))
-        try accessor.setter(self)
+    func allocReferenceBackedAccessor() throws -> GetSetAccessor {
+        guard let memType = type?.importedType(inModule: module) else { throw VIRError.noType(#file) }
+        let accessor = RefAccessor(memory: try module.builder.build(inst: AllocInst(memType: memType)))
+        try accessor.setValue(self)
         return accessor
     }
 }
@@ -72,7 +75,7 @@ extension Value {
 extension Accessor {
     
     func getMemCopy() throws -> GetSetAccessor {
-        return try aggregateGetter().accessor().asReferenceAccessor()
+        return try aggregateGetValue().accessor().referenceBacked()
     }
     
     func release() { }
@@ -81,8 +84,8 @@ extension Accessor {
     func dealloc() { }
     func deallocUnowned() { }
     
-    func aggregateGetter() throws -> Value {
-        return try getter()
+    func aggregateGetValue() throws -> Value {
+        return try getValue()
     }
     
     /// The type system needs to coerce a type into another. Here we insert the
@@ -90,16 +93,16 @@ extension Accessor {
     ///
     /// `func foo :: AConcept = ...` is called as `foo aConformant`. If aConformant
     /// is not already an existential we must construct one.
-    func boxedAggregateGetter(expectedType: Type?) throws -> Value {
+    func boxedAggregateGetValue(expectedType: Type?) throws -> Value {
         
         // if the function expects an existential, we construct one
         if case let existentialType as ConceptType = expectedType?.getConcreteNominalType() {
             if storedType?.mangledName == existentialType.mangledName {
-                return try aggregateGetter() // dont box it if its the same concept
+                return try aggregateGetValue() // dont box it if its the same concept
             }
             else {
-                let existentialRef = try asReferenceAccessor().aggregateReference()
-                return try module.builder.buildExistentialBox(PtrOperand(existentialRef), existentialType: existentialType)
+                let existentialRef = try referenceBacked().aggregateReference()
+                return try module.builder.buildExistentialBox(value: PtrOperand(existentialRef), existentialType: existentialType)
             }
         }
         else if case let refCounted as RefCountedAccessor = self {
@@ -108,7 +111,7 @@ extension Accessor {
         }
             // if its a nominal type we get the object and pass it in
         else {
-            return try aggregateGetter()
+            return try aggregateGetValue()
         }
     }
 }
@@ -123,7 +126,7 @@ extension Accessor {
 protocol GetSetAccessor : Accessor {
     var mem: LValue { get }
     /// Stores `val` in the stored object
-    func setter(val: Value) throws
+    func setValue(_ val: Value) throws
     /// The pointer to the stored object
     func reference() throws -> LValue
     
@@ -135,16 +138,16 @@ protocol GetSetAccessor : Accessor {
 
 extension GetSetAccessor {
     // if its already a red accessor we're done
-    func asReferenceAccessor() throws -> GetSetAccessor { return self }
+    func referenceBacked() throws -> GetSetAccessor { return self }
     
     var storedType: Type? { return mem.memType }
     
-    func getter() throws -> Value {
-        return try module.builder.build(LoadInst(address: reference()))
+    func getValue() throws -> Value {
+        return try module.builder.build(inst: LoadInst(address: reference()))
     }
     
-    func setter(val: Value) throws {
-        try module.builder.build(StoreInst(address: reference(), value: val))
+    func setValue(_ val: Value) throws {
+        try module.builder.build(inst: StoreInst(address: reference(), value: val))
     }
     
     // default impl of `reference` is a projection of the storage
@@ -153,11 +156,11 @@ extension GetSetAccessor {
     // default impl of `aggregateReference` is the same as `reference`
     func aggregateReference() -> LValue { return mem }
     
-    func aggregateGetter() throws -> Value {
-        return try module.builder.build(LoadInst(address: aggregateReference()))
+    func aggregateGetValue() throws -> Value {
+        return try module.builder.build(inst: LoadInst(address: aggregateReference()))
     }
     func aggregateSetter(val: Value) throws {
-        try module.builder.build(StoreInst(address: aggregateReference(), value: val))
+        try module.builder.build(inst: StoreInst(address: aggregateReference(), value: val))
     }
     
     var module: Module { return mem.module }
@@ -195,7 +198,7 @@ final class GlobalIndirectRefAccessor : GetSetAccessor {
     }
     
     private lazy var memsubsc: LValue = { [unowned self] in
-        let mem = try! self.module.builder.build(LoadInst(address: self.mem))
+        let mem = try! self.module.builder.build(inst: LoadInst(address: self.mem))
         return try! OpaqueLValue(rvalue: mem)
     }()
     
@@ -227,11 +230,9 @@ final class RefCountedAccessor : GetSetAccessor {
     var _reference: OpaqueLValue? // lazy member reference
     func reference() throws -> LValue {
         if let r = _reference { return r }
-
-        let irName = mem.irName.map { "\($0).instance" }
         
-        let ref = try module.builder.build(StructElementPtrInst(object: mem, property: "object"))
-        let load = try module.builder.build(LoadInst(address: ref, irName: irName))
+        let ref = try module.builder.build(inst: StructElementPtrInst(object: mem, property: "object"))
+        let load = try module.builder.build(inst: LoadInst(address: ref, irName: mem.irName.+"instance"))
         
         return try OpaqueLValue(rvalue: load)
     }
@@ -240,35 +241,35 @@ final class RefCountedAccessor : GetSetAccessor {
         return mem
     }
     
-    func aggregateGetter() throws -> Value {
+    func aggregateGetValue() throws -> Value {
         return mem
     }
     
     /// Retain a reference, increment the ref count
     func retain() throws {
-        try module.builder.buildRetain(PtrOperand(aggregateReference()))
+        try module.builder.buildRetain(object: PtrOperand(aggregateReference()))
     }
     
     /// Releases the object without decrementing the ref count.
     /// - note: Used in returns as the user of the return is expected
     ///         to either `retain` it or `deallocUnowned` it
     func releaseUnowned() throws {
-        try module.builder.buildReleaseUnowned(PtrOperand(aggregateReference()))
+        try module.builder.buildReleaseUnowned(object: PtrOperand(aggregateReference()))
     }
     
     /// Release a reference, decrement the ref count
     func release() throws {
-        try module.builder.buildRelease(PtrOperand(aggregateReference()))
+        try module.builder.buildRelease(object: PtrOperand(aggregateReference()))
     }
     
     /// Deallocates the object
     func dealloc() throws {
-        try module.builder.buildDeallocObject(PtrOperand(aggregateReference()))
+        try module.builder.buildDeallocObject(object: PtrOperand(aggregateReference()))
     }
     
     /// Deallocates an unowned object if the ref count is 0
     func deallocUnowned() throws {
-        try module.builder.buildDeallocUnownedObject(PtrOperand(aggregateReference()))
+        try module.builder.buildDeallocUnownedObject(object: PtrOperand(aggregateReference()))
     }
     
     /// Capture another reference to the object and retain it
@@ -284,11 +285,11 @@ final class RefCountedAccessor : GetSetAccessor {
     
     /// Allocate a heap object and retain it
     /// - returns: the object's accessor
-    static func allocObject(type type: StructType, module: Module) throws -> RefCountedAccessor {
+    static func allocObject(type: StructType, module: Module) throws -> RefCountedAccessor {
         
-        let val = try module.builder.buildAllocObject(type, irName: "storage")
-        let targetType = type.refCountedBox(module).usingTypesIn(module)
-        let bc = try module.builder.build(BitcastInst(address: val, newType: targetType))
+        let val = try module.builder.buildAllocObject(type: type, irName: "storage")
+        let targetType = type.refCountedBox(module: module).importedType(inModule: module)
+        let bc = try module.builder.build(inst: BitcastInst(address: val, newType: targetType))
         
         let accessor = RefCountedAccessor(refcountedBox: bc)
         try accessor.retain()
@@ -319,14 +320,14 @@ final class LazyAccessor : Accessor {
     
     var storedType: Type? { return val?.type }
 
-    func getter() throws -> Value {
+    func getValue() throws -> Value {
         guard let v = val else { fatalError() }
         return v
     }
     
-    func asReferenceAccessor() throws -> GetSetAccessor {
+    func referenceBacked() throws -> GetSetAccessor {
         guard let v = val else { fatalError() }
-        return try v.allocGetSetAccessor()
+        return try v.allocReferenceBackedAccessor()
     }
     
     init(module: Module, fn: () throws -> Value) {

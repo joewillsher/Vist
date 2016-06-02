@@ -64,12 +64,14 @@ extension Builder {
     
     /// Handles adding the instruction to the block -- then returns it
     func _add<I: Inst>(instruction: I) throws -> I {
-        try addToCurrentBlock(instruction)
+        try addToCurrentBlock(inst: instruction)
         return instruction
     }
     
+    /// Build an instruction and add to the current block
+    @discardableResult
     func build<I : Inst>(inst: I) throws -> I {
-        try addToCurrentBlock(inst)
+        try addToCurrentBlock(inst: inst)
         return inst
     }
     

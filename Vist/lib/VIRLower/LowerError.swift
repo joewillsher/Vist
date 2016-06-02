@@ -55,7 +55,7 @@ enum IRError: VistError {
         case .notStructType: return "Expression was not a struct type"
         case .notTupleType: return "Expression was not a tuple type"
             
-        case .invalidModule(_, let desc): return "Invalid module generated:\n\t~\(desc?.stringByReplacingOccurrencesOfString("\n", withString: "\n\t~") ?? "")"
+        case .invalidModule(_, let desc): return "Invalid module generated:\n\t~\(desc?.replacingOccurrences(of: "\n", with: "\n\t~") ?? "")"
         case .invalidFunction(let f): return "Invalid function IR for '\(f)'"
             
         case .unreachable: return "Code flow should not reach here"

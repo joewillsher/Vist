@@ -107,18 +107,18 @@ final class VoidLiteralValue : Value {
 extension Builder {
     /// Builds a builtin i64 object
     func buildIntLiteral(val: Int, size: Int = 64, irName: String? = nil) throws -> IntLiteralInst {
-        return try _add(IntLiteralInst(val: val, size: size, irName: irName))
+        return try _add(instruction: IntLiteralInst(val: val, size: size, irName: irName))
     }
     
     
     /// Builds a builtin i1 object
     func buildBoolLiteral(val: Bool, irName: String? = nil) throws -> BoolLiteralInst {
-        return try _add(BoolLiteralInst(val: val, irName: irName))
+        return try _add(instruction: BoolLiteralInst(val: val, irName: irName))
     }
 
     /// Builds a builtin i1 object
     func buildStringLiteral(val: String, irName: String? = nil) throws -> StringLiteralInst {
-        return try _add(StringLiteralInst(val: val, irName: irName))
+        return try _add(instruction: StringLiteralInst(val: val, irName: irName))
     }
 
     func createVoidLiteral() -> VoidLiteralValue {

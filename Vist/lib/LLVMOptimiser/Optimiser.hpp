@@ -16,8 +16,8 @@
 extern "C" {
 #endif
         
-    void performLLVMOptimisations(LLVMModuleRef, int, bool);
-    int LLVMMetadataID(const char * String);
+    void performLLVMOptimisations(LLVMModuleRef __nonnull, int, bool);
+    int LLVMMetadataID(const char * __nonnull String);
     
 #ifdef __cplusplus
 }

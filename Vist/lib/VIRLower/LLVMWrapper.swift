@@ -6,6 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
+import class Foundation.NSTask
 
 private protocol Dumpable {
     func dump()
@@ -33,7 +34,7 @@ enum LLVMError : VistError {
 
 
 struct LLVMBuilder {
-    private var builder: LLVMBuilderRef = nil
+    private var builder: LLVMBuilderRef? = nil
 //    var metadata: Set<RuntimeObject> = []
     
     init() { builder = LLVMCreateBuilder() }
@@ -41,20 +42,20 @@ struct LLVMBuilder {
 }
 extension LLVMBuilder {
     
-    func positionAtEnd(block: LLVMBasicBlock) {
+    /// Position the builder at the end of `block`
+    func position(atEndOfBlock block: LLVMBasicBlock) {
         LLVMPositionBuilderAtEnd(builder, block.block)
     }
-    func position(after after: LLVMValue) throws {
+    func position(after: LLVMValue) throws {
         let successor = LLVMGetNextInstruction(after._value)
         guard successor != nil else { throw error(LLVMError.noSuccessor) }
         LLVMPositionBuilderBefore(builder, successor)
     }
-    func position(before before: LLVMValue) {
+    func position(before: LLVMValue) {
         LLVMPositionBuilderBefore(builder, before._value)
     }
     func getInsertBlock() -> LLVMBasicBlock? {
-        let i = LLVMGetInsertBlock(builder)
-        guard i != nil else { return nil }
+        guard let i = LLVMGetInsertBlock(builder) else { return nil }
         return LLVMBasicBlock(ref: i)
     }
     
@@ -62,25 +63,23 @@ extension LLVMBuilder {
 extension LLVMBuilder {
     
     /// Wraps a LLVM function and checks the builder
-    @warn_unused_result
-    private func wrap(@autoclosure val: () throws -> LLVMValueRef) throws -> LLVMValue {
+    private func wrap(_ val: @autoclosure () throws -> LLVMValueRef) throws -> LLVMValue {
         #if DEBUG
             guard builder != nil else { throw error(NullLLVMRef()) }
         #endif
         return try LLVMValue(ref: val())
     }
-    @warn_unused_result
-    func buildPhi(type type: LLVMType, name: String? = nil) throws -> LLVMValue {
+    func buildPhi(type: LLVMType, name: String? = nil) throws -> LLVMValue {
         return try wrap(
-            LLVMBuildPhi(builder, type.type, name ?? "")
+            LLVMBuildPhi(builder, type.type!, name ?? "")
         )
     }
-    @warn_unused_result
-    func buildAlloca(type type: LLVMType, name: String? = nil) throws -> LLVMValue {
+    func buildAlloca(type: LLVMType, name: String? = nil) throws -> LLVMValue {
         return try wrap(
-            LLVMBuildAlloca(builder, type.type, name ?? "")
+            LLVMBuildAlloca(builder, type.type!, name ?? "")
         )
     }
+    @discardableResult
     func buildStore(value val: LLVMValue, in addr: LLVMValue) throws -> LLVMValue {
         return try wrap(
             LLVMBuildStore(builder, val.val(), addr.val())
@@ -93,12 +92,12 @@ extension LLVMBuilder {
     }
     func buildBitcast(value val: LLVMValue, to type: LLVMType, name: String? = nil) throws -> LLVMValue {
         return try wrap(
-            LLVMBuildBitCast(builder, val.val(), type.type, name ?? "")
+            LLVMBuildBitCast(builder, val.val(), type.type!, name ?? "")
         )
     }
     static func constBitcast(value val: LLVMValue, to type: LLVMType) throws -> LLVMValue {
         return try LLVMValue(ref:
-            LLVMConstBitCast(val.val(), type.type)
+            LLVMConstBitCast(val.val(), type.type!)
         )
     }
     func buildTrunc(val: LLVMValue, size: Int, name: String? = nil) throws -> LLVMValue {
@@ -106,21 +105,25 @@ extension LLVMBuilder {
             LLVMBuildTrunc(builder, val.val(), LLVMIntType(UInt32(size)), name ?? "")
         )
     }
+    @discardableResult
     func buildBr(to block: LLVMBasicBlock) throws -> LLVMValue {
         return try wrap(
             LLVMBuildBr(builder, block.block)
         )
     }
+    @discardableResult
     func buildCondBr(if cond: LLVMValue, to success: LLVMBasicBlock, elseTo fail: LLVMBasicBlock) throws -> LLVMValue {
         return try wrap(
             LLVMBuildCondBr(builder, cond.val(), success.block, fail.block)
         )
     }
+    @discardableResult
     func buildRet(val: LLVMValue) throws -> LLVMValue {
         return try wrap(
             LLVMBuildRet(builder, val.val())
         )
     }
+    @discardableResult
     func buildRetVoid() throws -> LLVMValue {
         return try wrap(
             LLVMBuildRetVoid(builder)
@@ -133,35 +136,40 @@ extension LLVMBuilder {
             LLVMBuildCall(builder, function.function.val(), &applied, UInt32(applied.count), name ?? "")
         )
     }
+    @discardableResult
     func buildUnreachable() throws -> LLVMValue {
         return try wrap(
             LLVMBuildUnreachable(builder)
         )
     }
+    @discardableResult
     func buildInsertValue(value val: LLVMValue, in aggr: LLVMValue, index: Int, name: String? = nil) throws -> LLVMValue {
         return try wrap(
             LLVMBuildInsertValue(builder, aggr.val(), val.val(), UInt32(index), name ?? "")
         )
     }
-    static func constInsertValue(value val: LLVMValue, in aggr: LLVMValue, index: Int, name: String? = nil) throws -> LLVMValue {
+    @discardableResult
+    static func constInsert(value val: LLVMValue, in aggr: LLVMValue, index: Int, name: String? = nil) throws -> LLVMValue {
         var v = [UInt32(index)]
         
         var value = val
         
         // cast the pointer if its the wrong target
-        let kind = LLVMGetTypeKind(val.type.type)
+        let kind = LLVMGetTypeKind(val.type.type!)
         if kind == LLVMPointerTypeKind || kind == LLVMArrayTypeKind {
-            let ptr = LLVMGetElementType(val.type.type)
+            let ptr = LLVMGetElementType(val.type.type!)
             if ptr != nil {
                 
-                var els = [LLVMTypeRef](count: Int(LLVMCountStructElementTypes(aggr.type.type)), repeatedValue: nil)
-                LLVMGetStructElementTypes(aggr.type.type, &els)
+                var els = [LLVMTypeRef?](repeating: nil, count: Int(LLVMCountStructElementTypes(aggr.type.type!)))
+                
+                LLVMGetStructElementTypes(aggr.type.type!, &els)
+                
                 if els[index] != val.type.type {
                     if kind == LLVMPointerTypeKind {
                         value = try constBitcast(value: value, to: LLVMType(ref: els[index]))
                     }
                     else if kind == LLVMArrayTypeKind {
-                        value = try constGEP(value, index: LLVMValue.constInt(0, size: 32))
+                        value = try constGEP(ofAggregate: value, index: LLVMValue.constInt(value: 0, size: 32))
                     }
                 }
             }
@@ -169,69 +177,69 @@ extension LLVMBuilder {
         
         return try LLVMValue(ref: LLVMConstInsertValue(aggr.val(), value.val(), &v, 1))
     }
-    func buildExtractValue(val: LLVMValue, index: Int, name: String? = nil) throws -> LLVMValue {
+    func buildExtractValue(from val: LLVMValue, index: Int, name: String? = nil) throws -> LLVMValue {
         return try wrap(
             LLVMBuildExtractValue(builder, val.val(), UInt32(index), name ?? "")
         )
     }
-    func buildStructGEP(val: LLVMValue, index: Int, name: String? = nil) throws -> LLVMValue {
+    func buildStructGEP(ofAggregate val: LLVMValue, index: Int, name: String? = nil) throws -> LLVMValue {
         return try wrap(
             LLVMBuildStructGEP(builder, val.val(), UInt32(index), name ?? "")
         )
     }
-    func buildGEP(val: LLVMValue, index: LLVMValue, name: String? = nil) throws -> LLVMValue {
+    func buildGEP(ofAggregate aggr: LLVMValue, index: LLVMValue, name: String? = nil) throws -> LLVMValue {
         var v = try [index.val()]
         return try wrap(
-            LLVMBuildGEP(builder, val.val(), &v, 1, name ?? "")
+            LLVMBuildGEP(builder, aggr.val(), &v, 1, name ?? "")
         )
     }
-    static func constGEP(val: LLVMValue, index: LLVMValue) throws -> LLVMValue {
+    static func constGEP(ofAggregate aggr: LLVMValue, index: LLVMValue) throws -> LLVMValue {
         var v = try [index.val()]
         return try LLVMValue(ref:
-            LLVMConstInBoundsGEP(val.val(), &v, 1)
+            LLVMConstInBoundsGEP(aggr.val(), &v, 1)
         )
     }
-    func buildGlobalString(str: String, name: String? = nil) throws -> LLVMValue {
+    func buildGlobalString(value str: String, name: String? = nil) throws -> LLVMValue {
         return try wrap(
             LLVMBuildGlobalString(builder, str, name ?? "")
         )
     }
-    func buildGlobalString(str: UnsafeMutablePointer<CChar>, name: String? = nil) throws -> LLVMValue {
+    func buildGlobalString(value str: UnsafeMutablePointer<CChar>, name: String? = nil) throws -> LLVMValue {
         return try wrap(
             LLVMBuildGlobalString(builder, str, name ?? "")
         )
     }
-    static func constAggregate(type type: LLVMType, elements: [LLVMValue]) throws -> LLVMValue {
+    static func constAggregate(type: LLVMType, elements: [LLVMValue]) throws -> LLVMValue {
         // creates an undef, then for each element in type, inserts the next element into it
         return try elements
-            .enumerate()
-            .reduce(LLVMValue.undef(type)) { aggr, el in
-                return try constInsertValue(value: el.element,
-                                            in: aggr,
-                                            index: el.index)
+            .enumerated()
+            .reduce(LLVMValue.undef(type: type)) { aggr, el in
+                return try constInsert(value: el.element,
+                                       in: aggr,
+                                       index: el.offset)
         }
     }
     
-    func buildAggregate(type type: LLVMType, elements: [LLVMValue], irName: String? = nil) throws -> LLVMValue {
+    func buildAggregate(type: LLVMType, elements: [LLVMValue], irName: String? = nil) throws -> LLVMValue {
         // creates an undef, then for each element in type, inserts the next element into it
         return try elements
-            .enumerate()
-            .reduce(LLVMValue.undef(type)) { aggr, el in
+            .enumerated()
+            .reduce(LLVMValue.undef(type: type)) { aggr, el in
                 return try buildInsertValue(value: el.element,
                                             in: aggr,
-                                            index: el.index,
+                                            index: el.offset,
                                             name: irName)
         }
     }
 
-    func buildArray(buffer: [LLVMValue], elType: LLVMType, irName: String? = nil) throws -> LLVMValue {
+    func buildArray(elements buffer: [LLVMValue], elType: LLVMType, irName: String? = nil) throws -> LLVMValue {
         let elPtrType = LLVMPointerType(elType.type, 0)
         
         let arrType = LLVMArrayType(elType.type, UInt32(buffer.count))
         let ptr = LLVMBuildAlloca(builder, arrType, irName ?? "") // [n x el]*
         let basePtr = LLVMBuildBitCast(builder, ptr, elPtrType, "") // el*
         
-        for (index, val) in buffer.enumerate() {
+        for (index, val) in buffer.enumerated() {
             // Make the index to lookup
             var mem = [LLVMConstInt(LLVMInt32Type(), UInt64(index), false)]
             // get the element ptr
@@ -243,12 +251,12 @@ extension LLVMBuilder {
         
         return LLVMValue(ref: LLVMBuildLoad(builder, ptr, ""))
     }
-    func buildArrayAlloca(size size: LLVMValue, elementType: LLVMType, name: String? = nil) throws -> LLVMValue {
+    func buildArrayAlloca(size: LLVMValue, elementType: LLVMType, name: String? = nil) throws -> LLVMValue {
         return try wrap(
             LLVMBuildArrayAlloca(builder, elementType.type, size.val(), name ?? "")
         )
     }
-    func buildArrayMalloc(size size: LLVMValue, elementType: LLVMType, name: String? = nil) throws -> LLVMValue {
+    func buildArrayMalloc(size: LLVMValue, elementType: LLVMType, name: String? = nil) throws -> LLVMValue {
         return try wrap(
             LLVMBuildArrayMalloc(builder, elementType.type, size.val(), name ?? "")
         )
@@ -262,76 +270,60 @@ extension LLVMBuilder {
 }
 
 extension LLVMBuilder {
-
-    typealias LLVMBinFunction = @convention(c) (builder: LLVMBuilderRef, lhs: LLVMValueRef, rhs: LLVMValueRef, name: UnsafePointer<Int8>) -> LLVMValueRef
-    typealias LLVMBinIntFunction = @convention(c) (builder: LLVMBuilderRef, pred: LLVMIntPredicate, lhs: LLVMValueRef, rhs: LLVMValueRef, name: UnsafePointer<Int8>) -> LLVMValueRef
-    typealias LLVMBinFloatFunction = @convention(c) (builder: LLVMBuilderRef, pred: LLVMRealPredicate, lhs: LLVMValueRef, rhs: LLVMValueRef, name: UnsafePointer<Int8>) -> LLVMValueRef
     
-    private func buildBinaryOperation_createThunk(function: LLVMBinFunction) -> (lhs: LLVMValue, rhs: LLVMValue, name: String?) throws -> LLVMValue {
-        return { lhs, rhs, name in
-            return try self.wrap(
-                function(builder: self.builder, lhs: lhs.val(), rhs: rhs.val(), name: name ?? "")
-            )
-        }
+    func buildIAdd(lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
+        return try wrap(LLVMBuildAdd(builder, lhs.val(), rhs.val(), name ?? ""))
     }
-    
-    func buildIAdd(lhs lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
-        return try buildBinaryOperation_createThunk(LLVMBuildAdd)(lhs: lhs, rhs: rhs, name: name)
+    func buildISub(lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
+        return try wrap(LLVMBuildSub(builder, lhs.val(), rhs.val(), name ?? ""))
     }
-    func buildISub(lhs lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
-        return try buildBinaryOperation_createThunk(LLVMBuildSub)(lhs: lhs, rhs: rhs, name: name)
-    }
-    func buildIMul(lhs lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
-        return try buildBinaryOperation_createThunk(LLVMBuildMul)(lhs: lhs, rhs: rhs, name: name)
-    }
-    func buildIDiv(lhs lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
-        return try buildBinaryOperation_createThunk(LLVMBuildSDiv)(lhs: lhs, rhs: rhs, name: name)
-    }
-    func buildIRem(lhs lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
-        return try buildBinaryOperation_createThunk(LLVMBuildSRem)(lhs: lhs, rhs: rhs, name: name)
-    }
-    func buildIShiftR(lhs lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
-        return try buildBinaryOperation_createThunk(LLVMBuildAShr)(lhs: lhs, rhs: rhs, name: name)
-    }
-    func buildIShiftL(lhs lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
-        return try buildBinaryOperation_createThunk(LLVMBuildShl)(lhs: lhs, rhs: rhs, name: name)
-    }
-    func buildAnd(lhs lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
-        return try buildBinaryOperation_createThunk(LLVMBuildAnd)(lhs: lhs, rhs: rhs, name: name)
-    }
-    func buildOr(lhs lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
-        return try buildBinaryOperation_createThunk(LLVMBuildOr)(lhs: lhs, rhs: rhs, name: name)
-    }
-    func buildXor(lhs lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
-        return try buildBinaryOperation_createThunk(LLVMBuildXor)(lhs: lhs, rhs: rhs, name: name)
-    }
-    func buildIntCompare(pred: LLVMIntPredicate, lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
-        let f = LLVMBuildICmp as LLVMBinIntFunction
-        return try self.wrap(
-            f(builder: builder, pred: pred, lhs: lhs.val(), rhs: rhs.val(), name: name ?? "")
+    func buildIMul(lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
+        return try wrap(
+            LLVMBuildMul(builder, lhs.val(), rhs.val(), name ?? "")
         )
     }
+    func buildIDiv(lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
+        return try wrap(LLVMBuildSDiv(builder, lhs.val(), rhs.val(), name ?? ""))
+    }
+    func buildIRem(lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
+        return try wrap(LLVMBuildSRem(builder, lhs.val(), rhs.val(), name ?? ""))
+    }
+    func buildIShiftR(lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
+        return try wrap(LLVMBuildAShr(builder, lhs.val(), rhs.val(), name ?? ""))
+    }
+    func buildIShiftL(lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
+        return try wrap(LLVMBuildShl(builder, lhs.val(), rhs.val(), name ?? ""))
+    }
+    func buildAnd(lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
+        return try wrap(LLVMBuildAnd(builder, lhs.val(), rhs.val(), name ?? ""))
+    }
+    func buildOr(lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
+        return try wrap(LLVMBuildOr(builder, lhs.val(), rhs.val(), name ?? ""))
+    }
+    func buildXor(lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
+        return try wrap(LLVMBuildXor(builder, lhs.val(), rhs.val(), name ?? ""))
+    }
+    func buildIntCompare(_ pred: LLVMIntPredicate, lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
+        return try wrap(LLVMBuildICmp(builder, pred, lhs.val(), rhs.val(), name ?? ""))
+    }
     
-    func buildFAdd(lhs lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
-        return try buildBinaryOperation_createThunk(LLVMBuildFAdd)(lhs: lhs, rhs: rhs, name: name)
+    func buildFAdd(lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
+        return try wrap(LLVMBuildFAdd(builder, lhs.val(), rhs.val(), name ?? ""))
     }
-    func buildFSub(lhs lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
-        return try buildBinaryOperation_createThunk(LLVMBuildFSub)(lhs: lhs, rhs: rhs, name: name)
+    func buildFSub(lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
+        return try wrap(LLVMBuildFSub(builder, lhs.val(), rhs.val(), name ?? ""))
     }
-    func buildFMul(lhs lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
-        return try buildBinaryOperation_createThunk(LLVMBuildFMul)(lhs: lhs, rhs: rhs, name: name)
+    func buildFMul(lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
+        return try wrap(LLVMBuildFMul(builder, lhs.val(), rhs.val(), name ?? ""))
     }
-    func buildFDiv(lhs lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
-        return try buildBinaryOperation_createThunk(LLVMBuildFDiv)(lhs: lhs, rhs: rhs, name: name)
+    func buildFDiv(lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
+        return try wrap(LLVMBuildFDiv(builder, lhs.val(), rhs.val(), name ?? ""))
     }
-    func buildFRem(lhs lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
-        return try buildBinaryOperation_createThunk(LLVMBuildFRem)(lhs: lhs, rhs: rhs, name: name)
+    func buildFRem(lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
+        return try wrap(LLVMBuildFRem(builder, lhs.val(), rhs.val(), name ?? ""))
     }
-    func buildFloatCompare(pred: LLVMRealPredicate, lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
-        let f = LLVMBuildFCmp as LLVMBinFloatFunction
-        return try self.wrap(
-            f(builder: builder, pred: pred, lhs: lhs.val(), rhs: rhs.val(), name: name ?? "")
-        )
+    func buildFloatCompare(_ pred: LLVMRealPredicate, lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
+        return try wrap(LLVMBuildFCmp(builder, pred, lhs.val(), rhs.val(), name ?? ""))
     }
 }
 
@@ -379,51 +371,34 @@ struct GlobalMetadataCache {
 }
 
 /// A collection which iterates over a module's linked list of functions
-final class FunctionsCollection : SequenceType {
+final class FunctionsSequence : Sequence {
     typealias Element = LLVMFunction
     
-    private var function: LLVMValueRef
+    private var function: LLVMValueRef?
     
     private init(function: LLVMValueRef) { self.function = function }
     
-    func generate() -> AnyGenerator<LLVMFunction> {
-        return AnyGenerator {
-            if self.function == nil { return nil }
-            defer { self.function = LLVMGetNextFunction(self.function) }
-            return LLVMFunction(ref: self.function)
+    func makeIterator() -> AnyIterator<LLVMFunction> {
+        return AnyIterator {
+            guard let f = self.function else { return nil }
+            defer { self.function = LLVMGetNextFunction(f) }
+            return LLVMFunction(ref: f)
         }
     }
 }
 
 struct LLVMModule : Dumpable {
-    private var module: LLVMModuleRef
+    private(set) var module: LLVMModuleRef?
     var typeMetadata: [String: TypeMetadata] = [:]
     
     private(set) var globals = GlobalMetadataCache()
     
-    var functions: FunctionsCollection {
-        return FunctionsCollection(function: LLVMGetFirstFunction(module))
-    }
-    
-    mutating func createLLVMGlobal<T>(forPointer value: UnsafeMutablePointer<T>, baseName: String, inout IGF: IRGenFunction) throws -> LLVMGlobalValue {
-        if let global = globals.cachedGlobals[value] {
-            return global
-        }
-        let v = try value.lowerMemory(&IGF, baseName: baseName)
-        return createGlobal(v, forPtr: value, baseName: baseName, IGF: &IGF)
-    }
-    
-    /// Add a LLVM global value to the module
-    mutating func createGlobal(val: LLVMValue, forPtr: UnsafeMutablePointer<Void>, baseName: String, inout IGF: IRGenFunction) -> LLVMGlobalValue {
-        let global = LLVMGlobalValue(module: IGF.module, type: val.type, name: baseName)
-        global.initialiser = val
-        global.isConstant = true
-        if forPtr != nil { globals.cachedGlobals[forPtr] = global }
-        return global
+    var functions: FunctionsSequence {
+        return FunctionsSequence(function: LLVMGetFirstFunction(module))
     }
     
     func getModule() throws -> LLVMModuleRef {
-        guard module != nil else { throw NullLLVMRef() }
+        guard let module = module else { throw NullLLVMRef() }
         return module
     }
     
@@ -435,53 +410,75 @@ struct LLVMModule : Dumpable {
     }
     
     func validate() throws {
-        var err = UnsafeMutablePointer<Int8>.alloc(1)
-        guard !LLVMVerifyModule(module, LLVMReturnStatusAction, &err) else {
+        var errorMessage: UnsafeMutablePointer<Int8>? = UnsafeMutablePointer(allocatingCapacity: 1)
+        guard let module = module else { fatalError() }
+        guard !LLVMVerifyModule(module, LLVMReturnStatusAction, &errorMessage) else {
             #if DEBUG
                 dump()
             #endif
-            throw irGenError(.invalidModule(module, String.fromCString(err)), userVisible: true)
+            let message = errorMessage.map { String(cString: $0) }
+            throw irGenError(.invalidModule(module, message), userVisible: true)
         }
     }
 
+    /// Returns a function from the module named `name`
     func function(named name: String) -> LLVMFunction? {
         let f = LLVMGetNamedFunction(module, name)
-        if f != nil {
+        if let f = f {
             return LLVMFunction(ref: f)
         }
         else { return nil }
     }
+    ///
     func global(named name: String) -> LLVMGlobalValue? {
         let f = LLVMGetNamedGlobal(module, name)
-        if f != nil {
+        if let f = f {
+            // will always be a global so it cannot fail
             return try! LLVMGlobalValue(ref: f)
         }
         else { return nil }
     }
     
-    func getIntrinsic(name: String, overload: LLVMType...) throws -> LLVMFunction {
-        let intrinsic: LLVMValueRef
+    func getIntrinsic(named name: String, overload: LLVMType...) throws -> LLVMFunction {
+        let intrinsic: LLVMValueRef?
         switch overload.count {
-        case 0: intrinsic = getRawIntrinsic(name, module)
-        case 1: intrinsic = getSinglyOverloadedIntrinsic(name, module, overload[0].type)
+        case 0: intrinsic = try getRawIntrinsic(name, getModule())
+        case 1: intrinsic = try getSinglyOverloadedIntrinsic(name, getModule(), overload[0].type!)
         case _:
             var overloads = overload.map{$0.type}
-            intrinsic = getOverloadedIntrinsic(name, module, &overloads, Int32(overload.count))
+            intrinsic = try getOverloadedIntrinsic(name, getModule(), &overloads, Int32(overload.count))
         }
-        guard intrinsic != nil else { throw NullLLVMRef() }
-        return LLVMFunction(ref: intrinsic)
+        guard let i = intrinsic else { throw NullLLVMRef() }
+        return LLVMFunction(ref: i)
     }
     
     func dump() { LLVMDumpModule(module) }
-    func description() -> String { return String.fromCString(LLVMPrintModuleToString(module))! }
+    func description() -> String { return String(cString: LLVMPrintModuleToString(module)) }
     
     var dataLayout: String {
-        get { return String.fromCString(LLVMGetDataLayout(module))! }
+        get { return String(cString: LLVMGetDataLayout(module)) }
         nonmutating set { LLVMSetDataLayout(module, newValue) }
     }
     var target: String {
-        get { return String.fromCString(LLVMGetTarget(module))! }
+        get { return String(cString: LLVMGetTarget(module)) }
         nonmutating set { LLVMSetTarget(module, newValue) }
+    }
+    
+    mutating func createLLVMGlobal<T>(forPointer value: UnsafeMutablePointer<T>, baseName: String, IGF: inout IRGenFunction) throws -> LLVMGlobalValue {
+        if let global = globals.cachedGlobals[value] {
+            return global
+        }
+        let v = try value.lowerMemory(IGF: &IGF, baseName: baseName)
+        return createGlobal(value: v, forPtr: value, baseName: baseName, IGF: &IGF)
+    }
+    
+    /// Add a LLVM global value to the module
+    mutating func createGlobal(value: LLVMValue, forPtr: UnsafeMutablePointer<Void>?, baseName: String, IGF: inout IRGenFunction) -> LLVMGlobalValue {
+        let global = LLVMGlobalValue(module: IGF.module, type: value.type, name: baseName)
+        global.initialiser = value
+        global.isConstant = true
+        if let p = forPtr { globals.cachedGlobals[p] = global }
+        return global
     }
     
     /// An initialiser which loads from a bitcode file
@@ -489,38 +486,49 @@ struct LLVMModule : Dumpable {
     init(path: String, name: String) {
         precondition(path.hasSuffix(".bc"))
         
-        let buffer = UnsafeMutablePointer<LLVMMemoryBufferRef>.alloc(1)
-        let str = UnsafeMutablePointer<UnsafeMutablePointer<Int8>>.alloc(1)
+        var buffer: LLVMMemoryBufferRef? = nil
+        var str: UnsafeMutablePointer<Int8>? = UnsafeMutablePointer(allocatingCapacity: 1)
         
         var runtimeModule = LLVMModuleCreateWithName(name)
         
-        LLVMCreateMemoryBufferWithContentsOfFile(path, buffer, str)
-        LLVMGetBitcodeModule(buffer.memory, &runtimeModule, str)
+        LLVMCreateMemoryBufferWithContentsOfFile(path, &buffer, &str)
+        LLVMGetBitcodeModule(buffer, &runtimeModule, &str)
         module = runtimeModule
-    }
-    
-    /// Links modules, importing from `otherModule`
-    func importFrom(otherModule: LLVMModule) {
-        let str = UnsafeMutablePointer<UnsafeMutablePointer<Int8>>.alloc(1)
-        LLVMLinkModules(module, otherModule.module, LLVMLinkerDestroySource, str)
     }
     
 }
 
+enum _WidthUnit { case bytes, bits }
+
 struct LLVMType : Dumpable {
 //    private
-    var type: LLVMTypeRef
+    var type: LLVMTypeRef?
     
-    init(ref: LLVMTypeRef) { type = ref }
+    init(ref: LLVMTypeRef?) { type = ref }
+    
+    static func functionType(params: [LLVMType], returns: LLVMType) -> LLVMType {
+        var fs = params.map { $0.type }
+        return LLVMType(ref: LLVMFunctionType(returns.type, &fs, UInt32(fs.count), false))
+    }
     
     func dump() { LLVMDumpType(type) }
     
-    func offsetOfElement(index index: Int, module: LLVMModule) -> Int {
+    /// Get the struct offset of an aggregate's element at `index`
+    func offsetOfElement(at index: Int, module: LLVMModule) -> Int {
         let dataLayout = LLVMCreateTargetData(module.dataLayout)
         return Int(LLVMOffsetOfElement(dataLayout, type, UInt32(index)))
     }
     var size: LLVMValue {
         return LLVMValue(ref: LLVMSizeOf(type))
+    }
+    /// the size in `unit` of this lowered type
+    func size(unit: _WidthUnit, IGF: IRGenFunction) -> Int {
+        let dataLayout = LLVMCreateTargetData(IGF.module.dataLayout)
+        let s = Int(LLVMSizeOfTypeInBits(dataLayout, type!))
+        switch unit {
+        case .bits: return s
+        case .bytes: return s / 8
+        }
     }
     /// get self*
     func getPointerType() -> LLVMType {
@@ -530,10 +538,10 @@ struct LLVMType : Dumpable {
     static var opaquePointer: LLVMType {
         return LLVMType(ref: LLVMPointerType(LLVMInt8Type(), 0))
     }
-    static func intType(size size: Int) -> LLVMType {
+    static func intType(size: Int) -> LLVMType {
         return LLVMType(ref: LLVMIntType(UInt32(size)))
     }
-    static func arrayType(element element: LLVMType, size: Int) -> LLVMType {
+    static func arrayType(element: LLVMType, size: Int) -> LLVMType {
         return LLVMType(ref: LLVMArrayType(element.type, UInt32(size)))
     }
     static var bool: LLVMType {
@@ -559,23 +567,22 @@ struct LLVMType : Dumpable {
 
 struct LLVMValue : Dumpable {
 //    private
-    var _value: LLVMValueRef = nil
+    var _value: LLVMValueRef? = nil
     
-    private func val() throws -> LLVMValueRef {
-        guard _value != nil else { throw NullLLVMRef() }
-        return _value
+    private func val() throws -> LLVMValueRef? {
+        guard let v = _value else { throw NullLLVMRef() }
+        return v
     }
     
-//    private
-    init(ref: LLVMValueRef) { _value = ref }
+    init(ref: LLVMValueRef?) { _value = ref }
     
     var name: String? {
-        get { return String.fromCString(LLVMGetValueName(_value)) }
+        get { return String(cString: LLVMGetValueName(_value)) }
         nonmutating set { if let name = newValue { LLVMSetValueName(_value, name) } }
     }
     
-    static func constNull(type type: LLVMType) -> LLVMValue {
-        return LLVMValue(ref: LLVMConstNull(type.type))
+    static func constNull(type: LLVMType) -> LLVMValue {
+        return LLVMValue(ref: LLVMConstNull(type.type!))
     }
     static func constInt(value: Int, size: Int) -> LLVMValue {
         return LLVMValue(ref: LLVMConstInt(LLVMIntType(UInt32(size)), UInt64(value), false))
@@ -587,12 +594,12 @@ struct LLVMValue : Dumpable {
         return LLVMValue(ref: LLVMConstString(value, UInt32(value.utf8.count), false))
     }
     static func undef(type: LLVMType) -> LLVMValue {
-        return LLVMValue(ref: LLVMGetUndef(type.type))
+        return LLVMValue(ref: LLVMGetUndef(type.type!))
     }
     static func constArray(of type: LLVMType, vals: [LLVMValue]) -> LLVMValue {
         var els = vals.map { $0._value }
         let s = UInt32(els.count)
-        return LLVMValue(ref: LLVMConstArray(type.type, &els, s))
+        return LLVMValue(ref: LLVMConstArray(type.type!, &els, s))
     }
     static var nullptr: LLVMValue { return LLVMValue(ref: nil) }
     
@@ -605,7 +612,7 @@ struct LLVMGlobalValue : Dumpable {
     var value: LLVMValue
     
     init(module: LLVMModule, type: LLVMType, name: String) {
-        value = LLVMValue(ref: LLVMAddGlobal(module.module, type.type, name))
+        value = LLVMValue(ref: LLVMAddGlobal(module.module, type.type!, name))
     }
     
 //    private
@@ -615,11 +622,11 @@ struct LLVMGlobalValue : Dumpable {
     }
     
     var hasUnnamedAddr: Bool {
-        get { return Bool(LLVMHasUnnamedAddr(value._value)) }
+        get { return LLVMHasUnnamedAddr(value._value).boolValue }
         nonmutating set { LLVMSetUnnamedAddr(value._value, LLVMBool(booleanLiteral: newValue)) }
     }
     var isExternallyInitialised: Bool {
-        get { return Bool(LLVMIsExternallyInitialized(value._value)) }
+        get { return LLVMIsExternallyInitialized(value._value).boolValue }
         nonmutating set { LLVMSetExternallyInitialized(value._value, LLVMBool(booleanLiteral: newValue)) }
     }
     var initialiser: LLVMValue {
@@ -648,16 +655,16 @@ struct LLVMFunction : Dumpable {
     private (set) var function: LLVMValue
     
 //    private
-    init(ref: LLVMValueRef) {
+    init(ref: LLVMValueRef?) {
 //        guard LLVMIsAFunction(ref) != nil else { throw error(LLVMError.notAFunction) }
         function = LLVMValue(ref: ref)
     }
     init(name: String, type: LLVMType, module: LLVMModule) {
-        let r = LLVMAddFunction(module.module, name, type.type)
+        let r = LLVMAddFunction(module.module, name, type.type!)
         function = LLVMValue(ref: r)
     }
     
-    func addAttr(attr: LLVMAttribute) throws {
+    func addAttr(_ attr: LLVMAttribute) throws {
         try LLVMAddFunctionAttr(function.val(), attr)
     }
     var visibility: LLVMVisibility {
@@ -675,7 +682,7 @@ struct LLVMFunction : Dumpable {
         )
     }
     
-    var unsafePointer: UnsafeMutablePointer<Void> {
+    var unsafePointer: UnsafeMutablePointer<Void>? {
         return UnsafeMutablePointer(function._value)
     }
     
@@ -687,7 +694,8 @@ struct LLVMFunction : Dumpable {
     
     var type: LLVMType { return function.type }
     
-    func getParam(index: Int) throws -> LLVMValue {
+    /// Returns the function parameter at `index`
+    func param(at index: Int) throws -> LLVMValue {
         guard let function = try? function.val() else { throw error(NullLLVMRef()) }
         guard index < paramCount else { throw error(LLVMError.invalidParamIndex(index, function: name)) }
         return LLVMValue(ref: LLVMGetParam(function, UInt32(index)))

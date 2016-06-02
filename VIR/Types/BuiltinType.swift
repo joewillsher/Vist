@@ -15,14 +15,14 @@ enum BuiltinType : Type {
     indirect case pointer(to: Type)
     case opaquePointer
     
-    func lowerType(module: Module) -> LLVMType {
+    func lowered(module: Module) -> LLVMType {
         switch self {
         case .null:                     return .null
         case .void:                     return .void
         case .int(let s):               return .intType(size: s)
         case .bool:                     return .bool
-        case .array(let el, let size):  return .arrayType(element: el.lowerType(module), size: size ?? 0)
-        case .pointer(let to):          return to.lowerType(module).getPointerType()
+        case .array(let el, let size):  return .arrayType(element: el.lowered(module: module), size: size ?? 0)
+        case .pointer(let to):          return to.lowered(module: module).getPointerType()
         case .opaquePointer:            return .opaquePointer
         case .float(let s):
             switch s {
@@ -89,9 +89,9 @@ enum BuiltinType : Type {
         }
     }
     
-    func usingTypesIn(module: Module) -> Type {
+    func importedType(inModule module: Module) -> Type {
         switch self {
-        case .pointer(let pointee): return BuiltinType.pointer(to: pointee.usingTypesIn(module))
+        case .pointer(let pointee): return BuiltinType.pointer(to: pointee.importedType(inModule: module))
         default: return self
         }
     }

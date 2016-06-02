@@ -11,8 +11,8 @@ extension NSTask {
     class func execute(execName exec: String, files: [String], outputName: String? = nil, cwd: String, args: [String]) {
         
         var a = args
-        if let n = outputName { a.appendContentsOf(["-o", n]) }
-        a.appendContentsOf(files)
+        if let n = outputName { a.append(contentsOf: ["-o", n]) }
+        a.append(contentsOf: files)
         
         let task = NSTask()
         task.currentDirectoryPath = cwd

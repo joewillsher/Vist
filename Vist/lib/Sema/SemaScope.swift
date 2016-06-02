@@ -27,18 +27,16 @@ final class SemaScope {
     /// Used for blocks’ types
     var semaContext: Type?
     
-    subscript (variable variable: String) -> Variable? {
-        get {
-            if let v = variables[variable] { return v }
-            return parent?[variable: variable]
-        }
-        set {
-            variables[variable] = newValue
-        }
+    /// Lookup the varibale called `name`
+    func variable(named name: String) -> Variable? {
+        if let v = variables[name] { return v }
+        return parent?.variable(named: name)
     }
-    
+    func addVariable(variable: Variable, name: String) {
+        variables[name] = variable
+    }
     /// Whether *this* scope contains a named variable
-    func containsVariable(named: String) -> Bool {
+    func thisScopeContainsVariable(named: String) -> Bool {
         return variables.contains { $0.0 == named }
     }
 
@@ -48,65 +46,63 @@ final class SemaScope {
     /// in the builtin functions, then it looks through this scope,
     /// then searches parent scopes, throwing if not found
     ///
-    func function(name: String, argTypes: [Type]) throws -> (String, FunctionType) {
+    func function(named name: String, argTypes: [Type]) throws -> (mangledName: String, type: FunctionType) {
         
-        // if not stdlib, lookup from the stdlib defs
-        // if stdlib lookup from builtin fns
-        if let stdLibFunction = StdLib.function(name: name, args: argTypes) {
-            return stdLibFunction
-        }
-        else if let builtinFunction = Builtin.function(name: name, argTypes: argTypes) where isStdLib {
-            return builtinFunction
-        }
-        else if let runtime = Runtime.function(name: name, argTypes: argTypes) where isStdLib {
-            return runtime
-        }
-        else if let f = functions[raw: name, paramTypes: argTypes] {
-            return (name.mangle(f), f)
-        }
-        else if let inParent = try parent?.function(name, argTypes: argTypes) {
-            return inParent
-        }
-        // error handling
-        else {
-            throw semaError(.noFunction(name, argTypes))
-        }
+        // lookup from stdlib/builtin
+        if let stdLibFunction = StdLib.function(name: name, args: argTypes) { return stdLibFunction }
+        else if let builtinFunction = Builtin.function(name: name, argTypes: argTypes) where isStdLib { return builtinFunction }
+//        else if let runtime = Runtime.function(name: name, argTypes: argTypes) where isStdLib { return runtime }
+            // otherwise we search the user scopes recursively
+        else { return try recursivelyLookupFunction(named: name, argTypes: argTypes) }
+    }
+    
+    /// Recursvively searches this scope and its parents
+    /// - note: should only be called *after* looking up in stdlib/builtin
+    private func recursivelyLookupFunction(named name: String, argTypes: [Type]) throws -> (mangledName: String, type: FunctionType) {
+        if let inScope = functions.function(havingUnmangledName: name, paramTypes: argTypes) { return inScope }
+            // lookup from parents
+        else if let inParent = try parent?.function(named: name, argTypes: argTypes) { return inParent }
+            // otherwise we havent found a match :(
+        else { throw semaError(.noFunction(name, argTypes)) }
     }
     
     func addFunction(name: String, type: FunctionType) {
-        functions[name.mangle(type)] = type
+        functions[name.mangle(type: type)] = type
     }
     
-    subscript(type type: String) -> NominalType? {
-        get {
-            if let t = StdLib.type(name: type) where !isStdLib {
-                return t
-            }
-            else if let v = types[type] {
-                return v
-            }
-            else if let g = genericParameters, let i = genericParameters?.indexOf({$0.name == type}) {
-                return try? GenericType.fromConstraint(inScope: self)(constraint: g[i])
-            }
-            else if let existential = self[concept: type] {
-                return existential
-            }
-            else {
-                return parent?[type: type]
-            }
+    func type(named name: String) -> NominalType? {
+        // lookup from this scope, its parents, then stldib
+        return recursivelyLookupType(named: name) ??
+            StdLib.type(name: name)
+    }
+    
+    /// Recursvively searches this scope and its parents
+    /// - note: should only be called *after* looking up in stdlib/builtin
+    private func recursivelyLookupType(named name: String) -> NominalType? {
+        if let v = types[name] {
+            return v
         }
-        set {
-            types[type] = newValue
+        else if let g = genericParameters, let i = genericParameters?.index(where: {$0.name == name}) {
+            return try? GenericType.fromConstraint(inScope: self)(constraint: g[i])
+        }
+        else if let existential = concepts[name] {
+            return existential
+        }
+        else {
+            return parent?.recursivelyLookupType(named: name)
         }
     }
-    subscript (concept concept: String) -> ConceptType? {
-        get {
-            if let c = concepts[concept] { return c }
-            return parent?[concept: concept]
-        }
-        set {
-            concepts[concept] = newValue
-        }
+    
+    func addType(_ type: NominalType, name: String) {
+        types[name] = type
+    }
+    
+    func concept(named name: String) -> ConceptType? {
+        if let c = concepts[name] { return c }
+        return parent?.concept(named: name)
+    }
+    func addConcept(_ concept: ConceptType, name: String) {
+        concepts[name] = concept
     }
     
     init(parent: SemaScope, returnType: Type? = BuiltinType.void, isYield: Bool = false, semaContext: Type? = nil) {
@@ -138,26 +134,24 @@ final class SemaScope {
         return SemaScope(isStdLib: isStdLib)
     }
     
-    /// Creates a scope assocoiated with its parent which cannot read from its func, var, & type tables
+    /// Creates a scope associated with its parent which cannot read from its func, var, & type tables
     static func nonCapturingScope(parent: SemaScope, returnType: Type? = BuiltinType.void, isYield: Bool = false, semaContext: Type? = nil) -> SemaScope {
         return SemaScope(returnType: returnType, isStdLib: parent.isStdLib, semaContext: semaContext)
     }
 }
 
 
-
-
-extension CollectionType
-    where
-    Generator.Element == (String, FunctionType)
+extension Collection where
+    Iterator.Element == (key: String, value: FunctionType)
 {
-    /// Subscript functions by their unmangled names and applies types
-    subscript(raw raw: String, paramTypes types: [Type]) -> FunctionType? {
-        get {
-            for (k, v) in self where k.demangleName() == raw && v.params.elementsEqual(types, isEquivalent: ==) {
-                return v
-            }
-            return nil
+    /// Look up the function from this mangled collection by the unmangled name and param types
+    /// - returns: the mangled name and the type of the matching function
+    func function(havingUnmangledName raw: String, paramTypes types: [Type]) -> (mangledName: String, type: FunctionType)? {
+        return first(where: { k, v in
+            k.demangleName() == raw
+                && v.params.elementsEqual(types, isEquivalent: ==)
+        }).map { f in
+            return (mangledName: raw.mangle(type: f.value), type: f.value)
         }
     }
 }

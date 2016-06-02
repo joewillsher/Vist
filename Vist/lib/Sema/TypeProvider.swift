@@ -27,42 +27,24 @@ extension ExprTypeProvider {
 extension ASTNode {
     func typeForNode(scope: SemaScope) throws {
         if case let expr as ExprTypeProvider = self {
-            try expr.typeForNode(scope)
+            _ = try expr.typeForNode(scope: scope)
         }
         else if case let stmt as StmtTypeProvider = self {
-            try stmt.typeForNode(scope)
+            _ = try stmt.typeForNode(scope: scope)
         }
         else if case let stmt as DeclTypeProvider = self {
-            try stmt.typeForNode(scope)
+            _ = try stmt.typeForNode(scope: scope)
         }
     }
 }
 
 
 
-extension CollectionType where Index == Int {
+extension Collection where IndexDistance == Int {
     
     /// An impl of flatmap which flatmaps but returns nil if the size changes
-    @warn_unused_result
-    public func optionalMap<T>(@noescape transform: (Generator.Element) throws -> T?) rethrows -> [T]? {
+    func optionalMap<T>(transform: @noescape (Generator.Element) throws -> T?) rethrows -> [T]? {
         let new = try flatMap(transform)
         if new.count == count { return new } else { return nil }
     }
 }
-extension CollectionType {
-    
-    @warn_unused_result
-    public func find(@noescape predicate: (Generator.Element) throws -> Bool) rethrows -> Generator.Element? {
-        return try indexOf(predicate).map { self[$0] }
-    }
-}
-extension CollectionType where Generator.Element : Equatable {
-    
-    @warn_unused_result
-    public func find(element: Generator.Element) -> Generator.Element? {
-        return indexOf(element).map { self[$0] }
-    }
-    
-}
-
-

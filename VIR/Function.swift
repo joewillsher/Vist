@@ -55,6 +55,11 @@ final class Function : VIRElement {
             self.parentFunction = parentFunction
             self.blocks = blocks
         }
+        
+        /// The index of `block` in `self`’s block list
+        private func index(of block: BasicBlock) throws -> Int {
+            if let index = blocks.index(where: {$0 === block}) { return index } else { throw VIRError.bbNotInFn }
+        }
     }
     
     /// The VIR visibility
@@ -66,7 +71,7 @@ final class Function : VIRElement {
         case `default`, always, never//, earlyAndAlways
     }
     /// Other attributes
-    struct Attributes : OptionSetType {
+    struct Attributes : OptionSet {
         let rawValue: Int
         init(rawValue: Int) { self.rawValue = rawValue }
         
@@ -82,7 +87,10 @@ extension Function {
     var hasBody: Bool { return body != nil && (body?.blocks.isEmpty ?? false) }
     /// The list of blocks in this function
     /// - precondition: self `hasBody`
-    var blocks: [BasicBlock]? { return body?.blocks }
+    var blocks: [BasicBlock]? {
+        get { return body?.blocks }
+        set { if let v = newValue { body?.blocks = v } }
+    }
     /// The list of params to this function
     /// - precondition: self `hasBody`
     var params: [Param]? { return body?.params }
@@ -104,7 +112,7 @@ extension Function {
         
         // values for the explicit params
         let params = zip(paramNames, type.params).map { name, type -> Param in
-            let t = type.usingTypesIn(module)
+            let t = type.importedType(inModule: module)
             if case let bt as BuiltinType = t, case .pointer(let pointee) = bt {
                 return RefParam(paramName: name, memType: pointee)
             }
@@ -115,7 +123,7 @@ extension Function {
         
         body = FunctionBody(params: params, parentFunction: self, blocks: [])
         
-        let entry = try module.builder.buildFunctionEntryBlock(self)
+        let entry = try module.builder.buildEntryBlock(function: self)
         for p in params { p.parentBlock = entry }
     }
     
@@ -125,20 +133,20 @@ extension Function {
     var lastBlock: BasicBlock? { return body?.blocks.last }
     
     /// The index of `block` in `self`’s block list
-    private func indexOf(block: BasicBlock) throws -> Int {
-        if let index = blocks?.indexOf({$0 === block}) { return index } else { throw VIRError.bbNotInFn }
+    private func index(of block: BasicBlock) throws -> Int {
+        if let body = body { return try body.index(of: block) } else { throw VIRError.bbNotInFn }
     }
-    
+
     /// Get the Param `name` from `self`
-    func paramNamed(name: String) throws -> Param {
-        if let p = try body?.blocks.first?.paramNamed(name) { return p } else { throw VIRError.noParamNamed(name) }
+    func param(named name: String) throws -> Param {
+        if let p = try body?.blocks.first?.param(named: name) { return p } else { throw VIRError.noParamNamed(name) }
     }
     
-    func insert(block block: BasicBlock, atIndex index: Int) {
-        body?.blocks.insert(block, atIndex: index)
+    func insert(block: BasicBlock, atIndex index: Int) {
+        body?.blocks.insert(block, at: index)
     }
     /// Add basic block to end of `self`
-    func append(block block: BasicBlock) {
+    func append(block: BasicBlock) {
         body?.blocks.append(block)
     }
     
@@ -153,38 +161,38 @@ extension Function {
         else if attrs.contains(.noinline) { inline = .never }
         
         // other attrs
-        if attrs.contains(.noreturn) { attributes.insert(.noreturn) }
+        if attrs.contains(.noreturn) { _ = attributes.insert(.noreturn) }
     }
-
+    
     /// Return a reference to this function
     func buildFunctionPointer() -> PtrOperand {
         return PtrOperand(FunctionRef(toFunction: self, parentBlock: module.builder.insertPoint.block))
     }
     
     func getAsClosure() throws -> Closure {
-        let type = self.type.cannonicalType(module)
+        let type = self.type.cannonicalType(module: module)
         var ty = FunctionType(params: type.params,
                               returns: type.returns,
                               callingConvention: type.callingConvention,
                               yieldType: type.yieldType)
         ty.isCanonicalType = true
-        let f = try module.builder.buildFunction(name,
-                                                type: ty.cannonicalType(module),
+        let f = try module.builder.buildFunction(name: name,
+                                                type: ty.cannonicalType(module: module),
                                                 paramNames: params?.map{$0.paramName} ?? [])
         return Closure(_thunkOf: f)
     }
     
     func addParam(param: Param) throws {
-        try entryBlock?.addEntryBlockParam(param)
+        try entryBlock?.addEntryBlockParam(param: param)
     }
     
-    func insertGlobalLifetime(lifetime: GlobalValue.Lifetime) {
+    func insertGlobalLifetime(_ lifetime: GlobalValue.Lifetime) {
         globalLifetimes.append(lifetime)
     }
     
-    func removeGlobalLifetime(lifetime: GlobalValue.Lifetime) {
-        if let i = globalLifetimes.indexOf({$0===lifetime}) {
-            globalLifetimes.removeAtIndex(i)
+    func removeGlobalLifetime(_ lifetime: GlobalValue.Lifetime) {
+        if let i = globalLifetimes.index(where: {$0===lifetime}) {
+            globalLifetimes.remove(at: i)
         }
     }
     
@@ -223,7 +231,7 @@ extension BasicBlock {
     /// Removes this block from the parent function
     func removeFromParent() throws {
         if let p = parentFunction {
-            try p.body?.blocks.removeAtIndex(p.indexOf(self))
+            try p.body?.blocks.remove(at: p.index(of: self))
         }
     }
     /// Erases `self` from the parent function, cutting all references to
@@ -236,58 +244,75 @@ extension BasicBlock {
         parentFunction = nil
     }
     /// Moves `self` after the `after` block
-    func move(after after: BasicBlock) throws {
-        if let p = parentFunction {
-            try p.body?.blocks.removeAtIndex(p.indexOf(self))
-            p.insert(block: self, atIndex: try p.indexOf(after).successor())
-        }
+    func move(after: BasicBlock) throws {
+        guard let body = parentFunction?.body else { return }
+        
+        try body.blocks.remove(at: body.index(of: self))
+
+        let new = try body.blocks.index(after: body.index(of: after))
+        body.blocks.insert(self, at: new)
     }
     /// Moves `self` before the `before` block
-    func move(before before: BasicBlock) throws {
-        if let p = parentFunction {
-            try p.body?.blocks.removeAtIndex(p.indexOf(self))
-            p.insert(block: self, atIndex: try p.indexOf(before).predecessor())
-        }
+    func move(before: BasicBlock) throws {
+        guard let body = parentFunction?.body else { return }
+        
+        try body.blocks.remove(at: body.index(of: self))
+        
+        let new = try body.blocks.index(before: body.index(of: before))
+        body.blocks.insert(self, at: new)
     }
 }
 
 extension Builder {
     
-    /// Builds a function and adds it to the module. Declares a body and entry block
+    /// Builds a function called `name` and adds it to the module
     func buildFunction(name: String, type: FunctionType, paramNames: [String], attrs: [FunctionAttributeExpr] = []) throws -> Function {
-        let f = try createFunctionPrototype(name: name, type: type, attrs: attrs)
+        let f = try buildFunctionPrototype(name: name, type: type, attrs: attrs)
         try f.defineBody(paramNames: paramNames)
         return f
     }
-    /// Builds a function and adds it to the module. Declares a body and entry block
+    
+    /// Builds a unique function, modifying the name if there is a collision
+    func buildUniqueFunction(name: String, type: FunctionType, paramNames: [String], attrs: [FunctionAttributeExpr] = []) throws -> Function {
+        
+        if let _ = module.function(named: name) {
+            // if we already have a function with this name, we try again with a different name
+            return try buildUniqueFunction(name: "\(name)2", type: type, paramNames: paramNames, attrs: attrs)
+        }
+        
+        return try buildFunction(name: name, type: type, paramNames: paramNames, attrs: attrs)
+    }
+    
+    /// Creates a function, building the prototype first if its not present
     func getOrBuildFunction(name: String, type: FunctionType, paramNames: [String], attrs: [FunctionAttributeExpr] = []) throws -> Function {
-        assert(paramNames.count == type.params.count)
+        precondition(paramNames.count == type.params.count)
         
         if let f = module.function(named: name) where !f.hasBody {
             try f.defineBody(paramNames: paramNames)
             return f
         }
         else {
-            return try buildFunction(name, type: type, paramNames: paramNames, attrs: attrs)
+            return try buildFunction(name: name, type: type, paramNames: paramNames, attrs: attrs)
         }
     }
 
     
     /// Builds an entry block for the function, passes the params of the function in
-    func buildFunctionEntryBlock(function: Function) throws -> BasicBlock {
+    func buildEntryBlock(function: Function) throws -> BasicBlock {
         let bb = BasicBlock(name: "entry", parameters: function.params, parentFunction: function)
-        try bb.addEntryApplication(function.params!)
-        function.body?.blocks.insert(bb, atIndex: 0)
+        try bb.addEntryApplication(args: function.params!)
+        function.body?.blocks.insert(bb, at: 0)
         insertPoint.block = bb
         return bb
     }
     
     /// Creates function prototype an adds to module
-    func createFunctionPrototype(name name: String, type: FunctionType, attrs: [FunctionAttributeExpr] = []) throws -> Function {
-        let type = type.cannonicalType(module).usingTypesIn(module) as! FunctionType
+    @discardableResult
+    func buildFunctionPrototype(name: String, type: FunctionType, attrs: [FunctionAttributeExpr] = []) throws -> Function {
+        let type = type.cannonicalType(module: module).importedType(inModule: module) as! FunctionType
         let function = Function(name: name, type: type, module: module)
-        function.applyAttributes(attrs)
-        module.insert(function)
+        function.applyAttributes(attrs: attrs)
+        module.insert(function: function)
         return function
     }
     
@@ -296,9 +321,10 @@ extension Builder {
 extension Module {
     
     /// Returns the function from the module. Adds prototype it if not already there
+    @discardableResult
     func getOrInsertFunction(named name: String, type: FunctionType, attrs: [FunctionAttributeExpr] = []) throws -> Function {
         if let f = function(named: name) { return f }
-        return try builder.createFunctionPrototype(name: name, type: type, attrs: attrs)
+        return try builder.buildFunctionPrototype(name: name, type: type, attrs: attrs)
     }
     
     /// Returns a stdlib function, updating the module fn list if needed
@@ -325,7 +351,7 @@ extension Module {
     
     /// Returns a function from the module by name
     func function(named name: String) -> Function? {
-        return functions.find {$0.name == name}
+        return functions.first {$0.name == name}
     }
 }
 

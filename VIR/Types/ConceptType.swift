@@ -21,8 +21,8 @@ final class ConceptType : NominalType {
 
 extension ConceptType {
     
-    func lowerType(module: Module) -> LLVMType {
-        return Runtime.existentialObjectType.lowerType(module)
+    func lowered(module: Module) -> LLVMType {
+        return Runtime.existentialObjectType.lowered(module: module)
     }
     
     var irName: String {
@@ -41,15 +41,15 @@ extension ConceptType {
         return requiredFunctions
     }
     
-    func usingTypesIn(module: Module) -> Type {
+    func importedType(inModule module: Module) -> Type {
         let fns = requiredFunctions.map { fn in
-            (name: fn.name, type: fn.type.usingTypesIn(module) as! FunctionType, mutating: fn.mutating) as StructMethod
+            (name: fn.name, type: fn.type.importedType(inModule: module) as! FunctionType, mutating: fn.mutating) as StructMethod
         }
         let mems = requiredProperties.map { memb in
-            (memb.name, memb.type.usingTypesIn(module), memb.isMutable) as StructMember
+            (memb.name, memb.type.importedType(inModule: module), memb.isMutable) as StructMember
         }
         let c = ConceptType(name: name, requiredFunctions: fns, requiredProperties: mems)
-        return module.getOrInsert(TypeAlias(name: name, targetType: c))
+        return module.getOrInsert(type: TypeAlias(name: name, targetType: c))
     }
 
 }

@@ -5,6 +5,8 @@ A functional, statically typed programming language using LLVM, inspired by Swif
 
 
 ##Installing
+Vist is is written in Swift 3.0 and compiles under the most recent [Swift 3.0 Preview 1 release, available here](https://swift.org/download/)
+
 To install, run
 
 ``` bash
@@ -19,7 +21,6 @@ To develop in Xcode, go to ‘Edit Scheme’ (⌘<) and under *Options* set the 
 
 
 ##The Language
-
 Vist’s syntax is lightweight; a hello world is as simple as
 
 ```swift

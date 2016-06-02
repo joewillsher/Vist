@@ -28,7 +28,7 @@ type Range {
     /// A generator -- yields each element in the range
     func generate:: -> Int = {
         var i = start
-        while (i < end) {
+        while (i <= end) {
             yield i
             i = i + 1
         }

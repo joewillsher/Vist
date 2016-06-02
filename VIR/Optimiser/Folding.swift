@@ -10,24 +10,25 @@
 
 struct ConstantFoldingPass : OptimisationPass {
     
+    typealias PassTarget = Function
     static var minOptLevel: OptLevel = .low
     
-    func runOn(function: Function) throws {
+    func run(on function: Function) throws {
         
         for inst in function.instructions {
             
-            guard case let builtin as BuiltinInstCall = inst else { continue }
-            
-            switch builtin.inst {
-            case .iadd:
-                
-                _ = builtin.args
-                
-                
-                
-            default:
-                continue
-            }
+//            guard case let builtin as BuiltinInstCall = inst else { continue }
+//            
+//            switch builtin.inst {
+//            case .iadd:
+//                
+//                _ = builtin.args
+//                
+//                
+//                
+//            default:
+//                continue
+//            }
             
         }
         

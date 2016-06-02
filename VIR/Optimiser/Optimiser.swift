@@ -20,7 +20,7 @@ extension CompileOptions {
 
 extension Module {
     
-    func runPasses(optLevel optLevel: OptLevel) throws {
+    func runPasses(optLevel: OptLevel) throws {
         
         for function in functions {
             try StdLibInlinePass.create(function, optLevel: optLevel)
@@ -37,25 +37,25 @@ extension Module {
 
 protocol OptimisationPass {
     /// What the pass is run on, normally function or module
-    associatedtype Element
+    associatedtype PassTarget
     /// The minimum opt level this pass will be run
     static var minOptLevel: OptLevel { get }
     init()
     /// Runs the pass
-    func runOn(element: Element) throws
+    func run(on: PassTarget) throws
 }
 
 extension OptimisationPass {
-    static func create(function: Element, optLevel: OptLevel) throws {
+    static func create(_ element: PassTarget, optLevel: OptLevel) throws {
         guard optLevel.rawValue >= minOptLevel.rawValue else { return }
-        return try Self().runOn(function)
+        return try Self().run(on: element)
     }
 }
 
 // utils
 
 extension Function {
-    var instructions: LazyCollection<[Inst]> { return blocks.map { $0.flatMap { $0.instructions }.lazy } ?? LazyCollection([]) }
+    var instructions: LazyCollection<[Inst]> { return blocks.map { $0.flatMap { $0.instructions }.lazy } ?? [Inst]().lazy }
 }
 
 struct Explosion<InstType : Inst> {
@@ -63,7 +63,7 @@ struct Explosion<InstType : Inst> {
     private(set) var explodedInstructions: [Inst] = []
     init(inst: InstType) { self.inst = inst }
     
-//    @discardibleResult
+    @discardableResult
     mutating func insert<I : Inst>(inst: I) -> I {
         explodedInstructions.append(inst)
         return inst
@@ -78,7 +78,7 @@ struct Explosion<InstType : Inst> {
         var pos = inst as Inst
         // add the insts to this scope
         for i in explodedInstructions {
-            try block.insert(i, after: pos)
+            try block.insert(inst: i, after: pos)
             pos = i // insert next after this inst
         }
         

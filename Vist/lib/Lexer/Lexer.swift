@@ -15,7 +15,7 @@ import class Foundation.NSScanner
 //  MARK:                                              Helpers
 //-------------------------------------------------------------------------------------------------------------------------
 
-enum LexerError: ErrorType {
+enum LexerError: ErrorProtocol {
     case outOfRange
     case noToken
 }
@@ -111,7 +111,7 @@ extension String {
         
         var escape = false
         
-        for (i, c) in escaping.characters.enumerate() {
+        for (i, c) in escaping.characters.enumerated() {
             
             if escape {
                 defer { escape = false }
@@ -142,7 +142,7 @@ extension String {
 
 private extension Token {
     
-    static func fromIdentifier(alpha: String) -> Token {
+    static func fromIdentifier(_ alpha: String) -> Token {
         // Text tokens which are language keywords
         switch alpha {
         case "let": return .`let`
@@ -167,11 +167,11 @@ private extension Token {
         }
     }
     
-    static func fromNumberLiteral(numeric: String) -> Token {
+    static func fromNumberLiteral(_ numeric: String) -> Token {
         
         guard !numeric.hasPrefix("0x") else {
             var int: UInt64 = 0
-            NSScanner(string: numeric).scanHexLongLong(&int)
+            NSScanner(string: numeric).scanHexInt64(&int)
             return .integerLiteral(Int(int))
         }
 //        guard !numeric.hasPrefix("0b") else {
@@ -182,8 +182,8 @@ private extension Token {
         
         //number literal
         let numberFormatter = NSNumberFormatter()
-        numberFormatter.numberStyle = NSNumberFormatterStyle.DecimalStyle
-        guard let number = numberFormatter.numberFromString(numeric.stringByReplacingOccurrencesOfString("_", withString: "")) else {
+        numberFormatter.numberStyle = NSNumberFormatterStyle.decimalStyle
+        guard let number = numberFormatter.number(from: numeric.replacingOccurrences(of: "_", with: "")) else {
             return .identifier(numeric)
         }
         
@@ -195,7 +195,7 @@ private extension Token {
         }
     }
     
-    static func fromSymbol(symbol: String) -> Token {
+    static func fromSymbol(_ symbol: String) -> Token {
         return (operators[symbol] ?? .infixOperator(symbol)) ?? .infixOperator(symbol)
     }
 }
@@ -211,7 +211,6 @@ extension String {
         var lexer = Lexer(code: self)
         return try lexer.getTokens()
     }
-    
 }
 
 /// Lexer object which manages token generation
@@ -244,7 +243,7 @@ private struct Lexer {
         return chars[index]
     }
     
-    func charPtr(n: Int) -> Character? {
+    func charPtr(_ n: Int) -> Character? {
         if index + n > 0 && index + n < chars.count { return chars[index+n] }
         return nil
     }
@@ -265,7 +264,7 @@ private struct Lexer {
         charsInContext = []
     }
     
-    private mutating func consumeChar(n: Int = 1) throws {
+    private mutating func consumeChar(_ n: Int = 1) throws {
         index += n
         try updatePos()
         guard index < chars.count else { throw LexerError.outOfRange }
@@ -285,7 +284,7 @@ private struct Lexer {
         tokens.append((tok, loc))
     }
     
-    private mutating func formToken(str: String) throws -> Token {
+    private mutating func formToken(_ str: String) throws -> Token {
         switch context {
         case .alpha?:           return Token.fromIdentifier(str)
         case .numeric?:         return Token.fromNumberLiteral(str)
@@ -392,7 +391,7 @@ extension Lexer {
 //        try lexWhilePredicate({$0 != "\""})
 //    }
 //    
-    mutating private func lexWhilePredicate(@noescape p: (Character) throws -> Bool) throws {
+    mutating private func lexWhilePredicate(p: @noescape (Character) throws -> Bool) throws {
         while try p(currentChar) {
             addChar()
             guard let _ = try? consumeChar() else { return }
@@ -429,7 +428,7 @@ extension Lexer {
                 if (multiLine && (n == "/" && charPtr(-1) == "*")) || (!multiLine && (n == "\n" || n == "\r")) {
                     try resetContext()
                     try consumeChar()
-                    if !multiLine { tokens.append((.newLine, SourceLoc(range: SourceRange.at(pos), string: "\n"))) } // if not multi line, add a new line token after it
+                    if !multiLine { tokens.append((.newLine, SourceLoc(range: SourceRange.at(pos: pos), string: "\n"))) } // if not multi line, add a new line token after it
                     continue
                 }
                 addChar()

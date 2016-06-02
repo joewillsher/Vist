@@ -13,7 +13,7 @@ protocol VIRElement {
     var vir: String { get }
 }
 
-enum VIRError : ErrorType {
+enum VIRError : ErrorProtocol {
     case noFunctionBody, hasBody, instNotInBB, bbNotInFn, cannotMoveBuilderHere, noParentBlock, noParamNamed(String), noUse, noType(StaticString), noModule
     case notGenerator, paramsNotTyped, wrongBlockParams
     case builtinIncorrectOperands(inst: BuiltinInst, recieved: Int)
@@ -24,20 +24,20 @@ enum VIRError : ErrorType {
 // @function
 // $basicblock
 
-extension CollectionType where Generator.Element : VIRElement {
+extension Collection where Iterator.Element : VIRElement {
     func virValueTuple() -> String {
         let a = map { $0.vir }        
-        return "(\(a.joinWithSeparator(", ")))"
+        return "(\(a.joined(separator: ", ")))"
     }
 }
-extension CollectionType where Generator.Element == Type {
+extension Collection where Iterator.Element == Type {
     func virTypeTuple() -> String {
         let a = map { $0.vir }
-        return "(\(a.joinWithSeparator(", ")))"
+        return "(\(a.joined(separator: ", ")))"
     }
     func virTypeStruct() -> String {
         let a = map { "\($0.vir)" }
-        return "{ \(a.joinWithSeparator(", ")) }"
+        return "{ \(a.joined(separator: ", ")) }"
     }
 }
 
@@ -54,18 +54,18 @@ extension Value {
 extension BasicBlock {
     var vir: String {
         let p = parameters?.count > 0 ? parameters?.map({ $0.vir }) : nil
-        let pString = p.map { "(\($0.joinWithSeparator(", ")))"} ?? ""
+        let pString = p.map { "(\($0.joined(separator: ", ")))"} ?? ""
         let i = instructions.map { $0.vir }
-        let iString = "\n  \(i.joinWithSeparator("\n  "))\n"
+        let iString = "\n  \(i.joined(separator: "\n  "))\n"
         let preds = predecessors.map { $0.name }
-        let predComment = predecessors.isEmpty ? "" : "\t\t\t// preds: \(preds.joinWithSeparator(", "))"
+        let predComment = predecessors.isEmpty ? "" : "\t\t\t// preds: \(preds.joined(separator: ", "))"
         return "$\(name)\(pString):\(predComment)\(iString)"
     }
 }
 extension Function {
     var vir: String {
         let b = blocks?.map { $0.vir }
-        let bString = b.map { " {\n\($0.joinWithSeparator("\n"))}" } ?? ""
+        let bString = b.map { " {\n\($0.joined(separator: "\n"))}" } ?? ""
         let conv = type.callingConvention.name
         return "func @\(name) : \(conv) \(type.vir)\(bString)"
     }
@@ -78,11 +78,11 @@ extension Module {
         let g = globalValues.map { "global \($0.vir)" }
         return
             "\n" +
-            t.joinWithSeparator("\n") +
+            t.joined(separator: "\n") +
             "\n\n" +
-            g.joinWithSeparator("\n") +
+            g.joined(separator: "\n") +
             "\n\n" +
-            f.joinWithSeparator("\n\n") +
+            f.joined(separator: "\n\n") +
             "\n"
     }
 }
@@ -111,7 +111,7 @@ extension NominalType {
 extension ConceptType {
     var vir: String {
         let a = requiredProperties.map { "\($0.type.vir)" }
-        return "existential < \(a.joinWithSeparator(", ")) >"
+        return "existential < \(a.joined(separator: ", ")) >"
     }
 }
 extension TupleType {
@@ -132,13 +132,14 @@ extension TypeAlias {
 extension Inst {
     var useComment: String {
         let u = uses.map { $0.user?.name ?? "nil" }
-        return uses.isEmpty ? "" : " \t// user\(uses.count == 1 ? "" : "s"): \(u.joinWithSeparator(", "))"
+        return uses.isEmpty ? "" : " \t// user\(uses.count == 1 ? "" : "s"): \(u.joined(separator: ", "))"
     }
 }
 
 
-func LLVMDumpTypeOf(val: LLVMValueRef) {
-    LLVMDumpType(LLVMTypeOf(val))
+/// Dump the LLVM type of a value
+func LLVMDumpTypeOf(_ val: LLVMValueRef?) {
+    LLVMDumpType(LLVMTypeOf(val!))
 }
 
 

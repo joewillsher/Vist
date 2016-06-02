@@ -15,9 +15,10 @@
 final class ReturnInst : InstBase {
     var value: Operand
     
-    private init(value: Operand, parentBlock: BasicBlock?) {
-        self.value = value
-        super.init(args: [value], irName: nil)
+    init(value: Value, parentBlock: BasicBlock?) {
+        let op = Operand(value)
+        self.value = op
+        super.init(args: [op], irName: nil)
         self.parentBlock = parentBlock
     }
     
@@ -34,10 +35,13 @@ final class ReturnInst : InstBase {
 
 extension Builder {
     
+    @discardableResult
     func buildReturnVoid() throws -> ReturnInst {
-        return try buildReturn(Operand(createVoidLiteral()))
+        return try buildReturn(value: createVoidLiteral())
     }
-    func buildReturn(value: Operand) throws -> ReturnInst {
-        return try _add(ReturnInst(value: value, parentBlock: insertPoint.block))
+    
+    @discardableResult
+    func buildReturn(value: Value) throws -> ReturnInst {
+        return try build(inst: ReturnInst(value: value, parentBlock: insertPoint.block))
     }
 }

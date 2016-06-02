@@ -22,9 +22,9 @@ final class AllocObjectInst : InstBase, LValue {
         super.init(args: [], irName: irName)
     }
     
-    var refType: Type { return storedType.refCountedBox(module).usingTypesIn(module) }
+    var refType: Type { return storedType.refCountedBox(module: module).importedType(inModule: module) }
     override var type: Type? { return memType.map { BuiltinType.pointer(to: $0) } }
-    var memType: Type? { return Runtime.refcountedObjectType.usingTypesIn(module) }
+    var memType: Type? { return Runtime.refcountedObjectType.importedType(inModule: module) }
     
     override var instVIR: String {
         return "\(name) = alloc_object \(refType.explicitName) \(useComment)"
@@ -115,22 +115,27 @@ final class DeallocObjectInst : InstBase {
 extension Builder {
     
     func buildAllocObject(type: StructType, irName: String? = nil) throws -> AllocObjectInst {
-        return try _add(AllocObjectInst(memType: type, irName: irName))
+        return try _add(instruction: AllocObjectInst(memType: type, irName: irName))
     }
+    @discardableResult
     func buildRetain(object: PtrOperand, irName: String? = nil) throws -> RetainInst {
-        return try _add(RetainInst(object: object, irName: irName))
+        return try _add(instruction: RetainInst(object: object, irName: irName))
     }
+    @discardableResult
     func buildRelease(object: PtrOperand, irName: String? = nil) throws -> ReleaseInst {
-        return try _add(ReleaseInst(object: object, unowned: false, irName: irName))
+        return try _add(instruction: ReleaseInst(object: object, unowned: false, irName: irName))
     }
+    @discardableResult
     func buildReleaseUnowned(object: PtrOperand, irName: String? = nil) throws -> ReleaseInst {
-        return try _add(ReleaseInst(object: object, unowned: true, irName: irName))
+        return try _add(instruction: ReleaseInst(object: object, unowned: true, irName: irName))
     }
+    @discardableResult
     func buildDeallocObject(object: PtrOperand, irName: String? = nil) throws -> DeallocObjectInst {
-        return try _add(DeallocObjectInst(object: object, unowned: false, irName: irName))
+        return try _add(instruction: DeallocObjectInst(object: object, unowned: false, irName: irName))
     }
+    @discardableResult
     func buildDeallocUnownedObject(object: PtrOperand, irName: String? = nil) throws -> DeallocObjectInst {
-        return try _add(DeallocObjectInst(object: object, unowned: true, irName: irName))
+        return try _add(instruction: DeallocObjectInst(object: object, unowned: true, irName: irName))
     }
 }
 

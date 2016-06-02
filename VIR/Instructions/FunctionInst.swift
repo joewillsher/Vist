@@ -71,11 +71,13 @@ final class FunctionApplyInst: InstBase, VIRFunctionCall {
 extension Builder {
     
     /// Calls a SIL function with given args
+    @discardableResult
     func buildFunctionCall(function: Function, args: [Operand], irName: String? = nil) throws -> FunctionCallInst {
-        return try _add(FunctionCallInst(function: function, returnType: function.type.returns, args: args, irName: irName))
+        return try _add(instruction: FunctionCallInst(function: function, returnType: function.type.returns, args: args, irName: irName))
     }
+    @discardableResult
     /// Applies the args to a function ref
     func buildFunctionApply(function: PtrOperand, returnType: Type, args: [Operand], irName: String? = nil) throws -> FunctionApplyInst {
-        return try _add(FunctionApplyInst(function: function, returnType: returnType, args: args, irName: irName))
+        return try _add(instruction: FunctionApplyInst(function: function, returnType: returnType, args: args, irName: irName))
     }
 }

@@ -36,7 +36,7 @@ extension StructExpr {
         // filter out non initilaised values, return nil if not all values have an initial value
         let names = properties.map { $0.name }
         
-        guard let types = properties.optionalMap({ $0.value._type }) else { throw semaError(.noMemberwiseInit, userVisible: false) }
+        guard let types = properties.optionalMap(transform: { $0.value._type }) else { throw semaError(.noMemberwiseInit, userVisible: false) }
         
         // FIXME: we dont emit memberwise inits for types which dont contain just nominal types
         guard !types.contains({type in (type is TupleType)}) else { return nil }
@@ -44,7 +44,7 @@ extension StructExpr {
         let typeNames = types.map { $0.explicitName }
         
         var initialisations: [ASTNode] = []
-        for (i, name) in names.enumerate() {
+        for (i, name) in names.enumerated() {
             let object = VariableExpr(name: name)
             let value = VariableExpr(name: String(i))
             let m = MutationExpr(object: object, value: value)

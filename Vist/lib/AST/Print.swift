@@ -46,11 +46,11 @@ struct _ASTPrintGroup {
         case 0:
             return (desc: "\(nodeName)", isTrivial: true)
         case _ where parentIsTrivial:
-            let s = els.map { el in "\(el.name)=\(el.valueString)" }.joinWithSeparator(" ")
+            let s = els.map { el in "\(el.name)=\(el.valueString)" }.joined(separator: " ")
             return (desc: "(\(nodeName): \(s))",
                     isTrivial: false)
         case _:
-            let s = els.map { el in "\((n+1)*tab)\(el.name)=\(el.valueString)" }.joinWithSeparator(",\n")
+            let s = els.map { el in "\((n+1)*tab)\(el.name)=\(el.valueString)" }.joined(separator: ",\n")
             return (desc: "(\(nodeName):\n\(s))",
                     isTrivial: false)
 
@@ -97,8 +97,8 @@ extension Array : ASTPrintable {
         
         let des = flatMap { $0 as? ASTPrintable }
             .map { $0._astDescription(indentLevel: n+1) }
-            .enumerate()
-            .map { (name: "#\($0.index)", valueString: $0.element.desc(indentLevel: n+1).desc) }
+            .enumerated()
+            .map { (name: "#\($0.offset)", valueString: $0.element.desc(indentLevel: n+1).desc) }
         
         return _ASTPrintGroup(nodeName: Array._astName, parentIsTrivial: count <= 1, els: des)
     }

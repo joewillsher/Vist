@@ -29,43 +29,45 @@
  */
 struct StdLibInlinePass : OptimisationPass {
     
+    typealias PassTarget = Function
+    
     // Aggressive opt should only be enabled in -Ohigh
     static var minOptLevel: OptLevel = .high
     
     // Run the opt -- called on each function by the pass manager
-    func runOn(function: Function) throws {
+    func run(on function: Function) throws {
         
         for case let call as FunctionCallInst in function.instructions {
             
             /// Explode the call to a simple arithmetic op
             /// - parameter returnType: Specify the return type, if none specified then the input type is used
             ///                         as the return type
-            func replaceWithBuiltin(inst: BuiltinInst, returnType: StructType? = nil) throws {
+            func replaceWithBuiltin(_ inst: BuiltinInst, returnType: StructType? = nil) throws {
                 try call.replace { explosion in
                     let extracted = try call.args.map { arg in
-                        try explosion.insert(StructExtractInst(object: arg, property: "value")) as Value
+                        try explosion.insert(inst: StructExtractInst(object: arg, property: "value")) as Value
                     }
-                    let virInst = try explosion.insert(BuiltinInstCall(inst: inst, args: extracted, irName: inst.rawValue))
+                    let virInst = try explosion.insert(inst: BuiltinInstCall(inst: inst, args: extracted, irName: inst.rawValue))
                     
                     let structType = try call.function.type.returns.getAsStructType()
-                    explosion.insert(StructInitInst(type: returnType ?? structType, values: virInst, irName: call.irName))
+                    explosion.insert(inst: StructInitInst(type: returnType ?? structType, values: virInst, irName: call.irName))
                 }
             }
             
             /// Explode the call to an overflow checking op
-            func replaceWithOverflowCheckedBuiltin(inst: BuiltinInst) throws {
+            func replaceWithOverflowCheckedBuiltin(_ inst: BuiltinInst) throws {
                 try call.replace { explosion in
                     let extracted = try call.args.map { arg in
-                        try explosion.insert(StructExtractInst(object: arg, property: "value")) as Value
+                        try explosion.insert(inst: StructExtractInst(object: arg, property: "value")) as Value
                     }
-                    let virInst = try explosion.insert(BuiltinInstCall(inst: inst, args: extracted, irName: inst.rawValue))
+                    let virInst = try explosion.insert(inst: BuiltinInstCall(inst: inst, args: extracted, irName: inst.rawValue))
                     
-                    let checkBit = try explosion.insert(TupleExtractInst(tuple: virInst, index: 1, irName: "overflow"))
-                    try explosion.insert(BuiltinInstCall(inst: .condfail, args: [checkBit]))
+                    let checkBit = try explosion.insert(inst: TupleExtractInst(tuple: virInst, index: 1, irName: "overflow"))
+                    try explosion.insert(inst: BuiltinInstCall(inst: .condfail, args: [checkBit]))
                     
                     let structType = try call.function.type.returns.getAsStructType()
-                    let val = try explosion.insert(TupleExtractInst(tuple: virInst, index: 0, irName: "value"))
-                    explosion.insert(StructInitInst(type: structType, values: val, irName: call.irName))
+                    let val = try explosion.insert(inst: TupleExtractInst(tuple: virInst, index: 0, irName: "value"))
+                    explosion.insert(inst: StructInitInst(type: structType, values: val, irName: call.irName))
                 }
             }
             

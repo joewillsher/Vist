@@ -14,7 +14,8 @@
  */
 protocol CaptureDelegate : class {
     var captured: [Accessor] { get }
-    func addCapture(variable: Accessor, scope: Scope, name: String) throws -> Accessor
+    /// The delegate action to capture a vairable
+    func capture(variable: Accessor, scope: Scope, name: String) throws -> Accessor
 }
 
 /// A thunk object -- wraps a function. Can be used for captruing scopes
@@ -34,14 +35,14 @@ extension ThunkFunction {
     }
     /// Form a new thunk object from `function`
     static func createFrom(function: Function) throws -> Self {
-        let type = function.type.cannonicalType(function.module)
+        let type = function.type.cannonicalType(module: function.module)
         var ty = FunctionType(params: type.params,
                               returns: type.returns,
                               callingConvention: type.callingConvention,
                               yieldType: type.yieldType)
         ty.isCanonicalType = true
-        let f = try function.module.builder.buildFunction(function.name,
-                                                          type: ty.cannonicalType(function.module),
+        let f = try function.module.builder.buildFunction(name: function.name,
+                                                          type: ty.cannonicalType(module: function.module),
                                                           paramNames: function.params?.map{$0.paramName} ?? [])
         return Self(_thunkOf: f)
     }
@@ -61,7 +62,7 @@ final class Closure : ThunkFunction, VIRElement {
     private(set) var capturedGlobals: [GlobalValue] = []
     
     var thunkName = ""
-    var name: String { return (thunkName+thunk.name).mangle(thunk.type)  }
+    var name: String { return (thunkName+thunk.name).mangle(type: thunk.type)  }
     
     init(_thunkOf thunk: Function) {
         self.thunk = thunk
@@ -72,7 +73,7 @@ final class Closure : ThunkFunction, VIRElement {
 
 extension Closure : CaptureDelegate {
     
-    func addCapture(variable: Accessor, scope: Scope, name: String) throws -> Accessor {
+    func capture(variable: Accessor, scope: Scope, name: String) throws -> Accessor {
         // add to self capture list
         // update function
         
@@ -84,26 +85,26 @@ extension Closure : CaptureDelegate {
         
         if
             case let variableAccessor as GetSetAccessor = variable,
-            case let decl as GetSetAccessor = try scope.parent?.variableNamed(name),
+            case let decl as GetSetAccessor = try scope.parent?.variable(named: name),
             let type = variableAccessor.mem.type {
            
             g = GlobalValue(name: "\(name).globlstorage", type: type, module: module)
-            try module.builder.build(StoreInst(address: g, value: decl.aggregateReference()))
+            try module.builder.build(inst: StoreInst(address: g, value: decl.aggregateReference()))
             accessor = GlobalIndirectRefAccessor(memory: g, module: function.module)
         }
         else if
             let type = variable.storedType,
-            let decl = try scope.parent?.variableNamed(name) {
+            let decl = try scope.parent?.variable(named: name) {
             
             g = GlobalValue(name: "\(name).globl", type: type, module: module)
-            try module.builder.build(StoreInst(address: g, value: decl.aggregateGetter()))
+            try module.builder.build(inst: StoreInst(address: g, value: decl.aggregateGetValue()))
             accessor = GlobalRefAccessor(memory: g, module: function.module)
         }
         else {
             fatalError()
         }
         
-        scope.insert(accessor, name: name)
+        scope.insert(variable: accessor, name: name)
         captured.append(variable)
         capturedGlobals.append(g)
         module.globalValues.insert(g)

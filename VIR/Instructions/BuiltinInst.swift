@@ -42,7 +42,7 @@ final class BuiltinInstCall : InstBase {
     
     override var instVIR: String {
         let a = args.map{$0.valueName}
-        let w = a.joinWithSeparator(", ")
+        let w = a.joined(separator: ", ")
         switch inst {
         case .condfail:
             return "cond_fail \(w)"
@@ -98,7 +98,7 @@ enum BuiltinInst : String {
             return 0
         }
     }
-    func returnType(params params: [Type]) -> Type? {
+    func returnType(params: [Type]) -> Type? {
         switch self {
         case .iadd, .isub, .imul:
             return TupleType(members: [params.first!, Builtin.boolType]) // overflowing arithmetic

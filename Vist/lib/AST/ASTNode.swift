@@ -31,9 +31,9 @@ final class AST : ASTNode, ScopeNode {
 
 
 extension AST {
-    func sema(globalScope globalScope: SemaScope) throws {
+    func sema(globalScope: SemaScope) throws {
         try walkChildren { node in
-            try node.typeForNode(globalScope)
+            try node.typeForNode(scope: globalScope)
         }
     }
 }
@@ -64,7 +64,7 @@ extension Typed {
     /// This property gets from and sets to the specifically typed `type` property
     /// 
     /// It should only be used by API, use the `type` property instead
-    @available(*, unavailable, message="Use the `type` property")
+    @available(*, unavailable, message: "Use the `type` property")
     var _type: Type? {
         get {
             return type as Type?

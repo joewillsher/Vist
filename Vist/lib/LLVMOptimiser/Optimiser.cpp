@@ -65,6 +65,6 @@ void performLLVMOptimisations(Module *module, int optLevel, bool isStdLib) {
 }
 
 /// Called from swift code
-void performLLVMOptimisations(LLVMModuleRef mod, int optLevel, bool isStdLib) {
+void performLLVMOptimisations(LLVMModuleRef __nonnull mod, int optLevel, bool isStdLib) {
     performLLVMOptimisations(unwrap(mod), optLevel, isStdLib);
 }

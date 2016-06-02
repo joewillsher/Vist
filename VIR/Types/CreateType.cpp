@@ -37,11 +37,11 @@ Type *createNamedType(Type *type, StringRef name) {
     return StructType::create(getGlobalContext(), elements, name);
 }
 
-LLVMTypeRef getNamedType(const char *name, LLVMModuleRef module) {
+_Nullable LLVMTypeRef getNamedType(const char * _Nonnull name, LLVMModuleRef _Nonnull module) {
     return wrap(getNamedType(StringRef(name), unwrap(module)));
 }
 
-LLVMTypeRef createNamedType(LLVMTypeRef type, const char *name) {
+LLVMTypeRef createNamedType(LLVMTypeRef _Nonnull type, const char * _Nonnull name) {
     return wrap(createNamedType(unwrap(type), name));
 }
 

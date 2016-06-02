@@ -117,7 +117,15 @@ struct StdLib {
         ("Range",   FunctionType(params: [intType, intType],            returns: rangeType)),
         ("Range",   FunctionType(params: [rangeType],                   returns: rangeType)),
         ("String",  FunctionType(params: [BuiltinType.opaquePointer, BuiltinType.int(size: 64), BuiltinType.bool], returns: stringType)),
-        ]
+        
+        // shim fns
+        ("vist_cshim_print", FunctionType(params: [BuiltinType.int(size: 64)], returns: voidType)),
+        ("vist_cshim_print", FunctionType(params: [BuiltinType.float(size: 64)], returns: voidType)),
+        ("vist_cshim_print", FunctionType(params: [BuiltinType.bool], returns: voidType)),
+        ("vist_cshim_print", FunctionType(params: [BuiltinType.int(size: 32)], returns: voidType)),
+        ("vist_cshim_putchar", FunctionType(params: [BuiltinType.int(size: 8)], returns: voidType)),
+        ("vist_cshim_write", FunctionType(params: [BuiltinType.opaquePointer, BuiltinType.int(size: 64)], returns: voidType)),
+    ]
     
     /// Container initialised with functions, provides subscript to look up functions by name and type
     ///
@@ -133,7 +141,7 @@ struct StdLib {
     // MARK: Exposed functions
     
     /// Returns the struct type of a named StdLib object
-    static func type(name id: String) -> StructType? {
+    static func type(name id: String) -> NominalType? {
         return functionContainer[type: id]
     }
     
@@ -147,7 +155,7 @@ struct StdLib {
     /// - parameter name: Unmangled name
     /// - parameter args: Applied arg types
     /// - returns: An optional tuple of `(mangledName, type)`
-    static func function(name name: String, args: [Type]) -> (mangledName: String, type: FunctionType)? {
+    static func function(name: String, args: [Type]) -> (mangledName: String, type: FunctionType)? {
         return functionContainer[fn: name, types: args]
     }
 }

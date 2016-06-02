@@ -11,28 +11,37 @@
 
 #include "LLVM.h"
 
+//#ifndef __cplusplus
+//NS_ASSUME_NONNULL_BEGIN
+//#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
     
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wnullability-completeness"
+    
     /// Intrinsic with a buffer of overload types
-    LLVMValueRef getOverloadedIntrinsic(const char *name,
-                                        LLVMModuleRef mod,
-                                        LLVMTypeRef *ty,
-                                        int overloadTypes);
+    _Nullable LLVMValueRef getOverloadedIntrinsic(const char * _Nonnull,
+                                                  LLVMModuleRef _Nonnull,
+                                                  LLVMTypeRef * _Nonnull,
+                                                  int);
+    #pragma clang diagnostic pop
     
     /// Intrinsic with a single overload type
-    LLVMValueRef getSinglyOverloadedIntrinsic(const char *name,
-                                              LLVMModuleRef mod,
-                                              LLVMTypeRef ty);
+    _Nullable LLVMValueRef getSinglyOverloadedIntrinsic(const char * _Nonnull name,
+                                                        LLVMModuleRef _Nonnull mod,
+                                                        LLVMTypeRef _Nonnull ty);
     
     /// Non overloaded intrinsic
-    LLVMValueRef getRawIntrinsic(const char *name,
-                                 LLVMModuleRef mod);
+    _Nullable LLVMValueRef getRawIntrinsic(const char * _Nonnull name,
+                                           LLVMModuleRef _Nonnull mod);
     
     
 #ifdef __cplusplus // only for c++
 }
+
 #include "llvm/IR/Value.h"
 #include "llvm/ADT/StringRef.h"
 #include <vector>
@@ -42,5 +51,9 @@ Function *getIntrinsic(StringRef name,
                        Module *mod,
                        std::vector<Type *> types);
 #endif
+
+//#ifndef __cplusplus
+//NS_ASSUME_NONNULL_END
+//#endif
 
 #endif /* Intrinsic_h */

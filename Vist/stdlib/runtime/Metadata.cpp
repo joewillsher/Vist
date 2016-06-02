@@ -33,10 +33,13 @@ vist_getWitnessMethod(ExistentialObject *existential,
     // table is  @_gFooconfCwitnessTablewitnessArr
     WitnessTable *table = conf->witnessTable;
     ValueWitness *witness = table->witnesses[methodIndex];
-    // FIXME: Swift lowers this funny so we have to
-    //        load the void* from where it thinks the
-    //        witness is
     return *(void**)witness->witness;
+    
+    /// EXAMPLE DATA SECTION:
+//    @_gYconfXwitnessTablewitnessArr0 = constant { i8* } { i8* bitcast (void (%Y*)* @foo_mY to i8*) }
+//    @_gYconfXwitnessTablewitnessArr03 = constant { i8* }* @_gYconfXwitnessTablewitnessArr0
+//    @_gYconfXwitnessTablewitnessArr = constant [1 x { i8* }**] [{ i8* }** @_gYconfXwitnessTablewitnessArr03]
+//    @_gYconfXwitnessTable = constant { { i8* }*, i32 } { { i8* }* bitcast ([1 x { i8* }**]* @_gYconfXwitnessTablewitnessArr to { i8* }*), i32 1 }
 }
 
 extern "C"
@@ -47,10 +50,18 @@ vist_getPropertyOffset(ExistentialObject *existential,
     // conf is @__gFooconfC
     ConceptConformance *conf = (ConceptConformance *)(existential->conformances) + conformanceIndex;
     
-    // get offset table, (cast as ** and load, so we have orig pointer type
-    // but we have loaded from it)
-    auto offs = *(int32_t **)conf->propWitnessOffsets;
-    return offs[propertyIndex];
+    // the table, get as i32***
+    auto offs = (int32_t ***)conf->propWitnessOffsets; // _gYconfXpropWitnessOffsetArr
+    // move to the offset, then load twice
+    auto i = offs[propertyIndex];                      // when i = 1, this is _gYconfXpropWitnessOffsetArr12
+    return **i;                                        // load _gYconfXpropWitnessOffsetArr12 then from _gYconfXpropWitnessOffsetArr1
+    
+    /// EXAMPLE DATA SECTION:
+//    @_gYconfXpropWitnessOffsetArr0 = constant i32 8
+//    @_gYconfXpropWitnessOffsetArr01 = constant i32* @_gYconfXpropWitnessOffsetArr0
+//    @_gYconfXpropWitnessOffsetArr1 = constant i32 0
+//    @_gYconfXpropWitnessOffsetArr12 = constant i32* @_gYconfXpropWitnessOffsetArr1
+//    @_gYconfXpropWitnessOffsetArr = constant [2 x i32**] [i32** @_gYconfXpropWitnessOffsetArr01, i32** @_gYconfXpropWitnessOffsetArr12]
 }
 
 

@@ -53,7 +53,7 @@ class InstBase : Inst {
 extension Inst {
     /// Removes the function from its parent
     func removeFromParent() throws {
-        try parentBlock?.remove(self)
+        try parentBlock?.remove(inst: self)
     }
     
     /// Removes the function from its parent and

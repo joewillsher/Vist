@@ -1,4 +1,4 @@
-    //
+//
 //  TypeAlias.swift
 //  Vist
 //
@@ -32,31 +32,32 @@ extension TypeAlias : NominalType {
 
 extension TypeAlias {
 
-    func lowerType(module: Module) -> LLVMType {
+    func lowered(module: Module) -> LLVMType {
         
         if targetType is ConceptType {
-            return TypeAlias(name: "", targetType: Runtime.existentialObjectType).lowerType(module)
+            return TypeAlias(name: "", targetType: Runtime.existentialObjectType).lowered(module: module)
         }
         
         if module.loweredModule == nil {
             // backup if a module isnt lowered
-            return targetType.lowerType(module)
+            return targetType.lowered(module: module)
         }
         
         // when lowering the alias, we need to get the ref in the LLVM module...
         let found = try? getNamedType(targetType.irName, module.loweredModule!.getModule())
-        if let found = found where found != nil {
-            return LLVMType(ref: found)
+        // found: TypeRef??
+        if let f1 = found, let f2 = f1 {
+            return LLVMType(ref: f2)
         }
         
         // ...and if it isnt already defined we lower the target and add it
-        let type = targetType.lowerType(module)
-        let namedType = createNamedType(type.type, targetType.irName)
+        let type = targetType.lowered(module: module)
+        let namedType = createNamedType(type.type!, targetType.irName)
         
         return LLVMType(ref: namedType)
     }
     
-    func usingTypesIn(module: Module) -> Type {
+    func importedType(inModule: Module) -> Type {
         return self
     }
     

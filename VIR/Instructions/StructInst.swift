@@ -13,7 +13,7 @@
  */
 final class StructInitInst : InstBase {
     
-    override var type: Type? { return module.getOrInsert(structType) }
+    override var type: Type? { return module.getOrInsert(type: structType) }
     var structType: StructType
     
     init(type: StructType, values: Value..., irName: String? = nil) {
@@ -53,7 +53,7 @@ final class StructExtractInst : InstBase {
         
         self.object = Operand(object)
         self.propertyName = property
-        self.propertyType = try structType.propertyType(property)
+        self.propertyType = try structType.propertyType(name: property)
         self.structType = structType
         super.init(args: [self.object], irName: irName)
     }
@@ -79,7 +79,7 @@ final class StructElementPtrInst : InstBase, LValue {
         
         self.object = PtrOperand(object)
         self.propertyName = property
-        self.propertyType = try structType.propertyType(property)
+        self.propertyType = try structType.propertyType(name: property)
         self.structType = structType
         super.init(args: [self.object], irName: irName)
     }

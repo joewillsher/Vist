@@ -17,12 +17,12 @@ protocol ScopeNode {
 
 extension ScopeNode {
     
-    func walkChildren<Ret>(inCollector collector: ErrorCollector? = nil, @noescape fn: (ASTNode) throws -> Ret) throws {
-        try childNodes.walkChildren(collector, fn)
+    func walkChildren<Ret>(inCollector collector: ErrorCollector? = nil, fn: @noescape (ASTNode) throws -> Ret) throws {
+        _ = try childNodes.walkChildren(collector: collector, fn)
     }
 }
 
-extension CollectionType where Generator.Element: ASTNode {
+extension Collection where Iterator.Element : ASTNode {
     
     /// Maps the input function over the children, which are types conforming to ASTNode
     ///
@@ -35,7 +35,8 @@ extension CollectionType where Generator.Element: ASTNode {
     /// }
     /// ```
     ///
-    func walkChildren<Ret>(collector: ErrorCollector? = nil, @noescape _ fn: (Generator.Element) throws -> Ret) throws -> [Ret] {
+    @discardableResult
+    func walkChildren<Ret>(collector: ErrorCollector? = nil, _ fn: @noescape (Iterator.Element) throws -> Ret) throws -> [Ret] {
 
         collector?.caught = false
         let errorCollector = collector ?? ErrorCollector()
@@ -57,7 +58,7 @@ extension CollectionType where Generator.Element: ASTNode {
     }
 }
 
-extension CollectionType where Generator.Element == ASTNode {
+extension Collection where Iterator.Element == ASTNode {
     
     /// Maps the input function over the ASTNode children
     ///
@@ -69,8 +70,8 @@ extension CollectionType where Generator.Element == ASTNode {
     ///     try exp.nodeCodeGen(stackFrame)
     /// }
     /// ```
-    ///
-    func walkChildren<Ret>(collector: ErrorCollector? = nil, @noescape _ fn: (ASTNode) throws -> Ret) throws -> [Ret] {
+    @discardableResult
+    func walkChildren<Ret>(collector: ErrorCollector? = nil, _ fn: @noescape (ASTNode) throws -> Ret) throws -> [Ret] {
         
         collector?.caught = false
         let errorCollector = collector ?? ErrorCollector()
@@ -93,7 +94,7 @@ extension CollectionType where Generator.Element == ASTNode {
     }
 }
 
-extension CollectionType where Generator.Element: ASTNode {
+extension Collection where Iterator.Element : ASTNode {
     
     /// flatMaps `$0 as? T` over the collection
     func mapAs<T>(_: T.Type) -> [T] {
@@ -120,7 +121,8 @@ final class ErrorCollector {
     }
     
     /// Runs a code block and catches any errors
-    func run<T>(@noescape block: () throws -> T) throws -> T? {
+    @discardableResult
+    func run<T>(block: @noescape () throws -> T) throws -> T? {
         caught = false
 
         do {

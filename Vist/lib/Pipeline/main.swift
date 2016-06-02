@@ -9,7 +9,7 @@ import class Foundation.NSTask
 
 do {
     let flags = Array(Process.arguments.dropFirst())
-    try compileWithOptions(flags, inDirectory: NSTask().currentDirectoryPath)
+    try compile(withFlags: flags, inDirectory: NSTask().currentDirectoryPath)
 }
 catch {
     print("", error, terminator: "\n\n")

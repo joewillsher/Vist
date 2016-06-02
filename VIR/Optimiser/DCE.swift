@@ -10,11 +10,12 @@
 /// Dead code elimination pass
 struct DCEPass : OptimisationPass {
     
+    typealias PassTarget = Function
     static var minOptLevel: OptLevel = .low
     
-    func runOn(function: Function) throws {
+    func run(on function: Function) throws {
         
-        for inst in function.instructions.reverse()
+        for inst in function.instructions.reversed()
             where inst.uses.isEmpty && !inst.instHasSideEffects {
                 try inst.eraseFromParent()
         }
@@ -24,9 +25,10 @@ struct DCEPass : OptimisationPass {
 
 struct DeadFunctionPass : OptimisationPass {
     
+    typealias PassTarget = Module
     static var minOptLevel: OptLevel = .low
     
-    func runOn(module: Module) throws {
+    func run(on module: Module) throws {
         for _ in module.functions {
             // remove function if no users & private
             // need to implement function users if i want to do this
@@ -35,18 +37,13 @@ struct DeadFunctionPass : OptimisationPass {
 }
 
 struct CFGSimplificationPass : OptimisationPass {
+    
+    typealias PassTarget = Function
     static var minOptLevel: OptLevel = .high
     
-    func runOn(function: Function) throws {
+    func run(on function: Function) throws {
         
-        for _ in function.blocks ?? [] {
-            
-//            guard bb.predecessors.count == 1 && bb.successors.count != 0 else { continue }
-//            guard let application = bb.applications.first else { continue }
-//            guard let args = application.args, pred = application.predecessor else { continue }
-//            
-//            
-            
+        for _ in function.blocks ?? [] {            
         }
         
     }

@@ -8,7 +8,7 @@
 
 
 /// A vist error -- implements ErrorType and CustomStringConvertible
-typealias VistError = protocol<ErrorType, CustomStringConvertible>
+typealias VistError = protocol<ErrorProtocol, CustomStringConvertible>
 
 /// Error function -- always rethrows the error passed to it
 ///
@@ -17,7 +17,7 @@ typealias VistError = protocol<ErrorType, CustomStringConvertible>
 /// In release builds it crashes if the error is an internal logic failure
 ///
 /// If a source location is defined, the result is wrapped in a `PositionedError` struct
-func error(err: VistError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = #file, line: UInt = #line, function: String = #function) -> VistError {
+func error(_ err: VistError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = #file, line: UInt = #line, function: String = #function) -> VistError {
     
     var error: VistError
     #if TEST
@@ -40,14 +40,14 @@ func error(err: VistError, loc: SourceRange? = nil, userVisible: Bool = true, fi
     }
 }
 
-func semaError(err: SemaError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = #file, line: UInt = #line, function: String = #function) -> VistError {
+func semaError(_ err: SemaError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = #file, line: UInt = #line, function: String = #function) -> VistError {
     return error(err, loc: loc, userVisible: userVisible, file: file, line: line, function: function)
 }
-func parseError(err: ParseError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = #file, line: UInt = #line, function: String = #function) -> VistError {
+func parseError(_ err: ParseError, loc: SourceRange? = nil, userVisible: Bool = true, file: StaticString = #file, line: UInt = #line, function: String = #function) -> VistError {
     return error(err, loc: loc, userVisible: userVisible, file: file, line: line, function: function)
 }
 /// IRGen error default `userVisible` is false
-func irGenError(err: IRError, loc: SourceRange? = nil, userVisible: Bool = false, file: StaticString = #file, line: UInt = #line, function: String = #function) -> VistError {
+func irGenError(_ err: IRError, loc: SourceRange? = nil, userVisible: Bool = false, file: StaticString = #file, line: UInt = #line, function: String = #function) -> VistError {
     return error(err, loc: loc, userVisible: userVisible, file: file, line: line, function: function)
 }
 
@@ -89,15 +89,15 @@ struct ErrorCollection: VistError {
         return "\(errors.count) errors found:\n"
             + errors.map { err in
             if case let coll as ErrorCollection = err {
-                return coll.errors.map { " -\($0)" }.joinWithSeparator("\n")
+                return coll.errors.map { " -\($0)" }.joined(separator: "\n")
             }
             else { return " -\(err)" }
-            }.joinWithSeparator("\n")
+            }.joined(separator: "\n")
     }
 }
 
-extension CollectionType where
-    Generator.Element == VistError,
+extension Collection where
+    Iterator.Element == VistError,
     Index == Int
 {
     func throwIfErrors() throws {

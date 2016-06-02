@@ -56,26 +56,27 @@ final class BasicBlock : VIRElement {
 
 extension BasicBlock {
     
-    
     func insert(inst: Inst, after: Inst) throws {
-        instructions.insert(inst, atIndex: try indexOf(after).successor())
+        let i = try index(of: after)
+        instructions.insert(inst, at: instructions.index(after: i))
         inst.parentBlock = self
     }
-    func append(inst: Inst) {
+    func append(_ inst: Inst) {
         instructions.append(inst)
         inst.parentBlock = self
     }
     
     /// Get param named `name` or throw
-    func paramNamed(name: String) throws -> Param {
-        guard let param = parameters?.find({ param in param.paramName == name }) else { throw VIRError.noParamNamed(name) }
+    func param(named name: String) throws -> Param {
+        guard let param = parameters?.first(where: { param in param.paramName == name }) else { throw VIRError.noParamNamed(name) }
         return param
     }
+    
     /// Get an array of the arguments that were applied for `param`
-    func appliedArgs(for param: Param) throws -> [BlockOperand] {
+    func blockArgs(for param: Param) throws -> [BlockOperand] {
         
-        guard let paramIndex = parameters?.indexOf({ blockParam in blockParam === param}),
-            let args = applications.optionalMap({ application in application.args?[paramIndex] as? BlockOperand })
+        guard let paramIndex = parameters?.index(where: { blockParam in blockParam === param}),
+            let args = applications.optionalMap(transform: { application in application.args?[paramIndex] as? BlockOperand })
             else { throw VIRError.noParamNamed(param.name) }
         
         return args
@@ -83,7 +84,7 @@ extension BasicBlock {
     
     /// Adds the entry application to a block -- used by Function builder
     func addEntryApplication(args: [Param]) throws {
-        applications.insert(.entry(args), atIndex: 0)
+        applications.insert(.entry(params: args), at: 0)
     }
     
     /// Applies the parameters to this block, `from` sepecifies the
@@ -98,25 +99,25 @@ extension BasicBlock {
         }
         else { guard args == nil else { throw VIRError.paramsNotTyped }}
         
-        applications.append(.body(block, params: args, breakInst: breakInst))
+        applications.append(.body(predecessor: block, params: args, breakInst: breakInst))
 //        block.successors.append(self)
     }
     
     /// Helper, the index of `inst` in self or throw
-    private func indexOf(inst: Inst) throws -> Int {
-        guard let i = instructions.indexOf({ $0 === inst }) else { throw VIRError.instNotInBB }
+    private func index(of inst: Inst) throws -> Int {
+        guard let i = instructions.index(where: { $0 === inst }) else { throw VIRError.instNotInBB }
         return i
     }
     
     // instructions
     func set(inst: Inst, newValue: Inst) throws {
-        instructions[try indexOf(inst)] = newValue
+        instructions[try index(of: inst)] = newValue
     }
     
     /// Remove `inst` from self
     /// - precondition: `inst` is a member of `self`
     func remove(inst: Inst) throws {
-        try instructions.removeAtIndex(indexOf(inst))
+        try instructions.remove(at: index(of: inst))
         inst.parentBlock = nil
     }
     
@@ -151,7 +152,7 @@ extension Builder {
     
     /// Appends this block to the function. Thus does not modify the insert
     /// point, make any breaks to this block, or apply any params to it
-    func appendBasicBlock(name name: String, parameters: [Param]? = nil) throws -> BasicBlock {
+    func appendBasicBlock(name: String, parameters: [Param]? = nil) throws -> BasicBlock {
         guard let function = insertPoint.function, let b = function.blocks where !b.isEmpty else { throw VIRError.noFunctionBody }
         
         let bb = BasicBlock(name: name, parameters: parameters, parentFunction: function)
@@ -166,11 +167,17 @@ extension Inst {
     
     /// The successor to `self`
     func successor() throws -> Inst? {
-        return try parentBlock.map { parent in parent.instructions[try parent.indexOf(self).successor()] }
+        return try parentBlock.map { parent in
+            let x = try parent.index(of: self)
+            return parent.instructions[parent.instructions.index(after: x)]
+        }
     }
     /// The predecessor of `self`
     func predecessor() throws -> Inst? {
-        return try parentBlock.map { parent in parent.instructions[try parent.indexOf(self).predecessor()] }
+        return try parentBlock.map { parent in
+            let x = try parent.index(of: self)
+            return parent.instructions[parent.instructions.index(before: x)]
+        }
     }
     
 }

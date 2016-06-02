@@ -31,12 +31,12 @@ class Operand : Value {
     deinit {
         value?.removeUse(self)
     }
-
-    @available(*, unavailable, message="`Operand` initialisers should not take `Operand`s")
+    
+    @available(*, unavailable, message: "`Operand` initialisers should not take `Operand`s")
     init(_ operand: Operand) { fatalError("`Operand` initialisers should not take `Operand`s") }
     
     private(set) var loweredValue: LLVMValue? = nil
-    func setLoweredValue(val: LLVMValue) { loweredValue = val }
+    func setLoweredValue(_ val: LLVMValue) { loweredValue = val }
     
     var type: Type? { return value?.type }
 }
@@ -61,8 +61,8 @@ extension Operand {
     }
     var operandName: String { return "<operand of \(name) by \(user?.name)>" }
     
-    func dumpIR() { if let loweredValue = loweredValue { LLVMDumpValue(loweredValue._value) } else { print("\(irName) <NULL>") } }
-    func dumpIRType() { if let loweredValue = loweredValue { LLVMDumpTypeOf(loweredValue._value) } else { print("\(irName).type <NULL>") } }
+    func dumpIR() { if let loweredValue = loweredValue { LLVMDumpValue(loweredValue._value!) } else { print("\(irName) <NULL>") } }
+    func dumpIRType() { if let loweredValue = loweredValue { LLVMDumpTypeOf(loweredValue._value!) } else { print("\(irName).type <NULL>") } }
     
     /// Removes this `Operand` as a user of `value`
     func removeSelfAsUser() {
@@ -103,13 +103,13 @@ final class BlockOperand : Operand {
     override var type: Type? { return param.type }
     
     /// Sets the phi's value for the incoming block `self.predBlock`
-    override func setLoweredValue(val: LLVMValue) {
+    override func setLoweredValue(_ val: LLVMValue) {
         guard val._value != nil else {
             loweredValue = nil
             return
         }
-        var incoming = [val._value], incomingBlocks = [predBlock.loweredBlock!.block]
-        LLVMAddIncoming(param.phi!._value, &incoming, &incomingBlocks, 1)
+        var incoming = [val._value], incomingBlocks = [predBlock.loweredBlock?.block]
+        LLVMAddIncoming(param.phi!._value!, &incoming, &incomingBlocks, 1)
     }
     
     /// access to the underlying phi switch. Normal `setLoweredValue` 

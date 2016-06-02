@@ -23,7 +23,7 @@ final class GenericType : NominalType {
     
     static func fromConstraint(inScope scope: SemaScope) -> (constraint: ConstrainedType) throws -> GenericType {
         return { ty in
-            if let c = ty.constraints.optionalMap({ scope[concept: $0] }) {
+            if let c = ty.constraints.optionalMap(transform: { scope.concept(named: $0) }) {
                 return GenericType(name: ty.name, concepts: c, parentName: ty.parentName)
             }
             else {
@@ -41,15 +41,15 @@ final class GenericType : NominalType {
     }
     
     // TODO: Reimplement this
-    func lowerType(module: Module) -> LLVMType {
+    func lowered(module: Module) -> LLVMType {
         return StructType.withTypes([
             BuiltinType.array(el: BuiltinType.int(size: 32), size: concepts.flatMap({$0.requiredProperties}).count),
             BuiltinType.opaquePointer
-            ]).lowerType(module)
+            ]).lowered(module: module)
     }
     
-    func usingTypesIn(module: Module) -> Type {
-        return GenericType(name: name, concepts: concepts.map { $0.usingTypesIn(module) as! ConceptType }, parentName: parentName)
+    func importedType(inModule module: Module) -> Type {
+        return GenericType(name: name, concepts: concepts.map { $0.importedType(inModule: module) as! ConceptType }, parentName: parentName)
     }
     
     var irName: String {

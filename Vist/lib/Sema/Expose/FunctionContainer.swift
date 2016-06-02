@@ -28,20 +28,20 @@ struct FunctionContainer {
         
         for (n, _ty) in functions {
             var ty = _ty
-            let mangled = mangleFunctionNames ? n.mangle(ty.params) : n
+            let mangled = mangleFunctionNames ? n.mangle(type: ty) : n
             ty.metadata += metadata
             functionTypes[mangled] = ty
         }
         
         let typesWithMethods = types.map { t -> StructType in
             let type = t
-            type.methods = type.methods.map { m in (m.name,  m.type.withParent(t, mutating: m.mutating), m.mutating) }
+            type.methods = type.methods.map { m in (m.name, m.type.asMethod(withSelf: t, mutating: m.mutating), m.mutating) }
             for m in type.methods { // add methods to function table
                 var type = m.type
                 if let y = type.yieldType {
                     type.setGeneratorVariantType(yielding: y)
                 }
-                functionTypes[m.name.mangle(m.type)] = type
+                functionTypes[m.name.mangle(type: m.type)] = type
             }
             return type
         }
@@ -56,20 +56,18 @@ struct FunctionContainer {
     /// - parameter types: Applied arg types
     /// - returns: An optional tuple of `(mangledName, type)`
     subscript(fn fn: String, types types: [Type]) -> (mangledName: String, type: FunctionType)? {
-        guard let t = functions[raw: fn, paramTypes: types] else { return nil }
-        return (fn.mangle(t.params), t)
+        return functions.function(havingUnmangledName: fn, paramTypes: types)
     }
     /// unmangled
     subscript(mangledName mangledName: String) -> (mangledName: String, type: FunctionType)? {
         return functions[mangledName].map { (mangledName, $0) }
     }
     
-    
     /// Returns type from type name
-    subscript(type type: String) -> StructType? {
-        return types
-            .indexOf { $0.name == type }
-            .map { types[$0] }
+    subscript(type type: String) -> NominalType? {
+        if let s = types.first(where: { $0.name == type }) { return s }
+        if let c = concepts.first(where: { $0.name == type }) { return c }
+        return nil
     }
     
 }

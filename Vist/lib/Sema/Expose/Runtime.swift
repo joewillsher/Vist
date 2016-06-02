@@ -31,13 +31,6 @@ struct Runtime {
     
     
     private static let functions: [(String, FunctionType)] = [
-        // runtime fns
-        ("vist_cshim_print", FunctionType(params: [intType], returns: voidType)),
-        ("vist_cshim_print", FunctionType(params: [doubleType], returns: voidType)),
-        ("vist_cshim_print", FunctionType(params: [boolType], returns: voidType)),
-        ("vist_cshim_print", FunctionType(params: [int32Type], returns: voidType)),
-        ("vist_cshim_putchar", FunctionType(params: [BuiltinType.int(size: 8)], returns: voidType)),
-        ("vist_cshim_write", FunctionType(params: [opaquePointerType, intType], returns: voidType)),
     ]
     private static let unmangled: [(String, FunctionType)] = [
         ("vist_allocObject", FunctionType(params: [int32Type], returns: refcountedObjectPointerType)),
@@ -62,7 +55,7 @@ struct Runtime {
     /// - parameter name: Unmangled name
     /// - parameter args: Applied arg types
     /// - returns: An optional tuple of `(mangledName, type)`
-    static func function(name name: String, argTypes args: [Type]) -> (mangledName: String, type: FunctionType)? {
+    static func function(name: String, argTypes args: [Type]) -> (mangledName: String, type: FunctionType)? {
         return functionContainer[fn: name, types: args]
     }
     

@@ -14,16 +14,17 @@ final class TupleType : Type {
         self.members = members
     }
     
-    func lowerType(module: Module) -> LLVMType {
-        var arr = members.map { $0.lowerType(module).type }
+    func lowered(module: Module) -> LLVMType {
+        var arr = members.map { $0.lowered(module: module).type }
         return LLVMType(ref: LLVMStructType(&arr, UInt32(members.count), false))
     }
     
-    func usingTypesIn(module: Module) -> Type {
-        return TupleType(members: members.map { $0.usingTypesIn(module) })
+    func importedType(inModule module: Module) -> Type {
+        return TupleType(members: members.map { $0.importedType(inModule: module) })
     }
     
-    func propertyType(index: Int) throws -> Type {
+    /// Returns the type of the tuple element at `index`
+    func elementType(at index: Int) throws -> Type {
         guard index < members.count else { throw semaError(.noTupleElement(index: index, size: members.count)) }
         return members[index]
     }
@@ -31,7 +32,7 @@ final class TupleType : Type {
     var mangledName: String {
         return members
             .map { $0.mangledName }
-            .joinWithSeparator("") + "_"
+            .joined(separator: "") + "_"
     }
     
     func isInModule() -> Bool {

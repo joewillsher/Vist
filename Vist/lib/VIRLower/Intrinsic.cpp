@@ -39,7 +39,7 @@ static int search(const void *p1,
 }
 
 bool GetLLVMIntrinsicIDFromString(const char* str,
-                                 Intrinsic::ID& id) {
+                                  Intrinsic::ID& id) {
     void *ptr = bsearch(str, (const void *) intrinsicNames,
                         sizeof(intrinsicNames)/sizeof(const char *),
                         sizeof(const char *), search);
@@ -72,10 +72,10 @@ Function *getIntrinsic(StringRef name,
 
 
 /// Returns ptr to intrinsic function
-LLVMValueRef getOverloadedIntrinsic(const char *name,
-                                    LLVMModuleRef mod,
-                                    LLVMTypeRef *ty,
-                                    int numArgs) {
+__nullable LLVMValueRef getOverloadedIntrinsic(const char * __nonnull name,
+                                               LLVMModuleRef __nonnull mod,
+                                               LLVMTypeRef * __nonnull ty,
+                                               int numArgs) {
     auto t = ty;
     std::vector<Type *> arg_types;
     if (ty != nullptr)
@@ -86,15 +86,15 @@ LLVMValueRef getOverloadedIntrinsic(const char *name,
     
     return wrap(getIntrinsic(StringRef(name), unwrap(mod), arg_types));
 }
-LLVMValueRef getSinglyOverloadedIntrinsic(const char *name,
-                                          LLVMModuleRef mod,
-                                          LLVMTypeRef ty) {
+__nullable LLVMValueRef getSinglyOverloadedIntrinsic(const char * __nonnull name,
+                                                     LLVMModuleRef __nonnull mod,
+                                                     LLVMTypeRef __nonnull ty) {
     std::vector<Type *> arg_types;
     arg_types.push_back(unwrap(ty));
     return wrap(getIntrinsic(StringRef(name), unwrap(mod), arg_types));
 };
-LLVMValueRef getRawIntrinsic(const char *name,
-                             LLVMModuleRef mod) {
+__nullable LLVMValueRef getRawIntrinsic(const char * __nonnull name,
+                                        LLVMModuleRef __nonnull mod) {
     std::vector<Type *> arg_types;
     return wrap(getIntrinsic(StringRef(name), unwrap(mod), arg_types));
 };

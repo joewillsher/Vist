@@ -8,46 +8,46 @@
 
 
 extension TupleCreateInst : VIRLower {
-    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
+    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         guard let t = type else { throw irGenError(.notStructType) }
-        return try IGF.builder.buildAggregate(type: t.lowerType(module),
+        return try IGF.builder.buildAggregate(type: t.lowered(module: module),
                                               elements: args.map { $0.loweredValue! },
                                               irName: irName)
     }
 }
 
 extension StructInitInst : VIRLower {
-    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
+    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         guard case let t as TypeAlias = type else { throw irGenError(.notStructType) }
-        return try IGF.builder.buildAggregate(type: t.lowerType(module),
+        return try IGF.builder.buildAggregate(type: t.lowered(module: module),
                                               elements: args.map { $0.loweredValue! },
                                               irName: irName)
     }
 }
 
 extension TupleExtractInst : VIRLower {
-    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
-        return try IGF.builder.buildExtractValue(tuple.loweredValue!, index: elementIndex, name: irName)
+    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+        return try IGF.builder.buildExtractValue(from: tuple.loweredValue!, index: elementIndex, name: irName)
     }
 }
 
 extension TupleElementPtrInst : VIRLower {
-    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
-        return try IGF.builder.buildStructGEP(tuple.loweredValue!, index: elementIndex, name: irName)
+    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+        return try IGF.builder.buildStructGEP(ofAggregate: tuple.loweredValue!, index: elementIndex, name: irName)
     }
 }
 
 extension StructExtractInst : VIRLower {
-    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
-        let index = try structType.indexOfMemberNamed(propertyName)
-        return try IGF.builder.buildExtractValue(object.loweredValue!, index: index, name: irName)
+    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+        let index = try structType.index(ofMemberNamed: propertyName)
+        return try IGF.builder.buildExtractValue(from: object.loweredValue!, index: index, name: irName)
     }
 }
 
 extension StructElementPtrInst : VIRLower {
-    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
-        let index = try structType.indexOfMemberNamed(propertyName)
-        return try IGF.builder.buildStructGEP(object.loweredValue!, index: index, name: irName)
+    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+        let index = try structType.index(ofMemberNamed: propertyName)
+        return try IGF.builder.buildStructGEP(ofAggregate: object.loweredValue!, index: index, name: irName)
     }
 }
 

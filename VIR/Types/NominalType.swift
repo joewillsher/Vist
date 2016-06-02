@@ -28,39 +28,39 @@ protocol NominalType : class, Type {
 
 extension NominalType {
     
-    func indexOfMemberNamed(name: String) throws -> Int {
-        guard let i = members.indexOf({ $0.name == name }) else {
-            throw semaError(.noPropertyNamed(type: self.name, property: name))
+    func index(ofMemberNamed memberName: String) throws -> Int {
+        guard let i = members.index(where: { $0.name == memberName }) else {
+            throw semaError(.noPropertyNamed(type: self.name, property: memberName))
         }
         return i
     }
     
-    func indexOf(methodNamed name: String, argTypes: [Type]) throws -> Int {
-        guard let i = methods.indexOf({
-            $0.name == name && $0.type.params.elementsEqual(argTypes, isEquivalent: ==)
+    func index(ofMethodNamed methodName: String, argTypes: [Type]) throws -> Int {
+        guard let i = methods.index(where: {
+            $0.name == methodName && $0.type.params.elementsEqual(argTypes, isEquivalent: ==)
         }) else {
-            throw semaError(.noPropertyNamed(type: self.name, property: name))
+            throw semaError(.noMethodNamed(type: self.name, property: methodName))
         }
         return i
     }
-    func ptrToMethod(named name: String, type: FunctionType, inout IGF: IRGenFunction) -> LLVMFunction {
-        return IGF.module.function(named: name.mangle(type))!
+    func ptrToMethod(named name: String, type: FunctionType, IGF: inout IRGenFunction) -> LLVMFunction {
+        return IGF.module.function(named: name.mangle(type: type))!
     }
     
     func ptrToMethodNamed(name: String, type: FunctionType, module: Module) throws -> LLVMFunction {
-        guard let function = module.function(named: name.mangle(type)) else { fatalError() }
+        guard let function = module.function(named: name.mangle(type: type)) else { fatalError() }
         return function.loweredFunction!
     }
     
     func propertyType(name: String) throws -> Type {
-        return members[try indexOfMemberNamed(name)].type
+        return try members[index(ofMemberNamed: name)].type
     }
     func propertyIsMutable(name: String) throws -> Bool {
-        return members[try indexOfMemberNamed(name)].isMutable
+        return try members[index(ofMemberNamed: name)].isMutable
     }
     func methodType(methodNamed name: String, argTypes types: [Type]) throws -> FunctionType {
-        let t =  methods[try indexOf(methodNamed: name, argTypes: types)]
-        return t.type.withParent(self, mutating: t.mutating)
+        let t =  methods[try index(ofMethodNamed: name, argTypes: types)]
+        return t.type.asMethod(withSelf: self, mutating: t.mutating)
     }
     
     /// Returns whether a type models a concept
@@ -75,7 +75,7 @@ extension NominalType {
     }
     
     func generatorFunction() -> FunctionType? {
-        return methods.find { method in method.name == "generate" && method.type.isGeneratorFunction }?.type
+        return methods.first { method in method.name == "generate" && method.type.isGeneratorFunction }?.type
     }
 }
 

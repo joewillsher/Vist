@@ -7,6 +7,7 @@
 //
 
 
+/// Like DefinedType but represents a function type
 final class DefinedFunctionType {
     let paramType: DefinedType
     let returnType: DefinedType
@@ -20,6 +21,8 @@ final class DefinedFunctionType {
 }
 
 
+/// The pre-type checked AST type. Exposes methods to calculate
+/// simple VIR types (used in Sema) for the nodes of the AST
 enum DefinedType {
     case void
     case type(String)
@@ -41,8 +44,8 @@ enum DefinedType {
     private func tyArr(scope: SemaScope) throws -> [Type] {
         switch self {
         case .void:             return []
-        case .type, .function:  return [try typeInScope(scope)]
-        case .tuple(let ts):    return try ts.flatMap { try $0.typeInScope(scope) }
+        case .type, .function:  return [try typeInScope(scope: scope)]
+        case .tuple(let ts):    return try ts.flatMap { try $0.typeInScope(scope: scope) }
         }
     }
     
@@ -66,22 +69,21 @@ enum DefinedType {
             if let builtin = BuiltinType(typeName) {
                 return builtin
             }
-            else if let i = scope[type: typeName] {
+            else if let i = scope.type(named: typeName) {
                 return i
-            }
-                // prioritise an in scope definition
-            else if let stdlib = StdLib.type(name: typeName) {
-                return stdlib
             }
             else {
                 throw semaError(.noTypeNamed(typeName))
             }
             
         case let .tuple(elements):
-            return elements.isEmpty ? BuiltinType.void : TupleType(members: try elements.map({try $0.typeInScope(scope)}))
+            return elements.isEmpty ?
+                BuiltinType.void :
+                TupleType(members: try elements.map({try $0.typeInScope(scope: scope)}))
             
         case let .function(functionType):
-            return FunctionType(params: try functionType.paramType.tyArr(scope), returns: try functionType.returnType.typeInScope(scope))
+            return FunctionType(params: try functionType.paramType.tyArr(scope: scope),
+                                returns: try functionType.returnType.typeInScope(scope: scope))
         }
     }
 }
@@ -91,11 +93,11 @@ enum DefinedType {
 extension DefinedFunctionType {
     
     func params(scope: SemaScope) throws -> [Type] {
-        return try paramType.tyArr(scope)
+        return try paramType.tyArr(scope: scope)
     }
     
     func returnType(scope: SemaScope) throws -> Type {
-        return try returnType.typeInScope(scope)
+        return try returnType.typeInScope(scope: scope)
     }
 }
 

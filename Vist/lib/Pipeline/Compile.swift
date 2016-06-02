@@ -12,7 +12,7 @@ import class Foundation.NSFileManager
 import Foundation.NSString
 
 
-struct CompileOptions : OptionSetType {
+struct CompileOptions : OptionSet {
     
     let rawValue: Int
     init(rawValue: Int) { self.rawValue = rawValue }
@@ -66,47 +66,42 @@ func compileDocuments(
     ) throws {
     
     /// Custom print that writes into the out pipe if its specifed
-    func print(string: String...) {
-        if let o = out { o.fileHandleForWriting.writeData((string.joinWithSeparator("\n")+"\n").dataUsingEncoding(NSUTF8StringEncoding)!) }
-        else { Swift.print(string) }
+    func print(_ string: String...) {
+        let s = string.joined(separator: " ")
+        if let o = out { o.fileHandleForWriting.write((s+"\n").data(using: NSUTF8StringEncoding)!) }
+        else { Swift.print(s) }
     }
     
     var head: AST? = nil
     var all: [AST] = [], names: [String] = []
     
-    let globalScope = SemaScope.globalScope(options.contains(.parseStdLib))
+    let globalScope = SemaScope.globalScope(isStdLib: options.contains(.parseStdLib))
     
-    for (index, name) in fileNames.enumerate() {
+    for (index, name) in fileNames.enumerated() {
         
         var fileName = name
         if options.contains(.runPreprocessor) {
-            runPreprocessor(&fileName, cwd: currentDirectory)
+            runPreprocessor(file: &fileName, cwd: currentDirectory)
         }
         
         let path = "\(currentDirectory)/\(fileName)"
         let doc = try String(contentsOfFile: path, encoding: NSUTF8StringEncoding)
-        if options.contains(.verbose) {
-            print("----------------------------SOURCE-----------------------------", doc, "\n\n-----------------------------TOKS------------------------------\n")
-        }
         
         // Lex code
         let tokens = try doc.getTokens()
         
         if options.contains(.verbose) {
-            tokens
-                .map {"\($0.0): \t\t\t\t\t\($0.1.range.start)--\($0.1.range.end)"}
-                .forEach { print($0) }
-            print("\n\n------------------------------AST-------------------------------\n")
+            print("------------------------------AST-------------------------------")
         }
         
         // parse tokens & generate AST
-        let ast = try Parser.parseWith(tokens, isStdLib: options.contains(.parseStdLib))
+        let ast = try Parser.parse(withTokens: tokens, isStdLib: options.contains(.parseStdLib))
         
         if options.contains(.dumpAST) { ast.dump(); return }
         if options.contains(.verbose) { ast.dump() }
         
         if let h = head {
-            h.exprs.appendContentsOf(ast.exprs)
+            h.exprs.append(contentsOf: ast.exprs)
         }
         
         if index == 0 {
@@ -140,19 +135,19 @@ func compileDocuments(
     }
     
     let file = explicitName ?? names.first!
-        .stringByReplacingOccurrencesOfString(".vist", withString: "")
-        .stringByReplacingOccurrencesOfString(".previst", withString: "")
+        .replacingOccurrences(of: ".vist", with: "")
+        .replacingOccurrences(of: ".previst", with: "")
     let virModule = Module()
     
     try ast.emitVIR(module: virModule, isLibrary: options.contains(.produceLib))
-    try virModule.vir.writeToFile("\(currentDirectory)/\(file)_.vir", atomically: true, encoding: NSUTF8StringEncoding)
+    try virModule.vir.write(toFile: "\(currentDirectory)/\(file)_.vir", atomically: true, encoding: NSUTF8StringEncoding)
     
     if options.contains(.verbose) {
         print(virModule.vir, "\n----------------------------VIR OPT-------------------------------\n")
     }
     
     try virModule.runPasses(optLevel: options.optLevel())
-    try virModule.vir.writeToFile("\(currentDirectory)/\(file).vir", atomically: true, encoding: NSUTF8StringEncoding)
+    try virModule.vir.write(toFile: "\(currentDirectory)/\(file).vir", atomically: true, encoding: NSUTF8StringEncoding)
     
     if options.contains(.dumpVIR) { print(virModule.vir); return }
     if options.contains(.verbose) { print(virModule.vir) }
@@ -165,7 +160,7 @@ func compileDocuments(
     
     var llvmModule = LLVMModule(name: file)
     if options.contains(.linkWithRuntime) {
-        importFile("shims.c", directory: stdlibDirectory, into: &llvmModule)
+        llvmModule.import(fromFile: "shims.c", directory: stdlibDirectory)
     }
     llvmModule.dataLayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
     llvmModule.target = "x86_64-apple-macosx10.11.0"
@@ -174,11 +169,11 @@ func compileDocuments(
         // remove files
         if !options.contains(.preserveTempFiles) {
             for file in ["\(file).ll", "\(file)_.ll", "\(file).s", "\(file).vir", "\(file)_.vir"] {
-                _ = try? NSFileManager.defaultManager().removeItemAtPath("\(currentDirectory)/\(file)")
+                _ = try? NSFileManager.default().removeItem(atPath: "\(currentDirectory)/\(file)")
             }
             if options.contains(.runPreprocessor) {
                 for file in names {
-                    _ = try? NSFileManager.defaultManager().removeItemAtPath("\(currentDirectory)/\(file)")
+                    _ = try? NSFileManager.default().removeItem(atPath: "\(currentDirectory)/\(file)")
                 }
             }
         }
@@ -188,11 +183,11 @@ func compileDocuments(
     if options.contains(.verbose) {
         print("\n-----------------------------IR LOWER------------------------------\n")
     }
-    try virModule.virLower(llvmModule, isStdLib: options.contains(.parseStdLib))
+    try virModule.virLower(module: llvmModule, isStdLib: options.contains(.parseStdLib))
     
     // print and write to file
     let unoptimisedIR = llvmModule.description()
-    try unoptimisedIR.writeToFile("\(currentDirectory)/\(file)_.ll", atomically: true, encoding: NSUTF8StringEncoding)
+    try unoptimisedIR.write(toFile: "\(currentDirectory)/\(file)_.ll", atomically: true, encoding: NSUTF8StringEncoding)
     
     if options.contains(.verbose) {
         print(unoptimisedIR, "\n\n----------------------------OPTIM----------------------------\n")
@@ -205,7 +200,7 @@ func compileDocuments(
                                  options.contains(.compileStdLib))
     
     let optimisedIR = llvmModule.description()
-    try optimisedIR.writeToFile("\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
+    try optimisedIR.write(toFile: "\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
     
     if options.contains(.dumpLLVMIR) {
         print(optimisedIR); return
@@ -221,7 +216,7 @@ func compileDocuments(
         
         // .ll -> .dylib
         // to link against program
-        NSTask.execute(.clang,
+        NSTask.execute(exec: .clang,
                        files: [libVistRuntimePath, "\(file).ll"],
                        outputName: libVistPath,
                        cwd: currentDirectory,
@@ -230,7 +225,7 @@ func compileDocuments(
     else {
         // .ll -> .s
         // for printing/saving
-        NSTask.execute(.clang,
+        NSTask.execute(exec: .clang,
                        files: ["\(file).ll"],
                        cwd: currentDirectory,
                        args: "-S")
@@ -243,14 +238,14 @@ func compileDocuments(
         
         let inputFiles = options.contains(.doNotLinkStdLib) ? ["\(file).ll"] : [libVistRuntimePath, libVistPath, "\(file).ll"]
         // .ll -> exec
-        NSTask.execute(.clang,
+        NSTask.execute(exec: .clang,
                        files: inputFiles,
                        outputName: file,
                        cwd: currentDirectory)
         
         if options.contains(.buildAndRun) {
             if options.contains(.verbose) { print("\n\n-----------------------------RUN-----------------------------\n") }
-            runExecutable(file, inDirectory: currentDirectory, out: out)
+            runExecutable(file: file, inDirectory: currentDirectory, out: out)
         }
         
     }
@@ -276,10 +271,10 @@ func runExecutable(
     runTask.launch()
     runTask.waitUntilExit()
     
-    if case .UncaughtSignal = runTask.terminationReason {
+    if case .uncaughtSignal = runTask.terminationReason {
         let message = "Program terminated with exit code: \(runTask.terminationStatus)"
         if let o = out {
-            o.fileHandleForWriting.writeData(message.dataUsingEncoding(NSUTF8StringEncoding)!)
+            o.fileHandleForWriting.write(message.data(using: NSUTF8StringEncoding)!)
         }
         else {
             print(message)
@@ -295,11 +290,20 @@ func buildRuntime(debugRuntime debug: Bool) {
         
     // .cpp -> .dylib
     // to link against program
-    NSTask.execute(.clang,
+    NSTask.execute(exec: .sysclang,
                    files: ["runtime.cpp", "Metadata.cpp", "RefcountedObject.cpp"],
                    outputName: libVistRuntimePath,
                    cwd: runtimeDirectory,
                    args: "-dynamiclib", "-std=c++14", "-lstdc++", "-includeruntime.hh", debug ? "-DREFCOUNT_DEBUG" : "")
+}
+
+func runPreprocessor(file: inout String, cwd: String) {
+    
+    let preprocessor = "\(SOURCE_ROOT)/Vist/lib/Pipeline/Preprocessor.sh"
+    
+    NSTask.execute(execName: preprocessor, files: [file], cwd: cwd, args: [])
+    
+    file = "\(file).previst"
 }
 
 

@@ -8,19 +8,22 @@
 
 import class Foundation.NSString
 
-func expectedTestCaseOutput(path path: String) -> String? {
+
+func expectedTestCaseOutput(path: String) -> String? {
     guard let contents = try? String(contentsOfFile: path) else { return nil }
     guard let toks = try? contents.getTokens() else { return nil }
     
     let comments = toks
         .flatMap { tok -> String? in if case .comment(let c) = tok.0 { return c } else { return nil } }
         .filter { comment in comment.hasPrefix(" test: ") }
-        .flatMap { comment in comment.stringByReplacingOccurrencesOfString(" test: ", withString: "").stringByReplacingOccurrencesOfString(" ", withString: "\n") }
+        .flatMap { comment in comment
+            .replacingOccurrences(of: " test: ", with: "")
+            .replacingOccurrences(of: " ", with: "\n") }
     
-    return comments.joinWithSeparator("\n") + "\n"
+    return comments.joined(separator: "\n") + "\n"
 }
 
-func getCommentsForFile(path path: String) throws -> [String] {
+func getCommentsForFile(path: String) throws -> [String] {
     let contents = try String(contentsOfFile: path)
     let toks = try contents.getTokens()
     
@@ -51,7 +54,7 @@ func getCommentsForFile(path path: String) throws -> [String] {
 //            configurationFlags.appendContentsOf(tokens)
 //        case "PRINT:":
 //            output += "\n"
-//            output += tokens.joinWithSeparator(" ")
+//            output += tokens.joined(separator: " ")
 //            
 //        default:
 //            return

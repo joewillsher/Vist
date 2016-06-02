@@ -21,7 +21,7 @@ final class ArrayInst : InstBase {
     
     override var instVIR: String {
         let v = values.map { value in value.valueName }
-        return "\(name) = array [\(v.joinWithSeparator(", "))] \(useComment)"
+        return "\(name) = array [\(v.joined(separator: ", "))] \(useComment)"
     }
     
 }
@@ -29,8 +29,8 @@ final class ArrayInst : InstBase {
 extension Builder {
     
     func buildArray(values: [Operand], memType: Type, irName: String? = nil) throws -> ArrayInst {
-        guard values.indexOf({value in value.type != memType}) == nil else { fatalError("Not homogenous array") }
-        return try _add(ArrayInst(values: values, memType: memType, irName: irName))
+        guard values.index(where: {value in value.type != memType}) == nil else { fatalError("Not homogenous array") }
+        return try _add(instruction: ArrayInst(values: values, memType: memType, irName: irName))
     }
 }
 

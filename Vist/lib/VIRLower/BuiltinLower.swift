@@ -9,7 +9,7 @@
 
 extension BuiltinInstCall: VIRLower {
     
-    func virLower(inout IGF: IRGenFunction) throws -> LLVMValue {
+    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         
         // applied args
         // self provides `lhs` and `rhs` which are lazily computed args[0] and args[1]
@@ -19,37 +19,37 @@ extension BuiltinInstCall: VIRLower {
         
         switch inst {
         // overflowing arithmetic
-        case .iadd: intrinsic = try IGF.module.getIntrinsic("llvm.sadd.with.overflow", overload: lhs.type)
-        case .imul: intrinsic = try IGF.module.getIntrinsic("llvm.smul.with.overflow", overload: lhs.type)
-        case .isub: intrinsic = try IGF.module.getIntrinsic("llvm.ssub.with.overflow", overload: lhs.type)
+        case .iadd: intrinsic = try IGF.module.getIntrinsic(named: "llvm.sadd.with.overflow", overload: lhs.type)
+        case .imul: intrinsic = try IGF.module.getIntrinsic(named: "llvm.smul.with.overflow", overload: lhs.type)
+        case .isub: intrinsic = try IGF.module.getIntrinsic(named: "llvm.ssub.with.overflow", overload: lhs.type)
             
         // other intrinsics
-        case .expect: intrinsic = try IGF.module.getIntrinsic("llvm.expect", overload: lhs.type)
-        case .trap:   intrinsic = try IGF.module.getIntrinsic("llvm.trap")
+        case .expect: intrinsic = try IGF.module.getIntrinsic(named: "llvm.expect", overload: lhs.type)
+        case .trap:   intrinsic = try IGF.module.getIntrinsic(named: "llvm.trap")
         case .memcpy:
             // overload types -- we want `@llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1)`
             // construct intrinsic
-            intrinsic = try IGF.module.getIntrinsic("llvm.memcpy",
+            intrinsic = try IGF.module.getIntrinsic(named: "llvm.memcpy",
                                                     overload: lhs.type, rhs.type, .intType(size: 64))
             // add extra memcpy args
-            args.append(.constInt(1, size: 32)) // i32 align -- align 1
-            args.append(.constBool(false)) // i1 isVolatile -- false
+            args.append(.constInt(value: 1, size: 32)) // i32 align -- align 1
+            args.append(.constBool(value: false)) // i1 isVolatile -- false
                 
         case .allocstack: return try IGF.builder.buildArrayAlloca(size: lhs, elementType: .intType(size: 8), name: irName)
         case .allocheap:  return try IGF.builder.buildArrayMalloc(size: lhs, elementType: .intType(size: 8), name: irName)
-        case .heapfree: return try IGF.builder.buildFree(lhs, name: irName)
+        case .heapfree: return try IGF.builder.buildFree(ptr: lhs, name: irName)
             
-        case .advancepointer: return try IGF.builder.buildGEP(lhs, index: rhs, name: irName)
+        case .advancepointer: return try IGF.builder.buildGEP(ofAggregate: lhs, index: rhs, name: irName)
         case .opaqueload:     return try IGF.builder.buildLoad(from: lhs, name: irName)
         case .opaquestore:    return try IGF.builder.buildStore(value: rhs, in: lhs)
             
         case .condfail:
             guard let fn = parentFunction, current = parentBlock else { fatalError() }
-            let success = try fn.loweredFunction!.appendBasicBlock(named: "\(current.name).cont"), fail = try fn.buildCondFailBlock(&IGF)
+            let success = try fn.loweredFunction!.appendBasicBlock(named: "\(current.name).cont"), fail = try fn.buildCondFailBlock(IGF: &IGF)
             
             success.move(after: current.loweredBlock!)
             try module.loweredBuilder.buildCondBr(if: lhs, to: fail, elseTo: success)
-            module.loweredBuilder.positionAtEnd(success)
+            module.loweredBuilder.position(atEndOfBlock: success)
             return .nullptr
             
         // handle calls which arent intrinsics, but builtin
@@ -81,13 +81,13 @@ extension BuiltinInstCall: VIRLower {
         case .flte: return try IGF.builder.buildFloatCompare(.lessThanEqual, lhs: lhs, rhs: rhs, name: irName)
         case .fgte: return try IGF.builder.buildFloatCompare(.lessThanEqual, lhs: lhs, rhs: rhs, name: irName)
             
-        case .trunc8: return try IGF.builder.buildTrunc(lhs, size: 8, name: irName)
-        case .trunc16: return try IGF.builder.buildTrunc(lhs, size: 16, name: irName)
-        case .trunc32: return try IGF.builder.buildTrunc(lhs, size: 32, name: irName)
+        case .trunc8: return try IGF.builder.buildTrunc(val: lhs, size: 8, name: irName)
+        case .trunc16: return try IGF.builder.buildTrunc(val: lhs, size: 16, name: irName)
+        case .trunc32: return try IGF.builder.buildTrunc(val: lhs, size: 32, name: irName)
         }
         
         // call the intrinsic
-        return try IGF.builder.buildCall(intrinsic, args: args, name: irName)
+        return try IGF.builder.buildCall(function: intrinsic, args: args, name: irName)
     }
 }
 
@@ -95,21 +95,21 @@ extension BuiltinInstCall: VIRLower {
 extension Function {
     
     /// Constructs a function's faluire landing pad, or returns the one defined
-    func buildCondFailBlock(inout IGF: IRGenFunction) throws -> LLVMBasicBlock {
+    func buildCondFailBlock(IGF: inout IRGenFunction) throws -> LLVMBasicBlock {
         // if its there already, we can use it
         if let condFailBlock = _condFailBlock { return condFailBlock }
         
         // make fail block & save current pos
         let ins = IGF.builder.getInsertBlock()
         let block = try loweredFunction!.appendBasicBlock(named: "\(name.demangleName()).trap")
-        IGF.builder.positionAtEnd(block)
+        IGF.builder.position(atEndOfBlock: block)
         
         // Build trap and unreachable
-        try BuiltinInstCall.trapInst().virLower(&IGF)
+        _ = try BuiltinInstCall.trapInst().virLower(IGF: &IGF)
         try IGF.builder.buildUnreachable()
         
         // move back; save and return the fail block
-        IGF.builder.positionAtEnd(ins!)
+        IGF.builder.position(atEndOfBlock: ins!)
         _condFailBlock = block
         return block
     }

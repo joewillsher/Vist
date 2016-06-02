@@ -31,7 +31,7 @@ final class Module : VIRElement {
 extension Module {
     
     /// Insert function to the module
-    func insert(f: Function) {
+    func insert(function f: Function) {
         functions.insert(f)
     }
     
@@ -46,24 +46,25 @@ extension Module {
     }
     
     /// Returns the module's definition of `type`
+    @discardableResult
     func getOrInsert(type: Type) -> TypeAlias {
-        if case let t as NominalType = type, let found = typeList.find({$0.targetType.name == t.name}) {
+        if case let t as NominalType = type, let found = typeList.first(where: {$0.targetType.name == t.name}) {
             return found
         }
-        else if case let alias as TypeAlias = type, let found = typeList.find({$0.targetType.name == alias.name}) {
+        else if case let alias as TypeAlias = type, let found = typeList.first(where: {$0.targetType.name == alias.name}) {
             return found
         }
-        let t = type.usingTypesIn(module) as! TypeAlias
-        insert(t)
+        let t = type.importedType(inModule: module) as! TypeAlias
+        insert(alias: t)
         return t
     }
     
-    func typeNamed(name: String) -> TypeAlias? {
-        return typeList.find {$0.name == name}
+    func type(named name: String) -> TypeAlias? {
+        return typeList.first {$0.name == name}
     }
     
-    func globalNamed(name: String) -> GlobalValue? {
-        return globalValues.find { $0.globalName == name }
+    func global(named name: String) -> GlobalValue? {
+        return globalValues.first { $0.globalName == name }
     }
     
     func dumpIR() { loweredModule?.dump() }

@@ -18,7 +18,7 @@ extension FuncDecl : DeclTypeProvider {
         declScope.genericParameters = genericParameters
         
         let mutableSelf = attrs.contains(.mutating)
-        let paramTypes = try fnType.params(declScope), returnType = try fnType.returnType(declScope)
+        let paramTypes = try fnType.params(scope: declScope), returnType = try fnType.returnType(scope: declScope)
         // if its a generator function there is no return
         let ret = isGeneratorFunction ? BuiltinType.void : returnType
         
@@ -35,9 +35,9 @@ extension FuncDecl : DeclTypeProvider {
             ty.setGeneratorVariantType(yielding: returnType)
         }
         
-        mangledName = name.mangle(ty)
+        mangledName = name.mangle(type: ty)
         
-        scope.addFunction(name, type: ty)  // update function table
+        scope.addFunction(name: name, type: ty)  // update function table
         fnType.type = ty            // store type in fntype
         return ty
     }
@@ -46,7 +46,7 @@ extension FuncDecl : DeclTypeProvider {
         
         // if we have already gen'ed the interface for this function, fnType.type
         // won't be nil, if we haven't, gen it now
-        let ty = try fnType.type ?? genFunctionInterface(scope)
+        let ty = try fnType.type ?? genFunctionInterface(scope: scope)
         
         guard let impl = self.impl else { return }
         // if body construct scope and parse inside it
@@ -68,25 +68,25 @@ extension FuncDecl : DeclTypeProvider {
         // make surebound list is same length
         guard impl.params.count == ty.params.count || isGeneratorFunction else { throw semaError(.wrongFuncParamList(applied: impl.params, forType: ty.params)) }
         
-        for (index, name) in impl.params.enumerate() {
-            fnScope[variable: name] = (type: ty.params[index], mutable: false, isImmutableCapture: false)
+        for (index, name) in impl.params.enumerated() {
+            fnScope.addVariable(variable: (type: ty.params[index], mutable: false, isImmutableCapture: false), name: name)
         }
         
         // if is a method
         if case let parentType as NominalType = parent?._type {
             
             // add self
-            fnScope[variable: "self"] = (type: parentType, mutable: mutableSelf, isImmutableCapture: !mutableSelf)
+            fnScope.addVariable(variable: (type: parentType, mutable: mutableSelf, isImmutableCapture: !mutableSelf), name: "self")
             
             // add self's memebrs implicitly
             for (memberName, memberType, mutable) in parentType.members {
-                fnScope[variable: memberName] = (type: memberType, mutable: mutable && mutableSelf, isImmutableCapture: !mutableSelf)
+                fnScope.addVariable(variable: (type: memberType, mutable: mutable && mutableSelf, isImmutableCapture: !mutableSelf), name: memberName)
             }
         }
         
         // type gen for inner scope
         try impl.body.exprs.walkChildren { exp in
-            try exp.typeForNode(fnScope)
+            try exp.typeForNode(scope: fnScope)
         }
         
         if isGeneratorFunction {
@@ -102,7 +102,7 @@ extension FuncDecl : DeclTypeProvider {
 extension BinaryExpr : ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Type {
-        let t = try semaFunctionCall(scope)
+        let t = try semaFunctionCall(scope: scope)
         self.fnType = t
         return t.returns
     }
@@ -112,7 +112,7 @@ extension BinaryExpr : ExprTypeProvider {
 extension FunctionCallExpr : ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Type {
-        let t = try semaFunctionCall(scope)
+        let t = try semaFunctionCall(scope: scope)
         self.fnType = t
         return t.returns
     }
@@ -124,15 +124,15 @@ extension FunctionCall {
         
         // gen types for objects in call
         for arg in argArr {
-            try arg.typeForNode(scope)
+            _ = try arg.typeForNode(scope: scope)
         }
         
         // get from table
-        guard let argTypes = argArr.optionalMap({ expr in expr._type }) else {
+        guard let argTypes = argArr.optionalMap(transform: { expr in expr._type }) else {
             throw semaError(.paramsNotTyped, userVisible: false)
         }
         
-        let (mangledName, fnType) = try scope.function(name, argTypes: argTypes)
+        let (mangledName, fnType) = try scope.function(named: name, argTypes: argTypes)
         self.mangledName = mangledName
         
         // we need explicit self, VIRGen cant handle the implicit method call

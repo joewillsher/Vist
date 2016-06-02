@@ -126,7 +126,7 @@ final class Stack {
     var description: String {
         return stackBuffer.stride(to: stackPtr, by: 1)
             .map { String($0.memory) }
-            .joinWithSeparator(" ")
+            .joined(separator: " ")
     }
 }
 

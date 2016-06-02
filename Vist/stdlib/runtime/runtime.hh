@@ -37,35 +37,35 @@ extern "C" {
     
     /// A witness function
     struct ValueWitness {
-        void *witness;
+        void *_Nonnull witness;
     };
     
     /// A concept witness table
     struct WitnessTable {
         /// The witnesses
-        ValueWitness ** SWIFT_NAME(witnessArr) witnesses;
+        ValueWitness *_Nullable *_Nonnull SWIFT_NAME(witnessArr) witnesses;
         int32_t SWIFT_NAME(witnessArrCount) numWitnesses;
     };
     
     struct TypeMetadata {
         /// witness tables
-        ConceptConformance ** SWIFT_NAME(conceptConformanceArr) conceptConformances;
+        ConceptConformance *_Nullable *_Nonnull  SWIFT_NAME(conceptConformanceArr) conceptConformances;
         int32_t SWIFT_NAME(conceptConformanceArrCount) numConformances;
-        const char *name;
+        const char *_Nonnull name;
     };
     
     /// The modeling of a concept -- the concept and witness table
     struct ConceptConformance {
-        TypeMetadata *concept;   /// The concept we are conforming to
-        int32_t * SWIFT_NAME(propWitnessOffsetArr) propWitnessOffsets;  /// Offset of concept elements
+        TypeMetadata *_Nonnull concept;   /// The concept we are conforming to
+        int32_t *_Nullable *_Nonnull SWIFT_NAME(propWitnessOffsetArr) propWitnessOffsets;  /// Offset of concept elements
         int32_t SWIFT_NAME(propWitnessOffsetArrCount) numOffsets;       /// Number of offsets in `propWitnessOffsets`
-        WitnessTable *witnessTable; /// Pointer to the conformant's witness table
+        WitnessTable *_Nonnull witnessTable; /// Pointer to the conformant's witness table
     };
     
     struct ExistentialObject {
-        void *object;
+        void *_Nonnull object;
         int32_t SWIFT_NAME(conformanceArrCount) numConformances;
-        ConceptConformance ** SWIFT_NAME(conformanceArr) conformances;
+        ConceptConformance *_Nullable *_Nonnull SWIFT_NAME(conformanceArr) conformances;
         
 #ifdef __cplusplus
     public:

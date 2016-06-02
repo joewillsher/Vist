@@ -41,23 +41,23 @@ final class Scope {
     
     /// - Returns: The accessor of a variable named `name`
     /// - Note: Updates the capture handler if we read from a parent
-    func variableNamed(name: String) throws -> Accessor? {
+    func variable(named name: String) throws -> Accessor? {
         if let v = variables[name] { return v }
         
-        let foundInParent = try parent?.variableNamed(name)
+        let foundInParent = try parent?.variable(named: name)
         if let f = foundInParent, let handler = captureDelegate {
             // if we have a capture handler, infor that it 
             // captures this accessor
-            let accessor = try handler.addCapture(f, scope: self, name: name)
-            insert(accessor, name: name)
+            let accessor = try handler.capture(variable: f, scope: self, name: name)
+            insert(variable: accessor, name: name)
             return accessor
         }
         return foundInParent
     }
 
-    func removeVariableNamed(name: String) -> Accessor? {
-        if let v = variables.removeValueForKey(name) { return v }
-        return parent?.removeVariableNamed(name)
+    func removeVariable(named name: String) -> Accessor? {
+        if let v = variables.removeValue(forKey: name) { return v }
+        return parent?.removeVariable(named: name)
     }
     
     func isInScope(variable: Accessor) -> Bool {
@@ -67,10 +67,10 @@ final class Scope {
     /// Release all refcounted and captuted variables in this scope
     /// - parameter deleting: Whether to delete the scope's variables after releasing
     /// - parameter except: Do not release this variable
-    func releaseVariables(deleting deleting: Bool, except: Accessor? = nil) throws {
+    func releaseVariables(deleting: Bool, except: Accessor? = nil) throws {
         if deleting {
             for (name, _) in variables {
-                try variables.removeValueForKey(name)?.release()
+                try variables.removeValue(forKey: name)?.release()
             }
         }
     }

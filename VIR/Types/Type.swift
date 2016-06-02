@@ -13,9 +13,9 @@ protocol Type : VIRElement {
     /// Name used in mangling function signatures
     var mangledName: String { get }
     
-    func lowerType(module: Module) -> LLVMType
+    func lowered(module: Module) -> LLVMType
     /// Replaces the function's memeber types with the module's typealias
-    func usingTypesIn(module: Module) -> Type
+    func importedType(inModule: Module) -> Type
     
     /// The explicit name of this type. The same as the
     /// mangled name, unless the mangled name uses a different
@@ -29,7 +29,6 @@ protocol Type : VIRElement {
     func isInModule() -> Bool
 }
 
-enum _WidthUnit { case bytes, bits }
 
 extension Type {
     // implement default behaviour
@@ -41,16 +40,6 @@ extension Type {
     
     func isInModule() -> Bool {
         return false
-    }
-    
-    /// the size in `unit` of this lowered type
-    func size(unit unit: _WidthUnit = .bytes, module: Module) -> Int {
-        let dataLayout = LLVMCreateTargetData(LLVMGetDataLayout(emptyModule))
-        let s = Int(LLVMSizeOfTypeInBits(dataLayout, lowerType(module).type))
-        switch unit {
-        case .bits: return s
-        case .bytes: return s / 8
-        }
     }
     
     func getAsStructType() throws -> StructType {
@@ -96,13 +85,13 @@ func != (lhs: Type?, rhs: Type) -> Bool {
 func == (lhs: Type, rhs: Type) -> Bool {
     switch (lhs, rhs) {
     case (let l as NominalType, let r as ConceptType):
-        return l.models(r)
+        return l.models(concept: r)
     case (let l as ConceptType, let r as NominalType):
-        return r.models(l)
+        return r.models(concept: l)
     case (let l as NominalType, let r as GenericType):
-        return l.validSubstitutionFor(r)
+        return l.validSubstitutionFor(generic: r)
     case (let l as GenericType, let r as NominalType):
-        return r.validSubstitutionFor(l)
+        return r.validSubstitutionFor(generic: l)
         
     case let (l as FunctionType, r as FunctionType):
         return r == l

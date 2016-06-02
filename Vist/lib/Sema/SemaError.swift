@@ -21,7 +21,7 @@ enum SemaError: VistError {
     case wrongFunctionReturnType(applied: Type, expected: Type)
     case wrongFunctionApplications(name: String, applied: [Type], expected: [Type])
     case noTypeNamed(String)
-    case noPropertyNamed(type: String, property: String), cannotStoreInParameterStruct(propertyName: String), notStructType(Type?), notTupleType(Type?)
+    case noPropertyNamed(type: String, property: String), noMethodNamed(type: String, property: String), cannotStoreInParameterStruct(propertyName: String), notStructType(Type?), notTupleType(Type?)
     case noModel(type: StructType, concept: ConceptType)
     
     case functionNotMethod, mutatingMethodOnImmutable(method: String, baseType: String)
@@ -85,13 +85,15 @@ enum SemaError: VistError {
         case let .noFunction(f, ts):
             return "Could not find function '\(f)' which accepts parameters of type '\(ts.asTupleDescription())'"
         case let .wrongFuncParamList(applied, forType):
-            return "Could not bind parameter list '(\(applied.joinWithSeparator(" ")))' to param types '\(forType.asTupleDescription())'"
+            return "Could not bind parameter list '(\(applied.joined(separator: " ")))' to param types '\(forType.asTupleDescription())'"
         case let .wrongFunctionApplications(name, applied, expected):
             return "Incorrect application of function '\(name)'. '\(applied.asTupleDescription())' is not convertible to '\(expected.asTupleDescription())'"
         case .noTypeNamed(let name):
             return "No type '\(name)' found"
-        case let .noPropertyNamed(type, property):
+        case .noPropertyNamed(let type, let property):
             return "Type '\(type)' does not have member '\(property)'"
+        case .noMethodNamed(let type, let property):
+            return "Type '\(type)' does not have method '\(property)'"
         case .cannotStoreInParameterStruct(let pName):
             return "'\(pName)' is a member of an immutable type passed as a parameter to a function"
         case .notStructType(let t):
@@ -139,13 +141,13 @@ enum SemaError: VistError {
 
 
 // used for array's error messages
-private extension CollectionType where Generator.Element == Type {
+private extension Collection where Iterator.Element == Type {
     
     /// Returns info about the collection
     func heterogeneous() -> (type: Type?, except: Type?) {
         guard let first = self.first else { return (nil, nil) }
         
-        guard let u = indexOf({ $0 != first }) else { return (nil, nil) }
+        guard let u = index(where: { $0 != first }) else { return (nil, nil) }
         
         let f = filter { $0 == self[u] }
         let o = filter { $0 == first }
@@ -159,7 +161,7 @@ private extension CollectionType where Generator.Element == Type {
     }
     
     func asTupleDescription() -> String {
-        return "(" + map {$0.mangledName}.joinWithSeparator(" ") + ")"
+        return "(" + map {$0.mangledName}.joined(separator: " ") + ")"
     }
     
 }

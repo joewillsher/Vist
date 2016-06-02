@@ -16,8 +16,10 @@
 extern "C" {
 #endif
 
-    LLVMTypeRef getNamedType(const char *name, LLVMModuleRef module);
-    LLVMTypeRef createNamedType(LLVMTypeRef type, const char *name);
+    _Nullable LLVMTypeRef getNamedType(const char * _Nonnull name,
+                                       LLVMModuleRef _Nonnull module);
+    _Nullable LLVMTypeRef createNamedType(LLVMTypeRef _Nonnull type,
+                                          const char * _Nonnull name);
     
 #ifdef __cplusplus
 }

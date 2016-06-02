@@ -53,6 +53,7 @@ final class CondBreakInst : InstBase, BreakInstruction {
 
 extension Builder {
     
+    @discardableResult
     func buildBreak(to block: BasicBlock, args: [BlockOperand]? = nil) throws -> BreakInst {
 //        if let _ = block.parameters {
 //            guard let applied = params?.map({$0.1})
@@ -60,13 +61,14 @@ extension Builder {
 //                else { throw VIRError.wrongBlockParams }
 //        }
         let s = BreakInst(call: (block: block, args: args))
-        try addToCurrentBlock(s)
+        try addToCurrentBlock(inst: s)
         
         guard let sourceBlock = insertPoint.block else { throw VIRError.noParentBlock }
         try block.addApplication(from: sourceBlock, args: args, breakInst: s)
         return s
     }
     
+    @discardableResult
     func buildCondBreak(if condition: Operand, to then: BlockCall, elseTo: BlockCall) throws -> CondBreakInst {
 //        if let _ = thenBlock.block.parameters {
 //            guard let applied = params?.optionalMap({$0.type}),
@@ -75,7 +77,7 @@ extension Builder {
 //                else { throw VIRError.wrongBlockParams }
 //        }
         let s = CondBreakInst(then: then, else: elseTo, condition: condition)
-        try addToCurrentBlock(s)
+        try addToCurrentBlock(inst: s)
         
         guard let sourceBlock = insertPoint.block else { throw VIRError.noParentBlock }
         try then.block.addApplication(from: sourceBlock, args: then.args, breakInst: s)

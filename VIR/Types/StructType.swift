@@ -26,8 +26,8 @@ final class StructType : NominalType {
 
 extension StructType {
     
-    func lowerType(module: Module) -> LLVMType {
-        var arr = members.map { $0.type.lowerType(module).type }
+    func lowered(module: Module) -> LLVMType {
+        var arr = members.map { $0.type.lowered(module: module).type }
         return LLVMType(ref: LLVMStructType(&arr, UInt32(members.count), false))
     }
     func refCountedBox(module: Module) -> TypeAlias {
@@ -35,25 +35,25 @@ extension StructType {
             ("object", BuiltinType.pointer(to: self), true),
             ("refCount", BuiltinType.int(size: 32), false),
             ], methods: [], name: "\(name).refcounted", concepts: concepts, heapAllocated: true)
-        return module.getOrInsert(t)
+        return module.getOrInsert(type: t)
     }
     
-    func usingTypesIn(module: Module) -> Type {
+    func importedType(inModule module: Module) -> Type {
         let mappedEls = members.map { member in
-            (member.name, member.type.usingTypesIn(module), member.isMutable) as StructMember
+            (member.name, member.type.importedType(inModule: module), member.isMutable) as StructMember
         }
         let newTy = StructType(members: mappedEls, methods: methods, name: name, concepts: concepts, heapAllocated: heapAllocated)
         newTy.genericTypes = genericTypes
         newTy.concepts = concepts
-        return module.getOrInsert(TypeAlias(name: name, targetType: newTy))
+        return module.getOrInsert(type: TypeAlias(name: name, targetType: newTy))
     }
     
     
-    static func named(n: String) -> StructType {
+    static func named(_ n: String) -> StructType {
         return StructType(members: [], methods: [], name: n)
     }
     
-    static func withTypes(tys: [Type], name: String = "") -> StructType {
+    static func withTypes(_ tys: [Type], name: String = "") -> StructType {
         return StructType(members: tys.map { (name: name, type: $0, mutable: true) }, methods: [], name: name)
     }
     

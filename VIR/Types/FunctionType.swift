@@ -30,11 +30,11 @@ struct FunctionType : Type {
             case .method: return "&method"
             }
         }
-        func usingTypesIn(module: Module) -> CallingConvention {
+        func importedType(inModule module: Module) -> CallingConvention {
             switch self {
             case .thin: return self
             case .method(let selfType, let mutating):
-                return .method(selfType: selfType.usingTypesIn(module),
+                return .method(selfType: selfType.importedType(inModule: module),
                                mutating: mutating)
             }
         }
@@ -62,26 +62,26 @@ extension FunctionType {
     }
     var isGeneratorFunction: Bool { return yieldType != nil }
     
-    func lowerType(module: Module) -> LLVMType {
+    func lowered(module: Module) -> LLVMType {
         
-        let ret: LLVMTypeRef
+        let ret: LLVMType
         if returns is FunctionType {
-            ret = BuiltinType.pointer(to: returns).lowerType(module).type
+            ret = returns.lowered(module: module).getPointerType()
         }
         else {
-            ret = returns.lowerType(module).type
+            ret = returns.lowered(module: module)
         }
         
-        var members = nonVoid.map {$0.lowerType(module).type}
+        let params = nonVoidParams.map {$0.lowered(module: module)}
         
-        return LLVMType(ref: LLVMFunctionType(ret, &members, UInt32(members.count), false))
+        return LLVMType.functionType(params: params, returns: ret)
     }
     
     /// Replaces the function's memeber types with the module's typealias
-    func usingTypesIn(module: Module) -> Type {
-        let params = self.params.map { $0.usingTypesIn(module) }
-        let returns = self.returns.usingTypesIn(module)
-        let convention = self.callingConvention.usingTypesIn(module)
+    func importedType(inModule module: Module) -> Type {
+        let params = self.params.map { $0.importedType(inModule: module) }
+        let returns = self.returns.importedType(inModule: module)
+        let convention = self.callingConvention.importedType(inModule: module)
         return FunctionType(params: params, returns: returns, metadata: metadata, callingConvention: convention, yieldType: yieldType)
     }
     
@@ -102,7 +102,7 @@ extension FunctionType {
         
         let ret: Type
         if case let s as StructType = returns where s.heapAllocated {
-            ret = BuiltinType.pointer(to: s.refCountedBox(module))
+            ret = BuiltinType.pointer(to: s.refCountedBox(module: module))
         }
         else {
             ret = returns
@@ -113,7 +113,7 @@ extension FunctionType {
         
         t.params = params.map { param in
             if case let s as StructType = param where s.heapAllocated {
-                return BuiltinType.pointer(to: s.refCountedBox(module))
+                return BuiltinType.pointer(to: s.refCountedBox(module: module))
             }
             else { return param }
         }
@@ -123,7 +123,7 @@ extension FunctionType {
             break
             
         case .method(let selfType, _):
-            t.params.insert(BuiltinType.pointer(to: selfType), atIndex: 0)
+            t.params.insert(BuiltinType.pointer(to: selfType), at: 0)
         }
         t.isCanonicalType = true
         return t
@@ -136,7 +136,7 @@ extension FunctionType {
         return FunctionType(params: [], returns: ret)
     }
     
-    var nonVoid: [Type]  {
+    private var nonVoidParams: [Type]  {
         return params.filter { if case BuiltinType.void = $0 { return false } else { return true } }
     }
     
@@ -150,15 +150,15 @@ extension FunctionType {
         }
         return conventionPrefix + params
             .map { $0.mangledName }
-            .joinWithSeparator("")
+            .joined(separator: "")
     }
     
     /// Returns a version of this type, but with a defined parent
-    func withParent(parent: NominalType, mutating: Bool) -> FunctionType {
+    func asMethod(withSelf parent: NominalType, mutating: Bool) -> FunctionType {
         return FunctionType(params: params, returns: returns, metadata: metadata, callingConvention: .method(selfType: parent, mutating: mutating), yieldType: yieldType)
     }
     /// Returns a version of this type, but with a parent of type i8 (so ptrs to it are i8*)
-    func withOpaqueParent() -> FunctionType {
+    func asMethodWithOpaqueParent() -> FunctionType {
         return FunctionType(params: params, returns: returns, metadata: metadata, callingConvention: .method(selfType: BuiltinType.int(size: 8), mutating: false), yieldType: yieldType)
     }
 }

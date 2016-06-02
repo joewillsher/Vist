@@ -30,7 +30,7 @@ final class ConditionalStmt : Stmt {
     init(statements: [(condition: Expr?, block: BlockExpr)]) throws {
         var p: [ElseIfBlockStmt] = []
         
-        for (index, path) in statements.enumerate() {
+        for (index, path) in statements.enumerated() {
             
             p.append(ElseIfBlockStmt(condition: path.0, block: path.1))
             
