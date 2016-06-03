@@ -40,12 +40,8 @@ final class GenericType : NominalType {
         return concepts.flatMap { $0.requiredFunctions }
     }
     
-    // TODO: Reimplement this
     func lowered(module: Module) -> LLVMType {
-        return StructType.withTypes([
-            BuiltinType.array(el: BuiltinType.int(size: 32), size: concepts.flatMap({$0.requiredProperties}).count),
-            BuiltinType.opaquePointer
-            ]).lowered(module: module)
+        fatalError("implement this")
     }
     
     func importedType(inModule module: Module) -> Type {

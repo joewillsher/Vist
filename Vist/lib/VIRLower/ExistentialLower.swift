@@ -103,7 +103,7 @@ extension NominalType {
         if case let s as StructType = self {
             conformances = try concepts
                 .map { concept in try s.generateConformanceMetadata(concept: concept, IGF: &IGF).conformance }
-                .map (UnsafeMutablePointer.allocInit)
+                .map (UnsafeMutablePointer.allocInit(value:))
         }
         
         let utf8 = UnsafePointer<Int8>(Array(name.nulTerminatedUTF8).copyBuffer())
@@ -137,7 +137,7 @@ extension StructType {
         
         let valueWitnesses = try concept
             .existentialValueWitnesses(structType: self, IGF: &IGF)
-            .map(UnsafeMutablePointer.allocInit)
+            .map(UnsafeMutablePointer.allocInit(value:))
 //        defer {
 //            valueWitnesses.forEach {
 //                $0?.deinitialize()
@@ -158,7 +158,7 @@ extension StructType {
 //        }
         
         let witnesses = try concept.existentialWitnessOffsets(structType: self, IGF: &IGF)
-            .map(UnsafeMutablePointer.allocInit)
+            .map(UnsafeMutablePointer.allocInit(value:))
         let witnessOffsets = witnesses.copyBuffer()
         let metadata = try UnsafeMutablePointer.allocInit(value: concept.getTypeMetadata(IGF: &IGF))!
         

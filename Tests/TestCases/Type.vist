@@ -21,17 +21,18 @@ type StackOf2 {
 
 var stack = StackOf2 2 10
 
-print (stack.sum ()) // test: 12
+print (stack.sum ()) // OUT: 12
 
 stack.push 3
-print (stack.bottom) // test: 10
-print (stack.top) // test: 3
-print (stack.sum ()) // test: 13
+print (stack.bottom) // OUT: 10
+print (stack.top) // OUT: 3
+print (stack.sum ()) // OUT: 13
 
-print (stack.pop ()) // test: 3
-print (stack.pop ()) // test: 10
+print (stack.pop ()) // OUT: 3
+print (stack.pop ()) // OUT: 10
 
 stack = StackOf2 2 4
 
-print stack.bottom == stack.top // test: false
+print stack.bottom == stack.top // OUT: false
+
 

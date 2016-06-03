@@ -1,0 +1,25 @@
+
+type Foo {
+    var a: Int
+    let b: Int
+
+    func nonmut :: () = do
+        a = 1 // ERROR: Cannot mutate 'self' in non mutating method. Make method '@mutable' to modify 'a'
+
+    func nonmutcool :: () = do
+        print a + b
+
+    @mutating func mut :: () = do
+        b = 1 // ERROR: Variable 'b' of type 'Int' is immutable
+
+    @mutating func mutcool :: () = do
+        a = 1
+}
+
+let nope = Foo 0 0
+var yaas = Foo 0 0
+
+nope.nonmut ()
+nope.nonmutcool ()
+nope.mut ()     // ERROR: Cannot call mutating method 'mut' on immutable object of type 'Foo'
+nope.mutcool () // ERROR: Cannot call mutating method 'mutcool' on immutable object of type 'Foo'

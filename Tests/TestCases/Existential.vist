@@ -27,6 +27,6 @@ func foo2 :: Eq Int -> Int = (a b) do
 let bar = Bar true 11 4
 let baz = Baz 2 3
 
-print (foo bar 2) // test: 17
-print (foo2 bar 2) // test: 28
-print (foo baz 2) // test: 3
+print (foo bar 2) // OUT: 17
+print (foo2 bar 2) // OUT: 28
+print (foo baz 2) // OUT: 3

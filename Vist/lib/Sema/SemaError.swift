@@ -13,7 +13,7 @@ enum SemaError: VistError {
     case heterogenousArray([Type]), emptyArray
     case cannotSubscriptNonArrayVariable, nonIntegerSubscript
     case nonBooleanCondition, notRangeType, differentTypeForMutation(name: String?, from: Type, to: Type)
-    case immutableVariable(name: String, type: String), immutableCapture(name: String), immutableProperty(p: String, ty: String), immutableObject(type: String), immutableTupleMember(index: Int)
+    case immutableVariable(name: String, type: String), immutableCapture(name: String), immutableProperty(p: String, ty: Type), immutableObject(type: Type), immutableTupleMember(index: Int)
     case cannotAssignToNullExpression(String)
     case noTupleElement(index: Int, size: Int)
     
@@ -41,7 +41,7 @@ enum SemaError: VistError {
     var description: String {
         switch self {
         case .invalidType(let t):
-            return "Invalid type '\(t)'"
+            return "Invalid type '\(t.prettyName)'"
         case .invalidFloatType(let s):
             return "Invalid float of size \(s)"
         case .invalidRedeclaration(let t):
@@ -63,30 +63,30 @@ enum SemaError: VistError {
             return "Condition is not a boolean expression"
         case .notRangeType:
             return "Expression is not of type 'Range'"
-        case let .differentTypeForMutation(name, from, to):
-            return (name.map { "Cannot change type of '\($0)'" } ?? "Could not change type") + " from '\(from.explicitName)' to '\(to.explicitName)'"
+        case .differentTypeForMutation(let name, let from, let to):
+            return (name.map { "Cannot change type of '\($0)'" } ?? "Could not change type") + " from '\(from.prettyName)' to '\(to.prettyName)'"
         case .immutableVariable(let name, let type):
             return "Variable '\(name)' of type '\(type)' is immutable"
         case .immutableCapture(let name):
             return "Cannot mutate 'self' in non mutating method. Make method '@mutable' to modify '\(name)'"
-        case let .immutableProperty(p, ty):
-            return "Variable of type '\(ty)' does not have mutable property '\(p)'"
+        case .immutableProperty(let p, let ty):
+            return "Variable of type '\(ty.prettyName)' does not have mutable property '\(p)'"
         case .immutableObject(let ty):
-            return "Object of type '\(ty)' is immutable"
+            return "Object of type '\(ty.prettyName)' is immutable"
         case .immutableTupleMember(let i):
             return "Tuple member at index \(i) is immutable"
         case .cannotAssignToNullExpression(let name):
             return "Variable '\(name)' cannot be assigned to null typed expression"
-        case let .noTupleElement(i, s):
+        case .noTupleElement(let i, let s):
             return "Could not extract element at index \(i) from tuple with \(s) elements"
             
-        case let .wrongFunctionReturnType(applied, expected):
-            return "Invalid return from function. '\(applied)' is not convertible to '\(expected)'"
-        case let .noFunction(f, ts):
+        case .wrongFunctionReturnType(let applied, let expected):
+            return "Invalid return from function. '\(applied.prettyName)' is not convertible to '\(expected.prettyName)'"
+        case .noFunction(let f, let ts):
             return "Could not find function '\(f)' which accepts parameters of type '\(ts.asTupleDescription())'"
-        case let .wrongFuncParamList(applied, forType):
+        case .wrongFuncParamList(let applied, let forType):
             return "Could not bind parameter list '(\(applied.joined(separator: " ")))' to param types '\(forType.asTupleDescription())'"
-        case let .wrongFunctionApplications(name, applied, expected):
+        case .wrongFunctionApplications(let name, let applied, let expected):
             return "Incorrect application of function '\(name)'. '\(applied.asTupleDescription())' is not convertible to '\(expected.asTupleDescription())'"
         case .noTypeNamed(let name):
             return "No type '\(name)' found"
@@ -97,15 +97,15 @@ enum SemaError: VistError {
         case .cannotStoreInParameterStruct(let pName):
             return "'\(pName)' is a member of an immutable type passed as a parameter to a function"
         case .notStructType(let t):
-            return "'\(t?.explicitName ?? "")' is not a struct type"
+            return "'\(t?.prettyName ?? "_")' is not a struct type"
         case .notTupleType(let t):
-            return "'\(t?.explicitName ?? "")' is not a tuple type"
+            return "'\(t?.prettyName ?? "_")' is not a tuple type"
         case .invalidYield:
             return "Can only yield from a generator function"
         case .invalidReturn:
             return "Cannot return from a generator function"
         case .notGenerator(let ty):
-            return "\(ty.map { "'\($0)' is not a generator type. "  })You can only loop over generator types"
+            return "\(ty.map { "'\($0.prettyName)' is not a generator type. "  })You can only loop over generator types"
         case .noTypeForFunction(let name):
             return "Function '\(name)' was not typed"
         case .noModel(let type, let concept):
@@ -122,8 +122,8 @@ enum SemaError: VistError {
         case .noStdIntType: return "Stdlib did not provide an Int type"
         case .notTypeProvider: return "ASTNode does not conform to `TypeProvider` and does not provide an implementation of `typeForNode(_:)"
         case .noTypeForStruct, .noTypeForTuple: return "Lookup's parent does not have a type"
-        case let .structPropertyNotTyped(type, property): return "Property '\(property)' in '\(type)' was not typed"
-        case let .structMethodNotTyped(type, method): return "Method '\(method)' in '\(type)' was not typed"
+        case .structPropertyNotTyped(let type, let property): return "Property '\(property)' in '\(type)' was not typed"
+        case .structMethodNotTyped(let type, let method): return "Method '\(method)' in '\(type)' was not typed"
         case .initialiserNotAssociatedWithType: return "Initialiser's parent type was unexpectedly nil"
         case .typeNotFound: return "Type not found"
         case .paramsNotTyped: return "Params not typed"
@@ -161,7 +161,7 @@ private extension Collection where Iterator.Element == Type {
     }
     
     func asTupleDescription() -> String {
-        return "(" + map {$0.mangledName}.joined(separator: " ") + ")"
+        return "(" + map {$0.prettyName}.joined(separator: " ") + ")"
     }
     
 }

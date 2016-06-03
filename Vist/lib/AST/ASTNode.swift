@@ -32,9 +32,7 @@ final class AST : ASTNode, ScopeNode {
 
 extension AST {
     func sema(globalScope: SemaScope) throws {
-        try walkChildren { node in
-            try node.typeForNode(scope: globalScope)
-        }
+        try walkChildren { node in try node.typeForNode(scope: globalScope) }
     }
 }
 
@@ -48,7 +46,7 @@ protocol _Typed {
 
 extension _Typed {
     var typeName: String {
-        return _type?.mangledName ?? "<invalid>"
+        return _type?.prettyName ?? "_"
     }
 }
 

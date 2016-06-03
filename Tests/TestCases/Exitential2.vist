@@ -15,7 +15,7 @@ var foo: TestC
 
 let b = Baz (Foo 1)
 let w = b.foo
-print w.t // test: 1
+print w.t // OUT: 1
 
 
 
@@ -30,7 +30,7 @@ print f.v
 print f.v
 }
 let uu = Baq 12
-fn uu // test: 12 12 12 12
+fn uu // OUT: 12 12 12 12
 
 
 type I { var v: Int }
@@ -42,15 +42,15 @@ var u = B (A (I 1))
 
 u.a.i.v = 2
 
-print u.a.i.v // test: 2
+print u.a.i.v // OUT: 2
 
 var x = ( (1, u), 2)
 
-print x.1 // test: 2
-print x.0 . 0 // test: 1
+print x.1 // OUT: 2
+print x.0 . 0 // OUT: 1
 
-print x. 0 . 1 . a.i.v // test: 2
+print x. 0 . 1 . a.i.v // OUT: 2
 
 x. 0 . 1 . a.i.v = 11
 
-print x. 0 . 1 . a.i.v // test: 11
+print x. 0 . 1 . a.i.v // OUT: 11

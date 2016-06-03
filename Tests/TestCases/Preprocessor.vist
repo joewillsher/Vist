@@ -44,12 +44,12 @@ print (a.popFront ())
 foreach(a,
     print elem
 )
-// test: 1
-// test: 2
-// test: 3
-// test: 4
+// OUT: 1
+// OUT: 2
+// OUT: 3
+// OUT: 4
 
-print __FILE__ // test: Preprocessor.c
-print __LINE__ // test: 53
+print __FILE__ // OUT: Preprocessor.c
+print __LINE__ // OUT: 53
 
 

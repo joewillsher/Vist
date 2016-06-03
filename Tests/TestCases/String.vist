@@ -1,15 +1,15 @@
 let meme = "meme"
 
-print meme.length // test: 4
-print (meme.bufferCapacity ()) // test: 5
-print (meme.isUTF8Encoded ()) // test: true
+print meme.length // OUT: 4
+print (meme.bufferCapacity ()) // OUT: 5
+print (meme.isUTF8Encoded ()) // OUT: true
 
-print meme // test: meme
-print 0 // test: 0
+print meme // OUT: meme
+print 0 // OUT: 0
 
 let b = "🔥test🔥"
-print b.length // test: 12
-print (b.bufferCapacity ()) // test: 13
-print (b.isUTF8Encoded ()) // test: false
+print b.length // OUT: 12
+print (b.bufferCapacity ()) // OUT: 13
+print (b.isUTF8Encoded ()) // OUT: false
 
-print b // test: 🔥test🔥
+print b // OUT: 🔥test🔥

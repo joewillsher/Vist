@@ -15,11 +15,11 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+    
     _Nullable LLVMTypeRef getNamedType(const char * _Nonnull name,
                                        LLVMModuleRef _Nonnull module);
-    _Nullable LLVMTypeRef createNamedType(LLVMTypeRef _Nonnull type,
-                                          const char * _Nonnull name);
+    _Nonnull LLVMTypeRef createNamedType(LLVMTypeRef _Nonnull type,
+                                         const char * _Nonnull name);
     
 #ifdef __cplusplus
 }
@@ -29,8 +29,8 @@ extern "C" {
 
 using namespace llvm;
 
-Type *getNamedType(StringRef name, Module *module);
-Type *createNamedType(Type *type, StringRef name);
+Type *_Nullable getNamedType(StringRef name, Module *_Nonnull module);
+Type *_Nonnull createNamedType(Type *_Nonnull type, StringRef name);
 
 #endif
 

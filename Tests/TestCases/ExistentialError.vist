@@ -1,0 +1,25 @@
+
+
+concept C { var x: Int }
+
+type X { var x: Bool }
+type Y { var x: Int }
+
+func foo1 :: C -> Int = (a) do return a.x
+
+let x = X true
+let y = Y 1
+
+foo1 x // ERROR: Could not find function 'foo1' which accepts parameters of type '(X)'
+foo1 y
+
+type Box {
+    let existential: C
+    
+    init X Y = {
+        existential = $0 // ERROR: Cannot change type of 'existential' from 'C' to 'X'
+        existential = $1
+    }
+    
+}
+

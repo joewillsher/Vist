@@ -153,6 +153,10 @@ extension FunctionType {
             .joined(separator: "")
     }
     
+    var prettyName: String {
+        return TupleType(members: nonVoidParams).prettyName + " -> " + returns.prettyName
+    }
+    
     /// Returns a version of this type, but with a defined parent
     func asMethod(withSelf parent: NominalType, mutating: Bool) -> FunctionType {
         return FunctionType(params: params, returns: returns, metadata: metadata, callingConvention: .method(selfType: parent, mutating: mutating), yieldType: yieldType)

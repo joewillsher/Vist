@@ -29,12 +29,10 @@ enum BuiltinType : Type {
             case 16:                    return .half
             case 32:                    return .single
             case 64:                    return .double
-//            case 128:                   return LLVMFP128Type()
             default:                    fatalError(SemaError.invalidFloatType(s).description)
             }
         }
     }
-
     
     init?(_ str: String) {
         switch str {
@@ -48,10 +46,6 @@ enum BuiltinType : Type {
         case "Builtin.Float":              self = .float(size: 32)
         case "Void":                       self = .void
         case "Builtin.OpaquePointer":      self = .opaquePointer
-        case _ where str.characters.first == "[" && str.characters.last == "]":
-            guard let el = BuiltinType(String(str.characters.dropFirst().dropLast())) else { return nil }
-            self = .array(el: el, size: nil)
-            // hack: array type IR has no size which is wrong
         default: return nil
         }
     }
@@ -73,6 +67,16 @@ enum BuiltinType : Type {
             case 128:                   return "Builtin.FP128"
             default:                    fatalError(SemaError.invalidFloatType(s).description)
             }
+        }
+    }
+    
+    var prettyName: String {
+        switch self {
+        case .void: return "()"
+        case .null: return "_"
+        case .pointer(let to): return to.prettyName + "*"
+        case .opaquePointer: return "void*"
+        default: return explicitName
         }
     }
     

@@ -35,6 +35,12 @@ final class TupleType : Type {
             .joined(separator: "") + "_"
     }
     
+    var prettyName: String {
+        return "(" + members
+            .map { $0.prettyName }
+            .joined(separator: ", ") + ")"
+    }
+    
     func isInModule() -> Bool {
         return !members.map { $0.isInModule() }.contains(false)
     }

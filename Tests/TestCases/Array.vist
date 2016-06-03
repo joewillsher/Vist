@@ -2,4 +2,4 @@
 let u = [1, 10, 11]
 
 print i[1]
-// test: 10
+// OUT: 10

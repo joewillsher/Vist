@@ -93,15 +93,14 @@ extension MutationExpr : ExprTypeProvider {
             
             guard let v = scope.variable(named: variable.name) else { throw semaError(.noVariable(variable.name)) }
             guard v.mutable else {
-                
+                // it's immutable, eek -- diagnose
                 if v.isImmutableCapture {
                     // if we are mutating self
                     throw semaError(.immutableCapture(name: variable.name))
                 }
                 else {
-                    throw semaError(.immutableVariable(name: variable.name, type: variable.name))
+                    throw semaError(.immutableVariable(name: variable.name, type: variable.typeName))
                 }
-                
             }
             
         case let lookup as LookupExpr:
@@ -113,7 +112,7 @@ extension MutationExpr : ExprTypeProvider {
             guard let p = parentMutable where p else {
                 // provide nice error -- if its a variable we can put its name in the error message using '.immutableVariable'
                 if case let v as VariableExpr = lookup.object { throw semaError(.immutableVariable(name: v.name, type: v.typeName)) }
-                else { throw semaError(.immutableObject(type: type.vir)) }
+                else { throw semaError(.immutableObject(type: type)) }
             }
             
             switch lookup {
@@ -121,7 +120,7 @@ extension MutationExpr : ExprTypeProvider {
                 guard mutable else { throw semaError(.immutableTupleMember(index: tuple.index)) }
 
             case let prop as PropertyLookupExpr:
-                guard mutable else { throw semaError(.immutableProperty(p: prop.propertyName, ty: type.vir)) }
+                guard mutable else { throw semaError(.immutableProperty(p: prop.propertyName, ty: type)) }
                 
             default:
                 throw semaError(.unreachable("All lookup types accounted for"), userVisible: false)
@@ -164,12 +163,10 @@ extension ChainableExpr {
                 parentMutable: tupleMutable,
                 mutable: tupleMutable
             )
-
+            
         case let intLiteral as IntegerLiteral:
             guard case let t as NominalType = intLiteral.type else { throw semaError(.noStdIntType, userVisible: false) }
             return (type: t, parentMutable: nil, mutable: false)
-            
-            
             
 //        case let tuple as TupleExpr:
 //            return (type: _type, )

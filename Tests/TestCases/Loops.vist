@@ -2,7 +2,7 @@
 for i in 0 ... 3 do
     print i
 
-// test: 0 1 2 3
+// OUT: 0 1 2 3
 
 
 var x = 1
@@ -11,10 +11,10 @@ for i in 2 ..< 5 {
     x = x + 1
 }
 
-// test: 2 6 12
+// OUT: 2 6 12
 
 for i in 0 ... 4 do print 1
-// test: 1 1 1 1 1
+// OUT: 1 1 1 1 1
 //func open::Foo->Int = (a) do return a.a
 
 //let u = (open (Foo 1))

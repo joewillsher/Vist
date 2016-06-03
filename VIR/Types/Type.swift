@@ -22,6 +22,9 @@ protocol Type : VIRElement {
     /// naming system, like the builtin types
     var explicitName: String { get }
     
+    /// The name to show to users
+    var prettyName: String { get }
+    
     var heapAllocated: Bool { get }
     
     /// Whether this type is representible in a module

@@ -15,7 +15,7 @@ struct ConstantFoldingPass : OptimisationPass {
     
     func run(on function: Function) throws {
         
-        for inst in function.instructions {
+        for _ in function.instructions {
             
 //            guard case let builtin as BuiltinInstCall = inst else { continue }
 //            

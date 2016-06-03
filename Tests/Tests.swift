@@ -10,7 +10,7 @@ import XCTest
 import Foundation
 
 // tests can define comments which define the expected output of the program
-// `// test: 1 2` will add "1\n2\n" to the expected result of the program
+// `// OUT: 1 2` will add "1\n2\n" to the expected result of the program
 
 protocol VistTest : class {
     var testDir: String { get }
@@ -357,50 +357,63 @@ extension ErrorTests {
             try compile(withFlags: ["-Ohigh", file], inDirectory: testDir)
             XCTFail("Errors not caught")
         }
-        catch {
-//            let e = ErrorCollection(errors: [
-//                SemaError.noVariable("b"),
-//                SemaError.noVariable("a"),
-//                SemaError.noFunction("print", [StdLib.intType, StdLib.intType]),
-//                ErrorCollection(errors: [
-//                    SemaError.noVariable("v"),
-//                    SemaError.noFunction("+", [StdLib.intType, StdLib.boolType]),
-//                    SemaError.wrongFunctionReturnType(applied: StdLib.doubleType, expected: StdLib.intType)
-//                    ]),
-//                SemaError.noVariable("print"),
-//                SemaError.immutableVariable(name: "x", type: "Int"),
-//                SemaError.invalidRedeclaration("x"),
-//                SemaError.immutableProperty(p: "a", ty: "Foo"),
-//                SemaError.invalidTypeRedeclaration("Foo")
-//                ])
-//            
-//            XCTAssertNotNil(error as? ErrorCollection)
-//            XCTAssert(e.description == (error as! ErrorCollection).description)
+        catch let error as VistError {
+            XCTAssertEqual(error.parsedError, try! expectedTestCaseErrors(path: "\(testDir)/\(file)"), "Incorrect output")
         }
-        
+        catch {
+            XCTFail("Unknown Error: \(error)")
+        }
     }
     
     func testTypeError() {
         let file = "TypeError.vist"
         
         do {
-            try compile(withFlags: ["-Ohigh", file], inDirectory: testDir)
+            try compile(withFlags: [file], inDirectory: testDir)
             XCTFail("Errors not caught")
         }
+        catch let error as VistError {
+            XCTAssertEqual(error.parsedError, try! expectedTestCaseErrors(path: "\(testDir)/\(file)"), "Incorrect output")
+        }
         catch {
-//            let e = ErrorCollection(errors: [
-//                SemaError.immutableVariable(name: "imm", type: "Foo"),
-//                SemaError.immutableVariable(name: "imm", type: "Foo"),
-//                SemaError.immutableProperty(p: "a", ty: "Foo"),
-//                SemaError.noPropertyNamed(type: "Foo", property: "x"),
-//                SemaError.immutableVariable(name: "tup", type: "Int.Int.tuple"),
-//                SemaError.noTupleElement(index: 3, size: 2)
-//                ])
-//            
-//            XCTAssertNotNil(error as? ErrorCollection)
-//            XCTAssert(e.description == (error as! ErrorCollection).description)
+            XCTFail("Unknown Error: \(error)")
         }
     }
+    
+    func testExistentialError() {
+        let file = "ExistentialError.vist"
+        
+        do {
+            try compile(withFlags: [file], inDirectory: testDir)
+            XCTFail("Errors not caught")
+        }
+        catch let error as VistError {
+            XCTAssertEqual(error.parsedError, try! expectedTestCaseErrors(path: "\(testDir)/\(file)"), "Incorrect output")
+        }
+        catch {
+            XCTFail("Unknown Error: \(error)")
+        }
+
+    }
+    func testMutatingError() {
+        let file = "MutatingError.vist"
+        
+        do {
+            try compile(withFlags: [file], inDirectory: testDir)
+            XCTFail("Errors not caught")
+        }
+        catch let error as VistError {
+            
+            print(error.parsedError)
+            print(try! expectedTestCaseErrors(path: "\(testDir)/\(file)"))
+            XCTAssertEqual(error.parsedError, try! expectedTestCaseErrors(path: "\(testDir)/\(file)"), "Incorrect output")
+        }
+        catch {
+            XCTFail("Unknown Error: \(error)")
+        }
+        
+    }
+
 
 }
 

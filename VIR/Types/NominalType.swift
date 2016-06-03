@@ -28,6 +28,8 @@ protocol NominalType : class, Type {
 
 extension NominalType {
     
+    var prettyName: String { return name }
+    
     func index(ofMemberNamed memberName: String) throws -> Int {
         guard let i = members.index(where: { $0.name == memberName }) else {
             throw semaError(.noPropertyNamed(type: self.name, property: memberName))

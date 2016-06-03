@@ -1,35 +1,30 @@
 
-let a = b
+let a = b // ERROR: Could not find variable 'b' in this scope
 
-print a
+print a   // ERROR: Could not find variable 'a' in this scope
 
-print 1 1
+print 1 1 // ERROR: Could not find function 'print' which accepts parameters of type '(Int Int)'
 
 
 func fib :: Int -> Int = (a) {
-let v = v
-let u = a + false
+    let v = v         // ERROR: Could not find variable 'v' in this scope
+    let u = a + false // ERROR: Could not find function '+' which accepts parameters of type '(Int Bool)'
 
-return 1.2
+    return 1.2        // ERROR: Invalid return from function. 'Double' is not convertible to 'Int'
 }
 
-print
+print     // ERROR: Could not find variable 'print' in this scope
 
 
 let x = 1
-x = 2
+x = 2     // ERROR: Variable 'x' of type 'Int' is immutable
 
-let x = 3
+let x = 3 // ERROR: Variable 'x' is already declared
 
-type Foo {
-let a: Int
-}
+type Foo { let a: Int }
 
 var c = Foo 1
-c.a = 2
+c.a = 2   // ERROR: Variable of type 'Foo' does not have mutable property 'a'
 
-type Foo { }
-
-
-
+type Foo { }    // ERROR: Type 'Foo' is already defined
 

@@ -46,8 +46,8 @@ extension TypeAlias {
         // when lowering the alias, we need to get the ref in the LLVM module...
         let found = try? getNamedType(targetType.irName, module.loweredModule!.getModule())
         // found: TypeRef??
-        if let f1 = found, let f2 = f1 {
-            return LLVMType(ref: f2)
+        if let f = found?.flatMap({$0}) {
+            return LLVMType(ref: f)
         }
         
         // ...and if it isnt already defined we lower the target and add it

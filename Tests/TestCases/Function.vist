@@ -8,24 +8,24 @@ func factorial :: Int -> Int = (a) do
         return a * factorial a - 1
 
 
-print (factorial 1) // test: 1
-print (factorial 10) // test: 3628800
-print (factorial 1 + 3) // test: 24
+print (factorial 1) // OUT: 1
+print (factorial 10) // OUT: 3628800
+print (factorial 1 + 3) // OUT: 24
 
 let dupe = dupe 2
 let w = factorial dupe.0 + dupe.1
-print w // test: 24
+print w // OUT: 24
 
-print (factorial (factorial 3)) // test: 720
+print (factorial (factorial 3)) // OUT: 720
 
 
 func void :: () = do print 41
 
-void () // test: 41
+void () // OUT: 41
 
 
 func two :: -> Int = do return 2
 
-print (two ()) // test: 2
+print (two ()) // OUT: 2
 
 

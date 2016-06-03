@@ -19,8 +19,6 @@ vist_constructExistential(ConceptConformance *conformance,
     return new ExistentialObject(instance, 1, (ConceptConformance **)conformance);
 }
 
-
-
 extern "C"
 void *
 vist_getWitnessMethod(ExistentialObject *existential,

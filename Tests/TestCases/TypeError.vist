@@ -4,19 +4,18 @@ type Foo {
     var b: Int
 }
 
-
 let imm = Foo 1 1
 var mut = Foo 2 2
 
-imm.a = 0
-imm.b = 0
-mut.a = 0
+imm.a = 0   // ERROR: Variable 'imm' of type 'Foo' is immutable
+imm.b = 0   // ERROR: Variable 'imm' of type 'Foo' is immutable
+mut.a = 0   // ERROR: Variable of type 'Foo' does not have mutable property 'a'
 mut.b = 0
 
-print mut.x
+print mut.x // ERROR: Type 'Foo' does not have member 'x'
 
 let tup = (0, 1)
-tup.1 = 2
+tup.1 = 2   // ERROR: Variable 'tup' of type '(Int, Int)' is immutable
 var tup2 = (0, 1)
-tup2.3 = 2
+tup2.3 = 2  // ERROR: Could not extract element at index 3 from tuple with 2 elements
 
