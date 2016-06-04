@@ -71,70 +71,75 @@ extension OutputTests {
     ///
     /// tests `if` statements, variables
     func testControlFlow() {
-        let file = "Control.vist"
+        let file = "Control"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", file], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
+            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file).vist"), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
         }
+        _ = try? NSFileManager.default().removeItem(atPath: "\(testDir)/\(file)")
     }
     
     /// Loops.vist
     ///
     /// tests `for in` loops, `while` loops, mutation
     func testLoops() {
-        let file = "Loops.vist"
+        let file = "Loops"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", file], inDirectory: testDir, out: pipe)
-//            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
+            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file).vist"), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
         }
+        _ = try? NSFileManager.default().removeItem(atPath: "\(testDir)/\(file)")
     }
     
     /// Type.vist
     ///
     /// tests type sytem, default initialisers, & methods
     func testType() {
-        let file = "Type.vist"
+        let file = "Type"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", file], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
+            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file).vist"), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
         }
+        _ = try? NSFileManager.default().removeItem(atPath: "\(testDir)/\(file)")
     }
     
     /// IntegerOps.vist
     ///
     /// tests integer operations
     func testIntegerOps() {
-        let file = "IntegerOps.vist"
+        let file = "IntegerOps"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", file], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
+            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file).vist"), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
         }
+        _ = try? NSFileManager.default().removeItem(atPath: "\(testDir)/\(file)")
     }
     
     /// Function.vist
     ///
     /// tests function decls and calling, tuples & type param labels
     func testFunctions() {
-        let file = "Function.vist"
+        let file = "Function"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", file], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
+            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file).vist"), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
         }
+        _ = try? NSFileManager.default().removeItem(atPath: "\(testDir)/\(file)")
     }
     
     
@@ -142,87 +147,93 @@ extension OutputTests {
     ///
     /// Test concept existentials
     func testExistential() {
-        let file = "Existential.vist"
+        let file = "Existential"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", file], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
+            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file).vist"), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
         }
+        _ = try? NSFileManager.default().removeItem(atPath: "\(testDir)/\(file)")
     }
     
     /// Existential2.vist
     func testExistential2() {
-        let file = "Existential.vist"
+        let file = "Existential2"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", file], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
+            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file).vist"), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
         }
+        _ = try? NSFileManager.default().removeItem(atPath: "\(testDir)/\(file)")
     }
-    
     
     /// Tuple.vist
     func testTuple() {
-        let file = "Tuple.vist"
+        let file = "Tuple"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", file], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
+            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file).vist"), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
         }
+        _ = try? NSFileManager.default().removeItem(atPath: "\(testDir)/\(file)")
     }
-
+    
     /// String.vist
     func testString() {
-        let file = "String.vist"
+        let file = "String"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", file], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
+            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file).vist"), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
         }
+        _ = try? NSFileManager.default().removeItem(atPath: "\(testDir)/\(file)")
     }
     
     /// Preprocessor.vist
     func testPreprocessor() {
-        let file = "Preprocessor.vist"
+        let file = "Preprocessor"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", "-run-preprocessor", file], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
+            try compile(withFlags: ["-Ohigh", "-r", "-run-preprocessor", "\(file).vist"], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file).vist"), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
         }
+        _ = try? NSFileManager.default().removeItem(atPath: "\(testDir)/\(file)")
     }
     /// Printable.vist
     func testPrintable() {
-        let file = "Printable.vist"
+        let file = "Printable"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", file], inDirectory: testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file)"), "Incorrect output")
+            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file).vist"), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
         }
+        _ = try? NSFileManager.default().removeItem(atPath: "\(testDir)/\(file)")
     }
     /// Any.vist
     func testAny() {
-        let file = "Any.vist"
+        let file = "Any"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", file], inDirectory: testDir, out: pipe)
+            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: testDir, out: pipe)
+            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file).vist"), "Incorrect output")
         }
         catch {
             XCTFail("Compilation failed with error:\n\(error)\n\n")
         }
+        _ = try? NSFileManager.default().removeItem(atPath: "\(testDir)/\(file)")
     }
     
-
 }
 
 extension RefCountingTests {
@@ -234,7 +245,7 @@ extension RuntimePerformanceTests {
     
     /// LoopPerf.vist
     ///
-    /// Builds file and analyses performance of resulting binary
+    /// Analyses the performance of for-in loops
     func testLoop() {
         
         let fileName = "LoopPerf"
@@ -257,6 +268,7 @@ extension RuntimePerformanceTests {
             runTask.waitUntilExit()
             self.stopMeasuring()
         }
+        _ = try? NSFileManager.default().removeItem(atPath: "\(testDir)/\(fileName)")
     }
     
     /// FunctionPerf.vist
@@ -284,6 +296,7 @@ extension RuntimePerformanceTests {
             runTask.waitUntilExit()
             self.stopMeasuring()
         }
+        _ = try? NSFileManager.default().removeItem(atPath: "\(testDir)/\(fileName)")
     }
     /// Random.vist
     ///
@@ -310,6 +323,7 @@ extension RuntimePerformanceTests {
             runTask.waitUntilExit()
             self.stopMeasuring()
         }
+        _ = try? NSFileManager.default().removeItem(atPath: "\(testDir)/\(fileName)")
     }
 
 }

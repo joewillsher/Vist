@@ -11,5 +11,5 @@ var b = Box 1
 
 b.a = "sup"
 
-
+print 1 // OUT: 1
 
