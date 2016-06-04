@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-extension Operand: VIRLower {
+extension Operand : VIRLower {
     
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         // if already lowered, we use that

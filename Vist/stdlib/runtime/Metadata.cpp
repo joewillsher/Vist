@@ -12,6 +12,25 @@
 #include <stdlib.h>
 
 
+ConceptConformance *ExistentialObject::getConformance(int32_t index) {
+    return (ConceptConformance *)(conformances) + index;
+}
+
+void *WitnessTable::getWitness(int32_t index) {
+    auto witness = witnesses[index];
+    return *(void**)witness->witness;
+}
+
+int32_t ConceptConformance::getOffset(int32_t index) {
+    // the table, get as i32***
+    auto offs = (int32_t ***)propWitnessOffsets; // _gYconfXpropWitnessOffsetArr
+    // move to the offset, then load twice
+    auto i = offs[index];                        // when i = 1, this is _gYconfXpropWitnessOffsetArr12
+    auto w = **i;                                  // load _gYconfXpropWitnessOffsetArr12 then from _gYconfXpropWitnessOffsetArr1
+    printf("old = %p %i\n", i, w);
+    return w;
+}
+
 extern "C"
 ExistentialObject *
 vist_constructExistential(ConceptConformance *conformance,
@@ -24,21 +43,14 @@ void *
 vist_getWitnessMethod(ExistentialObject *existential,
                       int32_t conformanceIndex,
                       int32_t methodIndex) {
-    // conf is @__gFooconfC
-    ConceptConformance *conf = (ConceptConformance *)(existential->conformances) + conformanceIndex;
-    // FIXME: ^ doesn't work if I subscript it out -- can't use the load
     
-    // table is  @_gFooconfCwitnessTablewitnessArr
-    WitnessTable *table = conf->witnessTable;
-    ValueWitness *witness = table->witnesses[methodIndex];
-    return *(void**)witness->witness;
-    
-    /// EXAMPLE DATA SECTION:
+    return existential->getConformance(conformanceIndex)->witnessTable->getWitness(methodIndex);
+}
+/// EXAMPLE DATA SECTION FOR WITNESS LOOKUP:
 //    @_gYconfXwitnessTablewitnessArr0 = constant { i8* } { i8* bitcast (void (%Y*)* @foo_mY to i8*) }
 //    @_gYconfXwitnessTablewitnessArr03 = constant { i8* }* @_gYconfXwitnessTablewitnessArr0
 //    @_gYconfXwitnessTablewitnessArr = constant [1 x { i8* }**] [{ i8* }** @_gYconfXwitnessTablewitnessArr03]
 //    @_gYconfXwitnessTable = constant { { i8* }*, i32 } { { i8* }* bitcast ([1 x { i8* }**]* @_gYconfXwitnessTablewitnessArr to { i8* }*), i32 1 }
-}
 
 extern "C"
 int32_t
@@ -46,15 +58,21 @@ vist_getPropertyOffset(ExistentialObject *existential,
                        int32_t conformanceIndex,
                        int32_t propertyIndex) {
     // conf is @__gFooconfC
-    ConceptConformance *conf = (ConceptConformance *)(existential->conformances) + conformanceIndex;
+    auto conf = existential->getConformance(conformanceIndex);
     
     // the table, get as i32***
     auto offs = (int32_t ***)conf->propWitnessOffsets; // _gYconfXpropWitnessOffsetArr
     // move to the offset, then load twice
     auto i = offs[propertyIndex];                      // when i = 1, this is _gYconfXpropWitnessOffsetArr12
-    return **i;                                        // load _gYconfXpropWitnessOffsetArr12 then from _gYconfXpropWitnessOffsetArr1
+    auto w = **i;                                        // load _gYconfXpropWitnessOffsetArr12 then from _gYconfXpropWitnessOffsetArr1
     
-    /// EXAMPLE DATA SECTION:
+    auto x = conf->getOffset(propertyIndex);
+    
+    printf("old = %p %i\n", i, w);
+    
+    return w;
+    
+/// EXAMPLE DATA SECTION FOR OFFSET LOOKUP:
 //    @_gYconfXpropWitnessOffsetArr0 = constant i32 8
 //    @_gYconfXpropWitnessOffsetArr01 = constant i32* @_gYconfXpropWitnessOffsetArr0
 //    @_gYconfXpropWitnessOffsetArr1 = constant i32 0

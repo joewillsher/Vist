@@ -1,11 +1,10 @@
-; ModuleID = 'example'
+; ModuleID = 'ExampleMetadata.ll'
 target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-macosx10.11.0"
 
-; %ExistentialObject = type { i8*, i32, { i8*, i32*, i32, { { i8* }*, i32 }* }** }
-; %Y = type { %Bool, %Int }
-; %Bool = type { i1 }
-; %Int = type { i64 }
+%Y = type { %Bool, %Int }
+%Bool = type { i1 }
+%Int = type { i64 }
 
 @_gXsconceptConformanceArr = constant [0 x i8**] zeroinitializer
 @_gXsname = constant [2 x i8] c"X\00"
@@ -29,4 +28,6 @@ target triple = "x86_64-apple-macosx10.11.0"
 @_gYconfXwitnessTable = constant { { i8* }*, i32 } { { i8* }* bitcast ([1 x { i8* }**]* @_gYconfXwitnessTablewitnessArr to { i8* }*), i32 1 }
 @_gYconfX = constant { i8*, i32*, i32, { { i8* }*, i32 }* } { i8* bitcast ({ { i8*, i32*, i32, { { i8* }*, i32 }* }**, i32, i8* }* @_gYconfXconcept to i8*), i32* bitcast ([2 x i32**]* @_gYconfXpropWitnessOffsetArr to i32*), i32 2, { { i8* }*, i32 }* @_gYconfXwitnessTable }
 
-
+define void @foo_mY(%Y* nocapture readonly %self) {
+  ret void
+}

@@ -23,7 +23,7 @@ final class IntLiteralInst : InstBase {
     }
     
     override var instVIR: String {
-        return "\(name) = int_literal \(value.value) \(useComment)"
+        return "\(name) = int_literal \(value.value)\(useComment)"
     }
 }
 /**
@@ -42,7 +42,7 @@ final class BoolLiteralInst : InstBase {
     }
     
     override var instVIR: String {
-        return "\(name) = bool_literal \(value.value) \(useComment)"
+        return "\(name) = bool_literal \(value.value)\(useComment)"
     }
 }
 

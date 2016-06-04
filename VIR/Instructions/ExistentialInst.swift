@@ -29,7 +29,7 @@ final class OpenExistentialPropertyInst: InstBase, LValue {
     }
     
     override var instVIR: String {
-        return "\(name) = existential_open \(existential.valueName), !\(propertyName) \(useComment)"
+        return "\(name) = existential_open \(existential.valueName), !\(propertyName)\(useComment)"
     }
 }
 
@@ -49,7 +49,7 @@ final class ExistentialConstructInst : InstBase {
     }
     
     override var instVIR: String {
-        return "\(name) = existential \(value.valueName) in #\(existentialType.explicitName) \(useComment)"
+        return "\(name) = existential \(value.valueName) in #\(existentialType.explicitName)\(useComment)"
     }
     
 }
@@ -71,7 +71,7 @@ final class ExistentialWitnessInst : InstBase, LValue {
     }
     
     override var instVIR: String {
-        return "\(name) = existential_witness \(existential.valueName), !\(methodName) \(useComment)"
+        return "\(name) = existential_witness \(existential.valueName), !\(methodName)\(useComment)"
     }
     
 }
@@ -89,7 +89,7 @@ final class ExistentialProjectInst : InstBase, LValue {
     }
     
     override var instVIR: String {
-        return "\(name) = existential_project \(existential.valueName) \(useComment)"
+        return "\(name) = existential_project \(existential.valueName)\(useComment)"
     }
     
 }

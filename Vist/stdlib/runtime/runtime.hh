@@ -45,29 +45,49 @@ extern "C" {
         /// The witnesses
         ValueWitness *_Nullable *_Nonnull SWIFT_NAME(witnessArr) witnesses;
         int32_t SWIFT_NAME(witnessArrCount) numWitnesses;
+        
+#ifdef __cplusplus
+        /// Returns the witness at `index` from the static metadata
+        void *getWitness(int32_t index);
+#endif
     };
     
     struct TypeMetadata {
         /// witness tables
         ConceptConformance *_Nullable *_Nonnull  SWIFT_NAME(conceptConformanceArr) conceptConformances;
         int32_t SWIFT_NAME(conceptConformanceArrCount) numConformances;
+        
         const char *_Nonnull name;
     };
     
     /// The modeling of a concept -- the concept and witness table
     struct ConceptConformance {
-        TypeMetadata *_Nonnull concept;   /// The concept we are conforming to
+        /// The concept we are conforming to
+        TypeMetadata *_Nonnull concept;
+        
         int32_t *_Nullable *_Nonnull SWIFT_NAME(propWitnessOffsetArr) propWitnessOffsets;  /// Offset of concept elements
         int32_t SWIFT_NAME(propWitnessOffsetArrCount) numOffsets;       /// Number of offsets in `propWitnessOffsets`
-        WitnessTable *_Nonnull witnessTable; /// Pointer to the conformant's witness table
+        
+        /// Pointer to the conformant's witness table
+        WitnessTable *_Nonnull witnessTable;
+        
+#ifdef __cplusplus
+        /// Returns the offset at `index` from the static metadata
+        int32_t getOffset(int32_t index);
+#endif
     };
     
     struct ExistentialObject {
+        /// The instance
         void *_Nonnull object;
+        
         int32_t SWIFT_NAME(conformanceArrCount) numConformances;
         ConceptConformance *_Nullable *_Nonnull SWIFT_NAME(conformanceArr) conformances;
         
 #ifdef __cplusplus
+        /// Returns the concept at `index` from the existential's metadata
+        ConceptConformance *getConformance(int32_t index);
+        
     public:
         ExistentialObject(void *object,
                           int32_t numConformances,

@@ -1,0 +1,42 @@
+// RUN: -Ohigh -emit-vir
+
+// VIR-CHECK:
+// VIR: type #Int = { #Builtin.Int64 }
+// VIR-CHECK:
+// VIR: type #Bool = { #Builtin.Bool }
+
+// VIR: START:
+// VIR: func @foo1_t : &thin () -> #Builtin.Void {
+// VIR: $entry:
+// VIR:   %0 = int_literal 1 	// user: %1
+// VIR:   %1 = struct %Int, (%0: #Builtin.Int64) 	// user: %4
+// VIR:   %2 = int_literal 2 	// user: %3
+// VIR:   %3 = struct %Int, (%2: #Builtin.Int64) 	// user: %4
+// VIR:   %4 = call @-P_tII (%1: #Int, %3: #Int) 	// user: %a
+// VIR:   variable_decl %a = %4: #Int 	// user: %5
+// VIR:   %5 = call @print_tI (%a: #Int)
+// VIR:   return ()
+// VIR: }
+func foo1 :: () = {
+    let a = 1 + 2
+    print a
+}
+
+// VIR-CHECK:
+// VIR: func @foo2_t : &thin () -> #Builtin.Void {
+// VIR: $entry:
+// VIR:   %0 = bool_literal true 	// user: %1
+// VIR:   %1 = struct %Bool, (%0: #Builtin.Bool) 	// user: %2
+// VIR:   %2 = call @print_tB (%1: #Bool)
+// VIR:   return ()
+// VIR: }
+func foo2 :: () = {
+    print true
+}
+
+// VIR-CHECK:
+// VIR: func @-P_tII : &thin (#Int, #Int) -> #Int
+// VIR-CHECK:
+// VIR: func @print_tB : &thin (#Bool) -> #Builtin.Void
+// VIR-CHECK:
+// VIR: func @print_tI : &thin (#Int) -> #Builtin.Void

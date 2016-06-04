@@ -22,7 +22,7 @@ final class TupleCreateInst : InstBase {
     override var type: Type? { return tupleType }
     
     override var instVIR: String {
-        return "\(name) = tuple \(args.virValueTuple()) \(useComment)"
+        return "\(name) = tuple \(args.virValueTuple())\(useComment)"
     }
 }
 
@@ -47,7 +47,7 @@ final class TupleExtractInst : InstBase {
     override var type: Type? { return elementType }
     
     override var instVIR: String {
-        return "\(name) = tuple_extract \(tuple.valueName), !\(elementIndex) \(useComment)"
+        return "\(name) = tuple_extract \(tuple.valueName), !\(elementIndex)\(useComment)"
     }
 }
 
@@ -73,6 +73,6 @@ final class TupleElementPtrInst : InstBase, LValue {
     var memType: Type? { return elementType }
 
     override var instVIR: String {
-        return "\(name) = tuple_element \(tuple.valueName), !\(elementIndex) \(useComment)"
+        return "\(name) = tuple_element \(tuple.valueName), !\(elementIndex)\(useComment)"
     }
 }

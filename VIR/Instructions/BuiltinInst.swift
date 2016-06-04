@@ -47,7 +47,7 @@ final class BuiltinInstCall : InstBase {
         case .condfail:
             return "cond_fail \(w)"
         default:
-            return "\(name) = builtin \(instName) \(w) \(useComment)"
+            return "\(name) = builtin \(instName) \(w)\(useComment)"
         }
     }
     

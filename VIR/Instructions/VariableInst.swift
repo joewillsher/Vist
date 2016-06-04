@@ -20,7 +20,7 @@ final class VariableInst : InstBase {
     }
     
     override var instVIR: String {
-        return "variable_decl \(name) = \(value.valueName) \(useComment)"
+        return "variable_decl \(name) = \(value.valueName)\(useComment)"
     }
 
 }

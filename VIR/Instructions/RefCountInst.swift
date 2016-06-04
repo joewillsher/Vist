@@ -27,7 +27,7 @@ final class AllocObjectInst : InstBase, LValue {
     var memType: Type? { return Runtime.refcountedObjectType.importedType(inModule: module) }
     
     override var instVIR: String {
-        return "\(name) = alloc_object \(refType.explicitName) \(useComment)"
+        return "\(name) = alloc_object \(refType.explicitName)\(useComment)"
     }
 }
 
@@ -48,10 +48,10 @@ final class RetainInst : InstBase {
     override var type: Type? { return object.memType.map { BuiltinType.pointer(to: $0) } }
     var memType: Type? { return object.memType }
     
-    override var instHasSideEffects: Bool { return true }
+    override var hasSideEffects: Bool { return true }
     
     override var instVIR: String {
-        return "\(name) = retain_object \(object.valueName) \(useComment)"
+        return "\(name) = retain_object \(object.valueName)\(useComment)"
     }
 }
 
@@ -77,10 +77,10 @@ final class ReleaseInst : InstBase {
     override var type: Type? { return object.memType.map { BuiltinType.pointer(to: $0) } }
     var memType: Type? { return object.memType }
     
-    override var instHasSideEffects: Bool { return true }
+    override var hasSideEffects: Bool { return true }
     
     override var instVIR: String {
-        return "\(name) = \(unowned ? "release_unowned_object" : "release_object") \(object.valueName) \(useComment)"
+        return "\(name) = \(unowned ? "release_unowned_object" : "release_object") \(object.valueName)\(useComment)"
     }
 }
 
@@ -105,10 +105,10 @@ final class DeallocObjectInst : InstBase {
     override var type: Type? { return object.memType.map { BuiltinType.pointer(to: $0) } }
     var memType: Type? { return object.memType }
     
-    override var instHasSideEffects: Bool { return true }
+    override var hasSideEffects: Bool { return true }
     
     override var instVIR: String {
-        return "\(name) = \(unowned ? "dealloc_unowned_object" : "dealloc_object") \(object.valueName) \(useComment)"
+        return "\(name) = \(unowned ? "dealloc_unowned_object" : "dealloc_object") \(object.valueName)\(useComment)"
     }
 }
 

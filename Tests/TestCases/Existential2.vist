@@ -49,8 +49,8 @@ var x = ( (1, u), 2)
 print x.1 // OUT: 2
 print x.0 . 0 // OUT: 1
 
-print x. 0 . 1 . a.i.v // OUT: 2
+print x.0 .1.a.i.v // OUT: 2
 
-x. 0 . 1 . a.i.v = 11
+x.0 .1.a.i.v = 11
 
-print x. 0 . 1 . a.i.v // OUT: 11
+print x.0 .1.a.i.v // OUT: 11

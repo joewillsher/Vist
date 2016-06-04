@@ -27,19 +27,19 @@ class InstBase : Inst {
     /// override with the IR description, called by base to print this inst
     var instVIR: String { fatalError("Override me '\(#function)' in '\(self.dynamicType)'") }
     
-    var irName: String?
-    weak var parentBlock: BasicBlock?
+    final var irName: String?
+    final weak var parentBlock: BasicBlock?
     
-    var uses: [Operand] = []
-    var args: [Operand] = []
+    final var uses: [Operand] = []
+    final var args: [Operand] = []
     
     // calls into the subclasses overriden `instVIR`
-    var vir: String { return instVIR }
+    final var vir: String { return instVIR }
     
     private(set) var hasSideEffects = false
     private(set) var isTerminator = false
-    var instHasSideEffects: Bool { return hasSideEffects }
-    var instIsTerminator: Bool { return isTerminator }
+    final var instHasSideEffects: Bool { return hasSideEffects }
+    final var instIsTerminator: Bool { return isTerminator }
     
     init(args: [Operand], irName: String? = nil) {
         self.args = args

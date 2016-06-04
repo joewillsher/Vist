@@ -138,7 +138,6 @@
 		D43B3A8B1C8A12090039FB2E /* Interpreter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A891C8A12090039FB2E /* Interpreter.swift */; };
 		D44529561CB00A6F00AFA099 /* RefCountInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44529551CB00A6F00AFA099 /* RefCountInst.swift */; };
 		D44529571CB00A6F00AFA099 /* RefCountInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44529551CB00A6F00AFA099 /* RefCountInst.swift */; };
-		D4536E101CF7A2E3000C7382 /* RuntimeObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CA32091CEA71F3009C2B10 /* RuntimeObject.swift */; };
 		D4728BDD1C944397003294B0 /* Accessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BDC1C944397003294B0 /* Accessor.swift */; };
 		D4728BDE1C944397003294B0 /* Accessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BDC1C944397003294B0 /* Accessor.swift */; };
 		D4728BE11C9475A5003294B0 /* Optimiser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BE01C9475A5003294B0 /* Optimiser.swift */; };
@@ -172,12 +171,13 @@
 		D4A0003C1CCA9BC300157D90 /* LLVMWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A0003B1CCA9BC300157D90 /* LLVMWrapper.swift */; };
 		D4A0003D1CCA9BC300157D90 /* LLVMWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A0003B1CCA9BC300157D90 /* LLVMWrapper.swift */; };
 		D4C0900F1CCFC931008B69F1 /* shims.c in Sources */ = {isa = PBXBuildFile; fileRef = D4C0900E1CCFC931008B69F1 /* shims.c */; };
-		D4CA320A1CEA71F3009C2B10 /* RuntimeObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CA32091CEA71F3009C2B10 /* RuntimeObject.swift */; };
 		D4CB751D1CB4612100FA2D8C /* vist in Copy Files */ = {isa = PBXBuildFile; fileRef = D47FF07A1B812052003F9920 /* vist */; };
 		D4CF76771C8CD4A70058A8EC /* TupleInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF76761C8CD4A70058A8EC /* TupleInst.swift */; };
 		D4CF76781C8CD4A70058A8EC /* TupleInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF76761C8CD4A70058A8EC /* TupleInst.swift */; };
 		D4CF767D1C8CF8490058A8EC /* Runtime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF767C1C8CF8490058A8EC /* Runtime.swift */; };
 		D4CF767E1C8CF8490058A8EC /* Runtime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF767C1C8CF8490058A8EC /* Runtime.swift */; };
+		D4D8B25D1D0301BC00D1F455 /* RuntimeObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D8B25C1D0301BC00D1F455 /* RuntimeObject.swift */; };
+		D4D8B25E1D0301BC00D1F455 /* RuntimeObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D8B25C1D0301BC00D1F455 /* RuntimeObject.swift */; };
 		D4DE28191C5969830096E798 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4DE28181C5969830096E798 /* libz.tbd */; };
 		D4E35B7D1C5D0F0700683486 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4DE28181C5969830096E798 /* libz.tbd */; };
 		D4E35B7F1C5D216600683486 /* Pipe.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E35B7E1C5D216600683486 /* Pipe.swift */; };
@@ -330,11 +330,11 @@
 		D4A0003B1CCA9BC300157D90 /* LLVMWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LLVMWrapper.swift; path = lib/VIRLower/LLVMWrapper.swift; sourceTree = "<group>"; };
 		D4C0900E1CCFC931008B69F1 /* shims.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = shims.c; path = stdlib/shims.c; sourceTree = "<group>"; };
 		D4CA32071CEA7013009C2B10 /* runtime.hh */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = runtime.hh; path = stdlib/runtime/runtime.hh; sourceTree = "<group>"; };
-		D4CA32091CEA71F3009C2B10 /* RuntimeObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RuntimeObject.swift; path = stdlib/runtime/RuntimeObject.swift; sourceTree = "<group>"; };
 		D4CF76761C8CD4A70058A8EC /* TupleInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TupleInst.swift; path = Instructions/TupleInst.swift; sourceTree = "<group>"; };
 		D4CF767C1C8CF8490058A8EC /* Runtime.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Runtime.swift; path = lib/Sema/Expose/Runtime.swift; sourceTree = "<group>"; };
 		D4D369D91CFC6FFA007E802D /* vir.vim */ = {isa = PBXFileReference; lastKnownFileType = text; name = vir.vim; path = utils/vim/syntax/vir.vim; sourceTree = "<group>"; };
 		D4D369DA1CFC6FFA007E802D /* vist.vim */ = {isa = PBXFileReference; lastKnownFileType = text; name = vist.vim; path = utils/vim/syntax/vist.vim; sourceTree = "<group>"; };
+		D4D8B25C1D0301BC00D1F455 /* RuntimeObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RuntimeObject.swift; path = lib/VIRLower/RuntimeObject.swift; sourceTree = "<group>"; };
 		D4DB92771C866FF300718B78 /* example.vir */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vir; path = RUN/example.vir; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
 		D4DE28181C5969830096E798 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
@@ -393,6 +393,7 @@
 			children = (
 				D43B3A521C8A11410039FB2E /* VIRLower.swift */,
 				D4A0003B1CCA9BC300157D90 /* LLVMWrapper.swift */,
+				D4D8B25C1D0301BC00D1F455 /* RuntimeObject.swift */,
 				D4A000351CCA7FFA00157D90 /* OperandLower.swift */,
 				D4A0002C1CCA7F4F00157D90 /* RefCountingLower.swift */,
 				D4A000201CCA7E4D00157D90 /* LiteralLower.swift */,
@@ -482,7 +483,6 @@
 			isa = PBXGroup;
 			children = (
 				D4CA32071CEA7013009C2B10 /* runtime.hh */,
-				D4CA32091CEA71F3009C2B10 /* RuntimeObject.swift */,
 				D49BC2971CE25B1C0071D3AD /* Metadata.cpp */,
 				D49BC2981CE25B1C0071D3AD /* RefcountedObject.cpp */,
 				D49BC29B1CE27F8C0071D3AD /* Casting.cpp */,
@@ -799,8 +799,8 @@
 				D43B39F91C8A100E0039FB2E /* CommandLine.swift in Sources */,
 				D43B39A41C8A0EDF0039FB2E /* VIR.swift in Sources */,
 				D43B39DD1C8A0F3A0039FB2E /* LiteralInst.swift in Sources */,
+				D4D8B25E1D0301BC00D1F455 /* RuntimeObject.swift in Sources */,
 				D4A000311CCA7F7000157D90 /* BuiltinLower.swift in Sources */,
-				D4536E101CF7A2E3000C7382 /* RuntimeObject.swift in Sources */,
 				D43B3A091C8A10390039FB2E /* Token.swift in Sources */,
 				D49248551CF7788A009FD509 /* StdLibInline.swift in Sources */,
 				D43B39E31C8A0F3A0039FB2E /* VariableInst.swift in Sources */,
@@ -892,6 +892,7 @@
 				D43B3A1F1C8A105B0039FB2E /* Print.swift in Sources */,
 				D400E84C1CC127DF003E6BEC /* Closure.swift in Sources */,
 				D411C8951C8DB61D00478988 /* BreakInst.swift in Sources */,
+				D4D8B25D1D0301BC00D1F455 /* RuntimeObject.swift in Sources */,
 				D43B3A0C1C8A104F0039FB2E /* ParseError.swift in Sources */,
 				D4F3D7FA1CAC35AE005A3B07 /* Attribute.swift in Sources */,
 				D43B39971C8A0EDF0039FB2E /* Inst.swift in Sources */,
@@ -901,7 +902,6 @@
 				D43B39991C8A0EDF0039FB2E /* Module.swift in Sources */,
 				D43B39D81C8A0F3A0039FB2E /* BuiltinInst.swift in Sources */,
 				D43B39B21C8A0F140039FB2E /* FunctionType.swift in Sources */,
-				D4CA320A1CEA71F3009C2B10 /* RuntimeObject.swift in Sources */,
 				D43B39BC1C8A0F140039FB2E /* Type.swift in Sources */,
 				D4326E3E1CA6F0140016E595 /* ExistentialInst.swift in Sources */,
 				D4C0900F1CCFC931008B69F1 /* shims.c in Sources */,

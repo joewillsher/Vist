@@ -21,7 +21,7 @@ final class ArrayInst : InstBase {
     
     override var instVIR: String {
         let v = values.map { value in value.valueName }
-        return "\(name) = array [\(v.joined(separator: ", "))] \(useComment)"
+        return "\(name) = array [\(v.joined(separator: ", "))]\(useComment)"
     }
     
 }

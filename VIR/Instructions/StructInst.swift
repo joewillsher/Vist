@@ -22,7 +22,7 @@ final class StructInitInst : InstBase {
     }
     
     override var instVIR: String {
-        return "\(name) = struct %\(structType.name), \(args.virValueTuple()) \(useComment)"
+        return "\(name) = struct %\(structType.name), \(args.virValueTuple())\(useComment)"
     }
 }
 
@@ -61,7 +61,7 @@ final class StructExtractInst : InstBase {
     override var type: Type? { return propertyType }
     
     override var instVIR: String {
-        return "\(name) = struct_extract \(object.vir), !\(propertyName) \(useComment)"
+        return "\(name) = struct_extract \(object.vir), !\(propertyName)\(useComment)"
     }
 }
 
@@ -88,7 +88,7 @@ final class StructElementPtrInst : InstBase, LValue {
     var memType: Type? { return propertyType }
     
     override var instVIR: String {
-        return "\(name) = struct_element \(object.vir), !\(propertyName) \(useComment)"
+        return "\(name) = struct_element \(object.vir), !\(propertyName)\(useComment)"
     }
 }
 

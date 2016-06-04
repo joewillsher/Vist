@@ -25,7 +25,7 @@ final class AllocInst : InstBase, LValue {
     var memType: Type? { return storedType }
     
     override var instVIR: String {
-        return "\(name) = alloc \(storedType.vir) \(useComment)"
+        return "\(name) = alloc \(storedType.vir)\(useComment)"
     }
 }
 /**
@@ -47,7 +47,7 @@ final class StoreInst : InstBase {
     override var hasSideEffects: Bool { return true }
     
     override var instVIR: String {
-        return "store \(value.name) in \(address.valueName) \(useComment)"
+        return "store \(value.name) in \(address.valueName)\(useComment)"
     }
 }
 /**
@@ -65,7 +65,7 @@ final class LoadInst : InstBase {
     }
     
     override var instVIR: String {
-        return "\(name) = load \(address.valueName) \(useComment)"
+        return "\(name) = load \(address.valueName)\(useComment)"
     }
 }
 /**
@@ -93,7 +93,7 @@ final class BitcastInst : InstBase, LValue {
     }
     
     override var instVIR: String {
-        return "\(name) = bitcast \(address.valueName) to \(pointerType.explicitName) \(useComment)"
+        return "\(name) = bitcast \(address.valueName) to \(pointerType.explicitName)\(useComment)"
     }
 }
 

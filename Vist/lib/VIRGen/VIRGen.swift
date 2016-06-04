@@ -111,7 +111,7 @@ extension IntegerLiteral : ValueEmitter {
     
     func emitRValue(module: Module, scope: Scope) throws -> Accessor {
         let int = try module.builder.buildIntLiteral(val: val)
-        let std = try module.builder.build(inst: StructInitInst(type: StdLib.intType, values: Operand(int)))
+        let std = try module.builder.build(inst: StructInitInst(type: StdLib.intType, values: int))
         return try std.accessor()
     }
 }
@@ -120,7 +120,7 @@ extension BooleanLiteral : ValueEmitter {
     
     func emitRValue(module: Module, scope: Scope) throws -> Accessor {
         let bool = try module.builder.buildBoolLiteral(val: val)
-        let std = try module.builder.build(inst: StructInitInst(type: StdLib.boolType, values: Operand(bool)))
+        let std = try module.builder.build(inst: StructInitInst(type: StdLib.boolType, values: bool))
         return try std.accessor()
     }
 }
@@ -197,7 +197,7 @@ extension FunctionCall/*: VIRGenerator*/ {
             throw VIRError.paramsNotTyped
         }
         let args = try argOperands(module: module, scope: scope)
-
+        
         if let stdlib = try module.getOrInsertStdLibFunction(named: name, argTypes: fnType.params) {
             return try module.builder.buildFunctionCall(function: stdlib, args: args).accessor()
         }

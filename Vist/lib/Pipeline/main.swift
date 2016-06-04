@@ -11,9 +11,6 @@ do {
     let flags = Array(Process.arguments.dropFirst())
     try compile(withFlags: flags, inDirectory: NSTask().currentDirectoryPath)
 }
-catch let error as VistError {
-    print(error, terminator: "\n\n")
-}
 catch {
     print(error, terminator: "\n\n")
 }

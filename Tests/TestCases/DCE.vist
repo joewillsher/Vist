@@ -1,0 +1,28 @@
+// RUN: -Ohigh -emit-vir
+
+type Foo { var x: Int }
+type Baz { var foo: Foo }
+
+let f = Foo 222
+let b = Baz f
+
+let u = f.x
+print u
+
+// its an optimiser bug, the DCE pass is messing with stuff
+// and keeping instructions without dominators alive
+
+// VIR-CHECK:
+// VIR: func @main : &thin () -> #Builtin.Void {
+// VIR: $entry:
+// VIR:   %0 = int_literal 222  	// user: %1
+// VIR:   %1 = struct %Int, (%0: #Builtin.Int64)  	// user: %2
+// VIR:   %2 = call @Foo_tI (%1: #Int)  	// user: %f
+// VIR:   variable_decl %f = %2: #Foo  	// users: %3, %4
+// VIR:   %3 = call @Baz_tFoo (%f: #Foo)  	// user: %b
+// VIR:   variable_decl %b = %3: #Baz
+// VIR:   %4 = struct_extract %f: #Foo, !x  	// user: %u
+// VIR:   variable_decl %u = %4: #Int  	// user: %5
+// VIR:   %5 = call @print_tI (%u: #Int)
+// VIR:   return ()
+// VIR: }

@@ -20,8 +20,8 @@
 */
 class Operand : Value {
     /// The underlying value
-    var value: Value?
-    weak var user: Inst?
+    final var value: Value?
+    final weak var user: Inst?
     
     init(_ value: Value) {
         self.value = value
@@ -35,8 +35,11 @@ class Operand : Value {
     @available(*, unavailable, message: "`Operand` initialisers should not take `Operand`s")
     init(_ operand: Operand) { fatalError("`Operand` initialisers should not take `Operand`s") }
     
-    private(set) var loweredValue: LLVMValue? = nil
-    func setLoweredValue(_ val: LLVMValue) { loweredValue = val }
+    final private(set) var loweredValue: LLVMValue? = nil
+    func setLoweredValue(_ val: LLVMValue) {
+        loweredValue = val
+    
+    }
     
     var type: Type? { return value?.type }
 }

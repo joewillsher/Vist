@@ -149,7 +149,14 @@ func compileDocuments(
     try virModule.runPasses(optLevel: options.optLevel())
     try virModule.vir.write(toFile: "\(currentDirectory)/\(file).vir", atomically: true, encoding: NSUTF8StringEncoding)
     
-    if options.contains(.dumpVIR) { print(virModule.vir); return }
+    if options.contains(.dumpVIR) {
+        print(virModule.vir)
+        
+//        if let explicitName = explicitName where explicitName.hasSuffix(".vir") {
+//            
+//        }
+        return
+    }
     if options.contains(.verbose) { print(virModule.vir) }
     
     if options.contains(.buildRuntime) {
@@ -294,7 +301,7 @@ func buildRuntime(debugRuntime debug: Bool) {
                    files: ["runtime.cpp", "Metadata.cpp", "RefcountedObject.cpp"],
                    outputName: libVistRuntimePath,
                    cwd: runtimeDirectory,
-                   args: "-dynamiclib", "-std=c++14", "-lstdc++", "-includeruntime.hh", debug ? "-DREFCOUNT_DEBUG" : "")
+                   args: "-dynamiclib", "-std=c++14", "-O3", "-lstdc++", "-includeruntime.hh", debug ? "-DREFCOUNT_DEBUG" : "")
 }
 
 func runPreprocessor(file: inout String, cwd: String) {
