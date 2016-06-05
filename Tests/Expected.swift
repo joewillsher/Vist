@@ -45,6 +45,10 @@ func expectedTestCaseVIR(path: String) throws -> [String] {
 func expectedTestCaseAST(path: String) throws -> [String] {
     return try expectedTestCaseBlock(name: "AST", path: path)
 }
+func expectedTestCaseLLVM(path: String) throws -> [String] {
+    return try expectedTestCaseBlock(name: "LLVM", path: path)
+}
+
 
 
 /// - parameter name: The name of the start of the line: AST/VIR/LLVM
@@ -123,6 +127,7 @@ func getRunSettings(path: String) throws -> [String] {
 
 struct OutputError : ErrorProtocol { let reason: String }
 
+/// Check that the multi line output matches
 func multiLineOutput(_ output: String, matches expected: [String]) throws -> Bool {
     let outputLines = output.components(separatedBy: "\n")
     
@@ -142,7 +147,7 @@ func multiLineOutput(_ output: String, matches expected: [String]) throws -> Boo
         }
         
         // diagnose a faliaure to find it
-        throw OutputError(reason: "Did not find matching IR")
+        throw OutputError(reason: "Did not find matching IR: \(expectedLines.first)")
     }
     
     return true

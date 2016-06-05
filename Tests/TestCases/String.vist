@@ -1,3 +1,5 @@
+// RUN: -Ohigh -emit-llvm
+
 let meme = "meme"
 
 print meme.length // OUT: 4
@@ -13,3 +15,18 @@ print (b.bufferCapacity ()) // OUT: 13
 print (b.isUTF8Encoded ()) // OUT: false
 
 print b // OUT: 🔥test🔥
+
+// LLVM-CHECK:
+// LLVM: @0 = private unnamed_addr constant [5 x i8] c"meme\00"
+// LLVM: @1 = private unnamed_addr constant [13 x i8] c"\F0\9F\94\A5test\F0\9F\94\A5\00"
+// LLVM: @2 = private unnamed_addr constant [9 x i8] c"hey \F0\9F\A4\94\00"
+
+// LLVM-CHECK:
+// LLVM: define %String @make_t() {
+// LLVM: entry:
+// LLVM:   %0 = tail call %String @String_topi64b(i8* getelementptr inbounds ([9 x i8]* @2, i32 0, i32 0), i64 9, i1 false)
+// LLVM:   ret %String %0
+// LLVM: }
+func make :: () -> String = {
+    return "hey 🤔"
+}

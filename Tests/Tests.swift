@@ -68,6 +68,9 @@ final class OptimiserTests : XCTestCase, VistTest {
 final class VIRGenTests : XCTestCase, VistTest {
     
 }
+final class LLVMTests : XCTestCase, VistTest {
+    
+}
 
 
 // MARK: Test Cases
@@ -460,13 +463,9 @@ extension OptimiserTests {
         }
     }
     
-}
-
-extension VIRGenTests {
-    
-    func testFunctionVIRGen() {
+    func testStdlibInlineVIR() {
         
-        let file = "FnCallVIR", path = "\(testDir)/\(file).vist"
+        let file = "StdlibInline-vir", path = "\(testDir)/\(file).vist"
         
         let flags = try! getRunSettings(path: path) + ["\(file).vist"]
         do {
@@ -481,8 +480,87 @@ extension VIRGenTests {
             XCTFail("\(error)")
         }
     }
+    func testStdlibInlineLLVM() {
+        
+        let file = "StdlibInline-llvm", path = "\(testDir)/\(file).vist"
+        
+        let flags = try! getRunSettings(path: path) + ["\(file).vist"]
+        do {
+            try compile(withFlags: flags, inDirectory: testDir)
+            
+            let expected = try expectedTestCaseLLVM(path: path)
+            let output = try String(contentsOfFile: "\(testDir)/\(file).ll")
+            
+            try XCTAssert(multiLineOutput(output, matches: expected))
+        }
+        catch {
+            XCTFail("\(error)")
+        }
+    }
+
+
 }
 
+extension VIRGenTests {
+    
+    func testFunctionVIRGen() {
+        
+        let file = "FnCallVIR", path = "\(testDir)/\(file).vist"
+        
+        let flags = try! getRunSettings(path: path) + ["\(file).vist"]
+        do {
+            try compile(withFlags: flags, inDirectory: testDir)
+            
+            let expected = try expectedTestCaseLLVM(path: path)
+            let output = try String(contentsOfFile: "\(testDir)/\(file).vir")
+            
+            try XCTAssert(multiLineOutput(output, matches: expected))
+        }
+        catch {
+            XCTFail("\(error)")
+        }
+    }
+}
+
+extension LLVMTests {
+    
+    func testMetadata() {
+        
+        let file = "Existential", path = "\(testDir)/\(file).vist"
+        
+        let flags = try! getRunSettings(path: path) + ["\(file).vist"]
+        do {
+            try compile(withFlags: flags, inDirectory: testDir)
+            
+            let expected = try expectedTestCaseLLVM(path: path)
+            let output = try String(contentsOfFile: "\(testDir)/\(file).ll")
+            
+            try XCTAssert(multiLineOutput(output, matches: expected))
+        }
+        catch {
+            XCTFail("\(error)")
+        }
+    }
+    
+    func testStrings() {
+        
+        let file = "String", path = "\(testDir)/\(file).vist"
+        
+        let flags = try! getRunSettings(path: path) + ["\(file).vist"]
+        do {
+            try compile(withFlags: flags, inDirectory: testDir)
+            
+            let expected = try expectedTestCaseLLVM(path: path)
+            let output = try String(contentsOfFile: "\(testDir)/\(file).ll")
+            
+            try XCTAssert(multiLineOutput(output, matches: expected))
+        }
+        catch {
+            XCTFail("\(error)")
+        }
+    }
+
+}
 
 
 

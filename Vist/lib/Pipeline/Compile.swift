@@ -175,7 +175,9 @@ func compileDocuments(
     defer {
         // remove files
         if !options.contains(.preserveTempFiles) {
-            for file in ["\(file).ll", "\(file)_.ll", "\(file).s", "\(file).vir", "\(file)_.vir"] {
+            for file in [
+//                "\(file).ll",
+                "\(file)_.ll", "\(file).s", "\(file).vir", "\(file)_.vir"] {
                 _ = try? NSFileManager.default().removeItem(atPath: "\(currentDirectory)/\(file)")
             }
             if options.contains(.runPreprocessor) {
@@ -210,7 +212,8 @@ func compileDocuments(
     try optimisedIR.write(toFile: "\(currentDirectory)/\(file).ll", atomically: true, encoding: NSUTF8StringEncoding)
     
     if options.contains(.dumpLLVMIR) {
-        print(optimisedIR); return
+        print(optimisedIR)
+        return
     }
     if options.contains(.verbose) {
         print(optimisedIR, "\n\n----------------------------LINK-----------------------------\n")

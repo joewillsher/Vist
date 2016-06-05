@@ -1,0 +1,40 @@
+// RUN: -Ohigh -emit-vir
+
+
+// VIR-CHECK:
+// VIR: func @foo1_t : &thin () -> #Builtin.Void {
+// VIR: $entry:
+// VIR:   %0 = int_literal 1 	// user: %1
+// VIR:   %1 = struct %Int, (%0: #Builtin.Int64) 	// users: nil, %4
+// VIR:   %2 = int_literal 3 	// user: %3
+// VIR:   %3 = struct %Int, (%2: #Builtin.Int64) 	// users: nil, %5
+// VIR:   %4 = struct_extract %1: #Int, !value 	// user: %i_mul
+// VIR:   %5 = struct_extract %3: #Int, !value 	// user: %i_mul
+// VIR:   %i_mul = builtin i_mul %4: #Builtin.Int64, %5: #Builtin.Int64 	// users: %overflow, %value
+// VIR:   %overflow = tuple_extract %i_mul: (#Builtin.Int64, #Builtin.Bool), !1 	// user: %6
+// VIR:   cond_fail %overflow: #Builtin.Bool
+// VIR:   %value = tuple_extract %i_mul: (#Builtin.Int64, #Builtin.Bool), !0 	// user: %7
+// VIR:   %7 = struct %Int, (%value: #Builtin.Int64) 	// users: nil, %15
+// VIR:   %8 = int_literal 2 	// user: %9
+// VIR:   %9 = struct %Int, (%8: #Builtin.Int64) 	// users: nil, %12
+// VIR:   %10 = int_literal 5 	// user: %11
+// VIR:   %11 = struct %Int, (%10: #Builtin.Int64) 	// users: nil, %13
+// VIR:   %12 = struct_extract %9: #Int, !value 	// user: %i_div
+// VIR:   %13 = struct_extract %11: #Int, !value 	// user: %i_div
+// VIR:   %i_div = builtin i_div %12: #Builtin.Int64, %13: #Builtin.Int64 	// user: %14
+// VIR:   %14 = struct %Int, (%i_div: #Builtin.Int64) 	// users: nil, %16
+// VIR:   %15 = struct_extract %7: #Int, !value 	// user: %i_xor
+// VIR:   %16 = struct_extract %14: #Int, !value 	// user: %i_xor
+// VIR:   %i_xor = builtin i_xor %15: #Builtin.Int64, %16: #Builtin.Int64 	// user: %17
+// VIR:   %17 = struct %Int, (%i_xor: #Builtin.Int64) 	// user: %x
+// VIR:   variable_decl %x = %17: #Int 	// user: %18
+// VIR:   %18 = call @print_tI (%x: #Int)
+// VIR:   return ()
+// VIR: }
+func foo1 :: () = {
+    let x = 1 * 3 ~^ 2 / 5
+    print x
+}
+
+
+

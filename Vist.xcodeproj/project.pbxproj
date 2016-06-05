@@ -182,7 +182,6 @@
 		D4E35B7D1C5D0F0700683486 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4DE28181C5969830096E798 /* libz.tbd */; };
 		D4E35B7F1C5D216600683486 /* Pipe.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E35B7E1C5D216600683486 /* Pipe.swift */; };
 		D4E35B821C5E3ECE00683486 /* Expected.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E35B801C5E3EC600683486 /* Expected.swift */; };
-		D4E5E3301C8367D900457B73 /* VIRTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5E32F1C8367D900457B73 /* VIRTests.swift */; };
 		D4F3D7FA1CAC35AE005A3B07 /* Attribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4F3D7F91CAC35AE005A3B07 /* Attribute.swift */; };
 		D4F3D7FB1CAC35AE005A3B07 /* Attribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4F3D7F91CAC35AE005A3B07 /* Attribute.swift */; };
 		D4F3D7FE1CAC419E005A3B07 /* CreateType.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D4F3D7FC1CAC419E005A3B07 /* CreateType.cpp */; };
@@ -340,7 +339,6 @@
 		D4DE28181C5969830096E798 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		D4E35B7E1C5D216600683486 /* Pipe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pipe.swift; sourceTree = "<group>"; };
 		D4E35B801C5E3EC600683486 /* Expected.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Expected.swift; sourceTree = "<group>"; };
-		D4E5E32F1C8367D900457B73 /* VIRTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VIRTests.swift; sourceTree = "<group>"; };
 		D4F3D7F91CAC35AE005A3B07 /* Attribute.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Attribute.swift; path = lib/AST/Attribute.swift; sourceTree = "<group>"; };
 		D4F3D7FC1CAC419E005A3B07 /* CreateType.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CreateType.cpp; path = VIR/Types/CreateType.cpp; sourceTree = SOURCE_ROOT; };
 		D4F3D7FD1CAC419E005A3B07 /* CreateType.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = CreateType.hpp; path = VIR/Types/CreateType.hpp; sourceTree = SOURCE_ROOT; };
@@ -413,7 +411,6 @@
 			isa = PBXGroup;
 			children = (
 				D41BF54C1C5CD797004A1962 /* Tests.swift */,
-				D4E5E32F1C8367D900457B73 /* VIRTests.swift */,
 				D4E35B7E1C5D216600683486 /* Pipe.swift */,
 				D4E35B801C5E3EC600683486 /* Expected.swift */,
 				D41BF5541C5CDC8C004A1962 /* TestCases */,
@@ -851,7 +848,6 @@
 				D4A000251CCA7E8F00157D90 /* CFGLower.swift in Sources */,
 				D43B399A1C8A0EDF0039FB2E /* Module.swift in Sources */,
 				D4326E3C1CA5FB7E0016E595 /* NSTask.swift in Sources */,
-				D4E5E3301C8367D900457B73 /* VIRTests.swift in Sources */,
 				D43B3A471C8A10C80039FB2E /* StmtSema.swift in Sources */,
 				D43B3A1C1C8A105B0039FB2E /* DefinedType.swift in Sources */,
 				D43B3A511C8A11180039FB2E /* VIRGen.swift in Sources */,

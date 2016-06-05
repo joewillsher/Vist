@@ -1,3 +1,15 @@
+// RUN: -Ohigh -emit-llvm
+
+// LLVM-CHECK:
+//LLVM: ; ModuleID = 'example'
+//LLVM: target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
+//LLVM: target triple = "x86_64-apple-macosx10.11.0"
+
+// LLVM-CHECK:
+//LLVM: %Bar = type { %Bool, %Int, %Int }
+//LLVM: %Bool = type { i1 }
+//LLVM: %Int = type { i64 }
+//LLVM: %Baz = type { %Int, %Int }
 
 concept Eq {
     var a: Int, b: Int
@@ -18,6 +30,18 @@ type Baz {
     
     func sum :: -> Int = do return 1
 }
+
+// LLVM-CHECK:
+//LLVM: @_gEqsconceptConformanceArr = constant [0 x i8**] zeroinitializer
+//LLVM: @_gEqsname = constant [3 x i8] c"Eq\00"
+//LLVM: @_gEqs = constant { { i8*, i32*, i32, { { i8* }*, i32 }* }**, i32, i8* } { { i8*, i32*, i32, { { i8* }*, i32 }* }** bitcast ([0 x i8**]* @_gEqsconceptConformanceArr to { i8*, i32*, i32, { { i8* }*, i32 }* }**), i32 0, i8* getelementptr inbounds ([3 x i8]* @_gEqsname, i32 0, i32 0) }
+//LLVM: @_gIntsconceptConformanceArr = constant [0 x i8**] zeroinitializer
+//LLVM: @_gIntsname = constant [4 x i8] c"Int\00"
+//LLVM: @_gInts = constant { { i8*, i32*, i32, { { i8* }*, i32 }* }**, i32, i8* } { { i8*, i32*, i32, { { i8* }*, i32 }* }** bitcast ([0 x i8**]* @_gIntsconceptConformanceArr to { i8*, i32*, i32, { { i8* }*, i32 }* }**), i32 0, i8* getelementptr inbounds ([4 x i8]* @_gIntsname, i32 0, i32 0) }
+//LLVM: @_gBoolsconceptConformanceArr = constant [0 x i8**] zeroinitializer
+//LLVM: @_gBoolsname = constant [5 x i8] c"Bool\00"
+//LLVM: @_gBools = constant { { i8*, i32*, i32, { { i8* }*, i32 }* }**, i32, i8* } { { i8*, i32*, i32, { { i8* }*, i32 }* }** bitcast ([0 x i8**]* @_gBoolsconceptConformanceArr to { i8*, i32*, i32, { { i8* }*, i32 }* }**), i32 0, i8* getelementptr inbounds ([5 x i8]* @_gBoolsname, i32 0, i32 0) }
+
 
 func foo :: Eq Int -> Int = (a b) do
     return a.sum () + b

@@ -35,6 +35,14 @@ func foo2 :: () = {
 }
 
 // VIR-CHECK:
+// VIR: func @foo3_tI : &thin (#Int) -> #Int {
+// VIR: $entry(%$0: #Int):
+// VIR:   return %$0
+// VIR: }
+func foo3 :: Int -> Int = do
+    return $0
+
+// VIR-CHECK:
 // VIR: func @-P_tII : &thin (#Int, #Int) -> #Int
 // VIR-CHECK:
 // VIR: func @print_tB : &thin (#Bool) -> #Builtin.Void

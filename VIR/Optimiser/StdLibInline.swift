@@ -81,7 +81,7 @@ struct StdLibInlinePass : OptimisationPass {
                 try replaceWithOverflowCheckedBuiltin(.iadd)
             case "-M_tII": // l - r
                 try replaceWithOverflowCheckedBuiltin(.isub)
-            case "-D_tII": // l / r
+            case "-S_tII": // l / r
                 try replaceWithBuiltin(.idiv)
             case "-C_tII": // l % r
                 try replaceWithBuiltin(.irem)

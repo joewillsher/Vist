@@ -27,7 +27,7 @@ int32_t ConceptConformance::getOffset(int32_t index) {
     // move to the offset, then load twice
     auto i = offs[index];                        // when i = 1, this is _gYconfXpropWitnessOffsetArr12
     auto w = **i;                                  // load _gYconfXpropWitnessOffsetArr12 then from _gYconfXpropWitnessOffsetArr1
-    printf("old = %p %i\n", i, w);
+    //printf("old = %p %i\n", i, w);
     return w;
 }
 
@@ -57,28 +57,15 @@ int32_t
 vist_getPropertyOffset(ExistentialObject *existential,
                        int32_t conformanceIndex,
                        int32_t propertyIndex) {
-    // conf is @__gFooconfC
-    auto conf = existential->getConformance(conformanceIndex);
     
-    // the table, get as i32***
-    auto offs = (int32_t ***)conf->propWitnessOffsets; // _gYconfXpropWitnessOffsetArr
-    // move to the offset, then load twice
-    auto i = offs[propertyIndex];                      // when i = 1, this is _gYconfXpropWitnessOffsetArr12
-    auto w = **i;                                        // load _gYconfXpropWitnessOffsetArr12 then from _gYconfXpropWitnessOffsetArr1
-    
-    auto x = conf->getOffset(propertyIndex);
-    
-    printf("old = %p %i\n", i, w);
-    
-    return w;
-    
+    return existential->getConformance(conformanceIndex)->getOffset(propertyIndex);
+}
 /// EXAMPLE DATA SECTION FOR OFFSET LOOKUP:
 //    @_gYconfXpropWitnessOffsetArr0 = constant i32 8
 //    @_gYconfXpropWitnessOffsetArr01 = constant i32* @_gYconfXpropWitnessOffsetArr0
 //    @_gYconfXpropWitnessOffsetArr1 = constant i32 0
 //    @_gYconfXpropWitnessOffsetArr12 = constant i32* @_gYconfXpropWitnessOffsetArr1
 //    @_gYconfXpropWitnessOffsetArr = constant [2 x i32**] [i32** @_gYconfXpropWitnessOffsetArr01, i32** @_gYconfXpropWitnessOffsetArr12]
-}
 
 
 #ifdef TESTING
