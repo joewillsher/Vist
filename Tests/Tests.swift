@@ -155,7 +155,7 @@ extension OutputTests {
     
     /// Existential.vist
     ///
-    /// Test concept existentials
+    /// Test concept existentials -- runtime & LLVM functions for extracting & metadata
     func testExistential() {
         let file = "Existential"
         do {

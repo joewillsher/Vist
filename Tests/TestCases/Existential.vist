@@ -1,9 +1,5 @@
-// RUN: -Ohigh -emit-llvm
 
-// LLVM-CHECK:
-//LLVM: ; ModuleID = 'example'
-//LLVM: target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
-//LLVM: target triple = "x86_64-apple-macosx10.11.0"
+// RUN: -Ohigh -emit-llvm
 
 // LLVM-CHECK:
 //LLVM: %Bar = type { %Bool, %Int, %Int }
@@ -31,18 +27,6 @@ type Baz {
     func sum :: -> Int = do return 1
 }
 
-// LLVM-CHECK:
-//LLVM: @_gEqsconceptConformanceArr = constant [0 x i8**] zeroinitializer
-//LLVM: @_gEqsname = constant [3 x i8] c"Eq\00"
-//LLVM: @_gEqs = constant { { i8*, i32*, i32, { { i8* }*, i32 }* }**, i32, i8* } { { i8*, i32*, i32, { { i8* }*, i32 }* }** bitcast ([0 x i8**]* @_gEqsconceptConformanceArr to { i8*, i32*, i32, { { i8* }*, i32 }* }**), i32 0, i8* getelementptr inbounds ([3 x i8]* @_gEqsname, i32 0, i32 0) }
-//LLVM: @_gIntsconceptConformanceArr = constant [0 x i8**] zeroinitializer
-//LLVM: @_gIntsname = constant [4 x i8] c"Int\00"
-//LLVM: @_gInts = constant { { i8*, i32*, i32, { { i8* }*, i32 }* }**, i32, i8* } { { i8*, i32*, i32, { { i8* }*, i32 }* }** bitcast ([0 x i8**]* @_gIntsconceptConformanceArr to { i8*, i32*, i32, { { i8* }*, i32 }* }**), i32 0, i8* getelementptr inbounds ([4 x i8]* @_gIntsname, i32 0, i32 0) }
-//LLVM: @_gBoolsconceptConformanceArr = constant [0 x i8**] zeroinitializer
-//LLVM: @_gBoolsname = constant [5 x i8] c"Bool\00"
-//LLVM: @_gBools = constant { { i8*, i32*, i32, { { i8* }*, i32 }* }**, i32, i8* } { { i8*, i32*, i32, { { i8* }*, i32 }* }** bitcast ([0 x i8**]* @_gBoolsconceptConformanceArr to { i8*, i32*, i32, { { i8* }*, i32 }* }**), i32 0, i8* getelementptr inbounds ([5 x i8]* @_gBoolsname, i32 0, i32 0) }
-
-
 func foo :: Eq Int -> Int = (a b) do
     return a.sum () + b
 func foo2 :: Eq Int -> Int = (a b) do
@@ -54,3 +38,63 @@ let baz = Baz 2 3
 print (foo bar 2) // OUT: 17
 print (foo2 bar 2) // OUT: 28
 print (foo baz 2) // OUT: 3
+
+// LLVM-CHECK:
+// LLVM: define %Int @getWitness_tEq(%ExistentialObject %e) {
+// LLVM: entry:
+// LLVM:   %0 = alloca %ExistentialObject
+// LLVM:   store %ExistentialObject %e, %ExistentialObject* %0
+// LLVM:   %1 = bitcast %ExistentialObject* %0 to { i8*, i32, { i8*, i32*, i32, { { i8* }*, i32 }* }** }*
+// LLVM:   %2 = call i8* @vist_getWitnessMethod({ i8*, i32, { i8*, i32*, i32, { { i8* }*, i32 }* }** }* %1, i32 0, i32 0)
+// LLVM:   %witness = bitcast i8* %2 to %Int (i8*)*
+// LLVM:   %unboxed.projection = getelementptr inbounds %ExistentialObject* %0, i32 0, i32 0
+// LLVM:   %3 = load i8** %unboxed.projection
+// LLVM:   %4 = call %Int %witness(i8* %3)
+// LLVM:   ret %Int %4
+// LLVM: }
+func getWitness :: Eq -> Int = (e) do
+    return e.sum ()
+
+    
+// LLVM-CHECK:
+// LLVM: @_gEqsconceptConformanceArr = constant [0 x i8**] zeroinitializer
+// LLVM: @_gEqsname = constant [3 x i8] c"Eq\00"
+// LLVM: @_gEqs = constant { { i8*, i32*, i32, { { i8* }*, i32 }* }**, i32, i8* } { { i8*, i32*, i32, { { i8* }*, i32 }* }** bitcast ([0 x i8**]* @_gEqsconceptConformanceArr to { i8*, i32*, i32, { { i8* }*, i32 }* }**), i32 0, i8* getelementptr inbounds ([3 x i8]* @_gEqsname, i32 0, i32 0) }
+
+// LLVM-CHECK:
+// LLVM: @_gIntsconceptConformanceArr = constant [0 x i8**] zeroinitializer
+// LLVM: @_gIntsname = constant [4 x i8] c"Int\00"
+// LLVM: @_gInts = constant { { i8*, i32*, i32, { { i8* }*, i32 }* }**, i32, i8* } { { i8*, i32*, i32, { { i8* }*, i32 }* }** bitcast ([0 x i8**]* @_gIntsconceptConformanceArr to { i8*, i32*, i32, { { i8* }*, i32 }* }**), i32 0, i8* getelementptr inbounds ([4 x i8]* @_gIntsname, i32 0, i32 0) }
+
+// LLVM-CHECK:
+// LLVM: @_gBoolsconceptConformanceArr = constant [0 x i8**] zeroinitializer
+// LLVM: @_gBoolsname = constant [5 x i8] c"Bool\00"
+// LLVM: @_gBools = constant { { i8*, i32*, i32, { { i8* }*, i32 }* }**, i32, i8* } { { i8*, i32*, i32, { { i8* }*, i32 }* }** bitcast ([0 x i8**]* @_gBoolsconceptConformanceArr to { i8*, i32*, i32, { { i8* }*, i32 }* }**), i32 0, i8* getelementptr inbounds ([5 x i8]* @_gBoolsname, i32 0, i32 0) }
+
+// LLVM-CHECK:
+// LLVM: @_gBarconfEqconceptconceptConformanceArr = constant [0 x i8**] zeroinitializer
+// LLVM: @_gBarconfEqconcept = constant { { i8*, i32*, i32, { { i8* }*, i32 }* }**, i32, i8* } { { i8*, i32*, i32, { { i8* }*, i32 }* }** bitcast ([0 x i8**]* @_gBarconfEqconceptconceptConformanceArr to { i8*, i32*, i32, { { i8* }*, i32 }* }**), i32 0, i8* getelementptr inbounds ([3 x i8]* @_gEqsname, i32 0, i32 0) }
+// LLVM: @_gBarconfEqpropWitnessOffsetArr0 = constant i32 16
+// LLVM: @_gBarconfEqpropWitnessOffsetArr01 = constant i32* @_gBarconfEqpropWitnessOffsetArr0
+// LLVM: @_gBarconfEqpropWitnessOffsetArr1 = constant i32 8
+// LLVM: @_gBarconfEqpropWitnessOffsetArr12 = constant i32* @_gBarconfEqpropWitnessOffsetArr1
+// LLVM: @_gBarconfEqpropWitnessOffsetArr = constant [2 x i32**] [i32** @_gBarconfEqpropWitnessOffsetArr01, i32** @_gBarconfEqpropWitnessOffsetArr12]
+// LLVM: @_gBarconfEqwitnessTablewitnessArr0 = constant { i8* } { i8* bitcast (%Int (%Bar*)* @sum_mBar to i8*) }
+// LLVM: @_gBarconfEqwitnessTablewitnessArr03 = constant { i8* }* @_gBarconfEqwitnessTablewitnessArr0
+// LLVM: @_gBarconfEqwitnessTablewitnessArr = constant [1 x { i8* }**] [{ i8* }** @_gBarconfEqwitnessTablewitnessArr03]
+// LLVM: @_gBarconfEqwitnessTable = constant { { i8* }*, i32 } { { i8* }* bitcast ([1 x { i8* }**]* @_gBarconfEqwitnessTablewitnessArr to { i8* }*), i32 1 }
+// LLVM: @_gBarconfEq = constant { i8*, i32*, i32, { { i8* }*, i32 }* } { i8* bitcast ({ { i8*, i32*, i32, { { i8* }*, i32 }* }**, i32, i8* }* @_gBarconfEqconcept to i8*), i32* bitcast ([2 x i32**]* @_gBarconfEqpropWitnessOffsetArr to i32*), i32 2, { { i8* }*, i32 }* @_gBarconfEqwitnessTable }
+
+// LLVM-CHECK:
+// LLVM: @_gBazconfEqconceptconceptConformanceArr = constant [0 x i8**] zeroinitializer
+// LLVM: @_gBazconfEqconcept = constant { { i8*, i32*, i32, { { i8* }*, i32 }* }**, i32, i8* } { { i8*, i32*, i32, { { i8* }*, i32 }* }** bitcast ([0 x i8**]* @_gBazconfEqconceptconceptConformanceArr to { i8*, i32*, i32, { { i8* }*, i32 }* }**), i32 0, i8* getelementptr inbounds ([3 x i8]* @_gEqsname, i32 0, i32 0) }
+// LLVM: @_gBazconfEqpropWitnessOffsetArr0 = constant i32 0
+// LLVM: @_gBazconfEqpropWitnessOffsetArr04 = constant i32* @_gBazconfEqpropWitnessOffsetArr0
+// LLVM: @_gBazconfEqpropWitnessOffsetArr1 = constant i32 8
+// LLVM: @_gBazconfEqpropWitnessOffsetArr15 = constant i32* @_gBazconfEqpropWitnessOffsetArr1
+// LLVM: @_gBazconfEqpropWitnessOffsetArr = constant [2 x i32**] [i32** @_gBazconfEqpropWitnessOffsetArr04, i32** @_gBazconfEqpropWitnessOffsetArr15]
+// LLVM: @_gBazconfEqwitnessTablewitnessArr0 = constant { i8* } { i8* bitcast (%Int (%Baz*)* @sum_mBaz to i8*) }
+// LLVM: @_gBazconfEqwitnessTablewitnessArr06 = constant { i8* }* @_gBazconfEqwitnessTablewitnessArr0
+// LLVM: @_gBazconfEqwitnessTablewitnessArr = constant [1 x { i8* }**] [{ i8* }** @_gBazconfEqwitnessTablewitnessArr06]
+// LLVM: @_gBazconfEqwitnessTable = constant { { i8* }*, i32 } { { i8* }* bitcast ([1 x { i8* }**]* @_gBazconfEqwitnessTablewitnessArr to { i8* }*), i32 1 }
+// LLVM: @_gBazconfEq = constant { i8*, i32*, i32, { { i8* }*, i32 }* } { i8* bitcast ({ { i8*, i32*, i32, { { i8* }*, i32 }* }**, i32, i8* }* @_gBazconfEqconcept to i8*), i32* bitcast ([2 x i32**]* @_gBazconfEqpropWitnessOffsetArr to i32*), i32 2, { { i8* }*, i32 }* @_gBazconfEqwitnessTable }

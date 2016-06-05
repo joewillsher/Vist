@@ -304,7 +304,7 @@ func buildRuntime(debugRuntime debug: Bool) {
                    files: ["runtime.cpp", "Metadata.cpp", "RefcountedObject.cpp"],
                    outputName: libVistRuntimePath,
                    cwd: runtimeDirectory,
-                   args: "-dynamiclib", "-std=c++14", "-O3", "-lstdc++", "-includeruntime.hh", debug ? "-DREFCOUNT_DEBUG" : "")
+                   args: "-dynamiclib", "-std=c++14", "-O3", "-lstdc++", "-includeruntime.h", debug ? "-DREFCOUNT_DEBUG" : "")
 }
 
 func runPreprocessor(file: inout String, cwd: String) {

@@ -11,7 +11,7 @@
 #import "Utils.h"
 #import "CreateType.hpp"
 
-#include "runtime.hh"
+#include "runtime.h"
 
 //#define SOURCE_ROOT #SRC_ROOT
 

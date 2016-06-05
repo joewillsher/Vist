@@ -328,7 +328,7 @@
 		D4A000351CCA7FFA00157D90 /* OperandLower.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OperandLower.swift; path = lib/VIRLower/OperandLower.swift; sourceTree = "<group>"; };
 		D4A0003B1CCA9BC300157D90 /* LLVMWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LLVMWrapper.swift; path = lib/VIRLower/LLVMWrapper.swift; sourceTree = "<group>"; };
 		D4C0900E1CCFC931008B69F1 /* shims.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = shims.c; path = stdlib/shims.c; sourceTree = "<group>"; };
-		D4CA32071CEA7013009C2B10 /* runtime.hh */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = runtime.hh; path = stdlib/runtime/runtime.hh; sourceTree = "<group>"; };
+		D4CA32071CEA7013009C2B10 /* runtime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = runtime.h; path = stdlib/runtime/runtime.h; sourceTree = "<group>"; };
 		D4CF76761C8CD4A70058A8EC /* TupleInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TupleInst.swift; path = Instructions/TupleInst.swift; sourceTree = "<group>"; };
 		D4CF767C1C8CF8490058A8EC /* Runtime.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Runtime.swift; path = lib/Sema/Expose/Runtime.swift; sourceTree = "<group>"; };
 		D4D369D91CFC6FFA007E802D /* vir.vim */ = {isa = PBXFileReference; lastKnownFileType = text; name = vir.vim; path = utils/vim/syntax/vir.vim; sourceTree = "<group>"; };
@@ -479,7 +479,7 @@
 		D44DB8881C316DA500EBCD9F /* Runtime */ = {
 			isa = PBXGroup;
 			children = (
-				D4CA32071CEA7013009C2B10 /* runtime.hh */,
+				D4CA32071CEA7013009C2B10 /* runtime.h */,
 				D49BC2971CE25B1C0071D3AD /* Metadata.cpp */,
 				D49BC2981CE25B1C0071D3AD /* RefcountedObject.cpp */,
 				D49BC29B1CE27F8C0071D3AD /* Casting.cpp */,
