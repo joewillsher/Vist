@@ -497,8 +497,6 @@ extension OptimiserTests {
             XCTFail("\(error)")
         }
     }
-
-
 }
 
 extension VIRGenTests {

@@ -23,18 +23,16 @@ void *WitnessTable::getWitness(int32_t index) {
 
 int32_t ConceptConformance::getOffset(int32_t index) {
     // the table, get as i32***
-    auto offs = (int32_t ***)propWitnessOffsets; // _gYconfXpropWitnessOffsetArr
+    auto offs = (int32_t ***)propWitnessOffsets;
     // move to the offset, then load twice
-    auto i = offs[index];                        // when i = 1, this is _gYconfXpropWitnessOffsetArr12
-    auto w = **i;                                  // load _gYconfXpropWitnessOffsetArr12 then from _gYconfXpropWitnessOffsetArr1
-    //printf("old = %p %i\n", i, w);
-    return w;
+    return **offs[index];
 }
 
 extern "C"
 ExistentialObject *
 vist_constructExistential(ConceptConformance *conformance,
                           void *instance) {
+    // TODO: Do not heap allocate this -- return an `ExistentialObject` by value
     return new ExistentialObject(instance, 1, (ConceptConformance **)conformance);
 }
 

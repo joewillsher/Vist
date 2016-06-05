@@ -3,26 +3,40 @@
 type Foo { var x: Int }
 type Baz { var foo: Foo }
 
-let f = Foo 222
-let b = Baz f
-
-let u = f.x
-print u
-
-// its an optimiser bug, the DCE pass is messing with stuff
-// and keeping instructions without dominators alive
 
 // VIR-CHECK:
-// VIR: func @main : &thin () -> #Builtin.Void {
+// VIR: func @test_t : &thin () -> #Builtin.Void {
 // VIR: $entry:
-// VIR:   %0 = int_literal 222  	// user: %1
-// VIR:   %1 = struct %Int, (%0: #Builtin.Int64)  	// user: %2
-// VIR:   %2 = call @Foo_tI (%1: #Int)  	// user: %f
-// VIR:   variable_decl %f = %2: #Foo  	// users: %3, %4
-// VIR:   %3 = call @Baz_tFoo (%f: #Foo)  	// user: %b
-// VIR:   variable_decl %b = %3: #Baz
-// VIR:   %4 = struct_extract %f: #Foo, !x  	// user: %u
-// VIR:   variable_decl %u = %4: #Int  	// user: %5
+// VIR:   %0 = int_literal 222 	// user: %1
+// VIR:   %1 = struct %Int, (%0: #Builtin.Int64) 	// user: %2
+// VIR:   %2 = call @Foo_tI (%1: #Int) 	// user: %f
+// VIR:   variable_decl %f = %2: #Foo 	// users: %3, %4
+// VIR:   %3 = call @Baz_tFoo (%f: #Foo)
+// VIR:   %4 = struct_extract %f: #Foo, !x 	// user: %u
+// VIR:   variable_decl %u = %4: #Int 	// user: %5
 // VIR:   %5 = call @print_tI (%u: #Int)
 // VIR:   return ()
 // VIR: }
+func test :: () = { // tests the output isnt being invalidated
+    let f = Foo 222
+    let b = Baz f
+    
+    let u = f.x
+    print u
+}
+
+// VIR-CHECK:
+// VIR: func @test2_t : &thin () -> #Int {
+// VIR: $entry:
+// VIR:   %0 = int_literal 1 	// user: %1
+// VIR:   %1 = struct %Int, (%0: #Builtin.Int64) 	// user: %a
+// VIR:   variable_decl %a = %1: #Int 	// user: %2
+// VIR:   return %a
+// VIR: }
+func test2 :: () -> Int= {
+    let a = 1
+    let b = 22
+    let c = 2
+    return a
+}
+

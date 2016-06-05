@@ -78,7 +78,6 @@ extension Inst {
             val.addUse(use)
         }
         uses.removeAll()
-        args.removeAll()
     }
 }
 
