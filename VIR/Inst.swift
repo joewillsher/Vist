@@ -36,8 +36,9 @@ class InstBase : Inst {
     // calls into the subclasses overriden `instVIR`
     final var vir: String { return instVIR }
     
-    private(set) var hasSideEffects = false
-    private(set) var isTerminator = false
+    private(set) var hasSideEffects = false, isTerminator = false
+    // Accessors below implement protocol requirement; return the above
+    // values which are to be overriden by subclasses
     final var instHasSideEffects: Bool { return hasSideEffects }
     final var instIsTerminator: Bool { return isTerminator }
     

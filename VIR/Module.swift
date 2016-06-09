@@ -48,12 +48,11 @@ extension Module {
     /// Returns the module's definition of `type`
     @discardableResult
     func getOrInsert(type: Type) -> TypeAlias {
+        // if it exists, return it
         if case let t as NominalType = type, let found = typeList.first(where: {$0.targetType.name == t.name}) {
             return found
         }
-        else if case let alias as TypeAlias = type, let found = typeList.first(where: {$0.targetType.name == alias.name}) {
-            return found
-        }
+        
         let t = type.importedType(inModule: module) as! TypeAlias
         insert(alias: t)
         return t

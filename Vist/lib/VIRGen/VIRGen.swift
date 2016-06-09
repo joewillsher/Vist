@@ -193,7 +193,6 @@ extension FunctionCall/*: VIRGenerator*/ {
     func emitRValue(module: Module, scope: Scope) throws -> Accessor {
         
         guard case let fnType as FunctionType = fnType?.importedType(inModule: module) else {
-            print(name, mangledName, self.fnType, self.dynamicType)
             throw VIRError.paramsNotTyped
         }
         let args = try argOperands(module: module, scope: scope)
