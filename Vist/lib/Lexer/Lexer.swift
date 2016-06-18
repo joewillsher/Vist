@@ -7,9 +7,8 @@
 //
 
 import class Foundation.NSString
-import class Foundation.NSNumberFormatter
-import enum Foundation.NSNumberFormatterStyle
-import class Foundation.NSScanner
+import class Foundation.NumberFormatter
+import class Foundation.Scanner
 
 //-------------------------------------------------------------------------------------------------------------------------
 //  MARK:                                              Helpers
@@ -171,7 +170,7 @@ private extension Token {
         
         guard !numeric.hasPrefix("0x") else {
             var int: UInt64 = 0
-            NSScanner(string: numeric).scanHexInt64(&int)
+            Scanner(string: numeric).scanHexInt64(&int)
             return .integerLiteral(Int(int))
         }
 //        guard !numeric.hasPrefix("0b") else {
@@ -181,8 +180,8 @@ private extension Token {
 //        }
         
         //number literal
-        let numberFormatter = NSNumberFormatter()
-        numberFormatter.numberStyle = NSNumberFormatterStyle.decimalStyle
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .decimal
         guard let number = numberFormatter.number(from: numeric.replacingOccurrences(of: "_", with: "")) else {
             return .identifier(numeric)
         }

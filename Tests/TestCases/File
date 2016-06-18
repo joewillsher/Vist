@@ -1,0 +1,9 @@
+
+
+// TODO: Failing
+
+func functionParamOperandOptimiserTest :: Int  = (number) {
+    var val = number
+    let isNegative = number < 0
+    print isNegative
+}

@@ -6,13 +6,13 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-import class Foundation.NSPipe
+import class Foundation.Pipe
 import Foundation.NSString
 
-extension NSPipe {
+extension Pipe {
     
     var string: String {
-        guard let printed = String(data: fileHandleForReading.readDataToEndOfFile(), encoding: NSUTF8StringEncoding) else { fatalError("No stdout") }
+        guard let printed = String(data: fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) else { fatalError("No stdout") }
         return printed
     }
     

@@ -15,7 +15,7 @@ protocol Type : VIRElement {
     
     func lowered(module: Module) -> LLVMType
     /// Replaces the function's memeber types with the module's typealias
-    func importedType(inModule: Module) -> Type
+    func importedType(in module: Module) -> Type
     
     /// The explicit name of this type. The same as the
     /// mangled name, unless the mangled name uses a different
@@ -71,20 +71,18 @@ extension Type {
 
 // MARK: Cannonical equality functions, compares their module-agnostic type info
 
-@warn_unused_result
 func == (lhs: Type?, rhs: Type) -> Bool {
     if let l = lhs { return l == rhs } else { return false }
 }
-@warn_unused_result
+
 func == (lhs: Type?, rhs: Type?) -> Bool {
     if let l = lhs, let r = rhs { return l == r } else { return false }
 }
-@warn_unused_result
+
 func != (lhs: Type?, rhs: Type) -> Bool {
     if let l = lhs { return l != rhs } else { return false }
 }
 
-@warn_unused_result
 func == (lhs: Type, rhs: Type) -> Bool {
     switch (lhs, rhs) {
     case (let l as NominalType, let r as ConceptType):
@@ -111,7 +109,6 @@ func == (lhs: Type, rhs: Type) -> Bool {
     }
 }
 
-@warn_unused_result
 func != (lhs: Type, rhs: Type) -> Bool {
     return !(lhs == rhs)
 }

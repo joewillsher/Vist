@@ -44,7 +44,12 @@ final class StoreInst : InstBase {
     
     override var type: Type? { return address.type }
     
-    override var hasSideEffects: Bool { return true }
+    override var hasSideEffects: Bool {
+        // it has side effects if someone else is using it
+        // TODO: should look through dominating blocks for uses, uses before this inst should not be counted
+//        return !address.uses.filter { $0 !== address }.isEmpty
+        return true
+    }
     
     override var instVIR: String {
         return "store \(value.name) in \(address.valueName)\(useComment)"
@@ -82,10 +87,8 @@ final class BitcastInst : InstBase, LValue {
     /// The new memory type of the cast
     private(set) var newType: Type
     
-    /// - precondition: newType has types in this module
     /// - note: the ptr will have type newType*
-    init(address: LValue, newType: Type, irName: String? = nil) {
-        precondition(newType.isInModule())
+    init(address: LValue, newType: TypeAlias, irName: String? = nil) {
         let op = PtrOperand(address)
         self.address = op
         self.newType = newType

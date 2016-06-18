@@ -30,24 +30,23 @@ extension StructType {
         var arr = members.map { $0.type.lowered(module: module).type }
         return LLVMType(ref: LLVMStructType(&arr, UInt32(members.count), false))
     }
-    func refCountedBox(module: Module) -> TypeAlias {
-        let t = StructType(members: [
-            ("object", BuiltinType.pointer(to: self), true),
-            ("refCount", BuiltinType.int(size: 32), false),
-            ], methods: [], name: "\(name).refcounted", concepts: concepts, heapAllocated: true)
-        return module.getOrInsert(type: t)
+    
+    func importedAggreagteType(in module: Module) -> Type {
+        let imported = importedType(in: module) as! NominalType
+        return heapAllocated ? imported.refCountedBox(module: module) : imported
     }
     
-    func importedType(inModule module: Module) -> Type {
+    /// TODO: docs
+    func importedType(in module: Module) -> Type {
         let mappedEls = members.map { member in
-            (member.name, member.type.importedType(inModule: module), member.isMutable) as StructMember
+            (member.name, member.type.importedType(in: module), member.isMutable) as StructMember
         }
         let newTy = StructType(members: mappedEls, methods: methods, name: name, concepts: concepts, heapAllocated: heapAllocated)
         newTy.genericTypes = genericTypes
         newTy.concepts = concepts
+        
         return module.getOrInsert(type: TypeAlias(name: name, targetType: newTy))
     }
-    
     
     static func named(_ n: String) -> StructType {
         return StructType(members: [], methods: [], name: n)
@@ -78,7 +77,7 @@ extension StructType {
 extension StructType : Equatable { }
 
 
-@warn_unused_result
+
 func == (lhs: StructType, rhs: StructType) -> Bool {
     return lhs.name == rhs.name
 }

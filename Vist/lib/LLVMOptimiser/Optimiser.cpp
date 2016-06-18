@@ -9,22 +9,17 @@
 
 #include "Optimiser.hpp"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wall"
+
 #include "llvm/PassManager.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
 #include "llvm/IR/Module.h"
-#include "llvm/PassInfo.h"
-#include "llvm/PassSupport.h"
-#include "llvm/Support/raw_ostream.h"
-#include "llvm/IR/Instructions.h"
-#include "llvm/IR/Function.h"
-#include "llvm/Pass.h"
-#include "llvm/IR/LLVMContext.h"
-
-#include "llvm/Transforms/Instrumentation.h"
 #include "llvm/Transforms/IPO.h"
-#include "llvm/Analysis/Passes.h"
 
 #include <iostream>
+
+#pragma clang diagnostic pop
 
 using namespace llvm;
 

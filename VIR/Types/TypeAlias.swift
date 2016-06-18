@@ -18,20 +18,7 @@ final class TypeAlias : Type {
         self.name = name
         self.targetType = targetType
     }
-}
-
-extension TypeAlias : NominalType {
-    var members: [StructMember] { return targetType.members }
-    var methods: [StructMethod] { return targetType.methods }
-    var irName: String { return targetType.irName }
-    var heapAllocated: Bool { return targetType.heapAllocated }
-    var concepts: [ConceptType] { return targetType.concepts }
-    var explicitName: String { return targetType.explicitName }
-    var mangledName: String { return targetType.mangledName }
-}
-
-extension TypeAlias {
-
+    
     func lowered(module: Module) -> LLVMType {
         
         if targetType is ConceptType {
@@ -57,7 +44,21 @@ extension TypeAlias {
         return LLVMType(ref: namedType)
     }
     
-    func importedType(inModule: Module) -> Type {
+}
+
+extension TypeAlias : NominalType {
+    var members: [StructMember] { return targetType.members }
+    var methods: [StructMethod] { return targetType.methods }
+    var irName: String { return targetType.irName }
+    var heapAllocated: Bool { return targetType.heapAllocated }
+    var concepts: [ConceptType] { return targetType.concepts }
+    var explicitName: String { return targetType.explicitName }
+    var mangledName: String { return targetType.mangledName }
+}
+
+extension TypeAlias {
+    
+    func importedType(in module: Module) -> Type {
         return self
     }
     
@@ -67,16 +68,50 @@ extension TypeAlias {
 }
 
 // we need a hash for the type so it can sit in the the type table set
-extension TypeAlias: Hashable {
+extension TypeAlias : Hashable {
     
     var hashValue: Int {
         return name.hashValue
     }
 }
 
-extension TypeAlias: Equatable { }
+extension TypeAlias : Equatable { }
 
-@warn_unused_result
+
 func == (lhs: TypeAlias, rhs: TypeAlias) -> Bool {
     return lhs.targetType == rhs.targetType
 }
+
+
+final class RefCountedType : NominalType {
+    
+    let name: String, targetType: StructType
+    
+    init(targetType: StructType) {
+        self.targetType = targetType
+        self.name = targetType.name
+    }
+    
+    func lowered(module: Module) -> LLVMType {
+        // its a pointer to the target
+        return targetType.lowered(module: module).getPointerType()
+    }
+    
+    func importedType(in module: Module) -> Type {
+        return targetType.importedType(in: module)
+    }
+    
+    var members: [StructMember] { return targetType.members }
+    var methods: [StructMethod] { return targetType.methods }
+    var irName: String { return targetType.irName }
+    var heapAllocated: Bool { return true }
+    var concepts: [ConceptType] { return targetType.concepts }
+    var explicitName: String { return targetType.explicitName }
+    var mangledName: String { return targetType.mangledName }
+}
+
+
+
+
+
+

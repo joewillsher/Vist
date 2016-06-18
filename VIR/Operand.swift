@@ -20,8 +20,17 @@
 */
 class Operand : Value {
     /// The underlying value
-    final var value: Value?
-    final weak var user: Inst?
+    final var value: Value? {
+        willSet(arg) {
+            value?.removeUse(self)
+            if let v = arg {
+                v.addUse(self)
+            }
+            user = arg
+        }
+    }
+    /// The value using this operand
+    final weak var user: Value?
     
     init(_ value: Value) {
         self.value = value
@@ -36,9 +45,9 @@ class Operand : Value {
     init(_ operand: Operand) { fatalError("`Operand` initialisers should not take `Operand`s") }
     
     final private(set) var loweredValue: LLVMValue? = nil
+    /// Set the LLVM value for uses of this operand
     func setLoweredValue(_ val: LLVMValue) {
         loweredValue = val
-    
     }
     
     var type: Type? { return value?.type }
@@ -62,7 +71,6 @@ extension Operand {
         get { return value?.name ?? "<null>" }
         set { value?.name = newValue }
     }
-    var operandName: String { return "<operand of \(name) by \(user?.name)>" }
     
     func dumpIR() { if let loweredValue = loweredValue { LLVMDumpValue(loweredValue._value!) } else { print("\(irName) <NULL>") } }
     func dumpIRType() { if let loweredValue = loweredValue { LLVMDumpTypeOf(loweredValue._value!) } else { print("\(irName).type <NULL>") } }
@@ -87,6 +95,16 @@ final class PtrOperand : Operand, LValue {
     }
 }
 
+
+/// An operand which doesn't capture self to
+final class FunctionOperand : Operand {
+    
+    init(param: Param) {
+        super.init(param)
+        param.removeUse(self)
+    }
+    
+}
 
 
 /// An operand applied to a block, loweredValue is lazily evaluated

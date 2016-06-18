@@ -65,7 +65,7 @@ extension Value {
     /// Builds a reference accessor which can store into & load from
     /// the memory it allocates
     func allocReferenceBackedAccessor() throws -> GetSetAccessor {
-        guard let memType = type?.importedType(inModule: module) else { throw VIRError.noType(#file) }
+        guard let memType = type?.importedType(in: module) else { throw VIRError.noType(#file) }
         let accessor = RefAccessor(memory: try module.builder.build(inst: AllocInst(memType: memType)))
         try accessor.setValue(self)
         return accessor
@@ -288,10 +288,10 @@ final class RefCountedAccessor : GetSetAccessor {
     static func allocObject(type: StructType, module: Module) throws -> RefCountedAccessor {
         
         let val = try module.builder.buildAllocObject(type: type, irName: "storage")
-        let targetType = type.refCountedBox(module: module).importedType(inModule: module)
-        let bc = try module.builder.build(inst: BitcastInst(address: val, newType: targetType))
+//        let targetType = type.importedType(in: module) as! TypeAlias
+//        let bc = try module.builder.build(inst: BitcastInst(address: val, newType: targetType))
         
-        let accessor = RefCountedAccessor(refcountedBox: bc)
+        let accessor = RefCountedAccessor(refcountedBox: val)
         try accessor.retain()
         return accessor
     }

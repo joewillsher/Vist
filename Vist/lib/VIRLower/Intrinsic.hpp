@@ -19,7 +19,7 @@
 extern "C" {
 #endif
     
-    #pragma clang diagnostic push
+    #pragma clang diagnostic push // workaround -- this was crashing llvm without it
     #pragma clang diagnostic ignored "-Wnullability-completeness"
     
     /// Intrinsic with a buffer of overload types
@@ -42,14 +42,19 @@ extern "C" {
 #ifdef __cplusplus // only for c++
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wall"
+
 #include "llvm/IR/Value.h"
 #include "llvm/ADT/StringRef.h"
 #include <vector>
 
+#pragma clang diagnostic pop
+
 using namespace llvm;
-Function *getIntrinsic(StringRef name,
-                       Module *mod,
-                       std::vector<Type *> types);
+Function *_Nullable getIntrinsic(StringRef name,
+                                 Module *_Nonnull mod,
+                                 std::vector<Type *> types);
 #endif
 
 //#ifndef __cplusplus

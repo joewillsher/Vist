@@ -41,12 +41,12 @@ extension ConceptType {
         return requiredFunctions
     }
     
-    func importedType(inModule module: Module) -> Type {
+    func importedType(in module: Module) -> Type {
         let fns = requiredFunctions.map { fn in
-            (name: fn.name, type: fn.type.importedType(inModule: module) as! FunctionType, mutating: fn.mutating) as StructMethod
+            (name: fn.name, type: fn.type.importedType(in: module) as! FunctionType, mutating: fn.mutating) as StructMethod
         }
         let mems = requiredProperties.map { memb in
-            (memb.name, memb.type.importedType(inModule: module), memb.isMutable) as StructMember
+            (memb.name, memb.type.importedType(in: module), memb.isMutable) as StructMember
         }
         let c = ConceptType(name: name, requiredFunctions: fns, requiredProperties: mems)
         return module.getOrInsert(type: TypeAlias(name: name, targetType: c))

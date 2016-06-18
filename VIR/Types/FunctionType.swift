@@ -30,11 +30,11 @@ struct FunctionType : Type {
             case .method: return "&method"
             }
         }
-        func importedType(inModule module: Module) -> CallingConvention {
+        func importedType(in module: Module) -> CallingConvention {
             switch self {
             case .thin: return self
             case .method(let selfType, let mutating):
-                return .method(selfType: selfType.importedType(inModule: module),
+                return .method(selfType: selfType.importedType(in: module),
                                mutating: mutating)
             }
         }
@@ -78,10 +78,10 @@ extension FunctionType {
     }
     
     /// Replaces the function's memeber types with the module's typealias
-    func importedType(inModule module: Module) -> Type {
-        let params = self.params.map { $0.importedType(inModule: module) }
-        let returns = self.returns.importedType(inModule: module)
-        let convention = self.callingConvention.importedType(inModule: module)
+    func importedType(in module: Module) -> Type {
+        let params = self.params.map { $0.importedType(in: module) }
+        let returns = self.returns.importedType(in: module)
+        let convention = self.callingConvention.importedType(in: module)
         return FunctionType(params: params, returns: returns, metadata: metadata, callingConvention: convention, yieldType: yieldType)
     }
     
@@ -102,7 +102,8 @@ extension FunctionType {
         
         let ret: Type
         if case let s as StructType = returns where s.heapAllocated {
-            ret = BuiltinType.pointer(to: s.refCountedBox(module: module))
+            ret = //BuiltinType.pointer(to:
+                s.refCountedBox(module: module)//)
         }
         else {
             ret = returns
@@ -113,7 +114,8 @@ extension FunctionType {
         
         t.params = params.map { param in
             if case let s as StructType = param where s.heapAllocated {
-                return BuiltinType.pointer(to: s.refCountedBox(module: module))
+                return //BuiltinType.pointer(to:
+                    s.refCountedBox(module: module)//)
             }
             else { return param }
         }
@@ -169,7 +171,6 @@ extension FunctionType {
 
 extension FunctionType : Equatable { }
 
-@warn_unused_result
 func == (lhs: FunctionType, rhs: FunctionType) -> Bool {
     return lhs.params.elementsEqual(rhs.params, isEquivalent: ==) && lhs.returns == rhs.returns
 }

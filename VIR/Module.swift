@@ -53,7 +53,7 @@ extension Module {
             return found
         }
         
-        let t = type.importedType(inModule: module) as! TypeAlias
+        let t = type.importedType(in: module) as! TypeAlias
         insert(alias: t)
         return t
     }

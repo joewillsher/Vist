@@ -46,7 +46,7 @@ final class StructExtractInst : InstBase {
     ///         element of `structType`
     init(object: Value, property: String, irName: String? = nil) throws {
         
-        // get the underlying struct type
+//         get the underlying struct type
         guard let structType = try object.type?.getAsStructType() else {
             throw VIRError.noType(#file)
         }

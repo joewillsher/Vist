@@ -18,6 +18,7 @@ struct DCEPass : OptimisationPass {
         for inst in function.instructions.reversed()
             where inst.uses.isEmpty && !inst.instHasSideEffects {
                 try inst.eraseFromParent()
+                
         }
         
     }

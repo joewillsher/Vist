@@ -13,16 +13,17 @@ func int64ToString :: Int -> String = (number) {
     
     var bufferSize = 1 // start with buffer size 1 for the null terminator
     var val = number
+    let n = number // TODO: fix this, use number instead -- see functionParamOperandOptimiserTest
     var ptr = buffer + size // the end of the buffer
 
     // if its negative, print the normalised val, then later print a - sign
-    let isNegative = number < 0
+    let isNegative = n < 0
     if (isNegative) do
         val = 0 - val
 
     // until the val is 0 we add new chars to the buffer
     // if it is initially 0 we put one '0' in
-    while val != 0 || (number == 0 && bufferSize == 1) {
+    while val != 0 || (n == 0 && bufferSize == 1) {
         ptr = ptr - 1 // move back a char
         
         let v = val % 10 + 48 // magic number 48 shifts 0 to the correct unicode code point for '0'
@@ -66,6 +67,9 @@ type Int32 {
     init Int32 = (val) do value = val.value
 }
 
+
+func inc :: Int -> Int = do return $0 + 1
+func dec :: Int -> Int = do return $0 - 1
 
 @public @noinline
 func print :: Int = (a) {

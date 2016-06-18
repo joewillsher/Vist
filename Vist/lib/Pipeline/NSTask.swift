@@ -1,4 +1,5 @@
-import class Foundation.NSTask
+
+import class Foundation.Task
 
 enum Exec: String {
     case clang = "/usr/local/Cellar/llvm/3.6.2/bin/clang-3.6"
@@ -7,14 +8,14 @@ enum Exec: String {
     case assemble = "/usr/local/Cellar/llvm/3.6.2/bin/llvm-as"
 }
 
-extension NSTask {
+extension Task {
     class func execute(execName exec: String, files: [String], outputName: String? = nil, cwd: String, args: [String]) {
         
         var a = args
         if let n = outputName { a.append(contentsOf: ["-o", n]) }
         a.append(contentsOf: files)
         
-        let task = NSTask()
+        let task = Task()
         task.currentDirectoryPath = cwd
         task.launchPath = exec
         task.arguments = a
@@ -23,6 +24,8 @@ extension NSTask {
         task.waitUntilExit()
     }
     class func execute(exec: Exec, files: [String], outputName: String? = nil, cwd: String, args: String...) {
-        NSTask.execute(execName: exec.rawValue, files: files, outputName: outputName, cwd: cwd, args: args)
+        Task.execute(execName: exec.rawValue, files: files, outputName: outputName, cwd: cwd, args: args)
     }
 }
+
+// TODO: Treat warnings as errors in these executes

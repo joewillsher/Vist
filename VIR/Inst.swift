@@ -60,14 +60,11 @@ extension Inst {
     /// Removes the function from its parent and
     /// drops all references to it
     func eraseFromParent() throws {
-        
         // tell self’s operands that we’re not using it any more
         for arg in args {
-            arg.removeSelfAsUser()
+            arg.value = nil
         }
         args.removeAll()
-        // remove this from everthing
-        removeAllUses()
         try removeFromParent()
     }
     
@@ -76,9 +73,7 @@ extension Inst {
     func replaceAllUses(with val: Inst) {
         for use in uses {
             use.value = val
-            val.addUse(use)
         }
-        uses.removeAll()
     }
 }
 

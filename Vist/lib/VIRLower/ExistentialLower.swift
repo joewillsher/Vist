@@ -19,7 +19,7 @@ extension ExistentialConstructInst : VIRLower {
        
         let ex = try IGF.builder.buildCall(function: ref, args: [conf, mem])
         
-        let exType = existentialType.importedType(inModule: module).lowered(module: module).getPointerType()
+        let exType = existentialType.importedType(in: module).lowered(module: module).getPointerType()
         let bc = try IGF.builder.buildBitcast(value: ex, to: exType)
         
         return try IGF.builder.buildLoad(from: bc, name: irName)
@@ -34,7 +34,7 @@ extension ExistentialWitnessInst : VIRLower {
             .methodType(methodNamed: methodName, argTypes: argTypes)
             .asMethodWithOpaqueParent()
             .cannonicalType(module: module)
-            .importedType(inModule: module)
+            .importedType(in: module)
         
         let ref = module.getOrAddRuntimeFunction(named: "vist_getWitnessMethod", IGF: &IGF)
         

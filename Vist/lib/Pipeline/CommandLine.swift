@@ -6,12 +6,12 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-import class Foundation.NSPipe
-import class Foundation.NSNumberFormatter
+import class Foundation.Pipe
+import class Foundation.NumberFormatter
 import CoreFoundation.CFDate
 import class Foundation.NSString
 
-public func compile(withFlags flags: [String], inDirectory dir: String, out: NSPipe? = nil) throws {
+public func compile(withFlags flags: [String], inDirectory dir: String, out: Pipe? = nil) throws {
     
     guard !flags.isEmpty else { fatalError("No input files") }
     
@@ -68,7 +68,7 @@ public func compile(withFlags flags: [String], inDirectory dir: String, out: NSP
         #endif
         
         if flags.contains("-build-stdlib") {
-            var o: CompileOptions = [.buildStdLib, .Ohigh]
+            var o: CompileOptions = [.buildStdLib]
             if o.contains(.verbose) { _ = o.insert(.verbose) }
             try compileDocuments(fileNames: ["Int.vist", "Operators.vist", "Other.vist", "String.vist" ],
                                  inDirectory: "\(SOURCE_ROOT)/Vist/Stdlib",
@@ -88,7 +88,7 @@ public func compile(withFlags flags: [String], inDirectory dir: String, out: NSP
         }
         
         #if DEBUG
-            let f = NSNumberFormatter() 
+            let f = NumberFormatter()
             f.maximumFractionDigits = 2
             f.minimumFractionDigits = 2
             print("\nCompile took: \(f.string(from: CFAbsoluteTimeGetCurrent() - s)!)s")

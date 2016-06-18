@@ -8,16 +8,13 @@
 
 #include "Intrinsic.hpp"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wall"
+
 #include <stdio.h>
 #include <iostream>
 #include <stdlib.h>
 #include <string.h>
-
-static const char *const intrinsicNames[] = {
-#define GET_INTRINSIC_NAME_TABLE
-#include "llvm/IR/Intrinsics.gen"
-#undef GET_INTRINSIC_NAME_TABLE
-};
 
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/Value.h"
@@ -25,6 +22,15 @@ static const char *const intrinsicNames[] = {
 #include "llvm/Target/TargetIntrinsicInfo.h"
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Target/TargetOptions.h"
+
+#pragma clang diagnostic pop
+
+static const char *const intrinsicNames[] = {
+#define GET_INTRINSIC_NAME_TABLE
+#include "llvm/IR/Intrinsics.gen"
+#undef GET_INTRINSIC_NAME_TABLE
+};
+
 
 
 using namespace llvm;

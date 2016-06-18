@@ -138,7 +138,7 @@ extension BasicBlock {
 extension BasicBlock.BlockApplication {
     /// Get an entry instance
     static func entry(params: [Param]?) -> BasicBlock.BlockApplication {
-        return BasicBlock.BlockApplication(params: params?.map(Operand.init), predecessor: nil, breakInst: nil)
+        return BasicBlock.BlockApplication(params: params?.map(FunctionOperand.init(param:)), predecessor: nil, breakInst: nil)
     }
     /// Get a non entry instance
     static func body(predecessor: BasicBlock, params: [BlockOperand]?, breakInst: BreakInstruction) -> BasicBlock.BlockApplication {

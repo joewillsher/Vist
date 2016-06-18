@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-import class Foundation.NSTask
+import class Foundation.Task
 
 private protocol Dumpable {
     func dump()
@@ -70,83 +70,57 @@ extension LLVMBuilder {
         return try LLVMValue(ref: val())
     }
     func buildPhi(type: LLVMType, name: String? = nil) throws -> LLVMValue {
-        return try wrap(
-            LLVMBuildPhi(builder, type.type!, name ?? "")
-        )
+        return try wrap(LLVMBuildPhi(builder, type.type!, name ?? ""))
     }
     func buildAlloca(type: LLVMType, name: String? = nil) throws -> LLVMValue {
-        return try wrap(
-            LLVMBuildAlloca(builder, type.type!, name ?? "")
-        )
+        return try wrap(LLVMBuildAlloca(builder, type.type!, name ?? ""))
     }
+    
     @discardableResult
     func buildStore(value val: LLVMValue, in addr: LLVMValue) throws -> LLVMValue {
-        return try wrap(
-            LLVMBuildStore(builder, val.val(), addr.val())
-        )
+        return try wrap(LLVMBuildStore(builder, val.val(), addr.val()))
     }
     func buildLoad(from addr: LLVMValue, name: String? = nil) throws -> LLVMValue {
-        return try wrap(
-            LLVMBuildLoad(builder, addr.val(), name ?? "")
-        )
+        return try wrap(LLVMBuildLoad(builder, addr.val(), name ?? ""))
     }
     func buildBitcast(value val: LLVMValue, to type: LLVMType, name: String? = nil) throws -> LLVMValue {
-        return try wrap(
-            LLVMBuildBitCast(builder, val.val(), type.type!, name ?? "")
-        )
+        return try wrap(LLVMBuildBitCast(builder, val.val(), type.type!, name ?? ""))
     }
     static func constBitcast(value val: LLVMValue, to type: LLVMType) throws -> LLVMValue {
-        return try LLVMValue(ref:
-            LLVMConstBitCast(val.val(), type.type!)
-        )
+        return try LLVMValue(ref:LLVMConstBitCast(val.val(), type.type!))
     }
     func buildTrunc(val: LLVMValue, size: Int, name: String? = nil) throws -> LLVMValue {
-        return try wrap(
-            LLVMBuildTrunc(builder, val.val(), LLVMIntType(UInt32(size)), name ?? "")
-        )
+        return try wrap(LLVMBuildTrunc(builder, val.val(), LLVMIntType(UInt32(size)), name ?? ""))
     }
     @discardableResult
     func buildBr(to block: LLVMBasicBlock) throws -> LLVMValue {
-        return try wrap(
-            LLVMBuildBr(builder, block.block)
-        )
+        return try wrap(LLVMBuildBr(builder, block.block))
     }
     @discardableResult
     func buildCondBr(if cond: LLVMValue, to success: LLVMBasicBlock, elseTo fail: LLVMBasicBlock) throws -> LLVMValue {
-        return try wrap(
-            LLVMBuildCondBr(builder, cond.val(), success.block, fail.block)
-        )
+        return try wrap(LLVMBuildCondBr(builder, cond.val(), success.block, fail.block))
     }
     @discardableResult
     func buildRet(val: LLVMValue) throws -> LLVMValue {
-        return try wrap(
-            LLVMBuildRet(builder, val.val())
+        return try wrap(LLVMBuildRet(builder, val.val())
         )
     }
     @discardableResult
     func buildRetVoid() throws -> LLVMValue {
-        return try wrap(
-            LLVMBuildRetVoid(builder)
-        )
+        return try wrap(LLVMBuildRetVoid(builder))
     }
     func buildCall(function: LLVMFunction, args: [LLVMValue], name: String? = nil) throws -> LLVMValue {
         var applied = try args.map { try $0.val() }
 //        guard function.paramCount == applied.count else { throw error(LLVMError.invalidParamCount(expected: function.paramCount, got: applied.count)) }
-        return try wrap(
-            LLVMBuildCall(builder, function.function.val(), &applied, UInt32(applied.count), name ?? "")
-        )
+        return try wrap(LLVMBuildCall(builder, function.function.val(), &applied, UInt32(applied.count), name ?? ""))
     }
     @discardableResult
     func buildUnreachable() throws -> LLVMValue {
-        return try wrap(
-            LLVMBuildUnreachable(builder)
-        )
+        return try wrap(LLVMBuildUnreachable(builder))
     }
     @discardableResult
     func buildInsertValue(value val: LLVMValue, in aggr: LLVMValue, index: Int, name: String? = nil) throws -> LLVMValue {
-        return try wrap(
-            LLVMBuildInsertValue(builder, aggr.val(), val.val(), UInt32(index), name ?? "")
-        )
+        return try wrap(LLVMBuildInsertValue(builder, aggr.val(), val.val(), UInt32(index), name ?? ""))
     }
     @discardableResult
     static func constInsert(value val: LLVMValue, in aggr: LLVMValue, index: Int, name: String? = nil) throws -> LLVMValue {
@@ -178,36 +152,24 @@ extension LLVMBuilder {
         return try LLVMValue(ref: LLVMConstInsertValue(aggr.val(), value.val(), &v, 1))
     }
     func buildExtractValue(from val: LLVMValue, index: Int, name: String? = nil) throws -> LLVMValue {
-        return try wrap(
-            LLVMBuildExtractValue(builder, val.val(), UInt32(index), name ?? "")
-        )
+        return try wrap(LLVMBuildExtractValue(builder, val.val(), UInt32(index), name ?? ""))
     }
     func buildStructGEP(ofAggregate val: LLVMValue, index: Int, name: String? = nil) throws -> LLVMValue {
-        return try wrap(
-            LLVMBuildStructGEP(builder, val.val(), UInt32(index), name ?? "")
-        )
+        return try wrap(LLVMBuildStructGEP(builder, val.val(), UInt32(index), name ?? ""))
     }
     func buildGEP(ofAggregate aggr: LLVMValue, index: LLVMValue, name: String? = nil) throws -> LLVMValue {
         var v = try [index.val()]
-        return try wrap(
-            LLVMBuildGEP(builder, aggr.val(), &v, 1, name ?? "")
-        )
+        return try wrap(LLVMBuildGEP(builder, aggr.val(), &v, 1, name ?? ""))
     }
     static func constGEP(ofAggregate aggr: LLVMValue, index: LLVMValue) throws -> LLVMValue {
         var v = try [index.val()]
-        return try LLVMValue(ref:
-            LLVMConstInBoundsGEP(aggr.val(), &v, 1)
-        )
+        return try LLVMValue(ref:LLVMConstInBoundsGEP(aggr.val(), &v, 1))
     }
     func buildGlobalString(value str: String, name: String? = nil) throws -> LLVMValue {
-        return try wrap(
-            LLVMBuildGlobalString(builder, str, name ?? "")
-        )
+        return try wrap(LLVMBuildGlobalString(builder, str, name ?? ""))
     }
     func buildGlobalString(value str: UnsafeMutablePointer<CChar>, name: String? = nil) throws -> LLVMValue {
-        return try wrap(
-            LLVMBuildGlobalString(builder, str, name ?? "")
-        )
+        return try wrap(LLVMBuildGlobalString(builder, str, name ?? ""))
     }
     static func constAggregate(type: LLVMType, elements: [LLVMValue]) throws -> LLVMValue {
         // creates an undef, then for each element in type, inserts the next element into it
@@ -252,19 +214,13 @@ extension LLVMBuilder {
         return LLVMValue(ref: LLVMBuildLoad(builder, ptr, ""))
     }
     func buildArrayAlloca(size: LLVMValue, elementType: LLVMType, name: String? = nil) throws -> LLVMValue {
-        return try wrap(
-            LLVMBuildArrayAlloca(builder, elementType.type, size.val(), name ?? "")
-        )
+        return try wrap(LLVMBuildArrayAlloca(builder, elementType.type, size.val(), name ?? ""))
     }
     func buildArrayMalloc(size: LLVMValue, elementType: LLVMType, name: String? = nil) throws -> LLVMValue {
-        return try wrap(
-            LLVMBuildArrayMalloc(builder, elementType.type, size.val(), name ?? "")
-        )
+        return try wrap(LLVMBuildArrayMalloc(builder, elementType.type, size.val(), name ?? ""))
     }
     func buildFree(ptr: LLVMValue, name: String? = nil) throws -> LLVMValue {
-        return try wrap(
-            LLVMBuildFree(builder, ptr.val())
-        )
+        return try wrap(LLVMBuildFree(builder, ptr.val()))
     }
 
 }

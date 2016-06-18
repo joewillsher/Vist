@@ -19,26 +19,6 @@ extension BoolLiteralInst : VIRLower {
     }
 }
 
-extension String {
-    
-    enum Encoding : Int { case utf8 = 1, utf16 = 2 }
-    
-    var encoding: Encoding {
-        switch smallestEncoding {
-        case NSUTF16StringEncoding: return .utf16
-        default: return .utf8
-        }
-    }
-}
-extension String.Encoding : CustomStringConvertible {
-    var description: String {
-        switch self {
-        case .utf8: return "utf8"
-        case .utf16: return "utf16"
-        }
-    }
-}
-
 extension StringLiteralInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         let str = try IGF.builder.buildGlobalString(value: value.value)

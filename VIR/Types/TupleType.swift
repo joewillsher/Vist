@@ -19,8 +19,8 @@ final class TupleType : Type {
         return LLVMType(ref: LLVMStructType(&arr, UInt32(members.count), false))
     }
     
-    func importedType(inModule module: Module) -> Type {
-        return TupleType(members: members.map { $0.importedType(inModule: module) })
+    func importedType(in module: Module) -> Type {
+        return TupleType(members: members.map { $0.importedType(in: module) })
     }
     
     /// Returns the type of the tuple element at `index`
@@ -49,7 +49,6 @@ final class TupleType : Type {
 
 extension TupleType : Equatable { }
 
-@warn_unused_result
 func == (lhs: TupleType, rhs: TupleType) -> Bool {
     return lhs.members.elementsEqual(rhs.members, isEquivalent: ==)
 }

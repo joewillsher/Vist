@@ -44,8 +44,8 @@ final class GenericType : NominalType {
         fatalError("implement this")
     }
     
-    func importedType(inModule module: Module) -> Type {
-        return GenericType(name: name, concepts: concepts.map { $0.importedType(inModule: module) as! ConceptType }, parentName: parentName)
+    func importedType(in module: Module) -> Type {
+        return GenericType(name: name, concepts: concepts.map { $0.importedType(in: module) as! ConceptType }, parentName: parentName)
     }
     
     var irName: String {

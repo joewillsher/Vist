@@ -93,9 +93,9 @@ enum BuiltinType : Type {
         }
     }
     
-    func importedType(inModule module: Module) -> Type {
+    func importedType(in module: Module) -> Type {
         switch self {
-        case .pointer(let pointee): return BuiltinType.pointer(to: pointee.importedType(inModule: module))
+        case .pointer(let pointee): return BuiltinType.pointer(to: pointee.importedType(in: module))
         default: return self
         }
     }
@@ -112,7 +112,6 @@ enum BuiltinType : Type {
 
 extension BuiltinType : Equatable { }
 
-@warn_unused_result
 func == (lhs: BuiltinType, rhs: BuiltinType) -> Bool {
     return lhs.explicitName == rhs.explicitName
 }

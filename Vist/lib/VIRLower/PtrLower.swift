@@ -12,7 +12,6 @@ extension AllocInst : VIRLower {
         return try IGF.builder.buildAlloca(type: storedType.lowered(module: module), name: irName)
     }
 }
-
 extension StoreInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         return try IGF.builder.buildStore(value: value.loweredValue!, in: address.loweredValue!)

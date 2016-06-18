@@ -45,7 +45,7 @@ struct StdLibInlinePass : OptimisationPass {
             func replaceWithBuiltin(_ inst: BuiltinInst, returnType: StructType? = nil) throws {
                 try call.replace { explosion in
                     let extracted = try call.args.map { arg in
-                        try explosion.insert(inst: StructExtractInst(object: arg, property: "value")) as Value
+                        try explosion.insert(inst: StructExtractInst(object: arg.value!, property: "value")) as Value
                     }
                     let virInst = try explosion.insert(inst: BuiltinInstCall(inst: inst, args: extracted, irName: inst.rawValue))
                     
@@ -58,7 +58,7 @@ struct StdLibInlinePass : OptimisationPass {
             func replaceWithOverflowCheckedBuiltin(_ inst: BuiltinInst) throws {
                 try call.replace { explosion in
                     let extracted = try call.args.map { arg in
-                        try explosion.insert(inst: StructExtractInst(object: arg, property: "value")) as Value
+                        try explosion.insert(inst: StructExtractInst(object: arg.value!, property: "value")) as Value
                     }
                     let virInst = try explosion.insert(inst: BuiltinInstCall(inst: inst, args: extracted, irName: inst.rawValue))
                     

@@ -27,6 +27,7 @@ extension Module {
 //            try ConstantFoldingPass.create(function, optLevel: optLevel)
             try DCEPass.create(function, optLevel: optLevel)
 //            try CFGSimplificationPass.create(function, optLevel: optLevel)
+            
         }
         
         try DeadFunctionPass.create(self, optLevel: optLevel)
@@ -82,6 +83,7 @@ struct Explosion<InstType : Inst> {
             pos = i // insert next after this inst
         }
         
+        //let l = inst.args[0].value // po l!.uses[0].user?.dump()
         inst.replaceAllUses(with: tail)
         try inst.eraseFromParent()
     }

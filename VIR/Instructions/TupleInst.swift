@@ -11,9 +11,9 @@ final class TupleCreateInst : InstBase {
     var tupleType: TupleType, elements: [Operand]
     
     /// - precondition: `type` has been included in the module using
-    ///                 `type.importedType(inModule: module)`
+    ///                 `type.importedType(in: module)`
     init(type: TupleType, elements: [Value], irName: String? = nil) {
-        self.tupleType = type//.importedType(inModule: module) as! TupleType
+        self.tupleType = type//.importedType(in: module) as! TupleType
         let els = elements.map(Operand.init)
         self.elements = els
         super.init(args: els, irName: irName)

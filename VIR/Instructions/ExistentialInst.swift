@@ -40,7 +40,7 @@ final class OpenExistentialPropertyInst: InstBase, LValue {
 final class ExistentialConstructInst : InstBase {
     var value: PtrOperand, existentialType: ConceptType
     
-    override var type: Type? { return existentialType.importedType(inModule: module) }
+    override var type: Type? { return existentialType.importedType(in: module) }
     
     private init(value: PtrOperand, existentialType: ConceptType, irName: String?) {
         self.value = value

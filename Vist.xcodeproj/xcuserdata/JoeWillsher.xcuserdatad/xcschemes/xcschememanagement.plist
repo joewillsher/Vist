@@ -9,11 +9,6 @@
 			<key>orderHint</key>
 			<integer>1</integer>
 		</dict>
-		<key>LLVM.xcscheme</key>
-		<dict>
-			<key>orderHint</key>
-			<integer>1</integer>
-		</dict>
 		<key>Target.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
@@ -24,11 +19,6 @@
 			<key>orderHint</key>
 			<integer>1</integer>
 		</dict>
-		<key>VHIR.xcscheme</key>
-		<dict>
-			<key>orderHint</key>
-			<integer>2</integer>
-		</dict>
 		<key>Vist.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
@@ -38,6 +28,11 @@
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
 		<key>D41BF5491C5CD797004A1962</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>D41D00BD1D147A1B00B01808</key>
 		<dict>
 			<key>primary</key>
 			<true/>

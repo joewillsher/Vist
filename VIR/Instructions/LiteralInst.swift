@@ -6,6 +6,8 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
+import class Foundation.NSString
+
 /**
  An int literal
  
@@ -46,6 +48,7 @@ final class BoolLiteralInst : InstBase {
     }
 }
 
+
 /**
  A string literal, specifying an encoding
  
@@ -54,7 +57,7 @@ final class BoolLiteralInst : InstBase {
 final class StringLiteralInst : InstBase {
     var value: LiteralValue<String>
     
-    var encoding: String.Encoding { return value.value.encoding }
+    var isUTF8Encoded: Bool { return value.value.smallestEncoding == .utf8 || value.value.smallestEncoding == .ascii }
     override var type: Type? { return value.type }
     
     private init(val: String, irName: String?) {
@@ -63,7 +66,7 @@ final class StringLiteralInst : InstBase {
     }
     
     override var instVIR: String {
-        return "\(name) = string_literal \(encoding) \"\(value.value)\" \(useComment)"
+        return "\(name) = string_literal \(isUTF8Encoded ? "utf8" : "utf16") \"\(value.value)\" \(useComment)"
     }
 }
 

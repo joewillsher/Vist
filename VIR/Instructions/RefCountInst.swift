@@ -22,12 +22,12 @@ final class AllocObjectInst : InstBase, LValue {
         super.init(args: [], irName: irName)
     }
     
-    var refType: Type { return storedType.refCountedBox(module: module).importedType(inModule: module) }
+    var refType: Type { return storedType.refCountedBox(module: module) }
     override var type: Type? { return memType.map { BuiltinType.pointer(to: $0) } }
-    var memType: Type? { return Runtime.refcountedObjectType.importedType(inModule: module) }
+    var memType: Type? { return refType }
     
     override var instVIR: String {
-        return "\(name) = alloc_object \(refType.explicitName)\(useComment)"
+        return "\(name) = alloc_object \(refType.vir)\(useComment)"
     }
 }
 

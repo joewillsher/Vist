@@ -62,6 +62,9 @@ struct StdLib {
         ("==", FunctionType(params: [intType, intType], returns: boolType)),
         ("!=", FunctionType(params: [intType, intType], returns: boolType)),
         
+        ("inc",FunctionType(params: [intType], returns: intType)),
+        ("dec",FunctionType(params: [intType], returns: intType)),
+        
         // bool
         ("&&", FunctionType(params: [boolType, boolType], returns: boolType)),
         ("||", FunctionType(params: [boolType, boolType], returns: boolType)),
@@ -99,6 +102,7 @@ struct StdLib {
         ("assert",     FunctionType(params: [boolType],   returns: voidType)),
         ("fatalError", FunctionType(params: [],           returns: voidType)),
         ("fatalError", FunctionType(params: [stringType], returns: voidType)),
+        
         
         // TODO: when we can link parallel compiled files' AST we 
         //       won't need to expose private stdlib function

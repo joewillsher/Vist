@@ -47,18 +47,15 @@ extension Value {
      */
     static func getType(_ forVal: Value) throws -> Type { if let t = forVal.type { return t } else { throw irGenError(.typeNotFound, userVisible: false) } }
     
-    /// Removes all `Operand` instances which point to `self`
-    func removeAllUses() { uses.forEach(removeUse)  }
-        
     /// Adds record of a user `use` to self’s users list
-    func addUse(_ use: Operand) { uses.append(use) }
+    func addUse(_ use: Operand) {
+        uses.append(use)
+    }
     
     /// Removes `use` from self’s uses record
     func removeUse(_ use: Operand) {
         guard let i = uses.index(where: {$0.value === self}) else { return }
         uses.remove(at: i)
-        use.value = nil
-        use.user = nil
     }
     
     /// Adds the lowered val to all users

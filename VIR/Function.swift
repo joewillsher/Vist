@@ -112,7 +112,7 @@ extension Function {
         
         // values for the explicit params
         let params = zip(paramNames, type.params).map { name, type -> Param in
-            let t = type.importedType(inModule: module)
+            let t = type.importedType(in: module)
             if case let bt as BuiltinType = t, case .pointer(let pointee) = bt {
                 return RefParam(paramName: name, memType: pointee)
             }
@@ -309,7 +309,7 @@ extension Builder {
     /// Creates function prototype an adds to module
     @discardableResult
     func buildFunctionPrototype(name: String, type: FunctionType, attrs: [FunctionAttributeExpr] = []) throws -> Function {
-        let type = type.cannonicalType(module: module).importedType(inModule: module) as! FunctionType
+        let type = type.cannonicalType(module: module).importedType(in: module) as! FunctionType
         let function = Function(name: name, type: type, module: module)
         function.applyAttributes(attrs: attrs)
         module.insert(function: function)
@@ -360,6 +360,6 @@ extension Module {
 extension Function : Hashable, Equatable {
     var hashValue: Int { return name.hashValue }
 }
-@warn_unused_result
+
 func == (lhs: Function, rhs: Function) -> Bool { return lhs === rhs }
 

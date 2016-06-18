@@ -6,8 +6,8 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-import class Foundation.NSTask
-import class Foundation.NSFileManager
+import class Foundation.Task
+import class Foundation.FileManager
 
 extension LLVMModule {
         
@@ -15,6 +15,8 @@ extension LLVMModule {
     func `import`(from otherModule: LLVMModule) {
         var str: UnsafeMutablePointer<Int8>? = UnsafeMutablePointer(allocatingCapacity: 1)
         LLVMLinkModules(module, otherModule.module, LLVMLinkerDestroySource, &str)
+//        str?.deinitialize()
+//        str?.deallocateCapacity(1)
     }
     
     /// Link the module with another IR file
@@ -29,18 +31,18 @@ extension LLVMModule {
             break
         case _ where !file.hasSuffix(".ll"):
             // .cpp -> .ll
-            NSTask.execute(exec: .clang,
-                           files: ["Shims.c"],
-                           outputName: "\(file).bc",
-                           cwd: directory,
-                           args: "-O3", "-S", "-emit-llvm")
+            Task.execute(exec: .clang,
+                         files: [file],
+                         outputName: "\(file).bc",
+                         cwd: directory,
+                         args: "-O3", "-S", "-emit-llvm")
             fallthrough
         default:
             // .ll -> .bc
-            NSTask.execute(exec: .assemble,
-                           files: ["\(file).bc"],
-                           outputName: "\(file).bc",
-                           cwd: directory)
+            Task.execute(exec: .assemble,
+                         files: ["\(file).bc"],
+                         outputName: "\(file).bc",
+                         cwd: directory)
             path = "\(directory)/\(file).bc"
         }
         
@@ -49,7 +51,7 @@ extension LLVMModule {
         defer {
             // we import the source into the target
             self.import(from: sourceModule)
-            _ = try? NSFileManager.default().removeItem(atPath: path)
+            _ = try? FileManager.default().removeItem(atPath: path)
         }
         
         // mangle names

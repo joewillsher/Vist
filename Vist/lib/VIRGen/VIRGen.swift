@@ -80,7 +80,7 @@ extension AST {
     
     func emitVIR(module: Module, isLibrary: Bool) throws {
         
-        let builder = module.builder
+        let builder = module.builder!
         let scope = Scope(module: module)
         
         if isLibrary {
@@ -142,7 +142,7 @@ extension StringLiteral : ValueEmitter {
         let string = try module.builder.buildStringLiteral(val: str)
         let length = try module.builder.buildIntLiteral(val: str.utf8.count + 1,
                                                         irName: "size")
-        let isUTFU = try module.builder.buildBoolLiteral(val: str.encoding.rawValue == String.Encoding.utf8.rawValue,
+        let isUTFU = try module.builder.buildBoolLiteral(val: string.isUTF8Encoded,
                                                          irName: "isUTF8")
         
         let initialiser = try module.getOrInsertStdLibFunction(named: "String",
@@ -178,7 +178,7 @@ extension VariableDecl : ValueEmitter {
 extension FunctionCall/*: VIRGenerator*/ {
     
     func argOperands(module: Module, scope: Scope) throws -> [Operand] {
-        guard case let fnType as FunctionType = fnType?.importedType(inModule: module) else {
+        guard case let fnType as FunctionType = fnType?.importedType(in: module) else {
             throw VIRError.paramsNotTyped
         }
         
@@ -192,7 +192,7 @@ extension FunctionCall/*: VIRGenerator*/ {
     
     func emitRValue(module: Module, scope: Scope) throws -> Accessor {
         
-        guard case let fnType as FunctionType = fnType?.importedType(inModule: module) else {
+        guard case let fnType as FunctionType = fnType?.importedType(in: module) else {
             throw VIRError.paramsNotTyped
         }
         let args = try argOperands(module: module, scope: scope)
@@ -237,7 +237,6 @@ extension FuncDecl : StmtEmitter {
         // find proto/make function and move into it
         let function = try module.builder.getOrBuildFunction(name: mangledName, type: type, paramNames: impl.params, attrs: attrs)
         module.builder.insertPoint.function = function
-        
         
         // make scope and occupy it with params
         let fnScope = Scope(parent: scope, function: function)
@@ -336,7 +335,7 @@ extension TupleExpr : ValueEmitter {
         
         if self.elements.isEmpty { return try VoidLiteralValue().accessor() }
         
-        guard let type = try _type?.importedType(inModule: module).getAsTupleType() else { throw VIRError.noType(#file) }
+        guard let type = try _type?.importedType(in: module).getAsTupleType() else { throw VIRError.noType(#file) }
         let elements = try self.elements.map { try $0.emitRValue(module: module, scope: scope).aggregateGetValue() }
         
         return try module.builder.build(inst: TupleCreateInst(type: type, elements: elements)).accessor()
@@ -690,7 +689,7 @@ extension InitialiserDecl: StmtEmitter {
             selfVar = try RefCountedAccessor.allocObject(type: selfType, module: module)
         }
         else {
-            selfVar = try module.builder.build(inst:AllocInst(memType: selfType.importedType(inModule: module), irName: "self")).accessor
+            selfVar = try module.builder.build(inst:AllocInst(memType: selfType.importedType(in: module), irName: "self")).accessor
         }
         
         fnScope.insert(variable: selfVar, name: "self")
@@ -769,7 +768,7 @@ extension MethodCallExpr : ValueEmitter {
                                                                       argTypes: argTypes,
                                                                       existentialType: existentialType,
                                                                       irName: "witness")
-            guard case let fnType as FunctionType = fn.memType?.importedType(inModule: module) else { fatalError() }
+            guard case let fnType as FunctionType = fn.memType?.importedType(in: module) else { fatalError() }
             
             // get the instance from the existential
             let unboxedSelf = try module.builder.buildExistentialUnbox(value: selfRef, irName: "unboxed")
