@@ -38,6 +38,31 @@ extension ASTNode {
     }
 }
 
+extension AST {
+    
+    private func semaDecls(scope: SemaScope) {
+        // TODO: Sema walks the root scope of the tree
+        //       - it picks up type/function/concept decls
+        //       - only recurses to their child decls, doesn't
+        //         type check function bodies etc
+        //       - this step resolves types and populates the
+        //         global scope
+        //       - so we get forward declaration behaviour and
+        //         multithreaded sema can resolve types declared
+        //         at different roots in the AST
+    }
+    
+    func sema(globalScope: SemaScope) throws {
+        
+        let globalCollector = AsyncErrorCollector()
+        try walkChildrenAsync(collector: globalCollector) { node in
+            try node.typeForNode(scope: globalScope)
+        }
+        globalCollector.group.wait()
+        try globalCollector.throwIfErrors()
+    }
+}
+
 
 
 extension Collection where IndexDistance == Int {

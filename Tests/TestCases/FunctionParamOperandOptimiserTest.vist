@@ -2,6 +2,10 @@
 
 // TODO: Failing
 
+/*
+    The optimiser incorrectly replaces uses of function parameters
+*/
+
 func functionParamOperandOptimiserTest :: Int  = (number) {
     var val = number
     let isNegative = number < 0

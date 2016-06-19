@@ -6,6 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
+import Dispatch
 
 /// AST nodes which have children
 ///
@@ -18,8 +19,12 @@ protocol ScopeNode {
 extension ScopeNode {
     
     func walkChildren<Ret>(inCollector collector: ErrorCollector? = nil, fn: @noescape (ASTNode) throws -> Ret) throws {
-        _ = try childNodes.walkChildren(collector: collector, fn)
+        try childNodes.walkChildren(collector: collector, fn)
     }
+    func walkChildrenAsync(collector: AsyncErrorCollector, fn: (ASTNode) throws -> ()) throws {
+        try childNodes.walkChildrenAsync(collector: collector, fn)
+    }
+
 }
 
 extension Collection where Iterator.Element : ASTNode {
@@ -92,6 +97,23 @@ extension Collection where Iterator.Element == ASTNode {
         
         return res
     }
+    
+    /// Walks the function over the child decls asynchronoustly
+    @discardableResult
+    func walkChildrenAsync(collector: AsyncErrorCollector, _ fn: (ASTNode) throws -> ()) throws {
+        
+        let queue = DispatchQueue(label: "com.vist.child-worker")
+        // FIXME: All operations added to the same queue
+        //        - we want all on a different queue, but we first need 
+        //          forward decl behaviour
+        
+        for exp in self {
+            queue.async(group: collector.group) {
+                do { try fn(exp) }
+                catch { collector.addErrorSync(error: error) }
+            }
+        }
+    }
 }
 
 extension Collection where Iterator.Element : ASTNode {
@@ -106,11 +128,12 @@ extension Collection where Iterator.Element : ASTNode {
 ///
 /// Requires any errors to be thrown with the `throwIfErrors()` function
 ///
-final class ErrorCollector {
+class ErrorCollector {
     
-    private var errors: [VistError] = []
-    private var caught = false
-    private var file: StaticString, line: UInt, function: String
+    private final var errors: [VistError] = []
+    private final var caught = false
+    private final var file: StaticString, line: UInt, function: String
+    private final var uncaughtError: ErrorProtocol? = nil
     
     // on init, captures scope
     // so if not thrown fatal error has helpful info
@@ -122,7 +145,7 @@ final class ErrorCollector {
     
     /// Runs a code block and catches any errors
     @discardableResult
-    func run<T>(block: @noescape () throws -> T) throws -> T? {
+    final func run<T>(block: @noescape () throws -> T) throws -> T? {
         caught = false
 
         do {
@@ -135,7 +158,7 @@ final class ErrorCollector {
     }
     
     /// Throws all errors collected
-    func throwIfErrors() throws {
+    final func throwIfErrors() throws {
         caught = true
         do {
             try errors.throwIfErrors()
@@ -148,6 +171,18 @@ final class ErrorCollector {
     deinit {
         if !caught {
             fatalError("Error thrown and not handled\nCollection initialised on line \(line), in function '\(function)', in file \(file)'")
+        }
+    }
+}
+
+final class AsyncErrorCollector : ErrorCollector {
+    
+    let group = DispatchGroup()
+    
+    final func addErrorSync(error: ErrorProtocol) {
+        switch error {
+        case let e as VistError: errors.append(e)
+        default: uncaughtError = error
         }
     }
 }

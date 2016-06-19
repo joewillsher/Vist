@@ -30,12 +30,6 @@ final class AST : ASTNode, ScopeNode {
 }
 
 
-extension AST {
-    func sema(globalScope: SemaScope) throws {
-        try walkChildren { node in try node.typeForNode(scope: globalScope) }
-    }
-}
-
 /// Type erased `Typed` protocol
 ///
 /// Conformants have a `_type` member which is an existential type

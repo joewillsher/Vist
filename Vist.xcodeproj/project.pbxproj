@@ -684,8 +684,8 @@
 		D4E347291C6254E200CC2F8E /* Type Check */ = {
 			isa = PBXGroup;
 			children = (
-				D43B3A2E1C8A10C80039FB2E /* ExprSema.swift */,
 				D43B3A371C8A10C80039FB2E /* TypeProvider.swift */,
+				D43B3A2E1C8A10C80039FB2E /* ExprSema.swift */,
 				D43B3A361C8A10C80039FB2E /* StructSema.swift */,
 				D43B3A351C8A10C80039FB2E /* StmtSema.swift */,
 				D43B3A2F1C8A10C80039FB2E /* FunctionSema.swift */,
