@@ -102,11 +102,11 @@ extension Collection where Iterator.Element == ASTNode {
     @discardableResult
     func walkChildrenAsync(collector: AsyncErrorCollector, _ fn: (ASTNode) throws -> ()) throws {
         
-        let queue = DispatchQueue(label: "com.vist.child-worker")
         // FIXME: All operations added to the same queue
         //        - we want all on a different queue, but we first need 
         //          forward decl behaviour
-        
+        let queue = DispatchQueue(label: "com.vist.child-worker")
+
         for exp in self {
             queue.async(group: collector.group) {
                 do { try fn(exp) }
@@ -180,9 +180,10 @@ final class AsyncErrorCollector : ErrorCollector {
     let group = DispatchGroup()
     
     final func addErrorSync(error: ErrorProtocol) {
+        // TODO: Thread safety issue here
         switch error {
-        case let e as VistError: errors.append(e)
-        default: uncaughtError = error
+        case let e as VistError: self.errors.append(e)
+        default: self.uncaughtError = error
         }
     }
 }

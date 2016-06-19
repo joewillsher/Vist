@@ -69,7 +69,7 @@ public func compile(withFlags flags: [String], inDirectory dir: String, out: Pip
         
         if flags.contains("-build-stdlib") {
             var o: CompileOptions = [.buildStdLib]
-            if o.contains(.verbose) { _ = o.insert(.verbose) }
+            if compileOptions.contains(.verbose) { _ = o.insert(.verbose) }
             try compileDocuments(fileNames: ["Int.vist", "Operators.vist", "Other.vist", "String.vist" ],
                                  inDirectory: "\(SOURCE_ROOT)/Vist/Stdlib",
                                  explicitName: "stdlib",

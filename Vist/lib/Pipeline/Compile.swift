@@ -39,7 +39,7 @@ struct CompileOptions : OptionSet {
     /// Parses the document as if it were the stdlib, exposing Builtin types and functions
     private static let parseStdLib = CompileOptions(rawValue: 1 << 13)
     /// Compiles the standard libary before the input files
-    static let buildStdLib: CompileOptions = [compileStdLib, parseStdLib, produceLib, buildRuntime, linkWithRuntime, Ohigh, verbose, preserveTempFiles]
+    static let buildStdLib: CompileOptions = [compileStdLib, parseStdLib, produceLib, buildRuntime, linkWithRuntime, Ohigh, preserveTempFiles]
     
     /// Compiles the runtime
     static let buildRuntime = CompileOptions(rawValue: 1 << 14)
@@ -51,6 +51,84 @@ struct CompileOptions : OptionSet {
     
     static let runPreprocessor = CompileOptions(rawValue: 1 << 17)
 }
+
+
+
+private func parseFiles(_ names: [String],
+                        inDirectory dir: String,
+                        options: CompileOptions
+    ) throws -> [AST] {
+    
+    var asts: [String: AST] = [:]
+    /// The queue used to access asts
+    /// - uses must be synchronous
+    let astQueue = DispatchQueue(label: "com.vist.ast-array")
+    
+    // collections storing thrown parse errors
+    var errors: [VistError] = [], unhandledError: ErrorProtocol? = nil
+    
+    /// The dispatch group we put parse threads in
+    let parseGroup = DispatchGroup()
+    
+    for name in names {
+        
+        let parseQueue = DispatchQueue(label: "com.vist.parse")
+        // On a seperate queue, parse the file
+        // dispatch onto parse group
+        parseQueue.async(group: parseGroup) {
+            do {
+                // Run preprocessor
+                var fileName = name
+                if options.contains(.runPreprocessor) {
+                    runPreprocessor(file: &fileName, cwd: dir)
+                }
+                // if we run preprocessor, clean up previst file
+                defer {
+                    if options.contains(.runPreprocessor) { try! FileManager.default().removeItem(atPath: "\(dir)/\(fileName)") }
+                }
+                
+                // get file contents
+                let path = "\(dir)/\(fileName)"
+                let doc = try String(contentsOfFile: path, encoding: .utf8)
+                
+                // Lex code
+                let tokens = try doc.getTokens()
+                
+                // parse tokens & generate AST
+                let ast = try Parser.parse(withTokens: tokens, isStdLib: options.contains(.parseStdLib))
+                
+                if options.contains(.verbose) { // log
+                    print("------------------------------AST-------------------------------", ast.astDescription())
+                }
+                
+                // on ast queue, synchronously write this AST
+                astQueue.sync {
+                    asts[fileName] = ast
+                }
+            }
+            catch let e as VistError {
+                // if there's an error we know about, add it to the error array
+                // on the astQueue synchronously
+                astQueue.sync { errors.append(e) }
+            }
+            catch let e {
+                // ...otherwise just assign to the unhandled one
+                astQueue.sync { unhandledError = e }
+            }
+        }
+    }
+
+    // wait for parsing to finish
+    parseGroup.wait()
+    
+    // handle any errors
+    try astQueue.sync(execute: {errors}).throwIfErrors()
+    if let e = astQueue.sync(execute: {unhandledError}) { throw e }
+    
+    // synchrnonoslt
+    return astQueue.sync { Array(asts.values) }
+}
+
 
 /// Compiles series of files
 /// - parameter fileNames: The file paths to compile
@@ -72,114 +150,94 @@ func compileDocuments(
         else { Swift.print(s) }
     }
     
-    var head: AST? = nil
-    var all: [AST] = [], names: [String] = []
+    // MARK: Parse
+    let astList = try parseFiles(fileNames, inDirectory: currentDirectory, options: options)
     
-    let globalScope = SemaScope.globalScope(isStdLib: options.contains(.parseStdLib))
-    
-    for (index, name) in fileNames.enumerated() {
-        
-        var fileName = name
-        if options.contains(.runPreprocessor) {
-            runPreprocessor(file: &fileName, cwd: currentDirectory)
-        }
-        
-        let path = "\(currentDirectory)/\(fileName)"
-        let doc = try String(contentsOfFile: path, encoding: .utf8)
-        
-        // Lex code
-        let tokens = try doc.getTokens()
-        
-        if options.contains(.verbose) {
-            print("------------------------------AST-------------------------------")
-        }
-        
-        // parse tokens & generate AST
-        let ast = try Parser.parse(withTokens: tokens, isStdLib: options.contains(.parseStdLib))
-        
-        if options.contains(.dumpAST) { ast.dump(); return }
-        if options.contains(.verbose) { ast.dump() }
-        
-        if let h = head {
-            h.exprs.append(contentsOf: ast.exprs)
-        }
-        
-        if index == 0 {
-            head = ast
-        }
-        else {
-            all.append(ast)
-        }
-        names.append(fileName)
+    // collect all ast nodes into a single ast object
+    let ast = astList.reduce(AST(exprs: [])) { i, x in
+        AST(exprs: i.exprs + x.exprs)
     }
     
+    if options.contains(.dumpAST) { ast.dump(); return }
+    if options.contains(.verbose) { ast.dump() }
+    
+    
+    // MARK: Sema
     if options.contains(.verbose) {
         print("\n------------------------SEMA & LINK AST----------------------------\n")
     }
     
-    guard let main = head else {
-        fatalError("No main file supplied")
-    }
-    let ast = main
-    
-    // TODO: parralelise file compilation
+    let globalScope = SemaScope.globalScope(isStdLib: options.contains(.parseStdLib))
     
     try ast.sema(globalScope: globalScope)
     if options.contains(.dumpAST) {
         ast.dump()
         return
     }
+    
+    
+    // MARK: VIR Gen
     if options.contains(.verbose) {
         ast.dump()
         print("\n----------------------------VIR GEN-------------------------------\n")
     }
     
-    let file = explicitName ?? names.first!
+    // get file title
+    let file = explicitName ?? fileNames.first!
         .replacingOccurrences(of: ".vist", with: "")
         .replacingOccurrences(of: ".previst", with: "")
-    let virModule = Module()
     
+    // create module and gen vir
+    let virModule = Module()
     try ast.emitVIR(module: virModule, isLibrary: options.contains(.produceLib))
+    
+    // write out
     try virModule.vir.write(toFile: "\(currentDirectory)/\(file)_.vir", atomically: true, encoding: .utf8)
     
+    
+    // MARK: VIR Optimiser
     if options.contains(.verbose) {
         print(virModule.vir, "\n----------------------------VIR OPT-------------------------------\n")
     }
     
+    // run optimiser
     try virModule.runPasses(optLevel: options.optLevel())
+    
+    // write out
     try virModule.vir.write(toFile: "\(currentDirectory)/\(file).vir", atomically: true, encoding: .utf8)
     
     if options.contains(.dumpVIR) {
         print(virModule.vir)
         return
     }
-    if options.contains(.verbose) { print(virModule.vir) }
+    if options.contains(.verbose) {
+        print(virModule.vir)
+    }
     
+    // MARK: Build runtime
     if options.contains(.buildRuntime) {
         buildRuntime(debugRuntime: options.contains(.debugRuntime))
     }
     
-    let stdlibDirectory = "\(SOURCE_ROOT)/Vist/stdlib"
     
+    // MARK: LLVM Generation
     var llvmModule = LLVMModule(name: file)
+    
+    // import runtime module if needed
+    let stdlibDirectory = "\(SOURCE_ROOT)/Vist/stdlib"
     if options.contains(.linkWithRuntime) {
         llvmModule.import(fromFile: "shims.c", directory: stdlibDirectory)
     }
+    
+    // set triple
     llvmModule.dataLayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
-    llvmModule.target = "x86_64-apple-macosx10.11.0"
+    llvmModule.target = "x86_64-apple-macosx10.12.0"
     
     defer {
-        // remove files
+        // remove files on scope exit
         if !options.contains(.preserveTempFiles) {
-            for file in [
-//                "\(file).ll",
-                "\(file)_.ll", "\(file).s", "\(file).vir", "\(file)_.vir"] {
+            for file in ["\(file).ll", "\(file)_.ll", "\(file).s", "\(file).vir", "\(file)_.vir"] {
                 _ = try? FileManager.default().removeItem(atPath: "\(currentDirectory)/\(file)")
-            }
-            if options.contains(.runPreprocessor) {
-                for file in names {
-                    _ = try? FileManager.default().removeItem(atPath: "\(currentDirectory)/\(file)")
-                }
             }
         }
     }
@@ -194,16 +252,18 @@ func compileDocuments(
     let unoptimisedIR = llvmModule.description()
     try unoptimisedIR.write(toFile: "\(currentDirectory)/\(file)_.ll", atomically: true, encoding: String.Encoding.utf8)
     
+    
+    // MARK: LLVM Optimiser
     if options.contains(.verbose) {
         print(unoptimisedIR, "\n\n----------------------------OPTIM----------------------------\n")
     }
     
-    //run my optimisation passes
-    
+    // run LLVM opt passes
     try performLLVMOptimisations(llvmModule.getModule(),
                                  Int32(options.optLevel().rawValue),
                                  options.contains(.compileStdLib))
     
+    // write out
     let optimisedIR = llvmModule.description()
     try optimisedIR.write(toFile: "\(currentDirectory)/\(file).ll", atomically: true, encoding: .utf8)
     
@@ -215,9 +275,12 @@ func compileDocuments(
         print(optimisedIR, "\n\n----------------------------LINK-----------------------------\n")
     }
     
+    
+    // MARK: Link and assemble
     let libVistPath = "/usr/local/lib/libvist.dylib"
     let libVistRuntimePath = "/usr/local/lib/libvistruntime.dylib"
     
+    // if its the stdlin, produce a dylib
     if options.contains(.compileStdLib) {
         
         // .ll -> .dylib
@@ -229,20 +292,28 @@ func compileDocuments(
                        args: "-dynamiclib")
     }
     else {
-        // .ll -> .s
-        // for printing/saving
-        Task.execute(exec: .clang,
-                       files: ["\(file).ll"],
-                       cwd: currentDirectory,
-                       args: "-S")
         
-        let asm = try String(contentsOfFile: "\(currentDirectory)/\(file).s", encoding: .utf8)
+        let wantsDumpASM = options.contains(.dumpASM), verboseOutput = options.contains(.verbose)
         
-        if options.contains(.dumpASM) { print(asm); return }
-        if options.contains(.verbose) { print(asm) }
+        // if the output requires asm, we compile to it first
+        if wantsDumpASM || verboseOutput {
+            // .ll -> .s
+            // for printing/saving
+            Task.execute(exec: .clang,
+                         files: ["\(file).ll"],
+                         cwd: currentDirectory,
+                         args: "-S")
+            
+            let asm = try String(contentsOfFile: "\(currentDirectory)/\(file).s", encoding: .utf8)
+            
+            print(asm)
+            if wantsDumpASM { return }
+        }
         
-        
-        let inputFiles = options.contains(.doNotLinkStdLib) ? ["\(file).ll"] : [libVistRuntimePath, libVistPath, "\(file).ll"]
+        // get the input for the clang binary
+        let inputFiles = options.contains(.doNotLinkStdLib) ?
+            ["\(file).ll"] :
+            [libVistRuntimePath, libVistPath, "\(file).ll"]
         // .ll -> exec
         Task.execute(exec: .clang,
                        files: inputFiles,
@@ -296,12 +367,11 @@ func buildRuntime(debugRuntime debug: Bool) {
         
     // .cpp -> .dylib
     // to link against program
-    Task.execute(exec: .sysclang,
+    Task.execute(exec: .clang,
                    files: ["runtime.cpp", "Metadata.cpp", "RefcountedObject.cpp"],
                    outputName: libVistRuntimePath,
                    cwd: runtimeDirectory,
                    args: "-dynamiclib", "-std=c++14", "-O3", "-lstdc++", "-includeruntime.h", debug ? "-DREFCOUNT_DEBUG" : "")
-    
 }
 
 func runPreprocessor(file: inout String, cwd: String) {
