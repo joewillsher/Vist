@@ -334,7 +334,9 @@ final class FunctionsSequence : Sequence {
     
     private init(function: LLVMValueRef) { self.function = function }
     
-    func makeIterator() -> AnyIterator<LLVMFunction> {
+    typealias Iterator = AnyIterator<LLVMFunction>
+    
+    func makeIterator() -> Iterator {
         return AnyIterator {
             guard let f = self.function else { return nil }
             defer { self.function = LLVMGetNextFunction(f) }

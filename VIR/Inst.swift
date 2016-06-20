@@ -70,7 +70,7 @@ extension Inst {
     
     /// Replaces all `Operand` instances which point to `self`
     /// with `val`
-    func replaceAllUses(with val: Inst) {
+    func replaceAllUses(with val: Value) {
         for use in uses {
             use.value = val
         }

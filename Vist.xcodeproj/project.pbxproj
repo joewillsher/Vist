@@ -138,6 +138,10 @@
 		D43B3A8B1C8A12090039FB2E /* Interpreter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A891C8A12090039FB2E /* Interpreter.swift */; };
 		D44529561CB00A6F00AFA099 /* RefCountInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44529551CB00A6F00AFA099 /* RefCountInst.swift */; };
 		D44529571CB00A6F00AFA099 /* RefCountInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44529551CB00A6F00AFA099 /* RefCountInst.swift */; };
+		D454444C1D181AB900C7B02A /* Inliner.swift in Sources */ = {isa = PBXBuildFile; fileRef = D454444B1D181AB900C7B02A /* Inliner.swift */; };
+		D454444D1D181AB900C7B02A /* Inliner.swift in Sources */ = {isa = PBXBuildFile; fileRef = D454444B1D181AB900C7B02A /* Inliner.swift */; };
+		D454444F1D181ACD00C7B02A /* RegisterPromotionPass.swift in Sources */ = {isa = PBXBuildFile; fileRef = D454444E1D181ACD00C7B02A /* RegisterPromotionPass.swift */; };
+		D45444501D181ACD00C7B02A /* RegisterPromotionPass.swift in Sources */ = {isa = PBXBuildFile; fileRef = D454444E1D181ACD00C7B02A /* RegisterPromotionPass.swift */; };
 		D4728BDD1C944397003294B0 /* Accessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BDC1C944397003294B0 /* Accessor.swift */; };
 		D4728BDE1C944397003294B0 /* Accessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BDC1C944397003294B0 /* Accessor.swift */; };
 		D4728BE11C9475A5003294B0 /* Optimiser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BE01C9475A5003294B0 /* Optimiser.swift */; };
@@ -297,6 +301,8 @@
 		D43B3A891C8A12090039FB2E /* Interpreter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Interpreter.swift; path = lib/Interpreter/Interpreter.swift; sourceTree = "<group>"; };
 		D43DF1EC1C5540AF0049EC2F /* stdlib_.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib_.ll; path = stdlib/stdlib_.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D44529551CB00A6F00AFA099 /* RefCountInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RefCountInst.swift; path = Instructions/RefCountInst.swift; sourceTree = "<group>"; };
+		D454444B1D181AB900C7B02A /* Inliner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Inliner.swift; path = Optimiser/Inliner.swift; sourceTree = "<group>"; };
+		D454444E1D181ACD00C7B02A /* RegisterPromotionPass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RegisterPromotionPass.swift; sourceTree = "<group>"; };
 		D45D4CFE1C74F5E400918E04 /* stdlib.bc */ = {isa = PBXFileReference; lastKnownFileType = file; name = stdlib.bc; path = stdlib/stdlib.bc; sourceTree = "<group>"; };
 		D4644BE31C40619800364B99 /* stdlib.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib.ll; path = stdlib/stdlib.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D4728BDC1C944397003294B0 /* Accessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Accessor.swift; sourceTree = "<group>"; };
@@ -334,7 +340,7 @@
 		D4D369DA1CFC6FFA007E802D /* vist.vim */ = {isa = PBXFileReference; lastKnownFileType = text; name = vist.vim; path = utils/vim/syntax/vist.vim; sourceTree = "<group>"; };
 		D4D8B25C1D0301BC00D1F455 /* RuntimeObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RuntimeObject.swift; path = lib/VIRLower/RuntimeObject.swift; sourceTree = "<group>"; };
 		D4DB92771C866FF300718B78 /* example.vir */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vir; path = RUN/example.vir; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
-		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.ppc; };
+		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; };
 		D4DE28181C5969830096E798 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		D4E35B7E1C5D216600683486 /* Pipe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pipe.swift; sourceTree = "<group>"; };
 		D4E35B801C5E3EC600683486 /* Expected.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Expected.swift; sourceTree = "<group>"; };
@@ -663,6 +669,8 @@
 				D4728BE61C960E22003294B0 /* Folding.swift */,
 				D4728BE91C960E31003294B0 /* Variable.swift */,
 				D49248531CF77883009FD509 /* StdLibInline.swift */,
+				D454444B1D181AB900C7B02A /* Inliner.swift */,
+				D454444E1D181ACD00C7B02A /* RegisterPromotionPass.swift */,
 			);
 			name = Optimiser;
 			sourceTree = "<group>";
@@ -797,6 +805,7 @@
 				D43B39F91C8A100E0039FB2E /* CommandLine.swift in Sources */,
 				D43B39A41C8A0EDF0039FB2E /* VIR.swift in Sources */,
 				D43B39DD1C8A0F3A0039FB2E /* LiteralInst.swift in Sources */,
+				D45444501D181ACD00C7B02A /* RegisterPromotionPass.swift in Sources */,
 				D4D8B25E1D0301BC00D1F455 /* RuntimeObject.swift in Sources */,
 				D4A000311CCA7F7000157D90 /* BuiltinLower.swift in Sources */,
 				D43B3A091C8A10390039FB2E /* Token.swift in Sources */,
@@ -872,6 +881,7 @@
 				D43B3A8B1C8A12090039FB2E /* Interpreter.swift in Sources */,
 				D4E35B7F1C5D216600683486 /* Pipe.swift in Sources */,
 				D4728BE81C960E22003294B0 /* Folding.swift in Sources */,
+				D454444D1D181AB900C7B02A /* Inliner.swift in Sources */,
 				D43B3A4B1C8A10C80039FB2E /* TypeProvider.swift in Sources */,
 				D4728BEB1C960E31003294B0 /* Variable.swift in Sources */,
 				D43B3A1A1C8A105B0039FB2E /* Decl.swift in Sources */,
@@ -886,6 +896,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D4A000331CCA7FD500157D90 /* PtrLower.swift in Sources */,
+				D454444C1D181AB900C7B02A /* Inliner.swift in Sources */,
 				D43B3A1F1C8A105B0039FB2E /* Print.swift in Sources */,
 				D400E84C1CC127DF003E6BEC /* Closure.swift in Sources */,
 				D411C8951C8DB61D00478988 /* BreakInst.swift in Sources */,
@@ -912,6 +923,7 @@
 				D43B3A4A1C8A10C80039FB2E /* TypeProvider.swift in Sources */,
 				D43B39A31C8A0EDF0039FB2E /* VIR.swift in Sources */,
 				D43B3A501C8A11180039FB2E /* VIRGen.swift in Sources */,
+				D454444F1D181ACD00C7B02A /* RegisterPromotionPass.swift in Sources */,
 				D43B39FE1C8A100E0039FB2E /* LinkRuntime.swift in Sources */,
 				D411C8981C8DD00000478988 /* DCE.swift in Sources */,
 				D43B3A2C1C8A10A50039FB2E /* StdLib.swift in Sources */,

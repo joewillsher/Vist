@@ -22,12 +22,13 @@ extension Module {
     
     func runPasses(optLevel: OptLevel) throws {
         
-        for function in functions {
+        for function in functions where function.hasBody {
+            
             try StdLibInlinePass.create(function, optLevel: optLevel)
 //            try ConstantFoldingPass.create(function, optLevel: optLevel)
             try DCEPass.create(function, optLevel: optLevel)
+            try RegisterPromotionPass.create(function, optLevel: optLevel)
 //            try CFGSimplificationPass.create(function, optLevel: optLevel)
-            
         }
         
         try DeadFunctionPass.create(self, optLevel: optLevel)
@@ -86,6 +87,40 @@ struct Explosion<InstType : Inst> {
         //let l = inst.args[0].value // po l!.uses[0].user?.dump()
         inst.replaceAllUses(with: tail)
         try inst.eraseFromParent()
+    }
+}
+
+
+final class DominatorTreeNode {
+    
+}
+
+/// A tree of dominating blocks in a function
+final class DominatorTree : Sequence {
+    
+    private var function: Function
+    
+    init(function: Function) {
+        self.function = function
+    }
+    
+    typealias Iterator = AnyIterator<BasicBlock>
+    
+    func makeIterator() -> Iterator {
+        return AnyIterator {
+            return nil
+        }
+    }
+}
+
+
+enum OptError : VistError {
+    case invalidValue(Value)
+    
+    var description: String {
+        switch self {
+        case .invalidValue(let inst): return "Invalid value '\(inst.valueName)'"
+        }
     }
 }
 

@@ -6,8 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-
-/** 
+/**
  An argument type. `Inst`s take `Operand`.
  
  The operand is added to the argument's users list, and 

@@ -38,6 +38,8 @@ final class Function : VIRElement {
     var _condFailBlock: LLVMBasicBlock? = nil
     
     
+    private weak var _dominatorTree: DominatorTree? = nil
+    
     private init(name: String, type: FunctionType, module: Module) {
         self.name = name
         self.parentModule = module
@@ -84,7 +86,7 @@ final class Function : VIRElement {
 extension Function {
     
     /// Whether this function has a defined body
-    var hasBody: Bool { return body != nil && (body?.blocks.isEmpty ?? false) }
+    var hasBody: Bool { return body.map { !$0.blocks.isEmpty } ?? false }
     /// The list of blocks in this function
     /// - precondition: self `hasBody`
     var blocks: [BasicBlock]? {
@@ -194,6 +196,14 @@ extension Function {
         if let i = globalLifetimes.index(where: {$0===lifetime}) {
             globalLifetimes.remove(at: i)
         }
+    }
+    
+    func getDominatorTree() -> DominatorTree {
+        return _dominatorTree ?? DominatorTree(function: self)
+    }
+    
+    func invalidateDominatorTree() {
+        _dominatorTree = nil
     }
     
     func dumpIR() { loweredFunction?.function.dump() }
