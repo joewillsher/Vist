@@ -35,10 +35,18 @@ struct RegisterPromotionPass : OptimisationPass {
     
     func run(on function: Function) throws {
         
+        // http://llvm.org/docs/Passes.html#mem2reg-promote-memory-to-register
+        // This file promotes memory references to be register references. It promotes alloca instructions which only
+        // have loads and stores as uses. An alloca is transformed by using dominator frontiers to place phi nodes, then
+        // traversing the function in depth-first order to rewrite loads and stores as appropriate. This is just the 
+        // standard SSA construction algorithm to construct “pruned” SSA form.
+        
+        // http://pages.cs.wisc.edu/~fischer/cs701.f08/lectures/Lecture19.4up.pdf
+        
         for case let allocInst as AllocInst in function.instructions where allocInst.isRegisterPromotable() {
             
             let stores = allocInst.stores()
-            precondition(stores.count == 1,
+            precondition(stores.count <= 1,
                          "Mem2Reg only works with one store isnt, this should have been enforced in `AllocInst.isRegisterPromotable`")
             let store = stores[0]
             guard let storedValue = store.value.value else {
@@ -80,6 +88,7 @@ private extension AllocInst {
 //        return true
         
         // for now we only do it if there is 1 store
+        // to do more requires constructing phi nodes/block applications
         guard stores().count <= 1 else { return false }
         
         return true

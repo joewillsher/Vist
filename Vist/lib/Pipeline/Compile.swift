@@ -9,7 +9,9 @@
 import class Foundation.Task
 import class Foundation.Pipe
 import class Foundation.FileManager
-import Foundation.NSString
+import class Foundation.NSString
+
+import Dispatch
 
 
 struct CompileOptions : OptionSet {
