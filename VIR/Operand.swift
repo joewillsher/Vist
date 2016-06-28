@@ -31,9 +31,8 @@ class Operand : Value {
     /// The value using this operand
     final weak var user: Value?
     
-    init(_ value: Value) {
-        self.value = value
-        value.addUse(self)
+    convenience init(_ value: Value) {
+        self.init(optionalValue: value)
     }
     
     deinit {
@@ -47,6 +46,16 @@ class Operand : Value {
     /// Set the LLVM value for uses of this operand
     func setLoweredValue(_ val: LLVMValue) {
         loweredValue = val
+    }
+    
+    init(optionalValue value: Value?) {
+        self.value = value
+        value?.addUse(self)
+    }
+    
+    /// An operand pointing to nothing
+    class func null() -> Operand {
+        return Operand(optionalValue: nil)
     }
     
     var type: Type? { return value?.type }
@@ -88,9 +97,9 @@ final class PtrOperand : Operand, LValue {
     /// The stored lvalue
     var memType: Type?
     
-    init(_ value: LValue) {
+    convenience init(_ value: LValue) {
+        self.init(optionalValue: value)
         self.memType = value.memType
-        super.init(value)
     }
 }
 
@@ -98,11 +107,10 @@ final class PtrOperand : Operand, LValue {
 /// An operand which doesn't capture self to
 final class FunctionOperand : Operand {
     
-    init(param: Param) {
-        super.init(param)
-        param.removeUse(self)
+    convenience init(param: Param) {
+        self.init(optionalValue: param)
+        param.removeUse(self) // function operands shouldnt list null as a use
     }
-    
 }
 
 
@@ -111,10 +119,14 @@ final class FunctionOperand : Operand {
 /// to be calculated
 final class BlockOperand : Operand {
     
-    init(value: Value, param: Param) {
+    convenience init(value: Value, param: Param) {
+        self.init(optionalValue: value, param: param, block: value.parentBlock!)
+    }
+    
+    init(optionalValue value: Value?, param: Param, block: BasicBlock) {
         self.param = param
-        self.predBlock = value.parentBlock!
-        super.init(value)
+        self.predBlock = block
+        super.init(optionalValue: value)
     }
     
     let param: Param

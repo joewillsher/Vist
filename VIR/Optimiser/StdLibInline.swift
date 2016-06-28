@@ -32,10 +32,10 @@ struct StdLibInlinePass : OptimisationPass {
     typealias PassTarget = Function
     
     // Aggressive opt should only be enabled in -Ohigh
-    static var minOptLevel: OptLevel = .high
+    static let minOptLevel: OptLevel = .high
     
     // Run the opt -- called on each function by the pass manager
-    func run(on function: Function) throws {
+    static func run(on function: Function) throws {
         
         for case let call as FunctionCallInst in function.instructions {
             

@@ -13,23 +13,30 @@
  `return %a`
  */
 final class ReturnInst : InstBase {
-    var value: Operand
+    var returnValue: Operand
     
-    init(value: Value, parentBlock: BasicBlock?) {
-        let op = Operand(value)
-        self.value = op
-        super.init(args: [op], irName: nil)
+    convenience init(value: Value, parentBlock: BasicBlock?) {
+        self.init(op: Operand(value))
         self.parentBlock = parentBlock
+    }
+    private init(op: Operand) {
+        self.returnValue = op
+        super.init(args: [op], irName: nil)
     }
     
     override var instVIR: String {
-        return "return \(value.name)"
+        return "return \(returnValue.name)"
     }
     
     override var type: Type? { return nil }
     
     override var hasSideEffects: Bool { return true }
     override var isTerminator: Bool { return true }
+    
+    
+    override func copyInst() -> ReturnInst {
+        return ReturnInst(op: returnValue)
+    }
 }
 
 
@@ -37,7 +44,7 @@ extension Builder {
     
     @discardableResult
     func buildReturnVoid() throws -> ReturnInst {
-        return try buildReturn(value: createVoidLiteral())
+        return try buildReturn(value: VoidLiteralValue())
     }
     
     @discardableResult

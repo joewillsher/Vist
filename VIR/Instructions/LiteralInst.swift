@@ -18,14 +18,18 @@ final class IntLiteralInst : InstBase {
     
     override var type: Type? { return BuiltinType.int(size: size) }
     
-    private init(val: Int, size: Int, irName: String?) {
+    init(val: Int, size: Int, irName: String? = nil) {
         self.value = LiteralValue(val: val, irName: nil)
         self.size = size
-        super.init(args: [Operand(value)], irName: irName)
+        super.init(args: [], irName: irName)
     }
     
     override var instVIR: String {
         return "\(name) = int_literal \(value.value)\(useComment)"
+    }
+    
+    override func copyInst() -> IntLiteralInst {
+        return IntLiteralInst(val: value.value, size: size, irName: irName)
     }
 }
 /**
@@ -38,13 +42,17 @@ final class BoolLiteralInst : InstBase {
     
     override var type: Type? { return value.type }
     
-    private init(val: Bool, irName: String?) {
+    init(val: Bool, irName: String? = nil) {
         self.value = LiteralValue(val: val, irName: nil)
-        super.init(args: [Operand(value)], irName: irName)
+        super.init(args: [], irName: irName)
     }
     
     override var instVIR: String {
         return "\(name) = bool_literal \(value.value)\(useComment)"
+    }
+    
+    override func copyInst() -> BoolLiteralInst {
+        return BoolLiteralInst(val: value.value, irName: irName)
     }
 }
 
@@ -60,13 +68,17 @@ final class StringLiteralInst : InstBase {
     var isUTF8Encoded: Bool { return value.value.smallestEncoding == .utf8 || value.value.smallestEncoding == .ascii }
     override var type: Type? { return value.type }
     
-    private init(val: String, irName: String?) {
+    init(val: String, irName: String? = nil) {
         self.value = LiteralValue(val: val, irName: nil)
-        super.init(args: [Operand(value)], irName: irName)
+        super.init(args: [], irName: irName)
     }
     
     override var instVIR: String {
         return "\(name) = string_literal \(isUTF8Encoded ? "utf8" : "utf16") \"\(value.value)\" \(useComment)"
+    }
+    
+    override func copyInst() -> StringLiteralInst {
+        return StringLiteralInst(val: value.value, irName: irName)
     }
 }
 
@@ -106,26 +118,4 @@ final class VoidLiteralValue : Value {
     }
 }
 
-
-extension Builder {
-    /// Builds a builtin i64 object
-    func buildIntLiteral(val: Int, size: Int = 64, irName: String? = nil) throws -> IntLiteralInst {
-        return try _add(instruction: IntLiteralInst(val: val, size: size, irName: irName))
-    }
-    
-    
-    /// Builds a builtin i1 object
-    func buildBoolLiteral(val: Bool, irName: String? = nil) throws -> BoolLiteralInst {
-        return try _add(instruction: BoolLiteralInst(val: val, irName: irName))
-    }
-
-    /// Builds a builtin i1 object
-    func buildStringLiteral(val: String, irName: String? = nil) throws -> StringLiteralInst {
-        return try _add(instruction: StringLiteralInst(val: val, irName: irName))
-    }
-
-    func createVoidLiteral() -> VoidLiteralValue {
-        return VoidLiteralValue()
-    }
-}
 

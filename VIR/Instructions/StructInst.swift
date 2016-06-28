@@ -16,13 +16,20 @@ final class StructInitInst : InstBase {
     override var type: Type? { return module.getOrInsert(type: structType) }
     var structType: StructType
     
-    init(type: StructType, values: Value..., irName: String? = nil) {
+    convenience init(type: StructType, values: Value..., irName: String? = nil) {
+        self.init(type: type, operands: values.map(Operand.init), irName: irName)
+    }
+    private init(type: StructType, operands: [Operand], irName: String?) {
         self.structType = type
-        super.init(args: values.map(Operand.init), irName: irName)
+        super.init(args: operands, irName: irName)
     }
     
     override var instVIR: String {
         return "\(name) = struct %\(structType.name), \(args.virValueTuple())\(useComment)"
+    }
+    
+    override func copyInst() -> StructInitInst {
+        return StructInitInst(type: structType, operands: args, irName: irName)
     }
 }
 
@@ -63,6 +70,7 @@ final class StructExtractInst : InstBase {
     override var instVIR: String {
         return "\(name) = struct_extract \(object.vir), !\(propertyName)\(useComment)"
     }
+    
 }
 
 

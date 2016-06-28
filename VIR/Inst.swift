@@ -13,6 +13,8 @@ protocol Inst : Value {
     
     var instHasSideEffects: Bool { get }
     var instIsTerminator: Bool { get }
+    
+    func copy() -> Self
 }
 
 /**
@@ -49,6 +51,9 @@ class InstBase : Inst {
         
         for arg in self.args { arg.user = self }
     }
+    
+    func copyInst() -> Self { fatalError("Override function '\(#function)' in '\(self.dynamicType)'") }
+    final func copy() -> Self { return copyInst() }
 }
 
 extension Inst {
@@ -67,7 +72,9 @@ extension Inst {
         args.removeAll()
         try removeFromParent()
     }
-    
+}
+
+extension Value {
     /// Replaces all `Operand` instances which point to `self`
     /// with `val`
     func replaceAllUses(with val: Value) {
@@ -81,8 +88,8 @@ extension Inst {
 // as a conformant of Inst in the generic parameter list
 extension InstBase {
     /// Replace self by applying a function and a
-    final func replace(with explode: (inout Explosion<InstBase>) throws -> Void) throws {
-        var e = Explosion(inst: self)
+    final func replace(with explode: @noescape (inout Explosion<InstBase>) throws -> Void) throws {
+        var e = Explosion(replacing: self)
         try explode(&e)
         try e.replaceInst()
     }

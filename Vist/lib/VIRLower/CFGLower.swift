@@ -9,11 +9,11 @@
 extension ReturnInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         
-        if case _ as VoidLiteralValue = value.value {
+        if case _ as VoidLiteralValue = returnValue.value {
             return try IGF.builder.buildRetVoid()
         }
         else {
-            let v = try value.virLower(IGF: &IGF)
+            let v = try returnValue.virLower(IGF: &IGF)
             return try IGF.builder.buildRet(val: v)
         }
     }

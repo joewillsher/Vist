@@ -11,9 +11,9 @@
 struct DCEPass : OptimisationPass {
     
     typealias PassTarget = Function
-    static var minOptLevel: OptLevel = .low
+    static let minOptLevel: OptLevel = .low
     
-    func run(on function: Function) throws {
+    static func run(on function: Function) throws {
         
         for inst in function.instructions.reversed()
             where inst.uses.isEmpty && !inst.instHasSideEffects {
@@ -29,7 +29,7 @@ struct DeadFunctionPass : OptimisationPass {
     typealias PassTarget = Module
     static var minOptLevel: OptLevel = .low
     
-    func run(on module: Module) throws {
+    static func run(on module: Module) throws {
         for _ in module.functions {
             // remove function if no users & private
             // need to implement function users if i want to do this
@@ -40,9 +40,9 @@ struct DeadFunctionPass : OptimisationPass {
 struct CFGSimplificationPass : OptimisationPass {
     
     typealias PassTarget = Function
-    static var minOptLevel: OptLevel = .high
+    static let minOptLevel: OptLevel = .high
     
-    func run(on function: Function) throws {
+    static func run(on function: Function) throws {
         
         for _ in function.blocks ?? [] {            
         }

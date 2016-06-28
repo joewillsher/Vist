@@ -23,8 +23,13 @@ extension Module {
     func runPasses(optLevel: OptLevel) throws {
         
         for function in functions where function.hasBody {
-            
+            // this is first for testing
+            try RegisterPromotionPass.create(function, optLevel: optLevel)
+        }
+        
+        for function in functions where function.hasBody {
             try StdLibInlinePass.create(function, optLevel: optLevel)
+            try InlinePass.create(function, optLevel: optLevel)
 //            try ConstantFoldingPass.create(function, optLevel: optLevel)
             try DCEPass.create(function, optLevel: optLevel)
             try RegisterPromotionPass.create(function, optLevel: optLevel)
@@ -42,15 +47,14 @@ protocol OptimisationPass {
     associatedtype PassTarget
     /// The minimum opt level this pass will be run
     static var minOptLevel: OptLevel { get }
-    init()
     /// Runs the pass
-    func run(on: PassTarget) throws
+    static func run(on: PassTarget) throws
 }
 
 extension OptimisationPass {
     static func create(_ element: PassTarget, optLevel: OptLevel) throws {
         guard optLevel.rawValue >= minOptLevel.rawValue else { return }
-        return try Self().run(on: element)
+        return try run(on: element)
     }
 }
 
@@ -60,22 +64,33 @@ extension Function {
     var instructions: LazyCollection<[Inst]> { return blocks.map { $0.flatMap { $0.instructions }.lazy } ?? [Inst]().lazy }
 }
 
+
+/// An explosion of instructions -- used to replace an inst with many others
 struct Explosion<InstType : Inst> {
     let inst: InstType
     private(set) var explodedInstructions: [Inst] = []
-    init(inst: InstType) { self.inst = inst }
+    init(replacing inst: InstType) { self.inst = inst }
     
     @discardableResult
     mutating func insert<I : Inst>(inst: I) -> I {
         explodedInstructions.append(inst)
         return inst
     }
+    @discardableResult
+    mutating func insert(inst: Inst) -> Inst {
+        explodedInstructions.append(inst)
+        return inst
+    }
     
+    /// The element of the explosion which replaces the inst
     var tail: Inst { return explodedInstructions.last ?? inst }
+    var block: BasicBlock? { return inst.parentBlock }
     
     func replaceInst() throws {
         
-        guard let block = inst.parentBlock else { fatalError("throw error -- no block") }
+        guard let block = inst.parentBlock else {
+            fatalError("throw error -- no block")
+        }
         
         var pos = inst as Inst
         // add the insts to this scope
@@ -84,7 +99,6 @@ struct Explosion<InstType : Inst> {
             pos = i // insert next after this inst
         }
         
-        //let l = inst.args[0].value // po l!.uses[0].user?.dump()
         inst.replaceAllUses(with: tail)
         try inst.eraseFromParent()
     }
@@ -92,6 +106,8 @@ struct Explosion<InstType : Inst> {
 
 
 final class DominatorTreeNode {
+    
+//    let block: BasicBlock
     
 }
 

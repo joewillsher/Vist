@@ -14,8 +14,11 @@ final class VariableInst : InstBase {
     
     override var type: Type? { return value.type }
     
-    private init(value: Operand, irName: String?) {
-        self.value = value
+    convenience init(value: Value, irName: String? = nil) {
+        self.init(operand: Operand(value), irName: irName)
+    }
+    init(operand: Operand, irName: String?) {
+        self.value = operand
         super.init(args: [value], irName: irName)
     }
     

@@ -32,11 +32,11 @@ final class BasicBlock : VIRElement {
     /// A list of the predecessor blocks. These blocks broke to `self`
     var predecessors: [BasicBlock] { return applications.flatMap { application in application.predecessor } }
     
-    init(name: String, parameters: [Param]?, parentFunction: Function) {
+    init(name: String, parameters: [Param]?, parentFunction: Function?) {
         self.name = name
         self.parameters = parameters
         self.parentFunction = parentFunction
-        applications = []
+        self.applications = []
     }
     
     /// The application of a block, how you jump into the block. `nil` preds
@@ -123,7 +123,7 @@ extension BasicBlock {
     
     /// Adds a param to the block
     /// - precondition: This block is an entry block
-    func addEntryBlockParam(param: Param) throws {
+    func addEntryBlockParam(_ param: Param) throws {
         guard let entry = applications.first where entry.isEntry else { fatalError() }
         parameters?.append(param)
         entry.args?.append(Operand(param))
@@ -133,7 +133,6 @@ extension BasicBlock {
     var module: Module { return parentFunction!.module }
     func dump() { print(vir) }
 }
-
 
 extension BasicBlock.BlockApplication {
     /// Get an entry instance

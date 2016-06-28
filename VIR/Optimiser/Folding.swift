@@ -11,9 +11,9 @@
 struct ConstantFoldingPass : OptimisationPass {
     
     typealias PassTarget = Function
-    static var minOptLevel: OptLevel = .low
+    static let minOptLevel: OptLevel = .low
     
-    func run(on function: Function) throws {
+    static func run(on function: Function) throws {
         
         for _ in function.instructions {
             

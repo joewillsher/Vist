@@ -184,8 +184,8 @@ extension Function {
         return Closure(_thunkOf: f)
     }
     
-    func addParam(param: Param) throws {
-        try entryBlock?.addEntryBlockParam(param: param)
+    func addParam(_ param: Param) throws {
+        try entryBlock?.addEntryBlockParam(param)
     }
     
     func insertGlobalLifetime(_ lifetime: GlobalValue.Lifetime) {

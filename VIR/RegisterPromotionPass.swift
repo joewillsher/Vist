@@ -31,9 +31,9 @@ $entry(%$0: #Int):
 struct RegisterPromotionPass : OptimisationPass {
     
     typealias PassTarget = Function
-    static var minOptLevel: OptLevel = .low
+    static let minOptLevel: OptLevel = .low
     
-    func run(on function: Function) throws {
+    static func run(on function: Function) throws {
         
         // http://llvm.org/docs/Passes.html#mem2reg-promote-memory-to-register
         // This file promotes memory references to be register references. It promotes alloca instructions which only
@@ -41,13 +41,14 @@ struct RegisterPromotionPass : OptimisationPass {
         // traversing the function in depth-first order to rewrite loads and stores as appropriate. This is just the 
         // standard SSA construction algorithm to construct “pruned” SSA form.
         
+        // TODO: Create a dominator tree, and move a block's value a BB param when removing the backing memory
         // http://pages.cs.wisc.edu/~fischer/cs701.f08/lectures/Lecture19.4up.pdf
         
-        for case let allocInst as AllocInst in function.instructions where allocInst.isRegisterPromotable() {
+        for case let allocInst as AllocInst in function.instructions where allocInst.isRegisterPromotable {
             
             let stores = allocInst.stores()
             precondition(stores.count <= 1,
-                         "Mem2Reg only works with one store isnt, this should have been enforced in `AllocInst.isRegisterPromotable`")
+                         "Mem2Reg currently only works with one store isnt, this should have been enforced in `AllocInst.isRegisterPromotable`")
             let store = stores[0]
             guard let storedValue = store.value.value else {
                 throw OptError.invalidValue(store)
@@ -76,12 +77,11 @@ private extension AllocInst {
     func loads() -> [LoadInst] {
         return uses.flatMap { $0.user as? LoadInst }
     }
-
     
     /// Can this stack memory be promoted to register uses
     /// - note: returns true if the only uses are loads
     ///         and stores
-    func isRegisterPromotable() -> Bool {
+    var isRegisterPromotable: Bool {
         for use in uses {
             guard use.user is LoadInst || use.user is StoreInst else { return false }
         }

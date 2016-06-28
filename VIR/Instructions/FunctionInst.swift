@@ -39,6 +39,10 @@ final class FunctionCallInst: InstBase, VIRFunctionCall {
     
     var functionRef: LLVMFunction { return function.loweredFunction! }
     var functionType: FunctionType { return function.type }
+    
+    override func copyInst() -> FunctionCallInst {
+        return FunctionCallInst(function: function, returnType: returnType, args: args, irName: irName)
+    }
 }
 
 /**

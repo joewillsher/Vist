@@ -110,7 +110,7 @@ extension AST {
 extension IntegerLiteral : ValueEmitter {
     
     func emitRValue(module: Module, scope: Scope) throws -> Accessor {
-        let int = try module.builder.buildIntLiteral(val: val)
+        let int = try module.builder.build(inst: IntLiteralInst(val: val, size: 64))
         let std = try module.builder.build(inst: StructInitInst(type: StdLib.intType, values: int))
         return try std.accessor()
     }
@@ -119,7 +119,7 @@ extension IntegerLiteral : ValueEmitter {
 extension BooleanLiteral : ValueEmitter {
     
     func emitRValue(module: Module, scope: Scope) throws -> Accessor {
-        let bool = try module.builder.buildBoolLiteral(val: val)
+        let bool = try module.builder.build(inst: BoolLiteralInst(val: val))
         let std = try module.builder.build(inst: StructInitInst(type: StdLib.boolType, values: bool))
         return try std.accessor()
     }
@@ -139,11 +139,9 @@ extension StringLiteral : ValueEmitter {
         //    - wholly if its contiguous UTF8
         //    - char by char if it contains UTF16 ocde units
         
-        let string = try module.builder.buildStringLiteral(val: str)
-        let length = try module.builder.buildIntLiteral(val: str.utf8.count + 1,
-                                                        irName: "size")
-        let isUTFU = try module.builder.buildBoolLiteral(val: string.isUTF8Encoded,
-                                                         irName: "isUTF8")
+        let string = try module.builder.build(inst: StringLiteralInst(val: str))
+        let length = try module.builder.build(inst: IntLiteralInst(val: str.utf8.count + 1, size: 64, irName: "size"))
+        let isUTFU = try module.builder.build(inst: BoolLiteralInst(val: string.isUTF8Encoded, irName: "isUTF8"))
         
         let initialiser = try module.getOrInsertStdLibFunction(named: "String",
                                                                argTypes: [BuiltinType.opaquePointer, BuiltinType.int(size: 64), BuiltinType.bool])!
@@ -324,6 +322,9 @@ extension ReturnStmt : ValueEmitter {
         //      dealloc it, so we return it as +0
         if scope.isInScope(variable: retVal) {
             try retVal.releaseUnowned()
+        } else {
+            // if its brought in by another scope, we can safely release
+//            try retVal.release()
         }
         
         let boxed = try retVal.boxedAggregateGetValue(expectedType: expectedReturnType)

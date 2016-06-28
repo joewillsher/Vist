@@ -18,7 +18,7 @@ final class BuiltinInstCall : InstBase {
     var instName: String { return inst.rawValue }
     var returnType: Type
     
-    init(inst: BuiltinInst, args: [Value], irName: String? = nil) throws {
+    convenience init(inst: BuiltinInst, args: [Value], irName: String? = nil) throws {
         
         guard args.count == inst.expectedNumOperands else {
             throw VIRError.builtinIncorrectOperands(inst: inst, recieved: args.count)
@@ -28,10 +28,14 @@ final class BuiltinInstCall : InstBase {
             let retTy = inst.returnType(params: argTypes) else {
             throw VIRError.noType(#file)
         }
-
+        
+        self.init(inst: inst, retType: retTy, operands: args.map(Operand.init), irName: irName)
+    }
+    
+    private init(inst: BuiltinInst, retType: Type, operands: [Operand], irName: String?) {
         self.inst = inst
-        self.returnType = retTy
-        super.init(args: args.map(Operand.init), irName: irName)
+        self.returnType = retType
+        super.init(args: operands, irName: irName)
     }
     
     static func trapInst() -> BuiltinInstCall { return try! BuiltinInstCall(inst: .trap, args: [], irName: nil) }
@@ -62,6 +66,10 @@ final class BuiltinInstCall : InstBase {
         case .trap: return true
         default: return false
         }
+    }
+    
+    override func copyInst() -> BuiltinInstCall {
+        return BuiltinInstCall(inst: inst, retType: returnType, operands: args, irName: irName)
     }
 }
 
