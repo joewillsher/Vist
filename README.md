@@ -1,11 +1,11 @@
 #README #
 
 ##About
-A functional, statically typed programming language using LLVM, inspired by Swift, Haskell, and Rust. Vist has a friendly & low weight syntax, and modern type system with a focus on generics and protocols.
+A functional, statically typed programming language using LLVM, inspired by Swift, Haskell, and Rust. Vist has a friendly & low weight syntax, and modern type system with a focus on generics and concepts.
 
 
 ##Installing
-Vist is is written in Swift 3.0 and compiles under the most recent [Swift 3.0 Preview 1 release, available here](https://swift.org/download/)
+Vist is is written in Swift 3 and compiles under the most recent Xcode beta.
 
 To install, run
 
