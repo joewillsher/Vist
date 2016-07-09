@@ -25,7 +25,10 @@ final class VariableInst : InstBase {
     override var instVIR: String {
         return "variable_decl \(name) = \(value.valueName)\(useComment)"
     }
-
+    
+    override func copyInst() -> VariableInst {
+        return VariableInst(operand: value, irName: irName)
+    }
 }
 
 extension Builder {

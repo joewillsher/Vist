@@ -187,7 +187,7 @@ extension FunctionCall/*: VIRGenerator*/ {
             try arg.retain()
             return try arg.boxedAggregateGetValue(expectedType: paramType)
             }
-            .map(Operand.init)
+            .map(Operand.init(_:))
     }
     
     func emitRValue(module: Module, scope: Scope) throws -> Accessor {

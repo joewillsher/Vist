@@ -15,20 +15,27 @@ struct ConstantFoldingPass : OptimisationPass {
     
     static func run(on function: Function) throws {
         
-        for _ in function.instructions {
+        for inst in function.instructions {
             
-//            guard case let builtin as BuiltinInstCall = inst else { continue }
-//            
-//            switch builtin.inst {
-//            case .iadd:
-//                
-//                _ = builtin.args
-//                
-//                
-//                
-//            default:
-//                continue
-//            }
+            switch inst {
+            case let builtin as BuiltinInstCall:
+                switch builtin.inst {
+                    
+//                    case
+                    
+                    
+                default:
+                    break
+                }
+                
+            case let variable as VariableInst:
+                try variable.eraseFromParent(replacingAllUsesWith: variable.value.value)
+                
+                
+                
+            default:
+                break
+            }
             
         }
         

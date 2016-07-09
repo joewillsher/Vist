@@ -24,15 +24,14 @@ extension Module {
         
         for function in functions where function.hasBody {
             // this is first for testing
-            try RegisterPromotionPass.create(function, optLevel: optLevel)
         }
         
         for function in functions where function.hasBody {
             try StdLibInlinePass.create(function, optLevel: optLevel)
             try InlinePass.create(function, optLevel: optLevel)
-//            try ConstantFoldingPass.create(function, optLevel: optLevel)
-            try DCEPass.create(function, optLevel: optLevel)
             try RegisterPromotionPass.create(function, optLevel: optLevel)
+            try ConstantFoldingPass.create(function, optLevel: optLevel)
+            try DCEPass.create(function, optLevel: optLevel)
 //            try CFGSimplificationPass.create(function, optLevel: optLevel)
         }
         
@@ -83,9 +82,10 @@ struct Explosion<InstType : Inst> {
     }
     
     /// The element of the explosion which replaces the inst
-    var tail: Inst { return explodedInstructions.last ?? inst }
-    var block: BasicBlock? { return inst.parentBlock }
+    var tail: Inst? { return explodedInstructions.last }
+    private var block: BasicBlock? { return inst.parentBlock }
     
+    /// Replaces the instruction with the exploded values
     func replaceInst() throws {
         
         guard let block = inst.parentBlock else {
@@ -99,8 +99,7 @@ struct Explosion<InstType : Inst> {
             pos = i // insert next after this inst
         }
         
-        inst.replaceAllUses(with: tail)
-        try inst.eraseFromParent()
+        try inst.eraseFromParent(replacingAllUsesWith: tail)
     }
 }
 

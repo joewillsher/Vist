@@ -39,6 +39,7 @@ final class Function : VIRElement {
     
     
     private weak var _dominatorTree: DominatorTree? = nil
+    var hasHadInline : Bool = false
     
     private init(name: String, type: FunctionType, module: Module) {
         self.name = name

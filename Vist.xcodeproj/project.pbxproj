@@ -311,7 +311,7 @@
 		D47FF07A1B812052003F9920 /* vist */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = vist; sourceTree = BUILT_PRODUCTS_DIR; };
 		D4851F491C28A0820009233E /* example_.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = example_.ll; path = RUN/example_.ll; sourceTree = "<group>"; };
 		D4851F4A1C28A08A0009233E /* example.s */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; name = example.s; path = RUN/example.s; sourceTree = "<group>"; };
-		D48739581C9D4E0B00D4D1C2 /* example_.vir */ = {isa = PBXFileReference; lastKnownFileType = text; name = example_.vir; path = RUN/example_.vir; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
+		D48739581C9D4E0B00D4D1C2 /* example_.vir */ = {isa = PBXFileReference; lastKnownFileType = text; name = example_.vir; path = RUN/example_.vir; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		D489F3BD1C1E392D00254FFC /* example.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vist; path = RUN/example.vist; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		D489F3C01C1E396E00254FFC /* example */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = example; path = RUN/example; sourceTree = "<group>"; };
 		D49248531CF77883009FD509 /* StdLibInline.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StdLibInline.swift; path = Optimiser/StdLibInline.swift; sourceTree = "<group>"; };

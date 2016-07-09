@@ -62,13 +62,17 @@ extension Inst {
     
     /// Removes the function from its parent and
     /// drops all references to it
-    func eraseFromParent() throws {
+    func eraseFromParent(replacingAllUsesWith value: Value? = nil) throws {
         // tell self’s operands that we’re not using it any more
         for arg in args {
             arg.value = nil
         }
         args.removeAll()
         try removeFromParent()
+        
+        if let value = value {
+            replaceAllUses(with: value)
+        }
     }
 }
 

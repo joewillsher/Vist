@@ -13,72 +13,76 @@ struct InlinePass : OptimisationPass {
     typealias PassTarget = Function
     static let minOptLevel: OptLevel = .low
     
-    /// A record to look up already copied instructions, used when 
-    /// traversing the inlined insts to connect them to their 
-    /// replacement value
-    private typealias InlineRecord = [String: (source: Value, inlined: Value)]
-    
     static func run(on function: Function) throws {
         
+        if function.hasHadInline { return }
+        function.hasHadInline = true
+        
         for inst in function.instructions {
-            try inline(inst, function: function)
+            switch inst {
+            case let call as FunctionCallInst:
+                
+                // inline that function first
+                try run(on: call.function)
+                
+                var explosion = Explosion(replacing: call)
+                // if it was inlined, replace the inst
+                if try inline(call, intoFunction: function, explosion: &explosion) {
+                    try explosion.replaceInst()
+                }
+                
+            case _ as FunctionApplyInst:
+                break // TODO
+            default: // the inst isnt a call or apply
+                break
+            }
         }
     }
     
-    static func inline(_ inst: Inst, function: Function) throws {
+    /// - returns: whether the call was inlined
+    static func inline(_ call: FunctionCallInst, intoFunction: Function, explosion: inout Explosion<FunctionCallInst>) throws -> Bool {
         
-        switch inst {
-        case let call as FunctionCallInst
-            where call.function.isInlineable && call.function.shouldInline(at: .high):
-            
-            let block = call.function.blocks![0]
-            
-            var record: InlineRecord = [:], params: [Param] = []
-            
-            try call.replace { explosion in
-                
-                // forward pass FIXME: should be through dominator tree
-                
-                // add params
-                for param in block.parameters ?? [] {
-                    let inlined = param.copy()
-                    record[param.name] = (source: param, inlined: inlined)
-                    params.append(inlined)
-                }
-                
-                // move instructions
-                for inst in block.instructions {
-                    
-                    let importedInst: Inst
-                    
-                    switch try inst.copy(using: &record) {
-                    case let returnInst as ReturnInst:
-                        importedInst = explosion.insert(inst:
-                            VariableInst(operand: Operand(record[returnInst.returnValue.name]!.inlined),
-                                         irName: call.function.name+".ret"))
-//                    case let inst as FunctionCallInst:
-//                        TODO: Recursive inlining, checking for cycles
-                    case let inst:
-                        importedInst = explosion.insert(inst: inst)
-                        importedInst.args = importedInst.args.map { arg in
-                            Operand(record[arg.name]!.inlined)
-                        }
-                    }
-                }
-                
-                for (arg, param) in zip(call.args, params) {
-                    param.replaceAllUses(with: arg.value!)
-                }
-            }
-            
-        case let call as FunctionApplyInst:
-            break // TODO
-            
-        default: // the inst isnt a call or apply
-            break
+        guard call.function.isInlineable && call.function.shouldInline(at: .high) else {
+            return false
         }
         
+        let block = call.function.blocks![0]
         
+        var alreadyInlined: [String: Value] = [:], params: [Param] = []
+        
+        // forward pass FIXME: should be through dominator tree
+        
+        // add params
+        for param in block.parameters ?? [] {
+            let inlined = param.copy()
+            alreadyInlined[param.name] = inlined
+            params.append(inlined)
+        }
+        
+        // move instructions
+        for sourceInst in block.instructions {
+            
+            let inst = try sourceInst.copy(using: &alreadyInlined)
+            
+            if case let returnInst as ReturnInst = inst {
+                explosion.insert(inst:
+                    VariableInst(operand: Operand(alreadyInlined[returnInst.returnValue.name]!),
+                                 irName: call.function.name+".ret"))
+                break // last inst in block is return
+            }
+            
+            let inlinedInst = explosion.insert(inst: inst)
+            
+            for arg in inlinedInst.args {
+                arg.value = alreadyInlined[arg.name]!
+            }
+        }
+        
+        for (arg, param) in zip(call.args, params) {
+            param.replaceAllUses(with: arg.value!)
+        }
+        
+        return true
     }
     
     
@@ -86,10 +90,10 @@ struct InlinePass : OptimisationPass {
 }
 
 extension Inst {
-        
-    private func copy(using found: inout InlinePass.InlineRecord) throws -> Self {
+    
+    private func copy(using found: inout [String: Value]) throws -> Self {
         let i = copy()
-        found[name] = (source: self, inlined: i)
+        found[name] = i
         return i
     }
     
