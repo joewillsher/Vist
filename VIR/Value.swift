@@ -24,6 +24,8 @@ protocol Value : class, VIRElement {
     var name: String { get set }
     
     var module: Module { get }
+    
+    func copy() -> Self
 }
 
 /**
@@ -39,6 +41,8 @@ protocol LValue : Value {
 }
 
 extension Value {
+    
+    func copy() -> Self { return self }
     
     /**
      for mapping getter for type -- cant do

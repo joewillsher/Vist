@@ -51,7 +51,7 @@ extension LLVMModule {
         defer {
             // we import the source into the target
             self.import(from: sourceModule)
-            _ = try? FileManager.default().removeItem(atPath: path)
+            _ = try? FileManager.default.removeItem(atPath: path)
         }
         
         // mangle names

@@ -13,8 +13,6 @@ protocol Inst : Value {
     
     var instHasSideEffects: Bool { get }
     var instIsTerminator: Bool { get }
-    
-    func copy() -> Self
 }
 
 /**

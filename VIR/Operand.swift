@@ -59,6 +59,15 @@ class Operand : Value {
     }
     
     var type: Type? { return value?.type }
+    
+    func formCopy() -> Operand {
+        return Operand(optionalValue: value?.copy())
+    }
+    
+    @available(*, unavailable, renamed: "Operand.formCopy")
+    func copy() -> Self {
+        return self
+    }
 }
 
 extension Operand {

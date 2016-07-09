@@ -89,7 +89,7 @@ struct Explosion<InstType : Inst> {
     func replaceInst() throws {
         
         guard let block = inst.parentBlock else {
-            fatalError("throw error -- no block")
+            fatalError("TODO: throw error -- no block")
         }
         
         var pos = inst as Inst

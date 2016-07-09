@@ -116,7 +116,7 @@ extension Function {
         let params = zip(paramNames, type.params).map { name, type -> Param in
             let t = type.importedType(in: module)
             if case let bt as BuiltinType = t, case .pointer(let pointee) = bt {
-                return RefParam(paramName: name, memType: pointee)
+                return RefParam(paramName: name, type: pointee)
             }
             else {
                 return Param(paramName: name, type: t)

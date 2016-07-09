@@ -15,7 +15,7 @@ class Param : Value {
     
     var phi: LLVMValue? = nil
     
-    init(paramName: String, type: Type) {
+    required init(paramName: String, type: Type) {
         self.paramName = paramName
         self.type = type
     }
@@ -29,7 +29,8 @@ class Param : Value {
 final class RefParam : Param, LValue {
     var memType: Type?
     
-    init(paramName: String, memType: Type) {
+    /// - parameter type: The memType of the reference param
+    required init(paramName: String, type memType: Type) {
         self.memType = memType
         super.init(paramName: paramName, type: BuiltinType.pointer(to: memType))
     }

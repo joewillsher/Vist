@@ -86,7 +86,7 @@ private func parseFiles(_ names: [String],
                 }
                 // if we run preprocessor, clean up previst file
                 defer {
-                    if options.contains(.runPreprocessor) { try! FileManager.default().removeItem(atPath: "\(dir)/\(fileName)") }
+                    if options.contains(.runPreprocessor) { try! FileManager.default.removeItem(atPath: "\(dir)/\(fileName)") }
                 }
                 
                 // get file contents
@@ -239,7 +239,7 @@ func compileDocuments(
         // remove files on scope exit
         if !options.contains(.preserveTempFiles) {
             for file in ["\(file).ll", "\(file)_.ll", "\(file).s", "\(file).vir", "\(file)_.vir"] {
-                _ = try? FileManager.default().removeItem(atPath: "\(currentDirectory)/\(file)")
+                _ = try? FileManager.default.removeItem(atPath: "\(currentDirectory)/\(file)")
             }
         }
     }
