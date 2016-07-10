@@ -25,7 +25,6 @@ class Operand : Value {
             if let v = arg {
                 v.addUse(self)
             }
-            user = arg
         }
     }
     /// The value using this operand
@@ -50,6 +49,7 @@ class Operand : Value {
     
     init(optionalValue value: Value?) {
         self.value = value
+        self.user = nil
         value?.addUse(self)
     }
     
@@ -61,7 +61,7 @@ class Operand : Value {
     var type: Type? { return value?.type }
     
     func formCopy() -> Operand {
-        return Operand(optionalValue: value?.copy())
+        return Operand(optionalValue: value)
     }
     
     @available(*, unavailable, renamed: "Operand.formCopy")

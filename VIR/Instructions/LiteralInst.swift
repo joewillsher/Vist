@@ -29,7 +29,7 @@ final class IntLiteralInst : InstBase {
     }
     
     override func copyInst() -> IntLiteralInst {
-        return IntLiteralInst(val: value.value, size: size, irName: irName)
+        return self
     }
 }
 /**
@@ -52,7 +52,7 @@ final class BoolLiteralInst : InstBase {
     }
     
     override func copyInst() -> BoolLiteralInst {
-        return BoolLiteralInst(val: value.value, irName: irName)
+        return self
     }
 }
 
@@ -78,7 +78,7 @@ final class StringLiteralInst : InstBase {
     }
     
     override func copyInst() -> StringLiteralInst {
-        return StringLiteralInst(val: value.value, irName: irName)
+        return self
     }
 }
 

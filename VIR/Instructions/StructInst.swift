@@ -29,7 +29,7 @@ final class StructInitInst : InstBase {
     }
     
     override func copyInst() -> StructInitInst {
-        return StructInitInst(type: structType, operands: args, irName: irName)
+        return StructInitInst(type: structType, operands: args.map { $0.formCopy() }, irName: irName)
     }
 }
 
@@ -51,17 +51,21 @@ final class StructExtractInst : InstBase {
     /// - Precondition: `structType` has a member `property`
     /// - Note: The initialised StructExtractInst has the same type as the `property`
     ///         element of `structType`
-    init(object: Value, property: String, irName: String? = nil) throws {
-        
-//         get the underlying struct type
+    convenience init(object: Value, property: String, irName: String? = nil) throws {
+        // get the underlying struct type
         guard let structType = try object.type?.getAsStructType() else {
             throw VIRError.noType(#file)
         }
+        let propType = try structType.propertyType(name: property)
         
-        self.object = Operand(object)
+        self.init(object: Operand(object), property: property, structType: structType, propertyType: propType, irName: irName)
+    }
+    private init(object: Operand, property: String, structType: StructType, propertyType: Type, irName: String?) {
+        self.object = object
         self.propertyName = property
-        self.propertyType = try structType.propertyType(name: property)
+        self.propertyType = propertyType
         self.structType = structType
+        
         super.init(args: [self.object], irName: irName)
     }
     
@@ -71,6 +75,14 @@ final class StructExtractInst : InstBase {
         return "\(name) = struct_extract \(object.vir), !\(propertyName)\(useComment)"
     }
     
+    override func copyInst() -> StructExtractInst {
+        return StructExtractInst(object: object.formCopy(), property: propertyName, structType: structType, propertyType: propertyType, irName: irName)
+    }
+    
+    override func setArgs(args: [Operand]) {
+        super.setArgs(args: args)
+        object = args[0]
+    }
 }
 
 

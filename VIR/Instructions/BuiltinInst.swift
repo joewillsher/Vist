@@ -69,7 +69,7 @@ final class BuiltinInstCall : InstBase {
     }
     
     override func copyInst() -> BuiltinInstCall {
-        return BuiltinInstCall(inst: inst, retType: returnType, operands: args, irName: irName)
+        return BuiltinInstCall(inst: inst, retType: returnType, operands: args.map { $0.formCopy() }, irName: irName)
     }
 }
 

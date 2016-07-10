@@ -15,7 +15,9 @@ struct InlinePass : OptimisationPass {
     
     static func run(on function: Function) throws {
         
-        if function.hasHadInline { return }
+        guard !function.hasHadInline else {
+            return
+        }
         function.hasHadInline = true
         
         for inst in function.instructions {
@@ -37,6 +39,7 @@ struct InlinePass : OptimisationPass {
                 break
             }
         }
+        
     }
     
     /// - returns: whether the call was inlined
@@ -47,84 +50,54 @@ struct InlinePass : OptimisationPass {
         }
         
         let block = call.function.blocks![0]
-        
-        var alreadyInlined: [String: Value] = [:], params: [Param] = []
-        
-        // forward pass FIXME: should be through dominator tree
+        var alreadyInlined: [String: Value] = [:]
         
         // add params
-        for param in block.parameters ?? [] {
-            let inlined = param.copy()
-            alreadyInlined[param.name] = inlined
-            params.append(inlined)
+        for (arg, param) in zip(call.args, block.parameters ?? []) {
+            alreadyInlined[param.name] = arg.value!
         }
         
+        func variableReplacing(_ val: Value) -> Value {
+            return alreadyInlined[val.name]!
+        }
+        
+        // forward pass FIXME: should be through dominator tree
         // move instructions
         for sourceInst in block.instructions {
             
-            let inst = try sourceInst.copy(using: &alreadyInlined)
-            
-            if case let returnInst as ReturnInst = inst {
-                explosion.insert(inst:
-                    VariableInst(operand: Operand(alreadyInlined[returnInst.returnValue.name]!),
-                                 irName: call.function.name+".ret"))
-                break // last inst in block is return
+            switch try sourceInst.copy(using: &alreadyInlined) {
+            case let returnInst as ReturnInst:
+                let inlinedInst = variableReplacing(returnInst.returnValue)
+                explosion.insertTail(inlinedInst)
+                break // return must be last inst in block
+                
+            case let inlinedInst:
+                
+                // fix up the user of the inst's args
+                inlinedInst.setInstArgs(args: inlinedInst.args.map { arg in
+                    let operand = Operand(variableReplacing(arg))
+                    operand.user = inlinedInst
+                    return operand
+                })
+                
+                // add the inst
+                explosion.insert(inst: inlinedInst)
             }
-            
-            let inlinedInst = explosion.insert(inst: inst)
-            
-            for arg in inlinedInst.args {
-                arg.value = alreadyInlined[arg.name]!
-            }
-        }
-        
-        for (arg, param) in zip(call.args, params) {
-            param.replaceAllUses(with: arg.value!)
         }
         
         return true
     }
     
-    
-
 }
 
-extension Inst {
+private extension Inst {
     
-    private func copy(using found: inout [String: Value]) throws -> Self {
+    func copy(using found: inout [String: Value]) throws -> Self {
         let i = copy()
         found[name] = i
         return i
     }
-    
 }
-
-
-
-
-// copy to new location, then replace all users when we have the replacement
-
-private extension BasicBlock {
-    
-    
-    /// Creates a parentless basic block which is a copy of self
-    func copy() -> BasicBlock {
-        let params = parameters?.map { $0.copy() }
-        return BasicBlock(name: name, parameters: params, parentFunction: nil)
-    }
-    
-}
-
-extension Param {
-    
-    // param has no params so a copy is clean
-    func copy() -> Self {
-        precondition(phi == nil) // cannot copy if we are in VIRLower
-        return self.dynamicType.init(paramName: paramName, type: type!)
-    }
-}
-
-
 
 private extension Function {
     

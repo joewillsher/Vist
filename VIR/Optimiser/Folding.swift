@@ -21,17 +21,16 @@ struct ConstantFoldingPass : OptimisationPass {
             case let builtin as BuiltinInstCall:
                 switch builtin.inst {
                     
-//                    case
+//                    case .
                     
                     
                 default:
                     break
                 }
                 
+                // see through variable instructions by removing them
             case let variable as VariableInst:
                 try variable.eraseFromParent(replacingAllUsesWith: variable.value.value)
-                
-                
                 
             default:
                 break

@@ -21,16 +21,21 @@ extension CompileOptions {
 extension Module {
     
     func runPasses(optLevel: OptLevel) throws {
-        
-        for function in functions where function.hasBody {
-            // this is first for testing
-        }
-        
+
+        // run pre inline opts
         for function in functions where function.hasBody {
             try StdLibInlinePass.create(function, optLevel: optLevel)
+        }
+        
+        // inline functions
+        for function in functions where function.hasBody {
             try InlinePass.create(function, optLevel: optLevel)
+        }
+        
+        // run post inline opts
+        for function in functions where function.hasBody {
             try RegisterPromotionPass.create(function, optLevel: optLevel)
-            try ConstantFoldingPass.create(function, optLevel: optLevel)
+//            try ConstantFoldingPass.create(function, optLevel: optLevel)
             try DCEPass.create(function, optLevel: optLevel)
 //            try CFGSimplificationPass.create(function, optLevel: optLevel)
         }
@@ -66,9 +71,9 @@ extension Function {
 
 /// An explosion of instructions -- used to replace an inst with many others
 struct Explosion<InstType : Inst> {
-    let inst: InstType
+    let instToReplace: InstType
     private(set) var explodedInstructions: [Inst] = []
-    init(replacing inst: InstType) { self.inst = inst }
+    init(replacing inst: InstType) { instToReplace = inst }
     
     @discardableResult
     mutating func insert<I : Inst>(inst: I) -> I {
@@ -81,25 +86,43 @@ struct Explosion<InstType : Inst> {
         return inst
     }
     
+    mutating func insertTail(_ val: Value) {
+        precondition(tail == nil) // cannot change tail
+        tail = val
+        // if the tail isnt just a value, but an inst, we want
+        // to add it to the block too
+        if case let inst as Inst = val {
+            insert(inst: inst)
+        }
+    }
+    
     /// The element of the explosion which replaces the inst
-    var tail: Inst? { return explodedInstructions.last }
-    private var block: BasicBlock? { return inst.parentBlock }
+    private(set) var tail: Value? = nil
+    private var block: BasicBlock? { return instToReplace.parentBlock }
     
     /// Replaces the instruction with the exploded values
     func replaceInst() throws {
+        precondition(tail != nil)
         
-        guard let block = inst.parentBlock else {
+        guard let block = instToReplace.parentBlock else {
             fatalError("TODO: throw error -- no block")
         }
         
-        var pos = inst as Inst
-        // add the insts to this scope
-        for i in explodedInstructions {
+        var pos = instToReplace as Inst
+        
+        // add the insts to this scope (if it's not already there)
+        for i in explodedInstructions where !block.contains(i) {
             try block.insert(inst: i, after: pos)
             pos = i // insert next after this inst
         }
         
-        try inst.eraseFromParent(replacingAllUsesWith: tail)
+//        let user = inst.uses
+        try instToReplace.eraseFromParent(replacingAllUsesWith: tail)
+        
+//        for (i, u) in user.enumerated() {
+//            tail!.uses[i].user = u
+//        }
+        
     }
 }
 

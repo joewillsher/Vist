@@ -50,7 +50,7 @@ struct StdLibInlinePass : OptimisationPass {
                     let virInst = try explosion.insert(inst: BuiltinInstCall(inst: inst, args: extracted, irName: inst.rawValue))
                     
                     let structType = try call.function.type.returns.getAsStructType()
-                    explosion.insert(inst: StructInitInst(type: returnType ?? structType, values: virInst, irName: call.irName))
+                    explosion.insertTail(StructInitInst(type: returnType ?? structType, values: virInst, irName: call.irName))
                 }
             }
             
@@ -67,7 +67,7 @@ struct StdLibInlinePass : OptimisationPass {
                     
                     let structType = try call.function.type.returns.getAsStructType()
                     let val = try explosion.insert(inst: TupleExtractInst(tuple: virInst, index: 0, irName: "value"))
-                    explosion.insert(inst: StructInitInst(type: structType, values: val, irName: call.irName))
+                    explosion.insertTail(StructInitInst(type: structType, values: val, irName: call.irName))
                 }
             }
             

@@ -33,9 +33,13 @@ final class ReturnInst : InstBase {
     override var hasSideEffects: Bool { return true }
     override var isTerminator: Bool { return true }
     
+    override func setArgs(args: [Operand]) {
+        super.setArgs(args: args)
+        returnValue = args[0]
+    }
     
     override func copyInst() -> ReturnInst {
-        return ReturnInst(op: returnValue)
+        return ReturnInst(op: returnValue.formCopy())
     }
 }
 

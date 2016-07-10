@@ -129,9 +129,20 @@ extension BasicBlock {
         entry.args?.append(Operand(param))
     }
     
+    /// - returns: whether this block's instructions contains `inst`
+    func contains(_ inst: Inst) -> Bool {
+        return instructions.contains { $0 === inst }
+    }
     
     var module: Module { return parentFunction!.module }
     func dump() { print(vir) }
+    
+    
+    /// Creates a parentless basic block which is a copy of self
+    func copy() -> BasicBlock {
+        let params = parameters?.map { $0.copy() }
+        return BasicBlock(name: name, parameters: params, parentFunction: nil)
+    }
 }
 
 extension BasicBlock.BlockApplication {

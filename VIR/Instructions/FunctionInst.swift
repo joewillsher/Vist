@@ -41,7 +41,7 @@ final class FunctionCallInst: InstBase, VIRFunctionCall {
     var functionType: FunctionType { return function.type }
     
     override func copyInst() -> FunctionCallInst {
-        return FunctionCallInst(function: function, returnType: returnType, args: args, irName: irName)
+        return FunctionCallInst(function: function, returnType: returnType, args: args.map { $0.formCopy() }, irName: irName)
     }
 }
 

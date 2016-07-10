@@ -6,7 +6,6 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-
 final class VariableInst : InstBase {
     var value: Operand
     //var attrs: [OwnershipAttrs] // specify ref/val semantics
@@ -26,8 +25,13 @@ final class VariableInst : InstBase {
         return "variable_decl \(name) = \(value.valueName)\(useComment)"
     }
     
+    override func setArgs(args: [Operand]) {
+        super.setArgs(args: args)
+        value = args[0]
+    }
+    
     override func copyInst() -> VariableInst {
-        return VariableInst(operand: value, irName: irName)
+        return VariableInst(operand: value.formCopy(), irName: irName)
     }
 }
 

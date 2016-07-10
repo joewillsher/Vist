@@ -31,13 +31,15 @@ final class TupleExtractInst : InstBase {
     var elementType: Type
     
     /// - precondition: Tuple has an element at `index`
-    init(tuple: Value, index: Int, irName: String? = nil) throws {
-        
+    convenience init(tuple: Value, index: Int, irName: String? = nil) throws {
         guard let elType = try tuple.type?.getAsTupleType().elementType(at: index) else {
             throw VIRError.noType(#file)
         }
-        
-        let op = Operand(tuple)
+        self.init(op: Operand(tuple), index: index, elType: elType, irName: irName)
+    }
+    
+    private init(op: Operand, index: Int, elType: Type, irName: String?) {
+        let op = op
         self.tuple = op
         self.elementIndex = index
         self.elementType = elType
@@ -48,6 +50,14 @@ final class TupleExtractInst : InstBase {
     
     override var instVIR: String {
         return "\(name) = tuple_extract \(tuple.valueName), !\(elementIndex)\(useComment)"
+    }
+    
+    override func copyInst() -> TupleExtractInst {
+        return TupleExtractInst(op: tuple.formCopy(), index: elementIndex, elType: elementType, irName: irName)
+    }
+    override func setArgs(args: [Operand]) {
+        super.setArgs(args: args)
+        tuple = args[0]
     }
 }
 
