@@ -31,12 +31,12 @@ final class Function : VIRElement {
         // update function ref operands
         didSet {
             guard let loweredFunction = loweredFunction else { return }
-            for user in uses { user.updateUsesWithLoweredVal(loweredFunction.function) }
+            for user in uses { user.value?.updateUsesWithLoweredVal(loweredFunction.function) }
         }
     }
+    
     /// The block self's errors should jmp to
     var _condFailBlock: LLVMBasicBlock? = nil
-    
     
     private weak var _dominatorTree: DominatorTree? = nil
     var hasHadInline : Bool = false

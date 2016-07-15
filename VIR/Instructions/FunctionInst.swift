@@ -63,7 +63,7 @@ final class FunctionApplyInst: InstBase, VIRFunctionCall {
     }
     
     override var instVIR: String {
-        return "\(name) = apply \(function.name) \(args.virValueTuple())\(useComment)"
+        return "\(name) = apply \(function.valueName) \(args.virValueTuple())\(useComment)"
     }
     override var hasSideEffects: Bool { return true }
     

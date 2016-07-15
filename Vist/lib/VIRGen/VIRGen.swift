@@ -167,7 +167,7 @@ extension VariableDecl : ValueEmitter {
         }
         else {
             // if immutable, pass by reg value
-            let variable = try module.builder.buildVariableDecl(value: Operand(val.aggregateGetValue()), irName: name).accessor()
+            let variable = try module.builder.build(inst: VariableInst(value: val.aggregateGetValue(), irName: name)).accessor()
             try variable.retain()
             scope.insert(variable: variable, name: name)
             return variable
@@ -746,7 +746,7 @@ extension MethodCallExpr : ValueEmitter {
         let args = try argOperands(module: module, scope: scope)
         let selfVar = try object.emitRValue(module: module, scope: scope)
         try selfVar.retain()
-        let selfRef = try PtrOperand(selfVar.referenceBacked().aggregateReference())
+        let selfRef = try selfVar.referenceBacked().aggregateReference()
         
         guard let fnType = fnType else { fatalError() }
         
@@ -756,7 +756,7 @@ extension MethodCallExpr : ValueEmitter {
             guard case .method = fnType.callingConvention else { fatalError() }
             
             let function = try module.getOrInsertFunction(named: mangledName, type: fnType)
-            return try module.builder.buildFunctionCall(function: function, args: [selfRef] + args).accessor()
+            return try module.builder.buildFunctionCall(function: function, args: [PtrOperand(selfRef)] + args).accessor()
             
         case let existentialType as ConceptType:
             

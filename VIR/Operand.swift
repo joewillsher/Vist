@@ -17,7 +17,7 @@
  when a LLVM value is calculated in IRLower all operands
  are updated to store that.
 */
-class Operand : Value {
+class Operand : VIRTyped {
     /// The underlying value
     final var value: Value? {
         willSet(arg) {
@@ -57,38 +57,22 @@ class Operand : Value {
     }
     
     var type: Type? { return value?.type }
-    
+
     func formCopy(nullValue: Bool = false) -> Operand {
         return Operand(optionalValue: nullValue ? nil : value)
     }
     
-    @available(*, unavailable, renamed: "Operand.formCopy")
+    @available(*, unavailable, renamed: "formCopy")
     func copy() -> Self {
         return self
     }
 }
 
 extension Operand {
-    // forward all interface to `value`
-    var irName: String? {
-        get { return value?.irName }
-        set { value?.irName = newValue }
-    }
-    var parentBlock: BasicBlock? {
-        get { return value?.parentBlock }
-        set { value?.parentBlock = newValue }
-    }
-    var uses: [Operand] {
-        get { return value?.uses ?? [] }
-        set { value?.uses = newValue }
-    }
-    var name: String {
-        get { return value?.name ?? "<null>" }
-        set { value?.name = newValue }
-    }
+    var module: Module! { return value?.module }
     
-    func dumpIR() { if let loweredValue = loweredValue { LLVMDumpValue(loweredValue._value!) } else { print("\(irName) <NULL>") } }
-    func dumpIRType() { if let loweredValue = loweredValue { LLVMDumpTypeOf(loweredValue._value!) } else { print("\(irName).type <NULL>") } }
+    func dumpIR() { if let loweredValue = loweredValue { LLVMDumpValue(loweredValue._value!) } else { print("<NULL>") } }
+    func dumpIRType() { if let loweredValue = loweredValue { LLVMDumpTypeOf(loweredValue._value!) } else { print("<NULL TYPE>") } }
     
     /// Removes this `Operand` as a user of `value`
     func removeSelfAsUser() {
@@ -99,7 +83,7 @@ extension Operand {
 
 /// An operand which stores a reference-backed lvalue. Can itself
 /// be used as an lvalue
-final class PtrOperand : Operand, LValue {
+final class PtrOperand : Operand {
     
     /// The stored lvalue
     var memType: Type?

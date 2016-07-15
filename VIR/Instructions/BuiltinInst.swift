@@ -23,9 +23,7 @@ final class BuiltinInstCall : InstBase {
         guard args.count == inst.expectedNumOperands else {
             throw VIRError.builtinIncorrectOperands(inst: inst, recieved: args.count)
         }
-        guard
-            let argTypes = try? args.map(InstBase.getType(_:)),
-            let retTy = inst.returnType(params: argTypes) else {
+        guard let retTy = try inst.returnType(params: args.map(getType(of:))) else {
             throw VIRError.noType(#file)
         }
         

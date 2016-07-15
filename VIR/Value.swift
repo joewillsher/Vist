@@ -7,11 +7,9 @@
 //
 
 /// An Value, instruction results, literals, etc
-protocol Value : class, VIRElement {
+protocol Value : class, VIRTyped, VIRElement {
     /// An explicit name to give self in the ir repr
     var irName: String? { get set }
-    
-    var type: Type? { get }
     
     /// The block containing `self`
     weak var parentBlock: BasicBlock? { get set }
@@ -28,6 +26,10 @@ protocol Value : class, VIRElement {
     func copy() -> Self
 }
 
+protocol VIRTyped {
+    var type: Type? { get }
+}
+
 /**
  Appears on the LHS of an expressions. `a = 1`, `a.b.c`
  
@@ -40,16 +42,17 @@ protocol LValue : Value {
     var memType: Type? { get }
 }
 
+/**
+ for mapping getter for type -- cant do
+ `let a = params.optionalMap(Value.type) else { throw ...`
+ so we can `let a = params.map(Value.getType)`
+ */
+func getType(of val: VIRTyped) throws -> Type { if let t = val.type { return t } else { throw irGenError(.typeNotFound, userVisible: false) } }
+
 extension Value {
     
     func copy() -> Self { return self }
     
-    /**
-     for mapping getter for type -- cant do
-     `let a = params.optionalMap(Value.type) else { throw ...`
-     so we can `let a = params.map(Value.getType)`
-     */
-    static func getType(_ forVal: Value) throws -> Type { if let t = forVal.type { return t } else { throw irGenError(.typeNotFound, userVisible: false) } }
     
     /// Adds record of a user `use` to self’s users list
     func addUse(_ use: Operand) {

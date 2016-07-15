@@ -16,7 +16,7 @@ final class VariableInst : InstBase {
     convenience init(value: Value, irName: String? = nil) {
         self.init(operand: Operand(value), irName: irName)
     }
-    init(operand: Operand, irName: String?) {
+    private init(operand: Operand, irName: String?) {
         self.value = operand
         super.init(args: [value], irName: irName)
     }
@@ -35,9 +35,3 @@ final class VariableInst : InstBase {
     }
 }
 
-extension Builder {
-    
-    func buildVariableDecl(value: Operand, irName: String? = nil) throws -> VariableInst {
-        return try _add(instruction: VariableInst(value: value, irName: irName))
-    }
-}

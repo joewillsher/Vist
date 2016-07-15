@@ -29,98 +29,102 @@
  */
 struct StdLibInlinePass : OptimisationPass {
     
-    typealias PassTarget = Function
+    typealias PassTarget = Module
     
     // Aggressive opt should only be enabled in -Ohigh
     static let minOptLevel: OptLevel = .high
     
     // Run the opt -- called on each function by the pass manager
-    static func run(on function: Function) throws {
+    static func run(on module: Module) throws  {
         
-        for case let call as FunctionCallInst in function.instructions {
+        for function in module.functions {
             
-            /// Explode the call to a simple arithmetic op
-            /// - parameter returnType: Specify the return type, if none specified then the input type is used
-            ///                         as the return type
-            func replaceWithBuiltin(_ inst: BuiltinInst, returnType: StructType? = nil) throws {
-                try call.replace { explosion in
-                    let extracted = try call.args.map { arg in
-                        try explosion.insert(inst: StructExtractInst(object: arg.value!, property: "value")) as Value
+            for case let call as FunctionCallInst in function.instructions {
+                
+                /// Explode the call to a simple arithmetic op
+                /// - parameter returnType: Specify the return type, if none specified then the input type is used
+                ///                         as the return type
+                func replaceWithBuiltin(_ inst: BuiltinInst, returnType: StructType? = nil) throws {
+                    try call.replace { explosion in
+                        let extracted = try call.args.map { arg in
+                            try explosion.insert(inst: StructExtractInst(object: arg.value!, property: "value")) as Value
+                        }
+                        let virInst = try explosion.insert(inst: BuiltinInstCall(inst: inst, args: extracted, irName: inst.rawValue))
+                        
+                        let structType = try call.function.type.returns.getAsStructType()
+                        explosion.insertTail(StructInitInst(type: returnType ?? structType, values: virInst, irName: call.irName))
                     }
-                    let virInst = try explosion.insert(inst: BuiltinInstCall(inst: inst, args: extracted, irName: inst.rawValue))
-                    
-                    let structType = try call.function.type.returns.getAsStructType()
-                    explosion.insertTail(StructInitInst(type: returnType ?? structType, values: virInst, irName: call.irName))
                 }
-            }
-            
-            /// Explode the call to an overflow checking op
-            func replaceWithOverflowCheckedBuiltin(_ inst: BuiltinInst) throws {
-                try call.replace { explosion in
-                    let extracted = try call.args.map { arg in
-                        try explosion.insert(inst: StructExtractInst(object: arg.value!, property: "value")) as Value
+                
+                /// Explode the call to an overflow checking op
+                func replaceWithOverflowCheckedBuiltin(_ inst: BuiltinInst) throws {
+                    try call.replace { explosion in
+                        let extracted = try call.args.map { arg in
+                            try explosion.insert(inst: StructExtractInst(object: arg.value!, property: "value")) as Value
+                        }
+                        let virInst = try explosion.insert(inst: BuiltinInstCall(inst: inst, args: extracted, irName: inst.rawValue))
+                        
+                        let checkBit = try explosion.insert(inst: TupleExtractInst(tuple: virInst, index: 1, irName: "overflow"))
+                        try explosion.insert(inst: BuiltinInstCall(inst: .condfail, args: [checkBit]))
+                        
+                        let structType = try call.function.type.returns.getAsStructType()
+                        let val = try explosion.insert(inst: TupleExtractInst(tuple: virInst, index: 0, irName: "value"))
+                        explosion.insertTail(StructInitInst(type: structType, values: val, irName: call.irName))
                     }
-                    let virInst = try explosion.insert(inst: BuiltinInstCall(inst: inst, args: extracted, irName: inst.rawValue))
-                    
-                    let checkBit = try explosion.insert(inst: TupleExtractInst(tuple: virInst, index: 1, irName: "overflow"))
-                    try explosion.insert(inst: BuiltinInstCall(inst: .condfail, args: [checkBit]))
-                    
-                    let structType = try call.function.type.returns.getAsStructType()
-                    let val = try explosion.insert(inst: TupleExtractInst(tuple: virInst, index: 0, irName: "value"))
-                    explosion.insertTail(StructInitInst(type: structType, values: val, irName: call.irName))
                 }
+                
+                // Now we switch over the mangled function name, if its a stdlib
+                // one we know how to explode, do it!
+                
+                switch call.function.name {
+                case "-A_tII": // l * r
+                    try replaceWithOverflowCheckedBuiltin(.imul)
+                case "-P_tII": // l + r
+                    try replaceWithOverflowCheckedBuiltin(.iadd)
+                case "-M_tII": // l - r
+                    try replaceWithOverflowCheckedBuiltin(.isub)
+                case "-S_tII": // l / r
+                    try replaceWithBuiltin(.idiv)
+                case "-C_tII": // l % r
+                    try replaceWithBuiltin(.irem)
+                case "-T-R_tII": // l ~^ r
+                    try replaceWithBuiltin(.ixor)
+                case "-L-L_tII": // l << r
+                    try replaceWithBuiltin(.ishl)
+                case "-G-G_tII": // l >> r
+                    try replaceWithBuiltin(.ishr)
+                case "-T-N_tII": // l ~& r
+                    try replaceWithBuiltin(.iand)
+                case "-T-O_tII": // l ~| r
+                    try replaceWithBuiltin(.ior)
+                case "-T-R_tII": // l ~^ r
+                    try replaceWithBuiltin(.ixor)
+                    
+                case "-L_tII": // l < r
+                    try replaceWithBuiltin(.ilt, returnType: StdLib.boolType)
+                case "-G_tII": // l > r
+                    try replaceWithBuiltin(.igt, returnType: StdLib.boolType)
+                case "-L-E_tII": // l <= r
+                    try replaceWithBuiltin(.ilte, returnType: StdLib.boolType)
+                case "-G-E_tII": // l >= r
+                    try replaceWithBuiltin(.igte, returnType: StdLib.boolType)
+                case "-E-E_tII": // l == r
+                    try replaceWithBuiltin(.ieq, returnType: StdLib.boolType)
+                case "-B-E_tII": // l != r
+                    try replaceWithBuiltin(.ineq, returnType: StdLib.boolType)
+                    
+                case "-N-N_tBB": // l && r
+                    try replaceWithBuiltin(.and, returnType: StdLib.boolType)
+                case "-O-O_tBB": // l || r
+                    try replaceWithBuiltin(.or, returnType: StdLib.boolType)
+                    
+                default:
+                    break // not a stdlib function so we're done
+                }
+                
             }
-            
-            // Now we switch over the mangled function name, if its a stdlib
-            // one we know how to explode, do it!
-            
-            switch call.function.name {
-            case "-A_tII": // l * r
-                try replaceWithOverflowCheckedBuiltin(.imul)
-            case "-P_tII": // l + r
-                try replaceWithOverflowCheckedBuiltin(.iadd)
-            case "-M_tII": // l - r
-                try replaceWithOverflowCheckedBuiltin(.isub)
-            case "-S_tII": // l / r
-                try replaceWithBuiltin(.idiv)
-            case "-C_tII": // l % r
-                try replaceWithBuiltin(.irem)
-            case "-T-R_tII": // l ~^ r
-                try replaceWithBuiltin(.ixor)
-            case "-L-L_tII": // l << r
-                try replaceWithBuiltin(.ishl)
-            case "-G-G_tII": // l >> r
-                try replaceWithBuiltin(.ishr)
-            case "-T-N_tII": // l ~& r
-                try replaceWithBuiltin(.iand)
-            case "-T-O_tII": // l ~| r
-                try replaceWithBuiltin(.ior)
-            case "-T-R_tII": // l ~^ r
-                try replaceWithBuiltin(.ixor)
-                
-            case "-L_tII": // l < r
-                try replaceWithBuiltin(.ilt, returnType: StdLib.boolType)
-            case "-G_tII": // l > r
-                try replaceWithBuiltin(.igt, returnType: StdLib.boolType)
-            case "-L-E_tII": // l <= r
-                try replaceWithBuiltin(.ilte, returnType: StdLib.boolType)
-            case "-G-E_tII": // l >= r
-                try replaceWithBuiltin(.igte, returnType: StdLib.boolType)
-            case "-E-E_tII": // l == r
-                try replaceWithBuiltin(.ieq, returnType: StdLib.boolType)
-            case "-B-E_tII": // l != r
-                try replaceWithBuiltin(.ineq, returnType: StdLib.boolType)
-                
-            case "-N-N_tBB": // l && r
-                try replaceWithBuiltin(.and, returnType: StdLib.boolType)
-            case "-O-O_tBB": // l || r
-                try replaceWithBuiltin(.or, returnType: StdLib.boolType)
-                
-            default:
-                break // not a stdlib function so we're done
-            }
-            
         }
+        
     }
 }
 

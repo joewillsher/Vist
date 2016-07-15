@@ -10,10 +10,16 @@
 /// Inline pass inlines single block functions
 struct InlinePass : OptimisationPass {
     
-    typealias PassTarget = Function
+    typealias PassTarget = Module
     static let minOptLevel: OptLevel = .low
     
-    static func run(on function: Function) throws {
+    static func run(on module: Module) throws {
+        for function in module.functions {
+            try run(on: function)
+        }
+    }
+    
+    private static func run(on function: Function) throws {
         
         guard !function.hasHadInline else {
             return
@@ -57,8 +63,9 @@ struct InlinePass : OptimisationPass {
             alreadyInlined[param.name] = arg.value!
         }
         
-        func getValue(replacing val: Value) -> Value {
-            return alreadyInlined[val.name]!
+        func getValue(replacing val: Operand) -> Value {
+            return alreadyInlined[val.name]
+                ?? val.value!.copy() // if its not in the block (a literal) we can copy it as is
         }
         
         // forward pass FIXME: should be through dominator tree

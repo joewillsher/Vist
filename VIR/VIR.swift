@@ -42,6 +42,18 @@ extension Collection where Iterator.Element == Type {
 }
 
 
+extension Operand : VIRElement {
+    /// `%1: %Int`
+    var valueName: String {
+        return "\(value?.name ?? "<NULL>")\(type.map { ": \($0.vir)" } ?? "")"
+    }
+    var name: String {
+        return value?.name ?? "<NULL>"
+    }
+    var vir: String {
+        return valueName
+    }
+}
 extension Value {
     /// `%1: %Int`
     var valueName: String {

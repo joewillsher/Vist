@@ -207,7 +207,8 @@ func compileDocuments(
     }
     
     // run optimiser
-    try virModule.runPasses(optLevel: options.optLevel())
+    try PassManager(module: virModule, optLevel: options.optLevel())
+        .runPasses()
     
     // write out
     try virModule.vir.write(toFile: "\(currentDirectory)/\(file).vir", atomically: true, encoding: .utf8)

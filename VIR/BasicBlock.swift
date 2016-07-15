@@ -92,8 +92,8 @@ extension BasicBlock {
     func addApplication(from block: BasicBlock, args: [BlockOperand]?, breakInst: BreakInstruction) throws {
         
         // make sure application is correctly typed
-        if let vals = try parameters?.map(InstBase.getType(_:)) {
-            guard let equal = try args?.map(Operand.getType(_:))
+        if let vals = try parameters?.map(getType(of:)) {
+            guard let equal = try args?.map(getType(of:))
                 .elementsEqual(vals, isEquivalent: ==)
                 where equal else { throw VIRError.paramsNotTyped }
         }

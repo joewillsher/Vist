@@ -6,8 +6,8 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-enum OptLevel: Int {
-    case off = 0, low = 1, high = 3
+enum OptLevel : Int {
+    case off, low, high
 }
 
 extension CompileOptions {
@@ -18,30 +18,24 @@ extension CompileOptions {
     }
 }
 
-extension Module {
+struct PassManager {
+    let module: Module, optLevel: OptLevel
     
-    func runPasses(optLevel: OptLevel) throws {
-        
-        // run pre inline opts
-        for function in functions where function.hasBody {
-            try StdLibInlinePass.create(function, optLevel: optLevel)
-        }
+    func runPasses() throws {
         
         // inline functions
-        for function in functions where function.hasBody {
-//            try InlinePass.create(function, optLevel: optLevel)
-        }
+        try create(pass: StdLibInlinePass.self, runOn: module)
+        try create(pass: InlinePass.self, runOn: module)
         
         // run post inline opts
-        for function in functions where function.hasBody {
-            try RegisterPromotionPass.create(function, optLevel: optLevel)
-            try ConstantFoldingPass.create(function, optLevel: optLevel)
-            try DCEPass.create(function, optLevel: optLevel)
-//            try CFGSimplificationPass.create(function, optLevel: optLevel)
+        for function in module.functions where function.hasBody {
+            try create(pass: RegisterPromotionPass.self, runOn: function)
+            try create(pass: ConstantFoldingPass.self, runOn: function)
+            try create(pass: DCEPass.self, runOn: function)
+            //try create(pass: CFGSimplificationPass.self, runOn: function)
         }
         
-        try DeadFunctionPass.create(self, optLevel: optLevel)
-        
+        try create(pass: DeadFunctionPass.self, runOn: module)
     }
 }
 
@@ -55,10 +49,10 @@ protocol OptimisationPass {
     static func run(on: PassTarget) throws
 }
 
-extension OptimisationPass {
-    static func create(_ element: PassTarget, optLevel: OptLevel) throws {
-        guard optLevel.rawValue >= minOptLevel.rawValue else { return }
-        return try run(on: element)
+extension PassManager {
+    func create<PassType : OptimisationPass>(pass: PassType.Type, runOn target: PassType.PassTarget) throws {
+        guard optLevel.rawValue >= pass.minOptLevel.rawValue else { return }
+        return try PassType.run(on: target)
     }
 }
 
@@ -116,13 +110,7 @@ struct Explosion<InstType : Inst> {
             pos = i // insert next after this inst
         }
         
-//        let user = inst.uses
         try instToReplace.eraseFromParent(replacingAllUsesWith: tail)
-        
-//        for (i, u) in user.enumerated() {
-//            tail!.uses[i].user = u
-//        }
-        
     }
 }
 

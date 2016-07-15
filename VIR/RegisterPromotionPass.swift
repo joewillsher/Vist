@@ -47,7 +47,7 @@ struct RegisterPromotionPass : OptimisationPass {
         for case let allocInst as AllocInst in function.instructions where allocInst.isRegisterPromotable {
             
             let stores = allocInst.stores()
-            precondition(stores.count <= 1,
+            precondition(stores.count == 1,
                          "Mem2Reg currently only works with one store isnt, this should have been enforced in `AllocInst.isRegisterPromotable`")
             let store = stores[0]
             guard let storedValue = store.value.value else {
@@ -88,7 +88,7 @@ private extension AllocInst {
         
         // for now we only do it if there is 1 store
         // to do more requires constructing phi nodes/block applications
-        guard stores().count <= 1 else { return false }
+        guard stores().count == 1 else { return false }
         
         return true
     }

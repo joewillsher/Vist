@@ -7,7 +7,7 @@
 //
 
 enum IRLowerError: VistError {
-    case notLowerable( Value)
+    case notLowerable(VIRElement)
     
     var description: String {
         switch self {
