@@ -27,7 +27,7 @@
  %6 = struct %I (%i_xor: #Builtin.Int64)
  ```
  */
-struct StdLibInlinePass : OptimisationPass {
+enum StdLibInlinePass : OptimisationPass {
     
     typealias PassTarget = Module
     
@@ -130,8 +130,6 @@ struct StdLibInlinePass : OptimisationPass {
 
 
 /*
- 
- 
  So the vist
  ```
  func add :: Int Int -> Int = (a b) do return a + b

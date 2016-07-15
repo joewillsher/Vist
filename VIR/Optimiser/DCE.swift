@@ -8,7 +8,7 @@
 
 
 /// Dead code elimination pass
-struct DCEPass : OptimisationPass {
+enum DCEPass : OptimisationPass {
     
     typealias PassTarget = Function
     static let minOptLevel: OptLevel = .low
@@ -24,7 +24,7 @@ struct DCEPass : OptimisationPass {
     }
 }
 
-struct DeadFunctionPass : OptimisationPass {
+enum DeadFunctionPass : OptimisationPass {
     
     typealias PassTarget = Module
     static var minOptLevel: OptLevel = .low
@@ -37,7 +37,7 @@ struct DeadFunctionPass : OptimisationPass {
     }
 }
 
-struct CFGSimplificationPass : OptimisationPass {
+enum CFGSimplificationPass : OptimisationPass {
     
     typealias PassTarget = Function
     static let minOptLevel: OptLevel = .high

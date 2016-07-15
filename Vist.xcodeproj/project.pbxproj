@@ -176,6 +176,7 @@
 		D4CF76781C8CD4A70058A8EC /* TupleInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF76761C8CD4A70058A8EC /* TupleInst.swift */; };
 		D4CF767D1C8CF8490058A8EC /* Runtime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF767C1C8CF8490058A8EC /* Runtime.swift */; };
 		D4CF767E1C8CF8490058A8EC /* Runtime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF767C1C8CF8490058A8EC /* Runtime.swift */; };
+		D4D386851D39ACB200820E43 /* Explosion.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D386841D39ACB200820E43 /* Explosion.swift */; };
 		D4D8B25D1D0301BC00D1F455 /* RuntimeObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D8B25C1D0301BC00D1F455 /* RuntimeObject.swift */; };
 		D4D8B25E1D0301BC00D1F455 /* RuntimeObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D8B25C1D0301BC00D1F455 /* RuntimeObject.swift */; };
 		D4DE28191C5969830096E798 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4DE28181C5969830096E798 /* libz.tbd */; };
@@ -334,6 +335,7 @@
 		D4CF767C1C8CF8490058A8EC /* Runtime.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Runtime.swift; path = lib/Sema/Expose/Runtime.swift; sourceTree = "<group>"; };
 		D4D369D91CFC6FFA007E802D /* vir.vim */ = {isa = PBXFileReference; lastKnownFileType = text; name = vir.vim; path = utils/vim/syntax/vir.vim; sourceTree = "<group>"; };
 		D4D369DA1CFC6FFA007E802D /* vist.vim */ = {isa = PBXFileReference; lastKnownFileType = text; name = vist.vim; path = utils/vim/syntax/vist.vim; sourceTree = "<group>"; };
+		D4D386841D39ACB200820E43 /* Explosion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Explosion.swift; sourceTree = "<group>"; };
 		D4D8B25C1D0301BC00D1F455 /* RuntimeObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RuntimeObject.swift; path = lib/VIRLower/RuntimeObject.swift; sourceTree = "<group>"; };
 		D4DB92771C866FF300718B78 /* example.vir */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vir; path = RUN/example.vir; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; };
@@ -657,15 +659,24 @@
 			name = Parser;
 			sourceTree = "<group>";
 		};
+		D4D386861D39ACD000820E43 /* Passes */ = {
+			isa = PBXGroup;
+			children = (
+				D49248531CF77883009FD509 /* StdLibInline.swift */,
+				D454444B1D181AB900C7B02A /* Inliner.swift */,
+				D454444E1D181ACD00C7B02A /* RegisterPromotionPass.swift */,
+				D4728BE61C960E22003294B0 /* Folding.swift */,
+				D411C8971C8DD00000478988 /* DCE.swift */,
+			);
+			name = Passes;
+			sourceTree = "<group>";
+		};
 		D4DB927E1C875BBB00718B78 /* Optimiser */ = {
 			isa = PBXGroup;
 			children = (
 				D4728BE01C9475A5003294B0 /* Optimiser.swift */,
-				D411C8971C8DD00000478988 /* DCE.swift */,
-				D4728BE61C960E22003294B0 /* Folding.swift */,
-				D49248531CF77883009FD509 /* StdLibInline.swift */,
-				D454444B1D181AB900C7B02A /* Inliner.swift */,
-				D454444E1D181ACD00C7B02A /* RegisterPromotionPass.swift */,
+				D4D386841D39ACB200820E43 /* Explosion.swift */,
+				D4D386861D39ACD000820E43 /* Passes */,
 			);
 			name = Optimiser;
 			sourceTree = "<group>";
@@ -961,6 +972,7 @@
 				D43B399B1C8A0EDF0039FB2E /* Operand.swift in Sources */,
 				D43B3A081C8A10390039FB2E /* Token.swift in Sources */,
 				D43B39931C8A0EDF0039FB2E /* Builder.swift in Sources */,
+				D4D386851D39ACB200820E43 /* Explosion.swift in Sources */,
 				D43B3A3A1C8A10C80039FB2E /* FunctionSema.swift in Sources */,
 				D43B3A481C8A10C80039FB2E /* StructSema.swift in Sources */,
 				D43B39911C8A0EDF0039FB2E /* BasicBlock.swift in Sources */,

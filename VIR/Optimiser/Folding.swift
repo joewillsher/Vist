@@ -8,7 +8,7 @@
 
 
 
-struct ConstantFoldingPass : OptimisationPass {
+enum ConstantFoldingPass : OptimisationPass {
     
     typealias PassTarget = Function
     static let minOptLevel: OptLevel = .low

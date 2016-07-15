@@ -28,7 +28,7 @@ $entry(%$0: #Int):
 }
  ```
 */
-struct RegisterPromotionPass : OptimisationPass {
+enum RegisterPromotionPass : OptimisationPass {
     
     typealias PassTarget = Function
     static let minOptLevel: OptLevel = .low
@@ -84,7 +84,6 @@ private extension AllocInst {
         for use in uses {
             guard use.user is LoadInst || use.user is StoreInst else { return false }
         }
-//        return true
         
         // for now we only do it if there is 1 store
         // to do more requires constructing phi nodes/block applications
