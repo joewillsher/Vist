@@ -21,7 +21,7 @@ extension CompileOptions {
 extension Module {
     
     func runPasses(optLevel: OptLevel) throws {
-
+        
         // run pre inline opts
         for function in functions where function.hasBody {
             try StdLibInlinePass.create(function, optLevel: optLevel)
@@ -29,13 +29,13 @@ extension Module {
         
         // inline functions
         for function in functions where function.hasBody {
-            try InlinePass.create(function, optLevel: optLevel)
+//            try InlinePass.create(function, optLevel: optLevel)
         }
         
         // run post inline opts
         for function in functions where function.hasBody {
             try RegisterPromotionPass.create(function, optLevel: optLevel)
-//            try ConstantFoldingPass.create(function, optLevel: optLevel)
+            try ConstantFoldingPass.create(function, optLevel: optLevel)
             try DCEPass.create(function, optLevel: optLevel)
 //            try CFGSimplificationPass.create(function, optLevel: optLevel)
         }

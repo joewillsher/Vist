@@ -9,7 +9,7 @@ import class Foundation.Task
 
 do {
     let flags = Array(Process.arguments.dropFirst())
-    try compile(withFlags: flags, inDirectory: Task().currentDirectoryPath)
+    try compile(withFlags: flags, inDirectory: Task().currentDirectoryPath, out: nil)
 }
 catch {
     print(error, terminator: "\n\n")

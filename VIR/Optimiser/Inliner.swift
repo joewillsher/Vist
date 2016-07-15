@@ -57,7 +57,7 @@ struct InlinePass : OptimisationPass {
             alreadyInlined[param.name] = arg.value!
         }
         
-        func variableReplacing(_ val: Value) -> Value {
+        func getValue(replacing val: Value) -> Value {
             return alreadyInlined[val.name]!
         }
         
@@ -67,7 +67,7 @@ struct InlinePass : OptimisationPass {
             
             switch try sourceInst.copy(using: &alreadyInlined) {
             case let returnInst as ReturnInst:
-                let inlinedInst = variableReplacing(returnInst.returnValue)
+                let inlinedInst = getValue(replacing: returnInst.returnValue)
                 explosion.insertTail(inlinedInst)
                 break // return must be last inst in block
                 
@@ -75,7 +75,8 @@ struct InlinePass : OptimisationPass {
                 
                 // fix up the user of the inst's args
                 inlinedInst.setInstArgs(args: inlinedInst.args.map { arg in
-                    let operand = Operand(variableReplacing(arg))
+                    let operand = arg.formCopy(nullValue: true)
+                    operand.value = getValue(replacing: arg)
                     operand.user = inlinedInst
                     return operand
                 })

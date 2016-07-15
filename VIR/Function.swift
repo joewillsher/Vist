@@ -349,17 +349,6 @@ extension Module {
         return try getOrInsertFunction(named: name, type: fnTy)
     }
     
-    /// Returns a runtime function, updating the module fn list if needed
-    func getOrInsertRuntimeFunction(named name: String, argTypes: [Type]) throws -> Function? {
-        guard let (mangledName, fnTy) = Runtime.function(name: name, argTypes: argTypes) else { return nil }
-        return try getOrInsertFunction(named: mangledName, type: fnTy)
-    }
-    /// Returns a raw, unmangled runtime function, updating the module fn list if needed
-    func getOrInsertRawRuntimeFunction(named name: String) throws -> Function? {
-        guard let (mangledName, fnTy) = Runtime.function(mangledName: name) else { return nil }
-        return try getOrInsertFunction(named: mangledName, type: fnTy)
-    }
-    
     /// Returns a function from the module by name
     func function(named name: String) -> Function? {
         return functions.first {$0.name == name}

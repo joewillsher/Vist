@@ -20,8 +20,8 @@ struct ConstantFoldingPass : OptimisationPass {
             switch inst {
             case let builtin as BuiltinInstCall:
                 switch builtin.inst {
-                    
-//                    case .
+                case .iadd:
+                    let (lhs, rhs) = (builtin.lhs, builtin.rhs)
                     
                     
                 default:
@@ -39,5 +39,10 @@ struct ConstantFoldingPass : OptimisationPass {
         }
         
     }
+//    
+//    static func staticIntValue(inst: Inst) -> Int? {
+//        
+//    }
+//    
 }
 

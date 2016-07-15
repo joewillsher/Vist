@@ -17,55 +17,38 @@ struct Runtime {
     private static let voidType = BuiltinType.void
     private static let opaquePointerType = BuiltinType.opaquePointer
     
-    static let refcountedObjectType = StructType.withTypes([BuiltinType.opaquePointer, int32Type], name: "RefcountedObject")
+    static let refcountedObjectType = StructType.withTypes([BuiltinType.opaquePointer, int32Type], name: "Refcounted")
     static let refcountedObjectPointerType = BuiltinType.pointer(to: refcountedObjectType)
 
     private static let __typeMetadataType = StructType.withTypes([BuiltinType.pointer(to: BuiltinType.pointer(to: conceptConformanceType)), int32Type, BuiltinType.pointer(to: int8Type)], name: "TypeMetadata")
-
     
-    static let valueWitnessType = StructType.withTypes([BuiltinType.opaquePointer], name: "ValueWitness")
-    static let conceptConformanceType = StructType.withTypes([BuiltinType.opaquePointer/*TypeMetadata *concept*/, BuiltinType.pointer(to: int32Type), int32Type, BuiltinType.pointer(to: witnessTableType)], name: "ConceptConformance")
+    
+    static let valueWitnessType = StructType.withTypes([BuiltinType.opaquePointer], name: "Witness")
+    static let conceptConformanceType = StructType.withTypes([BuiltinType.opaquePointer/*TypeMetadata *concept*/, BuiltinType.pointer(to: int32Type), int32Type, BuiltinType.pointer(to: witnessTableType)], name: "Conformance")
     static let witnessTableType = StructType.withTypes([BuiltinType.pointer(to: valueWitnessType), int32Type], name: "WitnessTable")
-    static let typeMetadataType = StructType.withTypes([BuiltinType.pointer(to: BuiltinType.pointer(to: conceptConformanceType)), int32Type, BuiltinType.pointer(to: int8Type)], name: "TypeMetadata")
-    static let existentialObjectType = StructType.withTypes([BuiltinType.opaquePointer, int32Type, BuiltinType.pointer(to: BuiltinType.pointer(to: conceptConformanceType))], name: "ExistentialObject")
+    static let typeMetadataType = StructType.withTypes([BuiltinType.pointer(to: BuiltinType.pointer(to: conceptConformanceType)), int32Type, BuiltinType.pointer(to: int8Type)], name: "Metadata")
+    static let existentialObjectType = StructType.withTypes([BuiltinType.opaquePointer, int32Type, BuiltinType.pointer(to: BuiltinType.pointer(to: conceptConformanceType))], name: "Existential")
     
-    
-    private static let functions: [(String, FunctionType)] = [
-    ]
-    private static let unmangled: [(String, FunctionType)] = [
-        ("vist_allocObject", FunctionType(params: [int32Type], returns: refcountedObjectPointerType)),
-        ("vist_deallocObject", FunctionType(params: [refcountedObjectPointerType], returns: voidType)),
-        ("vist_retainObject", FunctionType(params: [refcountedObjectPointerType], returns: voidType)),
-        ("vist_releaseObject", FunctionType(params: [refcountedObjectPointerType], returns: voidType)),
-        ("vist_releaseUnownedObject", FunctionType(params: [refcountedObjectPointerType], returns: voidType)),
-        ("vist_deallocUnownedObject", FunctionType(params: [refcountedObjectPointerType], returns: voidType)),
+    struct Function {
+        let name: String, type: FunctionType
         
-        ("vist_setYieldTarget", FunctionType(params: [], returns: boolType)),
-        ("vist_yieldUnwind", FunctionType(params: [], returns: voidType)),
+        static let allocObject = Function(name: "vist_allocObject", type: FunctionType(params: [int32Type], returns: refcountedObjectPointerType))
+        static let deallocObject = Function(name: "vist_deallocObject", type: FunctionType(params: [refcountedObjectPointerType], returns: voidType))
+        static let retainObject  = Function(name: "vist_retainObject", type: FunctionType(params: [refcountedObjectPointerType], returns: voidType))
+        static let releaseObject  = Function(name: "vist_releaseObject", type: FunctionType(params: [refcountedObjectPointerType], returns: voidType))
+        static let releaseUnownedObject = Function(name: "vist_releaseUnownedObject", type: FunctionType(params: [refcountedObjectPointerType], returns: voidType))
+        static let deallocUnownedObject = Function(name: "vist_deallocUnownedObject", type: FunctionType(params: [refcountedObjectPointerType], returns: voidType))
         
-        ("vist_constructExistential", FunctionType(params: [BuiltinType.pointer(to: conceptConformanceType), BuiltinType.opaquePointer], returns: BuiltinType.pointer(to: existentialObjectType))),
-        ("vist_getWitnessMethod", FunctionType(params: [BuiltinType.pointer(to: existentialObjectType), int32Type, int32Type], returns: Builtin.opaquePointerType)),
-        ("vist_getPropertyOffset", FunctionType(params: [BuiltinType.pointer(to: existentialObjectType), int32Type, int32Type], returns: Builtin.int32Type)),
-    ]
-    
-    private static let functionContainer = FunctionContainer(functions: functions, types: [])
-    private static let unmangledContainer = FunctionContainer(functions: unmangled, types: [], mangleFunctionNames: false)
-    
-    /// Get a builtin function by name
-    /// - parameter name: Unmangled name
-    /// - parameter args: Applied arg types
-    /// - returns: An optional tuple of `(mangledName, type)`
-    static func function(name: String, argTypes args: [Type]) -> (mangledName: String, type: FunctionType)? {
-        return functionContainer[fn: name, types: args]
+        static let setYieldTarget = Function(name: "vist_setYieldTarget", type: FunctionType(params: [], returns: boolType))
+        static let yieldUnwind = Function(name: "vist_yieldUnwind", type: FunctionType(params: [], returns: voidType))
+        
+        static let getWitnessMethod = Function(name: "vist_getWitnessMethod", type: FunctionType(params: [BuiltinType.pointer(to: existentialObjectType), int32Type, int32Type], returns: Builtin.opaquePointerType))
+        static let getPropertyOffset = Function(name: "vist_getPropertyOffset", type: FunctionType(params: [BuiltinType.pointer(to: existentialObjectType), int32Type, int32Type], returns: Builtin.int32Type))
+        static let constructExistential = Function(name: "vist_constructExistential", type: FunctionType(params: [BuiltinType.pointer(to: conceptConformanceType), BuiltinType.opaquePointer], returns:
+            BuiltinType.pointer(to:
+            existentialObjectType
+            )
+            ))
     }
-    
-    /// Get a builtin function by mangled name
-    /// - parameter name: Mangled name
-    /// - parameter args: Applied arg types
-    /// - returns: An optional tuple of `(mangledName, type)`
-    static func function(mangledName name: String) -> (mangledName: String, type: FunctionType)? {
-        return unmangledContainer[mangledName: name]
-    }
-    
 }
 

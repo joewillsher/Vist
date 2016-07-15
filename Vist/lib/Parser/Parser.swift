@@ -1205,8 +1205,8 @@ extension Parser {
     private func parseExpr(token: Token) throws -> [ASTNode] {
         
         switch token {
-        case .`let`:                return try parseVariableDecl(declContext: .global).mapAs(ASTNode) // swift bug
-        case .`var`:                return try parseVariableDecl(declContext: .global).mapAs(ASTNode)
+        case .`let`:                return try parseVariableDecl(declContext: .global).mapAs(ASTNode.self) // swift bug
+        case .`var`:                return try parseVariableDecl(declContext: .global).mapAs(ASTNode.self)
         case .`func`:               return [try parseFuncDeclaration(declContext: .global)]
         case .`return`:             return [try parseReturnExpr()]
         case .yield:                return [try parseYieldExpr()]

@@ -48,6 +48,9 @@ func expectedTestCaseAST(path: String) throws -> [String] {
 func expectedTestCaseLLVM(path: String) throws -> [String] {
     return try expectedTestCaseBlock(name: "LLVM", path: path)
 }
+func expectedTestCaseOutput(prefix: String, path: String) throws -> [String] {
+    return try expectedTestCaseBlock(name: prefix, path: path)
+}
 
 
 
@@ -124,6 +127,13 @@ func getRunSettings(path: String) throws -> [String] {
         .replacingOccurrences(of: " RUN: ", with: "")
         .components(separatedBy: " ")
 }
+func getTestPrefix(path: String) throws -> String? {
+    return try getCommentsFromFile(atPath: path)
+        .filter { comment in  comment.hasPrefix(" CHECK: ") }
+        .flatMap { $0.components(separatedBy: " ").first }
+        .first
+}
+
 
 struct OutputError : ErrorProtocol { let reason: String }
 

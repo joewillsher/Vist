@@ -51,9 +51,8 @@ extension Module {
         return LLVMFunction(name: name, type: type.lowered(module: module), module: IGF.module)
     }
     
-    func getOrAddRuntimeFunction(named name: String, IGF: inout IRGenFunction) -> LLVMFunction {
-        let (_, fnType) = Runtime.function(mangledName: name)!
-        return module.getOrAddFunction(named: name, type: fnType, IGF: &IGF)
+    func getRuntimeFunction(_ fn: Runtime.Function, IGF: inout IRGenFunction) -> LLVMFunction {
+        return module.getOrAddFunction(named: fn.name, type: fn.type.importedType(in: self) as! FunctionType, IGF: &IGF)
     }
     
     func virLower(module: LLVMModule, isStdLib: Bool) throws {
@@ -64,10 +63,10 @@ extension Module {
         var IGF = (builder, module) as IRGenFunction
         
         for type in typeList where type.targetType is ConceptType {
-            _ = try type.getLLVMTypeMetadata(IGF: &IGF)
+            _ = try type.getLLVMTypeMetadata(IGF: &IGF, module: self)
         }
         for type in typeList where type.targetType is StructType {
-            _ = try type.getLLVMTypeMetadata(IGF: &IGF)
+            _ = try type.getLLVMTypeMetadata(IGF: &IGF, module: self)
         }
 
         for fn in functions {

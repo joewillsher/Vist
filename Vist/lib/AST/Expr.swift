@@ -339,7 +339,7 @@ final class StructExpr: Typed, ScopeNode, TypeExpr, LibraryTopLevel {
     var type: StructType? = nil
     
     var childNodes: [ASTNode] {
-        return properties.mapAs(ASTNode) + methods.mapAs(ASTNode) + initialisers.mapAs(ASTNode)
+        return properties.mapAs(ASTNode.self) + methods.mapAs(ASTNode.self) + initialisers.mapAs(ASTNode.self)
     }
 }
 
@@ -357,7 +357,7 @@ final class ConceptExpr: TypedExpr, ScopeNode, TypeExpr, LibraryTopLevel {
     var type: ConceptType? = nil
     
     var childNodes: [ASTNode] {
-        return requiredProperties.mapAs(ASTNode) + requiredMethods.mapAs(ASTNode)
+        return requiredProperties.mapAs(ASTNode.self) + requiredMethods.mapAs(ASTNode.self)
     }
     
 }

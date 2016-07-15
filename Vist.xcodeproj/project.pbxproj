@@ -79,7 +79,6 @@
 		D43B39FE1C8A100E0039FB2E /* LinkRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39F21C8A100E0039FB2E /* LinkRuntime.swift */; };
 		D43B39FF1C8A100E0039FB2E /* LinkRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39F21C8A100E0039FB2E /* LinkRuntime.swift */; };
 		D43B3A001C8A100E0039FB2E /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39F31C8A100E0039FB2E /* main.swift */; };
-		D43B3A011C8A100E0039FB2E /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39F31C8A100E0039FB2E /* main.swift */; };
 		D43B3A061C8A10390039FB2E /* Lexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A041C8A10390039FB2E /* Lexer.swift */; };
 		D43B3A071C8A10390039FB2E /* Lexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A041C8A10390039FB2E /* Lexer.swift */; };
 		D43B3A081C8A10390039FB2E /* Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A051C8A10390039FB2E /* Token.swift */; };
@@ -844,7 +843,6 @@
 				D43B39DB1C8A0F3A0039FB2E /* FunctionInst.swift in Sources */,
 				D4728BE51C960D79003294B0 /* MemoryInst.swift in Sources */,
 				D4F3D8061CAC4243005A3B07 /* LowerError.swift in Sources */,
-				D43B3A011C8A100E0039FB2E /* main.swift in Sources */,
 				D43B3A3B1C8A10C80039FB2E /* FunctionSema.swift in Sources */,
 				D4F3D8031CAC41EB005A3B07 /* Intrinsic.cpp in Sources */,
 				D43B39FF1C8A100E0039FB2E /* LinkRuntime.swift in Sources */,

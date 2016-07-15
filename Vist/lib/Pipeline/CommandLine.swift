@@ -10,8 +10,9 @@ import class Foundation.Pipe
 import class Foundation.NumberFormatter
 import CoreFoundation.CFDate
 import class Foundation.NSString
+import struct Foundation.URL
 
-public func compile(withFlags flags: [String], inDirectory dir: String, out: Pipe? = nil) throws {
+public func compile(withFlags flags: [String], inDirectory dir: String, out: URL? = nil) throws {
     
     guard !flags.isEmpty else { fatalError("No input files") }
     
@@ -80,7 +81,7 @@ public func compile(withFlags flags: [String], inDirectory dir: String, out: Pip
             try compileDocuments(fileNames: files,
                                  inDirectory: dir,
                                  explicitName: explicitName,
-                                 out: out,
+                                 output: out,
                                  options: compileOptions)
         }
         else if compileOptions.contains(.buildRuntime) {

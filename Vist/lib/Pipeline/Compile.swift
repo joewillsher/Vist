@@ -9,7 +9,9 @@
 import class Foundation.Task
 import class Foundation.Pipe
 import class Foundation.FileManager
+import class Foundation.FileHandle
 import class Foundation.NSString
+import struct Foundation.URL
 
 import Dispatch
 
@@ -141,14 +143,16 @@ func compileDocuments(
     fileNames: [String],
     inDirectory currentDirectory: String,
     explicitName: String? = nil,
-    out: Pipe? = nil,
+    output: URL? = nil,
     options: CompileOptions
     ) throws {
     
     /// Custom print that writes into the out pipe if its specifed
     func print(_ string: String...) {
         let s = string.joined(separator: " ")
-        if let o = out { o.fileHandleForWriting.write((s+"\n").data(using: .utf8)!) }
+        if let o = output {
+            try! FileHandle(forWritingTo: o).write((s+"\n").data(using: .utf8)!)
+        }
         else { Swift.print(s) }
     }
     
@@ -324,7 +328,7 @@ func compileDocuments(
         
         if options.contains(.buildAndRun) {
             if options.contains(.verbose) { print("\n\n-----------------------------RUN-----------------------------\n") }
-            runExecutable(file: file, inDirectory: currentDirectory, out: out)
+            runExecutable(file: file, inDirectory: currentDirectory, output: output)
         }
         
     }
@@ -335,7 +339,7 @@ func compileDocuments(
 func runExecutable(
     file: String,
     inDirectory: String,
-    out: Pipe? = nil
+    output: URL? = nil
     ) {
     
     /// Run the program
@@ -343,8 +347,8 @@ func runExecutable(
     runTask.currentDirectoryPath = inDirectory
     runTask.launchPath = "\(inDirectory)/\(file)"
     
-    if let out = out {
-        runTask.standardOutput = out
+    if let out = output {
+        try! runTask.standardOutput = FileHandle(forWritingTo: out)
     }
     
     runTask.launch()
@@ -352,8 +356,8 @@ func runExecutable(
     
     if case .uncaughtSignal = runTask.terminationReason {
         let message = "Program terminated with exit code: \(runTask.terminationStatus)"
-        if let o = out {
-            o.fileHandleForWriting.write(message.data(using: .utf8)!)
+        if let o = output {
+            try! FileHandle(forWritingTo: o).write(message.data(using: .utf8)!)
         }
         else {
             print(message)

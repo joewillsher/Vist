@@ -12,10 +12,10 @@ extension ExistentialConstructInst : VIRLower {
         
         guard let structType = try value.memType?.getAsStructType() else { fatalError() }
         
-        let ref = module.getOrAddRuntimeFunction(named: "vist_constructExistential", IGF: &IGF)
+        let ref = module.getRuntimeFunction(.constructExistential, IGF: &IGF)
         
         let mem = try IGF.builder.buildBitcast(value: value.loweredValue!, to: LLVMType.opaquePointer)
-        let conf = try structType.generateConformanceMetadata(concept: existentialType, IGF: &IGF).metadata
+        let conf = try structType.generateConformanceMetadata(concept: existentialType, IGF: &IGF, module: module).metadata
        
         let ex = try IGF.builder.buildCall(function: ref, args: [conf, mem])
         
@@ -36,12 +36,10 @@ extension ExistentialWitnessInst : VIRLower {
             .cannonicalType(module: module)
             .importedType(in: module)
         
-        let ref = module.getOrAddRuntimeFunction(named: "vist_getWitnessMethod", IGF: &IGF)
+        let ref = module.getRuntimeFunction(.getWitnessMethod, IGF: &IGF)
         
-        let exType = Runtime.existentialObjectType.lowered(module: module).getPointerType()
         let conformanceIndex = LLVMValue.constInt(value: 0, size: 32), methodIndex = LLVMValue.constInt(value: i, size: 32)
-        let ex = try IGF.builder.buildBitcast(value: existential.loweredValue!, to: exType)
-        let functionPointer = try IGF.builder.buildCall(function: ref, args: [ex, conformanceIndex, methodIndex])
+        let functionPointer = try IGF.builder.buildCall(function: ref, args: [existential.loweredValue!, conformanceIndex, methodIndex])
         
         let functionType = BuiltinType.pointer(to: fnType).lowered(module: module)
         return try IGF.builder.buildBitcast(value: functionPointer, to: functionType, name: irName) // fntype*
@@ -61,11 +59,11 @@ extension OpenExistentialPropertyInst : VIRLower {
         // use this to look up the index in self by getting the ixd from the runtime's array
         let i = try conceptType.index(ofMemberNamed: propertyName)
         
-        let exType = Runtime.existentialObjectType.lowered(module: module).getPointerType()
+        let exType = Runtime.existentialObjectType.importedType(in: module).lowered(module: module).getPointerType()
         let ex = try IGF.builder.buildBitcast(value: existential.loweredValue!, to: exType)
         let conformanceIndex = LLVMValue.constInt(value: 0, size: 32), propertyIndex = LLVMValue.constInt(value: i, size: 32)
-
-        let ref = module.getOrAddRuntimeFunction(named: "vist_getPropertyOffset", IGF: &IGF)
+        
+        let ref = module.getRuntimeFunction(.getPropertyOffset, IGF: &IGF)
         let offset = try IGF.builder.buildCall(function: ref, args: [ex, conformanceIndex, propertyIndex])
 
         let elementPtrType = propertyPtrType.lowered(module: module) // ElTy*.Type
@@ -91,7 +89,7 @@ extension ExistentialProjectInst : VIRLower {
 
 extension NominalType {
     
-    func getTypeMetadata(IGF: inout IRGenFunction) throws -> TypeMetadata {
+    func getTypeMetadata(IGF: inout IRGenFunction, module: Module) throws -> TypeMetadata {
         
         if let g = IGF.module.typeMetadata[name] {
             return g
@@ -102,7 +100,7 @@ extension NominalType {
         // if its a struct, we can emit the conformance tables
         if case let s as StructType = self {
             conformances = try concepts
-                .map { concept in try s.generateConformanceMetadata(concept: concept, IGF: &IGF).conformance }
+                .map { concept in try s.generateConformanceMetadata(concept: concept, IGF: &IGF, module: module).conformance }
                 .map (UnsafeMutablePointer.allocInit(value:))
         }
         
@@ -117,14 +115,14 @@ extension NominalType {
         return md
     }
     
-    func getLLVMTypeMetadata(IGF: inout IRGenFunction) throws -> LLVMValue {
+    func getLLVMTypeMetadata(IGF: inout IRGenFunction, module: Module) throws -> LLVMValue {
         
         let metadataName = "_g\(name)s"
         
         if let g = IGF.module.global(named: metadataName) {
             return g.value
         }
-        return try getTypeMetadata(IGF: &IGF).getConstMetadata(IGF: &IGF, name: metadataName)
+        return try getTypeMetadata(IGF: &IGF, module: module).getConstMetadata(IGF: &IGF, module: module, name: metadataName)
     }
     
 }
@@ -133,7 +131,7 @@ extension NominalType {
 
 extension StructType {
     
-    func generateConformanceMetadata(concept: ConceptType, IGF: inout IRGenFunction) throws -> (conformance: ConceptConformance, metadata: LLVMValue) {
+    func generateConformanceMetadata(concept: ConceptType, IGF: inout IRGenFunction, module: Module) throws -> (conformance: ConceptConformance, metadata: LLVMValue) {
         
         let valueWitnesses = try concept
             .existentialValueWitnesses(structType: self, IGF: &IGF)
@@ -160,14 +158,14 @@ extension StructType {
         let witnesses = try concept.existentialWitnessOffsets(structType: self, IGF: &IGF)
             .map(UnsafeMutablePointer.allocInit(value:))
         let witnessOffsets = witnesses.copyBuffer()
-        let metadata = try UnsafeMutablePointer.allocInit(value: concept.getTypeMetadata(IGF: &IGF))!
+        let metadata = try UnsafeMutablePointer.allocInit(value: concept.getTypeMetadata(IGF: &IGF, module: module))!
         
         let c = ConceptConformance(concept: metadata,
                                    propWitnessOffsetArr: witnessOffsets,
                                    propWitnessOffsetArrCount: Int32(witnesses.count),
                                    witnessTable: witnessTable)
         
-        let md = try c.getConstMetadata(IGF: &IGF, name: "_g\(name)conf\(concept.name)")
+        let md = try c.getConstMetadata(IGF: &IGF, module: module, name: "_g\(name)conf\(concept.name)")
         
         return (c, md)
     }

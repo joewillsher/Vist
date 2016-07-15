@@ -13,7 +13,7 @@ extension BuiltinInstCall: VIRLower {
         
         // applied args
         // self provides `lhs` and `rhs` which are lazily computed args[0] and args[1]
-        var args = self.args.map { $0.loweredValue! }
+        var args = self.args.map { $0.loweredValue! as LLVMValue }
         // An intrinsic to call with args
         let intrinsic: LLVMFunction
         
@@ -32,8 +32,8 @@ extension BuiltinInstCall: VIRLower {
             intrinsic = try IGF.module.getIntrinsic(named: "llvm.memcpy",
                                                     overload: lhs.type, rhs.type, .intType(size: 64))
             // add extra memcpy args
-            args.append(.constInt(value: 1, size: 32)) // i32 align -- align 1
-            args.append(.constBool(value: false)) // i1 isVolatile -- false
+            args.append(LLVMValue.constInt(value: 1, size: 32)) // i32 align -- align 1
+            args.append(LLVMValue.constBool(value: false)) // i1 isVolatile -- false
                 
         case .allocstack: return try IGF.builder.buildArrayAlloca(size: lhs, elementType: .intType(size: 8), name: irName)
         case .allocheap:  return try IGF.builder.buildArrayMalloc(size: lhs, elementType: .intType(size: 8), name: irName)

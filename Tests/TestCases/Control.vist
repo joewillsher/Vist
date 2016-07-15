@@ -1,3 +1,4 @@
+// RUN: -Ohigh -r
 
 let a = 3
 

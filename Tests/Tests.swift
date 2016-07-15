@@ -7,7 +7,9 @@
 //
 
 import XCTest
-import Foundation
+//import class Foundation.Pipe
+import class Foundation.FileManager
+import struct Foundation.URL
 
 // tests can define comments which define the expected output of the program
 // `// OUT: 1 2` will add "1\n2\n" to the expected result of the program
@@ -31,31 +33,52 @@ extension VistTest {
 
 /// Test the compilation and output of code samples
 final class OutputTests : XCTestCase, VistTest {
-    
-    /// pipe used as the stdout of the test cases
-    var pipe: Pipe? = nil
-    
-    override func setUp() {
-        super.setUp()
-        pipe = Pipe()
-    }
 }
 
-final class _AutomatedTests : XCTestCase, VistTest {
-    
-    let files: [String]
-    
-    override init() {
-        files = try! files(dir: _AutomatedTests.testDir)
+//final class _AutomatedTests : XCTestCase, VistTest {
+//    
+//    let files: [String]
+//    
+//    override init() {
+//        files = try! _AutomatedTests.files(dir: _AutomatedTests.testDir)
+//        
+//        super.init()
+//    }
+//    
+//    private static func files(dir: String) throws -> [String] {
+//        return try FileManager.default.contentsOfDirectory(atPath: dir)
+//            + FileManager.default.subpathsOfDirectory(atPath: dir).flatMap { try files(dir: $0) }
+//    }
+//    
+//}
+
+protocol CheckingTest : VistTest { }
+extension CheckingTest {
+    func _testFile(name: String) -> Bool {
+        let path = "\(Self.testDir)/\(name).vist"
+        let temp = URL(fileURLWithPath: "\(path).tmp")
+        guard FileManager.default.createFile(atPath: temp.path!, contents: nil, attributes: nil) else { fatalError() }
+        defer { try! FileManager.default.removeItem(at: temp) }
         
-        print(files)
-        
-        super.init()
-    }
-    
-    private func files(dir: String) throws -> [String] {
-        return try FileManager.default.contentsOfDirectory(atPath: dir)
-            + FileManager.default.subpathsOfDirectory(atPath: dir).flatMap { try files(dir: $0) }
+        do {
+            let flags = try getRunSettings(path: path) + ["\(name).vist"]
+            let prefix = try getTestPrefix(path: path)!
+            do {
+                try compile(withFlags: flags, inDirectory: Self.testDir, out: temp)
+                
+                let expected = try expectedTestCaseOutput(prefix: prefix, path: path)
+                let output = try String(contentsOf: temp)
+                
+                return try multiLineOutput(output, matches: expected)
+            }
+            catch {
+                XCTFail("Test failed with error: \(error)")
+            }
+        }
+        catch {
+            XCTFail("Inforrectly formatted test case: \(error)")
+        }
+        return false
     }
     
 }
@@ -102,8 +125,8 @@ extension OutputTests {
     func testControlFlow() {
         let file = "Control"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
+            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir)
+//            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
             try! FileManager.default.removeItem(atPath: "\(OutputTests.testDir)/\(file)")
         }
         catch {
@@ -117,8 +140,8 @@ extension OutputTests {
     func testLoops() {
         let file = "Loops"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
+            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir)
+//            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
             try! FileManager.default.removeItem(atPath: "\(OutputTests.testDir)/\(file)")
         }
         catch {
@@ -132,8 +155,8 @@ extension OutputTests {
     func testType() {
         let file = "Type"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
+            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir)
+//            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
             try! FileManager.default.removeItem(atPath: "\(OutputTests.testDir)/\(file)")
         }
         catch {
@@ -147,8 +170,8 @@ extension OutputTests {
     func testIntegerOps() {
         let file = "IntegerOps"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
+            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir)
+//            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
             try! FileManager.default.removeItem(atPath: "\(OutputTests.testDir)/\(file)")
         }
         catch {
@@ -162,8 +185,8 @@ extension OutputTests {
     func testFunctions() {
         let file = "Function"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
+            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir)
+//            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
             try! FileManager.default.removeItem(atPath: "\(OutputTests.testDir)/\(file)")
         }
         catch {
@@ -178,8 +201,8 @@ extension OutputTests {
     func testExistential() {
         let file = "Existential"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
+            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir)
+//            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
             try! FileManager.default.removeItem(atPath: "\(OutputTests.testDir)/\(file)")
         }
         catch {
@@ -191,7 +214,7 @@ extension OutputTests {
     func testExistential2() {
 //        let file = "Existential2"
 //        do {
-//            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: testDir, out: pipe)
+//            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: testDir)
 //            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(testDir)/\(file).vist"), "Incorrect output")
 //            try! FileManager.default.removeItem(atPath: "\(testDir)/\(file)")
 //        }
@@ -204,8 +227,8 @@ extension OutputTests {
     func testTuple() {
         let file = "Tuple"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
+            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir)
+//            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
             try! FileManager.default.removeItem(atPath: "\(OutputTests.testDir)/\(file)")
         }
         catch {
@@ -217,8 +240,8 @@ extension OutputTests {
     func testString() {
         let file = "String"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
+            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir)
+//            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
             try! FileManager.default.removeItem(atPath: "\(OutputTests.testDir)/\(file)")
         }
         catch {
@@ -230,8 +253,8 @@ extension OutputTests {
     func testPreprocessor() {
         let file = "Preprocessor"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", "-run-preprocessor", "\(file).vist"], inDirectory: OutputTests.testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
+            try compile(withFlags: ["-Ohigh", "-r", "-run-preprocessor", "\(file).vist"], inDirectory: OutputTests.testDir)
+//            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
             try! FileManager.default.removeItem(atPath: "\(OutputTests.testDir)/\(file)")
         }
         catch {
@@ -242,8 +265,8 @@ extension OutputTests {
     func testPrintable() {
         let file = "Printable"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
+            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir)
+//            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
             try! FileManager.default.removeItem(atPath: "\(OutputTests.testDir)/\(file)")
         }
         catch {
@@ -254,8 +277,8 @@ extension OutputTests {
     func testAny() {
         let file = "Any"
         do {
-            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir, out: pipe)
-            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
+            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir)
+//            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
             try! FileManager.default.removeItem(atPath: "\(OutputTests.testDir)/\(file)")
         }
         catch {
@@ -472,7 +495,7 @@ extension OptimiserTests {
         do {
             try compile(withFlags: flags, inDirectory: OptimiserTests.testDir)
             
-            let expected = try expectedTestCaseVIR(path: :path)
+            let expected = try expectedTestCaseVIR(path: path)
             let output = try String(contentsOfFile: "\(OptimiserTests.testDir)/\(file).vir")
             
             try XCTAssert(multiLineOutput(output, matches: expected))
@@ -516,6 +539,29 @@ extension OptimiserTests {
             XCTFail("\(error)")
         }
     }
+    
+    func testInlinerSimple() {
+        
+        let file = "InlineSimple", path = "\(OptimiserTests.testDir)/\(file).vist"
+        
+        let flags = try! getRunSettings(path: path) + ["\(file).vist"]
+        do {
+            try compile(withFlags: flags, inDirectory: OptimiserTests.testDir)
+            
+            let expected = try expectedTestCaseVIR(path: path)
+            let output = try String(contentsOfFile: "\(OptimiserTests.testDir)/\(file).vir")
+            
+            try XCTAssert(multiLineOutput(output, matches: expected))
+        }
+        catch {
+            XCTFail("\(error)")
+        }
+    }
+    
+    func testInlinerSimple3() {
+        XCTAssert(_testFile(name: "InlineSimple"))
+    }
+    
 }
 
 extension VIRGenTests {

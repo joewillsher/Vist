@@ -32,16 +32,20 @@ extern "C"
 ExistentialObject *
 vist_constructExistential(ConceptConformance *conformance,
                           void *instance) {
-    // TODO: Do not heap allocate this -- return an `ExistentialObject` by value
     return new ExistentialObject(instance, 1, (ConceptConformance **)conformance);
 }
+
+//extern "C"
+//void
+//vist_deallocExistential(ExistentialObject *) {
+//    
+//}
 
 extern "C"
 void *
 vist_getWitnessMethod(ExistentialObject *existential,
                       int32_t conformanceIndex,
                       int32_t methodIndex) {
-    
     return existential->getConformance(conformanceIndex)->witnessTable->getWitness(methodIndex);
 }
 /// EXAMPLE DATA SECTION FOR WITNESS LOOKUP:
@@ -55,7 +59,6 @@ int32_t
 vist_getPropertyOffset(ExistentialObject *existential,
                        int32_t conformanceIndex,
                        int32_t propertyIndex) {
-    
     return existential->getConformance(conformanceIndex)->getOffset(propertyIndex);
 }
 /// EXAMPLE DATA SECTION FOR OFFSET LOOKUP:

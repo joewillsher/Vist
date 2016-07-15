@@ -90,18 +90,21 @@ final class StructElementPtrInst : InstBase, LValue {
     var object: PtrOperand, propertyName: String
     var propertyType: Type, structType: StructType
     
-    init(object: LValue, property: String, irName: String? = nil) throws {
+    convenience init(object: LValue, property: String, irName: String? = nil) throws {
         
         // get the underlying struct type
         guard let structType = try object.memType?.getAsStructType() else {
             throw VIRError.noType(#file)
         }
-        
-        self.object = PtrOperand(object)
+        let propertyType = try structType.propertyType(name: property)
+        self.init(object: PtrOperand(object), property: property, structType: structType, propertyType: propertyType, irName: irName)
+    }
+    private init(object: PtrOperand, property: String, structType: StructType, propertyType: Type, irName: String?) {
+        self.object = object
         self.propertyName = property
-        self.propertyType = try structType.propertyType(name: property)
+        self.propertyType = propertyType
         self.structType = structType
-        super.init(args: [self.object], irName: irName)
+        super.init(args: [object], irName: irName)
     }
     
     override var type: Type? { return BuiltinType.pointer(to: propertyType) }
@@ -109,6 +112,14 @@ final class StructElementPtrInst : InstBase, LValue {
     
     override var instVIR: String {
         return "\(name) = struct_element \(object.vir), !\(propertyName)\(useComment)"
+    }
+    
+    override func copyInst() -> StructElementPtrInst {
+        return StructElementPtrInst(object: object.formCopy(), property: propertyName, structType: structType, propertyType: propertyType, irName: irName)
+    }
+    override func setArgs(args: [Operand]) {
+        super.setArgs(args: args)
+        object = args[0] as! PtrOperand
     }
 }
 

@@ -12,7 +12,7 @@ extension AllocObjectInst : VIRLower {
         let sizeValue = ty.size(unit: .bytes, IGF: IGF)
         let size = LLVMValue.constInt(value: sizeValue, size: 32)
         
-        let ref = module.getOrAddRuntimeFunction(named: "vist_allocObject", IGF: &IGF)
+        let ref = module.getRuntimeFunction(.allocObject, IGF: &IGF)
         let alloced = try IGF.builder.buildCall(function: ref,
                                                 args: [size],
                                                 name: irName)
@@ -23,7 +23,7 @@ extension AllocObjectInst : VIRLower {
 
 extension RetainInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        let ref = module.getOrAddRuntimeFunction(named: "vist_retainObject", IGF: &IGF)
+        let ref = module.getRuntimeFunction(.retainObject, IGF: &IGF)
         return try IGF.builder.buildCall(function: ref,
                                          args: [object.bitcastToOpaqueRefCountedType()],
                                          name: irName)
@@ -32,8 +32,8 @@ extension RetainInst : VIRLower {
 
 extension ReleaseInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        let functionName = unowned ? "vist_releaseUnownedObject" : "vist_releaseObject"
-        let ref = module.getOrAddRuntimeFunction(named: functionName, IGF: &IGF)
+        let ref = module.getRuntimeFunction(unowned ? .releaseUnownedObject : .releaseObject,
+                                                 IGF: &IGF)
         return try IGF.builder.buildCall(function: ref,
                                          args: [object.bitcastToOpaqueRefCountedType()],
                                          name: irName)
@@ -43,8 +43,8 @@ extension ReleaseInst : VIRLower {
 
 extension DeallocObjectInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        let functionName = unowned ? "vist_deallocUnownedObject" : "vist_deallocObject"
-        let ref = module.getOrAddRuntimeFunction(named: functionName, IGF: &IGF)
+        let ref = module.getRuntimeFunction(unowned ? .deallocUnownedObject : .deallocObject,
+                                                 IGF: &IGF)
         return try IGF.builder.buildCall(function: ref,
                                          args: [object.bitcastToOpaqueRefCountedType()],
                                          name: irName)

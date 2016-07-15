@@ -200,9 +200,6 @@ extension FunctionCall/*: VIRGenerator*/ {
         if let stdlib = try module.getOrInsertStdLibFunction(named: name, argTypes: fnType.params) {
             return try module.builder.buildFunctionCall(function: stdlib, args: args).accessor()
         }
-        else if let runtime = try module.getOrInsertRuntimeFunction(named: name, argTypes: fnType.params) /*where name.hasPrefix("vist_")*/ {
-            return try module.builder.buildFunctionCall(function: runtime, args: args).accessor()
-        }
         else if
             let prefixRange = name.range(of: "Builtin."),
             let instruction = BuiltinInst(rawValue: name.replacingCharacters(in: prefixRange, with: "")) {
@@ -766,15 +763,15 @@ extension MethodCallExpr : ValueEmitter {
             guard let argTypes = args.optionalMap(transform: {$0.type}) else { fatalError() }
             
             // get the witness from the existential
-            let fn = try module.builder.buildExistentialWitnessMethod(existential: selfRef,
-                                                                      methodName: name,
-                                                                      argTypes: argTypes,
-                                                                      existentialType: existentialType,
-                                                                      irName: "witness")
+            let fn = try module.builder.build(inst: ExistentialWitnessInst(existential: selfRef,
+                                                                           methodName: name,
+                                                                           argTypes: argTypes,
+                                                                           existentialType: existentialType,
+                                                                           irName: "witness"))
             guard case let fnType as FunctionType = fn.memType?.importedType(in: module) else { fatalError() }
             
             // get the instance from the existential
-            let unboxedSelf = try module.builder.buildExistentialUnbox(value: selfRef, irName: "unboxed")
+            let unboxedSelf = try module.builder.build(inst: ExistentialProjectInst(existential: selfRef, irName: "unboxed"))
             // call the method by applying the opaque ptr to self as the first param
             return try module.builder.buildFunctionApply(function: PtrOperand(fn),
                                                          returnType: fnType.returns,

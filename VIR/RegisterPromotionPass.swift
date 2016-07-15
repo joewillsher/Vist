@@ -55,8 +55,7 @@ struct RegisterPromotionPass : OptimisationPass {
             }
             
             for load in allocInst.loads() {
-                load.replaceAllUses(with: storedValue)
-                try load.eraseFromParent()
+                try load.eraseFromParent(replacingAllUsesWith: storedValue)
             }
             
             try store.eraseFromParent()

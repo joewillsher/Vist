@@ -109,6 +109,9 @@ extension LLVMBuilder {
     func buildRetVoid() throws -> LLVMValue {
         return try wrap(LLVMBuildRetVoid(builder))
     }
+    func buildApply(function: LLVMValue, args: [LLVMValue], name: String? = nil) throws -> LLVMValue {
+        return try buildCall(function: LLVMFunction(ref: function._value), args: args)
+    }
     func buildCall(function: LLVMFunction, args: [LLVMValue], name: String? = nil) throws -> LLVMValue {
         var applied = try args.map { try $0.val() }
 //        guard function.paramCount == applied.count else { throw error(LLVMError.invalidParamCount(expected: function.paramCount, got: applied.count)) }
@@ -219,7 +222,7 @@ extension LLVMBuilder {
     func buildArrayMalloc(size: LLVMValue, elementType: LLVMType, name: String? = nil) throws -> LLVMValue {
         return try wrap(LLVMBuildArrayMalloc(builder, elementType.type, size.val(), name ?? ""))
     }
-    func buildFree(ptr: LLVMValue, name: String? = nil) throws -> LLVMValue {
+    @discardableResult func buildFree(ptr: LLVMValue, name: String? = nil) throws -> LLVMValue {
         return try wrap(LLVMBuildFree(builder, ptr.val()))
     }
 
@@ -422,11 +425,11 @@ struct LLVMModule : Dumpable {
         nonmutating set { LLVMSetTarget(module, newValue) }
     }
     
-    mutating func createLLVMGlobal<T>(forPointer value: UnsafeMutablePointer<T>, baseName: String, IGF: inout IRGenFunction) throws -> LLVMGlobalValue {
+    mutating func createLLVMGlobal<T>(forPointer value: UnsafeMutablePointer<T>, baseName: String, IGF: inout IRGenFunction, module: Module) throws -> LLVMGlobalValue {
         if let global = globals.cachedGlobals[value] {
             return global
         }
-        let v = try value.lowerMemory(IGF: &IGF, baseName: baseName)
+        let v = try value.lowerMemory(IGF: &IGF, module: module, baseName: baseName)
         return createGlobal(value: v, forPtr: value, baseName: baseName, IGF: &IGF)
     }
     
@@ -654,11 +657,10 @@ struct LLVMFunction : Dumpable {
     
     /// Returns the function parameter at `index`
     func param(at index: Int) throws -> LLVMValue {
-        guard let function = try? function.val() else { throw error(NullLLVMRef()) }
         guard index < paramCount else { throw error(LLVMError.invalidParamIndex(index, function: name)) }
-        return LLVMValue(ref: LLVMGetParam(function, UInt32(index)))
+        return try LLVMValue(ref: LLVMGetParam(function.val(), UInt32(index)))
     }
-    
+        
     func dump() { function.dump() }
 }
 

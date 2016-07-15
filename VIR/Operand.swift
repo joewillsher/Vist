@@ -22,9 +22,7 @@ class Operand : Value {
     final var value: Value? {
         willSet(arg) {
             value?.removeUse(self)
-            if let v = arg {
-                v.addUse(self)
-            }
+            arg?.addUse(self)
         }
     }
     /// The value using this operand
@@ -54,14 +52,14 @@ class Operand : Value {
     }
     
     /// An operand pointing to nothing
-    class func null() -> Operand {
+    static func null() -> Operand {
         return Operand(optionalValue: nil)
     }
     
     var type: Type? { return value?.type }
     
-    func formCopy() -> Operand {
-        return Operand(optionalValue: value)
+    func formCopy(nullValue: Bool = false) -> Operand {
+        return Operand(optionalValue: nullValue ? nil : value)
     }
     
     @available(*, unavailable, renamed: "Operand.formCopy")
@@ -110,6 +108,10 @@ final class PtrOperand : Operand, LValue {
         self.init(optionalValue: value)
         self.memType = value.memType
     }
+    
+    override func formCopy(nullValue: Bool = false) -> PtrOperand {
+        return PtrOperand(optionalValue: nullValue ? nil : value)
+    }
 }
 
 
@@ -119,6 +121,10 @@ final class FunctionOperand : Operand {
     convenience init(param: Param) {
         self.init(optionalValue: param)
         param.removeUse(self) // function operands shouldnt list null as a use
+    }
+    
+    override func formCopy(nullValue: Bool = false) -> FunctionOperand {
+        return FunctionOperand(optionalValue: nullValue ? nil : value)
     }
 }
 
@@ -142,6 +148,10 @@ final class BlockOperand : Operand {
     private unowned let predBlock: BasicBlock
     
     override var type: Type? { return param.type }
+    
+    override func formCopy(nullValue: Bool = false) -> BlockOperand {
+        return BlockOperand(optionalValue: nullValue ? nil : value, param: param, block: predBlock)
+    }
     
     /// Sets the phi's value for the incoming block `self.predBlock`
     override func setLoweredValue(_ val: LLVMValue) {
