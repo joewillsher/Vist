@@ -46,12 +46,12 @@ extension StructExpr {
         var initialisations: [ASTNode] = []
         for (i, name) in names.enumerated() {
             let object = VariableExpr(name: name)
-            let value = VariableExpr(name: String(i))
+            let value = VariableExpr(name: "$\(i)")
             let m = MutationExpr(object: object, value: value)
             initialisations.append(m)
         }
         
-        let params = (0..<names.count).map(String.init)
+        let params = (0..<names.count).map { "$\($0)" }
         let block = BlockExpr(exprs: initialisations)
         let body = FunctionImplementationExpr(params: params, body: block)
         

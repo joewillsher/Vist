@@ -232,7 +232,9 @@ extension Param : VIRLower {
 
 extension VariableInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        guard let type = type else { throw irGenError(.notTyped) }
+        guard let type = type else {
+            throw irGenError(.notTyped)
+        }
         
         let mem = try IGF.builder.buildAlloca(type: type.lowered(module: module), name: irName)
         try IGF.builder.buildStore(value: value.loweredValue!, in: mem)

@@ -24,8 +24,9 @@ struct PassManager {
     func runPasses() throws {
         
         // inline functions
-        try create(pass: StdLibInlinePass.self, runOn: module)
+//        try create(pass: StdLibInlinePass.self, runOn: module)
         try create(pass: InlinePass.self, runOn: module)
+        return
         
         // run post inline opts
         for function in module.functions where function.hasBody {

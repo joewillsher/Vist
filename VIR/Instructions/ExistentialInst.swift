@@ -86,7 +86,7 @@ final class ExistentialWitnessInst : InstBase, LValue {
     override var type: Type? { return memType.map { BuiltinType.pointer(to: $0) } }
     var memType: Type? { return methodType }
     
-    convenience init(existential: Value, methodName: String, argTypes: [Type], existentialType: ConceptType, irName: String? = nil) {
+    convenience init(existential: LValue, methodName: String, argTypes: [Type], existentialType: ConceptType, irName: String? = nil) {
         self.init(existential: PtrOperand(existential), methodName: methodName, argTypes: argTypes, existentialType: existentialType, irName: irName)
     }
     

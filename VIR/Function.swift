@@ -288,7 +288,7 @@ extension Builder {
         
         if let _ = module.function(named: name) {
             // if we already have a function with this name, we try again with a different name
-            return try buildUniqueFunction(name: "\(name)2", type: type, paramNames: paramNames, attrs: attrs)
+            return try buildUniqueFunction(name: "\(name)_", type: type, paramNames: paramNames, attrs: attrs)
         }
         
         return try buildFunction(name: name, type: type, paramNames: paramNames, attrs: attrs)

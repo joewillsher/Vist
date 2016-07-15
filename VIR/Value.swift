@@ -61,7 +61,8 @@ extension Value {
     
     /// Removes `use` from self’s uses record
     func removeUse(_ use: Operand) {
-        guard let i = uses.index(where: {$0.value === self}) else { return }
+        //guard let i = uses.index(where: {$0.value === self}) else { return }
+        guard let i = uses.index(where: {$0 === use}) else { return }
         uses.remove(at: i)
     }
     
@@ -102,15 +103,15 @@ extension Value {
         
         var count = 0
         guard let instructions = parentFunction?.instructions else { return nil }
-        for inst in instructions {
-            if case let o as Operand = self where o.value === inst { break }
-            else if inst === self { break }
-            // we dont want to provide a name for void exprs
-            // remove iteration here, plus in instrs that could be void, remove the `%0 = `...
-            if inst.irName == nil /*&& inst.type != BuiltinType.void*/ { count += 1 }
+        
+        for val in instructions {
+            if val === self {
+                return String(count)
+            }
+            if val.irName == nil { count += 1 }
         }
         
-        return String(count)
+        return nil
     }
     
     var name: String {

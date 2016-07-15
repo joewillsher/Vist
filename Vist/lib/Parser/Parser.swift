@@ -19,7 +19,7 @@ private extension Array {
 private extension Token {
     func isControlToken() -> Bool {
         switch self {
-        case .`do`, .openBrace: return true
+        case .do, .openBrace: return true
         default: return false
         }
     }
@@ -519,7 +519,7 @@ extension Parser {
         case .openParen:
             return try parseParenExpr()
             
-        case .openBrace, .`do` /*, .OpenParen */: // FIXME: closures want to be able to do `let a = (u) do print u`
+        case .openBrace, .do /*, .OpenParen */: // FIXME: closures want to be able to do `let a = (u) do print u`
             let block = try parseBlockExpr()
             let closure = ClosureExpr(exprs: block.exprs, params: block.variables)
             return closure
@@ -608,11 +608,11 @@ extension Parser {
         let block = try parseBlockExpr()
         blocks.append((condition, block))
         
-        while case .`else` = currentToken {
+        while case .else = currentToken {
             
             var condition: Expr?
             
-            if case .`if`? = inspectNextToken() {
+            if case .if? = inspectNextToken() {
                 // `else if` statement
                 getNextToken(2)
                 condition = try parseOperatorExpr()
@@ -671,8 +671,8 @@ extension Parser {
         
         let mutable: Bool
         switch currentToken {
-        case .`let`: mutable = false
-        case .`var`: mutable = true
+        case .let: mutable = false
+        case .var: mutable = true
         default: throw parseError(.notVariableDecl, userVisible: false)
         }
         
@@ -899,7 +899,7 @@ extension Parser {
         switch currentToken {
         case .openParen:    return try parseBlockExpr(names: parseClosureNamesExpr())
         case .openBrace:    return try parseBraceExpr(names: names)
-        case .`do`, .`else`:return try parseBracelessDoExpr(names: names)
+        case .do, .else:return try parseBracelessDoExpr(names: names)
         default:            throw parseError(.notBlock, loc: SourceRange.at(pos: currentPos))
         }
         
@@ -1039,13 +1039,13 @@ extension Parser {
         
         conceptScopeLoop: while true {
             switch currentToken {
-            case .`var`, .`let`:
+            case .var, .let:
                 try properties.append(contentsOf: parseVariableDecl(declContext: .type))
                 
-            case .`func`:
+            case .func:
                 try methods.append(parseFuncDeclaration(declContext: .type))
                 
-            case .`init`:
+            case .init:
                 try initialisers.append(parseInitDecl())
                 
             case .at:
@@ -1093,7 +1093,7 @@ extension Parser {
         }
         getNextToken() // eat `=`
         
-        return InitialiserDecl(ty: type, impl: try parseClosureDeclaration(type: type), parent: nil)
+        return try InitialiserDecl(ty: type, impl: parseClosureDeclaration(type: type), parent: nil)
     }
     
     
@@ -1110,10 +1110,10 @@ extension Parser {
         
         typeScopeLoop: while true {
             switch currentToken {
-            case .`var`, .`let`:
+            case .var, .let:
                 try properties.append(contentsOf: parseVariableDecl(declContext: .concept))
                 
-            case .`func`:
+            case .func:
                 try methods.append(parseFuncDeclaration(declContext: .concept))
                 
             case .at:
@@ -1205,19 +1205,19 @@ extension Parser {
     private func parseExpr(token: Token) throws -> [ASTNode] {
         
         switch token {
-        case .`let`:                return try parseVariableDecl(declContext: .global).mapAs(ASTNode.self) // swift bug
-        case .`var`:                return try parseVariableDecl(declContext: .global).mapAs(ASTNode.self)
-        case .`func`:               return [try parseFuncDeclaration(declContext: .global)]
-        case .`return`:             return [try parseReturnExpr()]
+        case .let:                return try parseVariableDecl(declContext: .global).mapAs(ASTNode.self) // swift bug
+        case .var:                return try parseVariableDecl(declContext: .global).mapAs(ASTNode.self)
+        case .func:               return [try parseFuncDeclaration(declContext: .global)]
+        case .return:             return [try parseReturnExpr()]
         case .yield:                return [try parseYieldExpr()]
         case .openParen:            return [try parseParenExpr()]
         case .openBrace:            return [try parseBraceExpr()]
         case .identifier(let str):  return [try parseIdentifierExpr(str)]
         case .comment(let str):     return [try parseCommentExpr(str: str)]
-        case .`if`:                 return [try parseIfStmt()]
-        case .`for`:                return [try parseForInLoopStmt()]
-        case .`do`:                 return [try parseBracelessDoExpr()]
-        case .`while`:              return [try parseWhileLoopStmt()]
+        case .if:                 return [try parseIfStmt()]
+        case .for:                return [try parseForInLoopStmt()]
+        case .do:                 return [try parseBracelessDoExpr()]
+        case .while:              return [try parseWhileLoopStmt()]
         case .sqbrOpen:             return [try parseArrayExpr()]
         case .type, .ref:           return [try parseTypeDeclarationExpr()]
         case .concept:              return [try parseConceptExpr()]

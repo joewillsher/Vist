@@ -20,9 +20,9 @@
 class Operand : VIRTyped {
     /// The underlying value
     final var value: Value? {
-        willSet(arg) {
+        willSet {
             value?.removeUse(self)
-            arg?.addUse(self)
+            newValue?.addUse(self)
         }
     }
     /// The value using this operand
@@ -35,9 +35,6 @@ class Operand : VIRTyped {
     deinit {
         value?.removeUse(self)
     }
-    
-    @available(*, unavailable, message: "`Operand` initialisers should not take `Operand`s")
-    init(_ operand: Operand) { fatalError("`Operand` initialisers should not take `Operand`s") }
     
     final private(set) var loweredValue: LLVMValue? = nil
     /// Set the LLVM value for uses of this operand
@@ -60,11 +57,6 @@ class Operand : VIRTyped {
 
     func formCopy(nullValue: Bool = false) -> Operand {
         return Operand(optionalValue: nullValue ? nil : value)
-    }
-    
-    @available(*, unavailable, renamed: "formCopy")
-    func copy() -> Self {
-        return self
     }
 }
 
@@ -89,12 +81,15 @@ final class PtrOperand : Operand {
     var memType: Type?
     
     convenience init(_ value: LValue) {
-        self.init(optionalValue: value)
-        self.memType = value.memType
+        self.init(optionalValue: value, memType: value.memType)
+    }
+    private init(optionalValue value: LValue?, memType: Type?) {
+        self.memType = memType
+        super.init(optionalValue: value)
     }
     
     override func formCopy(nullValue: Bool = false) -> PtrOperand {
-        return PtrOperand(optionalValue: nullValue ? nil : value)
+        return PtrOperand(optionalValue: nullValue ? nil : (value as! LValue), memType: memType)
     }
 }
 
@@ -114,8 +109,8 @@ final class FunctionOperand : Operand {
 
 
 /// An operand applied to a block, loweredValue is lazily evaluated
-/// so phi nodes can be created when theyre needed, allowing their values
-/// to be calculated
+/// so phi nodes can be created when they're needed and the values
+/// are avaliable
 final class BlockOperand : Operand {
     
     convenience init(value: Value, param: Param) {

@@ -321,7 +321,7 @@ extension ReturnStmt : ValueEmitter {
             try retVal.releaseUnowned()
         } else {
             // if its brought in by another scope, we can safely release
-//            try retVal.release()
+            try retVal.release() // FIXME: CHECK THIS
         }
         
         let boxed = try retVal.boxedAggregateGetValue(expectedType: expectedReturnType)
@@ -589,7 +589,7 @@ extension YieldStmt : StmtEmitter {
 }
 
 
-extension WhileLoopStmt: StmtEmitter {
+extension WhileLoopStmt : StmtEmitter {
     
     func emitStmt(module: Module, scope: Scope) throws {
         
@@ -661,7 +661,7 @@ extension ConceptExpr : ValueEmitter {
 
 }
 
-extension InitialiserDecl: StmtEmitter {
+extension InitialiserDecl : StmtEmitter {
     
     func emitStmt(module: Module, scope: Scope) throws {
         guard let initialiserType = ty.type, let selfType = parent?.type else { throw VIRError.noType(#file) }

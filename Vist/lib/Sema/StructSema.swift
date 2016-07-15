@@ -66,8 +66,6 @@ extension StructExpr : ExprTypeProvider {
             }
         }
         
-
-        
         if let implicit = implicitIntialiser() {
             initialisers.append(implicit)
         }
@@ -180,7 +178,7 @@ extension InitialiserDecl : DeclTypeProvider {
             initScope.addVariable(variable: (type: propType, mutable: true, isImmutableCapture: false), name: p.name)
         }
         
-        for (p, type) in zip(impl.params, try ty.params(scope: scope)) {
+        for (p, type) in try zip(impl.params, ty.params(scope: scope)) {
             initScope.addVariable(variable: (type: type, mutable: false, isImmutableCapture: false), name: p)
         }
         
