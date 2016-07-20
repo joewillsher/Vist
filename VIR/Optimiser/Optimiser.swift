@@ -11,13 +11,15 @@ enum OptLevel : Int {
 }
 
 struct PassManager {
-    let module: Module, optLevel: OptLevel
+    let module: Module, optLevel: OptLevel, opts: CompileOptions
     
     func runPasses() throws {
         
         // inline functions
         try create(pass: StdLibInlinePass.self, runOn: module)
-        try create(pass: InlinePass.self, runOn: module)
+        if !opts.contains(.disableInline) {
+            try create(pass: InlinePass.self, runOn: module)
+        }
         
         // run post inline opts
         for function in module.functions where function.hasBody {

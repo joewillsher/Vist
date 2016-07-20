@@ -53,6 +53,8 @@ struct CompileOptions : OptionSet {
     /// Parse this file as stdlib code and link manually with runtime
     static let doNotLinkStdLib: CompileOptions = [buildRuntime, linkWithRuntime, parseStdLib]
     
+    static let disableInline = CompileOptions(rawValue: 1 << 17)
+    
     static let runPreprocessor = CompileOptions(rawValue: 1 << 18)
 }
 
@@ -207,7 +209,7 @@ func compileDocuments(
     }
     
     // run optimiser
-    try PassManager(module: virModule, optLevel: options.optLevel())
+    try PassManager(module: virModule, optLevel: options.optLevel(), opts: options)
         .runPasses()
     
     // write out

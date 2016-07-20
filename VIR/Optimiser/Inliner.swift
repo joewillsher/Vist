@@ -31,7 +31,7 @@ enum InlinePass : OptimisationPass {
         for inst in function.instructions {
             switch inst {
                 // If the inst is a call...
-            case let call as FunctionCallInst:
+            case let call as FunctionCallInst: //  where call.function.inlineRequirement != .never
                 // ...inline the called function's body first...
                 try run(on: call.function)
                 // ...then inline this call.

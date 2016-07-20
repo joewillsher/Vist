@@ -546,8 +546,8 @@ extension ForInLoopStmt : StmtEmitter {
         module.builder.insertPoint = entryInsertPoint
         
         // require that we inline the loop thunks early
-        loopClosure.thunk.inline = .always
-        loopClosure.thunk.inline = .always
+        loopClosure.thunk.inlineRequirement = .always
+        loopClosure.thunk.inlineRequirement = .always
         
         // get the instance of the generator
         let generator = try self.generator.emitRValue(module: module, scope: scope).referenceBacked().aggregateReference()
@@ -678,7 +678,7 @@ extension InitialiserDecl : StmtEmitter {
         let function = try module.builder.buildFunction(name: mangledName, type: initialiserType, paramNames: impl.params)
         module.builder.insertPoint.function = function
         
-        function.inline = .always
+        function.inlineRequirement = .always
         
         // make scope and occupy it with params
         let fnScope = Scope(parent: scope, function: function)

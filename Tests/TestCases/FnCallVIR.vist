@@ -1,4 +1,5 @@
 // RUN: -Ohigh -emit-vir
+// CHECK: VIR
 
 // VIR-CHECK:
 // VIR: type #Int = { #Builtin.Int64 }

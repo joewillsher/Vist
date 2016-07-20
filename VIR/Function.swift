@@ -21,7 +21,7 @@ final class Function : VIRElement {
     
     // Attrs
     var visibility: Visibility = .`internal`
-    var inline: InlineRequirement = .`default`
+    var inlineRequirement: InlineRequirement = .`default`
     var attributes: Attributes = []
     
     private(set) var globalLifetimes: [GlobalValue.Lifetime] = []
@@ -160,8 +160,8 @@ extension Function {
         else if attrs.contains(.`public`) { visibility = .`public` }
         
         // inline attrs
-        if attrs.contains(.inline) { inline = .always }
-        else if attrs.contains(.noinline) { inline = .never }
+        if attrs.contains(.inline) { inlineRequirement = .always }
+        else if attrs.contains(.noinline) { inlineRequirement = .never }
         
         // other attrs
         if attrs.contains(.noreturn) { _ = attributes.insert(.noreturn) }

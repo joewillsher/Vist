@@ -100,8 +100,8 @@ extension Module {
 extension Function : VIRLower {
     
     private func applyInline() throws {
-        switch inline {
-        case .`default`: break
+        switch inlineRequirement {
+        case .default: break
         case .always: try loweredFunction?.addAttr(LLVMAlwaysInlineAttribute)
         case .never: try loweredFunction?.addAttr(LLVMNoInlineAttribute)
         }

@@ -45,6 +45,11 @@ public func compile(withFlags flags: [String], inDirectory dir: String, out: URL
         if let range = flag.range(of: "-disable-opt=") { return flag.replacingCharacters(in: range, with: "") }
         return nil
     }
+    // special case for disabling inliner
+    // TODO: all opts should have the option of disabling them
+    if filteredOpts.contains(InlinePass.name) {
+        compileOptions.insert(.disableInline)
+    }
     
     let explicitName = flags
         .first { flag in flag.hasPrefix("-o") }

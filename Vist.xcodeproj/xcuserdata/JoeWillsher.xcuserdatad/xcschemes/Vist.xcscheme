@@ -77,15 +77,19 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "-Ohigh"
-            isEnabled = "YES">
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-disable-opt=inline"
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-run-preprocessor"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "-disable-stdlib-inline"
-            isEnabled = "NO">
+            argument = "-Onone"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-verbose"

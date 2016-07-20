@@ -1,0 +1,48 @@
+// RUN: -Ohigh -emit-vir
+// CHECK: VIR
+
+concept AbstractBox { var el: Int }
+type ConcreteBox { var el: Int }
+
+// CHECK-VIR:
+// VIR: func @join_tAbstractBoxAbstractBox : &thin (#AbstractBox, #AbstractBox) -> #AbstractBox {
+// VIR: $entry(%$0: #AbstractBox, %$1: #AbstractBox):
+// VIR:   %0 = alloc #AbstractBox 	// users: %1, %2
+// VIR:   store %$0 in %0: #*AbstractBox
+// VIR:   %2 = existential_open %0: #*AbstractBox, !el 	// user: %3
+// VIR:   %3 = load %2: #*Int 	// user: %8
+// VIR:   %4 = alloc #AbstractBox 	// users: %5, %6
+// VIR:   store %$1 in %4: #*AbstractBox
+// VIR:   %6 = existential_open %4: #*AbstractBox, !el 	// user: %7
+// VIR:   %7 = load %6: #*Int 	// user: %9
+// VIR:   %8 = struct_extract %3: #Int, !value 	// user: %i_add
+// VIR:   %9 = struct_extract %7: #Int, !value 	// user: %i_add
+// VIR:   %i_add = builtin i_add %8: #Builtin.Int64, %9: #Builtin.Int64 	// users: %overflow, %value
+// VIR:   %overflow = tuple_extract %i_add: (#Builtin.Int64, #Builtin.Bool), !1 	// user: %10
+// VIR:   cond_fail %overflow: #Builtin.Bool
+// VIR:   %value = tuple_extract %i_add: (#Builtin.Int64, #Builtin.Bool), !0 	// user: %11
+// VIR:   %11 = struct %Int, (%value: #Builtin.Int64) 	// user: %12
+// VIR:   %12 = call @ConcreteBox_tI (%11: #Int) 	// user: %14
+// VIR:   %13 = alloc #ConcreteBox 	// users: %14, %15
+// VIR:   store %12 in %13: #*ConcreteBox
+// VIR:   %15 = existential %13: #*ConcreteBox in #AbstractBox 	// user: %16
+// VIR:   return %15
+// VIR: }
+func join :: AbstractBox AbstractBox -> AbstractBox = do return ConcreteBox $0.el + $1.el
+
+// CHECK-VIR:
+// VIR: func @wrap_tConcreteBox : &thin (#ConcreteBox) -> #AbstractBox {
+// VIR: $entry(%$0: #ConcreteBox):
+// VIR:   %0 = alloc #ConcreteBox 	// users: %1, %2
+// VIR:   store %$0 in %0: #*ConcreteBox
+// VIR:   %2 = existential %0: #*ConcreteBox in #AbstractBox 	// user: %3
+// VIR:   return %2
+// VIR: }
+func wrap :: ConcreteBox -> AbstractBox = do return $0
+
+let a = ConcreteBox 1
+let b = ConcreteBox 2
+let c = wrap a
+let x = join b c
+print x.el
+

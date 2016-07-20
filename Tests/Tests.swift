@@ -107,7 +107,7 @@ final class OptimiserTests : XCTestCase, VistTest, CheckingTest {
     
 }
 
-final class VIRGenTests : XCTestCase, VistTest {
+final class VIRGenTests : XCTestCase, VistTest, CheckingTest {
     
 }
 final class LLVMTests : XCTestCase, VistTest {
@@ -507,22 +507,13 @@ extension OptimiserTests {
 extension VIRGenTests {
     
     func testFunctionVIRGen() {
-        
-        let file = "FnCallVIR", path = "\(VIRGenTests.testDir)/\(file).vist"
-        
-        let flags = try! getRunSettings(path: path) + ["\(file).vist"]
-        do {
-            try compile(withFlags: flags, inDirectory: VIRGenTests.testDir)
-            
-            let expected = try expectedTestCaseLLVM(path: path)
-            let output = try String(contentsOfFile: "\(VIRGenTests.testDir)/\(file).vir")
-            
-            try XCTAssert(multiLineOutput(output, matches: expected))
-        }
-        catch {
-            XCTFail("\(error)")
-        }
+        XCTAssert(_testFile(name: "FnCallVIR"))
     }
+    
+    func testExistentialReturn() {
+        XCTAssert(_testFile(name: "ExistentialReturn-vir"))
+    }
+    
 }
 
 extension LLVMTests {
