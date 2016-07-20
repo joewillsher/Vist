@@ -243,12 +243,12 @@ private struct Lexer {
     }
     
     func charPtr(_ n: Int) -> Character? {
-        if index + n > 0 && index + n < chars.count { return chars[index+n] }
+        if index + n > 0, index + n < chars.count { return chars[index+n] }
         return nil
     }
     
     private mutating func updatePos() throws {
-        if let a = charPtr(-1) where a == "\n" {
+        if let a = charPtr(-1), a == "\n" {
             pos = (pos.0+1, 0)
         }
         else {

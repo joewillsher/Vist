@@ -19,7 +19,7 @@ extension StructExpr : ExprTypeProvider {
         
         try errorCollector.run {
             // if its a redeclaration, throw (unless we're in the tdlib)
-            if let _ = scope.type(named: name) where !scope.isStdLib {
+            if let _ = scope.type(named: name), !scope.isStdLib {
                 throw semaError(.invalidTypeRedeclaration(name))
             }
         }
@@ -37,7 +37,7 @@ extension StructExpr : ExprTypeProvider {
         }
         
         let cs = concepts.optionalMap { scope.concept(named: $0) }!
-        let ty = StructType(members: members, methods: [], name: name, concepts: cs, heapAllocated: byRef)
+        let ty = StructType(members: members, methods: [], name: name, concepts: cs, isHeapAllocated: byRef)
         self.type = ty
         
         try errorCollector.run {

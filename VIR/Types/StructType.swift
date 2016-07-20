@@ -13,14 +13,14 @@ final class StructType : NominalType {
     var methods: [StructMethod]
     var genericTypes: [GenericType] = []
     var concepts: [ConceptType] = []
-    let heapAllocated: Bool
-        
-    init(members: [StructMember], methods: [StructMethod], name: String, concepts: [ConceptType] = [], heapAllocated: Bool = false) {
+    let isHeapAllocated: Bool
+
+    init(members: [StructMember], methods: [StructMethod], name: String, concepts: [ConceptType] = [], isHeapAllocated: Bool = false) {
         self.name = name
         self.members = members
         self.methods = methods
         self.concepts = concepts
-        self.heapAllocated = heapAllocated
+        self.isHeapAllocated = isHeapAllocated
     }
 }
 
@@ -33,7 +33,7 @@ extension StructType {
     
     func importedAggreagteType(in module: Module) -> Type {
         let imported = importedType(in: module) as! NominalType
-        return heapAllocated ? imported.refCountedBox(module: module) : imported
+        return isHeapAllocated ? imported.refCountedBox(module: module) : imported
     }
     
     /// TODO: docs
@@ -41,7 +41,7 @@ extension StructType {
         let mappedEls = members.map { member in
             (member.name, member.type.importedType(in: module), member.isMutable) as StructMember
         }
-        let newTy = StructType(members: mappedEls, methods: methods, name: name, concepts: concepts, heapAllocated: heapAllocated)
+        let newTy = StructType(members: mappedEls, methods: methods, name: name, concepts: concepts, isHeapAllocated: isHeapAllocated)
         newTy.genericTypes = genericTypes
         newTy.concepts = concepts
         

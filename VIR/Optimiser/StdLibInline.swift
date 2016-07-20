@@ -33,6 +33,7 @@ enum StdLibInlinePass : OptimisationPass {
     
     // Aggressive opt should only be enabled in -Ohigh
     static let minOptLevel: OptLevel = .high
+    static let name = "stdlib-inline"
     
     // Run the opt -- called on each function by the pass manager
     static func run(on module: Module) throws  {

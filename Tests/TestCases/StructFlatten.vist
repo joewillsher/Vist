@@ -1,0 +1,22 @@
+// RUN: -Ohigh -emit-vir
+// CHECK: VIR
+
+func foo :: () = {
+    print 1 + 2
+}
+// VIR-CHECK:
+// VIR: func @foo_t : &thin () -> #Builtin.Void {
+// VIR: $entry:
+// VIR:   %0 = int_literal 1 	// user: %i_add
+// VIR:   %1 = int_literal 2 	// user: %i_add
+// VIR:   %i_add = builtin i_add %0: #Builtin.Int64, %1: #Builtin.Int64 	// users: %overflow, %value
+// VIR:   %overflow = tuple_extract %i_add: (#Builtin.Int64, #Builtin.Bool), !1 	// user: %2
+// VIR:   cond_fail %overflow: #Builtin.Bool
+// VIR:   %value = tuple_extract %i_add: (#Builtin.Int64, #Builtin.Bool), !0 	// user: %3
+// VIR:   %3 = struct %Int, (%value: #Builtin.Int64) 	// user: %4
+// VIR:   %4 = call @print_tI (%3: #Int)
+// VIR:   return ()
+// VIR: }
+
+
+

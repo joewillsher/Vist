@@ -50,7 +50,7 @@ extension RuntimeObject {
         let children = Mirror(reflecting: self).children
         
         func arrayCount(property label: String?) -> Int32? {
-            guard let property = label where property.hasSuffix("Arr") else { return nil }
+            guard let property = label, property.hasSuffix("Arr") else { return nil }
             guard let child = children.first(where: { child in child.label == "\(property)Count" }) else { return nil }
             return child.value as? Int32
         }

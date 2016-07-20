@@ -22,14 +22,20 @@ struct PassManager {
         // run post inline opts
         for function in module.functions where function.hasBody {
             try create(pass: RegisterPromotionPass.self, runOn: function)
+            try create(pass: StructFlattenPass.self, runOn: function)
             try create(pass: ConstantFoldingPass.self, runOn: function)
             try create(pass: DCEPass.self, runOn: function)
             //try create(pass: CFGSimplificationPass.self, runOn: function)
         }
         
         try create(pass: DeadFunctionPass.self, runOn: module)
+        
+        #if DEBUG
+            module.verify()
+        #endif
     }
 }
+
 protocol OptimisationPass {
     /// What the pass is run on, normally function or module
     associatedtype PassTarget
@@ -37,6 +43,8 @@ protocol OptimisationPass {
     static var minOptLevel: OptLevel { get }
     /// Runs the pass
     static func run(on: PassTarget) throws
+    
+    static var name: String { get }
 }
 
 extension PassManager {

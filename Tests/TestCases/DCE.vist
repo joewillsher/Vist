@@ -1,4 +1,5 @@
 // RUN: -Ohigh -emit-vir
+// CHECK: VIR
 
 type Foo { var x: Int }
 type Baz { var foo: Foo }

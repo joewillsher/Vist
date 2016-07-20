@@ -109,7 +109,7 @@ extension MutationExpr : ExprTypeProvider {
             guard let type = lookup.object._type else { throw semaError(.notStructType(lookup._type)) }
             let (_, parentMutable, mutable) = try lookup.recursiveType(scope: scope)
             
-            guard let p = parentMutable where p else {
+            guard let p = parentMutable, p else {
                 // provide nice error -- if its a variable we can put its name in the error message using '.immutableVariable'
                 if case let v as VariableExpr = lookup.object { throw semaError(.immutableVariable(name: v.name, type: v.typeName)) }
                 else { throw semaError(.immutableObject(type: type)) }
@@ -206,7 +206,7 @@ extension VariableDecl : DeclTypeProvider {
         }
         
         // if its a null expression
-        if let e = explicitType where value._type == BuiltinType.null && value is NullExpr {
+        if let e = explicitType, value._type == BuiltinType.null, value is NullExpr {
             value._type = e
         } // otherwise, if the type is null, we are assigning to something we shouldn't be
         else if objectType == BuiltinType.null {

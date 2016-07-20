@@ -85,7 +85,7 @@ final class Parser {
     private func getNextToken(_ n: Int = 1) -> Token {
         if n == 0 { return currentToken }
         index += 1
-        if case .newLine = currentToken where !considerNewLines {
+        if case .newLine = currentToken, !considerNewLines {
             return getNextToken(n)
         }
         return getNextToken(n-1)
@@ -99,7 +99,7 @@ final class Parser {
     @discardableResult
     private func inspectNextToken(_ i: Int = 1) -> Token? { // debug function, acts as getNextToken() but does not mutate
         if index+i >= tokens.count-i { return nil }
-        if case .newLine = currentToken where !considerNewLines {
+        if case .newLine = currentToken, !considerNewLines {
             return inspectNextToken(i+1)
         }
         return tokens[index+i]
@@ -107,7 +107,7 @@ final class Parser {
     @discardableResult
     private func inspectNextPos(_ i: Int = 1) -> Pos? {
         if index+i >= tokens.count-i { return nil }
-        if case .newLine = currentToken where !considerNewLines {
+        if case .newLine = currentToken, !considerNewLines {
             return inspectNextPos(i+1)
         }
         return tokensWithPos.map{$0.1.range.start}[index+i]
@@ -248,9 +248,9 @@ extension Parser {
         loop: while true {
             switch currentToken {
             case .identifier(let id):
-                
+
                 // handle native llvm type in stdlib
-                if case .period? = inspectNextToken(), case .identifier(let n)? = inspectNextToken(2) where id == "Builtin" && isStdLib {
+                if case .period? = inspectNextToken(), case .identifier(let n)? = inspectNextToken(2), id == "Builtin", isStdLib {
                     elements.append("Builtin.\(n)")    // param
                     getNextToken(3)// eat Builtin.Id
                 }
@@ -263,7 +263,7 @@ extension Parser {
                 guard case .identifier(let id) = getNextToken() else { throw parseError(.noIdentifier, loc: rangeOfCurrentToken()) }
                 
                 // handle native llvm type in stdlib
-                if case .period? = inspectNextToken(), case .identifier(let n)? = inspectNextToken(2) where id == "Builtin" && isStdLib {
+                if case .period? = inspectNextToken(), case .identifier(let n)? = inspectNextToken(2), id == "Builtin", isStdLib {
                     elements.append("Builtin.\(n)")    // param
                     getNextToken(2)// eat Builtin.Id
                 }
@@ -313,7 +313,7 @@ extension Parser {
             getNextToken()
         }
         
-        while case let a = currentToken where a.isValidParamToken {
+        while case let a = currentToken, a.isValidParamToken {
             try exps.append(parseOperatorExpr())
             
             if inTuple {
@@ -341,7 +341,7 @@ extension Parser {
         considerNewLines = true
         inTuple = true
         
-        while case let a = currentToken where a.isValidParamToken {
+        while case let a = currentToken, a.isValidParamToken {
             try exps.append(parseOperatorExpr())
         }
         
@@ -617,7 +617,7 @@ extension Parser {
                 getNextToken(2)
                 condition = try parseOperatorExpr()
                 
-                guard currentToken.isControlToken() && (usesBraces == currentToken.isBrace()) else { throw parseError(.notBlock, loc: SourceRange.at(pos: currentPos)) }
+                guard currentToken.isControlToken(), usesBraces == currentToken.isBrace() else { throw parseError(.notBlock, loc: SourceRange.at(pos: currentPos)) }
             }
             else {
                 getNextToken()
@@ -781,7 +781,7 @@ extension Parser {
             s = o
             
             let found = precedences[o]
-            if let x = found where x != ops { // make sure uses op’s predetermined prec
+            if let x = found, x != ops { // make sure uses op’s predetermined prec
                 throw parseError(.cannotChangeOpPrecedence(o, x), loc: SourceRange.at(pos: currentPos))
             }
             else if found == nil {
@@ -793,7 +793,7 @@ extension Parser {
         }
         
         let functionName: String
-        if case .period? = inspectNextToken(), case .identifier(let n)? = inspectNextToken(2) where s == "Builtin" && isStdLib {
+        if case .period? = inspectNextToken(), case .identifier(let n)? = inspectNextToken(2), s == "Builtin" && isStdLib {
             functionName = "Builtin.\(n)"
             getNextToken(2) // eat
         }
@@ -832,7 +832,7 @@ extension Parser {
             getNextToken()
         }
         guard case .closeParen = currentToken else { throw parseError(.expectedParen, loc: SourceRange.at(pos: currentPos)) }
-        guard let next = inspectNextToken() where next.isControlToken() else { throw parseError(.notBlock, loc: SourceRange.at(pos: currentPos)) }
+        guard let next = inspectNextToken(), next.isControlToken() else { throw parseError(.notBlock, loc: SourceRange.at(pos: currentPos)) }
         getNextToken() // eat 'do' or '{'
         
         return nms

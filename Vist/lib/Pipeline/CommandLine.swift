@@ -41,6 +41,11 @@ public func compile(withFlags flags: [String], inDirectory dir: String, out: URL
     for flag in flags.flatMap({map[$0]}) {
         _ = compileOptions.insert(flag)
     }
+    let filteredOpts = flags.flatMap { flag -> String? in
+        if let range = flag.range(of: "-disable-opt=") { return flag.replacingCharacters(in: range, with: "") }
+        return nil
+    }
+    
     let explicitName = flags
         .first { flag in flag.hasPrefix("-o") }
         .map { name in name.replacingOccurrences(of: "-o", with: "") }

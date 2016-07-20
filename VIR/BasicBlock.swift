@@ -93,9 +93,9 @@ extension BasicBlock {
         
         // make sure application is correctly typed
         if let vals = try parameters?.map(getType(of:)) {
-            guard let equal = try args?.map(getType(of:))
-                .elementsEqual(vals, isEquivalent: ==)
-                where equal else { throw VIRError.paramsNotTyped }
+            guard let equal = try args?.map(getType(of:)) .elementsEqual(vals, isEquivalent: ==), equal else {
+                throw VIRError.paramsNotTyped
+            }
         }
         else { guard args == nil else { throw VIRError.paramsNotTyped }}
         
@@ -124,7 +124,7 @@ extension BasicBlock {
     /// Adds a param to the block
     /// - precondition: This block is an entry block
     func addEntryBlockParam(_ param: Param) throws {
-        guard let entry = applications.first where entry.isEntry else { fatalError() }
+        guard let entry = applications.first, entry.isEntry else { fatalError() }
         parameters?.append(param)
         entry.args?.append(Operand(param))
     }
@@ -163,7 +163,7 @@ extension Builder {
     /// Appends this block to the function. Thus does not modify the insert
     /// point, make any breaks to this block, or apply any params to it
     func appendBasicBlock(name: String, parameters: [Param]? = nil) throws -> BasicBlock {
-        guard let function = insertPoint.function, let b = function.blocks where !b.isEmpty else { throw VIRError.noFunctionBody }
+        guard let function = insertPoint.function, let b = function.blocks, !b.isEmpty else { throw VIRError.noFunctionBody }
         
         let bb = BasicBlock(name: name, parameters: parameters, parentFunction: function)
         function.append(block: bb)

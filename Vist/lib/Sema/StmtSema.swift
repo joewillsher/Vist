@@ -13,7 +13,7 @@ private extension ScopeEscapeStmt {
         let retScope = SemaScope(parent: scope, semaContext: scope.returnType)
         let returnType = try expr.typeForNode(scope: retScope)
         
-        guard let ret = scope.returnType where ret == returnType else {
+        guard let ret = scope.returnType, ret == returnType else {
             throw semaError(.wrongFunctionReturnType(applied: returnType, expected: scope.returnType ?? BuiltinType.null))
         }
     }
@@ -72,7 +72,7 @@ extension ElseIfBlockStmt: StmtTypeProvider {
         if condition == nil { return }
         
         // otherwise make sure its a Bool
-        guard let condition = c where condition == StdLib.boolType else { throw semaError(.nonBooleanCondition) }
+        guard let condition = c, condition == StdLib.boolType else { throw semaError(.nonBooleanCondition) }
     }
     
 }

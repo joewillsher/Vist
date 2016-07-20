@@ -85,7 +85,7 @@ func expectedTestCaseBlock(name: String, path: String) throws -> [String] {
         
         var blockLines: [String] = []
         
-        while i < comments.endIndex && comments[i].hasPrefix(" \(name): ") {
+        while i < comments.endIndex, comments[i].hasPrefix(" \(name): ") {
             blockLines.append(comments[i].replacingOccurrences(of: " \(name): ", with: ""))
             i += 1
         }
@@ -122,7 +122,7 @@ func getCommentsForFile(path: String) throws -> [String] {
 }
 
 func getRunSettings(path: String) throws -> [String] {
-    guard let comment = try getCommentsFromFile(atPath: path).first where comment.hasPrefix(" RUN: ") else { return [] }
+    guard let comment = try getCommentsFromFile(atPath: path).first, comment.hasPrefix(" RUN: ") else { return [] }
     return comment
         .replacingOccurrences(of: " RUN: ", with: "")
         .components(separatedBy: " ")

@@ -25,7 +25,7 @@ protocol Type : VIRElement {
     /// The name to show to users
     var prettyName: String { get }
     
-    var heapAllocated: Bool { get }
+    var isHeapAllocated: Bool { get }
     
     /// Whether this type is representible in a module
     /// - whether it is a structrual type or module defined type alias
@@ -39,7 +39,7 @@ extension Type {
         return mangledName
     }
     
-    var heapAllocated: Bool { return false }
+    var isHeapAllocated: Bool { return false }
     
     func isInModule() -> Bool {
         return false

@@ -77,7 +77,7 @@ extension Value {
         
         if case BuiltinType.pointer(let to)? = type, case let nominal as NominalType = to {
             let lVal = try OpaqueLValue(rvalue: self)
-            if nominal.heapAllocated {
+            if nominal.isHeapAllocated {
                 return RefCountedAccessor(refcountedBox: lVal)
             }
             else {

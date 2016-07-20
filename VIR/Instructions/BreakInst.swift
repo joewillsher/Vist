@@ -56,8 +56,8 @@ extension Builder {
     @discardableResult
     func buildBreak(to block: BasicBlock, args: [BlockOperand]? = nil) throws -> BreakInst {
 //        if let _ = block.parameters {
-//            guard let applied = params?.map({$0.1})
-//                where paramTypes.map({ $0.paramName }).elementsEqual(applied, isEquivalent: ==)
+//            guard let applied = params?.map({$0.1}),
+//                paramTypes.map({ $0.paramName }).elementsEqual(applied, isEquivalent: ==)
 //                else { throw VIRError.wrongBlockParams }
 //        }
         let s = BreakInst(call: (block: block, args: args))
@@ -72,8 +72,8 @@ extension Builder {
     func buildCondBreak(if condition: Operand, to then: BlockCall, elseTo: BlockCall) throws -> CondBreakInst {
 //        if let _ = thenBlock.block.parameters {
 //            guard let applied = params?.optionalMap({$0.type}),
-//                let b = applied.optionalMap({ $0.type! })
-//                where paramTypes.map({ $0.1 }).elementsEqual(b, isEquivalent: ==)
+//                let b = applied.optionalMap({ $0.type! }),
+//                paramTypes.map({ $0.1 }).elementsEqual(b, isEquivalent: ==)
 //                else { throw VIRError.wrongBlockParams }
 //        }
         let s = CondBreakInst(then: then, else: elseTo, condition: condition)

@@ -11,6 +11,7 @@ enum InlinePass : OptimisationPass {
     
     typealias PassTarget = Module
     static let minOptLevel: OptLevel = .low
+    static let name = "inline"
     
     /// Inline functions in `module`
     /// - note: entrypoint for the inline pass
@@ -56,7 +57,7 @@ enum InlinePass : OptimisationPass {
         
         // Can we inline this call?
         // FIXME: Inlining multi block functions. (May need a dom tree analysis pass to do this)
-        guard call.function.isInlineable && call.function.shouldInline(at: .high) else {
+        guard call.function.isInlineable, call.function.shouldInline(at: .high) else {
             return false
         }
         

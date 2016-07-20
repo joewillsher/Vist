@@ -298,7 +298,7 @@ extension Builder {
     func getOrBuildFunction(name: String, type: FunctionType, paramNames: [String], attrs: [FunctionAttributeExpr] = []) throws -> Function {
         precondition(paramNames.count == type.params.count)
         
-        if let f = module.function(named: name) where !f.hasBody {
+        if let f = module.function(named: name), !f.hasBody {
             try f.defineBody(paramNames: paramNames)
             return f
         }

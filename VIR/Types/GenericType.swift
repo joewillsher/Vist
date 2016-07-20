@@ -13,7 +13,7 @@ final class GenericType : NominalType {
     /// Concepts this generic type implements
     let concepts: [ConceptType] 
     let parentName: String
-    let heapAllocated = false
+    let isHeapAllocated = false
     
     init(name: String, concepts: [ConceptType], parentName: String) {
         self.name = name

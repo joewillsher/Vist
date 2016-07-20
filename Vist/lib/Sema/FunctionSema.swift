@@ -55,7 +55,7 @@ extension FuncDecl : DeclTypeProvider {
         
         // get the type the scope returns or yields
         let scopeRetType: Type
-        if let yt = ty.yieldType where isGeneratorFunction {
+        if let yt = ty.yieldType, isGeneratorFunction {
             scopeRetType = yt
         }
         else {

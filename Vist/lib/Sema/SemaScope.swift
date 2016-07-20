@@ -50,8 +50,8 @@ final class SemaScope {
         
         // lookup from stdlib/builtin
         if let stdLibFunction = StdLib.function(name: name, args: argTypes) { return stdLibFunction }
-        else if let builtinFunction = Builtin.function(name: name, argTypes: argTypes) where isStdLib { return builtinFunction }
-//        else if let runtime = Runtime.function(name: name, argTypes: argTypes) where isStdLib { return runtime }
+        else if let builtinFunction = Builtin.function(name: name, argTypes: argTypes), isStdLib { return builtinFunction }
+//        else if let runtime = Runtime.function(name: name, argTypes: argTypes), isStdLib { return runtime }
             // otherwise we search the user scopes recursively
         else { return try recursivelyLookupFunction(named: name, argTypes: argTypes) }
     }

@@ -101,7 +101,7 @@ extension FunctionType {
         if isCanonicalType { return self }
         
         let ret: Type
-        if case let s as StructType = returns where s.heapAllocated {
+        if case let s as StructType = returns, s.isHeapAllocated {
             ret = //BuiltinType.pointer(to:
                 s.refCountedBox(module: module)//)
         }
@@ -113,7 +113,7 @@ extension FunctionType {
         t.returns = ret
         
         t.params = params.map { param in
-            if case let s as StructType = param where s.heapAllocated {
+            if case let s as StructType = param, s.isHeapAllocated {
                 return //BuiltinType.pointer(to:
                     s.refCountedBox(module: module)//)
             }

@@ -1,5 +1,5 @@
 // RUN: -Ohigh -emit-llvm
-
+// CHECK: LLVM
 
 // LLVM-CHECK:
 // LLVM: define void @foo1_t() {

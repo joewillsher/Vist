@@ -103,7 +103,7 @@ final class ErrorTests : XCTestCase, VistTest {
 }
 
 /// Tests the optimiser
-final class OptimiserTests : XCTestCase, VistTest {
+final class OptimiserTests : XCTestCase, VistTest, CheckingTest {
     
 }
 
@@ -488,80 +488,20 @@ extension ErrorTests {
 extension OptimiserTests {
     
     func testDCE() {
-        
-        let file = "DCE", path = "\(OptimiserTests.testDir)/\(file).vist"
-        
-        let flags = try! getRunSettings(path: path) + ["\(file).vist"]
-        do {
-            try compile(withFlags: flags, inDirectory: OptimiserTests.testDir)
-            
-            let expected = try expectedTestCaseVIR(path: path)
-            let output = try String(contentsOfFile: "\(OptimiserTests.testDir)/\(file).vir")
-            
-            try XCTAssert(multiLineOutput(output, matches: expected))
-        }
-        catch {
-            XCTFail("\(error)")
-        }
+        XCTAssert(_testFile(name: "DCE"))
     }
-    
     func testStdlibInlineVIR() {
-        
-        let file = "StdlibInline-vir", path = "\(OptimiserTests.testDir)/\(file).vist"
-        
-        let flags = try! getRunSettings(path: path) + ["\(file).vist"]
-        do {
-            try compile(withFlags: flags, inDirectory: OptimiserTests.testDir)
-            
-            let expected = try expectedTestCaseVIR(path: path)
-            let output = try String(contentsOfFile: "\(OptimiserTests.testDir)/\(file).vir")
-            
-            try XCTAssert(multiLineOutput(output, matches: expected))
-        }
-        catch {
-            XCTFail("\(error)")
-        }
+        XCTAssert(_testFile(name: "StdlibInline-vir"))
     }
     func testStdlibInlineLLVM() {
-        
-        let file = "StdlibInline-llvm", path = "\(OptimiserTests.testDir)/\(file).vist"
-        
-        let flags = try! getRunSettings(path: path) + ["\(file).vist"]
-        do {
-            try compile(withFlags: flags, inDirectory: OptimiserTests.testDir)
-            
-            let expected = try expectedTestCaseLLVM(path: path)
-            let output = try String(contentsOfFile: "\(OptimiserTests.testDir)/\(file).ll")
-            
-            try XCTAssert(multiLineOutput(output, matches: expected))
-        }
-        catch {
-            XCTFail("\(error)")
-        }
+        XCTAssert(_testFile(name: "StdlibInline-llvm"))
     }
-    
     func testInlinerSimple() {
-        
-        let file = "InlineSimple", path = "\(OptimiserTests.testDir)/\(file).vist"
-        
-        let flags = try! getRunSettings(path: path) + ["\(file).vist"]
-        do {
-            try compile(withFlags: flags, inDirectory: OptimiserTests.testDir)
-            
-            let expected = try expectedTestCaseVIR(path: path)
-            let output = try String(contentsOfFile: "\(OptimiserTests.testDir)/\(file).vir")
-            
-            try XCTAssert(multiLineOutput(output, matches: expected))
-        }
-        catch {
-            XCTFail("\(error)")
-        }
-    }
-    
-    func testInlinerSimple3() {
         XCTAssert(_testFile(name: "InlineSimple"))
     }
-    
+    func testStructFlattenVIR() {
+        XCTAssert(_testFile(name: "StructFlatten"))
+    }
 }
 
 extension VIRGenTests {

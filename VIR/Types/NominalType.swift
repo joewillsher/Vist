@@ -23,7 +23,7 @@ protocol NominalType : class, Type {
     
     var concepts: [ConceptType] { get }
     
-    var heapAllocated: Bool { get }
+    var isHeapAllocated: Bool { get }
 }
 
 extension NominalType {
@@ -86,7 +86,7 @@ extension NominalType {
                           methods: methods,
                           name: "\(name).refcounted",
                           concepts: concepts,
-                          heapAllocated: true)
+                          isHeapAllocated: true)
             .importedType(in: module)
     }
 }

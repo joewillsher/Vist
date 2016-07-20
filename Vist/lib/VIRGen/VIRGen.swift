@@ -558,7 +558,7 @@ extension ForInLoopStmt : StmtEmitter {
         let call = try module.builder.buildFunctionCall(function: generatorClosure.thunk,
                                                         args: [PtrOperand(generator), loopClosure.thunk.buildFunctionPointer()])
         
-        if let entryInst = entryInsertPoint.inst, entryFunction = entryInsertPoint.function {
+        if let entryInst = entryInsertPoint.inst, let entryFunction = entryInsertPoint.function {
             // set the captured global values' lifetimes
             for captured in loopClosure.capturedGlobals {
                 captured.lifetime = GlobalValue.Lifetime(start: entryInst,
@@ -685,7 +685,7 @@ extension InitialiserDecl : StmtEmitter {
         
         let selfVar: GetSetAccessor
         
-        if selfType.heapAllocated {
+        if selfType.isHeapAllocated {
             selfVar = try RefCountedAccessor.allocObject(type: selfType, module: module)
         }
         else {

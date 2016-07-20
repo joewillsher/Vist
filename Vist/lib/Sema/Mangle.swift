@@ -62,7 +62,7 @@ extension String {
         
         for c in nameString.characters {
             if c != "-" {
-                if let original = String.mangleMap.index(where: {$0.1 == c}) where pred == "-" {
+                if let original = String.mangleMap.index(where: {$0.1 == c}), pred == "-" {
                     resStr.append(String.mangleMap[original].0)
                 } else {
                     resStr.append(c)

@@ -44,7 +44,7 @@ extension BuiltinInstCall: VIRLower {
         case .opaquestore:    return try IGF.builder.buildStore(value: rhs, in: lhs)
             
         case .condfail:
-            guard let fn = parentFunction, current = parentBlock else { fatalError() }
+            guard let fn = parentFunction, let current = parentBlock else { fatalError() }
             let success = try fn.loweredFunction!.appendBasicBlock(named: "\(current.name).cont"), fail = try fn.buildCondFailBlock(IGF: &IGF)
             
             success.move(after: current.loweredBlock!)

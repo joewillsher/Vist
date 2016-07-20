@@ -13,25 +13,26 @@
  
  ```
  func @foo_tI : &thin (#Int) -> #Int {
-$entry(%$0: #Int):
-  %0 = alloc #Int 	// users: %1, %2
-  store %$0 in %0: #*Int
-  %2 = load %0: #*Int 	// user: %3
-  return %2
-}
+ $entry(%$0: #Int):
+   %0 = alloc #Int 	// users: %1, %2
+   store %$0 in %0: #*Int
+   %2 = load %0: #*Int 	// user: %3
+   return %2
+ }
  ```
  becomes
  ```
  func @foo_tI : &thin (#Int) -> #Int {
-$entry(%$0: #Int):
-  return %$0
-}
+ $entry(%$0: #Int):
+   return %$0
+ }
  ```
 */
 enum RegisterPromotionPass : OptimisationPass {
     
     typealias PassTarget = Function
     static let minOptLevel: OptLevel = .low
+    static let name = "mem2reg"
     
     static func run(on function: Function) throws {
         

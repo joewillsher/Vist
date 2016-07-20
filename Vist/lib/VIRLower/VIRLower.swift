@@ -208,7 +208,7 @@ extension BasicBlock {
 extension Param : VIRLower {
 
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        guard let function = parentFunction, block = parentBlock else { throw VIRError.noParentBlock }
+        guard let function = parentFunction, let block = parentBlock else { throw VIRError.noParentBlock }
         
         if let functionParamIndex = function.params?.index(where: {$0.name == name}) {
             return try function.loweredFunction!.param(at: functionParamIndex)
