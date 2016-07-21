@@ -8,24 +8,20 @@
 
 
 /**
- Promotes variables which aren't mutated to be a constant 
+ ## Promotes variables which aren't mutated to be a constant
  passed in registers
  
  ```
- func @foo_tI : &thin (#Int) -> #Int {
  $entry(%$0: #Int):
-   %0 = alloc #Int 	// users: %1, %2
+   %0 = alloc #Int
    store %$0 in %0: #*Int
-   %2 = load %0: #*Int 	// user: %3
+   %2 = load %0: #*Int
    return %2
- }
  ```
  becomes
  ```
- func @foo_tI : &thin (#Int) -> #Int {
  $entry(%$0: #Int):
    return %$0
- }
  ```
 */
 enum RegisterPromotionPass : OptimisationPass {

@@ -27,10 +27,7 @@ struct PassManager {
             try create(pass: StructFlattenPass.self, runOn: function)
             try create(pass: ConstantFoldingPass.self, runOn: function)
             try create(pass: DCEPass.self, runOn: function)
-            //try create(pass: CFGSimplificationPass.self, runOn: function)
         }
-        
-        try create(pass: DeadFunctionPass.self, runOn: module)
         
         #if DEBUG
             module.verify()
@@ -45,7 +42,7 @@ protocol OptimisationPass {
     static var minOptLevel: OptLevel { get }
     /// Runs the pass
     static func run(on: PassTarget) throws
-    
+    /// The pass's name presented to the command line
     static var name: String { get }
 }
 
@@ -71,27 +68,27 @@ extension Function {
 }
 
 
-final class DominatorTreeNode {
-//    let block: BasicBlock
-}
-
-/// A tree of dominating blocks in a function
-final class DominatorTree : Sequence {
-    
-    private var function: Function
-    
-    init(function: Function) {
-        self.function = function
-    }
-    
-    typealias Iterator = AnyIterator<BasicBlock>
-    
-    func makeIterator() -> Iterator {
-        return AnyIterator {
-            return nil
-        }
-    }
-}
+//final class DominatorTreeNode {
+////    let block: BasicBlock
+//}
+//
+///// A tree of dominating blocks in a function
+//final class DominatorTree : Sequence {
+//    
+//    private var function: Function
+//    
+//    init(function: Function) {
+//        self.function = function
+//    }
+//    
+//    typealias Iterator = AnyIterator<BasicBlock>
+//    
+//    func makeIterator() -> Iterator {
+//        return AnyIterator {
+//            return nil
+//        }
+//    }
+//}
 
 enum OptError : VistError {
     case invalidValue(Value)

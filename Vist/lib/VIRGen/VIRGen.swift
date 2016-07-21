@@ -689,7 +689,7 @@ extension InitialiserDecl : StmtEmitter {
             selfVar = try RefCountedAccessor.allocObject(type: selfType, module: module)
         }
         else {
-            selfVar = try module.builder.build(inst:AllocInst(memType: selfType.importedType(in: module), irName: "self")).accessor
+            selfVar = try module.builder.build(inst: AllocInst(memType: selfType.importedType(in: module), irName: "self")).accessor
         }
         
         fnScope.insert(variable: selfVar, name: "self")

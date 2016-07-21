@@ -38,7 +38,7 @@ final class Function : VIRElement {
     /// The block self's errors should jmp to
     var _condFailBlock: LLVMBasicBlock? = nil
     
-    private weak var _dominatorTree: DominatorTree? = nil
+//    private weak var _dominatorTree: DominatorTree? = nil
     var hasHadInline : Bool = false
     
     private init(name: String, type: FunctionType, module: Module) {
@@ -199,13 +199,13 @@ extension Function {
         }
     }
     
-    func getDominatorTree() -> DominatorTree {
-        return _dominatorTree ?? DominatorTree(function: self)
-    }
-    
-    func invalidateDominatorTree() {
-        _dominatorTree = nil
-    }
+//    func getDominatorTree() -> DominatorTree {
+//        return _dominatorTree ?? DominatorTree(function: self)
+//    }
+//    
+//    func invalidateDominatorTree() {
+//        _dominatorTree = nil
+//    }
     
     func dumpIR() { loweredFunction?.function.dump() }
     func dump() { print(vir) }
