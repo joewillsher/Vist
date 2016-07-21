@@ -28,7 +28,7 @@ extension Function {
                     assert(arg.value != nil,
                            "\(inst.valueName) : \(inst.dynamicType) has a null argument")
                     assert(arg.value?.parentFunction == self || arg.value is VoidLiteralValue,
-                           "\(inst.valueName) : \(inst.dynamicType) is referenced from another function ('\(arg.value?.parentFunction?.name ?? "nil")')")
+                           "\(inst.valueName) : \(inst.dynamicType) has an arg from another function ('\(arg.value?.parentFunction?.name ?? "nil")')")
                 }
                 // check the users are alive
                 for use in inst.uses {
@@ -42,7 +42,7 @@ extension Function {
             // check the block's exit is a control flow inst
             if let last = block.instructions.last {
                 assert(last is ReturnInst || last is BreakInstruction,
-                       "Last parameter of \(block.name) must be a control flow instruction")
+                       "Last instruction in \(block.name) must be a control flow instruction")
             }
         }
 

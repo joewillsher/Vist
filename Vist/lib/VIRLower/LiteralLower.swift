@@ -10,18 +10,18 @@ import Foundation.NSString
 
 extension IntLiteralInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        return LLVMValue.constInt(value: value.value, size: size)
+        return LLVMValue.constInt(value: value, size: size)
     }
 }
 extension BoolLiteralInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        return LLVMValue.constBool(value: value.value)
+        return LLVMValue.constBool(value: value)
     }
 }
 
 extension StringLiteralInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        let str = try IGF.builder.buildGlobalString(value: value.value)
+        let str = try IGF.builder.buildGlobalString(value: value)
         return try IGF.builder.buildBitcast(value: str, to: BuiltinType.opaquePointer.lowered(module: module))
     }
 }

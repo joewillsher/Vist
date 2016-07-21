@@ -1,0 +1,22 @@
+// RUN: -Ohigh -emit-vir
+// CHECK: VIR
+
+// CHECK-VIR:
+// VIR: func @testComplex_t : &thin () -> #Builtin.Void {
+// VIR: $entry:
+// VIR:   %0 = int_literal 3 	// user: %1
+// VIR:   %1 = struct %Int, (%0: #Builtin.Int64) 	// user: %2
+// VIR:   %2 = call @print_tI (%1: #Int)
+// VIR:   %3 = int_literal 2 	// user: %4
+// VIR:   %4 = struct %Int, (%3: #Builtin.Int64) 	// user: %5
+// VIR:   %5 = call @print_tI (%4: #Int)
+// VIR:   %7 = struct %Int, (%6: #Builtin.Int64) 	// user: %8
+// VIR:   %8 = call @print_tI (%7: #Int)
+// VIR:   return ()
+// VIR: }
+func testComplex :: () = {
+    let v = 1 + 2
+    print v
+    print v - 1
+    print 3 * 2 - 4
+}

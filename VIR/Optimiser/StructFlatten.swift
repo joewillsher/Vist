@@ -48,26 +48,27 @@ enum StructFlattenPass : OptimisationPass {
     
     static func run(on function: Function) throws {
         
-        var instanceMembers: [String: Value] = [:]
-        
         for inst in function.instructions {
             instCheck: switch inst {
                 // If we have a struct
-            case let extractInst as StructExtractInst:
-                guard case let initInst as StructInitInst = extractInst.object.value, initInst.isFlattenable() else { break instCheck }
+            case let initInst as StructInitInst:
+                var instanceMembers: [String: Value] = [:]
                 
                 // record the struct members
                 for (member, arg) in zip(initInst.structType.members, initInst.args) {
-                    instanceMembers[member.name] = arg.value
+                    instanceMembers[member.name] = arg.value!
                 }
                 
-                let member = instanceMembers[extractInst.propertyName]!
-                try extractInst.eraseFromParent(replacingAllUsesWith: member)
+                for case let extract as StructExtractInst in initInst.uses.map({$0.user}) {
+                    let member = instanceMembers[extract.propertyName]!
+                    // replace the extract inst with the member
+                    try extract.eraseFromParent(replacingAllUsesWith: member)
+                }
                 
+                // If all struct users have been removed, remove the init
                 if initInst.uses.isEmpty {
                     try initInst.eraseFromParent()
                 }
-                
                 /*
                  We can simplify struct memory insts, given:
                  - Memory is struct type
@@ -77,6 +78,7 @@ enum StructFlattenPass : OptimisationPass {
             case let allocInst as AllocInst:
                 // The memory must be of a struct type
                 guard let storedType = try? allocInst.storedType.getAsStructType() else { break instCheck }
+                var instanceMembers: [String: Value] = [:]
                 
                 // Check the memory's uses
                 for use in allocInst.uses {
@@ -134,21 +136,6 @@ enum StructFlattenPass : OptimisationPass {
                 break
             }
         }
-    }
-}
-
-private extension StructInitInst {
-    
-    /// Can this `struct` inst be flattened.
-    ///
-    /// - returns: `true` if all uses of this inst are `struct_element` or
-    ///            `struct_extract` instructions which can be trivially
-    ///            replaced by the operands of this `struct` inst
-    func isFlattenable() -> Bool {
-        for use in uses {
-            guard use.user is StructExtractInst else { return false }
-        }
-        return true
     }
 }
 

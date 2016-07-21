@@ -53,30 +53,38 @@ enum ConstantFoldingPass : OptimisationPass {
                     case let lhs as IntLiteralInst = inst.args[0].value,
                     case let rhs as IntLiteralInst = inst.args[1].value else { break }
                 
-                let (val, overflow) = try foldOverflowingArithmeticOperation(inst.inst,
-                                                                             lhs: lhs.value.value, rhs: rhs.value.value)
+                // get the value & whether it overflowed
+                let (val, overflow): (Int, Bool)
+                switch inst.inst {
+                case .iadd: (val, overflow) = Int.addWithOverflow(lhs.value, rhs.value)
+                case .isub: (val, overflow) = Int.subtractWithOverflow(lhs.value, rhs.value)
+                case .imul: (val, overflow) = Int.multiplyWithOverflow(lhs.value, rhs.value)
+                default: fatalError("not an overflowing inst call")
+                }
+                
                 // All uses must be tuple extracts
                 guard let uses = inst.uses.optionalMap(transform: { $0.user as? TupleExtractInst }) else { break }
                 
+                // Replace overflow check uses to check a literal
                 let overflowUses = uses.filter { $0.elementIndex == 1 }
-                let valueUses = uses.filter { $0.elementIndex == 0 }
-                
+                let literalOverflow = BoolLiteralInst(val: overflow)
+                try block.insert(inst: literalOverflow, after: inst)
                 for overflowCheck in overflowUses {
-                    let literal = BoolLiteralInst(val: overflow)
-                    try block.insert(inst: literal, after: overflowCheck)
-                    try overflowCheck.eraseFromParent(replacingAllUsesWith: literal)
+                    try overflowCheck.eraseFromParent(replacingAllUsesWith: literalOverflow)
                 }
+                // Replace users extracting the value with a literal
+                let valueUses = uses.filter { $0.elementIndex == 0 }
+                let literalVal = IntLiteralInst(val: val, size: 64)
+                try block.insert(inst: literalVal, after: inst)
                 for valueInst in valueUses {
-                    let literal = IntLiteralInst(val: val, size: 64)
-                    try block.insert(inst: literal, after: valueInst)
-                    try valueInst.eraseFromParent(replacingAllUsesWith: literal)
+                    try valueInst.eraseFromParent(replacingAllUsesWith: literalVal)
                 }
                 
             case .condfail:
                 guard case let cond as BoolLiteralInst = inst.args[0].value else { break }
                 
                 // if it always overflows, replace with a trap
-                if cond.value.value {
+                if cond.value {
                     let trap = try BuiltinInstCall(inst: .trap, args: [])
                     try block.insert(inst: trap, after: inst)
                     try inst.eraseFromParent()
@@ -91,15 +99,5 @@ enum ConstantFoldingPass : OptimisationPass {
             }
         }
     }
-    
-    private static func foldOverflowingArithmeticOperation(_ op: BuiltinInst, lhs: Int, rhs: Int) throws -> (Int, overflow: Bool) {
-        switch op {
-        case .iadd: return Int.addWithOverflow(lhs, rhs)
-        case .isub: return Int.subtractWithOverflow(lhs, rhs)
-        case .imul: return Int.multiplyWithOverflow(lhs, rhs)
-        default: preconditionFailure("not an overflowing inst call")
-        }
-    }
-
 }
 

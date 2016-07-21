@@ -14,22 +14,22 @@ import class Foundation.NSString
  `%a = int_literal 1`
  */
 final class IntLiteralInst : InstBase {
-    var value: LiteralValue<Int>, size: Int
+    var value: Int, size: Int
     
     override var type: Type? { return BuiltinType.int(size: size) }
     
     init(val: Int, size: Int, irName: String? = nil) {
-        self.value = LiteralValue(val: val, irName: nil)
+        self.value = val
         self.size = size
         super.init(args: [], irName: irName)
     }
     
     override var instVIR: String {
-        return "\(name) = int_literal \(value.value)\(useComment)"
+        return "\(name) = int_literal \(value)\(useComment)"
     }
     
     override func copyInst() -> IntLiteralInst {
-        return self
+        return IntLiteralInst(val: value, size: size)
     }
 }
 /**
@@ -38,21 +38,21 @@ final class IntLiteralInst : InstBase {
  `%a = bool_literal false`
  */
 final class BoolLiteralInst : InstBase {
-    var value: LiteralValue<Bool>
+    var value: Bool
     
-    override var type: Type? { return value.type }
+    override var type: Type? { return BuiltinType.bool }
     
     init(val: Bool, irName: String? = nil) {
-        self.value = LiteralValue(val: val, irName: nil)
+        self.value = val
         super.init(args: [], irName: irName)
     }
     
     override var instVIR: String {
-        return "\(name) = bool_literal \(value.value)\(useComment)"
+        return "\(name) = bool_literal \(value)\(useComment)"
     }
     
     override func copyInst() -> BoolLiteralInst {
-        return self
+        return BoolLiteralInst(val: value)
     }
 }
 
@@ -63,45 +63,22 @@ final class BoolLiteralInst : InstBase {
  `%a = string_literal utf16 "hello 😎"`
  */
 final class StringLiteralInst : InstBase {
-    var value: LiteralValue<String>
+    var value: String
     
-    var isUTF8Encoded: Bool { return value.value.smallestEncoding == .utf8 || value.value.smallestEncoding == .ascii }
-    override var type: Type? { return value.type }
+    var isUTF8Encoded: Bool { return value.smallestEncoding == .utf8 || value.smallestEncoding == .ascii }
+    override var type: Type? { return BuiltinType.opaquePointer }
     
     init(val: String, irName: String? = nil) {
-        self.value = LiteralValue(val: val, irName: nil)
+        self.value = val
         super.init(args: [], irName: irName)
     }
     
     override var instVIR: String {
-        return "\(name) = string_literal \(isUTF8Encoded ? "utf8" : "utf16") \"\(value.value)\" \(useComment)"
+        return "\(name) = string_literal \(isUTF8Encoded ? "utf8" : "utf16") \"\(value)\" \(useComment)"
     }
     
     override func copyInst() -> StringLiteralInst {
-        return self
-    }
-}
-
-/// A literal's contained object
-final class LiteralValue<Literal> : Value {
-    var value: Literal
-    
-    var irName: String?
-    var type: Type? {
-        switch value {
-        case is Int: return BuiltinType.int(size: 64)
-        case is Bool: return BuiltinType.bool
-        case is String: return BuiltinType.opaquePointer
-        case is (): return BuiltinType.void
-        default: fatalError("Invalid literal")
-        }
-    }
-    weak var parentBlock: BasicBlock?
-    var uses: [Operand] = []
-    
-    private init(val: Literal, irName: String?) {
-        self.value = val
-        self.irName = irName
+        return StringLiteralInst(val: value, irName: irName)
     }
 }
 

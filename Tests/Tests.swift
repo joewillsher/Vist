@@ -502,6 +502,9 @@ extension OptimiserTests {
     func testStructFlattenVIR() {
         XCTAssert(_testFile(name: "StructFlatten"))
     }
+    func testConstantFolding() {
+        XCTAssert(_testFile(name: "ConstantFolding"))
+    }
 }
 
 extension VIRGenTests {
