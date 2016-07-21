@@ -61,13 +61,12 @@ enum StructFlattenPass : OptimisationPass {
                     instanceMembers[member.name] = arg.value
                 }
                 
-                for case let extract as StructExtractInst in initInst.uses.map({$0.value}) {
-                    let member = instanceMembers[extract.propertyName]!
-                    // replace the extract inst with the member
-                    try extract.eraseFromParent(replacingAllUsesWith: member)
-                }
+                let member = instanceMembers[extractInst.propertyName]!
+                try extractInst.eraseFromParent(replacingAllUsesWith: member)
                 
-                try initInst.eraseFromParent()
+                if initInst.uses.isEmpty {
+                    try initInst.eraseFromParent()
+                }
                 
                 /*
                  We can simplify struct memory insts, given:
@@ -81,9 +80,7 @@ enum StructFlattenPass : OptimisationPass {
                 
                 // Check the memory's uses
                 for use in allocInst.uses {
-                    // (nonnull user)
-                    guard case let user as Inst = use.user else { break instCheck }
-                    
+                    let user = use.user!
                     switch user {
                     // We allow stores...
                     case let store as StoreInst:
@@ -113,6 +110,7 @@ enum StructFlattenPass : OptimisationPass {
                                 
                             default:
                                 break instCheck
+                                // TODO: how do we recover if we have already replaced a StoreInst
                             }
                         }
                     // We allow all loads

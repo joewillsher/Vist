@@ -26,7 +26,7 @@ class Operand : VIRTyped {
         }
     }
     /// The value using this operand
-    final weak var user: Value?
+    final weak var user: Inst?
     
     convenience init(_ value: Value) {
         self.init(optionalValue: value)
