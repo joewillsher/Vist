@@ -546,7 +546,7 @@ struct LLVMValue : Dumpable {
         return LLVMValue(ref: LLVMConstNull(type.type!))
     }
     static func constInt(value: Int, size: Int) -> LLVMValue {
-        return LLVMValue(ref: LLVMConstInt(LLVMIntType(UInt32(size)), UInt64(value), false))
+        return LLVMValue(ref: LLVMConstInt(LLVMIntType(UInt32(size)), UInt64(bitPattern: Int64(value)), false))
     }
     static func constBool(value: Bool) -> LLVMValue {
         return LLVMValue(ref: LLVMConstInt(LLVMInt1Type(), UInt64(value.hashValue), false))

@@ -16,14 +16,40 @@ enum DCEPass : OptimisationPass {
     
     static func run(on function: Function) throws {
         
+        try function.blocks?.forEach(UnreachableRemovePass.run(on:))
+
         for inst in function.instructions.reversed() where
             inst.uses.isEmpty && !inst.instHasSideEffects {
                 try inst.eraseFromParent()
-                
         }
-        
     }
 }
+
+/// Remove dynamically dead code which traps before being reached
+enum UnreachableRemovePass : OptimisationPass {
+    
+    typealias PassTarget = BasicBlock
+    static let minOptLevel: OptLevel = .low
+    static let name = "unreachable-remove"
+    
+    static func run(on block: BasicBlock) throws {
+        
+        // the insts after the current inst
+        // -- the list to be removed if there is a trap
+        var after: [Inst] = []
+        // go backwards
+        for inst in block.instructions.reversed() {
+            // if it is a trap, remove all insts after
+            if case let trap as BuiltinInstCall = inst, trap.inst == .trap {
+                for i in after {
+                    try i.eraseFromParent()
+                }
+            }
+            after.append(inst)
+        }
+    }
+}
+
 
 enum DeadFunctionPass : OptimisationPass {
     

@@ -41,7 +41,7 @@ extension Function {
             
             // check the block's exit is a control flow inst
             if let last = block.instructions.last {
-                assert(last is ReturnInst || last is BreakInstruction,
+                assert(last.instIsTerminator,
                        "Last instruction in \(block.name) must be a control flow instruction")
             }
         }

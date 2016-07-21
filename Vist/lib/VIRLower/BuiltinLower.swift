@@ -87,7 +87,9 @@ extension BuiltinInstCall: VIRLower {
         }
         
         // call the intrinsic
-        return try IGF.builder.buildCall(function: intrinsic, args: args, name: irName)
+        let call = try IGF.builder.buildCall(function: intrinsic, args: args, name: irName)
+        if case .trap = inst { try IGF.builder.buildUnreachable() }        
+        return call
     }
 }
 

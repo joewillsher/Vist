@@ -85,7 +85,7 @@ enum ConstantFoldingPass : OptimisationPass {
                 
                 // if it always overflows, replace with a trap
                 if cond.value {
-                    let trap = try BuiltinInstCall(inst: .trap, args: [])
+                    let trap = BuiltinInstCall.trapInst()
                     try block.insert(inst: trap, after: inst)
                     try inst.eraseFromParent()
                 }
