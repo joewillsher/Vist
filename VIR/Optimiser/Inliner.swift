@@ -31,7 +31,7 @@ enum InlinePass : OptimisationPass {
         for inst in function.instructions {
             switch inst {
                 // If the inst is a call...
-            case let call as FunctionCallInst: //  where call.function.inlineRequirement != .never
+            case let call as FunctionCallInst where call.function.inlineRequirement != .never:
                 // ...inline the called function's body first...
                 try run(on: call.function)
                 // ...then inline this call.
@@ -88,8 +88,12 @@ enum InlinePass : OptimisationPass {
                 // return insts simply want passing out as the tail of the inlined vals.
                 // Its users are fixed at the end of the explosion's inlining
             case let returnInst as ReturnInst:
-                let inlinedInst = getValue(replacing: returnInst.returnValue)
-                explosion.insertTail(inlinedInst)
+                let args = returnInst.args
+                let inlinedRetVal = getValue(replacing: returnInst.returnValue)
+                for arg in args {
+                    arg.value = nil; arg.user = nil
+                }
+                explosion.insertTail(inlinedRetVal)
                 break // return must be last inst in block
                 
             default:
@@ -97,8 +101,7 @@ enum InlinePass : OptimisationPass {
                 inlinedInst.setInstArgs(args: inlinedInst.args.map { arg in
                     let operand = arg.formCopy(nullValue: true)
                     let v = getValue(replacing: arg)
-                    arg.value = nil
-                    arg.user = nil
+                    arg.value = nil; arg.user = nil
                     operand.value = v
                     operand.user = inlinedInst
                     return operand

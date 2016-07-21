@@ -77,7 +77,7 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "-Ohigh"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-disable-opt=inline"
@@ -89,7 +89,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-Onone"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-verbose"
@@ -105,7 +105,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-build-stdlib"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-parse-stdlib"

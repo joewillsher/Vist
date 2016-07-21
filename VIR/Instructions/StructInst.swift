@@ -19,7 +19,7 @@ final class StructInitInst : InstBase {
     convenience init(type: StructType, values: Value..., irName: String? = nil) {
         self.init(type: type, operands: values.map(Operand.init), irName: irName)
     }
-    private init(type: StructType, operands: [Operand], irName: String?) {
+    init(type: StructType, operands: [Operand], irName: String?) {
         self.structType = type
         super.init(args: operands, irName: irName)
     }

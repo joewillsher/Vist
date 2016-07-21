@@ -69,6 +69,10 @@ final class FunctionApplyInst: InstBase, VIRFunctionCall {
     
     var functionRef: LLVMFunction { return LLVMFunction(ref: function.loweredValue!._value) }
     var functionType: FunctionType { return function.memType as! FunctionType }
+    
+    override func copyInst() -> FunctionApplyInst {
+        return FunctionApplyInst(function: function, returnType: returnType, args: args.map { $0.formCopy() }, irName: irName)
+    }
 }
 
 

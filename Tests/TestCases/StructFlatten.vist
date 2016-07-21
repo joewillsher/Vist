@@ -1,11 +1,11 @@
 // RUN: -Ohigh -emit-vir
 // CHECK: VIR
 
-func foo :: () = {
+func testSimple :: () = {
     print 1 + 2
 }
 // VIR-CHECK:
-// VIR: func @foo_t : &thin () -> #Builtin.Void {
+// VIR: func @testSimple_t : &thin () -> #Builtin.Void {
 // VIR: $entry:
 // VIR:   %0 = int_literal 1 	// user: %i_add
 // VIR:   %1 = int_literal 2 	// user: %i_add
@@ -18,5 +18,47 @@ func foo :: () = {
 // VIR:   return ()
 // VIR: }
 
+type Box { let i: Int }
+
+func testAggr :: () = {
+    let x = Box 1
+    print x.i
+}
+// VIR-CHECK:
+// VIR: func @testAggr_t : &thin () -> #Builtin.Void {
+// VIR: $entry:
+// VIR:   %0 = int_literal 1 	// user: %1
+// VIR:   %1 = struct %Int, (%0: #Builtin.Int64) 	// user: %2
+// VIR:   %2 = call @print_tI (%1: #Int)
+// VIR:   return ()
+// VIR: }
+
+
+type _Range {
+    let a: Int, b: Int
+}
+// CHECK-VIR:
+// VIR: func @-URange_tII : &thin (#Int, #Int) -> #_Range {
+// VIR: $entry(%$0: #Int, %$1: #Int):
+// VIR:   %0 = struct %_Range, (%$0: #Int, %$1: #Int) 	// user: %1
+// VIR:   return %0
+// VIR: }
+
+func rangeTest :: Int Int -> _Range = (a b) {
+    return _Range a b-1
+}
+// CHECK-VIR:
+// VIR: func @rangeTest_tII : &thin (#Int, #Int) -> #_Range {
+// VIR: $entry(%a: #Int, %b: #Int):
+// VIR:   %0 = int_literal 1 	// user: %i_sub
+// VIR:   %1 = struct_extract %b: #Int, !value 	// user: %i_sub
+// VIR:   %i_sub = builtin i_sub %1: #Builtin.Int64, %0: #Builtin.Int64 	// users: %overflow, %value
+// VIR:   %overflow = tuple_extract %i_sub: (#Builtin.Int64, #Builtin.Bool), !1 	// user: %2
+// VIR:   cond_fail %overflow: #Builtin.Bool
+// VIR:   %value = tuple_extract %i_sub: (#Builtin.Int64, #Builtin.Bool), !0 	// user: %3
+// VIR:   %3 = struct %Int, (%value: #Builtin.Int64) 	// user: %4
+// VIR:   %4 = struct %_Range, (%a: #Int, %3: #Int) 	// user: %5
+// VIR:   return %4
+// VIR: }
 
 

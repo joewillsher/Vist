@@ -36,6 +36,12 @@ enum RegisterPromotionPass : OptimisationPass {
     
     static func run(on function: Function) throws {
         
+        // before handling memory, replace all VariableInst's with their values
+        for case let varInst as VariableInst in function.instructions {
+            let v = varInst.value.value!
+            try varInst.eraseFromParent(replacingAllUsesWith: v)
+        }
+        
         // http://llvm.org/docs/Passes.html#mem2reg-promote-memory-to-register
         // This file promotes memory references to be register references. It promotes alloca instructions which only
         // have loads and stores as uses. An alloca is transformed by using dominator frontiers to place phi nodes, then
@@ -62,7 +68,6 @@ enum RegisterPromotionPass : OptimisationPass {
             try store.eraseFromParent()
             try allocInst.eraseFromParent()
         }
-        
     }
 }
 

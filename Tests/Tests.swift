@@ -110,7 +110,7 @@ final class OptimiserTests : XCTestCase, VistTest, CheckingTest {
 final class VIRGenTests : XCTestCase, VistTest, CheckingTest {
     
 }
-final class LLVMTests : XCTestCase, VistTest {
+final class LLVMTests : XCTestCase, VistTest, CheckingTest {
     
 }
 
@@ -519,39 +519,11 @@ extension VIRGenTests {
 extension LLVMTests {
     
     func testMetadata() {
-        
-        let file = "Existential", path = "\(LLVMTests.testDir)/\(file).vist"
-        
-        let flags = try! getRunSettings(path: path) + ["\(file).vist"]
-        do {
-            try compile(withFlags: flags, inDirectory: LLVMTests.testDir)
-            
-            let expected = try expectedTestCaseLLVM(path: path)
-            let output = try String(contentsOfFile: "\(VIRGenTests.testDir)/\(file).ll")
-            
-            try XCTAssert(multiLineOutput(output, matches: expected))
-        }
-        catch {
-            XCTFail("\(error)")
-        }
+        XCTAssert(_testFile(name: "Existential"))
     }
     
     func testStrings() {
-        
-        let file = "String", path = "\(LLVMTests.testDir)/\(file).vist"
-        
-        let flags = try! getRunSettings(path: path) + ["\(file).vist"]
-        do {
-            try compile(withFlags: flags, inDirectory: LLVMTests.testDir)
-            
-            let expected = try expectedTestCaseLLVM(path: path)
-            let output = try String(contentsOfFile: "\(LLVMTests.testDir)/\(file).ll")
-            
-            try XCTAssert(multiLineOutput(output, matches: expected))
-        }
-        catch {
-            XCTFail("\(error)")
-        }
+        XCTAssert(_testFile(name: "String"))
     }
 
 }

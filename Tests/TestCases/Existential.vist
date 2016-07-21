@@ -1,5 +1,5 @@
-
 // RUN: -Ohigh -emit-llvm
+// CHECK: LLVM
 
 // LLVM-CHECK:
 //LLVM: %Bar = type { %Bool, %Int, %Int }

@@ -39,39 +39,91 @@ enum StructFlattenPass : OptimisationPass {
     static let name = "struct-flatten"
     
     static func run(on function: Function) throws {
-
-        // TODO: mem2reg after a memory location isnt worked on
-        //  currently we don't mem2reg an alloc if there are any
-        //  non load/stores -- this means initialisers arent worked
-        //  on by this pass
+        
+        var instanceMembers: [String: Value] = [:]
         
         for inst in function.instructions {
-            switch inst {
+            instCheck: switch inst {
                 // If we have a struct
-            case let initInst as StructInitInst where initInst.isFlattenable():
+            case let extractInst as StructExtractInst:
+                guard case let initInst as StructInitInst = extractInst.object.value, initInst.isFlattenable() else { break instCheck }
+                
                 // get a map of struct member( name)s and the applied operand's value
-                let args = zip(initInst.structType.members, initInst.args).map { member, arg in
-                    (name: member.name, val: arg.value)
+                for (member, arg) in zip(initInst.structType.members, initInst.args) {
+                    instanceMembers[member.name] = arg.value
                 }
                 
                 for extract in initInst.extracts() {
-                    guard // get the value of the looked up member
-                        let element = args.first(where: { arg in arg.name == extract.propertyName }),
-                        let val = element.val else { fatalError() }
+                    let member = instanceMembers[extract.propertyName]!
                     // replace the extract inst with the value
-                    try extract.eraseFromParent(replacingAllUsesWith: val)
+                    try extract.eraseFromParent(replacingAllUsesWith: member)
                 }
                 
                 try initInst.eraseFromParent()
-
-            case let allocInst as AllocInst where allocInst.isTrivialStructStorage():
-                break
+                
+                
                 /*
                  We can simplify struct memory, preds:
                  - Memory is struct type
                  - All insts are load/store/gep
                  - All gep instructions *only have* load/stores using them
                  */
+            case let allocInst as AllocInst:
+                // The memory must be of a struct type
+                guard let storedType = try? allocInst.storedType.getAsStructType() else { break instCheck }
+                
+                // Check the memory's uses
+                for use in allocInst.uses {
+                    // (nonnull user)
+                    guard case let user as Inst = use.user else { break instCheck }
+                    
+                    switch user {
+                    // We allow all loads
+                    case is LoadInst:
+                        let structMembers = storedType.members.map { member in
+                            Operand(instanceMembers[member.name]!)
+                        }
+                        let val = StructInitInst(type: storedType,
+                                                 operands: structMembers,
+                                                 irName: nil)
+                        try inst.parentBlock!.insert(inst: val, after: user)
+                        try user.eraseFromParent(replacingAllUsesWith: val)
+                        
+                    // we allow stores...
+                    case let store as StoreInst:
+                        // ... if we are storing a struct init ...
+                        guard case let initInst as StructInitInst = store.value.value else { break instCheck }
+                        
+                        // ...so record the members
+                        for (member, arg) in zip(initInst.structType.members, initInst.args) {
+                            instanceMembers[member.name] = arg.value
+                        }
+                        try initInst.eraseFromParent()
+                        
+                    // If the memory is used by a GEP inst...
+                    case let gep as StructElementPtrInst:
+                        for use in user.uses {
+                            // ...the user must be a load/store -- we cannot optimise
+                            // if a GEP pointer is passed as a func param, for exmaple
+                            switch use.user {
+                            case let load as LoadInst:
+                                let member = instanceMembers[gep.propertyName]!
+                                try load.eraseFromParent(replacingAllUsesWith: member)
+                                
+                            case let store as StoreInst:
+                                instanceMembers[gep.propertyName] = store.value.value!
+                                try store.eraseFromParent()
+                                
+                            default:
+                                break instCheck
+                            }
+                        }
+                        
+                    // The memory can only be stored into, loaded from, or GEP'd
+                    default:
+                        break instCheck
+                    }
+                }
                 
             default:
                 break
@@ -100,19 +152,4 @@ private extension StructInitInst {
     func extracts() -> [StructExtractInst] {
         return uses.flatMap { $0.user as? StructExtractInst }
     }
-}
-
-private extension AllocInst {
-    
-    /// Is this allocated memory simply used to store a struct
-    ///
-    /// - returns: `true` if all uses are `struct_element` insts which 
-    ///            are stored into/loaded from which can be replaced by
-    ///            forwarding the values or `load` instructions which 
-    ///            can forward a whole `struct` init inst which can be
-    ///            trivially replaced by the operands of the
-    func isTrivialStructStorage() -> Bool {
-        return false
-    }
-    
 }
