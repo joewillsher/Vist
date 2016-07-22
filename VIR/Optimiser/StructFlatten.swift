@@ -69,12 +69,13 @@ enum StructFlattenPass : OptimisationPass {
                 if initInst.uses.isEmpty {
                     try initInst.eraseFromParent()
                 }
-                /*
-                 We can simplify struct memory insts, given:
-                 - Memory is struct type
-                 - All insts are load/store/gep
-                 - All gep instructions *only have* load/stores using them
-                 */
+                
+            /*
+            We can simplify struct memory insts, given:
+            - Memory is struct type
+            - All insts are load/store/gep
+            - All gep instructions *only have* load/stores using them
+            */
             case let allocInst as AllocInst:
                 // The memory must be of a struct type
                 guard let storedType = try? allocInst.storedType.getAsStructType() else { break instCheck }

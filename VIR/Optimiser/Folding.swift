@@ -62,20 +62,31 @@ enum ConstantFoldingPass : OptimisationPass {
                 default: fatalError("not an int overflowing arithmetic inst")
                 }
                 
+                // add replacement literals
+                let literalVal = IntLiteralInst(val: val, size: 64)
+                try block.insert(inst: literalVal, after: inst)
+                let literalOverflow = BoolLiteralInst(val: overflow)
+                try block.insert(inst: literalOverflow, after: inst)
+                
                 // All uses must be tuple extracts
-                guard let uses = inst.uses.optionalMap(transform: { $0.user as? TupleExtractInst }) else { break }
+                guard let uses = inst.uses.optionalMap(transform: { $0.user as? TupleExtractInst }) else {
+                    // if the tuple is used directly (for some reason?) we construct 
+                    // a literal tuple to pass in
+                    let tuple = TupleCreateInst(type:
+                        TupleType(members: [StdLib.intType, StdLib.boolType]),
+                                  elements: [literalVal, literalOverflow])
+                    try block.insert(inst: tuple, after: inst)
+                    try inst.eraseFromParent(replacingAllUsesWith: tuple)
+                    break
+                }
                 
                 // Replace overflow check uses to check a literal
                 let overflowUses = uses.filter { $0.elementIndex == 1 }
-                let literalOverflow = BoolLiteralInst(val: overflow)
-                try block.insert(inst: literalOverflow, after: inst)
                 for overflowCheck in overflowUses {
                     try overflowCheck.eraseFromParent(replacingAllUsesWith: literalOverflow)
                 }
                 // Replace users extracting the value with a literal
                 let valueUses = uses.filter { $0.elementIndex == 0 }
-                let literalVal = IntLiteralInst(val: val, size: 64)
-                try block.insert(inst: literalVal, after: inst)
                 for valueInst in valueUses {
                     try valueInst.eraseFromParent(replacingAllUsesWith: literalVal)
                 }
@@ -135,7 +146,7 @@ enum ConstantFoldingPass : OptimisationPass {
                 let resultLiteral = IntLiteralInst(val: val, size: 64)
                 try block.insert(inst: resultLiteral, after: inst)
                 try inst.eraseFromParent(replacingAllUsesWith: resultLiteral)
-
+                
             default:
                 break // not implemented
             }

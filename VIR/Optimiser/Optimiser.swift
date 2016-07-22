@@ -25,6 +25,7 @@ struct PassManager {
         for function in module.functions where function.hasBody {
             try create(pass: RegisterPromotionPass.self, runOn: function)
             try create(pass: StructFlattenPass.self, runOn: function)
+            try create(pass: TupleFlattenPass.self, runOn: function)
             try create(pass: ConstantFoldingPass.self, runOn: function)
             try create(pass: DCEPass.self, runOn: function)
         }
