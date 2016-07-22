@@ -62,3 +62,23 @@ func rangeTest :: Int Int -> _Range = (a b) {
 // VIR: }
 
 
+type Foo {
+    var a: Int
+}
+
+func testStore :: () = {
+    var f = Foo 1
+    f.a = 2
+    print f.a
+}
+// CHECK-VIR:
+// VIR: func @testStore_t : &thin () -> #Builtin.Void {
+// VIR: $entry:
+// VIR:   %0 = int_literal 2 	// user: %1
+// VIR:   %1 = struct %Int, (%0: #Builtin.Int64) 	// user: %2
+// VIR:   %2 = struct %Foo, (%1: #Int) 	// user: %3
+// VIR:   %3 = struct_extract %2: #Foo, !a 	// user: %4
+// VIR:   %4 = call @print_tI (%3: #Int)
+// VIR:   return ()
+// VIR: }
+

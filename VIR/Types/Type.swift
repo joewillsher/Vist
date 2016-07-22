@@ -32,7 +32,6 @@ protocol Type : VIRElement {
     func isInModule() -> Bool
 }
 
-
 extension Type {
     // implement default behaviour
     var explicitName: String {
@@ -48,17 +47,17 @@ extension Type {
     func getAsStructType() throws -> StructType {
         if case let s as TypeAlias = self { return try s.targetType.getAsStructType() }
         else if case let s as StructType = self { return s }
-        else { fatalError("throw error -- not struct type") }
+        else { throw VIRError.notStructType(self) }
     }
     func getAsTupleType() throws -> TupleType {
         if case let s as TypeAlias = self { return try s.targetType.getAsTupleType() }
         else if case let s as TupleType = self { return s }
-        else { fatalError("throw error -- not tuple type") }
+        else { throw VIRError.notTupleType(self) }
     }
     func getAsConceptType() throws -> ConceptType {
         if case let s as TypeAlias = self { return try s.targetType.getAsConceptType() }
         else if case let s as ConceptType = self { return s }
-        else { fatalError("throw error -- not concept type") }
+        else { throw VIRError.notConceptType(self) }
     }
     func getConcreteNominalType() -> NominalType? {
         if case let s as TypeAlias = self { return s.targetType.getConcreteNominalType() }

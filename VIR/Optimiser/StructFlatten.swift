@@ -95,6 +95,7 @@ enum StructFlattenPass : OptimisationPass {
                         }
                         // ...and remove this inst
                         try initInst.eraseFromParent()
+                        try store.eraseFromParent()
                         
                     // If the memory is used by a GEP inst...
                     case let gep as StructElementPtrInst:
@@ -115,6 +116,8 @@ enum StructFlattenPass : OptimisationPass {
                                 // TODO: how do we recover if we have already replaced a StoreInst
                             }
                         }
+                        try gep.eraseFromParent()
+                        
                     // We allow all loads
                     case is LoadInst:
                         let structMembers = storedType.members.map { member in
@@ -131,6 +134,8 @@ enum StructFlattenPass : OptimisationPass {
                         break instCheck
                     }
                 }
+                
+                try allocInst.eraseFromParent()
                 
             default:
                 break

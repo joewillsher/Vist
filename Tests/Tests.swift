@@ -32,7 +32,7 @@ extension VistTest {
 }
 
 /// Test the compilation and output of code samples
-final class OutputTests : XCTestCase, VistTest {
+final class OutputTests : XCTestCase, VistTest, CheckingTest {
 }
 
 //final class _AutomatedTests : XCTestCase, VistTest {
@@ -123,75 +123,35 @@ extension OutputTests {
     ///
     /// tests `if` statements, variables
     func testControlFlow() {
-        let file = "Control"
-        do {
-            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir)
-//            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
-            try! FileManager.default.removeItem(atPath: "\(OutputTests.testDir)/\(file)")
-        }
-        catch {
-            XCTFail("Compilation failed with error:\n\(error)\n\n")
-        }
+        XCTAssertTrue(_testFile(name: "Control"))
     }
     
     /// Loops.vist
     ///
     /// tests `for in` loops, `while` loops, mutation
     func testLoops() {
-        let file = "Loops"
-        do {
-            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir)
-//            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
-            try! FileManager.default.removeItem(atPath: "\(OutputTests.testDir)/\(file)")
-        }
-        catch {
-            XCTFail("Compilation failed with error:\n\(error)\n\n")
-        }
+        XCTAssertTrue(_testFile(name: "Loops"))
     }
     
     /// Type.vist
     ///
     /// tests type sytem, default initialisers, & methods
     func testType() {
-        let file = "Type"
-        do {
-            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir)
-//            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
-            try! FileManager.default.removeItem(atPath: "\(OutputTests.testDir)/\(file)")
-        }
-        catch {
-            XCTFail("Compilation failed with error:\n\(error)\n\n")
-        }
+        XCTAssertTrue(_testFile(name: "Type"))
     }
     
     /// IntegerOps.vist
     ///
     /// tests integer operations
     func testIntegerOps() {
-        let file = "IntegerOps"
-        do {
-            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir)
-//            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
-            try! FileManager.default.removeItem(atPath: "\(OutputTests.testDir)/\(file)")
-        }
-        catch {
-            XCTFail("Compilation failed with error:\n\(error)\n\n")
-        }
+        XCTAssertTrue(_testFile(name: "IntegerOps"))
     }
     
     /// Function.vist
     ///
     /// tests function decls and calling, tuples & type param labels
     func testFunctions() {
-        let file = "Function"
-        do {
-            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir)
-//            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
-            try! FileManager.default.removeItem(atPath: "\(OutputTests.testDir)/\(file)")
-        }
-        catch {
-            XCTFail("Compilation failed with error:\n\(error)\n\n")
-        }
+        XCTAssertTrue(_testFile(name: "Function"))
     }
     
     
@@ -199,15 +159,7 @@ extension OutputTests {
     ///
     /// Test concept existentials -- runtime & LLVM functions for extracting & metadata
     func testExistential() {
-        let file = "Existential"
-        do {
-            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir)
-//            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
-            try! FileManager.default.removeItem(atPath: "\(OutputTests.testDir)/\(file)")
-        }
-        catch {
-            XCTFail("Compilation failed with error:\n\(error)\n\n")
-        }
+        XCTAssertTrue(_testFile(name: "Existential"))
     }
     
     /// Existential2.vist
@@ -225,28 +177,12 @@ extension OutputTests {
     
     /// Tuple.vist
     func testTuple() {
-        let file = "Tuple"
-        do {
-            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir)
-//            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
-            try! FileManager.default.removeItem(atPath: "\(OutputTests.testDir)/\(file)")
-        }
-        catch {
-            XCTFail("Compilation failed with error:\n\(error)\n\n")
-        }
+        XCTAssertTrue(_testFile(name: "Tuple"))
     }
     
     /// String.vist
     func testString() {
-        let file = "String"
-        do {
-            try compile(withFlags: ["-Ohigh", "-r", "\(file).vist"], inDirectory: OutputTests.testDir)
-//            XCTAssertEqual(pipe?.string, expectedTestCaseOutput(path: "\(OutputTests.testDir)/\(file).vist"), "Incorrect output")
-            try! FileManager.default.removeItem(atPath: "\(OutputTests.testDir)/\(file)")
-        }
-        catch {
-            XCTFail("Compilation failed with error:\n\(error)\n\n")
-        }
+        XCTAssertTrue(_testFile(name: "String"))
     }
     
     /// Preprocessor.vist
@@ -501,6 +437,9 @@ extension OptimiserTests {
     }
     func testStructFlattenVIR() {
         XCTAssert(_testFile(name: "StructFlatten"))
+    }
+    func testStructFlattenLLVM() {
+        XCTAssert(_testFile(name: "StructFlatten-llvm"))
     }
     func testConstantFolding() {
         XCTAssert(_testFile(name: "ConstantFolding"))

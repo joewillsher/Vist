@@ -1,4 +1,5 @@
-// RUN: -Ohigh -emit-llvm
+// RUN: -Onone -emit-llvm
+// CHECK: LLVM
 
 let meme = "meme"
 

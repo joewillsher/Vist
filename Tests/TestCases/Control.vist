@@ -1,4 +1,5 @@
-// RUN: -Ohigh -r
+// RUN: -Onone -r
+// CHECK: OUT
 
 let a = 3
 

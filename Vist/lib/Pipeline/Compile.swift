@@ -200,8 +200,12 @@ func compileDocuments(
     try ast.emitVIR(module: virModule, isLibrary: options.contains(.produceLib))
     
     // write out
-    try virModule.vir.write(toFile: "\(currentDirectory)/\(file)_.vir", atomically: true, encoding: .utf8)
-    
+    let unoptVIRPath = "\(currentDirectory)/\(file)_.vir"
+    try virModule.vir.write(toFile: unoptVIRPath, atomically: true, encoding: .utf8)
+    defer {
+        if !options.contains(.preserveTempFiles) { try! FileManager.default.removeItem(atPath: unoptVIRPath) }
+    }
+
     
     // MARK: VIR Optimiser
     if options.contains(.verbose) {
@@ -213,7 +217,11 @@ func compileDocuments(
         .runPasses()
     
     // write out
-    try virModule.vir.write(toFile: "\(currentDirectory)/\(file).vir", atomically: true, encoding: .utf8)
+    let optVIRPath = "\(currentDirectory)/\(file).vir"
+    try virModule.vir.write(toFile: optVIRPath, atomically: true, encoding: .utf8)
+    defer {
+        if !options.contains(.preserveTempFiles) { try! FileManager.default.removeItem(atPath: optVIRPath) }
+    }
     
     if options.contains(.dumpVIR) {
         print(virModule.vir)
@@ -242,14 +250,14 @@ func compileDocuments(
     llvmModule.dataLayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
     llvmModule.target = "x86_64-apple-macosx10.12.0"
     
-    defer {
-        // remove files on scope exit
-        if !options.contains(.preserveTempFiles) {
-            for file in ["\(file).ll", "\(file)_.ll", "\(file).s", "\(file).vir", "\(file)_.vir"] {
-                _ = try? FileManager.default.removeItem(atPath: "\(currentDirectory)/\(file)")
-            }
-        }
-    }
+//    defer {
+//        // remove files on scope exit
+//        if !options.contains(.preserveTempFiles) {
+//            for file in ["\(file).ll", "\(file)_.ll", "\(file).s", "\(file).vir", "\(file)_.vir"] {
+//                _ = try? FileManager.default.removeItem(atPath: "\(currentDirectory)/\(file)")
+//            }
+//        }
+//    }
     
     // Generate LLVM IR code for program
     if options.contains(.verbose) {
@@ -259,8 +267,12 @@ func compileDocuments(
     
     // print and write to file
     let unoptimisedIR = llvmModule.description()
-    try unoptimisedIR.write(toFile: "\(currentDirectory)/\(file)_.ll", atomically: true, encoding: String.Encoding.utf8)
-    
+    let unoptIRPath = "\(currentDirectory)/\(file)_.ll"
+    try unoptimisedIR.write(toFile: unoptIRPath, atomically: true, encoding: String.Encoding.utf8)
+    defer {
+        if !options.contains(.preserveTempFiles) { try! FileManager.default.removeItem(atPath: unoptIRPath) }
+    }
+
     
     // MARK: LLVM Optimiser
     if options.contains(.verbose) {
@@ -274,7 +286,11 @@ func compileDocuments(
     
     // write out
     let optimisedIR = llvmModule.description()
-    try optimisedIR.write(toFile: "\(currentDirectory)/\(file).ll", atomically: true, encoding: .utf8)
+    let optIRPath = "\(currentDirectory)/\(file).ll"
+    try optimisedIR.write(toFile: optIRPath, atomically: true, encoding: .utf8)
+    defer {
+        if !options.contains(.preserveTempFiles) { try! FileManager.default.removeItem(atPath: optIRPath) }
+    }
     
     if options.contains(.dumpLLVMIR) {
         print(optimisedIR)
@@ -312,8 +328,11 @@ func compileDocuments(
                          files: ["\(file).ll"],
                          cwd: currentDirectory,
                          args: "-S")
-            
-            let asm = try String(contentsOfFile: "\(currentDirectory)/\(file).s", encoding: .utf8)
+            let asmPath = "\(currentDirectory)/\(file).s"
+            let asm = try String(contentsOfFile: asmPath, encoding: .utf8)
+            defer {
+                if !options.contains(.preserveTempFiles) { try! FileManager.default.removeItem(atPath: asmPath) }
+            }
             
             print(asm)
             if wantsDumpASM { return }

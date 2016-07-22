@@ -26,7 +26,7 @@ enum DCEPass : OptimisationPass {
 }
 
 /// Remove dynamically dead code which traps before being reached
-enum UnreachableRemovePass : OptimisationPass {
+private enum UnreachableRemovePass : OptimisationPass {
     
     typealias PassTarget = BasicBlock
     static let minOptLevel: OptLevel = .low

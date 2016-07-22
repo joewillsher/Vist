@@ -1,3 +1,5 @@
+// RUN: -Ohigh -r
+// CHECK: OUT
 
 type Bar {
 var x: Bool, b: Int, a: Int

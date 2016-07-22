@@ -17,6 +17,8 @@ enum VIRError : ErrorProtocol {
     case noFunctionBody, hasBody, instNotInBB, bbNotInFn, cannotMoveBuilderHere, noParentBlock, noParamNamed(String), noUse, noType(StaticString), noModule
     case notGenerator, paramsNotTyped, wrongBlockParams
     case builtinIncorrectOperands(inst: BuiltinInst, recieved: Int)
+    
+    case notStructType(Type), notConceptType(Type), notTupleType(Type)
 }
 
 // instruction

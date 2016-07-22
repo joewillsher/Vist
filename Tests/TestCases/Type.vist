@@ -1,3 +1,5 @@
+// RUN: -Onone -r
+// CHECK: Out
 
 type StackOf2 {
     var bottom: Int, top: Int

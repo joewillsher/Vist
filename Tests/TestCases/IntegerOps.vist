@@ -1,4 +1,5 @@
-
+// RUN: -Onone -r
+// CHECK: OUT
 
 print 1 + 3 // OUT: 4
 print 2 * 3 // OUT: 6

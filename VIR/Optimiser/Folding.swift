@@ -93,6 +93,19 @@ enum ConstantFoldingPass : OptimisationPass {
                 else {
                     try inst.eraseFromParent()
                 }
+//                
+//            case .ilte, .ilt, .igte, .igt, .ieq, .ineq:
+//                guard
+//                    case let lhs as IntLiteralInst = inst.args[0].value,
+//                    case let rhs as IntLiteralInst = inst.args[1].value else { break }
+//                
+//                let val: Bool
+//                switch inst.inst {
+//                case .ilte: val = lhs.value <= rhs.value
+//                case .ilt: val = lhs.value < rhs.value
+//                }
+                
+                
                 
             default:
                 break // not implemented

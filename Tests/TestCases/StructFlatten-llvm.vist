@@ -1,0 +1,20 @@
+// RUN: -Ohigh -emit-llvm
+// CHECK: LLVM
+
+
+type Foo {
+    var a: Int
+}
+
+func testStore :: () = {
+    var f = Foo 1
+    f.a = 2
+    print f.a
+}
+// CHECK-LLVM:
+// LLVM: define void @testStore_t() {
+// LLVM: entry:
+// LLVM:   tail call void @print_tI(%Int { i64 2 })
+// LLVM:   ret void
+// LLVM: }
+

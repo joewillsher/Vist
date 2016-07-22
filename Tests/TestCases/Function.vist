@@ -1,3 +1,6 @@
+// RUN: -Onone -r
+// CHECK: OUT
+
 
 func dupe :: Int -> Int Int = (a) do return (a, a)
 
