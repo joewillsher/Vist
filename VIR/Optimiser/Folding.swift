@@ -59,7 +59,7 @@ enum ConstantFoldingPass : OptimisationPass {
                 case .iadd: (val, overflow) = Int.addWithOverflow(lhs.value, rhs.value)
                 case .isub: (val, overflow) = Int.subtractWithOverflow(lhs.value, rhs.value)
                 case .imul: (val, overflow) = Int.multiplyWithOverflow(lhs.value, rhs.value)
-                default: fatalError("not an overflowing inst call")
+                default: fatalError("not an int overflowing arithmetic inst")
                 }
                 
                 // All uses must be tuple extracts
@@ -93,20 +93,49 @@ enum ConstantFoldingPass : OptimisationPass {
                 else {
                     try inst.eraseFromParent()
                 }
-//                
-//            case .ilte, .ilt, .igte, .igt, .ieq, .ineq:
-//                guard
-//                    case let lhs as IntLiteralInst = inst.args[0].value,
-//                    case let rhs as IntLiteralInst = inst.args[1].value else { break }
-//                
-//                let val: Bool
-//                switch inst.inst {
-//                case .ilte: val = lhs.value <= rhs.value
-//                case .ilt: val = lhs.value < rhs.value
-//                }
                 
+            case .ilte, .ilt, .igte, .igt, .ieq, .ineq:
+                guard
+                    case let lhs as IntLiteralInst = inst.args[0].value,
+                    case let rhs as IntLiteralInst = inst.args[1].value else { break }
                 
+                let val: Bool
+                switch inst.inst {
+                case .ilte: val = lhs.value <= rhs.value
+                case .ilt: val = lhs.value < rhs.value
+                case .igte: val = lhs.value >= rhs.value
+                case .igt: val = lhs.value > rhs.value
+                case .ieq: val = lhs.value == rhs.value
+                case .ineq: val = lhs.value != rhs.value
+                default: fatalError("Not an int comparison inst")
+                }
                 
+                let resultLiteral = BoolLiteralInst(val: val)
+                try block.insert(inst: resultLiteral, after: inst)
+                try inst.eraseFromParent(replacingAllUsesWith: resultLiteral)
+                
+            case .ishl, .ishr, .iand, .ixor, .ior, .idiv, .irem, .iaddoverflow:
+                guard
+                    case let lhs as IntLiteralInst = inst.args[0].value,
+                    case let rhs as IntLiteralInst = inst.args[1].value else { break }
+
+                let val: Int
+                switch inst.inst {
+                case .idiv: val = lhs.value / rhs.value
+                case .irem: val = lhs.value % rhs.value
+                case .ishl: val = lhs.value << rhs.value
+                case .ishr: val = lhs.value >> rhs.value
+                case .iand: val = lhs.value & rhs.value
+                case .ior:  val = lhs.value | rhs.value
+                case .ixor: val = lhs.value ^ rhs.value
+                case .iaddoverflow: val = lhs.value &+ rhs.value
+                default: fatalError("Not an int inst")
+                }
+                
+                let resultLiteral = IntLiteralInst(val: val, size: 64)
+                try block.insert(inst: resultLiteral, after: inst)
+                try inst.eraseFromParent(replacingAllUsesWith: resultLiteral)
+
             default:
                 break // not implemented
             }

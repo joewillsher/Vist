@@ -108,7 +108,6 @@ extension Function {
         
         // Build trap and unreachable
         _ = try BuiltinInstCall.trapInst().virLower(IGF: &IGF)
-        try IGF.builder.buildUnreachable()
         
         // move back; save and return the fail block
         IGF.builder.position(atEndOfBlock: ins!)

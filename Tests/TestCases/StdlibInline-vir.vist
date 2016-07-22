@@ -1,6 +1,8 @@
 // RUN: -Ohigh -emit-vir
 // CHECK: VIR
 
+// TODO: leave opt after inlining phase
+
 // VIR-CHECK:
 // VIR: func @foo1_t : &thin () -> #Builtin.Void {
 // VIR: $entry:

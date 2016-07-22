@@ -130,7 +130,7 @@ func getRunSettings(path: String) throws -> [String] {
 func getTestPrefix(path: String) throws -> String? {
     return try getCommentsFromFile(atPath: path)
         .filter { comment in  comment.hasPrefix(" CHECK: ") }
-        .flatMap { $0.components(separatedBy: " ").first }
+        .map { $0.replacingOccurrences(of: " CHECK: ", with: "") }
         .first
 }
 
@@ -149,7 +149,7 @@ func multiLineOutput(_ output: String, matches expected: [String]) throws -> Boo
         nextLine: for (i, el) in outputLines.enumerated() where expectedLines.first == el {
             
             let searchRange = outputLines[outputLines.startIndex.advanced(by: i)..<outputLines.endIndex]
-            for (expected, output) in zip(expectedLines, searchRange) where expected != output {
+            for (expected, output) in zip(expectedLines, searchRange) where !output.hasPrefix(expected) {
                 throw OutputError(reason: "Line \(output) is not equal to \(expected)")
             }
             

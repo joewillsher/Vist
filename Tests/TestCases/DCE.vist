@@ -10,12 +10,9 @@ type Baz { var foo: Foo }
 // VIR: $entry:
 // VIR:   %0 = int_literal 222 	// user: %1
 // VIR:   %1 = struct %Int, (%0: #Builtin.Int64) 	// user: %2
-// VIR:   %2 = call @Foo_tI (%1: #Int) 	// user: %f
-// VIR:   variable_decl %f = %2: #Foo 	// users: %3, %4
-// VIR:   %3 = call @Baz_tFoo (%f: #Foo)
-// VIR:   %4 = struct_extract %f: #Foo, !x 	// user: %u
-// VIR:   variable_decl %u = %4: #Int 	// user: %5
-// VIR:   %5 = call @print_tI (%u: #Int)
+// VIR:   %2 = struct %Foo, (%1: #Int) 	// user: %3
+// VIR:   %3 = struct_extract %2: #Foo, !x 	// user: %4
+// VIR:   %4 = call @print_tI (%3: #Int)
 // VIR:   return ()
 // VIR: }
 func test :: () = { // tests the output isnt being invalidated
@@ -30,9 +27,8 @@ func test :: () = { // tests the output isnt being invalidated
 // VIR: func @test2_t : &thin () -> #Int {
 // VIR: $entry:
 // VIR:   %0 = int_literal 1 	// user: %1
-// VIR:   %1 = struct %Int, (%0: #Builtin.Int64) 	// user: %a
-// VIR:   variable_decl %a = %1: #Int 	// user: %2
-// VIR:   return %a
+// VIR:   %1 = struct %Int, (%0: #Builtin.Int64) 	// user: %2
+// VIR:   return %1
 // VIR: }
 func test2 :: () -> Int= {
     let a = 1
@@ -41,3 +37,17 @@ func test2 :: () -> Int= {
     return a
 }
 
+// CHECK-VIR:
+// VIR: func @trapSimplify_t : &thin () -> #Builtin.Void {
+// VIR: $entry:
+// VIR:   %0 = int_literal 12 	// user: %1
+// VIR:   %1 = struct %Int, (%0: #Builtin.Int64) 	// user: %2
+// VIR:   %2 = call @print_tI (%1: #Int)
+// VIR:   %3 = builtin trap
+// VIR: }
+func trapSimplify :: () = {
+    print 12
+    let x = 9223372036854775807 + 1
+    print x
+    print 100
+}
