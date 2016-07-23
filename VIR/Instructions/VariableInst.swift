@@ -6,32 +6,38 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-final class VariableInst : InstBase {
+final class VariableInst : Inst {
     var value: Operand
     //var attrs: [OwnershipAttrs] // specify ref/val semantics
     // also memory management info stored
     
-    override var type: Type? { return value.type }
+    var uses: [Operand] = []
+    var args: [Operand]
+    
+    var type: Type? { return value.type }
     
     convenience init(value: Value, irName: String? = nil) {
         self.init(operand: Operand(value), irName: irName)
     }
     private init(operand: Operand, irName: String?) {
         self.value = operand
-        super.init(args: [value], irName: irName)
+        self.args = [operand]
+        initialiseArgs()
+        self.irName = irName
     }
     
-    override var instVIR: String {
+    var vir: String {
         return "variable_decl \(name) = \(value.valueName)\(useComment)"
     }
     
-    override func setArgs(args: [Operand]) {
-        super.setArgs(args: args)
+    func setArgs(args: [Operand]) {
         value = args[0]
     }
     
-    override func copyInst() -> VariableInst {
+    func copy() -> VariableInst {
         return VariableInst(operand: value.formCopy(), irName: irName)
     }
+    var parentBlock: BasicBlock?
+    var irName: String?
 }
 

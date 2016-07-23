@@ -7,23 +7,30 @@
 //
 
 
-final class ArrayInst : InstBase {
+final class ArrayInst : Inst {
     var values: [Operand]
     let arrayType: (mem: Type, size: Int)
     
-    override var type: Type? { return BuiltinType.array(el: arrayType.mem, size: arrayType.size) }
+    var type: Type? { return BuiltinType.array(el: arrayType.mem, size: arrayType.size) }
+    
+    var uses: [Operand] = []
+    var args: [Operand]
     
     private init(values: [Operand], memType: Type, irName: String?) {
         self.values = values
         self.arrayType = (mem: memType, size: values.count)
-        super.init(args: values, irName: irName)
+        self.args = values
+        initialiseArgs()
+        self.irName = irName
     }
     
-    override var instVIR: String {
+    var vir: String {
         let v = values.map { value in value.valueName }
         return "\(name) = array [\(v.joined(separator: ", "))]\(useComment)"
     }
     
+    weak var parentBlock: BasicBlock?
+    var irName: String?
 }
 
 extension Builder {
@@ -33,5 +40,3 @@ extension Builder {
         return try _add(instruction: ArrayInst(values: values, memType: memType, irName: irName))
     }
 }
-
-

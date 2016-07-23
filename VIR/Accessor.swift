@@ -247,29 +247,29 @@ final class RefCountedAccessor : GetSetAccessor {
     
     /// Retain a reference, increment the ref count
     func retain() throws {
-        try module.builder.buildRetain(object: PtrOperand(aggregateReference()))
+        try module.builder.build(inst: RetainInst(val: aggregateReference()))
     }
     
     /// Releases the object without decrementing the ref count.
     /// - note: Used in returns as the user of the return is expected
     ///         to either `retain` it or `deallocUnowned` it
     func releaseUnowned() throws {
-        try module.builder.buildReleaseUnowned(object: PtrOperand(aggregateReference()))
+        try module.builder.build(inst: ReleaseInst(val: aggregateReference(), unowned: true))
     }
     
     /// Release a reference, decrement the ref count
     func release() throws {
-        try module.builder.buildRelease(object: PtrOperand(aggregateReference()))
+        try module.builder.build(inst: ReleaseInst(val: aggregateReference(), unowned: false))
     }
     
     /// Deallocates the object
     func dealloc() throws {
-        try module.builder.buildDeallocObject(object: PtrOperand(aggregateReference()))
+        try module.builder.build(inst: DeallocObjectInst(val: aggregateReference(), unowned: false))
     }
     
     /// Deallocates an unowned object if the ref count is 0
     func deallocUnowned() throws {
-        try module.builder.buildDeallocUnownedObject(object: PtrOperand(aggregateReference()))
+        try module.builder.build(inst: DeallocObjectInst(val: aggregateReference(), unowned: true))
     }
     
     /// Capture another reference to the object and retain it
@@ -287,7 +287,7 @@ final class RefCountedAccessor : GetSetAccessor {
     /// - returns: the object's accessor
     static func allocObject(type: StructType, module: Module) throws -> RefCountedAccessor {
         
-        let val = try module.builder.buildAllocObject(type: type, irName: "storage")
+        let val = try module.builder.build(inst: AllocObjectInst(memType: type, irName: "storage"))
 //        let targetType = type.importedType(in: module) as! TypeAlias
 //        let bc = try module.builder.build(inst: BitcastInst(address: val, newType: targetType))
         

@@ -11,26 +11,34 @@
  
  `%a = struct_init %Range, (%1:%Int, %2:$Int)`
  */
-final class StructInitInst : InstBase {
+final class StructInitInst : Inst {
     
-    override var type: Type? { return module.getOrInsert(type: structType) }
+    var type: Type? { return module.getOrInsert(type: structType) }
     var structType: StructType
+    
+    var uses: [Operand] = []
+    var args: [Operand]
     
     convenience init(type: StructType, values: Value..., irName: String? = nil) {
         self.init(type: type, operands: values.map(Operand.init), irName: irName)
     }
     init(type: StructType, operands: [Operand], irName: String?) {
         self.structType = type
-        super.init(args: operands, irName: irName)
+        self.args = operands
+        initialiseArgs()
+        self.irName = irName
     }
     
-    override var instVIR: String {
+    var vir: String {
         return "\(name) = struct %\(structType.name), \(args.virValueTuple())\(useComment)"
     }
     
-    override func copyInst() -> StructInitInst {
+    func copy() -> StructInitInst {
         return StructInitInst(type: structType, operands: args.map { $0.formCopy() }, irName: irName)
     }
+    
+    var parentBlock: BasicBlock?
+    var irName: String?
 }
 
 
@@ -42,10 +50,13 @@ final class StructInitInst : InstBase {
  
  `%a = struct_extract %1:%Range, !start`
  */
-final class StructExtractInst : InstBase {
+final class StructExtractInst : Inst {
     
     var object: Operand, propertyName: String
     var propertyType: Type, structType: StructType
+    
+    var uses: [Operand] = []
+    var args: [Operand]
     
     /// - Precondition: `structType` is a `StructType` or `TypeAlias` storing a `StructType`
     /// - Precondition: `structType` has a member `property`
@@ -65,30 +76,36 @@ final class StructExtractInst : InstBase {
         self.propertyName = property
         self.propertyType = propertyType
         self.structType = structType
-        
-        super.init(args: [self.object], irName: irName)
+        self.args = [object]
+        initialiseArgs()
+        self.irName = irName
     }
     
-    override var type: Type? { return propertyType }
+    var type: Type? { return propertyType }
     
-    override var instVIR: String {
+    var vir: String {
         return "\(name) = struct_extract \(object.vir), !\(propertyName)\(useComment)"
     }
     
-    override func copyInst() -> StructExtractInst {
+    func copy() -> StructExtractInst {
         return StructExtractInst(object: object.formCopy(), property: propertyName, structType: structType, propertyType: propertyType, irName: irName)
     }
     
-    override func setArgs(args: [Operand]) {
-        super.setArgs(args: args)
+    func setArgs(args: [Operand]) {
         object = args[0]
     }
+    
+    var parentBlock: BasicBlock?
+    var irName: String?
 }
 
 
-final class StructElementPtrInst : InstBase, LValue {
+final class StructElementPtrInst : Inst, LValue {
     var object: PtrOperand, propertyName: String
     var propertyType: Type, structType: StructType
+    
+    var uses: [Operand] = []
+    var args: [Operand]
     
     convenience init(object: LValue, property: String, irName: String? = nil) throws {
         
@@ -104,22 +121,25 @@ final class StructElementPtrInst : InstBase, LValue {
         self.propertyName = property
         self.propertyType = propertyType
         self.structType = structType
-        super.init(args: [object], irName: irName)
+        self.args = [object]
+        initialiseArgs()
+        self.irName = irName
     }
     
-    override var type: Type? { return BuiltinType.pointer(to: propertyType) }
+    var type: Type? { return BuiltinType.pointer(to: propertyType) }
     var memType: Type? { return propertyType }
     
-    override var instVIR: String {
+    var vir: String {
         return "\(name) = struct_element \(object.vir), !\(propertyName)\(useComment)"
     }
     
-    override func copyInst() -> StructElementPtrInst {
+    func copy() -> StructElementPtrInst {
         return StructElementPtrInst(object: object.formCopy(), property: propertyName, structType: structType, propertyType: propertyType, irName: irName)
     }
-    override func setArgs(args: [Operand]) {
-        super.setArgs(args: args)
+    func setArgs(args: [Operand]) {
         object = args[0] as! PtrOperand
     }
+    var parentBlock: BasicBlock?
+    var irName: String?
 }
 

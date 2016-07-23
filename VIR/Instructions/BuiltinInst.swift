@@ -12,11 +12,17 @@
  
  `%a = builtin i_add %1:%Builtin.Int %2:$Builtin.Int`
  */
-final class BuiltinInstCall : InstBase {
-    override var type: Type? { return returnType }
+final class BuiltinInstCall : Inst {
+    var type: Type? { return returnType }
     let inst: BuiltinInst
     var instName: String { return inst.rawValue }
     var returnType: Type
+    
+    var uses: [Operand] = []
+    var args: [Operand]
+    
+    weak var parentBlock: BasicBlock?
+    var irName: String?
     
     convenience init(inst: BuiltinInst, args: [Value], irName: String? = nil) throws {
         
@@ -33,7 +39,9 @@ final class BuiltinInstCall : InstBase {
     private init(inst: BuiltinInst, retType: Type, operands: [Operand], irName: String?) {
         self.inst = inst
         self.returnType = retType
-        super.init(args: operands, irName: irName)
+        self.args = operands
+        initialiseArgs()
+        self.irName = irName
     }
     
     static func trapInst() -> BuiltinInstCall { return try! BuiltinInstCall(inst: .trap, args: [], irName: nil) }
@@ -42,7 +50,7 @@ final class BuiltinInstCall : InstBase {
     lazy var lhs: LLVMValue! = { return self.args[0].loweredValue }()
     lazy var rhs: LLVMValue! = { return self.args[1].loweredValue }()
     
-    override var instVIR: String {
+    var vir: String {
         let a = args.map{$0.valueName}
         let w = a.joined(separator: ", ")
         switch inst {
@@ -53,23 +61,24 @@ final class BuiltinInstCall : InstBase {
         }
     }
     
-    override var hasSideEffects: Bool {
+    var instHasSideEffects: Bool {
         switch inst {
         case .condfail, .memcpy, .trap, .opaquestore, .heapfree: return true
         default: return false
         }
     }
-    override var isTerminator: Bool {
+    var instIsTerminator: Bool {
         switch inst {
         case .trap: return true
         default: return false
         }
     }
     
-    override func copyInst() -> BuiltinInstCall {
+    func copy() -> BuiltinInstCall {
         return BuiltinInstCall(inst: inst, retType: returnType, operands: args.map { $0.formCopy() }, irName: irName)
     }
 }
+
 
 /// A builtin VIR function. Each can be called in Vist code (stdlib only)
 /// by doing Builtin.intrinsic

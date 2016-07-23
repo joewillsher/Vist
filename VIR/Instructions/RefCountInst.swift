@@ -14,21 +14,31 @@
  
  `%a = alloc_object %Foo.refcounted`
  */
-final class AllocObjectInst : InstBase, LValue {
+final class AllocObjectInst : Inst, LValue {
     var storedType: StructType
     
-    private init(memType: StructType, irName: String?) {
+    var uses: [Operand] = []
+    var args: [Operand] = []
+    
+    init(memType: StructType, irName: String? = nil) {
         self.storedType = memType
-        super.init(args: [], irName: irName)
+        self.irName = irName
     }
     
     var refType: Type { return storedType.refCountedBox(module: module) }
-    override var type: Type? { return memType.map { BuiltinType.pointer(to: $0) } }
+    var type: Type? { return memType.map { BuiltinType.pointer(to: $0) } }
     var memType: Type? { return refType }
     
-    override var instVIR: String {
+    var vir: String {
         return "\(name) = alloc_object \(refType.vir)\(useComment)"
     }
+    
+    func copy() -> AllocObjectInst {
+        return AllocObjectInst(memType: storedType, irName: irName)
+    }
+    
+    weak var parentBlock: BasicBlock?
+    var irName: String?
 }
 
 /**
@@ -37,22 +47,41 @@ final class AllocObjectInst : InstBase, LValue {
  
  `retain_object %0:%Foo.refcounted`
  */
-final class RetainInst : InstBase {
+final class RetainInst : Inst {
     var object: PtrOperand
+    
+    var uses: [Operand] = []
+    var args: [Operand]
+    
+    convenience init(val: LValue, irName: String? = nil) {
+        self.init(object: PtrOperand(val), irName: irName)
+    }
     
     private init(object: PtrOperand, irName: String?) {
         self.object = object
-        super.init(args: [object], irName: irName)
+        self.args = [object]
+        initialiseArgs()
+        self.irName = irName
     }
     
-    override var type: Type? { return object.memType.map { BuiltinType.pointer(to: $0) } }
+    var type: Type? { return object.memType.map { BuiltinType.pointer(to: $0) } }
     var memType: Type? { return object.memType }
     
-    override var hasSideEffects: Bool { return true }
+    var instHasSideEffects: Bool { return true }
     
-    override var instVIR: String {
+    var vir: String {
         return "\(name) = retain_object \(object.valueName)\(useComment)"
     }
+    
+    func copy() -> RetainInst {
+        return RetainInst(object: object.formCopy(), irName: irName)
+    }
+    func setArgs(args: [Operand]) {
+        object = args[0] as! PtrOperand
+    }
+    
+    weak var parentBlock: BasicBlock?
+    var irName: String?
 }
 
 /**
@@ -65,23 +94,34 @@ final class RetainInst : InstBase {
  release_unowned_object %0:%Foo.refcounted
  ```
  */
-final class ReleaseInst : InstBase {
+final class ReleaseInst : Inst {
     var object: PtrOperand, unowned: Bool
+    
+    var uses: [Operand] = []
+    var args: [Operand]
+    
+    convenience init(val: LValue, unowned: Bool, irName: String? = nil) {
+        self.init(object: PtrOperand(val), unowned: unowned, irName: irName)
+    }
     
     private init(object: PtrOperand, unowned: Bool, irName: String?) {
         self.object = object
         self.unowned = unowned
-        super.init(args: [object], irName: irName)
+        self.args = [object]
+        initialiseArgs()
+        self.irName = irName
     }
     
-    override var type: Type? { return object.memType.map { BuiltinType.pointer(to: $0) } }
+    var type: Type? { return object.memType.map { BuiltinType.pointer(to: $0) } }
     var memType: Type? { return object.memType }
     
-    override var hasSideEffects: Bool { return true }
+    var instHasSideEffects: Bool { return true }
     
-    override var instVIR: String {
+    var vir: String {
         return "\(name) = \(unowned ? "release_unowned_object" : "release_object") \(object.valueName)\(useComment)"
     }
+    weak var parentBlock: BasicBlock?
+    var irName: String?
 }
 
 /**
@@ -93,50 +133,34 @@ final class ReleaseInst : InstBase {
  dealloc_unowned_object %0:%Foo.refcounted
  ```
  */
-final class DeallocObjectInst : InstBase {
+final class DeallocObjectInst : Inst {
     var object: PtrOperand, unowned: Bool
+    
+    var uses: [Operand] = []
+    var args: [Operand]
+
+    convenience init(val: LValue, unowned: Bool, irName: String? = nil) {
+        self.init(object: PtrOperand(val), unowned: unowned, irName: irName)
+    }
     
     private init(object: PtrOperand, unowned: Bool, irName: String?) {
         self.object = object
         self.unowned = unowned
-        super.init(args: [object], irName: irName)
+        self.args = [object]
+        initialiseArgs()
+        self.irName = irName
     }
     
-    override var type: Type? { return object.memType.map { BuiltinType.pointer(to: $0) } }
+    var type: Type? { return object.memType.map { BuiltinType.pointer(to: $0) } }
     var memType: Type? { return object.memType }
     
-    override var hasSideEffects: Bool { return true }
+    var instHasSideEffects: Bool { return true }
     
-    override var instVIR: String {
+    var vir: String {
         return "\(name) = \(unowned ? "dealloc_unowned_object" : "dealloc_object") \(object.valueName)\(useComment)"
     }
-}
-
-extension Builder {
-    
-    func buildAllocObject(type: StructType, irName: String? = nil) throws -> AllocObjectInst {
-        return try _add(instruction: AllocObjectInst(memType: type, irName: irName))
-    }
-    @discardableResult
-    func buildRetain(object: PtrOperand, irName: String? = nil) throws -> RetainInst {
-        return try _add(instruction: RetainInst(object: object, irName: irName))
-    }
-    @discardableResult
-    func buildRelease(object: PtrOperand, irName: String? = nil) throws -> ReleaseInst {
-        return try _add(instruction: ReleaseInst(object: object, unowned: false, irName: irName))
-    }
-    @discardableResult
-    func buildReleaseUnowned(object: PtrOperand, irName: String? = nil) throws -> ReleaseInst {
-        return try _add(instruction: ReleaseInst(object: object, unowned: true, irName: irName))
-    }
-    @discardableResult
-    func buildDeallocObject(object: PtrOperand, irName: String? = nil) throws -> DeallocObjectInst {
-        return try _add(instruction: DeallocObjectInst(object: object, unowned: false, irName: irName))
-    }
-    @discardableResult
-    func buildDeallocUnownedObject(object: PtrOperand, irName: String? = nil) throws -> DeallocObjectInst {
-        return try _add(instruction: DeallocObjectInst(object: object, unowned: true, irName: irName))
-    }
+    weak var parentBlock: BasicBlock?
+    var irName: String?
 }
 
 

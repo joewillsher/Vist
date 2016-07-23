@@ -8,65 +8,41 @@
 
 /// A VIR instruction
 protocol Inst : Value {
-    /// The arguments applied to `self`
-    var args: [Operand] { get set }
     
     var instHasSideEffects: Bool { get }
     var instIsTerminator: Bool { get }
     
+    /// Override this to do stuff after setting args
+    func setArgs(args: [Operand])
+    /// Call this to set the args
     func setInstArgs(args: [Operand])
-}
-
-/**
- An instruction. Must be overriden but is used to remove
- a lot of the state boilerplate that cant be defaulted
- using just protocols
- */
-class InstBase : Inst {
     
-    /// Self’s type, override with a computed getter
-    var type: Type? { fatalError("Override function '\(#function)' in '\(self.dynamicType)'") }
-    /// override with the IR description, called by base to print this inst
-    var instVIR: String { fatalError("Override me '\(#function)' in '\(self.dynamicType)'") }
+    var uses: [Operand] { get set }
+    var args: [Operand] { get set }
     
-    final var irName: String?
-    final weak var parentBlock: BasicBlock?
+    var type: Type? { get }
     
-    final var uses: [Operand] = []
-    final var args: [Operand] = []
+    var vir: String { get }
     
-    // calls into the subclasses overriden `instVIR`
-    final var vir: String { return instVIR }
-    
-    func setArgs(args: [Operand]) {
-        self.args = args
-    }
-    final func setInstArgs(args: [Operand]) {
-        setArgs(args: args)
-    }
-    
-    private(set) var hasSideEffects = false, isTerminator = false
-    // Accessors below implement protocol requirement; return the above
-    // values which are to be overriden by subclasses
-    final var instHasSideEffects: Bool { return hasSideEffects }
-    final var instIsTerminator: Bool { return isTerminator }
-    
-    init(args: [Operand], irName: String? = nil) {
-        self.args = args
-        self.uses = []
-        self.irName = irName
-        
-        for arg in self.args { arg.user = self }
-    }
-    
-    func copyInst() -> Self { fatalError("Override function '\(#function)' in '\(self.dynamicType)'") }
-    final func copy() -> Self { return copyInst() }
+    var irName: String? { get set }
+    weak var parentBlock: BasicBlock? { get set }
 }
 
 extension Inst {
     /// Removes the function from its parent
     func removeFromParent() throws {
         try parentBlock?.remove(inst: self)
+    }
+    
+    func initialiseArgs() {
+        for arg in self.args { arg.user = self }
+    }
+    
+    func setArgs(args: [Operand]) { }
+    
+    func setInstArgs(args: [Operand]) {
+        self.args = args
+        setArgs(args: args)
     }
     
     /// Removes the function from its parent and
@@ -85,6 +61,16 @@ extension Inst {
         
         try removeFromParent()
     }
+    
+    var instHasSideEffects: Bool { return false }
+    var instIsTerminator: Bool { return false }
+    
+    func replace(with explode: @noescape (inout Explosion) throws -> Void) throws {
+        var e = Explosion(replacing: self)
+        try explode(&e)
+        try e.replaceInst()
+    }
+    
 }
 
 extension Value {
@@ -97,14 +83,9 @@ extension Value {
     }
 }
 
-// We have to add it to instbase (not inst) because we can't use Inst protocol
-// as a conformant of Inst in the generic parameter list
-extension InstBase {
-    final func replace(with explode: @noescape (inout Explosion<InstBase>) throws -> Void) throws {
-        var e = Explosion(replacing: self)
-        try explode(&e)
-        try e.replaceInst()
-    }
-}
+//// We have to add it to instbase (not inst) because we can't use Inst protocol
+//// as a conformant of Inst in the generic parameter list
+//extension InstBase {
+//}
 
 

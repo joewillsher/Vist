@@ -7,10 +7,10 @@
 //
 
 /// An explosion of instructions -- used to replace an inst with many others
-struct Explosion<InstType : Inst> {
-    let instToReplace: InstType
+struct Explosion {
+    let instToReplace: Inst
     private(set) var explodedInstructions: [Inst] = []
-    init(replacing inst: InstType) { instToReplace = inst }
+    init(replacing inst: Inst) { instToReplace = inst }
     
     @discardableResult
     mutating func insert<I : Inst>(inst: I) -> I {

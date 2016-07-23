@@ -11,44 +11,57 @@ typealias BlockCall = (block: BasicBlock, args: [BlockOperand]?)
 protocol BreakInstruction : Inst {
 }
 
-final class BreakInst : InstBase, BreakInstruction {
+final class BreakInst : BreakInstruction, Inst {
     var call: BlockCall
     
-    override var type: Type? { return nil }
+    var uses: [Operand] = []
+    var args: [Operand]
+    
+    var type: Type? { return nil }
     
     private init(call: BlockCall) {
         self.call = call
-        super.init(args: call.args ?? [], irName: nil)
+        self.args = call.args ?? []
+        initialiseArgs()
     }
     
-    override var instVIR: String {
+    var vir: String {
         return "break $\(call.block.name)\(call.args?.virValueTuple() ?? "")"
     }
     
-    override var hasSideEffects: Bool { return true }
-    override var isTerminator: Bool { return true }
+    var instHasSideEffects: Bool { return true }
+    var instIsTerminator: Bool { return true }
+    
+    var parentBlock: BasicBlock?
+    var irName: String?
 }
 
-final class CondBreakInst : InstBase, BreakInstruction {
+final class CondBreakInst : Inst, BreakInstruction {
     var thenCall: BlockCall, elseCall: BlockCall
     var condition: Operand
     
-    override var type: Type? { return nil }
+    var uses: [Operand] = []
+    var args: [Operand]
+    
+    var type: Type? { return nil }
     
     private init(then: BlockCall, else: BlockCall, condition: Operand) {
         self.thenCall = then
         self.elseCall = `else`
         self.condition = condition
-        let args = (thenCall.args ?? []) + (elseCall.args ?? [])
-        super.init(args: args, irName: nil)
+        self.args = (thenCall.args ?? []) + (elseCall.args ?? [])
+        initialiseArgs()
     }
     
-    override var instVIR: String {
+    var vir: String {
         return "break \(condition.vir), $\(thenCall.block.name)\(thenCall.args?.virValueTuple() ?? ""), $\(elseCall.block.name)\(elseCall.args?.virValueTuple() ?? "")"
     }
     
-    override var hasSideEffects: Bool { return true }
-    override var isTerminator: Bool { return true }
+    var instHasSideEffects: Bool { return true }
+    var instIsTerminator: Bool { return true }
+    
+    var parentBlock: BasicBlock?
+    var irName: String?
 }
 
 extension Builder {

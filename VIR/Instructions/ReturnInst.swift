@@ -12,8 +12,11 @@
  
  `return %a`
  */
-final class ReturnInst : InstBase {
+final class ReturnInst : Inst {
     var returnValue: Operand
+    
+    var uses: [Operand] = []
+    var args: [Operand]
     
     convenience init(value: Value, parentBlock: BasicBlock?) {
         self.init(op: Operand(value))
@@ -21,26 +24,29 @@ final class ReturnInst : InstBase {
     }
     private init(op: Operand) {
         self.returnValue = op
-        super.init(args: [op], irName: nil)
+        self.args = [op]
+        initialiseArgs()
     }
     
-    override var instVIR: String {
+    var vir: String {
         return "return \(returnValue.name)"
     }
     
-    override var type: Type? { return nil }
+    var type: Type? { return nil }
     
-    override var hasSideEffects: Bool { return true }
-    override var isTerminator: Bool { return true }
+    var instHasSideEffects: Bool { return true }
+    var instIsTerminator: Bool { return true }
     
-    override func setArgs(args: [Operand]) {
-        super.setArgs(args: args)
+    func setArgs(args: [Operand]) {
         returnValue = args[0]
     }
     
-    override func copyInst() -> ReturnInst {
+    func copy() -> ReturnInst {
         return ReturnInst(op: returnValue.formCopy())
     }
+    
+    var parentBlock: BasicBlock?
+    var irName: String?
 }
 
 

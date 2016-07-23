@@ -20,29 +20,36 @@ protocol VIRFunctionCall : Inst, VIRLower {
  
  `%a = call @HalfOpenRange_tII (%0:%Int, %1:%Int)`
  */
-final class FunctionCallInst: InstBase, VIRFunctionCall {
+final class FunctionCallInst: Inst, VIRFunctionCall {
     var function: Function
     var returnType: Type
     
-    override var type: Type? { return returnType }
+    var type: Type? { return returnType }
+    
+    var uses: [Operand] = []
+    var args: [Operand]
     
     private init(function: Function, returnType: Type, args: [Operand], irName: String?) {
         self.function = function
         self.returnType = returnType
-        super.init(args: args, irName: irName)
+        self.args = args
+        initialiseArgs()
+        self.irName = irName
     }
     
-    override var instVIR: String {
+    var vir: String {
         return "\(name) = call @\(function.name) \(args.virValueTuple())\(useComment)"
     }
-    override var hasSideEffects: Bool { return true }
+    var instHasSideEffects: Bool { return true }
     
     var functionRef: LLVMFunction { return function.loweredFunction! }
     var functionType: FunctionType { return function.type }
     
-    override func copyInst() -> FunctionCallInst {
+    func copy() -> FunctionCallInst {
         return FunctionCallInst(function: function, returnType: returnType, args: args.map { $0.formCopy() }, irName: irName)
     }
+    var parentBlock: BasicBlock?
+    var irName: String?
 }
 
 /**
@@ -50,35 +57,43 @@ final class FunctionCallInst: InstBase, VIRFunctionCall {
  
  `%a = apply %0 (%1:%Int, %2:%Int)`
  */
-final class FunctionApplyInst: InstBase, VIRFunctionCall {
+final class FunctionApplyInst: Inst, VIRFunctionCall {
     var function: PtrOperand
     var returnType: Type
     
-    override var type: Type? { return returnType }
+    var type: Type? { return returnType }
+    
+    var uses: [Operand] = []
+    var args: [Operand]
     
     private init(function: PtrOperand, returnType: Type, args: [Operand], irName: String?) {
         self.function = function
         self.returnType = returnType
-        super.init(args: args, irName: irName)
+        self.args = args
+        initialiseArgs()
+        self.irName = irName
     }
     
-    override var instVIR: String {
+    var vir: String {
         return "\(name) = apply \(function.valueName) \(args.virValueTuple())\(useComment)"
     }
-    override var hasSideEffects: Bool { return true }
+    var instHasSideEffects: Bool { return true }
     
     var functionRef: LLVMFunction { return LLVMFunction(ref: function.loweredValue!._value) }
     var functionType: FunctionType { return function.memType as! FunctionType }
     
-    override func copyInst() -> FunctionApplyInst {
+    func copy() -> FunctionApplyInst {
         return FunctionApplyInst(function: function, returnType: returnType, args: args.map { $0.formCopy() }, irName: irName)
     }
+    
+    var parentBlock: BasicBlock?
+    var irName: String?
 }
 
 
 extension Builder {
     
-    /// Calls a SIL function with given args
+    /// Calls a VIR function with given args
     @discardableResult
     func buildFunctionCall(function: Function, args: [Operand], irName: String? = nil) throws -> FunctionCallInst {
         return try _add(instruction: FunctionCallInst(function: function, returnType: function.type.returns, args: args, irName: irName))

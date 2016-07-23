@@ -1,13 +1,6 @@
 
 
-func scope() {
-    
-    let a: Int
-    
-    defer {
-        print(a)
-    }
-    
-    a = 1
-}
+
+let v = "aaa"._splitFirstIf { _ in false }
+String(v.1)
 

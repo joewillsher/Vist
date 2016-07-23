@@ -11,34 +11,44 @@
  
  `%a = alloc %Int`
  */
-final class AllocInst : InstBase, LValue {
+final class AllocInst : Inst, LValue {
     var storedType: Type
+    
+    var uses: [Operand] = []
+    var args: [Operand] = []
     
     /// - precondition: newType has types in this module
     init(memType: Type, irName: String? = nil) {
         precondition(memType.isInModule())
         self.storedType = memType
-        super.init(args: [], irName: irName)
+        self.irName = irName
     }
     
-    override var type: Type? { return BuiltinType.pointer(to: storedType) }
+    var type: Type? { return BuiltinType.pointer(to: storedType) }
     var memType: Type? { return storedType }
     
-    override var instVIR: String {
+    var vir: String {
         return "\(name) = alloc \(storedType.vir)\(useComment)"
     }
     
-    override func copyInst() -> AllocInst {
+    func copy() -> AllocInst {
         return AllocInst(memType: storedType, irName: irName)
     }
+    
+    weak var parentBlock: BasicBlock?
+    var irName: String?
 }
+
 /**
  Store into a memory location
  
  `store %0 in %a: %*Int`
  */
-final class StoreInst : InstBase {
+final class StoreInst : Inst {
     private(set) var address: PtrOperand, value: Operand
+    
+    var uses: [Operand] = []
+    var args: [Operand]
     
     convenience init(address: LValue, value: Value) {
         self.init(address: PtrOperand(address), value: Operand(value))
@@ -47,39 +57,45 @@ final class StoreInst : InstBase {
     private init(address: PtrOperand, value: Operand) {
         self.address = address
         self.value = value
-        super.init(args: [value, address], irName: nil)
+        self.args = [value, address]
+        initialiseArgs()
     }
     
-    override var type: Type? { return address.type }
+    var type: Type? { return address.type }
     
-    override var hasSideEffects: Bool {
+    var instHasSideEffects: Bool {
         // it has side effects if someone else is using it
         // TODO: should look through dominating blocks for uses, uses before this inst should not be counted
 //        return !address.uses.filter { $0 !== address }.isEmpty
         return true
     }
     
-    override var instVIR: String {
+    var vir: String {
         return "store \(value.name) in \(address.valueName)\(useComment)"
     }
     
-    override func copyInst() -> StoreInst {
+    func copy() -> StoreInst {
         return StoreInst(address: address.formCopy(), value: value.formCopy())
     }
     
-    override func setArgs(args: [Operand]) {
-        super.setArgs(args: args)
+    func setArgs(args: [Operand]) {
         (value, address) = (args[0], args[1] as! PtrOperand)
     }
+    
+    weak var parentBlock: BasicBlock?
+    var irName: String?
 }
 /**
  Load from a memory location
  
  `%a = load %0: %*Int`
  */
-final class LoadInst : InstBase {
-    override var type: Type? { return address.memType }
+final class LoadInst : Inst {
+    var type: Type? { return address.memType }
     private(set) var address: PtrOperand
+    
+    var uses: [Operand] = []
+    var args: [Operand]
     
     convenience init(address: LValue, irName: String? = nil) {
         self.init(address: PtrOperand(address), irName: irName)
@@ -87,35 +103,42 @@ final class LoadInst : InstBase {
     
     private init(address: PtrOperand, irName: String?) {
         self.address = address
-        super.init(args: [self.address], irName: irName)
+        self.args = [address]
+        initialiseArgs()
+        self.irName = irName
     }
     
-    override var instVIR: String {
+    var vir: String {
         return "\(name) = load \(address.valueName)\(useComment)"
     }
     
-    override func copyInst() -> LoadInst {
+    func copy() -> LoadInst {
         return LoadInst(address: address.formCopy(), irName: irName)
     }
     
-    override func setArgs(args: [Operand]) {
-        super.setArgs(args: args)
+    func setArgs(args: [Operand]) {
         address = args[0] as! PtrOperand
     }
+    
+    weak var parentBlock: BasicBlock?
+    var irName: String?
 }
 /**
  Bitcast a memory location
  
  `%a = bitcast %0:%*Int to %*Builtin.Int`
  */
-final class BitcastInst : InstBase, LValue {
+final class BitcastInst : Inst, LValue {
     var pointerType: BuiltinType { return BuiltinType.pointer(to: newType) }
-    override var type: Type? { return pointerType }
+    var type: Type? { return pointerType }
     var memType: Type? { return newType }
     /// The operand of the cast
     private(set) var address: PtrOperand
     /// The new memory type of the cast
     private(set) var newType: TypeAlias
+    
+    var uses: [Operand] = []
+    var args: [Operand]
     
     /// - note: the ptr will have type newType*
     convenience init(address: LValue, newType: TypeAlias, irName: String? = nil) {
@@ -125,21 +148,25 @@ final class BitcastInst : InstBase, LValue {
     private init(address op: PtrOperand, newType: TypeAlias, irName: String?) {
         self.address = op
         self.newType = newType
-        super.init(args: [op], irName: irName)
+        args = [op]
+        initialiseArgs()
+        self.irName = irName
     }
     
-    override var instVIR: String {
+    var vir: String {
         return "\(name) = bitcast \(address.valueName) to \(pointerType.explicitName)\(useComment)"
     }
     
-    override func copyInst() -> BitcastInst {
+    func copy() -> BitcastInst {
         return BitcastInst(address: address.formCopy(), newType: newType, irName: irName)
     }
     
-    override func setArgs(args: [Operand]) {
-        super.setArgs(args: args)
+    func setArgs(args: [Operand]) {
         address = args[0] as! PtrOperand
     }
+    
+    weak var parentBlock: BasicBlock?
+    var irName: String?
 }
 
 

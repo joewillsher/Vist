@@ -8,14 +8,17 @@
 
 
 /// Opening an existential box to get a pointer to a member
-final class OpenExistentialPropertyInst: InstBase, LValue {
+final class OpenExistentialPropertyInst: Inst, LValue {
     var existential: PtrOperand
     let propertyName: String, existentialType: ConceptType
     
     var propertyType: Type { return try! existentialType.propertyType(name: propertyName) }
     
     var memType: Type? { return propertyType }
-    override var type: Type? { return BuiltinType.pointer(to: propertyType) }
+    var type: Type? { return BuiltinType.pointer(to: propertyType) }
+    
+    var uses: [Operand] = []
+    var args: [Operand]
     
     convenience init(existential: LValue, propertyName: String, irName: String? = nil) throws {
         
@@ -29,31 +32,37 @@ final class OpenExistentialPropertyInst: InstBase, LValue {
         self.existential = existential
         self.propertyName = propertyName
         self.existentialType = existentialType
-        super.init(args: [existential], irName: irName)
+        self.args = [existential]
+        initialiseArgs()
+        self.irName = irName
     }
     
-    override var instVIR: String {
+    var vir: String {
         return "\(name) = existential_open \(existential.valueName), !\(propertyName)\(useComment)"
     }
     
-    override func copyInst() -> OpenExistentialPropertyInst {
+    func copy() -> OpenExistentialPropertyInst {
         return OpenExistentialPropertyInst(existential: existential.formCopy(), propertyName: propertyName, existentialType: existentialType, irName: irName)
     }
     
-    override func setArgs(args: [Operand]) {
-        super.setArgs(args: args)
+    func setArgs(args: [Operand]) {
         existential = args[0] as! PtrOperand
     }
+    var parentBlock: BasicBlock?
+    var irName: String?
 }
 
 /// Constructing an existential box from a struct.
 ///
 /// When lowered it calculates the metadata for offsets and constructs
 /// the struct's witness table
-final class ExistentialConstructInst : InstBase {
+final class ExistentialConstructInst : Inst {
     var value: PtrOperand, existentialType: ConceptType
     
-    override var type: Type? { return existentialType.importedType(in: module) }
+    var type: Type? { return existentialType.importedType(in: module) }
+    
+    var uses: [Operand] = []
+    var args: [Operand]
     
     convenience init(value: LValue, existentialType: ConceptType, irName: String? = nil) {
         self.init(value: PtrOperand(value), existentialType: existentialType, irName: irName)
@@ -62,29 +71,35 @@ final class ExistentialConstructInst : InstBase {
     private init(value: PtrOperand, existentialType: ConceptType, irName: String?) {
         self.value = value
         self.existentialType = existentialType
-        super.init(args: [value], irName: irName)
+        self.args = [value]
+        initialiseArgs()
+        self.irName = irName
     }
     
-    override var instVIR: String {
+    var vir: String {
         return "\(name) = existential \(value.valueName) in #\(existentialType.explicitName)\(useComment)"
     }
     
-    override func copyInst() -> ExistentialConstructInst {
+    func copy() -> ExistentialConstructInst {
         return ExistentialConstructInst(value: value.formCopy(), existentialType: existentialType, irName: irName)
     }
-    override func setArgs(args: [Operand]) {
-        super.setArgs(args: args)
+    func setArgs(args: [Operand]) {
         value = args[0] as! PtrOperand
     }
+    var parentBlock: BasicBlock?
+    var irName: String?
 }
 
-final class ExistentialWitnessInst : InstBase, LValue {
+final class ExistentialWitnessInst : Inst, LValue {
     var existential: PtrOperand
     let methodName: String, argTypes: [Type], existentialType: ConceptType
     
     var methodType: FunctionType? { return try? existentialType.methodType(methodNamed: methodName, argTypes: argTypes) }
-    override var type: Type? { return memType.map { BuiltinType.pointer(to: $0) } }
+    var type: Type? { return memType.map { BuiltinType.pointer(to: $0) } }
     var memType: Type? { return methodType }
+    
+    var uses: [Operand] = []
+    var args: [Operand]
     
     convenience init(existential: LValue, methodName: String, argTypes: [Type], existentialType: ConceptType, irName: String? = nil) {
         self.init(existential: PtrOperand(existential), methodName: methodName, argTypes: argTypes, existentialType: existentialType, irName: irName)
@@ -95,48 +110,58 @@ final class ExistentialWitnessInst : InstBase, LValue {
         self.methodName = methodName
         self.existentialType = existentialType
         self.argTypes = argTypes
-        super.init(args: [existential], irName: irName)
+        self.args = [existential]
+        initialiseArgs()
+        self.irName = irName
     }
     
-    override var instVIR: String {
+    var vir: String {
         return "\(name) = existential_witness \(existential.valueName), !\(methodName)\(useComment)"
     }
     
-    override func copyInst() -> ExistentialWitnessInst {
+    func copy() -> ExistentialWitnessInst {
         return ExistentialWitnessInst(existential: existential.formCopy(), methodName: methodName, argTypes: argTypes, existentialType: existentialType, irName: irName)
     }
-    override func setArgs(args: [Operand]) {
-        super.setArgs(args: args)
+    func setArgs(args: [Operand]) {
         existential = args[0] as! PtrOperand
     }
+    
+    var parentBlock: BasicBlock?
+    var irName: String?
 }
 
 /// Get the instance from the existential box, an i8*
-final class ExistentialProjectInst : InstBase, LValue {
+final class ExistentialProjectInst : Inst, LValue {
     var existential: PtrOperand
     
-    override var type: Type? { return BuiltinType.opaquePointer }
+    var type: Type? { return BuiltinType.opaquePointer }
     var memType: Type? { return BuiltinType.int(size: 8) }
+    
+    var uses: [Operand] = []
+    var args: [Operand] = []
     
     convenience init(existential: LValue, irName: String? = nil) {
         self.init(existential: PtrOperand(existential), irName: irName)
     }
-
+    
     private init(existential: PtrOperand, irName: String?) {
         self.existential = existential
-        super.init(args: [existential], irName: irName)
+        self.args = [existential]
+        initialiseArgs()
+        self.irName = irName
     }
     
-    override var instVIR: String {
+    var vir: String {
         return "\(name) = existential_project \(existential.valueName)\(useComment)"
     }
     
-    override func copyInst() -> ExistentialProjectInst {
+    func copy() -> ExistentialProjectInst {
         return ExistentialProjectInst(existential: existential.formCopy(), irName: irName)
     }
-    override func setArgs(args: [Operand]) {
-        super.setArgs(args: args)
+    func setArgs(args: [Operand]) {
         existential = args[0] as! PtrOperand
     }
+    var parentBlock: BasicBlock?
+    var irName: String?
 }
 

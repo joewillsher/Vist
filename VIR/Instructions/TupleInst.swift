@@ -7,8 +7,11 @@
 //
 
 
-final class TupleCreateInst : InstBase {
+final class TupleCreateInst : Inst {
     var tupleType: TupleType, elements: [Operand]
+    
+    var uses: [Operand] = []
+    var args: [Operand]
     
     /// - precondition: `type` has been included in the module using
     ///                 `type.importedType(in: module)`
@@ -16,19 +19,26 @@ final class TupleCreateInst : InstBase {
         self.tupleType = type//.importedType(in: module) as! TupleType
         let els = elements.map(Operand.init)
         self.elements = els
-        super.init(args: els, irName: irName)
+        args = els
+        initialiseArgs()
+        self.irName = irName
     }
     
-    override var type: Type? { return tupleType }
+    var type: Type? { return tupleType }
     
-    override var instVIR: String {
+    var vir: String {
         return "\(name) = tuple \(args.virValueTuple())\(useComment)"
     }
+    var parentBlock: BasicBlock?
+    var irName: String?
 }
 
-final class TupleExtractInst : InstBase {
+final class TupleExtractInst : Inst {
     var tuple: Operand, elementIndex: Int
     var elementType: Type
+    
+    var uses: [Operand] = []
+    var args: [Operand]
     
     /// - precondition: Tuple has an element at `index`
     convenience init(tuple: Value, index: Int, irName: String? = nil) throws {
@@ -43,28 +53,34 @@ final class TupleExtractInst : InstBase {
         self.tuple = op
         self.elementIndex = index
         self.elementType = elType
-        super.init(args: [op], irName: irName)
+        self.args = [op]
+        initialiseArgs()
+        self.irName = irName
     }
     
-    override var type: Type? { return elementType }
+    var type: Type? { return elementType }
     
-    override var instVIR: String {
+    var vir: String {
         return "\(name) = tuple_extract \(tuple.valueName), !\(elementIndex)\(useComment)"
     }
     
-    override func copyInst() -> TupleExtractInst {
+    func copy() -> TupleExtractInst {
         return TupleExtractInst(op: tuple.formCopy(), index: elementIndex, elType: elementType, irName: irName)
     }
-    override func setArgs(args: [Operand]) {
-        super.setArgs(args: args)
+    func setArgs(args: [Operand]) {
         tuple = args[0]
     }
+    var parentBlock: BasicBlock?
+    var irName: String?
 }
 
 
-final class TupleElementPtrInst : InstBase, LValue {
+final class TupleElementPtrInst : Inst, LValue {
     var tuple: PtrOperand, elementIndex: Int
     var elementType: Type
+    
+    var uses: [Operand] = []
+    var args: [Operand]
     
     init(tuple: LValue, index: Int, irName: String? = nil) throws {
         
@@ -76,13 +92,17 @@ final class TupleElementPtrInst : InstBase, LValue {
         self.tuple = op
         self.elementIndex = index
         self.elementType = elType
-        super.init(args: [op], irName: irName)
+        self.args = [op]
+        initialiseArgs()
+        self.irName = irName
     }
     
-    override var type: Type? { return BuiltinType.pointer(to: elementType) }
+    var type: Type? { return BuiltinType.pointer(to: elementType) }
     var memType: Type? { return elementType }
 
-    override var instVIR: String {
+    var vir: String {
         return "\(name) = tuple_element \(tuple.valueName), !\(elementIndex)\(useComment)"
     }
+    var parentBlock: BasicBlock?
+    var irName: String?
 }

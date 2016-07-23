@@ -13,47 +13,58 @@ import class Foundation.NSString
  
  `%a = int_literal 1`
  */
-final class IntLiteralInst : InstBase {
+final class IntLiteralInst : Inst {
     var value: Int, size: Int
     
-    override var type: Type? { return BuiltinType.int(size: size) }
+    var type: Type? { return BuiltinType.int(size: size) }
+    
+    var args: [Operand] = []
+    var uses: [Operand] = []
     
     init(val: Int, size: Int, irName: String? = nil) {
         self.value = val
         self.size = size
-        super.init(args: [], irName: irName)
+        self.irName = irName
     }
     
-    override var instVIR: String {
+    var vir: String {
         return "\(name) = int_literal \(value)\(useComment)"
     }
     
-    override func copyInst() -> IntLiteralInst {
+    func copy() -> IntLiteralInst {
         return IntLiteralInst(val: value, size: size)
     }
+    
+    var parentBlock: BasicBlock?
+    var irName: String?
 }
 /**
  An boolean literal
  
  `%a = bool_literal false`
  */
-final class BoolLiteralInst : InstBase {
+final class BoolLiteralInst : Inst {
     var value: Bool
     
-    override var type: Type? { return BuiltinType.bool }
+    var type: Type? { return BuiltinType.bool }
     
+    var args: [Operand] = []
+    var uses: [Operand] = []
+
     init(val: Bool, irName: String? = nil) {
         self.value = val
-        super.init(args: [], irName: irName)
+        self.irName = irName
     }
     
-    override var instVIR: String {
+    var vir: String {
         return "\(name) = bool_literal \(value)\(useComment)"
     }
     
-    override func copyInst() -> BoolLiteralInst {
+    func copy() -> BoolLiteralInst {
         return BoolLiteralInst(val: value)
     }
+    var parentBlock: BasicBlock?
+    var irName: String?
 }
 
 
@@ -62,24 +73,29 @@ final class BoolLiteralInst : InstBase {
  
  `%a = string_literal utf16 "hello 😎"`
  */
-final class StringLiteralInst : InstBase {
+final class StringLiteralInst : Inst {
     var value: String
     
     var isUTF8Encoded: Bool { return value.smallestEncoding == .utf8 || value.smallestEncoding == .ascii }
-    override var type: Type? { return BuiltinType.opaquePointer }
+    var type: Type? { return BuiltinType.opaquePointer }
+    
+    var args: [Operand] = []
+    var uses: [Operand] = []
     
     init(val: String, irName: String? = nil) {
         self.value = val
-        super.init(args: [], irName: irName)
+        self.irName = irName
     }
     
-    override var instVIR: String {
+    var vir: String {
         return "\(name) = string_literal \(isUTF8Encoded ? "utf8" : "utf16") \"\(value)\" \(useComment)"
     }
     
-    override func copyInst() -> StringLiteralInst {
+    func copy() -> StringLiteralInst {
         return StringLiteralInst(val: value, irName: irName)
     }
+    var parentBlock: BasicBlock?
+    var irName: String?
 }
 
 /// A void literal: `()`

@@ -53,7 +53,7 @@ enum InlinePass : OptimisationPass {
     }
     
     /// - returns: whether the call was inlined
-    static func inline(_ call: FunctionCallInst, explosion: inout Explosion<FunctionCallInst>) throws -> Bool {
+    static func inline(_ call: FunctionCallInst, explosion: inout Explosion) throws -> Bool {
         
         // Can we inline this call?
         // FIXME: Inlining multi block functions. (May need a dom tree analysis pass to do this)
