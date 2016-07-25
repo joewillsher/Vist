@@ -109,19 +109,20 @@ enum ConstantFoldingPass : OptimisationPass {
                 guard
                     case let lhs as IntLiteralInst = inst.args[0].value,
                     case let rhs as IntLiteralInst = inst.args[1].value else { break }
+                assert(lhs.size == rhs.size)
                 
-                let val: Bool
+                let op: (Int, Int) -> Bool
                 switch inst.inst {
-                case .ilte: val = lhs.value <= rhs.value
-                case .ilt: val = lhs.value < rhs.value
-                case .igte: val = lhs.value >= rhs.value
-                case .igt: val = lhs.value > rhs.value
-                case .ieq: val = lhs.value == rhs.value
-                case .ineq: val = lhs.value != rhs.value
+                case .ilte: op = (<=)
+                case .ilt: op = (<)
+                case .igte: op = (>=)
+                case .igt: op = (>)
+                case .ieq: op = (==)
+                case .ineq: op = (!=)
                 default: fatalError("Not an int comparison inst")
                 }
                 
-                let resultLiteral = BoolLiteralInst(val: val)
+                let resultLiteral = BoolLiteralInst(val: op(lhs.value, rhs.value))
                 try block.insert(inst: resultLiteral, after: inst)
                 try inst.eraseFromParent(replacingAllUsesWith: resultLiteral)
                 
@@ -129,23 +130,38 @@ enum ConstantFoldingPass : OptimisationPass {
                 guard
                     case let lhs as IntLiteralInst = inst.args[0].value,
                     case let rhs as IntLiteralInst = inst.args[1].value else { break }
-
-                let val: Int
+                assert(lhs.size == rhs.size)
+                
+                let op: (Int, Int) -> Int
                 switch inst.inst {
-                case .idiv: val = lhs.value / rhs.value
-                case .irem: val = lhs.value % rhs.value
-                case .ishl: val = lhs.value << rhs.value
-                case .ishr: val = lhs.value >> rhs.value
-                case .iand: val = lhs.value & rhs.value
-                case .ior:  val = lhs.value | rhs.value
-                case .ixor: val = lhs.value ^ rhs.value
-                case .iaddoverflow: val = lhs.value &+ rhs.value
-                default: fatalError("Not an int inst")
+                case .idiv: op = (/)
+                case .irem: op = (%)
+                case .ishl: op = (<<)
+                case .ishr: op = (>>)
+                case .iand: op = (&)
+                case .ior:  op = (|)
+                case .ixor: op = (^)
+                case .iaddoverflow: op = (&+)
+                default: fatalError("Not a trunc inst")
                 }
                 
-                let resultLiteral = IntLiteralInst(val: val, size: 64)
+                let resultLiteral = IntLiteralInst(val: op(lhs.value, rhs.value), size: lhs.size)
                 try block.insert(inst: resultLiteral, after: inst)
                 try inst.eraseFromParent(replacingAllUsesWith: resultLiteral)
+                
+            case .trunc8, .trunc16, .trunc32:
+                guard case let val as IntLiteralInst = inst.args[0].value else { break }
+                
+                let size: Int
+                switch inst.inst {
+                case .trunc8: size = 8
+                case .trunc16: size = 16
+                case .trunc32: size = 32
+                default: fatalError("Not an int inst")
+                }
+                let literal = IntLiteralInst(val: val.value, size: size)
+                try block.insert(inst: literal, after: inst)
+                try inst.eraseFromParent(replacingAllUsesWith: literal)
                 
             default:
                 break // not implemented

@@ -49,11 +49,23 @@ enum AggrFlattenPass : OptimisationPass {
     static let maxAttempts = 5
     
     static func run(on function: Function) throws {
-        
-        /// returns: whether we should run again
-        func runAggrOpt(block: BasicBlock) throws -> Bool {
-
-            for inst in block.instructions {
+        // run the opt pass while it still wants change
+        for block in function.blocks ?? [] where !block.instructions.isEmpty {
+            var attempt = 0
+            var startIndex = block.instructions.startIndex
+            
+            while let tryAgainIndex = try runAggrOpt(block.instructions[startIndex..<block.instructions.endIndex]), attempt < maxAttempts {
+                attempt += 1
+                startIndex = tryAgainIndex
+            }
+        }
+    }
+    
+    /// - returns: if not nil, the inst to try optimising again from
+    private static func runAggrOpt<CollectionType : Collection>(_ block: CollectionType) throws -> Int?
+        where CollectionType.Iterator.Element == Inst, CollectionType.Index == Int {
+            
+            for inst in block {
                 instCheck: switch inst {
                 // If we have a struct
                 case let initInst as StructInitInst:
@@ -99,7 +111,7 @@ enum AggrFlattenPass : OptimisationPass {
                     var structMembers: [String: Value] = [:]
                     var tupleMembers: [Int: Value] = [:]
                     
-                    var returnAndGoAgain = false
+                    var returnAndGoAgainIndex: Int?
                     
                     // Check the memory's uses
                     for use in allocInst.uses {
@@ -132,8 +144,12 @@ enum AggrFlattenPass : OptimisationPass {
                             
                             // if the element of the tuple is a struct, we may have missed
                             // an optimisation opportunity, make sure we go back go back over it
-                            if let _ = try? gep.propertyType.getAsTupleType() {
-                                returnAndGoAgain = true
+                            if  let _ = try? gep.propertyType.getAsTupleType(),
+                                let index = gep.args
+                                    .flatMap({ $0.value as? Inst })
+                                    .map({ inst in block.index(where: {$0 === inst})! })
+                                    .min() {
+                                returnAndGoAgainIndex = index
                             }
                             
                             for use in user.uses {
@@ -154,12 +170,17 @@ enum AggrFlattenPass : OptimisationPass {
                                 }
                             }
                             try gep.eraseFromParent()
+                            
                         case let gep as TupleElementPtrInst:
                             
                             // if the element of the tuple is a struct, we may have missed
                             // an optimisation opportunity, make sure we go back go back over it
-                            if let _ = try? gep.elementType.getAsStructType() {
-                                returnAndGoAgain = true
+                            if  let _ = try? gep.elementType.getAsStructType(),
+                                let index = gep.args
+                                    .flatMap({ $0.value as? Inst })
+                                    .map({ inst in block.index(where: {$0 === inst})! })
+                                    .min() {
+                                returnAndGoAgainIndex = index
                             }
                             
                             for use in user.uses {
@@ -173,6 +194,7 @@ enum AggrFlattenPass : OptimisationPass {
                                 case let store as StoreInst:
                                     tupleMembers[gep.elementIndex] = store.value.value!
                                     try store.eraseFromParent()
+                                    
                                     
                                 default:
                                     break instCheck
@@ -211,8 +233,8 @@ enum AggrFlattenPass : OptimisationPass {
                     
                     try allocInst.eraseFromParent()
                     
-                    if returnAndGoAgain {
-                        return true
+                    if let i = returnAndGoAgainIndex {
+                        return i
                     }
                     
                 default:
@@ -221,19 +243,10 @@ enum AggrFlattenPass : OptimisationPass {
                 
             }
             
-            return false
-        }
-        
-        // run the opt pass while it still wants change
-        for block in function.blocks ?? [] {
-            var attempt = 0
-            while try runAggrOpt(block: block), attempt < maxAttempts {
-                attempt += 1
-            }
-        }
+            return nil
     }
-    
 }
+
 private enum AggregateType {
     case `struct`(StructType), tuple(TupleType)
 }
