@@ -104,6 +104,10 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "-emit-llvm"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "-build-stdlib"
             isEnabled = "NO">
          </CommandLineArgument>

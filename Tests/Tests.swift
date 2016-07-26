@@ -441,6 +441,9 @@ extension OptimiserTests {
     func testStructFlattenLLVM() {
         XCTAssert(_testFile(name: "StructFlatten-llvm"))
     }
+    func testStructTupleFlatten() {
+        XCTAssert(_testFile(name: "FlattenStructTuple"))
+    }
     func testConstantFolding() {
         XCTAssert(_testFile(name: "ConstantFolding"))
     }

@@ -43,7 +43,7 @@ struct LLVMBuilder {
 extension LLVMBuilder {
     
     /// Position the builder at the end of `block`
-    func position(atEndOfBlock block: LLVMBasicBlock) {
+    func position(atEndOf block: LLVMBasicBlock) {
         LLVMPositionBuilderAtEnd(builder, block.block)
     }
     func position(after: LLVMValue) throws {

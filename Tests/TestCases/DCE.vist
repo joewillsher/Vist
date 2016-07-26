@@ -37,7 +37,7 @@ func test2 :: () -> Int= {
     return a
 }
 
-// CHECK-VIR:
+// VIR-CHECK:
 // VIR: func @trapSimplify_t : &thin () -> #Builtin.Void {
 // VIR: $entry:
 // VIR:   %0 = int_literal 12 	// user: %1

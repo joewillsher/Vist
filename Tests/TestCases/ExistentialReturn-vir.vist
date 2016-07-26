@@ -4,7 +4,7 @@
 concept AbstractBox { var el: Int }
 type ConcreteBox { var el: Int }
 
-// CHECK-VIR:
+// VIR-CHECK:
 // VIR: func @join_tAbstractBoxAbstractBox : &thin (#AbstractBox, #AbstractBox) -> #AbstractBox {
 // VIR: $entry(%$0: #AbstractBox, %$1: #AbstractBox):
 // VIR:   %0 = alloc #AbstractBox 	// users: %1, %2
@@ -30,7 +30,7 @@ type ConcreteBox { var el: Int }
 // VIR: }
 func join :: AbstractBox AbstractBox -> AbstractBox = do return ConcreteBox $0.el + $1.el
 
-// CHECK-VIR:
+// VIR-CHECK:
 // VIR: func @wrap_tConcreteBox : &thin (#ConcreteBox) -> #AbstractBox {
 // VIR: $entry(%$0: #ConcreteBox):
 // VIR:   %0 = alloc #ConcreteBox 	// users: %1, %2

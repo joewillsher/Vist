@@ -49,7 +49,7 @@ extension BuiltinInstCall: VIRLower {
             
             success.move(after: current.loweredBlock!)
             try module.loweredBuilder.buildCondBr(if: lhs, to: fail, elseTo: success)
-            module.loweredBuilder.position(atEndOfBlock: success)
+            module.loweredBuilder.position(atEndOf: success)
             return .nullptr
             
         // handle calls which arent intrinsics, but builtin
@@ -104,13 +104,13 @@ extension Function {
         // make fail block & save current pos
         let ins = IGF.builder.getInsertBlock()
         let block = try loweredFunction!.appendBasicBlock(named: "\(name.demangleName()).trap")
-        IGF.builder.position(atEndOfBlock: block)
+        IGF.builder.position(atEndOf: block)
         
         // Build trap and unreachable
         _ = try BuiltinInstCall.trapInst().virLower(IGF: &IGF)
         
         // move back; save and return the fail block
-        IGF.builder.position(atEndOfBlock: ins!)
+        IGF.builder.position(atEndOf: ins!)
         _condFailBlock = block
         return block
     }

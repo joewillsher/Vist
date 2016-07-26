@@ -55,14 +55,13 @@ extension LLVMModule {
         }
         
         // mangle names
-        guard demanglingSymbols else { return }
-        
-        for function in sourceModule.functions {
-            let name = function.name!
-            guard name.hasPrefix("vist$U") else { continue }
-            function.name = name.demangleRuntimeName()
+        if demanglingSymbols {
+            for function in sourceModule.functions {
+                let name = function.name!
+                guard name.hasPrefix("vist$U") else { continue }
+                function.name = name.demangleRuntimeName()
+            }
         }
         
     }
-    
 }

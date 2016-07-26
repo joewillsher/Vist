@@ -140,7 +140,7 @@ extension Function : VIRLower {
         // declare blocks, so break instructions have something to br to
         for bb in blocks {
             bb.loweredBlock = try fn.appendBasicBlock(named: bb.name)
-            IGF.builder.position(atEndOfBlock: bb.loweredBlock!)
+            IGF.builder.position(atEndOf: bb.loweredBlock!)
             
             for param in bb.parameters ?? [] {
                 let v = try param.virLower(IGF: &IGF)
@@ -149,7 +149,7 @@ extension Function : VIRLower {
         }
         
         for bb in blocks {
-            IGF.builder.position(atEndOfBlock: bb.loweredBlock!)
+            IGF.builder.position(atEndOf: bb.loweredBlock!)
             
             for case let inst as protocol<VIRLower, Inst> in bb.instructions {
                 let v = try inst.virLower(IGF: &IGF)
@@ -179,7 +179,7 @@ extension Function : VIRLower {
             _ = try IGF.builder.buildCall(function: endIntrinsic, args: [constSize, globalPointer])
         }
         
-        if let b = b { IGF.builder.position(atEndOfBlock: b) }
+        if let b = b { IGF.builder.position(atEndOf: b) }
         
         return fn.function
     }

@@ -1,24 +1,27 @@
 // RUN: -Ohigh -emit-vir
 // CHECK: VIR
 
+
+
 func testSimple :: () = {
     print 1 + 2
 }
 // VIR-CHECK:
 // VIR: func @testSimple_t : &thin () -> #Builtin.Void {
 // VIR: $entry:
-// VIR:   %0 = int_literal 1 	// user: %i_add
-// VIR:   %1 = int_literal 2 	// user: %i_add
-// VIR:   %i_add = builtin i_add %0: #Builtin.Int64, %1: #Builtin.Int64 	// users: %overflow, %value
-// VIR:   %overflow = tuple_extract %i_add: (#Builtin.Int64, #Builtin.Bool), !1 	// user: %2
-// VIR:   cond_fail %overflow: #Builtin.Bool
-// VIR:   %value = tuple_extract %i_add: (#Builtin.Int64, #Builtin.Bool), !0 	// user: %3
-// VIR:   %3 = struct %Int, (%value: #Builtin.Int64) 	// user: %4
-// VIR:   %4 = call @print_tI (%3: #Int)
+// VIR:   %0 = int_literal 3 	// user: %1
+// VIR:   %1 = struct %Int, (%0: #Builtin.Int64) 	// user: %2
+// VIR:   %2 = call @print_tI (%1: #Int)
 // VIR:   return ()
 // VIR: }
 
 type Box { let i: Int }
+// VIR-CHECK:
+// VIR: func @Box_tI : &thin (#Int) -> #Box {
+// VIR: $entry(%$0: #Int):
+// VIR:   %0 = struct %Box, (%$0: #Int) 	// user: %1
+// VIR:   return %0
+// VIR: }
 
 func testAggr :: () = {
     let x = Box 1
@@ -37,7 +40,7 @@ func testAggr :: () = {
 type _Range {
     let a: Int, b: Int
 }
-// CHECK-VIR:
+// VIR-CHECK:
 // VIR: func @-URange_tII : &thin (#Int, #Int) -> #_Range {
 // VIR: $entry(%$0: #Int, %$1: #Int):
 // VIR:   %0 = struct %_Range, (%$0: #Int, %$1: #Int) 	// user: %1
@@ -47,7 +50,7 @@ type _Range {
 func rangeTest :: Int Int -> _Range = (a b) {
     return _Range a b-1
 }
-// CHECK-VIR:
+// VIR-CHECK:
 // VIR: func @rangeTest_tII : &thin (#Int, #Int) -> #_Range {
 // VIR: $entry(%a: #Int, %b: #Int):
 // VIR:   %0 = int_literal 1 	// user: %i_sub
@@ -65,13 +68,19 @@ func rangeTest :: Int Int -> _Range = (a b) {
 type Foo {
     var a: Int
 }
+// VIR-CHECK:
+// VIR: func @Foo_tI : &thin (#Int) -> #Foo {
+// VIR: $entry(%$0: #Int):
+// VIR:   %0 = struct %Foo, (%$0: #Int) 	// user: %1
+// VIR:   return %0
+// VIR: }
 
 func testStore :: () = {
     var f = Foo 1
     f.a = 2
     print f.a
 }
-// CHECK-VIR:
+// VIR-CHECK:
 // VIR: func @testStore_t : &thin () -> #Builtin.Void {
 // VIR: $entry:
 // VIR:   %0 = int_literal 2 	// user: %1
@@ -81,4 +90,5 @@ func testStore :: () = {
 // VIR:   %4 = call @print_tI (%3: #Int)
 // VIR:   return ()
 // VIR: }
+
 
