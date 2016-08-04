@@ -6,8 +6,6 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-
-
 extension FuncDecl : DeclTypeProvider {
     
     /// Generate the function type and mangled name for a function
@@ -18,13 +16,13 @@ extension FuncDecl : DeclTypeProvider {
         declScope.genericParameters = genericParameters
         
         let mutableSelf = attrs.contains(.mutating)
-        let paramTypes = try fnType.params(scope: declScope), returnType = try fnType.returnType(scope: declScope)
+        let paramTypes = try typeRepr.params(scope: declScope), returnType = try typeRepr.returnType(scope: declScope)
         // if its a generator function there is no return
         let ret = isGeneratorFunction ? BuiltinType.void : returnType
         
         var ty: FunctionType
         
-        if case let parentType as NominalType = parent?._type {
+        if let parentType = parent?.declaredType {
             ty = FunctionType(params: paramTypes, returns: ret, callingConvention: .method(selfType: parentType, mutating: mutableSelf))
         }
         else {
@@ -38,7 +36,7 @@ extension FuncDecl : DeclTypeProvider {
         mangledName = name.mangle(type: ty)
         
         scope.addFunction(name: name, type: ty)  // update function table
-        fnType.type = ty            // store type in fntype
+        typeRepr.type = ty            // store type in fntype
         return ty
     }
     
@@ -46,7 +44,7 @@ extension FuncDecl : DeclTypeProvider {
         
         // if we have already gen'ed the interface for this function, fnType.type
         // won't be nil, if we haven't, gen it now
-        let ty = try fnType.type ?? genFunctionInterface(scope: scope)
+        let ty = try typeRepr.type ?? genFunctionInterface(scope: scope)
         
         guard let impl = self.impl else { return }
         // if body construct scope and parse inside it
@@ -73,11 +71,9 @@ extension FuncDecl : DeclTypeProvider {
         }
         
         // if is a method
-        if case let parentType as NominalType = parent?._type {
-            
+        if let parentType = parent?.declaredType {
             // add self
             fnScope.addVariable(variable: (type: parentType, mutable: mutableSelf, isImmutableCapture: !mutableSelf), name: "self")
-            
             // add self's memebrs implicitly
             for (memberName, memberType, mutable) in parentType.members {
                 fnScope.addVariable(variable: (type: memberType, mutable: mutable && mutableSelf, isImmutableCapture: !mutableSelf), name: memberName)

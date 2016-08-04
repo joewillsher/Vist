@@ -13,16 +13,18 @@ protocol VIRElement {
     var vir: String { get }
 }
 
-enum VIRError : ErrorProtocol {
+enum VIRError : Error {
     case noFunctionBody, hasBody, instNotInBB, bbNotInFn, cannotMoveBuilderHere, noParentBlock, noParamNamed(String), noUse, noType(StaticString), noModule
-    case notGenerator, paramsNotTyped, wrongBlockParams
+    case notGenerator(Any.Type), paramsNotTyped, wrongBlockParams
     case builtinIncorrectOperands(inst: BuiltinInst, recieved: Int)
+    case noMangledName
     
     case notStructType(Type), notConceptType(Type), notTupleType(Type)
 }
 
 // instruction
 // %identifier
+// #type
 // @function
 // $basicblock
 

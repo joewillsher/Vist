@@ -14,7 +14,7 @@ import class Foundation.Scanner
 //  MARK:                                              Helpers
 //-------------------------------------------------------------------------------------------------------------------------
 
-enum LexerError: ErrorProtocol {
+enum LexerError: Error {
     case outOfRange
     case noToken
 }
@@ -73,7 +73,7 @@ private extension Character {
     
 
     func isSymbol() -> Bool {
-        return (isblank(value) != 1) && isOperatorCodeUnit() || stdlibOperators.reduce("", combine: +).characters.contains(self)
+        return (isblank(value) != 1) && isOperatorCodeUnit() || stdlibOperators.reduce("", +).characters.contains(self)
     }
     
     func isWhiteSpace() -> Bool {
@@ -95,7 +95,6 @@ private enum LexerContext {
 
 private func == (lhs: Character, rhs: String) -> Bool { return lhs == Character(rhs) }
 private func != (lhs: Character, rhs: String) -> Bool { return !(lhs == rhs) }
-
 
 extension String {
     
@@ -312,7 +311,7 @@ extension Lexer {
     
     mutating private func lexWhiteSpace() throws {
         try lexWhilePredicate { $0.isWhiteSpace() }
-        if charsInContext.contains({ $0.isNewLine()}) {
+        if charsInContext.contains(where: ({ $0.isNewLine()})) {
             try resetContext()
         } else {
             context = nil

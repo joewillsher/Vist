@@ -169,14 +169,10 @@ extension FunctionType {
     }
 }
 
-extension FunctionType : Equatable { }
-
-func == (lhs: FunctionType, rhs: FunctionType) -> Bool {
-    return lhs.params.elementsEqual(rhs.params, isEquivalent: ==) && lhs.returns == rhs.returns
+extension FunctionType : Equatable {
+    static func == (lhs: FunctionType, rhs: FunctionType) -> Bool {
+        return lhs.params.elementsEqual(rhs.params, by: ==) && lhs.returns == rhs.returns
+    }
 }
-
-
-
-
 
 

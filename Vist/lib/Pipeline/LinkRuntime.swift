@@ -13,7 +13,7 @@ extension LLVMModule {
         
     /// Links modules, importing from `otherModule`
     func `import`(from otherModule: LLVMModule) {
-        var str: UnsafeMutablePointer<Int8>? = UnsafeMutablePointer(allocatingCapacity: 1)
+        var str: UnsafeMutablePointer<Int8>? = UnsafeMutablePointer.allocate(capacity: 1)
         LLVMLinkModules(module, otherModule.module, LLVMLinkerDestroySource, &str)
 //        str?.deinitialize()
 //        str?.deallocateCapacity(1)

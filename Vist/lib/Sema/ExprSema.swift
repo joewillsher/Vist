@@ -14,7 +14,6 @@
 extension IntegerLiteral : ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Type {
-        // TODO: modify the AST to make this a function call
         let ty = StdLib.intType
         self.type = ty
         return ty
@@ -68,7 +67,6 @@ extension VariableExpr : ExprTypeProvider {
         guard let v = scope.variable(named: name) else {
             throw semaError(.noVariable(name))
         }
-        
         // assign type to self and return
         self._type = v.type
         return v.type
@@ -118,10 +116,8 @@ extension MutationExpr : ExprTypeProvider {
             switch lookup {
             case let tuple as TupleMemberLookupExpr:
                 guard mutable else { throw semaError(.immutableTupleMember(index: tuple.index)) }
-
             case let prop as PropertyLookupExpr:
                 guard mutable else { throw semaError(.immutableProperty(p: prop.propertyName, ty: type)) }
-                
             default:
                 throw semaError(.unreachable("All lookup types accounted for"), userVisible: false)
             }
@@ -179,44 +175,6 @@ extension ChainableExpr {
     
 }
 
-
-
-extension VariableDecl : DeclTypeProvider {
-    
-    func typeForNode(scope: SemaScope) throws {
-        // handle redeclaration
-        if scope.thisScopeContainsVariable(named: name) {
-            throw semaError(.invalidRedeclaration(name))
-        }
-        
-        // if provided, get the explicit type
-        let explicitType = try aType?.typeInScope(scope: scope)
-        
-        // scope for declaration -- not a return type and sets the `semaContext` to the explicitType
-        let declScope = SemaScope(parent: scope, returnType: nil, semaContext: explicitType)
-        
-        let objectType = try value.typeForNode(scope: declScope)
-        
-        if case let fn as FunctionType = objectType {
-            scope.addFunction(name: name, type: fn) // store in function table if closure
-        }
-        else {
-            let type = explicitType ?? objectType
-            scope.addVariable(variable: (type, isMutable, false), name: name)  // store in arr
-        }
-        
-        // if its a null expression
-        if let e = explicitType, value._type == BuiltinType.null, value is NullExpr {
-            value._type = e
-        } // otherwise, if the type is null, we are assigning to something we shouldn't be
-        else if objectType == BuiltinType.null {
-            throw semaError(.cannotAssignToNullExpression(name))
-        }
-    }
-}
-
-
-
 //-------------------------------------------------------------------------------------------------------------------------
 //  MARK:                                                 Exprs
 //-------------------------------------------------------------------------------------------------------------------------
@@ -229,8 +187,6 @@ extension VoidExpr : ExprTypeProvider {
         return BuiltinType.void
     }
 }
-
-
 
 
 //-------------------------------------------------------------------------------------------------------------------------
@@ -282,7 +238,7 @@ extension ArrayExpr : ExprTypeProvider {
         let types = try arr.map { el in try el.typeForNode(scope: scope) }
         
         // make sure array is homogeneous
-        guard !types.contains({types.first != $0}) else { throw semaError(.heterogenousArray(types)) }
+        guard !types.contains(where: {types.first != $0}) else { throw semaError(.heterogenousArray(types)) }
         
         // get element type and assign to self
         guard let elementType = types.first else { throw semaError(.emptyArray) }
@@ -312,4 +268,90 @@ extension ArraySubscriptExpr : ExprTypeProvider {
     }
     
 }
+
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                                 Tuples
+//-------------------------------------------------------------------------------------------------------------------------
+
+extension TupleExpr : ExprTypeProvider {
+    
+    func typeForNode(scope: SemaScope) throws -> Type {
+        
+        guard elements.count != 0 else {
+            let t = BuiltinType.void
+            self._type = t
+            return t
+        }
+        
+        let tys = try elements.map { try $0.typeForNode(scope: scope) }
+        let t = TupleType(members: tys)
+        _type = t
+        return t
+    }
+}
+
+extension TupleMemberLookupExpr : ExprTypeProvider {
+    
+    func typeForNode(scope: SemaScope) throws -> Type {
+        
+        guard case let objType as TupleType = try object.typeForNode(scope: scope) else { throw semaError(.noTypeForTuple, userVisible: false) }
+        
+        let propertyType = try objType.elementType(at: index)
+        self._type = propertyType
+        return propertyType
+    }
+}
+
+
+
+//-------------------------------------------------------------------------------------------------------------------------
+//  MARK:                                                 Types
+//-------------------------------------------------------------------------------------------------------------------------
+
+
+extension PropertyLookupExpr : ExprTypeProvider {
+    
+    func typeForNode(scope: SemaScope) throws -> Type {
+        
+        guard case let objType as NominalType = try object.typeForNode(scope: scope) else { throw semaError(.noTypeForStruct, userVisible: false) }
+        
+        let propertyType = try objType.propertyType(name: propertyName)
+        self._type = propertyType
+        return propertyType
+    }
+    
+}
+
+extension MethodCallExpr : ExprTypeProvider {
+    
+    func typeForNode(scope: SemaScope) throws -> Type {
+        
+        let ty = try object.typeForNode(scope: scope)
+        guard case let parentType as NominalType = ty else { throw semaError(.notStructType(ty), userVisible: false) }
+        
+        let args = try self.args.elements.map { arg in try arg.typeForNode(scope: scope) }
+        
+        let fnType = try parentType.methodType(methodNamed: name, argTypes: args)
+        mangledName = name.mangle(type: fnType)
+        
+        guard case .method(_, let mutatingMethod) = fnType.callingConvention else { throw semaError(.functionNotMethod, userVisible: false) }
+        let (baseType, _, allowsMutation) = try object.recursiveType(scope: scope)
+        
+        if mutatingMethod && !allowsMutation {
+            throw semaError(.mutatingMethodOnImmutable(method: name, baseType: baseType.explicitName))
+        }
+        
+        // gen types for objects in call
+        for arg in self.args.elements {
+            try arg.typeForNode(scope: scope)
+        }
+        
+        // assign type to self and return
+        self._type = fnType.returns
+        self.fnType = fnType
+        self.structType = parentType
+        return fnType.returns
+    }
+}
+
 

@@ -11,7 +11,7 @@ final class StructType : NominalType {
     let name: String
     let members: [StructMember]
     var methods: [StructMethod]
-    var genericTypes: [GenericType] = []
+    var genericTypes: [GenericType]?
     var concepts: [ConceptType] = []
     let isHeapAllocated: Bool
 
@@ -74,12 +74,13 @@ extension StructType {
 }
 
 
-extension StructType : Equatable { }
-
-
-
-func == (lhs: StructType, rhs: StructType) -> Bool {
-    return lhs.name == rhs.name
+extension StructType : Equatable {
+    static func == (lhs: StructType, rhs: StructType) -> Bool {
+        return lhs.name == rhs.name
+    }
 }
+
+
+
 
 

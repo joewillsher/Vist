@@ -8,7 +8,7 @@
 
 
 /// A vist error -- implements ErrorType and CustomStringConvertible
-typealias VistError = protocol<ErrorProtocol, CustomStringConvertible>
+typealias VistError = Error & CustomStringConvertible
 
 /// Error function -- always rethrows the error passed to it
 ///
@@ -110,5 +110,6 @@ extension Collection where
         if !isEmpty { throw ErrorCollection(errors: Array(self)) }
     }
 }
+
 
 

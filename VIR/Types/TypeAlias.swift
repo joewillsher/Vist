@@ -69,17 +69,15 @@ extension TypeAlias {
 
 // we need a hash for the type so it can sit in the the type table set
 extension TypeAlias : Hashable {
-    
     var hashValue: Int {
         return name.hashValue
     }
 }
 
-extension TypeAlias : Equatable { }
-
-
-func == (lhs: TypeAlias, rhs: TypeAlias) -> Bool {
-    return lhs.targetType == rhs.targetType
+extension TypeAlias : Equatable {
+    static func == (lhs: TypeAlias, rhs: TypeAlias) -> Bool {
+        return lhs.targetType == rhs.targetType
+    }
 }
 
 

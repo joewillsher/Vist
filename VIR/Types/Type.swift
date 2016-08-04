@@ -77,6 +77,9 @@ func == (lhs: Type?, rhs: Type) -> Bool {
 func == (lhs: Type?, rhs: Type?) -> Bool {
     if let l = lhs, let r = rhs { return l == r } else { return false }
 }
+func != (lhs: Type?, rhs: Type?) -> Bool {
+    if let l = lhs, let r = rhs { return l != r } else { return false }
+}
 
 func != (lhs: Type?, rhs: Type) -> Bool {
     if let l = lhs { return l != rhs } else { return false }
@@ -111,4 +114,5 @@ func == (lhs: Type, rhs: Type) -> Bool {
 func != (lhs: Type, rhs: Type) -> Bool {
     return !(lhs == rhs)
 }
+
 

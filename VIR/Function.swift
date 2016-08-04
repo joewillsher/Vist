@@ -359,7 +359,8 @@ extension Module {
 // implement hash and equality for functions
 extension Function : Hashable, Equatable {
     var hashValue: Int { return name.hashValue }
+    
+    static func == (lhs: Function, rhs: Function) -> Bool { return lhs === rhs }
 }
 
-func == (lhs: Function, rhs: Function) -> Bool { return lhs === rhs }
 

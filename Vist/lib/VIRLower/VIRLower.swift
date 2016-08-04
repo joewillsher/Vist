@@ -19,18 +19,12 @@ enum IRLowerError: VistError {
 
 // Extends LLVM bool to be initialisable from bool literal, and usable
 // as condition
-extension LLVMBool : Boolean, BooleanLiteralConvertible {
+extension LLVMBool : ExpressibleByBooleanLiteral {
     
     public init(booleanLiteral value: Bool) {
         self.init(value.hashValue)
     }
-    
-    public var boolValue: Bool {
-        return self == 1
-    }
 }
-
-
 
 typealias IRGenFunction = (builder: LLVMBuilder, module: LLVMModule)
 
@@ -151,7 +145,7 @@ extension Function : VIRLower {
         for bb in blocks {
             IGF.builder.position(atEndOf: bb.loweredBlock!)
             
-            for case let inst as protocol<VIRLower, Inst> in bb.instructions {
+            for case let inst as VIRLower & Inst in bb.instructions {
                 let v = try inst.virLower(IGF: &IGF)
                 inst.updateUsesWithLoweredVal(v)
             }

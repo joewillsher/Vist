@@ -7,11 +7,12 @@
 //
 
 
-extension StructExpr {
+extension TypeDecl {
 
     /// Returns an initialiser if all objects in `self` are given an initial value
     func implicitIntialiser() -> InitialiserDecl? {
         // filter out non initilaised values, return nil if not all values have an initial value
+        let properties = self.properties.flatMap { $0.declared }
         let values = properties.filter { !($0.value is NullExpr) }.map { $0.value }
         let names = properties.map { $0.name }
         guard values.count == properties.count else { return nil }
@@ -24,9 +25,9 @@ extension StructExpr {
         }
         
         let block = BlockExpr(exprs: initialisations)
-        let body = FunctionImplementationExpr(params: [], body: block)
+        let body = FunctionBodyExpr(params: [], body: block)
         
-        let ty = DefinedFunctionType(paramType: .void, returnType: .type(name))
+        let ty = FunctionTypeRepr(paramType: .void, returnType: .type(name))
         
         return InitialiserDecl(ty: ty, impl: body, parent: self)
     }
@@ -34,12 +35,13 @@ extension StructExpr {
     /// Returns an initialiser for each element in the struct
     func memberwiseInitialiser() throws -> InitialiserDecl? {
         // filter out non initilaised values, return nil if not all values have an initial value
+        let properties = self.properties.flatMap { $0.declared }
         let names = properties.map { $0.name }
         
         guard let types = properties.optionalMap(transform: { $0.value._type }) else { throw semaError(.noMemberwiseInit, userVisible: false) }
         
         // FIXME: we dont emit memberwise inits for types which dont contain just nominal types
-        guard !types.contains({type in (type is TupleType)}) else { return nil }
+        guard !types.contains(where: {type in (type is TupleType)}) else { return nil }
         
         let typeNames = types.map { $0.explicitName }
         
@@ -53,9 +55,9 @@ extension StructExpr {
         
         let params = (0..<names.count).map { "$\($0)" }
         let block = BlockExpr(exprs: initialisations)
-        let body = FunctionImplementationExpr(params: params, body: block)
+        let body = FunctionBodyExpr(params: params, body: block)
         
-        let ty = DefinedFunctionType(paramType: DefinedType(typeNames), returnType: .type(name))
+        let ty = FunctionTypeRepr(paramType: TypeRepr(typeNames), returnType: .type(name))
         
         return InitialiserDecl(ty: ty, impl: body, parent: self)
     }

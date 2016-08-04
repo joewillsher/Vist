@@ -63,13 +63,12 @@ extension GlobalValue {
         set { }
     }
     var vir: String { return "\(name): \(globalType)" }
+    
+    static func == (lhs: GlobalValue, rhs: GlobalValue) -> Bool {
+        return lhs.globalName == rhs.globalName
+    }
 }
 extension GlobalValue : Hashable, Equatable {
     var hashValue: Int { return name.hashValue }
 }
-func == (lhs: GlobalValue, rhs: GlobalValue) -> Bool {
-    return lhs.globalName == rhs.globalName
-}
-
-
 

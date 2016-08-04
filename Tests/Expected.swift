@@ -99,7 +99,7 @@ func expectedTestCaseBlock(name: String, path: String) throws -> [String] {
 
 
 
-extension ErrorProtocol where Self : VistError {
+extension Error where Self : VistError {
     
     /// Remove coments around error message, leave just the errors 
     /// to compare with the test case comments
@@ -135,7 +135,7 @@ func getTestPrefix(path: String) throws -> String? {
 }
 
 
-struct OutputError : ErrorProtocol { let reason: String }
+struct OutputError : Error { let reason: String }
 
 /// Check that the multi line output matches
 func multiLineOutput(_ output: String, matches expected: [String]) throws -> Bool {

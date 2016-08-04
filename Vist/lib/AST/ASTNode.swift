@@ -6,13 +6,11 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-protocol ASTNode : ASTPrintable { }
-
-// use behaviour delegates (when released in swift 3) to make `let (delated) type: Type { get }`
-///
 /// AST walker node
 ///
 /// Provides common interfaces for expressions, declarations, and statements
+protocol ASTNode : ASTPrintable { }
+
 final class AST : ASTNode, ScopeNode {
     var exprs: [ASTNode]
     

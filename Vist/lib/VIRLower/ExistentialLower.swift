@@ -173,8 +173,8 @@ extension StructType {
 
 extension UnsafeMutablePointer {
     static func allocInit(value: Pointee) -> UnsafeMutablePointer<Pointee>? {
-        let v = UnsafeMutablePointer<Pointee>(allocatingCapacity: 1)
-        v.initialize(with: value)
+        let v = UnsafeMutablePointer<Pointee>.allocate(capacity: 1)
+        v.initialize(to: value)
         return v
     }
 }
@@ -182,8 +182,8 @@ extension UnsafeMutablePointer {
 extension Array {
     func copyBuffer() -> UnsafeMutablePointer<Element> {
         return withUnsafeBufferPointer { buffer in
-            let b = UnsafeMutablePointer<Element>(allocatingCapacity: count)
-            b.assignFrom(UnsafeMutablePointer(buffer.baseAddress!), count: count)
+            let b = UnsafeMutablePointer<Element>.allocate(capacity: count)
+            b.assign(from: UnsafeMutablePointer(buffer.baseAddress!), count: count)
             return b
         }
     }

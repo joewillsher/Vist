@@ -39,7 +39,6 @@ extension Collection where Iterator.Element : ASTNode {
     ///     try i.codeGen(stackFrame)
     /// }
     /// ```
-    ///
     @discardableResult
     func walkChildren<Ret>(collector: ErrorCollector? = nil, _ fn: @noescape (Iterator.Element) throws -> Ret) throws -> [Ret] {
 
@@ -133,7 +132,7 @@ class ErrorCollector {
     private final var errors: [VistError] = []
     private final var caught = false
     private final var file: StaticString, line: UInt, function: String
-    private final var uncaughtError: ErrorProtocol? = nil
+    private final var uncaughtError: Error? = nil
     
     // on init, captures scope
     // so if not thrown fatal error has helpful info
@@ -179,7 +178,7 @@ final class AsyncErrorCollector : ErrorCollector {
     
     let group = DispatchGroup()
     
-    final func addErrorSync(error: ErrorProtocol) {
+    final func addErrorSync(error: Error) {
         // TODO: Thread safety issue here
         switch error {
         case let e as VistError: self.errors.append(e)

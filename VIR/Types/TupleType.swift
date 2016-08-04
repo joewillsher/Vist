@@ -47,9 +47,9 @@ final class TupleType : Type {
 
 }
 
-extension TupleType : Equatable { }
-
-func == (lhs: TupleType, rhs: TupleType) -> Bool {
-    return lhs.members.elementsEqual(rhs.members, isEquivalent: ==)
+extension TupleType : Equatable {
+    static func == (lhs: TupleType, rhs: TupleType) -> Bool {
+        return lhs.members.elementsEqual(rhs.members, by: ==)
+    }
 }
 

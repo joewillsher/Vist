@@ -110,9 +110,10 @@ enum BuiltinType : Type {
     }
 }
 
-extension BuiltinType : Equatable { }
-
-func == (lhs: BuiltinType, rhs: BuiltinType) -> Bool {
-    return lhs.explicitName == rhs.explicitName
+extension BuiltinType : Equatable {
+    static func == (lhs: BuiltinType, rhs: BuiltinType) -> Bool {
+        return lhs.explicitName == rhs.explicitName
+    }
 }
+
 

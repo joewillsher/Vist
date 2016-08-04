@@ -28,10 +28,6 @@ struct PassManager {
             try create(pass: ConstantFoldingPass.self, runOn: function)
             try create(pass: DCEPass.self, runOn: function)
         }
-        
-        #if DEBUG
-            module.verify()
-        #endif
     }
 }
 

@@ -1,5 +1,5 @@
 //
-//  DefinedType.swift
+//  TypeRepr.swift
 //  Vist
 //
 //  Created by Josef Willsher on 06/02/2016.
@@ -7,27 +7,35 @@
 //
 
 
-/// Like DefinedType but represents a function type
-final class DefinedFunctionType {
-    let paramType: DefinedType
-    let returnType: DefinedType
+/// Like TypeRepr but represents a function type
+final class FunctionTypeRepr {
+    let paramType: TypeRepr
+    let returnType: TypeRepr
     
-    init(paramType: DefinedType, returnType: DefinedType) {
+    init(paramType: TypeRepr, returnType: TypeRepr) {
         self.paramType = paramType
         self.returnType = returnType
     }
     
     var type: FunctionType? = nil
+    
+    func params(scope: SemaScope) throws -> [Type] {
+        return try paramType.tyArr(scope: scope)
+    }
+    
+    func returnType(scope: SemaScope) throws -> Type {
+        return try returnType.typeIn(scope: scope)
+    }
 }
 
 
 /// The pre-type checked AST type. Exposes methods to calculate
 /// simple VIR types (used in Sema) for the nodes of the AST
-enum DefinedType {
+enum TypeRepr {
     case void
     case type(String)
-    indirect case tuple([DefinedType])
-    case function(DefinedFunctionType)
+    indirect case tuple([TypeRepr])
+    case function(FunctionTypeRepr)
     
     init(_ str: String) {
         self = .type(str)
@@ -37,15 +45,15 @@ enum DefinedType {
         switch strs.count {
         case 0: self = .void
         case 1: self = .type(strs[0])
-        case _: self = .tuple(strs.map(DefinedType.init))
+        case _: self = .tuple(strs.map(TypeRepr.init))
         }
     }
     
     private func tyArr(scope: SemaScope) throws -> [Type] {
         switch self {
         case .void:             return []
-        case .type, .function:  return [try typeInScope(scope: scope)]
-        case .tuple(let ts):    return try ts.flatMap { try $0.typeInScope(scope: scope) }
+        case .type, .function:  return [try typeIn(scope: scope)]
+        case .tuple(let ts):    return try ts.flatMap { try $0.typeIn(scope: scope) }
         }
     }
     
@@ -59,7 +67,7 @@ enum DefinedType {
     
     var isVoid: Bool { if case .void = self { return true } else { return false } }
     
-    func typeInScope(scope: SemaScope) throws -> Type {
+    func typeIn(scope: SemaScope) throws -> Type {
         switch self {
         case .void:
             return BuiltinType.void
@@ -76,32 +84,15 @@ enum DefinedType {
                 throw semaError(.noTypeNamed(typeName))
             }
             
-        case let .tuple(elements):
+        case .tuple(let elements):
             return elements.isEmpty ?
                 BuiltinType.void :
-                TupleType(members: try elements.map({try $0.typeInScope(scope: scope)}))
+                TupleType(members: try elements.map({try $0.typeIn(scope: scope)}))
             
-        case let .function(functionType):
+        case .function(let functionType):
             return FunctionType(params: try functionType.paramType.tyArr(scope: scope),
-                                returns: try functionType.returnType.typeInScope(scope: scope))
+                                returns: try functionType.returnType.typeIn(scope: scope))
         }
     }
 }
-
-
-
-extension DefinedFunctionType {
-    
-    func params(scope: SemaScope) throws -> [Type] {
-        return try paramType.tyArr(scope: scope)
-    }
-    
-    func returnType(scope: SemaScope) throws -> Type {
-        return try returnType.typeInScope(scope: scope)
-    }
-}
-
-
-
-
 

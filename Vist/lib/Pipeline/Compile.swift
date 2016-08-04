@@ -71,7 +71,7 @@ private func parseFiles(_ names: [String],
     let astQueue = DispatchQueue(label: "com.vist.ast-array")
     
     // collections storing thrown parse errors
-    var errors: [VistError] = [], unhandledError: ErrorProtocol? = nil
+    var errors: [VistError] = [], unhandledError: Error? = nil
     
     /// The dispatch group we put parse threads in
     let parseGroup = DispatchGroup()
@@ -205,7 +205,10 @@ func compileDocuments(
     defer {
         if !options.contains(.preserveTempFiles) { try! FileManager.default.removeItem(atPath: unoptVIRPath) }
     }
-
+    
+    #if DEBUG
+        try virModule.verify()
+    #endif
     
     // MARK: VIR Optimiser
     if options.contains(.verbose) {
@@ -215,6 +218,10 @@ func compileDocuments(
     // run optimiser
     try PassManager(module: virModule, optLevel: options.optLevel(), opts: options)
         .runPasses()
+    
+    #if DEBUG
+        try virModule.verify()
+    #endif
     
     // write out
     let optVIRPath = "\(currentDirectory)/\(file).vir"
@@ -344,9 +351,9 @@ func compileDocuments(
             [libVistRuntimePath, libVistPath, "\(file).ll"]
         // .ll -> exec
         Task.execute(exec: .clang,
-                       files: inputFiles,
-                       outputName: file,
-                       cwd: currentDirectory)
+                     files: inputFiles,
+                     outputName: file,
+                     cwd: currentDirectory)
         
         if options.contains(.buildAndRun) {
             if options.contains(.verbose) { print("\n\n-----------------------------RUN-----------------------------\n") }
@@ -392,14 +399,14 @@ func buildRuntime(debugRuntime debug: Bool) {
     
     let runtimeDirectory = "\(SOURCE_ROOT)/Vist/stdlib/runtime"
     let libVistRuntimePath = "/usr/local/lib/libvistruntime.dylib"
-        
+    
     // .cpp -> .dylib
     // to link against program
     Task.execute(exec: .clang,
-                   files: ["runtime.cpp", "Metadata.cpp", "RefcountedObject.cpp"],
-                   outputName: libVistRuntimePath,
-                   cwd: runtimeDirectory,
-                   args: "-dynamiclib", "-std=c++14", "-O3", "-lstdc++", "-includeruntime.h", debug ? "-DREFCOUNT_DEBUG" : "")
+                 files: ["runtime.cpp", "Metadata.cpp", "RefcountedObject.cpp"],
+                 outputName: libVistRuntimePath,
+                 cwd: runtimeDirectory,
+                 args: "-dynamiclib", "-std=c++14", "-O3", "-lstdc++", "-includeruntime.h", debug ? "-DREFCOUNT_DEBUG" : "")
 }
 
 func runPreprocessor(file: inout String, cwd: String) {

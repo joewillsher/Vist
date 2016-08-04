@@ -49,12 +49,63 @@ enum Token {
     
     var isValidParamToken: Bool {
         switch self {
-        case .identifier, .sqbrOpen, .openParen, openBrace, floatingPointLiteral, integerLiteral, booleanLiteral, stringLiteral: return true
+        case .identifier, .sqbrOpen, .openParen, .openBrace, .floatingPointLiteral, .integerLiteral, .booleanLiteral, .stringLiteral: return true
         default: return false
         }
     }
     var isCloseParen: Bool {
         if case .closeParen = self { return true } else { return false }
+    }
+}
+
+extension Token : Equatable {
+    static func == (lhs: Token, rhs: Token) -> Bool {
+        switch (lhs, rhs) {
+        case (.let, .let): return true
+        case (.var, .var): return true
+        case (.func, .func): return true
+        case (.return, .return): return true
+        case (.void, .void): return true
+        case (.EOF, .EOF): return true
+        case (.newLine, .newLine): return true
+        case (.if, .if): return true
+        case (.else, .else): return true
+        case (.for, .for): return true
+        case (.in, .in): return true
+        case (.while, .while): return true
+        case (.do, .do): return true
+        case (.yield, .yield): return true
+        case (.ref, .ref): return true
+        case (.type, .type): return true
+        case (.init, .init): return true
+        case (.operator, .operator): return true
+        case (.concept, .concept): return true
+        case (.assign, .assign): return true
+        case (.sqbrOpen, .sqbrOpen): return true
+        case (.sqbrClose, .sqbrClose): return true
+        case (.comma, .comma): return true
+        case (.period, .period): return true
+        case (.colon, .colon): return true
+        case (.semicolon, .semicolon): return true
+        case (.openParen, .openParen): return true
+        case (.closeParen, .closeParen): return true
+        case (.returnArrow, .returnArrow): return true
+        case (.bar, .bar): return true
+        case (.at, .at): return true
+        case (.openBrace, .openBrace): return true
+        case (.closeBrace, .closeBrace): return true
+        case (.infixOperator(let l), .infixOperator(let r)): return l == r
+        case (.prefixOperator(let l), .prefixOperator(let r)): return l == r
+        case (.postfixOperator(let l), .postfixOperator(let r)): return l == r
+        case (.identifier(let l), .identifier(let r)): return l == r
+        case (.floatingPointLiteral(let l), .floatingPointLiteral(let r)): return l == r
+        case (.integerLiteral(let l), .integerLiteral(let r)): return l == r
+        case (.booleanLiteral(let l), .booleanLiteral(let r)): return l == r
+        case (.stringLiteral(let l), .stringLiteral(let r)): return l == r
+        case (.comment(let l), .comment(let r)): return l == r
+        case (.nilLiteral, .nilLiteral): return true
+        default: return false
+        }
     }
 }
 

@@ -7,7 +7,7 @@
 //
 
 protocol ExprTypeProvider {
-    func typeForNode(scope: SemaScope) throws -> Type
+    @discardableResult func typeForNode(scope: SemaScope) throws -> Type
 }
 
 protocol StmtTypeProvider {
@@ -27,13 +27,13 @@ extension ExprTypeProvider {
 extension ASTNode {
     func typeForNode(scope: SemaScope) throws {
         if case let expr as ExprTypeProvider = self {
-            _ = try expr.typeForNode(scope: scope)
+            try expr.typeForNode(scope: scope)
         }
         else if case let stmt as StmtTypeProvider = self {
-            _ = try stmt.typeForNode(scope: scope)
+            try stmt.typeForNode(scope: scope)
         }
         else if case let stmt as DeclTypeProvider = self {
-            _ = try stmt.typeForNode(scope: scope)
+            try stmt.typeForNode(scope: scope)
         }
     }
 }

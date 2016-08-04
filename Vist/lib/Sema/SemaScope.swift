@@ -47,11 +47,9 @@ final class SemaScope {
     /// then searches parent scopes, throwing if not found
     ///
     func function(named name: String, argTypes: [Type]) throws -> (mangledName: String, type: FunctionType) {
-        
         // lookup from stdlib/builtin
         if let stdLibFunction = StdLib.function(name: name, args: argTypes) { return stdLibFunction }
         else if let builtinFunction = Builtin.function(name: name, argTypes: argTypes), isStdLib { return builtinFunction }
-//        else if let runtime = Runtime.function(name: name, argTypes: argTypes), isStdLib { return runtime }
             // otherwise we search the user scopes recursively
         else { return try recursivelyLookupFunction(named: name, argTypes: argTypes) }
     }
@@ -138,6 +136,13 @@ final class SemaScope {
     static func nonCapturingScope(parent: SemaScope, returnType: Type? = BuiltinType.void, isYield: Bool = false, semaContext: Type? = nil) -> SemaScope {
         return SemaScope(returnType: returnType, isStdLib: parent.isStdLib, semaContext: semaContext)
     }
+    
+    static func capturingScope(parent: SemaScope, overrideReturnType: Optional<Type?> = nil) -> SemaScope {
+        return SemaScope(parent: parent,
+                         returnType: overrideReturnType ?? parent.returnType,
+                         isYield: parent.isYield,
+                         semaContext: parent.semaContext)
+    }
 }
 
 
@@ -148,8 +153,8 @@ extension Collection where
     /// - returns: the mangled name and the type of the matching function
     func function(havingUnmangledName raw: String, paramTypes types: [Type]) -> (mangledName: String, type: FunctionType)? {
         return first(where: { k, v in
-            k.demangleName() == raw
-                && v.params.elementsEqual(types, isEquivalent: ==)
+            k.demangleName() == raw &&
+                v.params.elementsEqual(types, by: ==)
         }).map { f in
             return (mangledName: raw.mangle(type: f.value), type: f.value)
         }

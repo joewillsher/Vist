@@ -7,43 +7,131 @@
 //
 
 /// - Declaration / Decl
-protocol Decl: ASTNode, DeclTypeProvider, StmtEmitter {}
+
+protocol Decl : ASTNode, DeclTypeProvider, StmtEmitter { }
+
+typealias ConstrainedType = (name: String, constraints: [String], parentName: String)
 
 
-final class VariableDecl: Decl, StructMemberExpr {
+protocol TypeMemberVariableDecl : class, Decl {
+    weak var parent: NominalTypeDecl? { get set }
+    var declared: [VariableDecl] { get }
+}
+
+protocol NominalTypeDecl : class, Decl {
+    var name: String { get }
+    var declaredType: NominalType? { get }
+}
+
+final class TypeDecl: ScopeNode, NominalTypeDecl, LibraryTopLevel {
     let name: String
-    let aType: DefinedType?
+    let properties: [TypeMemberVariableDecl]
+    var methods: [FuncDecl], initialisers: [InitialiserDecl]
+    let attrs: [AttributeExpr]
+    let byRef: Bool
+    
+    let genericParameters: [ConstrainedType]?
+    let concepts: [String]
+    
+    init(name: String,
+         attrs: [AttributeExpr],
+         properties: [TypeMemberVariableDecl],
+         methods: [FuncDecl],
+         initialisers: [InitialiserDecl],
+         genericParameters: [ConstrainedType]?,
+         concepts: [String],
+         byRef: Bool) {
+        self.name = name
+        self.properties = properties
+        self.methods = methods
+        self.initialisers = initialisers
+        self.attrs = attrs
+        self.genericParameters = genericParameters
+        self.byRef = byRef
+        self.concepts = concepts
+    }
+    
+    var type: StructType? = nil
+    var declaredType: NominalType? { return type as? NominalType }
+    
+    var childNodes: [ASTNode] {
+        return properties.map { $0 as ASTNode }
+            + methods as [ASTNode]
+            + initialisers as [ASTNode]
+    }
+}
+
+final class ConceptDecl : TypedExpr, ScopeNode, NominalTypeDecl, LibraryTopLevel {
+    let name: String
+    let requiredProperties: [TypeMemberVariableDecl]
+    let requiredMethods: [FuncDecl]
+    
+    init(name: String, requiredProperties: [TypeMemberVariableDecl], requiredMethods: [FuncDecl]) {
+        self.name = name
+        self.requiredProperties = requiredProperties
+        self.requiredMethods = requiredMethods
+    }
+    
+    var type: ConceptType? = nil
+    var declaredType: NominalType? { return type as? NominalType }
+    
+    var childNodes: [ASTNode] {
+        return requiredProperties.flatMap{$0.declared} as [ASTNode]
+             + requiredMethods as [ASTNode]
+    }
+}
+
+final class VariableDecl : Decl, TypeMemberVariableDecl {
+    let name: String
+    let typeRepr: TypeRepr?
     let isMutable: Bool
     var value: Expr
     
-    init(name: String, type: DefinedType?, isMutable: Bool, value: Expr) {
+    init(name: String, typeRepr: TypeRepr?, isMutable: Bool, value: Expr) {
         self.name = name
-        self.aType = type
+        self.typeRepr = typeRepr
         self.isMutable = isMutable
         self.value = value
     }
+    
+    /// `self` if the function is a type member decl
+    var parent: NominalTypeDecl? = nil
+    
+    var declared: [VariableDecl] { return [self] }
 }
 
-final class VariableDeclGroup: Decl, StructMemberExpr {
-    var variableDecls: [VariableDecl]
+final class VariableGroupDecl : Decl, TypeMemberVariableDecl {
+    var declared: [VariableDecl]
     
-    init(variableDecls: [VariableDecl]) {
-        self.variableDecls = variableDecls
+    init(declared: [VariableDecl]) {
+        self.declared = declared
+    }
+    
+    /// `self` if the function is a type member decl
+    weak var parent: NominalTypeDecl? = nil {
+        willSet(parent) {
+            for child in declared {
+                child.parent = parent
+            }
+        }
     }
 }
 
-final class FuncDecl: Decl, StructMemberExpr, LibraryTopLevel {
+final class FuncDecl : Decl, LibraryTopLevel {
     let name: String
-    let fnType: DefinedFunctionType
-    let impl: FunctionImplementationExpr?
+    let typeRepr: FunctionTypeRepr
+    let impl: FunctionBodyExpr?
     let attrs: [FunctionAttributeExpr]
-    let genericParameters: [ConstrainedType]
+    let genericParameters: [ConstrainedType]?
     
-    init(name: String, type: DefinedFunctionType, impl: FunctionImplementationExpr?, attrs: [FunctionAttributeExpr], genericParameters: [ConstrainedType]) {
+    init(name: String,
+         typeRepr: FunctionTypeRepr,
+         impl: FunctionBodyExpr?,
+         attrs: [FunctionAttributeExpr],
+         genericParameters: [ConstrainedType]?) {
         self.name = name
-        self.fnType = type
+        self.typeRepr = typeRepr
         self.impl = impl
-        self.mangledName = name
         self.attrs = attrs
         self.genericParameters = genericParameters
     }
@@ -53,31 +141,44 @@ final class FuncDecl: Decl, StructMemberExpr, LibraryTopLevel {
         // its a method called 'generate' with no params & a non void return type
         return name == "generate" &&
             (parent != nil) &&
-            fnType.paramType.typeNames().isEmpty &&
-            !fnType.returnType.isVoid
+            typeRepr.paramType.typeNames().isEmpty &&
+            !typeRepr.returnType.isVoid
     }
     
-    var mangledName: String
+    var mangledName: String?
     
     /// `self` if the function is a member function
-    var parent: TypeExpr? = nil
+    weak var parent: NominalTypeDecl? = nil
 }
 
 
-
-final class InitialiserDecl: Decl, StructMemberExpr {
-    let ty: DefinedFunctionType
-    let impl: FunctionImplementationExpr?
-    weak var parent: StructExpr?
+final class FunctionBodyExpr : Expr {
+    var params: [String]
+    let body: BlockExpr
     
-    init(ty: DefinedFunctionType, impl: FunctionImplementationExpr?, parent: StructExpr?) {
-        self.ty = ty
-        self.impl = impl
-        self.parent = parent
-        self.mangledName = ""
+    init(params: [String], body: BlockExpr) {
+        self.params = params
+        self.body = body
     }
     
-    var mangledName: String
+    var _type: Type? = nil
+}
+
+final class InitialiserDecl : Decl {
+    let typeRepr: FunctionTypeRepr
+    let impl: FunctionBodyExpr?
+    
+    init(ty: FunctionTypeRepr,
+         impl: FunctionBodyExpr?,
+         parent: NominalTypeDecl?) {
+        self.typeRepr = ty
+        self.impl = impl
+        self.parent = parent
+    }
+    
+    var mangledName: String?
+    
+    weak var parent: NominalTypeDecl? = nil
 }
 
 

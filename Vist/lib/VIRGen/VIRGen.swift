@@ -28,17 +28,17 @@ protocol LibraryTopLevel: ASTNode {}
 
 extension Expr {
     func emitRValue(module: Module, scope: Scope) throws -> Accessor {
-        throw VIRError.notGenerator
+        throw VIRError.notGenerator(self.dynamicType)
     }
 }
 extension Stmt {
     func emitStmt(module: Module, scope: Scope) throws {
-        throw VIRError.notGenerator
+        throw VIRError.notGenerator(self.dynamicType)
     }
 }
 extension Decl {
     func emitStmt(module: Module, scope: Scope) throws {
-        throw VIRError.notGenerator
+        throw VIRError.notGenerator(self.dynamicType)
     }
 }
 extension ASTNode {
@@ -175,6 +175,15 @@ extension VariableDecl : ValueEmitter {
     }
 }
 
+extension VariableGroupDecl : StmtEmitter {
+    
+    func emitStmt(module: Module, scope: Scope) throws {
+        for decl in declared {
+            _ = try decl.emitRValue(module: module, scope: scope)
+        }
+    }
+}
+
 extension FunctionCall/*: VIRGenerator*/ {
     
     func argOperands(module: Module, scope: Scope) throws -> [Operand] {
@@ -221,7 +230,8 @@ extension FuncDecl : StmtEmitter {
         
     func emitStmt(module: Module, scope: Scope) throws {
         
-        guard let type = fnType.type else { throw VIRError.noType(#file) }
+        guard let type = typeRepr.type else { throw VIRError.noType(#file) }
+        guard let mangledName = self.mangledName else { throw VIRError.noMangledName }
         
         // if has body
         guard let impl = impl else {
@@ -282,7 +292,7 @@ extension FuncDecl : StmtEmitter {
 
         // TODO: look at exit nodes of block, not just place we're left off
         // add implicit `return ()` for a void function without a return expression
-        if type.returns == BuiltinType.void && !function.instructions.contains({$0 is ReturnInst}) {
+        if type.returns == BuiltinType.void && !function.instructions.contains(where: {$0 is ReturnInst}) {
             try fnScope.releaseVariables(deleting: true)
             try module.builder.buildReturnVoid()
         }
@@ -451,7 +461,7 @@ extension ConditionalStmt : StmtEmitter {
             
             // once we're done in success, break to the exit and
             // move into the fail for the next round
-            if !ifBlock.instructions.contains({$0.instIsTerminator}) {
+            if !ifBlock.instructions.contains(where: {$0.instIsTerminator}) {
                 try module.builder.buildBreak(to: exitBlock)
                 module.builder.insertPoint.block = failBlock
             }
@@ -500,9 +510,6 @@ extension ForInLoopStmt : StmtEmitter {
      
      The `yield` applies this closure. The closure can also be thick, this allows
      it to capture state from the loop's scope.
-     
-     TODO:
-     Returning from the loop requires longjmping out -- this is gross
      */
     func emitStmt(module: Module, scope: Scope) throws {
         
@@ -547,14 +554,13 @@ extension ForInLoopStmt : StmtEmitter {
         
         // require that we inline the loop thunks early
         loopClosure.thunk.inlineRequirement = .always
-        loopClosure.thunk.inlineRequirement = .always
+        generatorClosure.thunk.inlineRequirement = .always
         
         // get the instance of the generator
         let generator = try self.generator.emitRValue(module: module, scope: scope).referenceBacked().aggregateReference()
         
         // call the generator function from loop position
         // apply the scope it requests
-        
         let call = try module.builder.buildFunctionCall(function: generatorClosure.thunk,
                                                         args: [PtrOperand(generator), loopClosure.thunk.buildFunctionPointer()])
         
@@ -569,7 +575,6 @@ extension ForInLoopStmt : StmtEmitter {
         }
         
         try loopScope.releaseVariables(deleting: true)
-
     }
 }
 
@@ -620,7 +625,7 @@ extension WhileLoopStmt : StmtEmitter {
     }
 }
 
-extension StructExpr : ValueEmitter {
+extension TypeDecl : ValueEmitter {
     
     func emitRValue(module: Module, scope: Scope) throws -> Accessor {
         
@@ -632,9 +637,9 @@ extension StructExpr : ValueEmitter {
             try i.emitStmt(module: module, scope: scope)
         }
         
-        for m in methods {
-            guard let t = m.fnType.type else { fatalError() }
-            try module.getOrInsertFunction(named: m.mangledName, type: t, attrs: m.attrs)
+        for method in methods {
+            guard let t = method.typeRepr.type, let mangledName = method.mangledName else { fatalError() }
+            try module.getOrInsertFunction(named: mangledName, type: t, attrs: method.attrs)
         }
         for m in methods {
             try m.emitStmt(module: module, scope: scope)
@@ -644,7 +649,7 @@ extension StructExpr : ValueEmitter {
     }
 }
 
-extension ConceptExpr : ValueEmitter {
+extension ConceptDecl : ValueEmitter {
 
     func emitRValue(module: Module, scope: Scope) throws -> Accessor {
         
@@ -664,7 +669,11 @@ extension ConceptExpr : ValueEmitter {
 extension InitialiserDecl : StmtEmitter {
     
     func emitStmt(module: Module, scope: Scope) throws {
-        guard let initialiserType = ty.type, let selfType = parent?.type else { throw VIRError.noType(#file) }
+        guard let initialiserType = typeRepr.type,
+            case let selfType as StructType = parent?.declaredType,
+            let mangledName = self.mangledName else {
+                throw VIRError.noType(#file)
+        }
         
         // if has body
         guard let impl = impl else {
@@ -744,9 +753,9 @@ extension MethodCallExpr : ValueEmitter {
         
         // build self and args' values
         let args = try argOperands(module: module, scope: scope)
-        let selfVar = try object.emitRValue(module: module, scope: scope)
-        try selfVar.retain()
-        let selfRef = try selfVar.referenceBacked().aggregateReference()
+        let selfVarAccessor = try object.emitRValue(module: module, scope: scope)
+        try selfVarAccessor.retain()
+        let selfRef = try selfVarAccessor.referenceBacked().aggregateReference()
         
         guard let fnType = fnType else { fatalError() }
         

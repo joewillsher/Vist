@@ -371,9 +371,9 @@ struct LLVMModule : Dumpable {
     }
     
     func validate() throws {
-        var errorMessage: UnsafeMutablePointer<Int8>? = UnsafeMutablePointer(allocatingCapacity: 1)
+        var errorMessage: UnsafeMutablePointer<Int8>? = UnsafeMutablePointer.allocate(capacity: 1)
         guard let module = module else { fatalError() }
-        guard !LLVMVerifyModule(module, LLVMReturnStatusAction, &errorMessage) else {
+        guard LLVMVerifyModule(module, LLVMReturnStatusAction, &errorMessage) == false else {
             #if DEBUG
                 dump()
             #endif
@@ -448,7 +448,7 @@ struct LLVMModule : Dumpable {
         precondition(path.hasSuffix(".bc"))
         
         var buffer: LLVMMemoryBufferRef? = nil
-        var str: UnsafeMutablePointer<Int8>? = UnsafeMutablePointer(allocatingCapacity: 1)
+        var str: UnsafeMutablePointer<Int8>? = UnsafeMutablePointer.allocate(capacity: 1)
         
         var runtimeModule = LLVMModuleCreateWithName(name)
         
@@ -583,11 +583,11 @@ struct LLVMGlobalValue : Dumpable {
     }
     
     var hasUnnamedAddr: Bool {
-        get { return LLVMHasUnnamedAddr(value._value).boolValue }
+        get { return LLVMHasUnnamedAddr(value._value) == true }
         nonmutating set { LLVMSetUnnamedAddr(value._value, LLVMBool(booleanLiteral: newValue)) }
     }
     var isExternallyInitialised: Bool {
-        get { return LLVMIsExternallyInitialized(value._value).boolValue }
+        get { return LLVMIsExternallyInitialized(value._value) == true }
         nonmutating set { LLVMSetExternallyInitialized(value._value, LLVMBool(booleanLiteral: newValue)) }
     }
     var initialiser: LLVMValue {

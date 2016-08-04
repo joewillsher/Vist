@@ -45,11 +45,10 @@ extension YieldStmt : StmtTypeProvider {
 extension ConditionalStmt : StmtTypeProvider {
     
     func typeForNode(scope: SemaScope) throws {
-        
         // call on child `ElseIfBlockExpressions`
         for statement in statements {
             // inner scopes
-            let ifScope = SemaScope(parent: scope, returnType: scope.returnType)
+            let ifScope = SemaScope.capturingScope(parent: scope)
             try statement.typeForNode(scope: ifScope)
         }
     }
@@ -72,7 +71,9 @@ extension ElseIfBlockStmt: StmtTypeProvider {
         if condition == nil { return }
         
         // otherwise make sure its a Bool
-        guard let condition = c, condition == StdLib.boolType else { throw semaError(.nonBooleanCondition) }
+        guard let condition = c, condition == StdLib.boolType else {
+            throw semaError(.nonBooleanCondition)
+        }
     }
     
 }
@@ -88,12 +89,17 @@ extension ForInLoopStmt: StmtTypeProvider {
     func typeForNode(scope: SemaScope) throws {
         
         // scopes for inner loop
-        let loopScope = SemaScope(parent: scope, returnType: scope.returnType)
+        let loopScope = SemaScope.capturingScope(parent: scope)
         let generator = try self.generator.typeForNode(scope: scope)
         
         // check its a generator, and the return type is the loop variable type
-        guard case let storage as NominalType = generator, let generatorFunctionType = storage.generatorFunction(), let yieldType = generatorFunctionType.yieldType
-            else { throw semaError(.notGenerator(generator)) }
+        guard
+            case let storage as NominalType = generator,
+            let generatorFunctionType = storage.generatorFunction(),
+            let yieldType = generatorFunctionType.yieldType
+            else {
+                throw semaError(.notGenerator(generator))
+        }
         
         // add bound name to scopes
         loopScope.addVariable(variable: (type: yieldType, mutable: false, isImmutableCapture: false), name: binded.name)
@@ -114,7 +120,7 @@ extension WhileLoopStmt: StmtTypeProvider {
     func typeForNode(scope: SemaScope) throws {
         
         // scopes for inner loop
-        let loopScope = SemaScope(parent: scope, returnType: scope.returnType, isYield: scope.isYield)
+        let loopScope = SemaScope.capturingScope(parent: scope)
         
         // gen types for iterator
         guard try condition.typeForNode(scope: scope) == StdLib.boolType else { throw semaError(.nonBooleanCondition) }

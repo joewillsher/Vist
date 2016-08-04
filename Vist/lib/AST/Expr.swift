@@ -16,11 +16,11 @@ protocol TypedExpr : Expr, Typed {}
 
 final class BlockExpr : TypedExpr, ScopeNode {
     var exprs: [ASTNode]
-    var variables: [String]
+    var parameters: [String]
     
-    init(exprs: [ASTNode], variables: [String] = []) {
+    init(exprs: [ASTNode], parameters: [String] = []) {
         self.exprs = exprs
-        self.variables = variables
+        self.parameters = parameters
     }
     
     var type: FunctionType? = nil
@@ -209,7 +209,7 @@ final class PostfixExpr: Expr {
 //  MARK:                                               Functions
 //-------------------------------------------------------------------------------------------------------------------------
 
-final class FunctionCallExpr: Expr, FunctionCall {
+final class FunctionCallExpr : Expr, FunctionCall {
     let name: String
     let args: TupleExpr
     
@@ -226,20 +226,7 @@ final class FunctionCallExpr: Expr, FunctionCall {
     var _type: Type? = nil
 }
 
-
-final class FunctionImplementationExpr: Expr {
-    var params: [String]
-    let body: BlockExpr
-    
-    init(params: [String], body: BlockExpr) {
-        self.params = params
-        self.body = body
-    }
-    
-    var _type: Type? = nil
-}
-
-final class TupleMemberLookupExpr: LookupExpr {
+final class TupleMemberLookupExpr : LookupExpr {
     let index: Int
     let object: ChainableExpr
     
@@ -263,7 +250,7 @@ final class TupleMemberLookupExpr: LookupExpr {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-final class ArrayExpr: ChainableExpr, Typed {
+final class ArrayExpr : ChainableExpr, Typed {
     
     let arr: [Expr]
     
@@ -295,76 +282,9 @@ final class ArraySubscriptExpr: ChainableExpr {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-protocol StructMemberExpr {
-}
-protocol TypeExpr: Expr {
-    var name: String { get }
-}
 
 
-
-// TODO: These really shouldn't be Exprs
-
-typealias ConstrainedType = (name: String, constraints: [String], parentName: String)
-
-final class StructExpr: Typed, ScopeNode, TypeExpr, LibraryTopLevel {
-    let name: String
-    let properties: [VariableDecl]
-    let methods: [FuncDecl]
-    var initialisers: [InitialiserDecl]
-    let attrs: [AttributeExpr]
-    let byRef: Bool
-    
-    let genericParameters: [ConstrainedType]
-    let concepts: [String]
-    
-    init(name: String,
-         properties: [VariableDecl],
-         methods: [FuncDecl],
-         initialisers: [InitialiserDecl],
-         attrs: [AttributeExpr],
-         genericParameters: [ConstrainedType],
-         concepts: [String],
-         byRef: Bool) {
-        self.name = name
-        self.properties = properties
-        self.methods = methods
-        self.initialisers = initialisers
-        self.attrs = attrs
-        self.genericParameters = genericParameters
-        self.byRef = byRef
-        self.concepts = concepts
-    }
-    
-    var type: StructType? = nil
-    
-    var childNodes: [ASTNode] {
-        return properties.mapAs(ASTNode.self) + methods.mapAs(ASTNode.self) + initialisers.mapAs(ASTNode.self)
-    }
-}
-
-final class ConceptExpr: TypedExpr, ScopeNode, TypeExpr, LibraryTopLevel {
-    let name: String
-    let requiredProperties: [VariableDecl]
-    let requiredMethods: [FuncDecl]
-    
-    init(name: String, requiredProperties: [VariableDecl], requiredMethods: [FuncDecl]) {
-        self.name = name
-        self.requiredProperties = requiredProperties
-        self.requiredMethods = requiredMethods
-    }
-    
-    var type: ConceptType? = nil
-    
-    var childNodes: [ASTNode] {
-        return requiredProperties.mapAs(ASTNode.self) + requiredMethods.mapAs(ASTNode.self)
-    }
-    
-}
-
-
-
-final class MethodCallExpr: ChainableExpr, FunctionCall {
+final class MethodCallExpr : ChainableExpr, FunctionCall {
     let name: String
     let object: ChainableExpr
     let args: TupleExpr
@@ -384,7 +304,7 @@ final class MethodCallExpr: ChainableExpr, FunctionCall {
     var _type: Type? = nil
 }
 
-final class PropertyLookupExpr: LookupExpr {
+final class PropertyLookupExpr : LookupExpr {
     let propertyName: String
     let object: ChainableExpr
     
@@ -405,12 +325,12 @@ final class PropertyLookupExpr: LookupExpr {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-struct NullExpr: Expr {
+struct NullExpr : Expr {
     var _type: Type? = BuiltinType.null
 }
 
 
-final class TupleExpr: ChainableExpr {
+final class TupleExpr : ChainableExpr {
     let elements: [Expr]
     
     init(elements: [Expr]) {
@@ -429,7 +349,7 @@ final class TupleExpr: ChainableExpr {
     var _type: Type? = nil
 }
 
-struct CommentExpr: Expr {
+struct CommentExpr : Expr {
     let str: String
     init(str: String) {
         self.str = str
@@ -438,7 +358,7 @@ struct CommentExpr: Expr {
     var _type: Type? = nil
 }
 
-final class VoidExpr: TypedExpr {
+final class VoidExpr : TypedExpr {
     var type: BuiltinType? = .void
 }
 
