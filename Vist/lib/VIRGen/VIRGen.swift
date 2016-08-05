@@ -666,7 +666,7 @@ extension ConceptDecl : ValueEmitter {
 
 }
 
-extension InitialiserDecl : StmtEmitter {
+extension InitDecl : StmtEmitter {
     
     func emitStmt(module: Module, scope: Scope) throws {
         guard let initialiserType = typeRepr.type,

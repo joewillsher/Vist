@@ -157,7 +157,7 @@ extension ConceptDecl : ExprTypeProvider {
 
 
 
-extension InitialiserDecl : DeclTypeProvider {
+extension InitDecl : DeclTypeProvider {
     
     func typeForNode(scope: SemaScope) throws {
         
@@ -170,10 +170,10 @@ extension InitialiserDecl : DeclTypeProvider {
         let params = try typeRepr.params(scope: scope)
         
         let initialiserFunctionType = FunctionType(params: params, returns: parentType)
-        self.mangledName = parentName.mangle(type: initialiserFunctionType)
+        mangledName = parentName.mangle(type: initialiserFunctionType)
+        typeRepr.type = initialiserFunctionType
         
         scope.addFunction(name: parentName, type: initialiserFunctionType)
-        typeRepr.type = initialiserFunctionType
         
         guard let impl = self.impl else {
             return // if no body, we're done

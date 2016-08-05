@@ -26,7 +26,7 @@ protocol NominalTypeDecl : class, Decl {
 final class TypeDecl: ScopeNode, NominalTypeDecl, LibraryTopLevel {
     let name: String
     let properties: [TypeMemberVariableDecl]
-    var methods: [FuncDecl], initialisers: [InitialiserDecl]
+    var methods: [FuncDecl], initialisers: [InitDecl]
     let attrs: [AttributeExpr]
     let byRef: Bool
     
@@ -37,7 +37,7 @@ final class TypeDecl: ScopeNode, NominalTypeDecl, LibraryTopLevel {
          attrs: [AttributeExpr],
          properties: [TypeMemberVariableDecl],
          methods: [FuncDecl],
-         initialisers: [InitialiserDecl],
+         initialisers: [InitDecl],
          genericParameters: [ConstrainedType]?,
          concepts: [String],
          byRef: Bool) {
@@ -164,16 +164,19 @@ final class FunctionBodyExpr : Expr {
     var _type: Type? = nil
 }
 
-final class InitialiserDecl : Decl {
+final class InitDecl : Decl {
     let typeRepr: FunctionTypeRepr
     let impl: FunctionBodyExpr?
+    let isImplicit: Bool
     
     init(ty: FunctionTypeRepr,
          impl: FunctionBodyExpr?,
-         parent: NominalTypeDecl?) {
+         parent: NominalTypeDecl?,
+         isImplicit: Bool) {
         self.typeRepr = ty
         self.impl = impl
         self.parent = parent
+        self.isImplicit = isImplicit
     }
     
     var mangledName: String?

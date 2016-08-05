@@ -61,7 +61,7 @@ extension NominalType {
         return try members[index(ofMemberNamed: name)].isMutable
     }
     func methodType(methodNamed name: String, argTypes types: [Type]) throws -> FunctionType {
-        let t =  methods[try index(ofMethodNamed: name, argTypes: types)]
+        let t = try methods[index(ofMethodNamed: name, argTypes: types)]
         return t.type.asMethod(withSelf: self, mutating: t.mutating)
     }
     

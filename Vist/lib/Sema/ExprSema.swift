@@ -235,13 +235,19 @@ extension ArrayExpr : ExprTypeProvider {
     func typeForNode(scope: SemaScope) throws -> Type {
         
         // element types
-        let types = try arr.map { el in try el.typeForNode(scope: scope) }
+        let types = try arr.map { el in
+            try el.typeForNode(scope: scope)
+        }
         
         // make sure array is homogeneous
-        guard !types.contains(where: {types.first != $0}) else { throw semaError(.heterogenousArray(types)) }
+        guard !types.contains(where: {types.first != $0}) else {
+            throw semaError(.heterogenousArray(types))
+        }
         
         // get element type and assign to self
-        guard let elementType = types.first else { throw semaError(.emptyArray) }
+        guard let elementType = types.first else {
+            throw semaError(.emptyArray)
+        }
         self.elType = elementType
         
         // assign array type to self and return
@@ -257,10 +263,15 @@ extension ArraySubscriptExpr : ExprTypeProvider {
     func typeForNode(scope: SemaScope) throws -> Type {
         
         // make sure its an array
-        guard case let v as VariableExpr = arr, case BuiltinType.array(let type, _)? = scope.variable(named: v.name)?.type else { throw semaError(.cannotSubscriptNonArrayVariable) }
+        guard case let v as VariableExpr = arr,
+            case BuiltinType.array(let type, _)? = scope.variable(named: v.name)?.type else {
+            throw semaError(.cannotSubscriptNonArrayVariable)
+        }
         
         // gen type for subscripting value
-        guard try index.typeForNode(scope: scope) == StdLib.intType else { throw semaError(.nonIntegerSubscript) }
+        guard try index.typeForNode(scope: scope) == StdLib.intType else {
+            throw semaError(.nonIntegerSubscript)
+        }
         
         // assign type to self and return
         self._type = type
@@ -294,7 +305,9 @@ extension TupleMemberLookupExpr : ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Type {
         
-        guard case let objType as TupleType = try object.typeForNode(scope: scope) else { throw semaError(.noTypeForTuple, userVisible: false) }
+        guard case let objType as TupleType = try object.typeForNode(scope: scope) else {
+            throw semaError(.noTypeForTuple, userVisible: false)
+        }
         
         let propertyType = try objType.elementType(at: index)
         self._type = propertyType

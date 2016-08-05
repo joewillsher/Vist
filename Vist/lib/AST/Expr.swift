@@ -54,7 +54,7 @@ final class ClosureExpr : TypedExpr, ScopeNode {
 //  MARK:                                               Literals
 //-------------------------------------------------------------------------------------------------------------------------
 
-final class FloatingPointLiteral: Typed, ChainableExpr {
+final class FloatingPointLiteral : Typed, ChainableExpr {
     let val: Double
     var size: UInt32 = 64
     var explicitType: String {
@@ -68,7 +68,7 @@ final class FloatingPointLiteral: Typed, ChainableExpr {
     var type: StructType? = nil
 }
 
-final class IntegerLiteral: Typed, ChainableExpr {
+final class IntegerLiteral : Typed, ChainableExpr {
     let val: Int
     var size: UInt32
     var explicitType: String {
@@ -83,7 +83,7 @@ final class IntegerLiteral: Typed, ChainableExpr {
     var type: StructType? = nil
 }
 
-final class BooleanLiteral: Typed, ChainableExpr {
+final class BooleanLiteral : Typed, ChainableExpr {
     let val: Bool
     
     init(val: Bool) {
@@ -93,7 +93,7 @@ final class BooleanLiteral: Typed, ChainableExpr {
     var type: StructType? = nil
 }
 
-final class StringLiteral: TypedExpr {
+final class StringLiteral : TypedExpr {
     let str: String
     var count: Int { return str.characters.count }
     
@@ -113,7 +113,7 @@ final class StringLiteral: TypedExpr {
 /// A variable lookup Expr
 ///
 /// Generic over the variable type, use AnyExpr if this is not known
-final class VariableExpr: ChainableExpr {
+final class VariableExpr : ChainableExpr {
     let name: String
     
     init(name: String) {
@@ -123,14 +123,14 @@ final class VariableExpr: ChainableExpr {
     var _type: Type? = nil
 }
 
-protocol ChainableExpr: Expr {
+protocol ChainableExpr : Expr {
 }
-protocol LookupExpr: ChainableExpr {
+protocol LookupExpr : ChainableExpr {
     var object: ChainableExpr { get }
 }
 
 
-final class MutationExpr: Expr {
+final class MutationExpr : Expr {
     let object: ChainableExpr
     let value: Expr
     
@@ -150,7 +150,7 @@ final class MutationExpr: Expr {
 //  MARK:                                               Operators
 //-------------------------------------------------------------------------------------------------------------------------
 
-protocol FunctionCall: class, Expr, _Typed {
+protocol FunctionCall : class, Expr, _Typed {
     var name: String { get }
     var argArr: [Expr] { get }
     var _type: Type? { get set }
@@ -159,7 +159,7 @@ protocol FunctionCall: class, Expr, _Typed {
     var fnType: FunctionType? { get set }
 }
 
-final class BinaryExpr: FunctionCall {
+final class BinaryExpr : FunctionCall {
     let op: String
     let lhs: Expr, rhs: Expr
     
@@ -178,7 +178,7 @@ final class BinaryExpr: FunctionCall {
     var _type: Type? = nil
 }
 
-final class PrefixExpr: Expr {
+final class PrefixExpr : Expr {
     let op: String
     let expr: Expr
     
@@ -190,7 +190,7 @@ final class PrefixExpr: Expr {
     var _type: Type? = nil
 }
 
-final class PostfixExpr: Expr {
+final class PostfixExpr : Expr {
     let op: String
     let expr: Expr
     
@@ -262,7 +262,7 @@ final class ArrayExpr : ChainableExpr, Typed {
     var type: BuiltinType? = nil
 }
 
-final class ArraySubscriptExpr: ChainableExpr {
+final class ArraySubscriptExpr : ChainableExpr {
     let arr: Expr
     let index: Expr
     

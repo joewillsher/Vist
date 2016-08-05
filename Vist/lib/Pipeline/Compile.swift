@@ -166,7 +166,6 @@ func compileDocuments(
         AST(exprs: i.exprs + x.exprs)
     }
     
-    if options.contains(.dumpAST) { ast.dump(); return }
     if options.contains(.verbose) { ast.dump() }
     
     
@@ -178,11 +177,9 @@ func compileDocuments(
     let globalScope = SemaScope.globalScope(isStdLib: options.contains(.parseStdLib))
     
     try ast.sema(globalScope: globalScope)
-    if options.contains(.dumpAST) {
-        ast.dump()
-        return
-    }
     
+    if options.contains(.dumpAST) { ast.dump(); return }
+    if options.contains(.verbose) { ast.dump() }
     
     // MARK: VIR Gen
     if options.contains(.verbose) {

@@ -44,21 +44,25 @@ final class Parser {
         self.isStdLib = isStdLib
         self.attrs = []
     }
-
-    private var index = 0
-    private let tokensWithPos: [(Token, SourceLoc)]
     
-    private var exprs = [ASTNode]()
+    static func parse(withTokens toks: [(Token, SourceLoc)], isStdLib: Bool = false) throws -> AST {
+        return try Parser(tokens: toks, isStdLib: isStdLib).parse()
+    }
     
-    private var tokens: [Token]     { return tokensWithPos.map{$0.0} }
-    private var currentToken: Token { return tokens[index] }
-    private var currentPos: Pos     { return tokensWithPos.map{$0.1.range.start}[index] }
+    fileprivate var index = 0
+    fileprivate let tokensWithPos: [(Token, SourceLoc)]
     
-    private let isStdLib: Bool
+    fileprivate var exprs = [ASTNode]()
     
-    private var attrs: [AttributeExpr]
+    fileprivate var tokens: [Token]     { return tokensWithPos.map{$0.0} }
+    fileprivate var currentToken: Token { return tokens[index] }
+    fileprivate var currentPos: Pos     { return tokensWithPos.map{$0.1.range.start}[index] }
     
-    private var precedences: [String: Int] = [
+    fileprivate let isStdLib: Bool
+    
+    fileprivate var attrs: [AttributeExpr]
+    
+    fileprivate var precedences: [String: Int] = [
         "<": 30,
         ">": 30,
         "<=": 30,
@@ -81,10 +85,10 @@ final class Parser {
         "~&": 95,
     ]
     
-    var diag = Diagnostics()
+    fileprivate var diag = Diagnostics()
     
     /// Consume `n` tokens
-    @discardableResult private func consumeToken(_ n: Int = 1) -> Token {
+    @discardableResult fileprivate func consumeToken(_ n: Int = 1) -> Token {
         if n == 0 { return currentToken }
         index += 1
         if case .newLine = currentToken, !considerNewLines {
@@ -95,7 +99,7 @@ final class Parser {
     
     /// Consume the current token if it matches `token`
     /// - returns: Whether the token matched
-    private func consumeIf(_ token: Token) -> Bool {
+    fileprivate func consumeIf(_ token: Token) -> Bool {
         guard token == currentToken else {
             return false
         }
@@ -104,37 +108,53 @@ final class Parser {
     }
     /// Consume the current tokens if they match `tokens`
     /// - returns: Whether the series of tokens matched
-    private func consumeIf(_ tokens: Token...) -> Bool {
+    fileprivate func consumeIf(_ tokens: Token...) -> Bool {
+        // Check they all match
+        for (dist, token) in tokens.enumerated() {
+            guard inspectNextToken(lookahead: dist) == token else { return false }
+        }
+        // then consume them
         for token in tokens {
             guard consumeIf(token) else { return false }
         }
         return true
     }
     /// If the current token is an identifier, return its string
-    private func consumeIfIdentifier() -> String? {
+    fileprivate func consumeIfIdentifier() -> String? {
         guard case .identifier(let id) = currentToken else { return nil }
         consumeToken()
         return id
     }
     /// Consume the current token if it is an identifier
     /// - throws: if the current token is not an identifier
-    @discardableResult private func consumeIdentifier() throws -> String {
+    @discardableResult fileprivate func consumeIdentifier() throws -> String {
         guard case .identifier(let id) = currentToken else {
             throw parseError(.noIdentifier, loc: .at(pos: currentPos))
         }
         consumeToken()
         return id
     }
+    @discardableResult fileprivate func consumeIdentifierOrOperator() throws -> String {
+        
+        switch currentToken {
+        case .identifier(let id), .infixOperator(let id):
+            consumeToken()
+            return id
+        default:
+            throw parseError(.noIdentifier, loc: .at(pos: currentPos))
+        }
+    }
+
     
     /// Consume the token if it matches `token`
-    private func consume(_ token: Token) throws {
+    fileprivate func consume(_ token: Token) throws {
         guard token == currentToken else {
             throw parseError(.noToken(token), loc: .at(pos: currentPos))
         }
         consumeToken()
     }
     /// Consume the current tokens if they match `tokens`
-    private func consume(tokens: Token...) throws {
+    fileprivate func consume(tokens: Token...) throws {
         for token in tokens {
             guard consumeIf(token) else {
                 throw parseError(.noToken(token), loc: .at(pos: currentPos))
@@ -143,15 +163,14 @@ final class Parser {
     }
     
     /// Return the token `steps` ahead of the current token
-    @discardableResult private func inspectNextToken(lookahead steps: Int = 1) -> Token? {
+    @discardableResult fileprivate func inspectNextToken(lookahead steps: Int = 1) -> Token? {
         if index+steps >= tokens.count-steps { return nil }
         if case .newLine = currentToken, !considerNewLines {
             return inspectNextToken(lookahead: steps+1)
         }
         return tokens[index+steps]
     }
-    @discardableResult
-    private func inspectNextPos(_ i: Int = 1) -> Pos? {
+    @discardableResult fileprivate func inspectNextPos(_ i: Int = 1) -> Pos? {
         if index+i >= tokens.count-i { return nil }
         if case .newLine = currentToken, !considerNewLines {
             return inspectNextPos(i+1)
@@ -159,12 +178,11 @@ final class Parser {
         return tokensWithPos.map{$0.1.range.start}[index+i]
     }
     
-    
-    private func rangeOfCurrentToken() -> SourceRange? {
+    fileprivate func rangeOfCurrentToken() -> SourceRange? {
         return inspectNextPos().map { SourceRange(start: currentPos, end: $0) }
     }
     
-    struct ConsumeIfMatch {
+    fileprivate struct ConsumeIfMatch {
         let token: Token
         let parser: Parser
         init(_ token: Token, _ parser: Parser) {
@@ -203,22 +221,39 @@ final class Parser {
         }
     }
     
+    func withConsiderNewLines<T>(_ fn: @noescape (nextToken: Token) throws -> T) throws -> T {
+        
+        considerNewLines = true
+        
+        guard let tok = inspectNextToken() else {
+            throw parseError(.expectedExpression, userVisible: false)
+        }
+        let v = try fn(nextToken: tok)
+        
+        resetConsiderNewLines()
+        return v
+    }
+    
+    func nextTokenIsCall() throws -> Bool {
+        return try withConsiderNewLines { nextToken in
+            nextToken.isValidParamToken && !inTuple
+        }
+    }
     
     /// When parsing a parameter list we want to lay out function parameters next to eachother
     ///
     /// `add a b` parses as `add(a, b)` not `parse(a(b))`
     ///
     /// This flag is true if the parser is in a parameter list where identifiers are assumed to be vars not funcs
-    private var inTuple: Bool {
+    fileprivate var inTuple: Bool {
         get { return _inTupleStack.last ?? false }
         set { _inTupleStack.append(newValue) }
     }
     private var _inTupleStack: [Bool] = [false]
     
-    private func revertInTupleState() {
+    fileprivate func revertInTupleState() {
         _inTupleStack.removeLast()
     }
-
 }
 
 //-------------------------------------------------------------------------------------------------------------------------
@@ -228,22 +263,22 @@ final class Parser {
 extension Parser {
     
     /// Int literal expression
-    private func parseIntExpr(_ token: Int) throws -> Expr {
+    fileprivate func parseIntExpr(_ token: Int) throws -> Expr {
         try consume(.integerLiteral(token))
         return IntegerLiteral(val: token)
     }
     /// Float literal expression
-    private func parseFloatingPointExpr(_ token: Double) -> FloatingPointLiteral {
+    fileprivate func parseFloatingPointExpr(_ token: Double) -> FloatingPointLiteral {
         consumeToken()
         return FloatingPointLiteral(val: token)
     }
     /// String literal expression
-    private func parseStringExpr(_ token: String) -> StringLiteral {
+    fileprivate func parseStringExpr(_ token: String) -> StringLiteral {
         consumeToken()
         return StringLiteral(str: token)
     }
     /// Bool literal expression
-    private func parseBooleanExpr(_ token: Bool) throws -> Expr {
+    fileprivate func parseBooleanExpr(_ token: Bool) throws -> Expr {
         consumeToken()
         return BooleanLiteral(val: token)
     }
@@ -259,7 +294,7 @@ extension Parser {
 extension Parser {
     
     /// Parses type expression, used in variable decls and function signatures
-    private func parseTypeExpr() throws -> TypeRepr {
+    fileprivate func parseTypeExpr() throws -> TypeRepr {
         
         // if () type
         do {
@@ -267,15 +302,13 @@ extension Parser {
                 if consumeIf(.closeParen) {
                     return .void
                 }
-                else {
-                    var types: [TypeRepr] = []
-                    repeat {
-                        try types.append(parseTypeExpr())
-                        if consumeIf(.closeParen) { // eat '('
-                            return .tuple(types)
-                        }
-                    } while consumeIf(.comma)
-                }
+                var types: [TypeRepr] = []
+                repeat {
+                    try types.append(parseTypeExpr())
+                    if consumeIf(.closeParen) { // eat '('
+                        return .tuple(types)
+                    }
+                } while consumeIf(.comma)
             }
         }
         catch _ as VistError {
@@ -326,7 +359,7 @@ extension Parser {
     ///
     /// If its a 0, or multi element tuple, this returns a tuple, otherwise the value in
     /// parens (as they were just used for disambiguation or operator precedence override)
-    private func parseParenExpr() throws -> Expr {
+    fileprivate func parseParenExpr() throws -> Expr {
         
         // if in paren Expr we allow function parameters to be treated as functions not vars
         inTuple = false
@@ -355,7 +388,7 @@ extension Parser {
     }
     
     /// Parses a parameter list for a function call
-    private func parseParamExpr() throws -> TupleExpr {
+    fileprivate func parseParamExpr() throws -> TupleExpr {
         
         var exps: [Expr] = []
         
@@ -374,127 +407,102 @@ extension Parser {
     
 }
 
-
 //-------------------------------------------------------------------------------------------------------------------------
 //  MARK:                                      Identifier and operators
 //-------------------------------------------------------------------------------------------------------------------------
 extension Parser {
     
     /// Parses a text token as a VariableExpr
-    private func parseIdentifierAsVariable() throws -> VariableExpr {
-        guard case .identifier(let i) = currentToken else { throw parseError(.noIdentifier, loc: rangeOfCurrentToken()) }
-        return VariableExpr(name: i)
+    fileprivate func parseIdentifierAsVariable() throws -> VariableExpr {
+        return VariableExpr(name: try consumeIdentifier())
     }
     
-    /// Handles parsing of an identifier token
-    ///
-    /// Works out whether its a function call, method lookup, variable
-    /// instance, mutation, or tuple member lookup
-    private func parseIdentifierExpr(_ token: String) throws -> Expr {
+    fileprivate func parseIdentifier() throws -> Expr {
         
-        try consumeIdentifier()
+        var isCall = try nextTokenIsCall()
+        var name = try consumeIdentifier()
+        
+        // handle stdlib's 'Builtin.' identifiers
+        if isStdLib, name == "Builtin", consumeIf(.period) {
+            isCall = try nextTokenIsCall()
+            name = try "Builtin.\(consumeIdentifier())"
+        }
+        
+        if isCall {
+            if consumeIf(.openParen, .closeParen) {
+                return FunctionCallExpr(name: name, args: TupleExpr.void())
+            }
+            return FunctionCallExpr(name: name, args: try parseParamExpr())
+        }
+        
+        return try parseChainableExpr(base: VariableExpr(name: name))
+    }
+
+    
+    private func parseChainableExpr<Chainable : ChainableExpr>(base: Chainable) throws -> Expr {
         
         switch currentToken {
-        case .openParen where inspectNextToken()?.isCloseParen ?? false: // call
-            try consume(tokens: .openParen, .closeParen) // eat '()'
-            return FunctionCallExpr(name: token, args: TupleExpr.void())
-            
-        case let u where u.isValidParamToken && !inTuple:
-            return FunctionCallExpr(name: token, args: try parseParamExpr())
-            
         case .sqbrOpen: // subscript
             try consume(.sqbrOpen)
             let subscpipt = try parseOperatorExpr()
             try consume(.sqbrClose)
             
             guard consumeIf(.assign) else { // if assignment
-                return ArraySubscriptExpr(arr: VariableExpr(name: token), index: subscpipt)
+                return ArraySubscriptExpr(arr: base, index: subscpipt)
             }
             
             // if assigning to subscripted value
-            return MutationExpr(object: ArraySubscriptExpr(arr: VariableExpr(name: token),
+            return MutationExpr(object: ArraySubscriptExpr(arr: base,
                                                            index: subscpipt),
                                 value: try parseOperatorExpr())
             
-        //case ConsumeIfMatch(.assign, self): // mutation
         case .assign:
             try consume(.assign)
-            return MutationExpr(object: VariableExpr(name: token),
+            return MutationExpr(object: base,
                                 value: try parseOperatorExpr())
-            
-        case .period where token == "Builtin" && isStdLib:
-            try consume(.period)
-            
-            guard case .identifier(let id) = currentToken else {
-                throw parseError(.stdLibExprInvalid, userVisible: false)
-            }
-            return try parseIdentifierExpr("Builtin.\(id)")
             
         case .period: // property or fn
             try consume(.period)
-            return try parseMemberLookupExpr(VariableExpr(name: token))
-            
-        default: // just identifier
-            return try parseOperatorExpr(VariableExpr(name: token))
-        }
-    }
-    
-    /// Handles the case of `identifier.`*something*
-    ///
-    /// Parses property and tuple member lookup, and method calls
-    private func parseMemberLookupExpr(_ exp: ChainableExpr) throws -> Expr {
-        
-        switch currentToken {
-        case .identifier(let name):
-            // property or method
-            
-            switch consumeToken() {
-            case let u where u.isValidParamToken && !inTuple: // method call
-                if case .openParen = currentToken, case .closeParen? = inspectNextToken() {   // simple itentifier () call
-                    try consume(tokens: .openParen, .closeParen)
-                    return MethodCallExpr(name: name, args: TupleExpr.void(), object: exp)
-                }
-                return MethodCallExpr(name: name, args: try parseParamExpr(), object: exp)
-                
-            case .assign:
-                try consume(.assign)
-                let property = PropertyLookupExpr(propertyName: name, object: exp)
-                
-                let exp = try parseOperatorExpr()
-                return MutationExpr(object: property, value: exp)
-                
-            case .period: // nested lookup, like a.b.c
-                try consume(.period)
 
-                let firstLookup = PropertyLookupExpr(propertyName: name, object: exp)
-                return try parseMemberLookupExpr(firstLookup)
+            switch currentToken {
+            case .identifier(let name):
+                // property or method
+                let isCall = try nextTokenIsCall()
+                consumeToken()
                 
-            default: // otherwise its a propertys
-                return PropertyLookupExpr(propertyName: name, object: exp)
-            }
-            
-        case .integerLiteral(let i):
-            let element = TupleMemberLookupExpr(index: i, object: exp)
-            
-            switch consumeToken() {
-            case .assign:
-                try consume(.assign) // eat =
-                let exp = try parseOperatorExpr()
-                return MutationExpr(object: element, value: exp)
+                if isCall {
+                    if case .openParen = currentToken, case .closeParen? = inspectNextToken() {   // simple itentifier () call
+                        try consume(tokens: .openParen, .closeParen)
+                        return MethodCallExpr(name: name,
+                                              args: TupleExpr.void(),
+                                              object: base)
+                    }
+                    return MethodCallExpr(name: name,
+                                          args: try parseParamExpr(),
+                                          object: base)
+                }
                 
-            case .period: // nested lookup, like a.b.c
-                try consume(.period) // eat `foo.`
-                return try parseMemberLookupExpr(element)
+                let lookup = PropertyLookupExpr(propertyName: name, object: base)
+                return try parseChainableExpr(base: lookup)
+                
+            case .integerLiteral(let i):
+                consumeToken()
+                let element = TupleMemberLookupExpr(index: i, object: base)
+                return try parseChainableExpr(base: element)
                 
             default:
-                return element
+                throw parseError(.noIdentifier, loc: rangeOfCurrentToken())
             }
             
-        default:
-            throw parseError(.noIdentifier, loc: rangeOfCurrentToken())
+        default: // just identifier
+            return base
         }
         
     }
+}
+
+
+extension Parser {
     
     /// Function parses one expression, and can handle operators & parens, function 
     /// calls, literals & variables, blocks, arrays, and tuples
@@ -513,8 +521,8 @@ extension Parser {
     private func parsePrimary() throws -> Expr {
         
         switch currentToken {
-        case .identifier(let id):
-            return try parseIdentifierExpr(id)
+        case .identifier:
+            return try parseIdentifier()
             
         case .prefixOperator(let op):
             consumeToken()
@@ -529,18 +537,38 @@ extension Parser {
         case .booleanLiteral(let b):
             return try parseBooleanExpr(b)
             
-        case .openParen:
-            return try parseParenExpr()
-            
         case .openBrace, .do /*, .OpenParen */: // FIXME: closures want to be able to do `let a = (u) do print u`
             let block = try parseBlockExpr()
             return ClosureExpr(exprs: block.exprs, params: block.parameters)
-
+            
+        case .openParen:
+            // look past param list
+            var lookaheadDist = 1
+            
+            while case .identifier? = inspectNextToken(lookahead: lookaheadDist) {
+                lookaheadDist += 1
+            }
+            guard case .closeParen? = inspectNextToken(lookahead: lookaheadDist) else { fallthrough }
+            guard inspectNextToken(lookahead: lookaheadDist+1)?.isControlToken() ?? false else { fallthrough }
+            consumeToken(lookaheadDist)
+            
+            let block = try parseBlockExpr()
+            return ClosureExpr(exprs: block.exprs, params: block.parameters)
+            
+        case .openParen:
+            return try parseParenExpr()
+            
         case .sqbrOpen:
             return try parseArrayExpr()
             
         case .stringLiteral(let str):
             return parseStringExpr(str)
+            
+        /*case .openParen:
+            try consume(.openParen)
+            let v = try parseOperatorExpr()
+            try consume(.closeParen)
+            return v*/
             
         default:
             throw parseError(.noIdentifier, loc: rangeOfCurrentToken())
@@ -612,7 +640,7 @@ extension Parser {
     
     /// Parses an 'if else block' chain
     private func parseIfStmt() throws -> ConditionalStmt {
-        try consume(.if) // eat `if`
+        precondition(currentToken == .if)
         
         // list of blocks
         var blocks: [ElseIfBlockStmt] = []
@@ -680,7 +708,7 @@ extension Parser {
 extension Parser {
     
     /// Parses a variable's declaration
-    private func parseVariableDecl(declContext: DeclContext) throws -> TypeMemberVariableDecl {
+    fileprivate func parseVariableDecl(declContext: DeclContext) throws -> TypeMemberVariableDecl {
         
         let mutable: Bool
         switch currentToken {
@@ -736,7 +764,6 @@ extension Parser {
         }
     }
     
-    
 }
 
 
@@ -751,9 +778,12 @@ extension Parser {
     private func parseFunctionType() throws -> FunctionTypeRepr {
         
         // param type
-        var ty = FunctionTypeRepr(paramType: try parseTypeExpr(), returnType: .void)
+        var ty = FunctionTypeRepr(paramType: try parseTypeExpr(),
+                                  returnType: .void)
         // case like `func fn: Int = `
-        try consume(.returnArrow)
+        guard consumeIf(.returnArrow) else {
+            return ty
+        }
         // case like `func fn: Int -> Int =`
         ty = FunctionTypeRepr(paramType: ty.paramType, returnType: try parseTypeExpr())
         
@@ -770,7 +800,7 @@ extension Parser {
     }
     
     /// Parse a function decl
-    private func parseFuncDeclaration(declContext: DeclContext) throws -> FuncDecl {
+    fileprivate func parseFuncDeclaration(declContext: DeclContext) throws -> FuncDecl {
         
         let a = attrs.flatMap { $0 as? FunctionAttributeExpr } ?? []
         let ops = attrs
@@ -809,7 +839,7 @@ extension Parser {
             functionName = s
         }
         
-        try consumeIdentifier()
+        try consumeIdentifierOrOperator()
         
         let genericParameters = try parseGenericParameterList(objName: functionName)
         
@@ -871,24 +901,24 @@ extension Parser {
     private func parseBraceExpr(names: [String] = []) throws -> BlockExpr {
         try consume(.openBrace)
         
-        var exprs = [ASTNode]()
+        var body: [ASTNode] = []
         
         while !consumeIf(.closeBrace) {
-            guard let expr = try parseExpr(token: currentToken) else {
+            guard let stmt = try parseStmt(context: .function) else {
                 throw parseError(.expectedExpression, loc: .at(pos: currentPos))
             }
-            exprs.append(expr)
+            body.append(stmt)
         }
-        return BlockExpr(exprs: exprs, parameters: names)
+        return BlockExpr(exprs: body, parameters: names)
     }
     
     /// Parses the expression in a 'do' block
     private func parseBracelessDoExpr(names: [String] = []) throws -> BlockExpr {
         try consume(.do)
-        guard let expr = try parseExpr(token: currentToken) else {
+        guard let body = try parseStmt(context: .function) else {
             throw parseError(.expectedExpression, loc: .at(pos: currentPos))
         }
-        return BlockExpr(exprs: [expr], parameters: names)
+        return BlockExpr(exprs: [body], parameters: names)
     }
     
     /// Parses expression following a `return`
@@ -912,7 +942,8 @@ extension Parser {
         case .openParen:    return try parseBlockExpr(names: parseClosureNamesExpr())
         case .openBrace:    return try parseBraceExpr(names: names)
         case .do, .else:    return try parseBracelessDoExpr(names: names)
-        default:            throw parseError(.notBlock, loc: .at(pos: currentPos))
+        default:
+            throw parseError(.notBlock, loc: .at(pos: currentPos))
         }
         
     }
@@ -1020,10 +1051,9 @@ extension Parser {
         let refType = consumeIf(.ref)
         try consume(.type)
         
-        guard case .identifier(let typeName) = currentToken else {
+        guard let typeName = consumeIfIdentifier() else {
             throw parseError(.noTypeName, loc: .at(pos: currentPos))
         }
-        consumeToken() // eat name
         
         let genericParameters = try parseGenericParameterList(objName: typeName)
         var concepts: [String] = []
@@ -1035,7 +1065,7 @@ extension Parser {
         }
         try consume(.openBrace)
         
-        var properties: [TypeMemberVariableDecl] = [], methods: [FuncDecl] = [], initialisers: [InitialiserDecl] = []
+        var properties: [TypeMemberVariableDecl] = [], methods: [FuncDecl] = [], initialisers: [InitDecl] = []
         
         conceptScopeLoop: while true {
             switch currentToken {
@@ -1075,27 +1105,32 @@ extension Parser {
     }
     
     /// Parse type's init function
-    private func parseInitDecl() throws -> InitialiserDecl {
+    private func parseInitDecl() throws -> InitDecl {
         
         try consume(.init)
         let type = try parseFunctionType()
-        guard case .assign = currentToken else {
-            return InitialiserDecl(ty: type, impl: nil, parent: nil)
+        guard consumeIf(.assign) else {
+            return InitDecl(ty: type,
+                            impl: nil,
+                            parent: nil,
+                            isImplicit: false)
         }
-        try consume(.assign)
-        
-        return try InitialiserDecl(ty: type, impl: parseFunctionBodyExpr(type: type), parent: nil)
+        return InitDecl(ty: type,
+                        impl: try parseFunctionBodyExpr(type: type),
+                        parent: nil,
+                        isImplicit: false)
     }
     
     
     private func parseConceptDecl() throws -> ConceptDecl {
         try consume(.concept)
         
-        guard case .identifier(let conceptName) = currentToken else { throw parseError(.noTypeName, loc: .at(pos: currentPos)) }
-        consumeToken() // eat name
-        
-        guard case .openBrace = currentToken else { throw parseError(.expectedOpenBrace, loc: .at(pos: currentPos)) }
-        try consume(.openBrace)
+        guard let conceptName = consumeIfIdentifier() else {
+            throw parseError(.noTypeName, loc: .at(pos: currentPos))
+        }
+        guard consumeIf(.openBrace) else {
+            throw parseError(.expectedOpenBrace, loc: .at(pos: currentPos))
+        }
         
         var properties: [TypeMemberVariableDecl] = [], methods: [FuncDecl] = []
         
@@ -1160,7 +1195,9 @@ extension Parser {
         if consumeIf(.openParen) {
             switch id {
             case "operator":
-                guard case let i as IntegerLiteral = try parseOperatorExpr() else { throw parseError(.noPrecedenceForOperator, loc: .at(pos: currentPos)) }
+                guard case let i as IntegerLiteral = try parseOperatorExpr() else {
+                    throw parseError(.noPrecedenceForOperator, loc: .at(pos: currentPos))
+                }
                 attrs.append(ASTAttributeExpr.Operator(prec: i.val))
                 
             default:
@@ -1178,7 +1215,7 @@ extension Parser {
 
 
 private enum DeclContext {
-    case global, type, concept
+    case global, type, concept, function
 }
 
 //-------------------------------------------------------------------------------------------------------------------------
@@ -1187,11 +1224,10 @@ private enum DeclContext {
 
 extension Parser {
     
-    /// Master parse function — depending on input calls the relevant child functions
-    /// and constructs a branch of the AST
-    private func parseExpr(token: Token) throws -> ASTNode? {
+    /// Parser entry point — parses a decl or stmt
+    private func parseStmt(context: DeclContext) throws -> ASTNode? {
         
-        switch token {
+        switch currentToken {
         case .let:                return try parseVariableDecl(declContext: .global)
         case .var:                return try parseVariableDecl(declContext: .global)
         case .func:               return try parseFuncDeclaration(declContext: .global)
@@ -1199,7 +1235,7 @@ extension Parser {
         case .yield:              return try parseYieldStmt()
         case .openParen:          return try parseParenExpr()
         case .openBrace:          return try parseBraceExpr()
-        case .identifier(let str):return try parseIdentifierExpr(str)
+        case .identifier:         return try parseIdentifier()
         case .comment(let str):   return try parseCommentExpr(str: str)
         case .if:                 return try parseIfStmt()
         case .for:                return try parseForInLoopStmt()
@@ -1214,7 +1250,7 @@ extension Parser {
         case .at:
             try parseAttrExpr()
             defer { attrs.removeAll() }
-            return try parseExpr(token: currentToken)
+            return try parseStmt(context: context)
         case .void:
             index += 1
             return VoidExpr()
@@ -1223,30 +1259,26 @@ extension Parser {
             return nil
         case .newLine:
             consumeToken()
-            return try parseExpr(token: currentToken)
+            return try parseStmt(context: context)
         default:
-            throw parseError(.noToken(token), loc: .at(pos: currentPos))
+            throw parseError(.noToken(currentToken), loc: .at(pos: currentPos))
         }
     }
     
     
     private func tok() -> Token? { return index < tokens.count ? tokens[index] : nil }
     
-    /// Returns abstract syntax tree from an instance of a parser
+    /// Returns AST from an instance of a parser
     private func parse() throws -> AST {
         
         index = 0
         exprs = []
         
-        while let tok = tok(), let expr = try parseExpr(token: tok) {
+        while let expr = try parseStmt(context: .global) {
             exprs.append(expr)
         }
         
         return AST(exprs: exprs)
-    }
-    
-    static func parse(withTokens toks: [(Token, SourceLoc)], isStdLib: Bool = false) throws -> AST {
-        return try Parser(tokens: toks, isStdLib: isStdLib).parse()
     }
     
 }

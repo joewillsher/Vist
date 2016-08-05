@@ -10,10 +10,12 @@
 extension TypeDecl {
 
     /// Returns an initialiser if all objects in `self` are given an initial value
-    func implicitIntialiser() -> InitialiserDecl? {
+    func implicitIntialiser() -> InitDecl? {
         // filter out non initilaised values, return nil if not all values have an initial value
         let properties = self.properties.flatMap { $0.declared }
-        let values = properties.filter { !($0.value is NullExpr) }.map { $0.value }
+        let values = properties
+            .filter { !($0.value is NullExpr) }
+            .map { $0.value }
         let names = properties.map { $0.name }
         guard values.count == properties.count else { return nil }
         
@@ -27,21 +29,26 @@ extension TypeDecl {
         let block = BlockExpr(exprs: initialisations)
         let body = FunctionBodyExpr(params: [], body: block)
         
-        let ty = FunctionTypeRepr(paramType: .void, returnType: .type(name))
+        let ty = FunctionTypeRepr(paramType: .void,
+                                  returnType: .type(name))
         
-        return InitialiserDecl(ty: ty, impl: body, parent: self)
+        return InitDecl(ty: ty, impl: body, parent: self, isImplicit: true)
     }
     
     /// Returns an initialiser for each element in the struct
-    func memberwiseInitialiser() throws -> InitialiserDecl? {
+    func memberwiseInitialiser() throws -> InitDecl? {
         // filter out non initilaised values, return nil if not all values have an initial value
         let properties = self.properties.flatMap { $0.declared }
         let names = properties.map { $0.name }
         
-        guard let types = properties.optionalMap(transform: { $0.value._type }) else { throw semaError(.noMemberwiseInit, userVisible: false) }
+        guard let types = properties.optionalMap(transform: { $0.value._type }) else {
+            throw semaError(.noMemberwiseInit, userVisible: false)
+        }
         
         // FIXME: we dont emit memberwise inits for types which dont contain just nominal types
-        guard !types.contains(where: {type in (type is TupleType)}) else { return nil }
+        guard !types.contains(where: {type in (type is TupleType)}) else {
+            return nil
+        }
         
         let typeNames = types.map { $0.explicitName }
         
@@ -57,9 +64,12 @@ extension TypeDecl {
         let block = BlockExpr(exprs: initialisations)
         let body = FunctionBodyExpr(params: params, body: block)
         
-        let ty = FunctionTypeRepr(paramType: TypeRepr(typeNames), returnType: .type(name))
-        
-        return InitialiserDecl(ty: ty, impl: body, parent: self)
+        let ty = FunctionTypeRepr(paramType: TypeRepr(typeNames),
+                                  returnType: .type(name))
+        return InitDecl(ty: ty,
+                        impl: body,
+                        parent: self,
+                        isImplicit: true)
     }
     
 }
