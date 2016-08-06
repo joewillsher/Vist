@@ -40,6 +40,7 @@ final class ClosureExpr : TypedExpr, ScopeNode {
     }
     
     var type: FunctionType? = nil
+    var mangledName: String? = nil
     
     var childNodes: [ASTNode] {
         return exprs

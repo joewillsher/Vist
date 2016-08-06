@@ -6,8 +6,6 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-import Foundation.NSString
-
 extension IntLiteralInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         return LLVMValue.constInt(value: value, size: size)
@@ -22,7 +20,7 @@ extension BoolLiteralInst : VIRLower {
 extension StringLiteralInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         let str = try IGF.builder.buildGlobalString(value: value)
-        return try IGF.builder.buildBitcast(value: str, to: BuiltinType.opaquePointer.lowered(module: module))
+        return try IGF.builder.buildBitcast(value: str, to: .opaquePointer)
     }
 }
 

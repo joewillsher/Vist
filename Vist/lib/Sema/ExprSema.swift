@@ -198,23 +198,37 @@ extension ClosureExpr : ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Type {
         
-        // no type inferrence from param list, just from AST context
-        let ty = (scope.semaContext as? FunctionType) ?? FunctionType(params: [BuiltinType.void], returns: BuiltinType.void)
+        
+        let ty = (scope.semaContext as? FunctionType)
+            ?? FunctionType(params: parameters.map { _ in scope.constraintSolver.getTypeVariable() },
+                            returns: scope.constraintSolver.getTypeVariable())
+        
+        /*
+        // If the AST context tells us the type, use that
+        // otherwise create type variables for the unknown param & return types
+        let ty = FunctionType(params: parameters.map { _ in scope.constraintSolver.getTypeVariable() },
+                              returns: scope.constraintSolver.getTypeVariable())
+        
+        if case let context as FunctionType = scope.semaContext {
+            for (ty, variable) in zip(context.params, ty.params) {
+                guard variable.addConstraint(type: ty) else { fatalError() }
+            }
+        }
+        */
+        
+        guard let mangledName = scope.name else { fatalError() }
+        self.mangledName = mangledName
         self.type = ty
         
         // we dont want implicit captutring
-        let innerScope = SemaScope.nonCapturingScope(parent: scope, returnType: ty)
+        let innerScope = SemaScope.capturingScope(parent: scope,
+                                                  overrideReturnType: ty.returns)
         innerScope.returnType = ty.returns
         
         for (i, t) in ty.params.enumerated() {
-            let name = parameters.isEmpty ? String(i) : parameters[i]
+            let name = parameters.isEmpty ? "$\(i)" : parameters[i]
             innerScope.addVariable(variable: (type: t, mutable: false, isImmutableCapture: false), name: name)
         }
-        
-        // TODO: Implementation relying on parameters
-        // Specify which parameters from the scope are copied into the closure
-        //  - this is needed for method calls -- as `self` needs to be copied in
-        // Make syntax for the users to define this?
         
         for exp in exprs {
             try exp.typeForNode(scope: innerScope)
@@ -361,7 +375,6 @@ extension MethodCallExpr : ExprTypeProvider {
         
         // assign type to self and return
         self._type = fnType.returns
-        self.fnType = fnType
         self.structType = parentType
         return fnType.returns
     }

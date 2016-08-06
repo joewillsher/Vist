@@ -93,7 +93,7 @@ extension BasicBlock {
         
         // make sure application is correctly typed
         if let vals = try parameters?.map(getType(of:)) {
-            guard let equal = try args?.map(getType(of:)) .elementsEqual(vals, by: ==), equal else {
+            guard let equal = try args?.map(getType(of:)).elementsEqual(vals, by: ==), equal else {
                 throw VIRError.paramsNotTyped
             }
         }

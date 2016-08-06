@@ -203,22 +203,22 @@ func compileDocuments(
         if !options.contains(.preserveTempFiles) { try! FileManager.default.removeItem(atPath: unoptVIRPath) }
     }
     
+    if options.contains(.verbose) {
+        print(virModule.vir)
+    }
+    
     #if DEBUG
         try virModule.verify()
     #endif
     
     // MARK: VIR Optimiser
     if options.contains(.verbose) {
-        print(virModule.vir, "\n----------------------------VIR OPT-------------------------------\n")
+        print("\n----------------------------VIR OPT-------------------------------\n")
     }
-    
+
     // run optimiser
     try PassManager(module: virModule, optLevel: options.optLevel(), opts: options)
         .runPasses()
-    
-    #if DEBUG
-        try virModule.verify()
-    #endif
     
     // write out
     let optVIRPath = "\(currentDirectory)/\(file).vir"
@@ -227,13 +227,19 @@ func compileDocuments(
         if !options.contains(.preserveTempFiles) { try! FileManager.default.removeItem(atPath: optVIRPath) }
     }
     
+    if options.contains(.verbose) {
+        print(virModule.vir)
+    }
+    
+    #if DEBUG
+        try virModule.verify()
+    #endif
+    
     if options.contains(.dumpVIR) {
         print(virModule.vir)
         return
     }
-    if options.contains(.verbose) {
-        print(virModule.vir)
-    }
+
     
     // MARK: Build runtime
     if options.contains(.buildRuntime) {

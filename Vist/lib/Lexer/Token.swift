@@ -49,7 +49,7 @@ enum Token {
     
     var isValidParamToken: Bool {
         switch self {
-        case .identifier, .sqbrOpen, .openParen, .openBrace, .floatingPointLiteral, .integerLiteral, .booleanLiteral, .stringLiteral: return true
+        case .identifier, .sqbrOpen, .openParen, .openBrace, .floatingPointLiteral, .integerLiteral, .booleanLiteral, .stringLiteral, .do: return true
         default: return false
         }
     }

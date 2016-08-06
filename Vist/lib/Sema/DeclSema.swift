@@ -212,17 +212,17 @@ extension VariableDecl : DeclTypeProvider {
         let explicitType = try typeRepr?.typeIn(scope: scope)
         
         // scope for declaration -- not a return type and sets the `semaContext` to the explicitType
-        let declScope = SemaScope(parent: scope, returnType: nil, semaContext: explicitType)
+        let context = (explicitType as? FunctionType).map {
+            (context: $0 as Type, name: self.name.mangle(type: $0))
+        }
+        let declScope = SemaScope.capturingScope(parent: scope,
+                                                 overrideReturnType: nil,
+                                                 context: context)
         
         let objectType = try value.typeForNode(scope: declScope)
         
-        if case let fn as FunctionType = objectType {
-            scope.addFunction(name: name, type: fn) // store in function table if closure
-        }
-        else {
-            let type = explicitType ?? objectType
-            scope.addVariable(variable: (type, isMutable, false), name: name)  // store in arr
-        }
+        let type = explicitType ?? objectType
+        scope.addVariable(variable: (type, isMutable, false), name: name)
         
         // if its a null expression
         if let e = explicitType, value._type == BuiltinType.null, value is NullExpr {

@@ -75,9 +75,9 @@ extension Value {
     /// box then the accessor accesses the stored value.
     func accessor() throws -> Accessor {
         
-        if case BuiltinType.pointer(let to)? = type, case let nominal as NominalType = to {
+        if case BuiltinType.pointer(let to)? = type, !(to is FunctionType) {
             let lVal = try OpaqueLValue(rvalue: self)
-            if nominal.isHeapAllocated {
+            if case let nominal as NominalType = to, nominal.isHeapAllocated {
                 return RefCountedAccessor(refcountedBox: lVal)
             }
             else {
@@ -121,7 +121,7 @@ extension Value {
 }
 
 extension LValue {
-    var accessor: GetSetAccessor { return RefAccessor(memory: self) }
+    var accessor: IndirectAccessor { return RefAccessor(memory: self) }
 }
 
 

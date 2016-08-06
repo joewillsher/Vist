@@ -293,8 +293,36 @@ extension Parser {
 
 extension Parser {
     
-    /// Parses type expression, used in variable decls and function signatures
-    fileprivate func parseTypeExpr() throws -> TypeRepr {
+    
+    /// Parses the function type signature, like `Int Int -> Int` or `() -> Bool`
+    /// - parameter paramTypeRepr: The type repr to the left of the '->', if nil, this function
+    ///                            parses it
+    fileprivate func parseFunctionTypeRepr(paramType: TypeRepr? = nil) throws -> FunctionTypeRepr {
+        
+        // param type
+        var ty = FunctionTypeRepr(paramType: try paramType ?? parseTypeRepr(),
+                                  returnType: .void)
+        // case like `func fn: Int = `
+        guard consumeIf(.returnArrow) else {
+            return ty
+        }
+        // case like `func fn: Int -> Int =`
+        ty = FunctionTypeRepr(paramType: ty.paramType, returnType: try parseTypeRepr())
+        
+        // curried case like `func fn: Int -> Int -> Int =`
+        while consumeIf(.returnArrow) {
+            let params = ty.returnType
+            let returns = try parseTypeRepr()
+            let out = FunctionTypeRepr(paramType: params, returnType: returns)
+            
+            ty = FunctionTypeRepr(paramType: ty.paramType, returnType: .function(out))
+        }
+        
+        return ty
+    }
+
+    /// Parses type repr, used in variable decls and function signatures
+    fileprivate func parseTypeRepr() throws -> TypeRepr {
         
         // if () type
         do {
@@ -304,11 +332,12 @@ extension Parser {
                 }
                 var types: [TypeRepr] = []
                 repeat {
-                    try types.append(parseTypeExpr())
-                    if consumeIf(.closeParen) { // eat '('
-                        return .tuple(types)
-                    }
+                    try types.append(parseTypeRepr())
                 } while consumeIf(.comma)
+                
+                try consume(.closeParen)
+                if types.count == 1 { return types[0] }
+                return .tuple(types)
             }
         }
         catch _ as VistError {
@@ -351,9 +380,18 @@ extension Parser {
             }
         }
         
-        return TypeRepr(elements)
+        let repr = TypeRepr(elements)
+        
+        // if we have a '->' after the type repr, we should return a function type repr
+        if case .returnArrow = currentToken {
+            return .function(try parseFunctionTypeRepr(paramType: repr))
+        }
+        
+        return repr
     }
-    
+}
+
+extension Parser {
     
     /// Parses an expression wrapped in parentheses
     ///
@@ -550,7 +588,6 @@ extension Parser {
             }
             guard case .closeParen? = inspectNextToken(lookahead: lookaheadDist) else { fallthrough }
             guard inspectNextToken(lookahead: lookaheadDist+1)?.isControlToken() ?? false else { fallthrough }
-            consumeToken(lookaheadDist)
             
             let block = try parseBlockExpr()
             return ClosureExpr(exprs: block.exprs, params: block.parameters)
@@ -726,7 +763,7 @@ extension Parser {
             }
             
             let explicitType: TypeRepr? = try consumeIf(.colon)
-                ? parseTypeExpr()
+                ? parseTypeRepr()
                 : nil
             
             /// Declaration used if no initial value is given
@@ -773,31 +810,6 @@ extension Parser {
 
 
 extension Parser {
-    
-    /// Parses the function type signature, like `Int Int -> Int` or `() -> Bool`
-    private func parseFunctionType() throws -> FunctionTypeRepr {
-        
-        // param type
-        var ty = FunctionTypeRepr(paramType: try parseTypeExpr(),
-                                  returnType: .void)
-        // case like `func fn: Int = `
-        guard consumeIf(.returnArrow) else {
-            return ty
-        }
-        // case like `func fn: Int -> Int =`
-        ty = FunctionTypeRepr(paramType: ty.paramType, returnType: try parseTypeExpr())
-        
-        // curried case like `func fn: Int -> Int -> Int =`
-        while consumeIf(.returnArrow) {
-            let params = ty.returnType
-            let returns = try parseTypeExpr()
-            let out = FunctionTypeRepr(paramType: params, returnType: returns)
-            
-            ty = FunctionTypeRepr(paramType: ty.paramType, returnType: .function(out))
-        }
-        
-        return ty
-    }
     
     /// Parse a function decl
     fileprivate func parseFuncDeclaration(declContext: DeclContext) throws -> FuncDecl {
@@ -848,7 +860,7 @@ extension Parser {
             throw parseError(.expectedDoubleColon, loc: SourceRange(start: typeSignatureStartPos, end: currentPos))
         }
         
-        let type = try parseFunctionType()
+        let type = try parseFunctionTypeRepr()
         
         guard consumeIf(.assign) else {
             return FuncDecl(name: functionName, typeRepr: type, impl: nil, attrs: a, genericParameters: genericParameters)
@@ -942,8 +954,7 @@ extension Parser {
         case .openParen:    return try parseBlockExpr(names: parseClosureNamesExpr())
         case .openBrace:    return try parseBraceExpr(names: names)
         case .do, .else:    return try parseBracelessDoExpr(names: names)
-        default:
-            throw parseError(.notBlock, loc: .at(pos: currentPos))
+        default:            throw parseError(.notBlock, loc: .at(pos: currentPos))
         }
         
     }
@@ -1108,7 +1119,7 @@ extension Parser {
     private func parseInitDecl() throws -> InitDecl {
         
         try consume(.init)
-        let type = try parseFunctionType()
+        let type = try parseFunctionTypeRepr()
         guard consumeIf(.assign) else {
             return InitDecl(ty: type,
                             impl: nil,

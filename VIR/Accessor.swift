@@ -24,13 +24,13 @@ protocol Accessor : class {
     
     var storedType: Type? { get }
     
-    /// Form a copy of `self`, the restult
-    func getMemCopy() throws -> GetSetAccessor
+    /// Form a copy of `self`
+    func getMemCopy() throws -> IndirectAccessor
     
     /// Returns an accessor abstracring the same value but with reference semantics
     /// - note: the returned accessor is not guaranteed to be a reference to the
     ///          original, mutating it may not affect `self`
-    func referenceBacked() throws -> GetSetAccessor
+    func referenceBacked() throws -> IndirectAccessor
     
     func release() throws
     func retain() throws
@@ -51,7 +51,7 @@ final class ValAccessor : Accessor {
     
     /// Alloc a new accessor and store self into it.
     /// - returns: a reference backed *copy* of `self`
-    func referenceBacked() throws -> GetSetAccessor {
+    func referenceBacked() throws -> IndirectAccessor {
         return try value.allocReferenceBackedAccessor()
     }
     
@@ -64,7 +64,7 @@ extension Value {
     
     /// Builds a reference accessor which can store into & load from
     /// the memory it allocates
-    func allocReferenceBackedAccessor() throws -> GetSetAccessor {
+    func allocReferenceBackedAccessor() throws -> IndirectAccessor {
         guard let memType = type?.importedType(in: module) else { throw VIRError.noType(#file) }
         let accessor = RefAccessor(memory: try module.builder.build(inst: AllocInst(memType: memType)))
         try accessor.setValue(self)
@@ -74,7 +74,7 @@ extension Value {
 
 extension Accessor {
     
-    func getMemCopy() throws -> GetSetAccessor {
+    func getMemCopy() throws -> IndirectAccessor {
         return try aggregateGetValue().accessor().referenceBacked()
     }
     
@@ -123,7 +123,7 @@ extension Accessor {
 
 
 /// An Accessor which allows setting, as well as self lookup by ptr
-protocol GetSetAccessor : Accessor {
+protocol IndirectAccessor : Accessor {
     var mem: LValue { get }
     /// Stores `val` in the stored object
     func setValue(_ val: Value) throws
@@ -136,9 +136,9 @@ protocol GetSetAccessor : Accessor {
         
 }
 
-extension GetSetAccessor {
+extension IndirectAccessor {
     // if its already a red accessor we're done
-    func referenceBacked() throws -> GetSetAccessor { return self }
+    func referenceBacked() throws -> IndirectAccessor { return self }
     
     var storedType: Type? { return mem.memType }
     
@@ -170,13 +170,13 @@ extension GetSetAccessor {
 
 
 /// Provides access to a value with backing memory
-final class RefAccessor : GetSetAccessor {
+final class RefAccessor : IndirectAccessor {
     var mem: LValue
     init(memory: LValue) { self.mem = memory }
 }
 
 /// Provides access to a global value with backing memory
-final class GlobalRefAccessor : GetSetAccessor {
+final class GlobalRefAccessor : IndirectAccessor {
     var mem: LValue
     unowned var module: Module
     init(memory: LValue, module: Module) {
@@ -188,7 +188,7 @@ final class GlobalRefAccessor : GetSetAccessor {
 /// Provides access to a global value with backing memory which
 /// is a pointer to the object. Global object has type storedType**
 /// and loads are
-final class GlobalIndirectRefAccessor : GetSetAccessor {
+final class GlobalIndirectRefAccessor : IndirectAccessor {
     var mem: LValue
     unowned var module: Module
     
@@ -219,7 +219,7 @@ final class GlobalIndirectRefAccessor : GetSetAccessor {
  This exposes API to `alloc`, `retain`, `release`, and `dealloc` ref coutned
  heap pointers.
 */
-final class RefCountedAccessor : GetSetAccessor {
+final class RefCountedAccessor : IndirectAccessor {
     
     var mem: LValue
     init(refcountedBox: LValue, _reference: OpaqueLValue? = nil) {
@@ -273,7 +273,7 @@ final class RefCountedAccessor : GetSetAccessor {
     }
     
     /// Capture another reference to the object and retain it
-    func getMemCopy() throws -> GetSetAccessor {
+    func getMemCopy() throws -> IndirectAccessor {
         try retain()
         return RefCountedAccessor(refcountedBox: aggregateReference(), _reference: _reference)
     }
@@ -301,7 +301,7 @@ final class RefCountedAccessor : GetSetAccessor {
 
 /// A Ref accessor whose accessor is evaluated on demand. Useful for values
 /// which might not be used
-final class LazyRefAccessor : GetSetAccessor {
+final class LazyRefAccessor : IndirectAccessor {
     private var build: () throws -> LValue
     private lazy var val: LValue? = try? self.build()
     
@@ -325,7 +325,7 @@ final class LazyAccessor : Accessor {
         return v
     }
     
-    func referenceBacked() throws -> GetSetAccessor {
+    func referenceBacked() throws -> IndirectAccessor {
         guard let v = val else { fatalError() }
         return try v.allocReferenceBackedAccessor()
     }

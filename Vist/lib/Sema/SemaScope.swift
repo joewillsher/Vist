@@ -17,15 +17,15 @@ final class SemaScope {
     let isStdLib: Bool
     var returnType: Type?, isYield: Bool
     let parent: SemaScope?
+    let constraintSolver: ConstraintSolver
     
     var genericParameters: [ConstrainedType]? = nil
     
-    
-    // TODO: make this the AST context
     /// Hint about what type the object should have
     ///
     /// Used for blocks’ types
     var semaContext: Type?
+    var name: String?
     
     /// Lookup the varibale called `name`
     func variable(named name: String) -> Variable? {
@@ -34,6 +34,10 @@ final class SemaScope {
     }
     func addVariable(variable: Variable, name: String) {
         variables[name] = variable
+        // if it is a closure, add to the function table too
+        if case let fnTy as FunctionType = variable.type {
+            addFunction(name: name, type: fnTy)
+        }
     }
     /// Whether *this* scope contains a named variable
     func thisScopeContainsVariable(named: String) -> Bool {
@@ -49,7 +53,7 @@ final class SemaScope {
     func function(named name: String, argTypes: [Type]) throws -> (mangledName: String, type: FunctionType) {
         // lookup from stdlib/builtin
         if let stdLibFunction = StdLib.function(name: name, args: argTypes) { return stdLibFunction }
-        else if let builtinFunction = Builtin.function(name: name, argTypes: argTypes), isStdLib { return builtinFunction }
+        else if isStdLib, let builtinFunction = Builtin.function(name: name, argTypes: argTypes) { return builtinFunction }
             // otherwise we search the user scopes recursively
         else { return try recursivelyLookupFunction(named: name, argTypes: argTypes) }
     }
@@ -57,7 +61,7 @@ final class SemaScope {
     /// Recursvively searches this scope and its parents
     /// - note: should only be called *after* looking up in stdlib/builtin
     private func recursivelyLookupFunction(named name: String, argTypes: [Type]) throws -> (mangledName: String, type: FunctionType) {
-        if let inScope = functions.function(havingUnmangledName: name, paramTypes: argTypes) { return inScope }
+        if let inScope = functions.function(havingUnmangledName: name, paramTypes: argTypes, solver: constraintSolver) { return inScope }
             // lookup from parents
         else if let inParent = try parent?.function(named: name, argTypes: argTypes) { return inParent }
             // otherwise we havent found a match :(
@@ -103,28 +107,38 @@ final class SemaScope {
         concepts[name] = concept
     }
     
-    init(parent: SemaScope, returnType: Type? = BuiltinType.void, isYield: Bool = false, semaContext: Type? = nil) {
+    init(parent: SemaScope, returnType: Type? = BuiltinType.void, isYield: Bool = false, semaContext: Type? = nil, name: String? = nil) {
         self.parent = parent
         self.returnType = returnType
+        self.semaContext = semaContext
+        self.name = name
         self.isYield = isYield
         self.variables = [:]
         self.functions = [:]
         self.types = [:]
         self.concepts = [:]
         self.isStdLib = parent.isStdLib
+        self.constraintSolver = parent.constraintSolver
     }
     
     // used by the global scope & non capturing static function
     /// Declares a type without a parent
-    private init(returnType: Type? = BuiltinType.void, isStdLib: Bool, semaContext: Type? = nil) {
+    private init(returnType: Type? = BuiltinType.void,
+                 isStdLib: Bool,
+                 context: Type? = nil,
+                 name: String? = nil,
+                 constraintSolver: ConstraintSolver = ConstraintSolver()) {
         self.parent = nil
         self.returnType = returnType
+        self.semaContext = context
+        self.name = name
         self.isYield = false
         self.variables = [:]
         self.functions = [:]
         self.types = [:]
         self.concepts = [:]
         self.isStdLib = isStdLib
+        self.constraintSolver = constraintSolver
     }
     
     /// Constructs the global SemaScope for a module
@@ -133,15 +147,19 @@ final class SemaScope {
     }
     
     /// Creates a scope associated with its parent which cannot read from its func, var, & type tables
-    static func nonCapturingScope(parent: SemaScope, returnType: Type? = BuiltinType.void, isYield: Bool = false, semaContext: Type? = nil) -> SemaScope {
-        return SemaScope(returnType: returnType, isStdLib: parent.isStdLib, semaContext: semaContext)
+    static func nonCapturingScope(parent: SemaScope,
+                                  returnType: Type? = BuiltinType.void,
+                                  isYield: Bool = false,
+                                  context: (context: Type, name: String)? = nil) -> SemaScope {
+        return SemaScope(returnType: returnType, isStdLib: parent.isStdLib, context: context?.context, name: context?.name)
     }
     
-    static func capturingScope(parent: SemaScope, overrideReturnType: Optional<Type?> = nil) -> SemaScope {
+    static func capturingScope(parent: SemaScope, overrideReturnType: Optional<Type?> = nil, context: (context: Type, name: String)? = nil) -> SemaScope {
         return SemaScope(parent: parent,
                          returnType: overrideReturnType ?? parent.returnType,
                          isYield: parent.isYield,
-                         semaContext: parent.semaContext)
+                         semaContext: context?.context ?? parent.semaContext,
+                         name: context?.name)
     }
 }
 
@@ -151,10 +169,26 @@ extension Collection where
 {
     /// Look up the function from this mangled collection by the unmangled name and param types
     /// - returns: the mangled name and the type of the matching function
+    func function(havingUnmangledName appliedName: String, paramTypes: [Type], solver: ConstraintSolver) -> (mangledName: String, type: FunctionType)? {
+        return first(where: { fnName, fnType in
+            
+            fnName.demangleName() == appliedName &&
+                !zip(fnType.params, paramTypes)
+                .map(solver.typeSatisfies(_:type:))
+                .contains(false)
+            
+        }).map { f in
+            return (mangledName: appliedName.mangle(type: f.value), type: f.value)
+        }
+    }
+    /// Look up the function from this mangled collection by the unmangled name and param types
+    /// - returns: the mangled name and the type of the matching function
     func function(havingUnmangledName raw: String, paramTypes types: [Type]) -> (mangledName: String, type: FunctionType)? {
         return first(where: { k, v in
+            
             k.demangleName() == raw &&
                 v.params.elementsEqual(types, by: ==)
+            
         }).map { f in
             return (mangledName: raw.mangle(type: f.value), type: f.value)
         }

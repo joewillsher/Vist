@@ -46,7 +46,6 @@ struct FunctionType : Type {
     var isCanonicalType: Bool = false
 }
 
-
 extension FunctionType {
     // get the generator type of the function
     mutating func setGeneratorVariantType(yielding yieldType: Type) {
@@ -61,18 +60,22 @@ extension FunctionType {
                         yieldType: yieldType)
     }
     var isGeneratorFunction: Bool { return yieldType != nil }
+    var isAddressOnly: Bool { return true }
     
     func lowered(module: Module) -> LLVMType {
         
-        let ret: LLVMType
-        if returns is FunctionType {
-            ret = returns.lowered(module: module).getPointerType()
-        }
-        else {
-            ret = returns.lowered(module: module)
+        var ret = returns.lowered(module: module)
+        if returns.isAddressOnly {
+            ret = ret.getPointerType()
         }
         
-        let params = nonVoidParams.map {$0.lowered(module: module)}
+        let params: [LLVMType] = nonVoidParams.map {
+            let ret = $0.lowered(module: module)
+            if $0.isAddressOnly {
+                return ret.getPointerType()
+            }
+            return ret
+        }
         
         return LLVMType.functionType(params: params, returns: ret)
     }
@@ -166,6 +169,10 @@ extension FunctionType {
     /// Returns a version of this type, but with a parent of type i8 (so ptrs to it are i8*)
     func asMethodWithOpaqueParent() -> FunctionType {
         return FunctionType(params: params, returns: returns, metadata: metadata, callingConvention: .method(selfType: BuiltinType.int(size: 8), mutating: false), yieldType: yieldType)
+    }
+    
+    func isInModule() -> Bool {
+        return !params.contains { !$0.isInModule() } && returns.isInModule()
     }
 }
 

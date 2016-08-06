@@ -119,6 +119,9 @@ extension Function {
             if case let bt as BuiltinType = t, case .pointer(let pointee) = bt {
                 return RefParam(paramName: name, type: pointee)
             }
+            else if case let ft as FunctionType = t {
+                return RefParam(paramName: name, type: ft)
+            }
             else {
                 return Param(paramName: name, type: t)
             }

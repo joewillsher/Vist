@@ -26,6 +26,8 @@ enum SemaError: VistError {
     
     case functionNotMethod, mutatingMethodOnImmutable(method: String, baseType: String)
     
+    case unsatisfiableConstraints(constraints: [TypeConstraint]), noConstraints
+    
     // not user visible
     case noStdBoolType, noStdIntType, notTypeProvider, noTypeForStruct, noTypeForTuple, noTypeForFunction(name: String)
     case structPropertyNotTyped(type: String, property: String), structMethodNotTyped(type: String, methodName: String), initialiserNotAssociatedWithType
@@ -135,6 +137,12 @@ enum SemaError: VistError {
         case .notValidLookup: return "Lookup expression was not valid"
         case .unreachable(let message): return "Unreachable: \(message)"
         case .todo(let message): return "Todo: \(message)"
+            
+        case .unsatisfiableConstraints(let constraints):
+            let names = constraints.map {$0.name}
+            return "Could not satisfy type constraitns: \(names.joined(separator: " "))"
+        case .noConstraints:
+            return "Could not satisfy empty type constraints"
         }
     }
 }

@@ -8,7 +8,7 @@
 
 private var emptyModule = LLVMModuleCreateWithName("___null___")
 
-protocol Type : VIRElement {
+protocol Type : VIRElement, ASTPrintable {
     
     /// Name used in mangling function signatures
     var mangledName: String { get }
@@ -30,6 +30,11 @@ protocol Type : VIRElement {
     /// Whether this type is representible in a module
     /// - whether it is a structrual type or module defined type alias
     func isInModule() -> Bool
+    
+    /// Add a type constraint to `self`
+    func addConstraint(type: Type) -> Bool
+    
+    var isAddressOnly: Bool { get }
 }
 
 extension Type {
@@ -38,6 +43,7 @@ extension Type {
         return mangledName
     }
     
+    var isAddressOnly: Bool { return false }
     var isHeapAllocated: Bool { return false }
     
     func isInModule() -> Bool {
@@ -70,6 +76,48 @@ extension Type {
 
 // MARK: Cannonical equality functions, compares their module-agnostic type info
 
+
+extension ConstraintSolver {
+    func typeSatisfies(_ subst: Type?, type: Type?) -> Bool {
+        switch (subst, type) {
+        case (let l as NominalType, let r as ConceptType):
+            return l.models(concept: r)
+        case (let l as NominalType, let r as GenericType):
+            return l.validSubstitutionFor(generic: r)
+        case (let variable as TypeVariable, let type):
+            if let solved = try? solveConstraints(variable: variable) {
+                return typeSatisfies(solved, type: type)
+            }
+            return false
+        default:
+            return subst == type
+        }
+    }
+}
+
+func == (lhs: Type?, rhs: Type?) -> Bool {
+    switch (lhs, rhs) {
+    case let (l as FunctionType, r as FunctionType):
+        return r == l
+    case (let lhs as NominalType, let rhs as NominalType):
+        return lhs.name == rhs.name
+    case let (l as BuiltinType, r as BuiltinType):
+        return l == r
+    case let (l as TupleType, r as TupleType):
+        return l == r
+    case let (l as TypeAlias, r as TypeAlias):
+        return l == r
+    case (nil, nil):
+        return true
+    default:
+        return false
+    }
+}
+func != (lhs: Type?, rhs: Type?) -> Bool {
+    return !(lhs == rhs)
+}
+
+/*
 func == (lhs: Type?, rhs: Type) -> Bool {
     if let l = lhs { return l == rhs } else { return false }
 }
@@ -84,35 +132,8 @@ func != (lhs: Type?, rhs: Type?) -> Bool {
 func != (lhs: Type?, rhs: Type) -> Bool {
     if let l = lhs { return l != rhs } else { return false }
 }
-
-func == (lhs: Type, rhs: Type) -> Bool {
-    switch (lhs, rhs) {
-    case (let l as NominalType, let r as ConceptType):
-        return l.models(concept: r)
-    case (let l as ConceptType, let r as NominalType):
-        return r.models(concept: l)
-    case (let l as NominalType, let r as GenericType):
-        return l.validSubstitutionFor(generic: r)
-    case (let l as GenericType, let r as NominalType):
-        return r.validSubstitutionFor(generic: l)
-        
-    case let (l as FunctionType, r as FunctionType):
-        return r == l
-    case (let lhs as NominalType, let rhs as NominalType):
-        return lhs.name == rhs.name
-    case let (l as BuiltinType, r as BuiltinType):
-        return l == r
-    case let (l as TupleType, r as TupleType):
-        return l == r
-    case let (l as TypeAlias, r as TypeAlias):
-        return l == r
-    default:
-        return false
-    }
-}
-
 func != (lhs: Type, rhs: Type) -> Bool {
     return !(lhs == rhs)
 }
-
+*/
 

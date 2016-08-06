@@ -81,11 +81,11 @@ extension Closure : CaptureDelegate {
         defer { module.builder.insertPoint = initialInsert }
         module.builder.insertPoint = scope.breakPoint!
 
-        let g: GlobalValue, accessor: GetSetAccessor
+        let g: GlobalValue, accessor: IndirectAccessor
         
         if
-            case let variableAccessor as GetSetAccessor = variable,
-            case let decl as GetSetAccessor = try scope.parent?.variable(named: name),
+            case let variableAccessor as IndirectAccessor = variable,
+            case let decl as IndirectAccessor = try scope.parent?.variable(named: name),
             let type = variableAccessor.mem.type {
            
             g = GlobalValue(name: "\(name).globlstorage", type: type, module: module)

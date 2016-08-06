@@ -13,6 +13,7 @@
 protocol VIRFunctionCall : Inst, VIRLower {
     var functionRef: LLVMFunction { get }
     var functionType: FunctionType { get }
+    var functionArgs: [Operand] { get }
 }
 
 /**
@@ -20,12 +21,14 @@ protocol VIRFunctionCall : Inst, VIRLower {
  
  `%a = call @HalfOpenRange_tII (%0:%Int, %1:%Int)`
  */
-final class FunctionCallInst: Inst, VIRFunctionCall {
+final class FunctionCallInst : Inst, VIRFunctionCall {
     var function: Function
     var returnType: Type
     
     var type: Type? { return returnType }
     
+    var functionArgs: [Operand] { return args }
+
     var uses: [Operand] = []
     var args: [Operand]
     
@@ -57,25 +60,30 @@ final class FunctionCallInst: Inst, VIRFunctionCall {
  
  `%a = apply %0 (%1:%Int, %2:%Int)`
  */
-final class FunctionApplyInst: Inst, VIRFunctionCall {
+final class FunctionApplyInst : Inst, VIRFunctionCall {
     var function: PtrOperand
     var returnType: Type
+    
+    /// The applied args to the function
+    var functionArgs: [Operand]
     
     var type: Type? { return returnType }
     
     var uses: [Operand] = []
+    /// This VIR instruction's args -- includes the function reference
     var args: [Operand]
     
     private init(function: PtrOperand, returnType: Type, args: [Operand], irName: String?) {
         self.function = function
         self.returnType = returnType
-        self.args = args
+        self.functionArgs = args
+        self.args = [function] + args
         initialiseArgs()
         self.irName = irName
     }
     
     var vir: String {
-        return "\(name) = apply \(function.valueName) \(args.virValueTuple())\(useComment)"
+        return "\(name) = apply \(function.name) \(args.virValueTuple())\(useComment)"
     }
     var instHasSideEffects: Bool { return true }
     
@@ -89,6 +97,45 @@ final class FunctionApplyInst: Inst, VIRFunctionCall {
     var parentBlock: BasicBlock?
     var irName: String?
 }
+
+/// A function reference
+/// `%0 = function_ref @foo : %`
+final class FunctionRefInst : Inst, LValue {
+    var function: PtrOperand, functionName: String
+    
+    var type: Type? { return function.type /*.map { BuiltinType.pointer(to: $0) }*/ }
+    var memType: Type? { return function.type }
+    
+    var uses: [Operand] = []
+    var args: [Operand]
+    
+    convenience init(function: Function, irName: String? = nil) {
+        self.init(function: function.buildFunctionPointer(), functionName: function.name, irName: irName)
+    }
+    
+    private init(function: PtrOperand, functionName: String, irName: String?) {
+        self.function = function
+        self.functionName = functionName
+        self.args = [function]
+        initialiseArgs()
+        self.irName = irName
+    }
+    
+    var vir: String {
+        return "\(name) = function_ref @\(function.name)\(useComment)"
+    }
+    
+    var functionRef: LLVMFunction { return LLVMFunction(ref: function.loweredValue!._value) }
+    var functionType: FunctionType { return function.memType as! FunctionType }
+    
+    func copy() -> FunctionRefInst {
+        return FunctionRefInst(function: function.formCopy(), functionName: functionName, irName: irName)
+    }
+    
+    var parentBlock: BasicBlock?
+    var irName: String?
+}
+
 
 
 extension Builder {

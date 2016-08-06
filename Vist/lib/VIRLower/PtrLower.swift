@@ -27,3 +27,8 @@ extension BitcastInst : VIRLower {
         return try IGF.builder.buildBitcast(value: address.loweredValue!, to: pointerType.lowered(module: module), name: irName)
     }
 }
+extension FunctionRefInst : VIRLower {
+    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+        return IGF.module.function(named: functionName)!.function
+    }
+}

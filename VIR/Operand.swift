@@ -91,6 +91,10 @@ final class PtrOperand : Operand {
     override func formCopy(nullValue: Bool = false) -> PtrOperand {
         return PtrOperand(optionalValue: nullValue ? nil : (value as! LValue), memType: memType)
     }
+    
+    var lvalue: LValue? {
+        return value as? LValue
+    }
 }
 
 

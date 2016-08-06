@@ -23,7 +23,11 @@ struct FunctionContainer {
      
      Optionally takes an array of metadata to apply to all functions
      */
-    init (functions: [(String, FunctionType)], types: [StructType], concepts: [ConceptType] = [], metadata: [String] = [], mangleFunctionNames: Bool = true) {
+    init (functions: [(String, FunctionType)],
+          types: [StructType],
+          concepts: [ConceptType] = [],
+          metadata: [String] = [],
+          mangleFunctionNames: Bool = true) {
         var functionTypes: [String: FunctionType] = [:]
         
         for (n, _ty) in functions {

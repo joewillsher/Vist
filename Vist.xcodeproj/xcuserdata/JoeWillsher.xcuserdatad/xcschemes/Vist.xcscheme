@@ -77,6 +77,10 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "-Ohigh"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-O0"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument

@@ -19,7 +19,7 @@ protocol StmtEmitter {
 
 protocol LValueEmitter: ValueEmitter {
     /// Emit the get/set-accessor for a VIR lvalue
-    func emitLValue(module: Module, scope: Scope) throws -> GetSetAccessor
+    func emitLValue(module: Module, scope: Scope) throws -> IndirectAccessor
 }
 
 /// A libaray without a main function can emit vir for this
@@ -195,7 +195,7 @@ extension FunctionCall/*: VIRGenerator*/ {
             let arg = try rawArg.emitRValue(module: module, scope: scope)
             try arg.retain()
             return try arg.boxedAggregateGetValue(expectedType: paramType)
-            }
+        }
             .map(Operand.init(_:))
     }
     
@@ -216,6 +216,12 @@ extension FunctionCall/*: VIRGenerator*/ {
             let a = args.map { $0.value! }
             return try module.builder.build(inst: BuiltinInstCall(inst: instruction, args: a)).accessor()
         }
+        else if case let closure as LValue = try scope.variable(named: mangledName.demangleName())?.getValue() {
+            let ret = closure.memType!.importedType(in: module) as! FunctionType
+            return try module.builder.buildFunctionApply(function: PtrOperand(closure),
+                                                         returnType: ret.returns,
+                                                         args: args).accessor()
+        }
         else if let function = module.function(named: mangledName) {
             return try module.builder.buildFunctionCall(function: function, args: args).accessor()
         }
@@ -225,6 +231,41 @@ extension FunctionCall/*: VIRGenerator*/ {
     }
 }
 
+extension ClosureExpr : ValueEmitter {
+    
+    func emitRValue(module: Module, scope: Scope) throws -> Accessor {
+        
+        // get the name and type
+        guard let mangledName = self.mangledName, let type = self.type else {
+            fatalError()
+        }
+        
+        // record position and create the closure body
+        let entry = module.builder.insertPoint
+        let thunk = try module.builder.getOrBuildFunction(name: mangledName,
+                                                          type: type,
+                                                          paramNames: parameters)
+        
+        // Create the closure to delegate captures
+        let closure = Closure.wrapping(function: thunk)
+        
+        let closureScope = Scope.capturing(parent: scope,
+                                           function: thunk,
+                                           captureDelegate: closure,
+                                           breakPoint: entry)
+        // add params
+        for param in parameters {
+            closureScope.insert(variable: try thunk.param(named: param).accessor(), name: param)
+        }
+        // emit body
+        try exprs.emitBody(module: module, scope: closureScope)
+        // move back out
+        module.builder.insertPoint = entry
+        
+        // return an accessor of the function reference
+        return try module.builder.build(inst: FunctionRefInst(function: thunk)).accessor()
+    }
+}
 
 extension FuncDecl : StmtEmitter {
         
@@ -265,7 +306,7 @@ extension FuncDecl : StmtEmitter {
                 
                 switch selfVar {
                 // if it is a ref self the self accessors are lazily calculated struct GEP
-                case let selfRef as GetSetAccessor:
+                case let selfRef as IndirectAccessor:
                     for property in type.members {
                         let pVar = LazyRefAccessor {
                             try module.builder.build(inst: StructElementPtrInst(object: selfRef.reference(), property: property.name, irName: property.name))
@@ -312,8 +353,8 @@ extension VariableExpr : LValueEmitter {
     func emitRValue(module: Module, scope: Scope) throws -> Accessor {
         return try scope.variable(named: name)!
     }
-    func emitLValue(module: Module, scope: Scope) throws -> GetSetAccessor {
-        return try scope.variable(named: name)! as! GetSetAccessor
+    func emitLValue(module: Module, scope: Scope) throws -> IndirectAccessor {
+        return try scope.variable(named: name)! as! IndirectAccessor
     }
 }
 
@@ -359,7 +400,7 @@ extension TupleMemberLookupExpr : ValueEmitter, LValueEmitter {
         return try module.builder.build(inst: TupleExtractInst(tuple: tuple, index: index)).accessor()
     }
     
-    func emitLValue(module: Module, scope: Scope) throws -> GetSetAccessor {
+    func emitLValue(module: Module, scope: Scope) throws -> IndirectAccessor {
         guard case let o as LValueEmitter = object else { fatalError() }
         
         let tuple = try o.emitLValue(module: module, scope: scope)
@@ -386,7 +427,7 @@ extension PropertyLookupExpr : LValueEmitter {
         }
     }
     
-    func emitLValue(module: Module, scope: Scope) throws -> GetSetAccessor {
+    func emitLValue(module: Module, scope: Scope) throws -> IndirectAccessor {
         guard case let o as LValueEmitter = object else { fatalError() }
         
         switch object._type {
@@ -692,7 +733,7 @@ extension InitDecl : StmtEmitter {
         // make scope and occupy it with params
         let fnScope = Scope(parent: scope, function: function)
         
-        let selfVar: GetSetAccessor
+        let selfVar: IndirectAccessor
         
         if selfType.isHeapAllocated {
             selfVar = try RefCountedAccessor.allocObject(type: selfType, module: module)

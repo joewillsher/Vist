@@ -35,6 +35,7 @@ arg.formMap(transform: {
 //    ptr.baseAddress
 //}
 
+/*
 class Foo {
     let s: String = "aa"
     let f: Any = 1
@@ -47,5 +48,17 @@ class Foo {
 }
 
 let g = Foo().foo()
+*/
 
+
+
+let c = { $0 } as (Int) -> Any
+
+let erased = c as Any
+
+if let opened = erased as? (Any) -> Any {
+    print(opened(1))
+}
+
+_ = ((Int) -> Any).self
 

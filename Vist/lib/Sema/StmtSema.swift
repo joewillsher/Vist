@@ -22,9 +22,16 @@ private extension ScopeEscapeStmt {
 extension ReturnStmt : StmtTypeProvider {
     
     func typeForNode(scope: SemaScope) throws {
-        guard !scope.isYield else { throw semaError(.invalidReturn) }
-        self.expectedReturnType = scope.returnType
-        try checkScopeEscapeStmt(scope: scope)
+        guard !scope.isYield, let returnType = scope.returnType else { throw semaError(.invalidReturn) }
+        expectedReturnType = returnType
+        
+        let exprType = try expr.typeForNode(scope: scope)
+        
+        guard returnType.addConstraint(type: exprType) else {
+            throw semaError(.wrongFunctionReturnType(applied: returnType, expected: returnType))
+        }
+        
+        //try checkScopeEscapeStmt(scope: scope)
     }
 }
 

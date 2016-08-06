@@ -262,6 +262,9 @@ extension YieldStmt : ASTPrintable {
 extension ClosureExpr : ASTPrintable {
     static var _astName: String { return "closure_expr=" }
 }
-
+extension Type {
+    var _astName_instance: String { return "\(prettyName)" }
+    static var _astName: String { return "type" }
+}
 
 
