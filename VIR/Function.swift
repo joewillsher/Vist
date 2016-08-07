@@ -48,7 +48,7 @@ final class Function : VIRElement {
     }
     
     /// A `Function`'s body. This contains the parameters and basic block list
-    private final class FunctionBody {
+    fileprivate final class FunctionBody {
         var blocks: [BasicBlock], params: [Param]
         /// The block self is a member of
         unowned let parentFunction: Function

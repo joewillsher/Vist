@@ -59,7 +59,7 @@ final class Closure : ThunkFunction, VIRElement {
     let thunk: Function
     var function: Function { return thunk }
     var captured: [Accessor] = []
-    private(set) var capturedGlobals: [GlobalValue] = []
+    fileprivate(set) var capturedGlobals: [GlobalValue] = []
     
     var thunkName = ""
     var name: String { return (thunkName+thunk.name).mangle(type: thunk.type)  }

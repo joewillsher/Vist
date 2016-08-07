@@ -17,7 +17,7 @@ final class BasicBlock : VIRElement {
     /// A name for the block
     var name: String
     /// The collection of instructions in this block
-    private(set) var instructions: [Inst] = []
+    fileprivate(set) var instructions: [Inst] = []
     
     weak var parentFunction: Function?
     var loweredBlock: LLVMBasicBlock? = nil
@@ -27,7 +27,7 @@ final class BasicBlock : VIRElement {
 
     /// The applications to this block. A list of predecessors
     /// and the arguments they applied
-    private(set) var applications: [BlockApplication]
+    fileprivate(set) var applications: [BlockApplication]
     
     /// A list of the predecessor blocks. These blocks broke to `self`
     var predecessors: [BasicBlock] { return applications.flatMap { application in application.predecessor } }

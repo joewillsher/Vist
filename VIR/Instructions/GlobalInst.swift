@@ -42,7 +42,7 @@ final class GlobalValue : LValue {
     final class Lifetime {
         let start: Operand, end: Operand
         let globalName: String
-        private unowned let owningFunction: Function
+        fileprivate unowned let owningFunction: Function
         init(start: Inst, end: Inst, globalName: String, owningFunction: Function) {
             self.start = Operand(start)
             self.end = Operand(end)

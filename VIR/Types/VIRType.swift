@@ -23,6 +23,10 @@ struct VIRType<T : Type> {
 struct AnyType : Type {
     private let type: Type
     
+    fileprivate init(type: Type) {
+        self.type = type
+    }
+    
     /// Name used in mangling function signatures
     var mangledName: String { return type.mangledName }
     

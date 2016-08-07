@@ -19,7 +19,7 @@ final class BreakInst : BreakInstruction, Inst {
     
     var type: Type? { return nil }
     
-    private init(call: BlockCall) {
+    fileprivate init(call: BlockCall) {
         self.call = call
         self.args = call.args ?? []
         initialiseArgs()
@@ -45,7 +45,7 @@ final class CondBreakInst : Inst, BreakInstruction {
     
     var type: Type? { return nil }
     
-    private init(then: BlockCall, else: BlockCall, condition: Operand) {
+    fileprivate init(then: BlockCall, else: BlockCall, condition: Operand) {
         self.thenCall = then
         self.elseCall = `else`
         self.condition = condition

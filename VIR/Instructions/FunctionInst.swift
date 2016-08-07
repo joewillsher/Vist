@@ -32,7 +32,7 @@ final class FunctionCallInst : Inst, VIRFunctionCall {
     var uses: [Operand] = []
     var args: [Operand]
     
-    private init(function: Function, returnType: Type, args: [Operand], irName: String?) {
+    fileprivate init(function: Function, returnType: Type, args: [Operand], irName: String?) {
         self.function = function
         self.returnType = returnType
         self.args = args
@@ -73,7 +73,7 @@ final class FunctionApplyInst : Inst, VIRFunctionCall {
     /// This VIR instruction's args -- includes the function reference
     var args: [Operand]
     
-    private init(function: PtrOperand, returnType: Type, args: [Operand], irName: String?) {
+    fileprivate init(function: PtrOperand, returnType: Type, args: [Operand], irName: String?) {
         self.function = function
         self.returnType = returnType
         self.functionArgs = args

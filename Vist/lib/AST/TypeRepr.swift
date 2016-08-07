@@ -49,7 +49,7 @@ enum TypeRepr {
         }
     }
     
-    private func tyArr(scope: SemaScope) throws -> [Type] {
+    fileprivate func tyArr(scope: SemaScope) throws -> [Type] {
         switch self {
         case .void:             return []
         case .type, .function:  return [try typeIn(scope: scope)]

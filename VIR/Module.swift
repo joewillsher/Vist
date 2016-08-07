@@ -26,9 +26,7 @@ final class Module : VIRElement {
     
     init() { builder = Builder(module: self) }
     var module: Module { return self }
-}
-
-extension Module {
+    
     
     /// Insert function to the module
     func insert(function f: Function) {

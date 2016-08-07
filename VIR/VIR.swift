@@ -69,7 +69,7 @@ extension Value {
 }
 extension BasicBlock {
     var vir: String {
-        let p = parameters?.count > 0 ? parameters?.map({ $0.vir }) : nil
+        let p = (parameters?.count ?? 0) > 0 ? parameters?.map({ $0.vir }) : nil
         let pString = p.map { "(\($0.joined(separator: ", ")))"} ?? ""
         let i = instructions.map { $0.vir }
         let iString = "\n  \(i.joined(separator: "\n  "))\n"
