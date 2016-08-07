@@ -214,8 +214,8 @@ extension ClosureExpr : ExprTypeProvider {
         }
         */
         
-        guard let mangledName = scope.name else { fatalError() }
-        self.mangledName = mangledName + ".closure"
+        guard let mangledName = scope.name?.appending(".closure") else { fatalError() }
+        self.mangledName = mangledName
         self.type = ty
         
         // we dont want implicit captutring
@@ -223,11 +223,19 @@ extension ClosureExpr : ExprTypeProvider {
                                                   overrideReturnType: ty.returns)
         innerScope.returnType = ty.returns
         
-        for (i, t) in ty.params.enumerated() {
-            let name = parameters.isEmpty ? "$\(i)" : parameters[i]
-            innerScope.addVariable(variable: (type: t, mutable: false, isImmutableCapture: false), name: name)
+        // add implicit params
+        if parameters.isEmpty && !ty.params.isEmpty {
+            parameters = (0..<ty.params.count).map { "$\($0)" }
+        }
+        guard parameters.count == ty.params.count else { fatalError() }
+        
+        // add params to scope
+        for (name, type) in zip(parameters, ty.params) {
+            innerScope.addVariable(variable: (type: type, mutable: false, isImmutableCapture: false),
+                                   name: name)
         }
         
+        // type check body
         for exp in exprs {
             try exp.typeForNode(scope: innerScope)
         }
