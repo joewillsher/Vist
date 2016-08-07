@@ -61,7 +61,8 @@ extension FuncDecl : DeclTypeProvider {
         }
         
         // scope return type hint applies to yield and return so use `returnType`
-        let fnScope = SemaScope(parent: scope, returnType: scopeRetType, isYield: isGeneratorFunction)
+        let scopeName = (scope.name ?? "") + "." + (self.mangledName ?? self.name)
+        let fnScope = SemaScope(parent: scope, returnType: scopeRetType, isYield: isGeneratorFunction, name: scopeName)
         
         // make surebound list is same length
         guard impl.params.count == ty.params.count || isGeneratorFunction else { throw semaError(.wrongFuncParamList(applied: impl.params, forType: ty.params)) }

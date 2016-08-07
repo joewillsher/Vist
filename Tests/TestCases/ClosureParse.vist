@@ -1,0 +1,11 @@
+// RUN: -dump-ast
+// CHECK: AST
+
+
+let fn: Int -> Int = do return $0
+let fn2: Int -> Int = (a) do return a + 1
+
+func map :: Int (Int -> Int) -> Int = (val map) {
+    return map val
+}
+

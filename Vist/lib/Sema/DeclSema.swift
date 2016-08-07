@@ -212,8 +212,12 @@ extension VariableDecl : DeclTypeProvider {
         let explicitType = try typeRepr?.typeIn(scope: scope)
         
         // scope for declaration -- not a return type and sets the `semaContext` to the explicitType
+        let scopeName = scope.name ?? ""
         let context = (explicitType as? FunctionType).map {
-            (context: $0 as Type, name: self.name.mangle(type: $0))
+            (
+                context: $0 as Type,
+                name: scopeName.mangle(type: $0) + "." + self.name
+            )
         }
         let declScope = SemaScope.capturingScope(parent: scope,
                                                  overrideReturnType: nil,

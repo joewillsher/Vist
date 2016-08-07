@@ -203,6 +203,7 @@
 		D4F3D8031CAC41EB005A3B07 /* Intrinsic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D4F3D8001CAC41EB005A3B07 /* Intrinsic.cpp */; };
 		D4F3D8051CAC4243005A3B07 /* LowerError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4F3D8041CAC4243005A3B07 /* LowerError.swift */; };
 		D4F3D8061CAC4243005A3B07 /* LowerError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4F3D8041CAC4243005A3B07 /* LowerError.swift */; };
+		D4FB8B9E1D57AE6E008199E9 /* Diagnose.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E615411D51F93000A10DA4 /* Diagnose.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -886,6 +887,7 @@
 				D43B39AF1C8A0F140039FB2E /* BuiltinType.swift in Sources */,
 				D43B39981C8A0EDF0039FB2E /* Inst.swift in Sources */,
 				D4A000251CCA7E8F00157D90 /* CFGLower.swift in Sources */,
+				D4FB8B9E1D57AE6E008199E9 /* Diagnose.swift in Sources */,
 				D43B399A1C8A0EDF0039FB2E /* Module.swift in Sources */,
 				D4326E3C1CA5FB7E0016E595 /* Task.swift in Sources */,
 				D43B3A471C8A10C80039FB2E /* StmtSema.swift in Sources */,

@@ -757,7 +757,7 @@ extension Parser {
         var decls: [VariableDecl] = []
         consumeToken() // eat var/let
         
-        while true {
+        repeat {
             guard let id = consumeIfIdentifier() else {
                 throw parseError(.noIdentifier, loc: rangeOfCurrentToken())
             }
@@ -790,15 +790,13 @@ extension Parser {
                                     isMutable: mutable,
                                     value: NullExpr())
             }
-            
-            if consumeIf(.comma) {
-                decls.append(decl)
-            }
-            else {
-                decls.append(decl)
-                return VariableGroupDecl(declared: decls)
-            }
+            decls.append(decl)
+        } while consumeIf(.comma)
+        
+        if decls.count == 1 {
+            return decls[0]
         }
+        return VariableGroupDecl(declared: decls)
     }
     
 }

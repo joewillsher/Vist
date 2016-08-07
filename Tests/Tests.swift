@@ -57,7 +57,7 @@ extension CheckingTest {
     func _testFile(name: String) -> Bool {
         let path = "\(Self.testDir)/\(name).vist"
         let temp = URL(fileURLWithPath: "\(path).tmp")
-        guard FileManager.default.createFile(atPath: temp.path!, contents: nil, attributes: nil) else { fatalError() }
+        guard FileManager.default.createFile(atPath: temp.path, contents: nil, attributes: nil) else { fatalError() }
         defer { try! FileManager.default.removeItem(at: temp) }
         
         do {
@@ -113,6 +113,10 @@ final class VIRGenTests : XCTestCase, VistTest, CheckingTest {
 final class LLVMTests : XCTestCase, VistTest, CheckingTest {
     
 }
+final class ParseTests : XCTestCase, VistTest, CheckingTest {
+    
+}
+
 
 
 // MARK: Test Cases
@@ -245,7 +249,7 @@ extension RuntimePerformanceTests {
                 let runTask = Task()
                 runTask.currentDirectoryPath = RuntimePerformanceTests.testDir
                 runTask.launchPath = "\(RuntimePerformanceTests.testDir)/\(fileName)"
-                runTask.standardOutput = FileHandle.withNullDevice
+                runTask.standardOutput = FileHandle.nullDevice
                 
                 self.startMeasuring()
                 runTask.launch()
@@ -274,7 +278,7 @@ extension RuntimePerformanceTests {
                 let runTask = Task()
                 runTask.currentDirectoryPath = RuntimePerformanceTests.testDir
                 runTask.launchPath = "\(RuntimePerformanceTests.testDir)/\(fileName)"
-                runTask.standardOutput = FileHandle.withNullDevice
+                runTask.standardOutput = FileHandle.nullDevice
                 
                 self.startMeasuring()
                 runTask.launch()
@@ -303,7 +307,7 @@ extension RuntimePerformanceTests {
                 let runTask = Task()
                 runTask.currentDirectoryPath = RuntimePerformanceTests.testDir
                 runTask.launchPath = "\(RuntimePerformanceTests.testDir)/\(fileName)"
-                runTask.standardOutput = FileHandle.withNullDevice
+                runTask.standardOutput = FileHandle.nullDevice
                 
                 self.startMeasuring()
                 runTask.launch()
@@ -457,6 +461,17 @@ extension VIRGenTests {
     
     func testExistentialReturn() {
         XCTAssert(_testFile(name: "ExistentialReturn-vir"))
+    }
+    
+    func testClosure() {
+        XCTAssert(_testFile(name: "ClosureGen"))
+    }
+}
+
+extension ParseTests {
+    
+    func testClosure() {
+        XCTAssert(_testFile(name: "ClosureParse"))
     }
     
 }

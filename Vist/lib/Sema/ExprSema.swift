@@ -198,11 +198,9 @@ extension ClosureExpr : ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Type {
         
-        
         let ty = (scope.semaContext as? FunctionType)
             ?? FunctionType(params: parameters.map { _ in scope.constraintSolver.getTypeVariable() },
                             returns: scope.constraintSolver.getTypeVariable())
-        
         /*
         // If the AST context tells us the type, use that
         // otherwise create type variables for the unknown param & return types
@@ -217,7 +215,7 @@ extension ClosureExpr : ExprTypeProvider {
         */
         
         guard let mangledName = scope.name else { fatalError() }
-        self.mangledName = mangledName
+        self.mangledName = mangledName + ".closure"
         self.type = ty
         
         // we dont want implicit captutring

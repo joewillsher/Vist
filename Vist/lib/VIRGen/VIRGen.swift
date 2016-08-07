@@ -248,14 +248,13 @@ extension ClosureExpr : ValueEmitter {
         
         // Create the closure to delegate captures
         let closure = Closure.wrapping(function: thunk)
-        
         let closureScope = Scope.capturing(parent: scope,
-                                           function: thunk,
+                                           function: closure.thunk,
                                            captureDelegate: closure,
                                            breakPoint: entry)
         // add params
         for param in parameters {
-            closureScope.insert(variable: try thunk.param(named: param).accessor(), name: param)
+            closureScope.insert(variable: try closure.thunk.param(named: param).accessor(), name: param)
         }
         // emit body
         try exprs.emitBody(module: module, scope: closureScope)
@@ -263,7 +262,7 @@ extension ClosureExpr : ValueEmitter {
         module.builder.insertPoint = entry
         
         // return an accessor of the function reference
-        return try module.builder.build(inst: FunctionRefInst(function: thunk)).accessor()
+        return try module.builder.build(inst: FunctionRefInst(function: closure.thunk)).accessor()
     }
 }
 
@@ -271,7 +270,7 @@ extension FuncDecl : StmtEmitter {
         
     func emitStmt(module: Module, scope: Scope) throws {
         
-        guard let type = typeRepr.type else { throw VIRError.noType(#file) }
+        guard let type = typeRepr.type else { throw VIRError.noType(#function) }
         guard let mangledName = self.mangledName else { throw VIRError.noMangledName }
         
         // if has body
@@ -302,29 +301,28 @@ extension FuncDecl : StmtEmitter {
             let selfVar = try selfParam.accessor()
             fnScope.insert(variable: selfVar, name: "self") // add `self`
             
-            if case let type as NominalType = selfType {
-                
-                switch selfVar {
-                // if it is a ref self the self accessors are lazily calculated struct GEP
-                case let selfRef as IndirectAccessor:
-                    for property in type.members {
-                        let pVar = LazyRefAccessor {
-                            try module.builder.build(inst: StructElementPtrInst(object: selfRef.reference(), property: property.name, irName: property.name))
-                        }
-                        fnScope.insert(variable: pVar, name: property.name)
+            guard case let type as NominalType = selfType else { fatalError() }
+            
+            switch selfVar {
+            // if it is a ref self the self accessors are lazily calculated struct GEP
+            case let selfRef as IndirectAccessor:
+                for property in type.members {
+                    let pVar = LazyRefAccessor {
+                        try module.builder.build(inst: StructElementPtrInst(object: selfRef.reference(), property: property.name, irName: property.name))
                     }
-                // If it is a value self then we do a struct extract to get self elements
-                // case is Accessor:
-                default:
-                    for property in type.members {
-                        let pVar = LazyAccessor(module: module) {
-                            try module.builder.build(inst: StructExtractInst(object: selfVar.getValue(), property: property.name, irName: property.name))
-                        }
-                        fnScope.insert(variable: pVar, name: property.name)
-                    }
+                    fnScope.insert(variable: pVar, name: property.name)
                 }
-                
+                // If it is a value self then we do a struct extract to get self elements
+            // case is Accessor:
+            default:
+                for property in type.members {
+                    let pVar = LazyAccessor(module: module) {
+                        try module.builder.build(inst: StructExtractInst(object: selfVar.getValue(), property: property.name, irName: property.name))
+                    }
+                    fnScope.insert(variable: pVar, name: property.name)
+                }
             }
+            
             
         }
         

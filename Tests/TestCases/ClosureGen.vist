@@ -1,0 +1,37 @@
+// RUN: -Onone -emit-vir
+// CHECK: VIR
+
+// VIR-CHECK:
+// VIR: func @foo_ttI : &thin ((#Int) -> #Int) -> #Builtin.Void {
+// VIR: $entry(%fn: #*tI):
+// VIR:   %0 = int_literal 1 	// user: %1
+// VIR:   %1 = struct %Int, (%0: #Builtin.Int64) 	// user: %2
+// VIR:   %2 = apply %fn (%fn: #*tI, %1: #Int) 	// user: %3
+// VIR:   %3 = call @print_tI (%2: #Int)
+// VIR:   return ()
+// VIR: }
+func foo :: (Int -> Int) = (fn) {
+    print (fn 1)
+}
+
+func test :: () = {
+    // VIR-CHECK:
+    // VIR: global %x.globl: #Int
+    let x = 1
+    
+    // VIR-CHECK:
+    // VIR: func @-Dtest-Ut_tI.f.closure : &thin (#Int) -> #Int {
+    // VIR:   $entry(%a: #Int):
+    // VIR:   %0 = load %x.globl: #*Int 	// user: %1
+    // VIR:   %1 = call @-P_tII (%a: #Int, %0: #Int) 	// user: %2
+    // VIR:   return %1
+    // VIR: }
+    let f: Int -> Int = (a) do return a + x
+    
+    // VIR-CHECK:
+    // VIR:   store %x in %x.globl: #*Int
+    // VIR:   %3 = function_ref @%-Dtest-Ut_tI.f.closure 	// user: %f
+    // VIR:   variable_decl %f = %3: #*tI 	// user: %4
+    // VIR:   %4 = call @foo_ttI (%f: #*tI)
+    foo f
+}

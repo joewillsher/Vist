@@ -22,7 +22,10 @@ final class Scope {
         self.module = module
         self.variables = [:]
     }
-    init(parent: Scope, function: Function?, captureDelegate: CaptureDelegate? = nil, breakPoint: Builder.InsertPoint? = nil) {
+    init(parent: Scope,
+         function: Function?,
+         captureDelegate: CaptureDelegate? = nil,
+         breakPoint: Builder.InsertPoint? = nil) {
         self.parent = parent
         self.function = function
         self.variables = [:]
@@ -31,8 +34,14 @@ final class Scope {
         self.breakPoint = breakPoint ?? parent.breakPoint
     }
     /// Create a scope which captures from `parent`
-    static func capturing(parent: Scope, function: Function, captureDelegate: CaptureDelegate, breakPoint: Builder.InsertPoint) -> Scope {
-        return Scope(parent: parent, function: function, captureDelegate: captureDelegate, breakPoint: breakPoint)
+    static func capturing(parent: Scope,
+                          function: Function,
+                          captureDelegate: CaptureDelegate,
+                          breakPoint: Builder.InsertPoint) -> Scope {
+        return Scope(parent: parent,
+                     function: function, 
+                     captureDelegate: captureDelegate,
+                     breakPoint: breakPoint)
     }
     
     func insert(variable: Accessor, name: String) {
