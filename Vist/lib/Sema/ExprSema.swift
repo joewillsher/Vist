@@ -208,9 +208,9 @@ extension ClosureExpr : ExprTypeProvider {
         // constrain the type variables to any explicit type
         if case let context as FunctionType = scope.semaContext {
             for (ty, variable) in zip(context.params, ty.params) {
-                try variable.addConstraint(ty, solver: scope.constraintSolver, customError: nil)
+                try variable.addConstraint(ty, solver: scope.constraintSolver)
             }
-            try ty.returns.addConstraint(context.returns, solver: scope.constraintSolver, customError: nil)
+            try ty.returns.addConstraint(context.returns, solver: scope.constraintSolver)
         }
         
         guard let mangledName = scope.name?.appending(".closure") else { fatalError() }

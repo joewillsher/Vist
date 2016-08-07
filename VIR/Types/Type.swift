@@ -32,7 +32,7 @@ protocol Type : VIRElement, ASTPrintable {
     func isInModule() -> Bool
     
     /// Add a type constraint to `self`
-    func addConstraint(_: Type, solver: ConstraintSolver, customError: Error?) throws
+    func addConstraint(_: Type, solver: ConstraintSolver) throws
     /// Can this type satisfy the given constraint
     func canAddConstraint(_: Type, solver: ConstraintSolver) -> Bool
     

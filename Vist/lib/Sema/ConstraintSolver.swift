@@ -27,12 +27,12 @@ final class TypeVariable : Type {
         return true
     }
     
-    func addConstraint(_ constraint: Type, solver: ConstraintSolver, customError: Error?) throws {
+    func addConstraint(_ constraint: Type, solver: ConstraintSolver) throws {
         
         // if this type variable has already been solved, we return
         // whether this type is substitutable
         if let solved = try? solver.solveConstraints(variable: self) {
-            try solved.addConstraint(constraint, solver: solver, customError: customError)
+            try solved.addConstraint(constraint, solver: solver)
             return
         }
         
@@ -51,7 +51,7 @@ final class TypeVariable : Type {
 extension Type {
     // For normal types adding a constraint doesn't make sense. Because we have a concrete type
     // we instead check whehter they are substitutable
-    func addConstraint(_ constraint: Type, solver: ConstraintSolver, customError: Error?) throws {
+    func addConstraint(_ constraint: Type, solver: ConstraintSolver) throws {
         guard solver.typeSatisfies(self, constraint: constraint) else {
             throw SemaError.couldNotAddConstraint(constraint: constraint, to: self)
         }

@@ -181,7 +181,7 @@ extension Collection where
             }
             
             for (type, constraint) in zip(argTypes, fnType.params) {
-                try! type.addConstraint(constraint, solver: solver, customError: nil)
+                try! type.addConstraint(constraint, solver: solver)
             }
             return true
             
