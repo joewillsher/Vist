@@ -1,11 +1,34 @@
 // RUN: -dump-ast
 // CHECK: AST
 
-
+// CHECK-AST:
+// AST:     (variable_decl
+// AST:       (name "fn")
+// AST:       (typeRepr Int -> Int)
+// AST:       (isMutable false)
+// AST:       (value (closure_expr exprs=
+// AST:             (return_stmt expr=(variable_expr name="$0" _type=Int) expectedReturnType=Int) parameters= type=(Int) -> Int mangledName="_tI.fn.closure"))
 let fn: Int -> Int = do return $0
-let fn2: Int -> Int = (a) do return a + 1
 
-func map :: Int (Int -> Int) -> Int = (val map) {
-    return map val
-}
+// CHECK-AST:
+// AST:     (variable_decl
+// AST:       (name "fn2")
+// AST:       (typeRepr Int -> Int)
+// AST:       (isMutable false)
+// AST:       (value (closure_expr
+// AST:         (exprs
+// AST:             (return_stmt
+// AST:               (expr (binary_operator_expr
+// AST:                 (op "+")
+// AST:                 (lhs (variable_expr name="a" _type=Int))
+// AST:                 (rhs (int_literal val=1 size=64 type=Int))
+// AST:                 (mangledName "-P_tII")
+// AST:                 (fnType (Int, Int) -> Int)
+// AST:                 (_type Int))
+// AST:               (expectedReturnType Int))
+// AST:         (parameters
+// AST:             "a")
+// AST:         (type (Int) -> Int)
+// AST:         (mangledName "_tI.fn2.closure"))
+let fn2: Int -> Int = (a) do return a + 1
 
