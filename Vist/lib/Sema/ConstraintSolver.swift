@@ -20,36 +20,52 @@ final class TypeVariable : Type {
     func isInModule() -> Bool { fatalError() }
     var vir: String { return prettyName }
     
-    func addConstraint(type: Type) -> Bool {
-        //func addConstraint<TypedNode: Typed>(type: Type, update: (TypedNode) -> ()) {
-        if case let concept as ConceptType = type {
-            constraints.append(.satisfies(concept))
-        }
-        else if case let variable as TypeVariable = type {
-            constraints.append(.sameVariable(variable))
-        }
-        else {
-            constraints.append(.equal(type))
+    func canAddConstraint(_ constraint: Type, solver: ConstraintSolver) -> Bool {
+        if let solved = try? solver.solveConstraints(variable: self) {
+            return solver.typeSatisfies(solved, constraint: constraint)
         }
         return true
     }
+    
+    func addConstraint(_ constraint: Type, solver: ConstraintSolver, customError: Error?) throws {
+        
+        // if this type variable has already been solved, we return
+        // whether this type is substitutable
+        if let solved = try? solver.solveConstraints(variable: self) {
+            try solved.addConstraint(constraint, solver: solver, customError: customError)
+            return
+        }
+        
+        if case let concept as ConceptType = constraint {
+            constraints.append(.satisfies(concept))
+        }
+        else if case let variable as TypeVariable = constraint {
+            constraints.append(.sameVariable(variable))
+            variable.constraints.append(.sameVariable(self))
+        }
+        else {
+            constraints.append(.equal(constraint))
+        }
+    }
 }
-
+extension Type {
+    // For normal types adding a constraint doesn't make sense. Because we have a concrete type
+    // we instead check whehter they are substitutable
+    func addConstraint(_ constraint: Type, solver: ConstraintSolver, customError: Error?) throws {
+        guard solver.typeSatisfies(self, constraint: constraint) else {
+            throw SemaError.couldNotAddConstraint(constraint: constraint, to: self)
+        }
+    }
+    func canAddConstraint(_ constraint: Type, solver: ConstraintSolver) -> Bool {
+        return solver.typeSatisfies(self, constraint: constraint)
+    }
+}
 extension TypeVariable : Hashable {
     var hashValue: Int { return id }
     static func == (l: TypeVariable, r: TypeVariable) -> Bool {
         return l.id == r.id
     }
 }
-extension Type {
-    // For normal types adding a constraint doesn't make sense. Because we have a concrete type
-    // we instead check whehter they are substitutable
-    func addConstraint(type: Type) -> Bool {
-        guard type == self else { return false }
-        return true
-    }
-}
-
 final class ConstraintSolver {
     
     private var counter = 0
@@ -59,31 +75,29 @@ final class ConstraintSolver {
     }
     
     private var solvedConstraints: [TypeVariable: Type] = [:]
-}
-
-extension ConstraintSolver {
     
     func solveConstraints(variable: TypeVariable) throws -> Type {
+        // if already solved, return it
         if let solved = solvedConstraints[variable] {
             return solved
         }
-        
+        /// Caches the solution and returns it
         func update(_ type: Type) -> Type {
             solvedConstraints[variable] = type
             return type
         }
         
-        for case .sameVariable(let solved) in variable.constraints {
-            return update(solved)
-        }
         for case .equal(let concrete) in variable.constraints {
             return update(concrete)
         }
         for case .satisfies(let concept) in variable.constraints {
             return update(concept)
         }
+        for case .sameVariable(let solved) in variable.constraints {
+            return try update(solveConstraints(variable: solved))
+        }
         
-        // If couldnt substitute the type, throw
+        // If couldn't substitute the type, throw
         throw semaError(.unsatisfiableConstraints(constraints: variable.constraints))
     }
 }

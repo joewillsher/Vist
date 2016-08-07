@@ -27,6 +27,7 @@ enum SemaError: VistError {
     case functionNotMethod, mutatingMethodOnImmutable(method: String, baseType: String)
     
     case unsatisfiableConstraints(constraints: [TypeConstraint]), noConstraints
+    case couldNotAddConstraint(constraint: Type, to: Type)
     
     // not user visible
     case noStdBoolType, noStdIntType, notTypeProvider, noTypeForStruct, noTypeForTuple, noTypeForFunction(name: String)
@@ -143,6 +144,8 @@ enum SemaError: VistError {
             return "Could not satisfy type constraitns: \(names.joined(separator: " "))"
         case .noConstraints:
             return "Could not satisfy empty type constraints"
+        case .couldNotAddConstraint(let constraint, let type):
+            return "Count not constrain type '\(type.prettyName)' to '\(constraint.prettyName)'"
         }
     }
 }

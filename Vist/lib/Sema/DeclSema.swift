@@ -221,7 +221,8 @@ extension VariableDecl : DeclTypeProvider {
         }
         let declScope = SemaScope.capturingScope(parent: scope,
                                                  overrideReturnType: nil,
-                                                 context: context)
+                                                 context: context?.context,
+                                                 scopeName: context?.name)
         
         let objectType = try value.typeForNode(scope: declScope)
         

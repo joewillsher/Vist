@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-struct StdLib {
+enum StdLib {
     
     static let intType =    StructType(members:   [("value", BuiltinType.int(size: 64), true)],       methods: [], name: "Int")
     static let int32Type =  StructType(members:   [("value", BuiltinType.int(size: 32), true)],       methods: [], name: "Int32")
@@ -137,10 +137,9 @@ struct StdLib {
     private static let functionContainer = FunctionContainer(functions: functions, types: types, concepts: [printableConcept])
     
     
-    private static func getStdLibFunctionWithInitInfo(id: String, args: [Type]) -> (String, FunctionType)? {
-        return functionContainer[fn: id, types: args]
+    private static func getStdLibFunctionWithInitInfo(id: String, args: [Type], solver: ConstraintSolver) -> (String, FunctionType)? {
+        return functionContainer.lookupFunction(named: id, argTypes: args, solver: solver)
     }
-    
     
     // MARK: Exposed functions
     
@@ -158,8 +157,9 @@ struct StdLib {
     /// Get a named function from the standard library
     /// - parameter name: Unmangled name
     /// - parameter args: Applied arg types
+    /// - parameter solver: the scope's constraint solver
     /// - returns: An optional tuple of `(mangledName, type)`
-    static func function(name: String, args: [Type]) -> (mangledName: String, type: FunctionType)? {
-        return functionContainer[fn: name, types: args]
+    static func function(name: String, args: [Type], solver: ConstraintSolver) -> (mangledName: String, type: FunctionType)? {
+        return functionContainer.lookupFunction(named: name, argTypes: args, solver: solver)
     }
 }

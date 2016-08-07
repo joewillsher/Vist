@@ -52,7 +52,7 @@ final class SemaScope {
     ///
     func function(named name: String, argTypes: [Type]) throws -> (mangledName: String, type: FunctionType) {
         // lookup from stdlib/builtin
-        if let stdLibFunction = StdLib.function(name: name, args: argTypes) { return stdLibFunction }
+        if let stdLibFunction = StdLib.function(name: name, args: argTypes, solver: constraintSolver) { return stdLibFunction }
         else if isStdLib, let builtinFunction = Builtin.function(name: name, argTypes: argTypes) { return builtinFunction }
             // otherwise we search the user scopes recursively
         else { return try recursivelyLookupFunction(named: name, argTypes: argTypes) }
@@ -61,7 +61,7 @@ final class SemaScope {
     /// Recursvively searches this scope and its parents
     /// - note: should only be called *after* looking up in stdlib/builtin
     private func recursivelyLookupFunction(named name: String, argTypes: [Type]) throws -> (mangledName: String, type: FunctionType) {
-        if let inScope = functions.function(havingUnmangledName: name, paramTypes: argTypes, solver: constraintSolver) { return inScope }
+        if let inScope = functions.function(havingUnmangledName: name, argTypes: argTypes, solver: constraintSolver) { return inScope }
             // lookup from parents
         else if let inParent = try parent?.function(named: name, argTypes: argTypes) { return inParent }
             // otherwise we havent found a match :(
@@ -154,12 +154,12 @@ final class SemaScope {
         return SemaScope(returnType: returnType, isStdLib: parent.isStdLib, context: context?.context, name: context?.name)
     }
     
-    static func capturingScope(parent: SemaScope, overrideReturnType: Optional<Type?> = nil, context: (context: Type, name: String)? = nil) -> SemaScope {
+    static func capturingScope(parent: SemaScope, overrideReturnType: Optional<Type?> = nil, context: Type? = nil, scopeName: String? = nil) -> SemaScope {
         return SemaScope(parent: parent,
                          returnType: overrideReturnType ?? parent.returnType,
                          isYield: parent.isYield,
-                         semaContext: context?.context ?? parent.semaContext,
-                         name: context?.name)
+                         semaContext: context ?? parent.semaContext,
+                         name: scopeName ?? parent.name)
     }
 }
 
@@ -169,28 +169,24 @@ extension Collection where
 {
     /// Look up the function from this mangled collection by the unmangled name and param types
     /// - returns: the mangled name and the type of the matching function
-    func function(havingUnmangledName appliedName: String, paramTypes: [Type], solver: ConstraintSolver) -> (mangledName: String, type: FunctionType)? {
+    func function(havingUnmangledName appliedName: String, argTypes: [Type], solver: ConstraintSolver) -> (mangledName: String, type: FunctionType)? {
         return first(where: { fnName, fnType in
             
-            fnName.demangleName() == appliedName &&
-                !zip(fnType.params, paramTypes)
-                .map(solver.typeSatisfies(_:type:))
-                .contains(false)
+            guard fnName.demangleName() == appliedName else { return false } // base names match
+            
+            for (type, constraint) in zip(argTypes, fnType.params) {
+                guard type.canAddConstraint(constraint, solver: solver) else {
+                    return false
+                }
+            }
+            
+            for (type, constraint) in zip(argTypes, fnType.params) {
+                try! type.addConstraint(constraint, solver: solver, customError: nil)
+            }
+            return true
             
         }).map { f in
             return (mangledName: appliedName.mangle(type: f.value), type: f.value)
-        }
-    }
-    /// Look up the function from this mangled collection by the unmangled name and param types
-    /// - returns: the mangled name and the type of the matching function
-    func function(havingUnmangledName raw: String, paramTypes types: [Type]) -> (mangledName: String, type: FunctionType)? {
-        return first(where: { k, v in
-            
-            k.demangleName() == raw &&
-                v.params.elementsEqual(types, by: ==)
-            
-        }).map { f in
-            return (mangledName: raw.mangle(type: f.value), type: f.value)
         }
     }
 }

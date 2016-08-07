@@ -56,11 +56,11 @@ struct FunctionContainer {
     }
     
     /// Get a named function
-    /// - parameter id: Unmangled name
-    /// - parameter types: Applied arg types
+    /// - parameter named: Unmangled name
+    /// - parameter argTypes: Applied arg types
     /// - returns: An optional tuple of `(mangledName, type)`
-    subscript(fn fn: String, types types: [Type]) -> (mangledName: String, type: FunctionType)? {
-        return functions.function(havingUnmangledName: fn, paramTypes: types)
+    func lookupFunction(named fn: String, argTypes types: [Type], solver: ConstraintSolver) -> (mangledName: String, type: FunctionType)? {
+        return functions.function(havingUnmangledName: fn, argTypes: types, solver: solver)
     }
     /// unmangled
     subscript(mangledName mangledName: String) -> (mangledName: String, type: FunctionType)? {

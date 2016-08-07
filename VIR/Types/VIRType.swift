@@ -49,7 +49,9 @@ struct AnyType : Type {
     func isInModule() -> Bool { return type.isInModule() }
     
     /// Add a type constraint to `self`
-    func addConstraint(type: Type) -> Bool { return self.type.addConstraint(type: type) }
+    func addConstraint(_ constraint: Type, solver: ConstraintSolver, customError: Error?) throws {
+        return try type.addConstraint(constraint, solver: solver, customError: customError)
+    }
     
     var vir: String { return type.vir }
 }

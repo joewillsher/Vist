@@ -27,11 +27,10 @@ extension ReturnStmt : StmtTypeProvider {
         
         let exprType = try expr.typeForNode(scope: scope)
         
-        guard returnType.addConstraint(type: exprType) else {
-            throw semaError(.wrongFunctionReturnType(applied: returnType, expected: returnType))
-        }
-        
-        //try checkScopeEscapeStmt(scope: scope)
+        try returnType.addConstraint(exprType,
+                                     solver: scope.constraintSolver,
+                                     customError: semaError(.wrongFunctionReturnType(applied: returnType,
+                                                                                     expected: returnType)))
     }
 }
 

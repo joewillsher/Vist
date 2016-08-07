@@ -198,21 +198,20 @@ extension ClosureExpr : ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Type {
         
-        let ty = (scope.semaContext as? FunctionType)
-            ?? FunctionType(params: parameters.map { _ in scope.constraintSolver.getTypeVariable() },
-                            returns: scope.constraintSolver.getTypeVariable())
-        /*
         // If the AST context tells us the type, use that
         // otherwise create type variables for the unknown param & return types
-        let ty = FunctionType(params: parameters.map { _ in scope.constraintSolver.getTypeVariable() },
-                              returns: scope.constraintSolver.getTypeVariable())
+        let paramTvs = parameters.map { _ in scope.constraintSolver.getTypeVariable() }
+        let retTv = scope.constraintSolver.getTypeVariable()
+        var ty = FunctionType(params: paramTvs,
+                              returns: retTv)
         
+        // constrain the type variables to any explicit type
         if case let context as FunctionType = scope.semaContext {
             for (ty, variable) in zip(context.params, ty.params) {
-                guard variable.addConstraint(type: ty) else { fatalError() }
+                try variable.addConstraint(ty, solver: scope.constraintSolver, customError: nil)
             }
+            try ty.returns.addConstraint(context.returns, solver: scope.constraintSolver, customError: nil)
         }
-        */
         
         guard let mangledName = scope.name?.appending(".closure") else { fatalError() }
         self.mangledName = mangledName
@@ -240,6 +239,15 @@ extension ClosureExpr : ExprTypeProvider {
             try exp.typeForNode(scope: innerScope)
         }
         
+        let solve: (TypeVariable) throws -> Type = {
+            try scope.constraintSolver.solveConstraints(variable: $0)
+        }
+        
+        // solve constraints and rewrite closure type
+        ty = FunctionType(params: try paramTvs.map(solve),
+                          returns: try solve(retTv),
+                          callingConvention: ty.callingConvention)
+        self.type = ty
         return ty
     }
 }

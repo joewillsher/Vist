@@ -120,11 +120,9 @@ extension FunctionCall {
     func semaFunctionCall(scope: SemaScope) throws -> FunctionType {
         
         // gen types for objects in call
-        for (_, arg) in argArr.enumerated() {
-//            let context = arg._type.map {
-//                (context: $0 as Type, name: self.name.mangle(type: $0))
-//            }
-            let argScope = SemaScope.capturingScope(parent: scope)
+        for (i, arg) in argArr.enumerated() {
+            let name = (scope.name ?? "") + self.name + "@" + String(i)
+            let argScope = SemaScope.capturingScope(parent: scope, scopeName: name)
             try arg.typeForNode(scope: argScope)
         }
         

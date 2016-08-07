@@ -7,7 +7,7 @@
 //
 
 /// The builtin functions
-struct Runtime {
+enum Runtime {
     private static let intType = BuiltinType.int(size: 64)
     private static let int32Type = BuiltinType.int(size: 32)
     private static let int16Type = BuiltinType.int(size: 16)

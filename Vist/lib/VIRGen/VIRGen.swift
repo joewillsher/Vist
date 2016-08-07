@@ -143,8 +143,9 @@ extension StringLiteral : ValueEmitter {
         let length = try module.builder.build(inst: IntLiteralInst(val: str.utf8.count + 1, size: 64, irName: "size"))
         let isUTFU = try module.builder.build(inst: BoolLiteralInst(val: string.isUTF8Encoded, irName: "isUTF8"))
         
-        let initialiser = try module.getOrInsertStdLibFunction(named: "String",
-                                                               argTypes: [BuiltinType.opaquePointer, BuiltinType.int(size: 64), BuiltinType.bool])!
+        let paramTypes: [Type] = [BuiltinType.opaquePointer, BuiltinType.int(size: 64), BuiltinType.bool]
+        let initName = "String".mangle(type: FunctionType(params: paramTypes, returns: StdLib.stringType))
+        let initialiser = try module.getOrInsertStdLibFunction(mangledName: initName)!
         let std = try module.builder.buildFunctionCall(function: initialiser,
                                                        args: [Operand(string), Operand(length), Operand(isUTFU)])
         
@@ -201,12 +202,9 @@ extension FunctionCall/*: VIRGenerator*/ {
     
     func emitRValue(module: Module, scope: Scope) throws -> Accessor {
         
-        guard case let fnType as FunctionType = fnType?.importedType(in: module) else {
-            throw VIRError.paramsNotTyped
-        }
         let args = try argOperands(module: module, scope: scope)
         
-        if let stdlib = try module.getOrInsertStdLibFunction(named: name, argTypes: fnType.params) {
+        if let stdlib = try module.getOrInsertStdLibFunction(mangledName: mangledName) {
             return try module.builder.buildFunctionCall(function: stdlib, args: args).accessor()
         }
         else if
@@ -554,7 +552,8 @@ extension ForInLoopStmt : StmtEmitter {
         
         // get generator function
         guard let functionName = generatorFunctionName,
-            let generatorFunction = try module.function(named: functionName) ?? module.getOrInsertStdLibFunction(mangledName: functionName),
+            let generatorFunction = try module.function(named: functionName)
+                ?? module.getOrInsertStdLibFunction(mangledName: functionName),
             let yieldType = generatorFunction.type.yieldType else { fatalError() }
         
         // If we got the generator function from the stdlib, remangle 

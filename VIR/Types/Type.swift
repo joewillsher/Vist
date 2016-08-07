@@ -32,9 +32,11 @@ protocol Type : VIRElement, ASTPrintable {
     func isInModule() -> Bool
     
     /// Add a type constraint to `self`
-    func addConstraint(type: Type) -> Bool
+    func addConstraint(_: Type, solver: ConstraintSolver, customError: Error?) throws
+    /// Can this type satisfy the given constraint
+    func canAddConstraint(_: Type, solver: ConstraintSolver) -> Bool
     
-    var isAddressOnly: Bool { get }
+//    var isAddressOnly: Bool { get }
 }
 
 extension Type {
@@ -78,7 +80,8 @@ extension Type {
 
 
 extension ConstraintSolver {
-    func typeSatisfies(_ subst: Type?, type: Type?) -> Bool {
+    /// Can `subst` satisfy `constraint`
+    func typeSatisfies(_ subst: Type?, constraint type: Type?) -> Bool {
         switch (subst, type) {
         case (let l as NominalType, let r as ConceptType):
             return l.models(concept: r)
@@ -86,7 +89,7 @@ extension ConstraintSolver {
             return l.validSubstitutionFor(generic: r)
         case (let variable as TypeVariable, let type):
             if let solved = try? solveConstraints(variable: variable) {
-                return typeSatisfies(solved, type: type)
+                return typeSatisfies(solved, constraint: type)
             }
             return false
         default:
@@ -113,27 +116,7 @@ func == (lhs: Type?, rhs: Type?) -> Bool {
         return false
     }
 }
+
 func != (lhs: Type?, rhs: Type?) -> Bool {
     return !(lhs == rhs)
 }
-
-/*
-func == (lhs: Type?, rhs: Type) -> Bool {
-    if let l = lhs { return l == rhs } else { return false }
-}
-
-func == (lhs: Type?, rhs: Type?) -> Bool {
-    if let l = lhs, let r = rhs { return l == r } else { return false }
-}
-func != (lhs: Type?, rhs: Type?) -> Bool {
-    if let l = lhs, let r = rhs { return l != r } else { return false }
-}
-
-func != (lhs: Type?, rhs: Type) -> Bool {
-    if let l = lhs { return l != rhs } else { return false }
-}
-func != (lhs: Type, rhs: Type) -> Bool {
-    return !(lhs == rhs)
-}
-*/
-

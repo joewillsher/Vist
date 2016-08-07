@@ -342,11 +342,6 @@ extension Module {
     }
     
     /// Returns a stdlib function, updating the module fn list if needed
-    func getOrInsertStdLibFunction(named name: String, argTypes: [Type]) throws -> Function? {
-        guard let (mangledName, fnTy) = StdLib.function(name: name, args: argTypes) else { return nil }
-        return try getOrInsertFunction(named: mangledName, type: fnTy)
-    }
-    /// Returns a stdlib function, updating the module fn list if needed
     func getOrInsertStdLibFunction(mangledName name: String) throws -> Function? {
         guard let fnTy = StdLib.function(mangledName: name) else { return nil }
         return try getOrInsertFunction(named: name, type: fnTy)
