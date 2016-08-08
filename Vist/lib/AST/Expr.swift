@@ -16,9 +16,9 @@ protocol TypedExpr : Expr, Typed {}
 
 final class BlockExpr : TypedExpr, ScopeNode {
     var exprs: [ASTNode]
-    var parameters: [String]
+    var parameters: [String]?
     
-    init(exprs: [ASTNode], parameters: [String] = []) {
+    init(exprs: [ASTNode], parameters: [String]?) {
         self.exprs = exprs
         self.parameters = parameters
     }
@@ -32,9 +32,9 @@ final class BlockExpr : TypedExpr, ScopeNode {
 
 final class ClosureExpr : TypedExpr, ScopeNode {
     var exprs: [ASTNode]
-    var parameters: [String]
+    var parameters: [String]?
     
-    init(exprs: [ASTNode], params: [String]) {
+    init(exprs: [ASTNode], params: [String]?) {
         self.exprs = exprs
         self.parameters = params
     }

@@ -26,7 +26,7 @@ extension TypeDecl {
             initialisations.append(m)
         }
         
-        let block = BlockExpr(exprs: initialisations)
+        let block = BlockExpr(exprs: initialisations, parameters: [])
         let body = FunctionBodyExpr(params: [], body: block)
         
         let ty = FunctionTypeRepr(paramType: .void,
@@ -61,7 +61,7 @@ extension TypeDecl {
         }
         
         let params = (0..<names.count).map { "$\($0)" }
-        let block = BlockExpr(exprs: initialisations)
+        let block = BlockExpr(exprs: initialisations, parameters: params)
         let body = FunctionBodyExpr(params: params, body: block)
         
         let ty = FunctionTypeRepr(paramType: TypeRepr(typeNames),

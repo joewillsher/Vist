@@ -242,7 +242,7 @@ extension ClosureExpr : ValueEmitter {
         let entry = module.builder.insertPoint
         let thunk = try module.builder.getOrBuildFunction(name: mangledName,
                                                           type: type,
-                                                          paramNames: parameters)
+                                                          paramNames: parameters!)
         
         // Create the closure to delegate captures
         let closure = Closure.wrapping(function: thunk)
@@ -251,7 +251,7 @@ extension ClosureExpr : ValueEmitter {
                                            captureDelegate: closure,
                                            breakPoint: entry)
         // add params
-        for param in parameters {
+        for param in parameters! {
             closureScope.insert(variable: try closure.thunk.param(named: param).accessor(), name: param)
         }
         // emit body

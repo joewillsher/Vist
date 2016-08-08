@@ -38,6 +38,7 @@ enum SemaError: VistError {
     case useExplicitSelf(methodName: String)
     
     case invalidYield, invalidReturn, notGenerator(Type?)
+    case cannotInferClosureParamListSize
     
     case genericSubstitutionInvalid, notValidLookup, unreachable(String), todo(String)
     
@@ -113,6 +114,8 @@ enum SemaError: VistError {
             return "Function '\(name)' was not typed"
         case .noModel(let type, let concept):
             return "Type '\(type.name)' does not conform to concept '\(concept.name)'"
+        case .cannotInferClosureParamListSize:
+            return "Cannot infer the size of a closure parameter list; either specify the type or provide an explicit parameter list"
             
         case .useExplicitSelf(let name):
             return "Use explicit self when calling method '\(name)' -- this is a bug"

@@ -200,7 +200,10 @@ extension ClosureExpr : ExprTypeProvider {
         
         // If the AST context tells us the type, use that
         // otherwise create type variables for the unknown param & return types
-        let paramTvs = parameters.map { _ in scope.constraintSolver.getTypeVariable() }
+        guard let size = parameters?.count ?? (scope.semaContext as? FunctionType)?.params.count else {
+            throw semaError(.cannotInferClosureParamListSize)
+        }
+        let paramTvs = (0..<size).map { _ in scope.constraintSolver.getTypeVariable() }
         let retTv = scope.constraintSolver.getTypeVariable()
         var ty = FunctionType(params: paramTvs,
                               returns: retTv)
@@ -213,7 +216,9 @@ extension ClosureExpr : ExprTypeProvider {
             try ty.returns.addConstraint(context.returns, solver: scope.constraintSolver)
         }
         
-        guard let mangledName = scope.name?.appending(".closure") else { fatalError() }
+        guard let mangledName = scope.name?.appending(".closure") else {
+            fatalError("Closure context needs name to provide mangling")
+        }
         self.mangledName = mangledName
         self.type = ty
         
@@ -223,13 +228,13 @@ extension ClosureExpr : ExprTypeProvider {
         innerScope.returnType = ty.returns
         
         // add implicit params
-        if parameters.isEmpty && !ty.params.isEmpty {
+        if parameters == nil {
             parameters = (0..<ty.params.count).map { "$\($0)" }
         }
-        guard parameters.count == ty.params.count else { fatalError() }
+        guard parameters?.count == ty.params.count else { fatalError() }
         
         // add params to scope
-        for (name, type) in zip(parameters, ty.params) {
+        for (name, type) in zip(parameters!, ty.params) {
             innerScope.addVariable(variable: (type: type, mutable: false, isImmutableCapture: false),
                                    name: name)
         }

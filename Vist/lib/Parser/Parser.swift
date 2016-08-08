@@ -908,7 +908,7 @@ extension Parser {
     }
     
     /// Parses the insides of a '{...}' expression
-    private func parseBraceExpr(names: [String] = []) throws -> BlockExpr {
+    private func parseBraceExpr(names: [String]? = nil) throws -> BlockExpr {
         try consume(.openBrace)
         
         var body: [ASTNode] = []
@@ -923,7 +923,7 @@ extension Parser {
     }
     
     /// Parses the expression in a 'do' block
-    private func parseBracelessDoExpr(names: [String] = []) throws -> BlockExpr {
+    private func parseBracelessDoExpr(names: [String]? = nil) throws -> BlockExpr {
         try consume(.do)
         guard let body = try parseStmt(context: .function) else {
             throw parseError(.expectedExpression, loc: .at(pos: currentPos))
@@ -946,7 +946,7 @@ extension Parser {
     /// Function scopes -- starts a new '{' or 'do' block
     ///
     /// Will parse any arg labels applied in parens
-    private func parseBlockExpr(names: [String] = []) throws -> BlockExpr {
+    private func parseBlockExpr(names: [String]? = nil) throws -> BlockExpr {
         
         switch currentToken {
         case .openParen:    return try parseBlockExpr(names: parseClosureNamesExpr())
