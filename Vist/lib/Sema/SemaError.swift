@@ -24,13 +24,13 @@ enum SemaError: VistError {
     case noPropertyNamed(type: String, property: String), noMethodNamed(type: String, property: String), cannotStoreInParameterStruct(propertyName: String), notStructType(Type?), notTupleType(Type?)
     case noModel(type: StructType, concept: ConceptType)
     
-    case functionNotMethod, mutatingMethodOnImmutable(method: String, baseType: String)
+    case functionNotMethod, mutatingMethodOnImmutable(method: String, baseType: String), closureNotFunctionType
     
     case unsatisfiableConstraints(constraints: [TypeConstraint]), noConstraints
     case couldNotAddConstraint(constraint: Type, to: Type)
     
     // not user visible
-    case noStdBoolType, noStdIntType, notTypeProvider, noTypeForStruct, noTypeForTuple, noTypeForFunction(name: String)
+    case noStdBoolType, noStdIntType, notTypeProvider, noTypeForStruct, noTypeForTuple, noTypeForFunction(name: String), notFunctionType(TypeRepr)
     case structPropertyNotTyped(type: String, property: String), structMethodNotTyped(type: String, methodName: String), initialiserNotAssociatedWithType
     case typeNotFound, paramsNotTyped, integerNotTyped, boolNotTyped
     case noMemberwiseInit
@@ -114,8 +114,13 @@ enum SemaError: VistError {
             return "Function '\(name)' was not typed"
         case .noModel(let type, let concept):
             return "Type '\(type.name)' does not conform to concept '\(concept.name)'"
+        case .notFunctionType(let repr):
+            return "Function must have function type; '\(repr._astName_instance ?? "")' is not valid"
+            
         case .cannotInferClosureParamListSize:
             return "Cannot infer the size of a closure parameter list; either specify the type or provide an explicit parameter list"
+        case .closureNotFunctionType:
+            return "Closure must have a function type"
             
         case .useExplicitSelf(let name):
             return "Use explicit self when calling method '\(name)' -- this is a bug"

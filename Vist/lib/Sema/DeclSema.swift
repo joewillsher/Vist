@@ -211,6 +211,8 @@ extension VariableDecl : DeclTypeProvider {
         // if provided, get the explicit type
         let explicitType = try typeRepr?.typeIn(scope: scope)
         
+        if let ex = explicitType { guard ex is FunctionType else { throw semaError(.closureNotFunctionType) } }
+        
         // scope for declaration -- not a return type and sets the `semaContext` to the explicitType
         let scopeName = scope.name ?? ""
         let context = (explicitType as? FunctionType).map {

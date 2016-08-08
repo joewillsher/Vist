@@ -293,101 +293,83 @@ extension Parser {
 
 extension Parser {
     
-    
-    /// Parses the function type signature, like `Int Int -> Int` or `() -> Bool`
-    /// - parameter paramTypeRepr: The type repr to the left of the '->', if nil, this function
-    ///                            parses it
-    fileprivate func parseFunctionTypeRepr(paramType: TypeRepr? = nil) throws -> FunctionTypeRepr {
-        
-        // param type
-        var ty = FunctionTypeRepr(paramType: try paramType ?? parseTypeRepr(),
-                                  returnType: .void)
-        // case like `func fn: Int = `
-        guard consumeIf(.returnArrow) else {
-            return ty
-        }
-        // case like `func fn: Int -> Int =`
-        ty = FunctionTypeRepr(paramType: ty.paramType, returnType: try parseTypeRepr())
-        
-        // curried case like `func fn: Int -> Int -> Int =`
-        while consumeIf(.returnArrow) {
-            let params = ty.returnType
-            let returns = try parseTypeRepr()
-            let out = FunctionTypeRepr(paramType: params, returnType: returns)
-            
-            ty = FunctionTypeRepr(paramType: ty.paramType, returnType: .function(out))
-        }
-        
-        return ty
-    }
-
     /// Parses type repr, used in variable decls and function signatures
     fileprivate func parseTypeRepr() throws -> TypeRepr {
         
-        // if () type
-        do {
-            if consumeIf(.openParen) {
-                if consumeIf(.closeParen) {
-                    return .void
-                }
-                var types: [TypeRepr] = []
-                repeat {
-                    try types.append(parseTypeRepr())
-                } while consumeIf(.comma)
-                
-                try consume(.closeParen)
-                if types.count == 1 { return types[0] }
-                return .tuple(types)
-            }
-        }
-        catch _ as VistError {
-            throw parseError(.expectedCloseBracket)
+        var elements: [TypeRepr] = []
+        func repr() -> TypeRepr {
+            if elements.isEmpty { return .void }
+            if elements.count == 1 { return elements[0] }
+            return .tuple(elements)
         }
         
-        var elements: [String] = []
         loop: while true {
             switch currentToken {
             case .identifier(let id):
                 // handle native llvm type in stdlib
                 if case .period? = inspectNextToken(), case .identifier(let n)? = inspectNextToken(lookahead: 2), id == "Builtin", isStdLib {
-                    elements.append("Builtin.\(n)")    // param
+                    elements.append(.type("Builtin.\(n)"))    // param
                     consumeToken(3)// eat Builtin.Id
                 }
                 else {
-                    elements.append(id)    // param
+                    elements.append(.type(id))    // param
                     consumeToken()
                 }
-
+            case .openParen:
+                try consume(.openParen)
+                
+                if consumeIf(.closeParen) {
+                    elements.append(.void)
+                }
+                else {
+                    var types: [TypeRepr] = []
+                    repeat {
+                        try types.append(parseTypeRepr())
+                    } while consumeIf(.comma)
+                    
+                    try consume(.closeParen)
+                    if types.count == 1 { elements.append(types[0]) }
+                    else { elements.append(.tuple(types)) }
+                }
+                
             case .sqbrOpen:
-                guard case .identifier(let id) = consumeToken() else {
+                guard let id = consumeIfIdentifier() else {
                     throw parseError(.noIdentifier, loc: rangeOfCurrentToken())
                 }
                 
                 // handle native llvm type in stdlib
                 if case .period? = inspectNextToken(), case .identifier(let n)? = inspectNextToken(lookahead: 2), id == "Builtin", isStdLib {
-                    elements.append("Builtin.\(n)")    // param
+                    elements.append(.type("Builtin.\(n)"))    // param
                     consumeToken(2)// eat Builtin.Id
                 }
                 else {
-                    elements.append(id)    // param
-                    consumeToken()
+                    elements.append(.type(id))    // param
                 }
                 
                 try consume(.sqbrClose)
                 
+            case .returnArrow:
+                // case like `func fn: Int = `
+                try consume(.returnArrow)
+                
+                // case like `func fn: Int -> Int =`
+                var ty = FunctionTypeRepr(paramType: repr(), returnType: try parseTypeRepr())
+                
+                // curried case like `func fn: Int -> Int -> Int =`
+                while consumeIf(.returnArrow) {
+                    let params = ty.returnType
+                    let returns = try parseTypeRepr()
+                    let out = FunctionTypeRepr(paramType: params, returnType: returns)
+                    
+                    ty = FunctionTypeRepr(paramType: ty.paramType, returnType: .function(out))
+                }
+                
+                elements = [.function(ty)]
+                
             default:
-                break loop
+                return repr()
             }
         }
-        
-        let repr = TypeRepr(elements)
-        
-        // if we have a '->' after the type repr, we should return a function type repr
-        if case .returnArrow = currentToken {
-            return .function(try parseFunctionTypeRepr(paramType: repr))
-        }
-        
-        return repr
     }
 }
 
@@ -858,7 +840,10 @@ extension Parser {
             throw parseError(.expectedDoubleColon, loc: SourceRange(start: typeSignatureStartPos, end: currentPos))
         }
         
-        let type = try parseFunctionTypeRepr()
+        let repr = try parseTypeRepr()
+        guard case .function(let type) = repr else {
+            throw semaError(.notFunctionType(repr))
+        }
         
         guard consumeIf(.assign) else {
             return FuncDecl(name: functionName, typeRepr: type, impl: nil, attrs: a, genericParameters: genericParameters)
@@ -1117,7 +1102,10 @@ extension Parser {
     private func parseInitDecl() throws -> InitDecl {
         
         try consume(.init)
-        let type = try parseFunctionTypeRepr()
+        let repr = try parseTypeRepr()
+        guard case .function(let type) = repr else {
+            throw semaError(.notFunctionType(repr))
+        }
         guard consumeIf(.assign) else {
             return InitDecl(ty: type,
                             impl: nil,

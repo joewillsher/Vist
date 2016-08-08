@@ -36,7 +36,7 @@ protocol Type : VIRElement, ASTPrintable {
     /// Can this type satisfy the given constraint
     func canAddConstraint(_: Type, solver: ConstraintSolver) -> Bool
     
-//    var isAddressOnly: Bool { get }
+    var isAddressOnly: Bool { get }
 }
 
 extension Type {
