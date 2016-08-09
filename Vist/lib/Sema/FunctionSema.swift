@@ -134,15 +134,14 @@ extension FunctionCall {
         let (mangledName, fnType) = try scope.function(named: name, argTypes: argTypes)
         self.mangledName = mangledName
         
-        // rewrite the arg types
-        for (arg, argType) in zip(argArr, fnType.params) {
-            let ty = arg._type
-            do {
-                try arg.rewriteType(to: argType, solver: scope.constraintSolver)
+        for (i, (arg, argType)) in zip(argArr, fnType.params).enumerated() {
+            // rewrite the closure arg types
+            guard arg is ClosureExpr else {
+                continue
             }
-            catch {
-                arg._type = ty
-            }
+            let name = (scope.name ?? "") + self.name + "@" + String(i)
+            let argScope = SemaScope.capturingScope(parent: scope, context: argType, scopeName: name)
+            try arg.typeForNode(scope: argScope)
         }
         
         // we need explicit self, VIRGen cant handle the implicit method call

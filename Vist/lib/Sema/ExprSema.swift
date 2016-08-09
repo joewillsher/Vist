@@ -203,17 +203,17 @@ extension ClosureExpr : ExprTypeProvider {
         guard let size = parameters?.count ?? (scope.semaContext as? FunctionType)?.params.count else {
             throw semaError(.cannotInferClosureParamListSize)
         }
-        let paramTvs = (0..<size).map { _ in scope.constraintSolver.getTypeVariable() }
-        let retTv = scope.constraintSolver.getTypeVariable()
-        let ty = FunctionType(params: paramTvs,
-                              returns: retTv)
         
+        let ty: FunctionType
         // constrain the type variables to any explicit type
         if case let context as FunctionType = scope.semaContext {
-            for (ty, variable) in zip(context.params, ty.params) {
-                try variable.addConstraint(ty, solver: scope.constraintSolver)
-            }
-            try ty.returns.addConstraint(context.returns, solver: scope.constraintSolver)
+            ty = context
+        }
+        else {
+            let paramTvs = (0..<size).map { _ in scope.constraintSolver.getTypeVariable() }
+            let retTv = scope.constraintSolver.getTypeVariable()
+            ty = FunctionType(params: paramTvs,
+                              returns: retTv)
         }
         
         guard let mangledName = scope.name?.appending(".closure") else {

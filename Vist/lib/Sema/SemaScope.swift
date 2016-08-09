@@ -197,7 +197,6 @@ extension Collection where
             
             // arg types satisfy the params
             for (type, constraint) in zip(argTypes, fnType.params) {
-                print(type.prettyName, constraint.prettyName)
                 guard type.canAddConstraint(constraint, solver: solver) else {
                     continue functionSearch
                 }

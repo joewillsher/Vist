@@ -240,7 +240,7 @@ enum TypeConstraint {
     }
 }
 
-
+/*
 extension _Typed {
     
     /// Rewrites any type variables in this node
@@ -251,4 +251,4 @@ extension _Typed {
         return subst
     }
 }
-
+*/
