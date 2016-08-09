@@ -88,7 +88,7 @@ extension ConstraintSolver {
         case (let l as NominalType, let r as GenericType):
             return l.validSubstitutionFor(generic: r)
         case (let variable as TypeVariable, let type):
-            if let solved = try? solveConstraints(variable: variable) {
+            if let solved = solveConstraints(variable: variable) {
                 return typeSatisfies(solved, constraint: type)
             }
             return false

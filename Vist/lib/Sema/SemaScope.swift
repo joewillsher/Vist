@@ -7,6 +7,7 @@
 //
 
 typealias Variable = (type: Type, mutable: Bool, isImmutableCapture: Bool)
+typealias Solution = (mangledName: String, type: FunctionType)
 
 final class SemaScope {
     
@@ -50,7 +51,7 @@ final class SemaScope {
     /// in the builtin functions, then it looks through this scope,
     /// then searches parent scopes, throwing if not found
     ///
-    func function(named name: String, argTypes: [Type]) throws -> (mangledName: String, type: FunctionType) {
+    func function(named name: String, argTypes: [Type]) throws -> Solution {
         // lookup from stdlib/builtin
         if let stdLibFunction = StdLib.function(name: name, args: argTypes, solver: constraintSolver) { return stdLibFunction }
         else if isStdLib, let builtinFunction = Builtin.function(name: name, argTypes: argTypes) { return builtinFunction }
@@ -60,12 +61,12 @@ final class SemaScope {
     
     /// Recursvively searches this scope and its parents
     /// - note: should only be called *after* looking up in stdlib/builtin
-    private func recursivelyLookupFunction(named name: String, argTypes: [Type]) throws -> (mangledName: String, type: FunctionType) {
+    private func recursivelyLookupFunction(named name: String, argTypes: [Type]) throws -> Solution {
         if let inScope = functions.function(havingUnmangledName: name, argTypes: argTypes, solver: constraintSolver) { return inScope }
             // lookup from parents
         else if let inParent = try parent?.function(named: name, argTypes: argTypes) { return inParent }
             // otherwise we havent found a match :(
-        else { throw semaError(.noFunction(name, argTypes)) }
+        throw semaError(.noFunction(name, argTypes))
     }
     
     func addFunction(name: String, type: FunctionType) {
@@ -151,10 +152,16 @@ final class SemaScope {
                                   returnType: Type? = BuiltinType.void,
                                   isYield: Bool = false,
                                   context: (context: Type, name: String)? = nil) -> SemaScope {
-        return SemaScope(returnType: returnType, isStdLib: parent.isStdLib, context: context?.context, name: context?.name)
+        return SemaScope(returnType: returnType,
+                         isStdLib: parent.isStdLib,
+                         context: context?.context,
+                         name: context?.name)
     }
     
-    static func capturingScope(parent: SemaScope, overrideReturnType: Optional<Type?> = nil, context: Type? = nil, scopeName: String? = nil) -> SemaScope {
+    static func capturingScope(parent: SemaScope,
+                               overrideReturnType: Optional<Type?> = nil,
+                               context: Type? = nil,
+                               scopeName: String? = nil) -> SemaScope {
         return SemaScope(parent: parent,
                          returnType: overrideReturnType ?? parent.returnType,
                          isYield: parent.isYield,
@@ -169,25 +176,57 @@ extension Collection where
 {
     /// Look up the function from this mangled collection by the unmangled name and param types
     /// - returns: the mangled name and the type of the matching function
-    func function(havingUnmangledName appliedName: String, argTypes: [Type], solver: ConstraintSolver) -> (mangledName: String, type: FunctionType)? {
-        return first(where: { fnName, fnType in
+    func function(havingUnmangledName appliedName: String,
+                  argTypes: [Type],
+                  solver: ConstraintSolver)
+        -> Solution?
+    {
+        var solutions: [Solution] = []
+        // type variables in the args means we have to search all overloads to
+        // form the disjoin overload set
+        let reqiresFullSweep = argTypes.contains(where: {$0 is TypeVariable})
+        // the return type variable -- only used when we are sweeping the whole set
+        let returnTv: TypeVariable! = reqiresFullSweep ? solver.getTypeVariable() : nil
+        
+        functionSearch: for (fnName, fnType) in self {
             
-            guard fnName.demangleName() == appliedName else { return false } // base names match
+            // base names match
+            guard fnName.demangleName() == appliedName else {
+                continue functionSearch
+            }
             
+            // arg types satisfy the params
             for (type, constraint) in zip(argTypes, fnType.params) {
+                print(type.prettyName, constraint.prettyName)
                 guard type.canAddConstraint(constraint, solver: solver) else {
-                    return false
+                    continue functionSearch
                 }
             }
             
-            for (type, constraint) in zip(argTypes, fnType.params) {
-                try! type.addConstraint(constraint, solver: solver)
+            if reqiresFullSweep {
+                // add the constraints
+                for (type, constraint) in zip(argTypes, fnType.params) {
+                    try! type.addConstraint(constraint, solver: solver)
+                }
+                try! returnTv.addConstraint(fnType.returns, solver: solver)
+                
+                let overload = (mangledName: appliedName.mangle(type: fnType), type: fnType)
+                solutions.append(overload)
             }
-            return true
-            
-        }).map { f in
-            return (mangledName: appliedName.mangle(type: f.value), type: f.value)
+            else {
+                // if we are not using type variables, we can return the first
+                // matching solution
+                return (mangledName: appliedName.mangle(type: fnType), type: fnType)
+            }
         }
+        
+        // if no overloads were found
+        if solutions.isEmpty || !reqiresFullSweep { return nil }
+        
+        // the return type depends on the chosen overload
+        let fnType = FunctionType(params: argTypes, returns: returnTv)
+        // return the constrained solution
+        return (mangledName: appliedName.mangle(type: fnType), type: fnType)
     }
 }
 

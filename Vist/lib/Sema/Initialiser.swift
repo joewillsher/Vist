@@ -41,7 +41,7 @@ extension TypeDecl {
         let properties = self.properties.flatMap { $0.declared }
         let names = properties.map { $0.name }
         
-        guard let types = properties.optionalMap(transform: { $0.value._type }) else {
+        guard let types = properties.optionalMap({ $0.value._type }) else {
             throw semaError(.noMemberwiseInit, userVisible: false)
         }
         

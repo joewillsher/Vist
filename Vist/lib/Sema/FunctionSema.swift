@@ -127,12 +127,23 @@ extension FunctionCall {
         }
         
         // get from table
-        guard let argTypes = argArr.optionalMap(transform: { expr in expr._type }) else {
+        guard let argTypes = argArr.optionalMap({ expr in expr._type }) else {
             throw semaError(.paramsNotTyped, userVisible: false)
         }
         
         let (mangledName, fnType) = try scope.function(named: name, argTypes: argTypes)
         self.mangledName = mangledName
+        
+        // rewrite the arg types
+        for (arg, argType) in zip(argArr, fnType.params) {
+            let ty = arg._type
+            do {
+                try arg.rewriteType(to: argType, solver: scope.constraintSolver)
+            }
+            catch {
+                arg._type = ty
+            }
+        }
         
         // we need explicit self, VIRGen cant handle the implicit method call
         // case just yet

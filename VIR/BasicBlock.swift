@@ -76,7 +76,7 @@ extension BasicBlock {
     func blockArgs(for param: Param) throws -> [BlockOperand] {
         
         guard let paramIndex = parameters?.index(where: { blockParam in blockParam === param}),
-            let args = applications.optionalMap(transform: { application in application.args?[paramIndex] as? BlockOperand })
+            let args = applications.optionalMap({ application in application.args?[paramIndex] as? BlockOperand })
             else { throw VIRError.noParamNamed(param.name) }
         
         return args

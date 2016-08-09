@@ -87,7 +87,7 @@ struct Builtin {
     /// - parameter name: Unmangled name
     /// - parameter args: Applied arg types
     /// - returns: An optional tuple of `(mangledName, type)`
-    static func function(name: String, argTypes args: [Type]) -> (mangledName: String, type: FunctionType)? {
+    static func function(name: String, argTypes args: [Type]) -> Solution? {
         return functionContainer[mangledName: name]
     }
 }

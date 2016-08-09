@@ -30,10 +30,8 @@ struct FunctionContainer {
           mangleFunctionNames: Bool = true) {
         var functionTypes: [String: FunctionType] = [:]
         
-        for (n, _ty) in functions {
-            var ty = _ty
+        for (n, ty) in functions {
             let mangled = mangleFunctionNames ? n.mangle(type: ty) : n
-            ty.metadata += metadata
             functionTypes[mangled] = ty
         }
         
@@ -59,11 +57,11 @@ struct FunctionContainer {
     /// - parameter named: Unmangled name
     /// - parameter argTypes: Applied arg types
     /// - returns: An optional tuple of `(mangledName, type)`
-    func lookupFunction(named fn: String, argTypes types: [Type], solver: ConstraintSolver) -> (mangledName: String, type: FunctionType)? {
+    func lookupFunction(named fn: String, argTypes types: [Type], solver: ConstraintSolver) -> Solution? {
         return functions.function(havingUnmangledName: fn, argTypes: types, solver: solver)
     }
     /// unmangled
-    subscript(mangledName mangledName: String) -> (mangledName: String, type: FunctionType)? {
+    subscript(mangledName mangledName: String) -> Solution? {
         return functions[mangledName].map { (mangledName, $0) }
     }
     

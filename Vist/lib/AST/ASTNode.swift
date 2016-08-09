@@ -32,8 +32,10 @@ final class AST : ASTNode, ScopeNode {
 ///
 /// Conformants have a `_type` member which is an existential type
 ///
-protocol _Typed {
+protocol _Typed : class {
     var _type: Type? { get set }
+    
+    @discardableResult func rewriteType(to: Type, solver: ConstraintSolver) throws -> Type
 }
 
 extension _Typed {

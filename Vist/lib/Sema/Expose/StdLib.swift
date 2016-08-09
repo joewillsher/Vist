@@ -38,12 +38,10 @@ enum StdLib {
     private static let types = [intType, int32Type, boolType, doubleType, rangeType, utf8CodeUnitType, utf16CodeUnitType, stringType]
     
     private static let printableConcept = ConceptType(name: "Printable", requiredFunctions: [(name: "description", type: FunctionType(params: [], returns: stringType), mutating: false)], requiredProperties: [])
-    
-    //    private static let concepts: [ConceptType] = [ConceptType(name: "Generator", requiredFunctions: [("generate", FunctionType(params: [], returns: intType))], requiredProperties: [])]
-    
+        
     private static let functions: [(String, FunctionType)] = [
         // int
-        ("+", FunctionType(params: [intType, intType], returns: intType, callingConvention: .thin)),
+        ("+", FunctionType(params: [intType, intType], returns: intType)),
         ("-", FunctionType(params: [intType, intType], returns: intType)),
         ("*", FunctionType(params: [intType, intType], returns: intType)),
         ("/", FunctionType(params: [intType, intType], returns: intType)),
@@ -136,13 +134,6 @@ enum StdLib {
     /// Adds the `stdlib.call.optim` metadata tag to all of them
     private static let functionContainer = FunctionContainer(functions: functions, types: types, concepts: [printableConcept])
     
-    
-    private static func getStdLibFunctionWithInitInfo(id: String, args: [Type], solver: ConstraintSolver) -> (String, FunctionType)? {
-        return functionContainer.lookupFunction(named: id, argTypes: args, solver: solver)
-    }
-    
-    // MARK: Exposed functions
-    
     /// Returns the struct type of a named StdLib object
     static func type(name id: String) -> NominalType? {
         return functionContainer[type: id]
@@ -159,7 +150,7 @@ enum StdLib {
     /// - parameter args: Applied arg types
     /// - parameter solver: the scope's constraint solver
     /// - returns: An optional tuple of `(mangledName, type)`
-    static func function(name: String, args: [Type], solver: ConstraintSolver) -> (mangledName: String, type: FunctionType)? {
+    static func function(name: String, args: [Type], solver: ConstraintSolver) -> Solution? {
         return functionContainer.lookupFunction(named: name, argTypes: args, solver: solver)
     }
 }

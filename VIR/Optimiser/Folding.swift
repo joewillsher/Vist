@@ -69,7 +69,7 @@ enum ConstantFoldingPass : OptimisationPass {
                 try block.insert(inst: literalOverflow, after: inst)
                 
                 // All uses must be tuple extracts
-                guard let uses = inst.uses.optionalMap(transform: { $0.user as? TupleExtractInst }) else {
+                guard let uses = inst.uses.optionalMap({ $0.user as? TupleExtractInst }) else {
                     // if the tuple is used directly (for some reason?) we construct 
                     // a literal tuple to pass in
                     let tuple = TupleCreateInst(type:

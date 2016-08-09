@@ -68,7 +68,7 @@ extension AST {
 extension Collection where IndexDistance == Int {
     
     /// An impl of flatmap which flatmaps but returns nil if the size changes
-    func optionalMap<T>(transform: @noescape (Generator.Element) throws -> T?) rethrows -> [T]? {
+    func optionalMap<T>(_ transform: @noescape (Generator.Element) throws -> T?) rethrows -> [T]? {
         let new = try flatMap(transform)
         if new.count == count { return new } else { return nil }
     }

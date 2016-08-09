@@ -326,7 +326,7 @@ final class PropertyLookupExpr : LookupExpr {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-struct NullExpr : Expr {
+final class NullExpr : Expr {
     var _type: Type? = BuiltinType.null
 }
 
@@ -350,7 +350,7 @@ final class TupleExpr : ChainableExpr {
     var _type: Type? = nil
 }
 
-struct CommentExpr : Expr {
+final class CommentExpr : Expr {
     let str: String
     init(str: String) {
         self.str = str

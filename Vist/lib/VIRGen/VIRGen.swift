@@ -807,7 +807,7 @@ extension MethodCallExpr : ValueEmitter {
             
         case let existentialType as ConceptType:
             
-            guard let argTypes = args.optionalMap(transform: {$0.type}) else { fatalError() }
+            guard let argTypes = args.optionalMap({$0.type}) else { fatalError() }
             
             // get the witness from the existential
             let fn = try module.builder.build(inst: ExistentialWitnessInst(existential: selfRef,

@@ -8,14 +8,11 @@
 
 struct FunctionType : Type {
     var params: [Type], returns: Type
-    var metadata: [String] // TODO: remove this, we're not using it
     var callingConvention: CallingConvention
     
-    init(params: [Type], returns: Type = BuiltinType.void, metadata: [String] = [], callingConvention: CallingConvention? = nil, yieldType: Type? = nil) {
+    init(params: [Type], returns: Type = BuiltinType.void, callingConvention: CallingConvention? = nil, yieldType: Type? = nil) {
         self.params = params
         self.returns = returns
-        self.metadata = metadata
-        // for some reason I cant use `callingConvention: CallingConvention = .thin` or it crashes
         self.callingConvention = callingConvention ?? .thin
         self.yieldType = yieldType
     }
@@ -85,7 +82,7 @@ extension FunctionType {
         let params = self.params.map { $0.importedType(in: module) }
         let returns = self.returns.importedType(in: module)
         let convention = self.callingConvention.importedType(in: module)
-        return FunctionType(params: params, returns: returns, metadata: metadata, callingConvention: convention, yieldType: yieldType)
+        return FunctionType(params: params, returns: returns, callingConvention: convention, yieldType: yieldType)
     }
     
     
@@ -164,11 +161,11 @@ extension FunctionType {
     
     /// Returns a version of this type, but with a defined parent
     func asMethod(withSelf parent: NominalType, mutating: Bool) -> FunctionType {
-        return FunctionType(params: params, returns: returns, metadata: metadata, callingConvention: .method(selfType: parent, mutating: mutating), yieldType: yieldType)
+        return FunctionType(params: params, returns: returns, callingConvention: .method(selfType: parent, mutating: mutating), yieldType: yieldType)
     }
     /// Returns a version of this type, but with a parent of type i8 (so ptrs to it are i8*)
     func asMethodWithOpaqueParent() -> FunctionType {
-        return FunctionType(params: params, returns: returns, metadata: metadata, callingConvention: .method(selfType: BuiltinType.int(size: 8), mutating: false), yieldType: yieldType)
+        return FunctionType(params: params, returns: returns, callingConvention: .method(selfType: BuiltinType.int(size: 8), mutating: false), yieldType: yieldType)
     }
     
     func isInModule() -> Bool {

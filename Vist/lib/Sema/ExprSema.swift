@@ -49,7 +49,7 @@ extension StringLiteral : ExprTypeProvider {
 
 extension NullExpr : ExprTypeProvider {
     
-    mutating func typeForNode(scope: SemaScope) throws -> Type {
+    func typeForNode(scope: SemaScope) throws -> Type {
         _type = nil
         return BuiltinType.null
     }
@@ -205,7 +205,7 @@ extension ClosureExpr : ExprTypeProvider {
         }
         let paramTvs = (0..<size).map { _ in scope.constraintSolver.getTypeVariable() }
         let retTv = scope.constraintSolver.getTypeVariable()
-        var ty = FunctionType(params: paramTvs,
+        let ty = FunctionType(params: paramTvs,
                               returns: retTv)
         
         // constrain the type variables to any explicit type
@@ -244,19 +244,19 @@ extension ClosureExpr : ExprTypeProvider {
             try exp.typeForNode(scope: innerScope)
         }
         
-        let solve: (TypeVariable) throws -> Type = {
-            try scope.constraintSolver.solveConstraints(variable: $0)
-        }
-        
-        // solve constraints and rewrite closure type
-        ty = FunctionType(params: try paramTvs.map(solve),
-                          returns: try solve(retTv),
-                          callingConvention: ty.callingConvention)
         self.type = ty
         return ty
+        
+        // TODO: 
+        // - split the closure type rewriting into a seperate method, call it after resolving the
+        //   overloaded func the closure is passed into; this will let that call add constraints
+        //   to the closure variables to help overloading
+        // - add type disjunctions -- currently when resolving an overload set we bail after finding
+        //   1 match (which could be incorrect for a type variable). Instead go through all and add
+        //   the matches to a disjoin set; the resolver can observe the relation between these to
+        //   calculate the final type
     }
 }
-
 
 
 //-------------------------------------------------------------------------------------------------------------------------
