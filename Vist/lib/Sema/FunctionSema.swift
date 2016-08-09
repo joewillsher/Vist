@@ -134,11 +134,9 @@ extension FunctionCall {
         let (mangledName, fnType) = try scope.function(named: name, argTypes: argTypes)
         self.mangledName = mangledName
         
-        for (i, (arg, argType)) in zip(argArr, fnType.params).enumerated() {
+        for (i, (arg, argType)) in zip(argArr, fnType.params).enumerated()
+            where arg is ClosureExpr {
             // rewrite the closure arg types
-            guard arg is ClosureExpr else {
-                continue
-            }
             let name = (scope.name ?? "") + self.name + "@" + String(i)
             let argScope = SemaScope.capturingScope(parent: scope, context: argType, scopeName: name)
             try arg.typeForNode(scope: argScope)

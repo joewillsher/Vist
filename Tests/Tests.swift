@@ -466,6 +466,9 @@ extension VIRGenTests {
     func testClosure() {
         XCTAssert(_testFile(name: "ClosureGen"))
     }
+    func testClosureParam() {
+        XCTAssert(_testFile(name: "ClosureParam"))
+    }
 }
 
 extension ParseTests {

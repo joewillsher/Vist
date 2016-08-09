@@ -1,0 +1,43 @@
+// RUN: -Onone -emit-vir
+// CHECK: VIR
+
+let w = 1
+
+// CHECK-VIR:
+// VIR: func @map_tItI : &thin (#Int, (#Int) -> #Int) -> #Int {
+// VIR: $entry(%val: #Int, %map: #*tI):
+// VIR:   %0 = apply %map (%map: #*tI, %val: #Int) 	// user: %1
+// VIR:   return %0
+// VIR: }
+func map :: Int (Int -> Int) -> Int = (val map) do
+    return map val
+
+// CHECK-VIR:
+// VIR: func @.ymap@1.closure : &thin (#Int) -> #Int {
+// VIR: $entry(%a: #Int):
+// VIR:   %0 = load %w.globlstorage: #**Int 	// user: %1
+// VIR:   %1 = load %0: #*Int 	// user: %2
+// VIR:   %2 = call @-P_tII (%a: #Int, %1: #Int) 	// user: %3
+// VIR:   return %2
+// VIR: }
+let y = map 1 (a) do
+    return a + w
+
+print y
+// CHECK-VIR:
+// VIR: func @main : &thin () -> #Builtin.Void {
+// VIR: $entry:
+// VIR:   %0 = int_literal 1 	// user: %1
+// VIR:   %1 = struct %Int, (%0: #Builtin.Int64) 	// user: %w
+// VIR:   variable_decl %w = %1: #Int 	// user: %4
+// VIR:   %2 = int_literal 1 	// user: %3
+// VIR:   %3 = struct %Int, (%2: #Builtin.Int64) 	// user: %6
+// VIR:   store %w in %w.globl: #*Int
+// VIR:   %5 = function_ref @%.ymap@1.closure 	// user: %6
+// VIR:   %6 = call @map_tItI (%3: #Int, %5: #*tI) 	// user: %y
+// VIR:   variable_decl %y = %6: #Int 	// user: %7
+// VIR:   %7 = call @print_tI (%y: #Int)
+// VIR:   return ()
+// VIR: }
+
+
