@@ -237,6 +237,8 @@ extension ClosureExpr : ValueEmitter {
         guard let mangledName = self.mangledName, let type = self.type else {
             fatalError()
         }
+        // We cannot perform VIRGen
+        precondition(hasConcreteType)
         
         // record position and create the closure body
         let entry = module.builder.insertPoint

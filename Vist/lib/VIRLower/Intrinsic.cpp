@@ -8,9 +8,6 @@
 
 #include "Intrinsic.hpp"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wall"
-
 #include <stdio.h>
 #include <iostream>
 #include <stdlib.h>
@@ -49,7 +46,7 @@ bool GetLLVMIntrinsicIDFromString(const char* str,
     void *ptr = bsearch(str, (const void *) intrinsicNames,
                         sizeof(intrinsicNames)/sizeof(const char *),
                         sizeof(const char *), search);
-    if (ptr == NULL)
+    if (!ptr)
         return false;
     id = (Intrinsic::ID)((((const char**) ptr) - intrinsicNames) + 1);
     

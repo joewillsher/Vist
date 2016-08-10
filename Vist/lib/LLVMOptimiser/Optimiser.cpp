@@ -9,26 +9,22 @@
 
 #include "Optimiser.hpp"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wall"
-
-#include "llvm/PassManager.h"
+#include "llvm/IR/LegacyPassManager.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
 #include "llvm/IR/Module.h"
 #include "llvm/Transforms/IPO.h"
 
 #include <iostream>
 
-#pragma clang diagnostic pop
-
 using namespace llvm;
+using namespace legacy;
 
 /// Runs the optimisations
 void performLLVMOptimisations(Module *module, int optLevel, bool isStdLib) {
     
     PassManagerBuilder pmBuilder;
     PassManager passManager;
-        
+    
     if (optLevel != 0) {
         pmBuilder.OptLevel = optLevel;
         pmBuilder.Inliner = createFunctionInliningPass();

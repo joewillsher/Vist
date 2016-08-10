@@ -56,7 +56,20 @@ enum CFGPass : OptimisationPass {
     static let minOptLevel: OptLevel = .high
     static let name = "cfg"
 
-    static func run(on: Function) throws {
+    static func run(on function: Function) throws {
+        
+        /*
+        for block in function.blocks {
+            for case let condBreakInst as CondBreakInst in function.blocks {
+                
+                guard case let literal as BoolLiteralInst = condBreakInst.condition else { continue }
+                
+                let br = BreakInst()
+                condBreakInst.parentBlock!.insert(br, after: condBreakInst)
+                try condBreakInst.eraseFromParent(replacingAllUsesWith: br)
+            }
+        }
+        */
         
     }
 }

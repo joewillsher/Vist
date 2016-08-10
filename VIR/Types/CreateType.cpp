@@ -10,9 +10,6 @@
 
 #include "LLVM.h"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wall"
-
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/Value.h"
 #include "llvm/IR/Module.h"
@@ -39,7 +36,7 @@ Type *createNamedType(Type *type, StringRef name) {
         els.push_back(type->getStructElementType(i));
     }
     auto elements = ArrayRef<Type *>(els);
-    return StructType::create(getGlobalContext(), elements, name);
+    return StructType::create(elements, name);
 }
 
 _Nullable LLVMTypeRef getNamedType(const char * _Nonnull name, LLVMModuleRef _Nonnull module) {

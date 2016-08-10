@@ -105,7 +105,8 @@ extension BasicBlock {
     
     /// Helper, the index of `inst` in self or throw
     func index(of inst: Inst) throws -> Int {
-        guard let i = instructions.index(where: { $0 === inst }) else { throw VIRError.instNotInBB }
+        guard let i = instructions.index(where: { $0 === inst }) else {
+            throw VIRError.instNotInBB }
         return i
     }
     

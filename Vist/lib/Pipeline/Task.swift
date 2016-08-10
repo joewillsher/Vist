@@ -9,10 +9,12 @@
 import class Foundation.Task
 
 enum Exec: String {
-    case clang = "/usr/local/Cellar/llvm/3.6.2/bin/clang-3.6"
     case sysclang = "/usr/bin/clang"
-    case opt = "/usr/local/Cellar/llvm/3.6.2/bin/opt"
-    case assemble = "/usr/local/Cellar/llvm/3.6.2/bin/llvm-as"
+    case clang = "/usr/local/Cellar/llvm/3.8.1/bin/clang"
+    case opt = "/usr/local/bin/opt"
+    case assemble = "/usr/local/bin/llvm-as"
+    
+    //static let ass = AS_PATH
 }
 
 extension Task {

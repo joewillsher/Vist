@@ -2,7 +2,7 @@
 Vist/lib/Include/Utils.h
 
 RUN/
-
+llvm/
 build/
 
 *.xcuserstate

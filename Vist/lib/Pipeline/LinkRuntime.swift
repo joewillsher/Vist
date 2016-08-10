@@ -13,10 +13,9 @@ extension LLVMModule {
         
     /// Links modules, importing from `otherModule`
     func `import`(from otherModule: LLVMModule) {
-        var str: UnsafeMutablePointer<Int8>? = UnsafeMutablePointer.allocate(capacity: 1)
-        LLVMLinkModules(module, otherModule.module, LLVMLinkerDestroySource, &str)
-//        str?.deinitialize()
-//        str?.deallocateCapacity(1)
+        guard LLVMLinkModules2(module, otherModule.module) == true else {
+            fatalError("Linking failed")
+        }
     }
     
     /// Link the module with another IR file

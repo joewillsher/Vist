@@ -113,7 +113,7 @@ enum VIRVerifierError : VistError {
         }
         
         let fn = (errorInst.parentFunction?.vir ?? "").components(separatedBy: "\n").joined(separator: "\n\t~ ")
-        return "VIR verification failed: \(message)\nError in instruction:\n\t\(errorInst.vir)\nError in function:\n\(fn)"
+        return "\n\nVIR verification failed: \(message)\nError in instruction:\n\t\(errorInst.vir)\nError in function:\n\(fn)"
     }
     
 }

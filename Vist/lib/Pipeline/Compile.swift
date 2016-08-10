@@ -78,7 +78,7 @@ private func parseFiles(_ names: [String],
     
     for name in names {
         
-        let parseQueue = DispatchQueue(label: "com.vist.parse")
+        let parseQueue = DispatchQueue(label: "com.vist.parse.\(name)")
         // On a seperate queue, parse the file
         // dispatch onto parse group
         parseQueue.async(group: parseGroup) {
@@ -282,7 +282,7 @@ func compileDocuments(
     defer {
         if !options.contains(.preserveTempFiles) { try! FileManager.default.removeItem(atPath: unoptIRPath) }
     }
-
+    
     
     // MARK: LLVM Optimiser
     if options.contains(.verbose) {
@@ -330,6 +330,7 @@ func compileDocuments(
         
         let wantsDumpASM = options.contains(.dumpASM), verboseOutput = options.contains(.verbose)
         
+        /*
         // if the output requires asm, we compile to it first
         if wantsDumpASM || verboseOutput {
             // .ll -> .s
@@ -347,6 +348,9 @@ func compileDocuments(
             print(asm)
             if wantsDumpASM { return }
         }
+        */
+        
+        try compileModule(llvmModule.getModule())
         
         // get the input for the clang binary
         let inputFiles = options.contains(.doNotLinkStdLib) ?
@@ -409,7 +413,7 @@ func buildRuntime(debugRuntime debug: Bool) {
                  files: ["runtime.cpp", "Metadata.cpp", "RefcountedObject.cpp"],
                  outputName: libVistRuntimePath,
                  cwd: runtimeDirectory,
-                 args: "-dynamiclib", "-std=c++14", "-O3", "-lstdc++", "-includeruntime.h", debug ? "-DREFCOUNT_DEBUG" : "")
+                 args: "-dynamiclib", "-std=c++14", "-O3", "-lstdc++", "-Wnullability-completeness", "-includeruntime.h", debug ? "-DREFCOUNT_DEBUG" : "")
 }
 
 func runPreprocessor(file: inout String, cwd: String) {

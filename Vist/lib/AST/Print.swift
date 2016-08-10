@@ -137,9 +137,9 @@ extension TypeRepr : ASTPrintable {
     var _astName_instance: String? {
         switch self {
         case .function(let fn): return fn._astName_instance
-        case .void: return "()"
-        case .tuple(let tys): return "(" + tys.map { $0._astName_instance ?? "" }.joined(separator: ", ") + ")"
-        case .type(let str): return str
+        case .void: return "'()'"
+        case .tuple(let tys): return "'(" + tys.map { $0._astName_instance ?? "" }.joined(separator: ", ") + ")'"
+        case .type(let str): return "'\(str)'"
         }
     }
     func _astDescription(indentLevel n: Int) -> (isTrivial: Bool, description: String) {
@@ -149,7 +149,7 @@ extension TypeRepr : ASTPrintable {
 extension FunctionTypeRepr : ASTPrintable {
     static var _astName: String { return "function_type_repr" }
     var _astName_instance: String? {
-        return (paramType._astName_instance ?? "") + " -> " + (returnType._astName_instance ?? "")
+        return "'\(paramType._astName_instance ?? "") -> \(returnType._astName_instance ?? "")'"
     }
     func _astDescription(indentLevel n: Int) -> (isTrivial: Bool, description: String) {
         return (true, _astName_instance ?? "")

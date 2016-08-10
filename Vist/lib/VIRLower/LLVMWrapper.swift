@@ -65,7 +65,8 @@ extension LLVMBuilder {
     /// Wraps a LLVM function and checks the builder
     private func wrap(_ val: @autoclosure () throws -> LLVMValueRef) throws -> LLVMValue {
         #if DEBUG
-            guard builder != nil else { throw error(NullLLVMRef()) }
+            guard builder != nil else {
+                throw error(NullLLVMRef()) }
         #endif
         return try LLVMValue(ref: val())
     }
@@ -359,7 +360,9 @@ struct LLVMModule : Dumpable {
     }
     
     func getModule() throws -> LLVMModuleRef {
-        guard let module = module else { throw NullLLVMRef() }
+        guard let module = module else {
+            throw NullLLVMRef()
+        }
         return module
     }
     
@@ -409,7 +412,9 @@ struct LLVMModule : Dumpable {
             var overloads = overload.map{$0.type}
             intrinsic = try getOverloadedIntrinsic(name, getModule(), &overloads, Int32(overload.count))
         }
-        guard let i = intrinsic else { throw NullLLVMRef() }
+        guard let i = intrinsic else {
+            throw NullLLVMRef()
+        }
         return LLVMFunction(ref: i)
     }
     
@@ -531,7 +536,9 @@ struct LLVMValue : Dumpable {
     var _value: LLVMValueRef? = nil
     
     private func val() throws -> LLVMValueRef? {
-        guard let v = _value else { throw NullLLVMRef() }
+        guard let v = _value else {
+            throw NullLLVMRef()
+        }
         return v
     }
     

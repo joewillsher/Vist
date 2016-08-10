@@ -164,6 +164,7 @@ extension ChainableExpr {
             guard case let t as NominalType = intLiteral.type else { throw semaError(.noStdIntType, userVisible: false) }
             return (type: t, parentMutable: nil, mutable: false)
             
+            // TODO: sema for tuple literal bases
 //        case let tuple as TupleExpr:
 //            return (type: _type, )
             
@@ -208,6 +209,7 @@ extension ClosureExpr : ExprTypeProvider {
         // constrain the type variables to any explicit type
         if case let context as FunctionType = scope.semaContext {
             ty = context
+            hasConcreteType = true
         }
         else {
             let paramTvs = (0..<size).map { _ in scope.constraintSolver.getTypeVariable() }

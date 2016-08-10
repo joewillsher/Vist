@@ -40,6 +40,7 @@ final class ClosureExpr : TypedExpr, ScopeNode {
     }
     
     var type: FunctionType? = nil
+    var hasConcreteType: Bool = false
     var mangledName: String? = nil
     
     var childNodes: [ASTNode] {
@@ -57,12 +58,8 @@ final class ClosureExpr : TypedExpr, ScopeNode {
 
 final class FloatingPointLiteral : Typed, ChainableExpr {
     let val: Double
-    var size: UInt32 = 64
-    var explicitType: String {
-        return size == 32 ? "Float": size == 64 ? "Double": "Float\(size)"
-    }
-    
-    init(val: Double, size: UInt32 = 64) {
+
+    init(val: Double) {
         self.val = val
     }
     
@@ -71,14 +68,9 @@ final class FloatingPointLiteral : Typed, ChainableExpr {
 
 final class IntegerLiteral : Typed, ChainableExpr {
     let val: Int
-    var size: UInt32
-    var explicitType: String {
-        return size == 32 ? "Int": "Int\(size)"
-    }
     
-    init(val: Int, size: UInt32 = 64) {
+    init(val: Int) {
         self.val = val
-        self.size = size
     }
     
     var type: StructType? = nil
@@ -106,6 +98,19 @@ final class StringLiteral : TypedExpr {
 }
 
 
+final class CommentExpr : Expr {
+    let str: String
+    init(str: String) {
+        self.str = str
+    }
+    
+    var _type: Type? = nil
+}
+
+final class VoidExpr : TypedExpr {
+    var type: BuiltinType? = .void
+}
+
 //-------------------------------------------------------------------------------------------------------------------------
 //  MARK:                                               Variables
 //-------------------------------------------------------------------------------------------------------------------------
@@ -124,8 +129,15 @@ final class VariableExpr : ChainableExpr {
     var _type: Type? = nil
 }
 
+/// An expression which can be chained with other ChainableExprs
+/// for example:
+/// `let val = foo.0.bar[1] = baz.val 12`
+/// has a value which is a chained TupleMemberLookup, PropertyLookup,
+/// Subscript, Assignment, and MethodCall
 protocol ChainableExpr : Expr {
 }
+
+/// A chainable expr which accesses a member of `object` with a `.`
 protocol LookupExpr : ChainableExpr {
     var object: ChainableExpr { get }
 }
@@ -144,6 +156,19 @@ final class MutationExpr : Expr {
 }
 
 
+final class TupleMemberLookupExpr : LookupExpr {
+    let index: Int
+    let object: ChainableExpr
+    
+    init(index: Int, object: ChainableExpr) {
+        self.index = index
+        self.object = object
+    }
+    
+    var _type: Type? = nil
+}
+
+
 
 
 
@@ -151,6 +176,7 @@ final class MutationExpr : Expr {
 //  MARK:                                               Operators
 //-------------------------------------------------------------------------------------------------------------------------
 
+/// Any function, operator, or method call expression
 protocol FunctionCall : class, Expr, _Typed {
     var name: String { get }
     var argArr: [Expr] { get }
@@ -227,18 +253,6 @@ final class FunctionCallExpr : Expr, FunctionCall {
     var _type: Type? = nil
 }
 
-final class TupleMemberLookupExpr : LookupExpr {
-    let index: Int
-    let object: ChainableExpr
-    
-    init(index: Int, object: ChainableExpr) {
-        self.index = index
-        self.object = object
-    }
-    
-    var _type: Type? = nil
-}
-
 
 
 
@@ -281,9 +295,6 @@ final class ArraySubscriptExpr : ChainableExpr {
 //-------------------------------------------------------------------------------------------------------------------------
 //  MARK:                                               Struct
 //-------------------------------------------------------------------------------------------------------------------------
-
-
-
 
 final class MethodCallExpr : ChainableExpr, FunctionCall {
     let name: String
@@ -348,19 +359,6 @@ final class TupleExpr : ChainableExpr {
     }
     
     var _type: Type? = nil
-}
-
-final class CommentExpr : Expr {
-    let str: String
-    init(str: String) {
-        self.str = str
-    }
-    
-    var _type: Type? = nil
-}
-
-final class VoidExpr : TypedExpr {
-    var type: BuiltinType? = .void
 }
 
 

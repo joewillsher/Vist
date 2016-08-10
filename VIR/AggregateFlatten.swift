@@ -260,7 +260,7 @@ enum AggrFlattenPass : OptimisationPass {
                             val = TupleCreateInst(type: tupleType, elements: members)
                         }
                         
-                        try inst.parentBlock!.insert(inst: val, after: user)
+                        try user.parentBlock!.insert(inst: val, after: user)
                         try user.eraseFromParent(replacingAllUsesWith: val)
                         
                     // The memory can only be stored into, loaded from, or GEP'd

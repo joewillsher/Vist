@@ -22,7 +22,9 @@ private extension ScopeEscapeStmt {
 extension ReturnStmt : StmtTypeProvider {
     
     func typeForNode(scope: SemaScope) throws {
-        guard !scope.isYield, let returnType = scope.returnType else { throw semaError(.invalidReturn) }
+        guard !scope.isYield, let returnType = scope.returnType else {
+            throw semaError(.invalidReturn)
+        }
         expectedReturnType = returnType
         
         let exprType = try expr.typeForNode(scope: scope)
@@ -33,7 +35,7 @@ extension ReturnStmt : StmtTypeProvider {
         }
         catch SemaError.couldNotAddConstraint {
             // diagnose why the constraint system couldn't add the constraint
-            throw semaError(.wrongFunctionReturnType(applied: returnType,
+            throw semaError(.wrongFunctionReturnType(applied: exprType,
                                                      expected: returnType))
         }
     }
