@@ -13,7 +13,7 @@ printf 'Download LLVM & Clang\n'
 
 if [ ! -d /usr/local/cellar/llvm/3.6.2 ]
     then
-        brew install llvm --with-clang #--with-lldb
+        brew install homebrew/versions/llvm36 --with-clang #--with-lldb
 fi
 
 printf 'Build vist compiler\n'
