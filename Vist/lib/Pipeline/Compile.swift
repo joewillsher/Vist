@@ -258,16 +258,7 @@ func compileDocuments(
     
     // set triple
     llvmModule.dataLayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
-    llvmModule.target = "x86_64-apple-macosx10.12.0"
-    
-//    defer {
-//        // remove files on scope exit
-//        if !options.contains(.preserveTempFiles) {
-//            for file in ["\(file).ll", "\(file)_.ll", "\(file).s", "\(file).vir", "\(file)_.vir"] {
-//                _ = try? FileManager.default.removeItem(atPath: "\(currentDirectory)/\(file)")
-//            }
-//        }
-//    }
+    llvmModule.target = String(cString: getHostTriple())
     
     // Generate LLVM IR code for program
     if options.contains(.verbose) {

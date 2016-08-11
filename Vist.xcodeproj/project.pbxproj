@@ -141,6 +141,8 @@
 		D454444D1D181AB900C7B02A /* Inline.swift in Sources */ = {isa = PBXBuildFile; fileRef = D454444B1D181AB900C7B02A /* Inline.swift */; };
 		D4654F991D50F02A005B3637 /* VIRType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4654F981D50F02A005B3637 /* VIRType.swift */; };
 		D4654F9A1D50F02A005B3637 /* VIRType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4654F981D50F02A005B3637 /* VIRType.swift */; };
+		D46D1F861D5CDD6C0001E327 /* Backend.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D46D1F841D5CDD6B0001E327 /* Backend.cpp */; };
+		D46D1F871D5CDD6C0001E327 /* Backend.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D46D1F841D5CDD6B0001E327 /* Backend.cpp */; };
 		D4728BDD1C944397003294B0 /* Accessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BDC1C944397003294B0 /* Accessor.swift */; };
 		D4728BDE1C944397003294B0 /* Accessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BDC1C944397003294B0 /* Accessor.swift */; };
 		D4728BE11C9475A5003294B0 /* Optimiser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BE01C9475A5003294B0 /* Optimiser.swift */; };
@@ -315,6 +317,8 @@
 		D454444B1D181AB900C7B02A /* Inline.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Inline.swift; path = Optimiser/Inline.swift; sourceTree = "<group>"; };
 		D4644BE31C40619800364B99 /* stdlib.ll */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.llvm; name = stdlib.ll; path = stdlib/stdlib.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		D4654F981D50F02A005B3637 /* VIRType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VIRType.swift; path = VIR/Types/VIRType.swift; sourceTree = SOURCE_ROOT; };
+		D46D1F841D5CDD6B0001E327 /* Backend.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Backend.cpp; path = lib/Pipeline/Backend.cpp; sourceTree = "<group>"; };
+		D46D1F851D5CDD6B0001E327 /* Backend.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Backend.hpp; path = lib/Pipeline/Backend.hpp; sourceTree = "<group>"; };
 		D4728BDC1C944397003294B0 /* Accessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Accessor.swift; sourceTree = "<group>"; };
 		D4728BE01C9475A5003294B0 /* Optimiser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Optimiser.swift; path = Optimiser/Optimiser.swift; sourceTree = "<group>"; };
 		D4728BE31C960D79003294B0 /* MemoryInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MemoryInst.swift; path = Instructions/MemoryInst.swift; sourceTree = "<group>"; };
@@ -666,6 +670,8 @@
 				D43B39F01C8A100E0039FB2E /* Compile.swift */,
 				D4326E3A1CA5FB7E0016E595 /* Task.swift */,
 				D43B39F21C8A100E0039FB2E /* LinkRuntime.swift */,
+				D46D1F841D5CDD6B0001E327 /* Backend.cpp */,
+				D46D1F851D5CDD6B0001E327 /* Backend.hpp */,
 			);
 			name = Pipeline;
 			sourceTree = "<group>";
@@ -872,6 +878,7 @@
 				D4A000371CCA7FFA00157D90 /* OperandLower.swift in Sources */,
 				D43B39961C8A0EDF0039FB2E /* Function.swift in Sources */,
 				D4E35B821C5E3ECE00683486 /* Expected.swift in Sources */,
+				D46D1F871D5CDD6C0001E327 /* Backend.cpp in Sources */,
 				D43B39921C8A0EDF0039FB2E /* BasicBlock.swift in Sources */,
 				D43B3A431C8A10C80039FB2E /* SemaScope.swift in Sources */,
 				D43B3A391C8A10C80039FB2E /* ExprSema.swift in Sources */,
@@ -965,6 +972,7 @@
 				D4A000211CCA7E4D00157D90 /* LiteralLower.swift in Sources */,
 				D43B3A8A1C8A12090039FB2E /* Interpreter.swift in Sources */,
 				D4F3D8051CAC4243005A3B07 /* LowerError.swift in Sources */,
+				D46D1F861D5CDD6C0001E327 /* Backend.cpp in Sources */,
 				D43B3A381C8A10C80039FB2E /* ExprSema.swift in Sources */,
 				D43B39BE1C8A0F140039FB2E /* TypeAlias.swift in Sources */,
 				D43B39E21C8A0F3A0039FB2E /* VariableInst.swift in Sources */,
@@ -1238,10 +1246,10 @@
 					__STDC_LIMIT_MACROS,
 					__STDC_FORMAT_MACROS,
 				);
-				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
+				HEADER_SEARCH_PATHS = /usr/local/Cellar/llvm/3.8.1/include;
 				"LD_MAP_FILE_PATH[arch=*]" = "$(TARGET_TEMP_DIR)/$(PRODUCT_NAME)-LinkMap-$(CURRENT_VARIANT)-$(CURRENT_ARCH).txt";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				LIBRARY_SEARCH_PATHS = /usr/local/opt/llvm/lib;
+				LIBRARY_SEARCH_PATHS = /usr/local/Cellar/llvm/3.8.1/lib;
 				LLVM_LTO = YES;
 				MODULE_NAME = vist;
 				MODULE_VERSION = 1.0;
@@ -1271,71 +1279,9 @@
 					"-lLLVMBitWriter",
 					"-lLLVMIRReader",
 					"-lLLVMAsmParser",
-					"-lLLVMXCoreDisassembler",
-					"-lLLVMXCoreCodeGen",
-					"-lLLVMXCoreDesc",
-					"-lLLVMXCoreInfo",
-					"-lLLVMXCoreAsmPrinter",
-					"-lLLVMSystemZDisassembler",
-					"-lLLVMSystemZCodeGen",
-					"-lLLVMSystemZAsmParser",
-					"-lLLVMSystemZDesc",
-					"-lLLVMSystemZInfo",
-					"-lLLVMSystemZAsmPrinter",
-					"-lLLVMSparcDisassembler",
-					"-lLLVMSparcCodeGen",
-					"-lLLVMSparcAsmParser",
-					"-lLLVMSparcDesc",
-					"-lLLVMSparcInfo",
-					"-lLLVMSparcAsmPrinter",
-					"-lLLVMR600CodeGen",
 					"-lLLVMipo",
 					"-lLLVMVectorize",
-					"-lLLVMR600AsmParser",
-					"-lLLVMR600Desc",
-					"-lLLVMR600Info",
-					"-lLLVMR600AsmPrinter",
-					"-lLLVMPowerPCDisassembler",
-					"-lLLVMPowerPCCodeGen",
-					"-lLLVMPowerPCAsmParser",
-					"-lLLVMPowerPCDesc",
-					"-lLLVMPowerPCInfo",
-					"-lLLVMPowerPCAsmPrinter",
-					"-lLLVMNVPTXCodeGen",
-					"-lLLVMNVPTXDesc",
-					"-lLLVMNVPTXInfo",
-					"-lLLVMNVPTXAsmPrinter",
-					"-lLLVMMSP430CodeGen",
-					"-lLLVMMSP430Desc",
-					"-lLLVMMSP430Info",
-					"-lLLVMMSP430AsmPrinter",
-					"-lLLVMMipsDisassembler",
-					"-lLLVMMipsCodeGen",
-					"-lLLVMMipsAsmParser",
-					"-lLLVMMipsDesc",
-					"-lLLVMMipsInfo",
-					"-lLLVMMipsAsmPrinter",
-					"-lLLVMHexagonDisassembler",
-					"-lLLVMHexagonCodeGen",
-					"-lLLVMHexagonDesc",
-					"-lLLVMHexagonInfo",
-					"-lLLVMCppBackendCodeGen",
-					"-lLLVMCppBackendInfo",
-					"-lLLVMARMDisassembler",
-					"-lLLVMARMCodeGen",
-					"-lLLVMARMAsmParser",
-					"-lLLVMARMDesc",
-					"-lLLVMARMInfo",
-					"-lLLVMARMAsmPrinter",
-					"-lLLVMAArch64Disassembler",
-					"-lLLVMAArch64CodeGen",
-					"-lLLVMAArch64AsmParser",
-					"-lLLVMAArch64Desc",
-					"-lLLVMAArch64Info",
-					"-lLLVMAArch64AsmPrinter",
-					"-lLLVMAArch64Utils",
 					"-lLLVMTableGen",
-					"-lLLVMDebugInfo",
 					"-lLLVMOption",
 					"-lLLVMX86Disassembler",
 					"-lLLVMX86AsmParser",
@@ -1361,7 +1307,6 @@
 					"-lLLVMBitReader",
 					"-lLLVMInstCombine",
 					"-lLLVMTransformUtils",
-					"-lLLVMipa",
 					"-lLLVMAnalysis",
 					"-lLLVMTarget",
 					"-lLLVMMC",
@@ -1398,9 +1343,9 @@
 					__STDC_LIMIT_MACROS,
 					__STDC_FORMAT_MACROS,
 				);
-				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
+				HEADER_SEARCH_PATHS = /usr/local/Cellar/llvm/3.8.1/include;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				LIBRARY_SEARCH_PATHS = /usr/local/opt/llvm/lib;
+				LIBRARY_SEARCH_PATHS = /usr/local/Cellar/llvm/3.8.1/lib;
 				LLVM_LTO = YES;
 				MODULE_NAME = vist;
 				MODULE_VERSION = 1.0;
@@ -1431,71 +1376,9 @@
 					"-lLLVMBitWriter",
 					"-lLLVMIRReader",
 					"-lLLVMAsmParser",
-					"-lLLVMXCoreDisassembler",
-					"-lLLVMXCoreCodeGen",
-					"-lLLVMXCoreDesc",
-					"-lLLVMXCoreInfo",
-					"-lLLVMXCoreAsmPrinter",
-					"-lLLVMSystemZDisassembler",
-					"-lLLVMSystemZCodeGen",
-					"-lLLVMSystemZAsmParser",
-					"-lLLVMSystemZDesc",
-					"-lLLVMSystemZInfo",
-					"-lLLVMSystemZAsmPrinter",
-					"-lLLVMSparcDisassembler",
-					"-lLLVMSparcCodeGen",
-					"-lLLVMSparcAsmParser",
-					"-lLLVMSparcDesc",
-					"-lLLVMSparcInfo",
-					"-lLLVMSparcAsmPrinter",
-					"-lLLVMR600CodeGen",
 					"-lLLVMipo",
 					"-lLLVMVectorize",
-					"-lLLVMR600AsmParser",
-					"-lLLVMR600Desc",
-					"-lLLVMR600Info",
-					"-lLLVMR600AsmPrinter",
-					"-lLLVMPowerPCDisassembler",
-					"-lLLVMPowerPCCodeGen",
-					"-lLLVMPowerPCAsmParser",
-					"-lLLVMPowerPCDesc",
-					"-lLLVMPowerPCInfo",
-					"-lLLVMPowerPCAsmPrinter",
-					"-lLLVMNVPTXCodeGen",
-					"-lLLVMNVPTXDesc",
-					"-lLLVMNVPTXInfo",
-					"-lLLVMNVPTXAsmPrinter",
-					"-lLLVMMSP430CodeGen",
-					"-lLLVMMSP430Desc",
-					"-lLLVMMSP430Info",
-					"-lLLVMMSP430AsmPrinter",
-					"-lLLVMMipsDisassembler",
-					"-lLLVMMipsCodeGen",
-					"-lLLVMMipsAsmParser",
-					"-lLLVMMipsDesc",
-					"-lLLVMMipsInfo",
-					"-lLLVMMipsAsmPrinter",
-					"-lLLVMHexagonDisassembler",
-					"-lLLVMHexagonCodeGen",
-					"-lLLVMHexagonDesc",
-					"-lLLVMHexagonInfo",
-					"-lLLVMCppBackendCodeGen",
-					"-lLLVMCppBackendInfo",
-					"-lLLVMARMDisassembler",
-					"-lLLVMARMCodeGen",
-					"-lLLVMARMAsmParser",
-					"-lLLVMARMDesc",
-					"-lLLVMARMInfo",
-					"-lLLVMARMAsmPrinter",
-					"-lLLVMAArch64Disassembler",
-					"-lLLVMAArch64CodeGen",
-					"-lLLVMAArch64AsmParser",
-					"-lLLVMAArch64Desc",
-					"-lLLVMAArch64Info",
-					"-lLLVMAArch64AsmPrinter",
-					"-lLLVMAArch64Utils",
 					"-lLLVMTableGen",
-					"-lLLVMDebugInfo",
 					"-lLLVMOption",
 					"-lLLVMX86Disassembler",
 					"-lLLVMX86AsmParser",
@@ -1521,7 +1404,6 @@
 					"-lLLVMBitReader",
 					"-lLLVMInstCombine",
 					"-lLLVMTransformUtils",
-					"-lLLVMipa",
 					"-lLLVMAnalysis",
 					"-lLLVMTarget",
 					"-lLLVMMC",

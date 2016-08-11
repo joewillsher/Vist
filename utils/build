@@ -13,7 +13,7 @@ printf 'Download LLVM & Clang\n'
 
 if [ ! -d /usr/local/cellar/llvm/3.6.2 ]
     then
-        brew install homebrew/versions/llvm36 --with-clang #--with-lldb
+        brew install homebrew/versions/llvm --with-clang #--with-lldb
 fi
 
 printf 'Build vist compiler\n'
@@ -29,20 +29,18 @@ vist -build-stdlib
 printf 'Done\n'
 
 
-######## MOVE TO THIS -- LLVM in this dir ########
-
-# download
-# svn co http://llvm.org/svn/llvm-project/llvm/branches/release_36 llvm/llvm
-# svn co http://llvm.org/svn/llvm-project/cfe/branches/release_36 llvm/clang
-
-# make build dir
-# mkdir llvm/build
-# cd llvm/build
-
-# build llvm
-# cmake -G Unix Makefiles -DCMAKE_BUILD_TYPE=Release ../llvm
-# cmake -G Unix Makefiles -DCMAKE_BUILD_TYPE=Release ../clang
-# make install -j8
-
-# done
+#svn co http://llvm.org/svn/llvm-project/llvm/branches/release_39/ llvm/llvm
+#svn co http://llvm.org/svn/llvm-project/llvm/branches/release_39/ llvm/clang
+#
+#cd llvm
+#mkdir build
+#cd build
+#
+#cmake ../clang -GNinja
+#
+#ninja -j8
+#ninja install
+#
+#cd ../..
+#
 

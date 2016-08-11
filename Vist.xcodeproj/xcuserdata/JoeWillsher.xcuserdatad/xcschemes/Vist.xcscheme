@@ -101,7 +101,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-profile"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-preserve"
@@ -125,7 +125,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-build-runtime"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-debug-runtime"

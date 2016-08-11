@@ -9,10 +9,16 @@
 import class Foundation.Task
 
 enum Exec: String {
-    case clang = "/usr/local/Cellar/llvm/3.6.2/bin/clang-3.6"
+    /// Clang: llvm frontend for c, c++, ir
+    case clang = "/usr/local/Cellar/llvm/3.8.1/bin/clang"
+    /// System version of `clang`
     case sysclang = "/usr/bin/clang"
-    case opt = "/usr/local/Cellar/llvm/3.6.2/bin/opt"
-    case assemble = "/usr/local/Cellar/llvm/3.6.2/bin/llvm-as"
+    /// LLVM optimiser
+    case opt = "/usr/local/Cellar/llvm/3.8.1/bin/opt"
+    /// LLVM assembler
+    case assemble = "/usr/local/Cellar/llvm/3.8.1/bin/llvm-as"
+    /// LLVM backend
+    case llc = "/usr/local/Cellar/llvm/3.8.1/bin/llc"
 }
 
 extension Task {
@@ -35,4 +41,3 @@ extension Task {
     }
 }
 
-// TODO: Treat warnings as errors in these executes

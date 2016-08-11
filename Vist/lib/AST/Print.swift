@@ -86,7 +86,8 @@ extension ASTPrintable {
             if let instance = _astName_instance {
                 return (true, instance)
             }
-            return (s.count < 3, "(" + Self._astName + " " + s.map { "\($0.name)=\($0.valueString)" }.joined(separator: " ") + ")")
+            let a = s.map { "\($0.name)=\($0.valueString)" }
+            return (s.count < 3, "(" + Self._astName + " " + a.joined(separator: " ") + ")")
         }
         return (false, "(" + Self._astName + s.map { "\n\(n*tab)(\($0.name) \($0.valueString))" }.joined(separator: ""))
     }

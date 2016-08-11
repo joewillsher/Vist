@@ -19,17 +19,17 @@ extension BuiltinInstCall: VIRLower {
         
         switch inst {
         // overflowing arithmetic
-        case .iadd: intrinsic = try IGF.module.getIntrinsic(named: "llvm.sadd.with.overflow", overload: lhs.type)
-        case .imul: intrinsic = try IGF.module.getIntrinsic(named: "llvm.smul.with.overflow", overload: lhs.type)
-        case .isub: intrinsic = try IGF.module.getIntrinsic(named: "llvm.ssub.with.overflow", overload: lhs.type)
+        case .iadd: intrinsic = try IGF.module.getIntrinsic(.i_add_overflow, overload: lhs.type)
+        case .imul: intrinsic = try IGF.module.getIntrinsic(.i_mul_overflow, overload: lhs.type)
+        case .isub: intrinsic = try IGF.module.getIntrinsic(.i_sub_overflow, overload: lhs.type)
             
         // other intrinsics
-        case .expect: intrinsic = try IGF.module.getIntrinsic(named: "llvm.expect", overload: lhs.type)
-        case .trap:   intrinsic = try IGF.module.getIntrinsic(named: "llvm.trap")
+        case .expect: intrinsic = try IGF.module.getIntrinsic(.expect, overload: lhs.type)
+        case .trap:   intrinsic = try IGF.module.getIntrinsic(.trap)
         case .memcpy:
             // overload types -- we want `@llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1)`
             // construct intrinsic
-            intrinsic = try IGF.module.getIntrinsic(named: "llvm.memcpy",
+            intrinsic = try IGF.module.getIntrinsic(.memcopy,
                                                     overload: lhs.type, rhs.type, .intType(size: 64))
             // add extra memcpy args
             args.append(LLVMValue.constInt(value: 1, size: 32)) // i32 align -- align 1

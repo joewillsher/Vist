@@ -112,6 +112,7 @@ extension LLVMBuilder {
     func buildApply(function: LLVMValue, args: [LLVMValue], name: String? = nil) throws -> LLVMValue {
         return try buildCall(function: LLVMFunction(ref: function._value), args: args)
     }
+    @discardableResult
     func buildCall(function: LLVMFunction, args: [LLVMValue], name: String? = nil) throws -> LLVMValue {
         var applied = try args.map { try $0.val() }
 //        guard function.paramCount == applied.count else { throw error(LLVMError.invalidParamCount(expected: function.paramCount, got: applied.count)) }
@@ -400,17 +401,10 @@ struct LLVMModule : Dumpable {
         else { return nil }
     }
     
-    func getIntrinsic(named name: String, overload: LLVMType...) throws -> LLVMFunction {
-        let intrinsic: LLVMValueRef?
-        switch overload.count {
-        case 0: intrinsic = try getRawIntrinsic(name, getModule())
-        case 1: intrinsic = try getSinglyOverloadedIntrinsic(name, getModule(), overload[0].type!)
-        case _:
-            var overloads = overload.map{$0.type}
-            intrinsic = try getOverloadedIntrinsic(name, getModule(), &overloads, Int32(overload.count))
-        }
-        guard let i = intrinsic else { throw NullLLVMRef() }
-        return LLVMFunction(ref: i)
+    func getIntrinsic(_ intrinsic: LLVMIntrinsic, overload: LLVMType...) throws -> LLVMFunction {
+        var types = overload.map{$0.type}
+        let intrinsicFunction = getIntrinsicFunction(intrinsic, module!, &types, types.count)
+        return LLVMFunction(ref: intrinsicFunction)
     }
     
     func dump() { LLVMDumpModule(module) }

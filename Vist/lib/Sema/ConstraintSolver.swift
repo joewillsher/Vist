@@ -6,6 +6,9 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
+/// A type to be solved
+///
+/// https://en.wikipedia.org/wiki/Type_variable
 final class TypeVariable : Type {
     private let id: Int
     private(set) var constraints: [TypeConstraint] = []
@@ -14,11 +17,12 @@ final class TypeVariable : Type {
     
     var mangledName: String { return "tv\(id)" }
     var prettyName: String { return "$\(id)" }
-    
-    func lowered(module: Module) -> LLVMType { fatalError() }
-    func importedType(in module: Module) -> Type { return self }
-    func isInModule() -> Bool { fatalError() }
     var vir: String { return prettyName }
+    
+    // Cannot do VIRGen on TypeVariables
+    func lowered(module: Module) -> LLVMType { fatalError("Type variables cannot be lowered") }
+    func importedType(in module: Module) -> Type { fatalError("Type variables cannot be lowered") }
+    func isInModule() -> Bool { fatalError("Type variables cannot be lowered") }
     
     func canAddConstraint(_ constraint: Type, solver: ConstraintSolver) -> Bool {
         if let solved = solver.solveConstraints(variable: self, satisfying: constraint) {
@@ -128,9 +132,11 @@ extension TypeVariable : Hashable {
     }
 }
 
+/// Solves constraints on type variables to form concrete types
 final class ConstraintSolver {
     
     private var counter = 0
+    /// Produce a unique type variable
     func getTypeVariable() -> TypeVariable {
         defer { counter += 1 }
         return TypeVariable(counter)
@@ -164,7 +170,7 @@ final class ConstraintSolver {
         }
 
         for constraint in variable.constraints {
-            if let solved = constraint.solveConstraints(variable: variable, satisfying: satisfying, solver: self) {
+            if let solved = constraint.solve(variable: variable, satisfying: satisfying, solver: self) {
                 // cache answer
                 solvedConstraints[variable] = solved
                 return solved
@@ -176,14 +182,14 @@ final class ConstraintSolver {
 extension TypeConstraint {
     
     /// - returns: the type this was able to be constrained to
-    func solveConstraints(variable: TypeVariable, satisfying: Type?, solver: ConstraintSolver) -> Type? {
+    fileprivate func solve(variable: TypeVariable, satisfying: Type?, solver: ConstraintSolver) -> Type? {
         
         switch self {
         case .disjoin(let set):
             // a disjoin set lists possibilities; if any one matches then we have a match
             for constraint in set {
                 // is there a constraint in this set which is satisfiable?
-                if let solved = constraint.solveConstraints(variable: variable, satisfying: satisfying, solver: solver) {
+                if let solved = constraint.solve(variable: variable, satisfying: satisfying, solver: solver) {
                     return solved
                 }
             }
@@ -207,8 +213,12 @@ extension TypeConstraint {
 
 
 enum TypeConstraint {
-    case equal(Type), sameVariable(TypeVariable)
-    indirect case disjoin([TypeConstraint])
+    /// The type is equal to this other type
+    case equal(Type)
+    /// This type variable is equal to the other
+    case sameVariable(TypeVariable)
+    /// The type satisfies one of these constraints
+    case disjoin([TypeConstraint])
     
     init(overloads: [TypeConstraint]) {
         if overloads.count == 1 { self = overloads[0] }
@@ -231,7 +241,7 @@ enum TypeConstraint {
         }
     }
     
-    func candidates() -> [Type] {
+    fileprivate func candidates() -> [Type] {
         switch self {
         case .equal(let t): return [t]
         case .sameVariable(let tv): return [tv]
@@ -240,15 +250,3 @@ enum TypeConstraint {
     }
 }
 
-/*
-extension _Typed {
-    
-    /// Rewrites any type variables in this node
-    func rewriteType(to type: Type, solver: ConstraintSolver) throws -> Type {
-        guard let ty = self._type else { throw semaError(.typeNotFound) }
-        let subst = try solver.solveConstraints(ty, satisfying: type)
-        self._type = subst
-        return subst
-    }
-}
-*/

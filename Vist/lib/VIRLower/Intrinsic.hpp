@@ -19,46 +19,45 @@
 extern "C" {
 #endif
     
-    #pragma clang diagnostic push // workaround -- this was crashing llvm without it
-    #pragma clang diagnostic ignored "-Wnullability-completeness"
-    
-    /// Intrinsic with a buffer of overload types
-    _Nullable LLVMValueRef getOverloadedIntrinsic(const char * _Nonnull,
-                                                  LLVMModuleRef _Nonnull,
-                                                  LLVMTypeRef * _Nonnull,
-                                                  int);
-    #pragma clang diagnostic pop
-    
-    /// Intrinsic with a single overload type
-    _Nullable LLVMValueRef getSinglyOverloadedIntrinsic(const char * _Nonnull name,
-                                                        LLVMModuleRef _Nonnull mod,
-                                                        LLVMTypeRef _Nonnull ty);
-    
-    /// Non overloaded intrinsic
-    _Nullable LLVMValueRef getRawIntrinsic(const char * _Nonnull name,
-                                           LLVMModuleRef _Nonnull mod);
-    
-    
+#ifndef __cplusplus
+#import <Foundation/Foundation.h>
+    typedef NS_ENUM(NSInteger, LLVMIntrinsic) {
+#else
+    enum LLVMIntrinsic {
+#endif
+        i_add_overflow,
+        i_sub_overflow,
+        i_mul_overflow,
+        
+        expect,
+        trap,
+        memcopy,
+        
+        lifetime_start,
+        lifetime_end,
+    };
+        
+        /// Intrinsic with a buffer of overload types
+        _Nullable LLVMValueRef getIntrinsicFunction(LLVMIntrinsic,
+                                                    LLVMModuleRef _Nonnull,
+                                                    LLVMTypeRef _Nullable *_Nonnull,
+                                                    long);
 #ifdef __cplusplus // only for c++
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wall"
 
 #include "llvm/IR/Value.h"
+#include "llvm/IR/Intrinsics.h"
 #include "llvm/ADT/StringRef.h"
 #include <vector>
-
-#pragma clang diagnostic pop
-
-using namespace llvm;
-Function *_Nullable getIntrinsic(StringRef name,
-                                 Module *_Nonnull mod,
-                                 std::vector<Type *> types);
+    using namespace llvm;
+    
+    Function * _Nonnull getIntrinsicFn(LLVMIntrinsic intrinsic,
+                                       Module *_Nonnull mod,
+                                       std::vector<Type *> types);
+    
+    Intrinsic::ID getIntrinsicID(LLVMIntrinsic intrinsic);
+    
 #endif
-
-//#ifndef __cplusplus
-//NS_ASSUME_NONNULL_END
-//#endif
 
 #endif /* Intrinsic_h */

@@ -10,10 +10,6 @@
 #define LLVM_h
 
 
-// we ignore nullability warnings in headers
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wall"
-
 #import "llvm-c/Core.h"
 #import "llvm-c/Analysis.h"
 #import "llvm-c/BitReader.h"
@@ -37,7 +33,5 @@
 #import "llvm-c/Transforms/PassManagerBuilder.h"
 #import "llvm-c/Transforms/Scalar.h"
 #import "llvm-c/Transforms/Vectorize.h"
-
-#pragma clang diagnostic pop
 
 #endif /* LLVM_h */

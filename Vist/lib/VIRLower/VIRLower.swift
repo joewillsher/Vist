@@ -164,13 +164,13 @@ extension Function : VIRLower {
             let globalPointer = try IGF.builder.buildBitcast(value: global.value, to: LLVMType.opaquePointer)
             let constSize = LLVMValue.constInt(value: size, size: 64)
             
-            let startIntrinsic = try IGF.module.getIntrinsic(named: "llvm.lifetime.start")
-            let endIntrinsic = try IGF.module.getIntrinsic(named: "llvm.lifetime.end")
+            let startIntrinsic = try IGF.module.getIntrinsic(.lifetime_start)
+            let endIntrinsic = try IGF.module.getIntrinsic(.lifetime_end)
             
             try IGF.builder.position(after: lifetime.start.loweredValue!)
-            _ = try IGF.builder.buildCall(function: startIntrinsic, args: [constSize, globalPointer])
+            try IGF.builder.buildCall(function: startIntrinsic, args: [constSize, globalPointer])
             try IGF.builder.position(after: lifetime.end.loweredValue!)
-            _ = try IGF.builder.buildCall(function: endIntrinsic, args: [constSize, globalPointer])
+            try IGF.builder.buildCall(function: endIntrinsic, args: [constSize, globalPointer])
         }
         
         if let b = b { IGF.builder.position(atEndOf: b) }

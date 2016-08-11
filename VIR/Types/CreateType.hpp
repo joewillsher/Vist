@@ -24,14 +24,8 @@ extern "C" {
 #ifdef __cplusplus
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wall"
-
 #include "llvm/IR/Value.h"
 #include "llvm/IR/Module.h"
-
-#pragma clang diagnostic pop
-
 using namespace llvm;
 
 Type *_Nullable getNamedType(StringRef name, Module *_Nonnull module);

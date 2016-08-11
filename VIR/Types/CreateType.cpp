@@ -10,9 +10,6 @@
 
 #include "LLVM.h"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wall"
-
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/Value.h"
 #include "llvm/IR/Module.h"
@@ -22,8 +19,6 @@
 #include "llvm/Target/TargetOptions.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/IR/LLVMContext.h"
-
-#pragma clang diagnostic pop
 
 using namespace llvm;
 
