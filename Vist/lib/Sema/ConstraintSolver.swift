@@ -40,7 +40,7 @@ final class TypeVariable : Type {
         //    return
         //}
         
-        for case .sameVariable(let other) in self.constraints {
+        for case .sameVariable(let other) in constraints {
             try other.addConstraint(typeConstraint, solver: solver)
         }
         
@@ -173,43 +173,17 @@ final class ConstraintSolver {
             if let solved = constraint.solve(variable: variable, satisfying: satisfying, solver: self) {
                 // cache answer
                 solvedConstraints[variable] = solved
+                // cache the same answer for all 'same variable' constraints
+                for case .sameVariable(let other) in variable.constraints {
+                    // TODO: Does this need to recurse?
+                    solvedConstraints[other] = solved
+                }
                 return solved
             }
         }
         return nil
     }
 }
-extension TypeConstraint {
-    
-    /// - returns: the type this was able to be constrained to
-    fileprivate func solve(variable: TypeVariable, satisfying: Type?, solver: ConstraintSolver) -> Type? {
-        
-        switch self {
-        case .disjoin(let set):
-            // a disjoin set lists possibilities; if any one matches then we have a match
-            for constraint in set {
-                // is there a constraint in this set which is satisfiable?
-                if let solved = constraint.solve(variable: variable, satisfying: satisfying, solver: solver) {
-                    return solved
-                }
-            }
-            
-        case .equal(let concrete):
-            // if the checker is requiring we satisfy one particular type, check that
-            if let requirement = satisfying {
-                guard solver.typeSatisfies(concrete, constraint: requirement) else { break }
-            }
-            return concrete
-        case .sameVariable(let solved):
-            guard let otherVariable = solver.solveConstraints(variable: solved, satisfying: satisfying) else { break }
-            return otherVariable
-        }
-        
-        return nil
-    }
-    
-}
-
 
 
 enum TypeConstraint {
@@ -248,5 +222,36 @@ enum TypeConstraint {
         case .disjoin(let constraints): return constraints.flatMap { $0.candidates() }
         }
     }
+}
+
+extension TypeConstraint {
+    
+    /// - returns: the type this was able to be constrained to
+    fileprivate func solve(variable: TypeVariable, satisfying: Type?, solver: ConstraintSolver) -> Type? {
+        
+        switch self {
+        case .disjoin(let set):
+            // a disjoin set lists possibilities; if any one matches then we have a match
+            for constraint in set {
+                // is there a constraint in this set which is satisfiable?
+                if let solved = constraint.solve(variable: variable, satisfying: satisfying, solver: solver) {
+                    return solved
+                }
+            }
+            
+        case .equal(let concrete):
+            // if the checker is requiring we satisfy one particular type, check that
+            if let requirement = satisfying {
+                guard solver.typeSatisfies(concrete, constraint: requirement) else { break }
+            }
+            return concrete
+        case .sameVariable(let solved):
+            guard let otherVariable = solver.solveConstraints(variable: solved, satisfying: satisfying) else { break }
+            return otherVariable
+        }
+        
+        return nil
+    }
+    
 }
 

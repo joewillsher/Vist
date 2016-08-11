@@ -15,6 +15,8 @@
 		D411C8991C8DD00000478988 /* DCE.swift in Sources */ = {isa = PBXBuildFile; fileRef = D411C8971C8DD00000478988 /* DCE.swift */; };
 		D41BF54D1C5CD797004A1962 /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41BF54C1C5CD797004A1962 /* Tests.swift */; };
 		D41BF5551C5CDC8C004A1962 /* TestCases in Resources */ = {isa = PBXBuildFile; fileRef = D41BF5541C5CDC8C004A1962 /* TestCases */; };
+		D41C732A1D5CEEC30047B373 /* Diagnose.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41C73291D5CEEC30047B373 /* Diagnose.swift */; };
+		D41C732B1D5CEEC30047B373 /* Diagnose.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41C73291D5CEEC30047B373 /* Diagnose.swift */; };
 		D427DA9C1CA05976000708E2 /* Param.swift in Sources */ = {isa = PBXBuildFile; fileRef = D427DA9B1CA05976000708E2 /* Param.swift */; };
 		D427DA9D1CA05976000708E2 /* Param.swift in Sources */ = {isa = PBXBuildFile; fileRef = D427DA9B1CA05976000708E2 /* Param.swift */; };
 		D4326E3B1CA5FB7E0016E595 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4326E3A1CA5FB7E0016E595 /* Task.swift */; };
@@ -194,7 +196,6 @@
 		D4E35B7D1C5D0F0700683486 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4DE28181C5969830096E798 /* libz.tbd */; };
 		D4E35B7F1C5D216600683486 /* Pipe.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E35B7E1C5D216600683486 /* Pipe.swift */; };
 		D4E35B821C5E3ECE00683486 /* Expected.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E35B801C5E3EC600683486 /* Expected.swift */; };
-		D4E615421D51F93000A10DA4 /* Diagnose.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E615411D51F93000A10DA4 /* Diagnose.swift */; };
 		D4E615441D54DE2A00A10DA4 /* ConstraintSolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E615431D54DE2A00A10DA4 /* ConstraintSolver.swift */; };
 		D4E615451D54DE2A00A10DA4 /* ConstraintSolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E615431D54DE2A00A10DA4 /* ConstraintSolver.swift */; };
 		D4F3D7FA1CAC35AE005A3B07 /* Attribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4F3D7F91CAC35AE005A3B07 /* Attribute.swift */; };
@@ -205,7 +206,6 @@
 		D4F3D8031CAC41EB005A3B07 /* Intrinsic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D4F3D8001CAC41EB005A3B07 /* Intrinsic.cpp */; };
 		D4F3D8051CAC4243005A3B07 /* LowerError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4F3D8041CAC4243005A3B07 /* LowerError.swift */; };
 		D4F3D8061CAC4243005A3B07 /* LowerError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4F3D8041CAC4243005A3B07 /* LowerError.swift */; };
-		D4FB8B9E1D57AE6E008199E9 /* Diagnose.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E615411D51F93000A10DA4 /* Diagnose.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -244,6 +244,7 @@
 		D41BF54C1C5CD797004A1962 /* Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests.swift; sourceTree = "<group>"; };
 		D41BF54E1C5CD797004A1962 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D41BF5541C5CDC8C004A1962 /* TestCases */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TestCases; sourceTree = "<group>"; };
+		D41C73291D5CEEC30047B373 /* Diagnose.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Diagnose.swift; path = lib/Parser/Diagnose.swift; sourceTree = "<group>"; };
 		D427DA9B1CA05976000708E2 /* Param.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Param.swift; sourceTree = "<group>"; };
 		D4326E3A1CA5FB7E0016E595 /* Task.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Task.swift; path = lib/Pipeline/Task.swift; sourceTree = "<group>"; };
 		D4326E3D1CA6F0140016E595 /* ExistentialInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ExistentialInst.swift; path = Instructions/ExistentialInst.swift; sourceTree = "<group>"; };
@@ -362,7 +363,6 @@
 		D4DE28181C5969830096E798 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		D4E35B7E1C5D216600683486 /* Pipe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pipe.swift; sourceTree = "<group>"; };
 		D4E35B801C5E3EC600683486 /* Expected.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Expected.swift; sourceTree = "<group>"; };
-		D4E615411D51F93000A10DA4 /* Diagnose.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Diagnose.swift; sourceTree = "<group>"; };
 		D4E615431D54DE2A00A10DA4 /* ConstraintSolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ConstraintSolver.swift; path = lib/Sema/ConstraintSolver.swift; sourceTree = "<group>"; };
 		D4F3D7F91CAC35AE005A3B07 /* Attribute.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Attribute.swift; path = lib/AST/Attribute.swift; sourceTree = "<group>"; };
 		D4F3D7FC1CAC419E005A3B07 /* CreateType.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CreateType.cpp; path = VIR/Types/CreateType.cpp; sourceTree = SOURCE_ROOT; };
@@ -680,8 +680,8 @@
 			isa = PBXGroup;
 			children = (
 				D43B3A0B1C8A104F0039FB2E /* Parser.swift */,
-				D4E615411D51F93000A10DA4 /* Diagnose.swift */,
 				D43B3A0A1C8A104F0039FB2E /* ParseError.swift */,
+				D41C73291D5CEEC30047B373 /* Diagnose.swift */,
 			);
 			name = Parser;
 			sourceTree = "<group>";
@@ -894,7 +894,6 @@
 				D43B39AF1C8A0F140039FB2E /* BuiltinType.swift in Sources */,
 				D43B39981C8A0EDF0039FB2E /* Inst.swift in Sources */,
 				D4A000251CCA7E8F00157D90 /* CFGLower.swift in Sources */,
-				D4FB8B9E1D57AE6E008199E9 /* Diagnose.swift in Sources */,
 				D43B399A1C8A0EDF0039FB2E /* Module.swift in Sources */,
 				D4326E3C1CA5FB7E0016E595 /* Task.swift in Sources */,
 				D43B3A471C8A10C80039FB2E /* StmtSema.swift in Sources */,
@@ -922,6 +921,7 @@
 				D4E35B7F1C5D216600683486 /* Pipe.swift in Sources */,
 				D4728BE81C960E22003294B0 /* Folding.swift in Sources */,
 				D454444D1D181AB900C7B02A /* Inline.swift in Sources */,
+				D41C732B1D5CEEC30047B373 /* Diagnose.swift in Sources */,
 				D43B3A4B1C8A10C80039FB2E /* TypeProvider.swift in Sources */,
 				D43B3A1A1C8A105B0039FB2E /* Decl.swift in Sources */,
 				D4654F9A1D50F02A005B3637 /* VIRType.swift in Sources */,
@@ -955,6 +955,7 @@
 				D4326E3E1CA6F0140016E595 /* ExistentialInst.swift in Sources */,
 				D4A0001D1CC7C46500157D90 /* GlobalInst.swift in Sources */,
 				D4CF76771C8CD4A70058A8EC /* TupleInst.swift in Sources */,
+				D41C732A1D5CEEC30047B373 /* Diagnose.swift in Sources */,
 				D43B3A3E1C8A10C80039FB2E /* Mangle.swift in Sources */,
 				D43B39B61C8A0F140039FB2E /* NominalType.swift in Sources */,
 				D4728BE11C9475A5003294B0 /* Optimiser.swift in Sources */,
@@ -1007,7 +1008,6 @@
 				D49248541CF77883009FD509 /* StdLibInline.swift in Sources */,
 				D43B39A11C8A0EDF0039FB2E /* Value.swift in Sources */,
 				D43B3A171C8A105B0039FB2E /* ASTNode.swift in Sources */,
-				D4E615421D51F93000A10DA4 /* Diagnose.swift in Sources */,
 				D43B3A4E1C8A11180039FB2E /* Scope.swift in Sources */,
 				D43B3A211C8A105B0039FB2E /* ScopeNode.swift in Sources */,
 				D43B399B1C8A0EDF0039FB2E /* Operand.swift in Sources */,

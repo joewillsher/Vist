@@ -6,12 +6,26 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
+enum ParamConvention {
+    case `in`, refIn, capture
+    
+    var name: String {
+        switch self {
+        case .in: return "@in"
+        case .refIn: return "@in_ref"
+        case .capture: return "@capture"
+        }
+    }
+}
+
 /// A parameter passed between blocks and functions
 class Param : Value {
     var paramName: String
     var type: Type?
     weak var parentBlock: BasicBlock?
     var uses: [Operand] = []
+    
+    let convention: ParamConvention = .in
     
     var phi: LLVMValue? = nil
     

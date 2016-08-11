@@ -73,8 +73,7 @@ extension Operand {
 }
 
 
-/// An operand which stores a reference-backed lvalue. Can itself
-/// be used as an lvalue
+/// An operand which stores a reference-backed lvalue
 final class PtrOperand : Operand {
     
     /// The stored lvalue

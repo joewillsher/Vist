@@ -91,7 +91,12 @@ final class FunctionApplyInst : Inst, VIRFunctionCall {
     var functionType: FunctionType { return function.memType as! FunctionType }
     
     func copy() -> FunctionApplyInst {
-        return FunctionApplyInst(function: function, returnType: returnType, args: functionArgs.map { $0.formCopy() }, irName: irName)
+        return FunctionApplyInst(function: function.formCopy(), returnType: returnType, args: functionArgs.map { $0.formCopy() }, irName: irName)
+    }
+    
+    func setArgs(args: [Operand]) {
+        self.function = args[0] as! PtrOperand
+        self.functionArgs = Array(args.dropFirst())
     }
     
     var parentBlock: BasicBlock?
