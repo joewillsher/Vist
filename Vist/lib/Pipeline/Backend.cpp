@@ -8,7 +8,7 @@
 
 #include "Backend.hpp"
 
-#include "llvm/ADT/STLExtras.h"
+//#include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/Triple.h"
 #include "llvm/Analysis/TargetLibraryInfo.h"
 #include "llvm/CodeGen/CommandFlags.h"
@@ -49,44 +49,93 @@
 #include <memory>
 using namespace llvm;
 
+#include <iostream>
 
-static void compile(Module *module, TargetMachine::CodeGenFileType type) {
+// Returns the TargetMachine instance or zero if no triple is provided.
+static llvm::TargetMachine *
+getTargetMachine(llvm::Triple TheTriple, StringRef CPUStr,
+                 StringRef FeaturesStr, const llvm::TargetOptions &Options) {
+    std::string Error;
+    const auto *TheTarget =
+    llvm::TargetRegistry::lookupTarget(MArch, TheTriple, Error);
+    // Some modules don't specify a triple, and this is okay.
+    if (!TheTarget) {
+        return nullptr;
+    }
+    
+    return TheTarget->createTargetMachine(TheTriple.getTriple(), CPUStr,
+                                          FeaturesStr, Options, getRelocModel(),
+                                          CMModel, CodeGenOpt::Default);
+}
+
+void compile(Module *module, TargetMachine::CodeGenFileType type) {
     
     LLVMContext Context;
-    InitializeAllTargets();
     
     PassRegistry *Registry = PassRegistry::getPassRegistry();
     initializeCore(*Registry);
     initializeCodeGen(*Registry);
+    initializeLoopStrengthReducePass(*Registry);
+    initializeLowerIntrinsicsPass(*Registry);
+    initializeUnreachableBlockElimLegacyPassPass(*Registry);
     
-    Triple TheTriple = Triple(module->getTargetTriple());
+    cl::AddExtraVersionPrinter(TargetRegistry::printRegisteredTargetsForVersion);
+    cl::ParseEnvironmentOptions("vist", "1");
     
-    if (TheTriple.getTriple().empty())
-    TheTriple.setTriple(sys::getDefaultTargetTriple());
+    Triple triple = Triple(Triple::normalize(module->getTargetTriple()));
+    
+    
+    //module->dump();
+    
+//    if (TheTriple.getTriple().empty())
+//        TheTriple.setTriple(sys::getDefaultTargetTriple());
     
     std::string Error;
-    const Target *TheTarget = TargetRegistry::lookupTarget(MArch, TheTriple, Error);
+    
+    std::string CPUStr = sys::getHostCPUName();
+    
+    SubtargetFeatures Features;
+    StringMap<bool> HostFeatures;
+    if (sys::getHostCPUFeatures(HostFeatures))
+        for (auto &F : HostFeatures)
+            Features.AddFeature(F.first(), F.second);
 
-    std::string CPUStr = getCPUStr(), FeaturesStr = getFeaturesStr();
+    std::string FeaturesStr = Features.getString();
+    
     TargetOptions Options = InitTargetOptionsFromCodeGenFlags();
     
     CodeGenOpt::Level OLvl = CodeGenOpt::Default;
-    std::unique_ptr<TargetMachine> TargetMachine(TheTarget->createTargetMachine(TheTriple.getTriple(), CPUStr, FeaturesStr,
-                                                                         Options, getRelocModel(), CMModel, OLvl));
+ //   std::cout << CPUStr << "\n\n";
+//    std::cout << FeaturesStr;
+    std::cout << triple.getTriple() << "\n";
+    std::cout << MArch << "\n";
     
-    module->setDataLayout(TargetMachine->createDataLayout());
-    setFunctionAttributes(CPUStr, FeaturesStr, *module);
+    //  const Target *Target = TargetRegistry::lookupTarget(triple.str(), Error);
+    //auto TM = getTargetMachine(triple, CPUStr, FeaturesStr, Options);
+    //assert(TM);
+    
+    const Target *Target = TargetRegistry::lookupTarget(triple.str(), Error);
+    
+    std::cout << Error;
+    assert(Target);
+    
+    auto TargetMachine = Target->createTargetMachine(triple.getTriple(), CPUStr, FeaturesStr,
+                                                     Options, getRelocModel(), CMModel, OLvl);
+    
+    //module->setDataLayout(TargetMachine->createDataLayout());
+    //setFunctionAttributes(CPUStr, FeaturesStr, *module);
     
     legacy::PassManager EmitPasses;
-    std::unique_ptr<raw_pwrite_stream> RawOS;
+    raw_pwrite_stream *RawOS;
 
     EmitPasses.add(createTargetTransformInfoWrapperPass(TargetMachine->getTargetIRAnalysis()));
     
     
     bool fail = TargetMachine->addPassesToEmitFile(EmitPasses, *RawOS,
                                                    type, true);
-
+    
 }
+
 
 void compileModule(LLVMModuleRef module) {
     compile(unwrap(module),

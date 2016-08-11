@@ -350,7 +350,8 @@ func compileDocuments(
         }
         */
         
-        try compileModule(llvmModule.getModule())
+        let m = try llvmModule.getModule()
+        compileModule(m)
         
         // get the input for the clang binary
         let inputFiles = options.contains(.doNotLinkStdLib) ?

@@ -12,6 +12,15 @@
 #include <stdio.h>
 #include "LLVM.h"
 
-void compileModule(LLVMModuleRef module);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
+    void compileModule(LLVMModuleRef module);
+
+#ifdef __cplusplus
+}
+#endif
+
+    
 #endif /* Backend_hpp */
