@@ -65,10 +65,12 @@ extension FuncDecl : DeclTypeProvider {
         let fnScope = SemaScope(parent: scope, returnType: scopeRetType, isYield: isGeneratorFunction, name: scopeName)
         
         // make surebound list is same length
-        guard impl.params.count == ty.params.count || isGeneratorFunction else { throw semaError(.wrongFuncParamList(applied: impl.params, forType: ty.params)) }
+        guard impl.params.count == ty.params.count || isGeneratorFunction else {
+            throw semaError(.wrongFuncParamList(applied: impl.params, forType: ty.params))
+        }
         
-        for (index, name) in impl.params.enumerated() {
-            fnScope.addVariable(variable: (type: ty.params[index], mutable: false, isImmutableCapture: false), name: name)
+        for (type, name) in zip(ty.params, impl.params) {
+            fnScope.addVariable(variable: (type: type, mutable: false, isImmutableCapture: false), name: name)
         }
         
         // if is a method

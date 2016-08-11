@@ -236,13 +236,14 @@ final class Parser {
     
     func nextTokenIsCall() throws -> Bool {
         return try withConsiderNewLines { nextToken in
-            nextToken.isValidParamToken && !inTuple
+            nextToken.isValidParamToken && !inTuple // param lists (== !inTuple) don't allow calls
+                && (allowsTrailingDo || !nextToken.isControlToken()) // if trailing do not allowed, only accept if not control token
         }
     }
     
     /// When parsing a parameter list we want to lay out function parameters next to eachother
     ///
-    /// `add a b` parses as `add(a, b)` not `parse(a(b))`
+    /// `add a b` parses as `(add (a b))` not `(parse (a (b)))`
     ///
     /// This flag is true if the parser is in a parameter list where identifiers are assumed to be vars not funcs
     fileprivate var inTuple: Bool {
@@ -253,6 +254,16 @@ final class Parser {
     
     fileprivate func revertInTupleState() {
         _inTupleStack.removeLast()
+    }
+    
+    fileprivate var allowsTrailingDo: Bool {
+        get { return _allowsTrailingDoStack.last ?? true }
+        set { _allowsTrailingDoStack.append(newValue) }
+    }
+    private var _allowsTrailingDoStack: [Bool] = [true]
+    
+    fileprivate func revertAllowsTrailingDo() {
+        _allowsTrailingDoStack.removeLast()
     }
 }
 
@@ -292,6 +303,15 @@ extension Parser {
 //-------------------------------------------------------------------------------------------------------------------------
 
 extension Parser {
+    
+    /// Parse a type repr as a function repr
+    /// - note: `Int` is interpreted as `Int -> ()` and `()` as `() -> ()` for example
+    fileprivate func parseFunctionTypeRepr() throws -> FunctionTypeRepr {
+        switch try parseTypeRepr() {
+        case .function(let fn): return fn
+        case let param: return FunctionTypeRepr(paramType: param, returnType: .void)
+        }
+    }
     
     /// Parses type repr, used in variable decls and function signatures
     fileprivate func parseTypeRepr() throws -> TypeRepr {
@@ -391,20 +411,17 @@ extension Parser {
             return TupleExpr.void()
         }
         
-        var exps: [Expr] = []
+        var exprs: [Expr] = []
         
         repeat {
-            try exps.append(parseOperatorExpr())
+            try exprs.append(parseOperatorExpr())
             guard !inTuple || consumeIf(.comma) else { break }
         } while currentToken.isValidParamToken
         
         try consume(.closeParen)
         
-        switch exps.count {
-        case 0: return TupleExpr.void()
-        case 1: return exps[0]
-        case _: return TupleExpr(elements: exps)
-        }
+        if exprs.count == 1 { return exprs[0] }
+        return TupleExpr(elements: exprs)
     }
     
     /// Parses a parameter list for a function call
@@ -583,12 +600,6 @@ extension Parser {
         case .stringLiteral(let str):
             return parseStringExpr(str)
             
-        /*case .openParen:
-            try consume(.openParen)
-            let v = try parseOperatorExpr()
-            try consume(.closeParen)
-            return v*/
-            
         default:
             throw parseError(.noIdentifier, loc: rangeOfCurrentToken())
         }
@@ -657,26 +668,31 @@ extension Parser {
 
 extension Parser {
     
+    /// Parse an expression which is terminated by a 'do' or '{'.
+    /// To disambiguate in the grammar, these expressions cannot contain
+    /// a parameter which is a closure.
+    fileprivate func parseInlineExpr() throws -> Expr {
+        // `if val do ` is ambiguous, `val do` could be a call
+        allowsTrailingDo = false
+        let v = try parseOperatorExpr()
+        revertAllowsTrailingDo()
+        return v
+    }
+    
     /// Parses an 'if else block' chain
     private func parseIfStmt() throws -> ConditionalStmt {
         precondition(currentToken == .if)
         
         // list of blocks
         var blocks: [ElseIfBlockStmt] = []
-        var hadUnconditionalElse = false
         var usesBraces: Bool? = nil
         
         repeat {
             var condition: Expr? = nil
             
-            // if already had final else stmt
-            if hadUnconditionalElse {
-                throw parseError(.condAfterElse, loc: .at(pos: currentPos))
-            }
-            
             // An `if` statement
             if consumeIf(.if) {
-                condition = try parseOperatorExpr()
+                condition = try parseInlineExpr()
                 
                 guard currentToken.isControlToken() else {
                     throw parseError(.notBlock, loc: .at(pos: currentPos))
@@ -687,8 +703,6 @@ extension Parser {
                 else {
                     usesBraces = currentToken.isBrace()
                 }
-            } else {
-                hadUnconditionalElse = true
             }
             
             let block = try parseBlockExpr()
@@ -704,7 +718,7 @@ extension Parser {
         let itentifier = try parseIdentifierAsVariable() // bind loop label
         try consume(.in)
         
-        let loop = try parseOperatorExpr()
+        let loop = try parseInlineExpr()
         let block = try parseBlockExpr()
         
         return ForInLoopStmt(identifier: itentifier, iterator: loop, block: block)
@@ -713,7 +727,7 @@ extension Parser {
     /// Parses while loop statements
     private func parseWhileLoopStmt() throws -> WhileLoopStmt {
         try consume(.while)
-        let condition = try parseOperatorExpr()
+        let condition = try parseInlineExpr()
         let block = try parseBlockExpr()
         return WhileLoopStmt(condition: condition, block: block)
     }
@@ -840,18 +854,15 @@ extension Parser {
             throw parseError(.expectedDoubleColon, loc: SourceRange(start: typeSignatureStartPos, end: currentPos))
         }
         
-        let repr = try parseTypeRepr()
-        guard case .function(let type) = repr else {
-            throw semaError(.notFunctionType(repr))
-        }
+        let repr = try parseFunctionTypeRepr()
         
         guard consumeIf(.assign) else {
-            return FuncDecl(name: functionName, typeRepr: type, impl: nil, attrs: a, genericParameters: genericParameters)
+            return FuncDecl(name: functionName, typeRepr: repr, impl: nil, attrs: a, genericParameters: genericParameters)
         }
         
         return FuncDecl(name: functionName,
-                        typeRepr: type,
-                        impl: try parseFunctionBodyExpr(type: type),
+                        typeRepr: repr,
+                        impl: try parseFunctionBodyExpr(type: repr),
                         attrs: a,
                         genericParameters: genericParameters)
     }
@@ -1102,18 +1113,16 @@ extension Parser {
     private func parseInitDecl() throws -> InitDecl {
         
         try consume(.init)
-        let repr = try parseTypeRepr()
-        guard case .function(let type) = repr else {
-            throw semaError(.notFunctionType(repr))
-        }
+        let repr = try parseFunctionTypeRepr()
+        
         guard consumeIf(.assign) else {
-            return InitDecl(ty: type,
+            return InitDecl(ty: repr,
                             impl: nil,
                             parent: nil,
                             isImplicit: false)
         }
-        return InitDecl(ty: type,
-                        impl: try parseFunctionBodyExpr(type: type),
+        return InitDecl(ty: repr,
+                        impl: try parseFunctionBodyExpr(type: repr),
                         parent: nil,
                         isImplicit: false)
     }

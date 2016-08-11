@@ -49,7 +49,8 @@ final class CondBreakInst : Inst, BreakInstruction {
         self.thenCall = then
         self.elseCall = `else`
         self.condition = condition
-        self.args = (thenCall.args ?? []) + (elseCall.args ?? [])
+        let blockArgs = (thenCall.args ?? []) + (elseCall.args ?? []) as [Operand]
+        self.args = [condition] + blockArgs
         initialiseArgs()
     }
     
