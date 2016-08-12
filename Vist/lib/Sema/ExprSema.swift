@@ -206,12 +206,15 @@ extension ClosureExpr : ExprTypeProvider {
         }
         
         let ty: FunctionType
-        // constrain the type variables to any explicit type
         if case let context as FunctionType = scope.semaContext {
             ty = context
             hasConcreteType = true
         }
+        else if scope.semaContext != nil {
+            throw semaError(.closureNotFunctionType)
+        }
         else {
+            // constrain the type variables to any explicit type
             let paramTvs = (0..<size).map { _ in scope.constraintSolver.getTypeVariable() }
             let retTv = scope.constraintSolver.getTypeVariable()
             ty = FunctionType(params: paramTvs,
@@ -369,36 +372,4 @@ extension PropertyLookupExpr : ExprTypeProvider {
     }
     
 }
-
-extension MethodCallExpr : ExprTypeProvider {
-    
-    func typeForNode(scope: SemaScope) throws -> Type {
-        
-        let ty = try object.typeForNode(scope: scope)
-        guard case let parentType as NominalType = ty else { throw semaError(.notStructType(ty), userVisible: false) }
-        
-        let args = try self.args.elements.map { arg in try arg.typeForNode(scope: scope) }
-        
-        let fnType = try parentType.methodType(methodNamed: name, argTypes: args)
-        mangledName = name.mangle(type: fnType)
-        
-        guard case .method(_, let mutatingMethod) = fnType.callingConvention else { throw semaError(.functionNotMethod, userVisible: false) }
-        let (baseType, _, allowsMutation) = try object.recursiveType(scope: scope)
-        
-        if mutatingMethod && !allowsMutation {
-            throw semaError(.mutatingMethodOnImmutable(method: name, baseType: baseType.explicitName))
-        }
-        
-        // gen types for objects in call
-        for arg in self.args.elements {
-            try arg.typeForNode(scope: scope)
-        }
-        
-        // assign type to self and return
-        self._type = fnType.returns
-        self.structType = parentType
-        return fnType.returns
-    }
-}
-
 

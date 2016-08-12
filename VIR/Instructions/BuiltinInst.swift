@@ -61,13 +61,13 @@ final class BuiltinInstCall : Inst {
         }
     }
     
-    var instHasSideEffects: Bool {
+    var hasSideEffects: Bool {
         switch inst {
         case .condfail, .memcpy, .trap, .opaquestore, .heapfree: return true
         default: return false
         }
     }
-    var instIsTerminator: Bool {
+    var isTerminator: Bool {
         switch inst {
         case .trap: return true
         default: return false

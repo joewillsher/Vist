@@ -14,6 +14,8 @@
 final class TypeAlias : Type {
     let name: String, targetType: NominalType
     
+    var witnessTables: [ConceptType: VIRWitnessTable] = [:]
+    
     init(name: String, targetType: NominalType) {
         self.name = name
         self.targetType = targetType
@@ -26,7 +28,7 @@ final class TypeAlias : Type {
         }
         
         if module.loweredModule == nil {
-            // backup if a module isnt lowered
+            // backup if a module isn't lowered
             return targetType.lowered(module: module)
         }
         
@@ -72,9 +74,6 @@ extension TypeAlias : Hashable {
     var hashValue: Int {
         return name.hashValue
     }
-}
-
-extension TypeAlias : Equatable {
     static func == (lhs: TypeAlias, rhs: TypeAlias) -> Bool {
         return lhs.targetType == rhs.targetType
     }

@@ -150,7 +150,7 @@ enum StdLib {
     /// - parameter args: Applied arg types
     /// - parameter solver: the scope's constraint solver
     /// - returns: An optional tuple of `(mangledName, type)`
-    static func function(name: String, args: [Type], solver: ConstraintSolver) -> Solution? {
-        return functionContainer.lookupFunction(named: name, argTypes: args, solver: solver)
+    static func function(name: String, args: [Type], base: NominalType?, solver: ConstraintSolver) -> Solution? {
+        return functionContainer.lookupFunction(named: name, argTypes: args, base: base, solver: solver)
     }
 }

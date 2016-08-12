@@ -209,9 +209,7 @@ extension VariableDecl : DeclTypeProvider {
         }
         
         // if provided, get the explicit type
-        let explicitType = try typeRepr?.typeIn(scope: scope)
-        
-        if let ex = explicitType { guard ex is FunctionType else { throw semaError(.closureNotFunctionType) } }
+        let explicitType = try typeRepr?.typeIn(scope)
         
         // scope for declaration -- not a return type and sets the `semaContext` to the explicitType
         let scopeName = scope.name ?? ""
@@ -227,12 +225,10 @@ extension VariableDecl : DeclTypeProvider {
         
         let type = explicitType ?? objectType
         scope.addVariable(variable: (type, isMutable, false), name: name)
+        value._type = type
         
-        // if its a null expression
-        if let e = explicitType, value._type == BuiltinType.null, value is NullExpr {
-            value._type = e
-        } // otherwise, if the type is null, we are assigning to something we shouldn't be
-        else if objectType == BuiltinType.null {
+        // if the type is null and no explicit type is specified, diagnose
+        if explicitType == nil, value is NullExpr {
             throw semaError(.cannotAssignToNullExpression(name))
         }
     }

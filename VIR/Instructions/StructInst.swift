@@ -91,7 +91,7 @@ final class StructExtractInst : Inst {
         return StructExtractInst(object: object.formCopy(), property: propertyName, structType: structType, propertyType: propertyType, irName: irName)
     }
     
-    func setArgs(args: [Operand]) {
+    func setArgs(_ args: [Operand]) {
         object = args[0]
     }
     
@@ -136,7 +136,7 @@ final class StructElementPtrInst : Inst, LValue {
     func copy() -> StructElementPtrInst {
         return StructElementPtrInst(object: object.formCopy(), property: propertyName, structType: structType, propertyType: propertyType, irName: irName)
     }
-    func setArgs(args: [Operand]) {
+    func setArgs(_ args: [Operand]) {
         object = args[0] as! PtrOperand
     }
     var parentBlock: BasicBlock?

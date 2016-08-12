@@ -218,7 +218,7 @@ extension Function {
 
 /// A function ref lvalue, this allows functions to be treated as values
 final class FunctionRef : LValue {
-//    unowned
+    
     let function: Function
     
     private init(toFunction function: Function, parentBlock: BasicBlock?) {
@@ -238,6 +238,7 @@ final class FunctionRef : LValue {
         get { return function.uses }
         set(uses) { function.uses = uses }
     }
+    
     
 }
 

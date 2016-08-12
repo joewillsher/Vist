@@ -9,40 +9,31 @@
 /// A VIR instruction
 protocol Inst : Value {
     
-    var instHasSideEffects: Bool { get }
-    var instIsTerminator: Bool { get }
+    /// Customise behaviour of `setInstArgs`: implementing this function
+    /// allows you to set `self`'s properties when the argument list is
+    /// overriden
+    func setArgs(_ args: [Operand])
     
-    /// Override this to do stuff after setting args
-    func setArgs(args: [Operand])
-    /// Call this to set the args
-    func setInstArgs(args: [Operand])
-    
-    var uses: [Operand] { get set }
+    /// The arguments applied to this operand
     var args: [Operand] { get set }
-    
-    var type: Type? { get }
     
     var vir: String { get }
     
-    var irName: String? { get set }
+    /// The block owning this inst
     weak var parentBlock: BasicBlock? { get set }
+    
+    /// Does this inst have side effects? If false, it can
+    /// be removed if there are no users
+    var hasSideEffects: Bool { get }
+    /// Is this inst a valid block terminator?
+    var isTerminator: Bool { get }
 }
 
 extension Inst {
+    
     /// Removes the function from its parent
     func removeFromParent() throws {
         try parentBlock?.remove(inst: self)
-    }
-    
-    func initialiseArgs() {
-        for arg in self.args { arg.user = self }
-    }
-    
-    func setArgs(args: [Operand]) { }
-    
-    func setInstArgs(args: [Operand]) {
-        self.args = args
-        setArgs(args: args)
     }
     
     /// Removes the function from its parent and
@@ -62,19 +53,35 @@ extension Inst {
         try removeFromParent()
     }
     
-    var instHasSideEffects: Bool { return false }
-    var instIsTerminator: Bool { return false }
+    /// Own the arguments of this instruction: set each
+    /// arg's user to `self`
+    func initialiseArgs() {
+        for arg in self.args { arg.user = self }
+    }
+    
+    // default impl is empty
+    func setArgs(_ args: [Operand]) { }
+    
+    /// Set the arguments of `self` to `args`
+    func setInstArgs(_ args: [Operand]) {
+        self.args = args
+        setArgs(args)
+    }
+    
+    // default impl is false
+    var hasSideEffects: Bool { return false }
+    var isTerminator: Bool { return false }
+    
     
     func replace(with explode: @noescape (inout Explosion) throws -> Void) throws {
         var e = Explosion(replacing: self)
         try explode(&e)
         try e.replaceInst()
     }
-    
 }
 
 extension Value {
-    /// Replaces all `Operand` instances which point to `self`
+    /// Replaces all uses which point to `self`
     /// with `val`
     func replaceAllUses(with val: Value) {
         for use in uses {
@@ -82,10 +89,5 @@ extension Value {
         }
     }
 }
-
-//// We have to add it to instbase (not inst) because we can't use Inst protocol
-//// as a conformant of Inst in the generic parameter list
-//extension InstBase {
-//}
 
 

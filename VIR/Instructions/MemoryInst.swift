@@ -63,7 +63,7 @@ final class StoreInst : Inst {
     
     var type: Type? { return address.type }
     
-    var instHasSideEffects: Bool {
+    var hasSideEffects: Bool {
         // it has side effects if someone else is using it
         // TODO: should look through dominating blocks for uses, uses before this inst should not be counted
 //        return !address.uses.filter { $0 !== address }.isEmpty
@@ -78,7 +78,7 @@ final class StoreInst : Inst {
         return StoreInst(address: address.formCopy(), value: value.formCopy())
     }
     
-    func setArgs(args: [Operand]) {
+    func setArgs(_ args: [Operand]) {
         (value, address) = (args[0], args[1] as! PtrOperand)
     }
     
@@ -116,7 +116,7 @@ final class LoadInst : Inst {
         return LoadInst(address: address.formCopy(), irName: irName)
     }
     
-    func setArgs(args: [Operand]) {
+    func setArgs(_ args: [Operand]) {
         address = args[0] as! PtrOperand
     }
     
@@ -161,7 +161,7 @@ final class BitcastInst : Inst, LValue {
         return BitcastInst(address: address.formCopy(), newType: newType, irName: irName)
     }
     
-    func setArgs(args: [Operand]) {
+    func setArgs(_ args: [Operand]) {
         address = args[0] as! PtrOperand
     }
     

@@ -51,18 +51,18 @@ final class SemaScope {
     /// in the builtin functions, then it looks through this scope,
     /// then searches parent scopes, throwing if not found
     ///
-    func function(named name: String, argTypes: [Type]) throws -> Solution {
+    func function(named name: String, argTypes: [Type], base: NominalType? = nil) throws -> Solution {
         // lookup from stdlib/builtin
-        if let stdLibFunction = StdLib.function(name: name, args: argTypes, solver: constraintSolver) { return stdLibFunction }
+        if let stdLibFunction = StdLib.function(name: name, args: argTypes, base: base, solver: constraintSolver) { return stdLibFunction }
         else if isStdLib, let builtinFunction = Builtin.function(name: name, argTypes: argTypes) { return builtinFunction }
             // otherwise we search the user scopes recursively
-        else { return try recursivelyLookupFunction(named: name, argTypes: argTypes) }
+        else { return try recursivelyLookupFunction(named: name, argTypes: argTypes, base: base) }
     }
     
     /// Recursvively searches this scope and its parents
     /// - note: should only be called *after* looking up in stdlib/builtin
-    private func recursivelyLookupFunction(named name: String, argTypes: [Type]) throws -> Solution {
-        if let inScope = functions.function(havingUnmangledName: name, argTypes: argTypes, solver: constraintSolver) { return inScope }
+    private func recursivelyLookupFunction(named name: String, argTypes: [Type], base: NominalType?) throws -> Solution {
+        if let inScope = functions.function(havingUnmangledName: name, argTypes: argTypes, base: base, solver: constraintSolver) { return inScope }
             // lookup from parents
         else if let inParent = try parent?.function(named: name, argTypes: argTypes) { return inParent }
             // otherwise we havent found a match :(
@@ -178,6 +178,7 @@ extension Collection where
     /// - returns: the mangled name and the type of the matching function
     func function(havingUnmangledName appliedName: String,
                   argTypes: [Type],
+                  base: NominalType?,
                   solver: ConstraintSolver)
         -> Solution?
     {
@@ -193,6 +194,10 @@ extension Collection where
             // base names match
             guard fnName.demangleName() == appliedName else {
                 continue functionSearch
+            }
+            if let base = base {
+                guard case .method(let parent) = fnType.callingConvention,
+                    solver.typeSatisfies(parent.selfType, constraint: base) else { continue }
             }
             
             // arg types satisfy the params

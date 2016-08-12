@@ -101,9 +101,7 @@ extension FuncDecl : DeclTypeProvider {
 extension BinaryExpr : ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Type {
-        let t = try semaFunctionCall(scope: scope)
-        self.fnType = t
-        return t.returns
+        return try semaFunctionCall(scope: scope).type.returns
     }
 }
 
@@ -111,15 +109,27 @@ extension BinaryExpr : ExprTypeProvider {
 extension FunctionCallExpr : ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Type {
-        let t = try semaFunctionCall(scope: scope)
-        self.fnType = t
-        return t.returns
+        let fnType = try semaFunctionCall(scope: scope).type
+        
+        // we need explicit self, VIRGen cant handle the implicit method call
+        // case just yet
+        if case .method = fnType.callingConvention {
+            throw semaError(.useExplicitSelf(methodName: name))
+        }
+        
+        return fnType.returns
     }
 }
 
 extension FunctionCall {
     
-    func semaFunctionCall(scope: SemaScope) throws -> FunctionType {
+    /// Perform sema for any function call.
+    ///
+    /// Sets self.fnType to the function type, self._type to the return
+    /// type, self.mangledName to the mangled name, and returns the function type
+    ///
+    /// Also does sema on the args and body.
+    func semaFunctionCall(scope: SemaScope) throws -> (mangledName: String, type: FunctionType) {
         
         // gen types for objects in call
         for (i, arg) in argArr.enumerated() {
@@ -133,8 +143,9 @@ extension FunctionCall {
             throw semaError(.paramsNotTyped, userVisible: false)
         }
         
-        let (mangledName, fnType) = try scope.function(named: name, argTypes: argTypes)
+        let (mangledName, fnType) = try scope.function(named: name, argTypes: argTypes, base: base)
         self.mangledName = mangledName
+        self.fnType = fnType
         
         for (i, (arg, argType)) in zip(argArr, fnType.params).enumerated()
             where arg is ClosureExpr {
@@ -144,15 +155,35 @@ extension FunctionCall {
             try arg.typeForNode(scope: argScope)
         }
         
-        // we need explicit self, VIRGen cant handle the implicit method call
-        // case just yet
-        if case .method = fnType.callingConvention {
-            throw semaError(.useExplicitSelf(methodName: name))
+        // assign type to self and return
+        self._type = fnType.returns
+        return (mangledName, fnType)
+    }
+}
+
+
+extension MethodCallExpr : ExprTypeProvider {
+    
+    var base: NominalType? { return structType }
+    
+    func typeForNode(scope: SemaScope) throws -> Type {
+        
+        let ty = try object.typeForNode(scope: scope)
+        guard case let parentType as NominalType = ty else { throw semaError(.notStructType(ty), userVisible: false) }
+        
+        // get the function type and sema the args
+        let fnType = try semaFunctionCall(scope: scope).type
+        
+        guard case .method(_, let mutatingMethod) = fnType.callingConvention else { throw semaError(.functionNotMethod, userVisible: false) }
+        let (baseType, _, allowsMutation) = try object.recursiveType(scope: scope)
+        
+        if mutatingMethod, !allowsMutation {
+            throw semaError(.mutatingMethodOnImmutable(method: name, baseType: baseType.explicitName))
         }
         
         // assign type to self and return
-        self._type = fnType.returns
-        return fnType
+        self.structType = parentType
+        return fnType.returns
     }
 }
 

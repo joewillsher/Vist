@@ -6,7 +6,8 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-/// An Value, instruction results, literals, etc
+/// A VIR value: instructions, literals, params, function refs
+///              globals
 protocol Value : class, VIRTyped, VIRElement {
     /// An explicit name to give self in the ir repr
     var irName: String? { get set }
@@ -15,7 +16,8 @@ protocol Value : class, VIRTyped, VIRElement {
     weak var parentBlock: BasicBlock? { get set }
     
     /// The list of uses of `self`. A collection of `Operand`
-    /// instances whose `value`s point to self, to 
+    /// instances whose `value`s point to self, the operand's
+    /// user is the inst which takes `self`
     var uses: [Operand] { get set }
     
     /// The formatted name as shown in IR
@@ -26,6 +28,7 @@ protocol Value : class, VIRTyped, VIRElement {
     func copy() -> Self
 }
 
+/// A typed VIR object
 protocol VIRTyped {
     var type: Type? { get }
 }
@@ -45,14 +48,13 @@ protocol LValue : Value {
 /**
  for mapping getter for type -- cant do
  `let a = params.optionalMap(Value.type) else { throw ...`
- so we can `let a = params.map(Value.getType)`
+ so we can `let a = params.map(Value.getType(of:))`
  */
 func getType(of val: VIRTyped) throws -> Type { if let t = val.type { return t } else { throw irGenError(.typeNotFound, userVisible: false) } }
 
 extension Value {
     
     func copy() -> Self { return self }
-    
     
     /// Adds record of a user `use` to self’s users list
     func addUse(_ use: Operand) {
@@ -71,11 +73,14 @@ extension Value {
         for use in uses { use.setLoweredValue(val) }
     }
     
-    /// The accessor whose getter returns `self`. If self is abstracts a refcounted
-    /// box then the accessor accesses the stored value.
+    /// Create an accessor which accesses `self`.
+    /// 
+    /// If `self` is ref counted, this creates a refcounted accessor, otherwise
+    /// it returns a by-val accessor for value types (or address only ptr types)
+    /// and returns a ref accessor for all other lvalues with ptr type
     func accessor() throws -> Accessor {
         
-        if case BuiltinType.pointer(let to)? = type, !(to is FunctionType) {
+        if case BuiltinType.pointer(let to)? = type, !to.isAddressOnly {
             let lVal = try OpaqueLValue(rvalue: self)
             if case let nominal as NominalType = to, nominal.isHeapAllocated {
                 return RefCountedAccessor(refcountedBox: lVal)
@@ -121,6 +126,7 @@ extension Value {
 }
 
 extension LValue {
+    /// Initialise a ref accessor accessing `self`
     var accessor: IndirectAccessor { return RefAccessor(memory: self) }
 }
 

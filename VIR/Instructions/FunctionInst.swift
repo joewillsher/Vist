@@ -43,7 +43,7 @@ final class FunctionCallInst : Inst, VIRFunctionCall {
     var vir: String {
         return "\(name) = call @\(function.name) \(args.virValueTuple())\(useComment)"
     }
-    var instHasSideEffects: Bool { return true }
+    var hasSideEffects: Bool { return true }
     
     var functionRef: LLVMFunction { return function.loweredFunction! }
     var functionType: FunctionType { return function.type }
@@ -85,7 +85,7 @@ final class FunctionApplyInst : Inst, VIRFunctionCall {
     var vir: String {
         return "\(name) = apply \(function.name) \(args.virValueTuple())\(useComment)"
     }
-    var instHasSideEffects: Bool { return true }
+    var hasSideEffects: Bool { return true }
     
     var functionRef: LLVMFunction { return LLVMFunction(ref: function.loweredValue!._value) }
     var functionType: FunctionType { return function.memType as! FunctionType }
@@ -94,7 +94,7 @@ final class FunctionApplyInst : Inst, VIRFunctionCall {
         return FunctionApplyInst(function: function.formCopy(), returnType: returnType, args: functionArgs.map { $0.formCopy() }, irName: irName)
     }
     
-    func setArgs(args: [Operand]) {
+    func setArgs(_ args: [Operand]) {
         self.function = args[0] as! PtrOperand
         self.functionArgs = Array(args.dropFirst())
     }

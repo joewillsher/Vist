@@ -58,7 +58,7 @@ extension Function {
             
             // check the block's exit is a control flow inst
             if let last = block.instructions.last {
-                guard last.instIsTerminator else {
+                guard last.isTerminator else {
                     throw VIRVerifierError.notTerminator(last)
                 }
                 // TODO: Proper comparison of inst types -- `!=` checks for conformance

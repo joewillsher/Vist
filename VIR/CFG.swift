@@ -51,11 +51,11 @@
  ```
 */
 enum CFGPass : OptimisationPass {
-    
+
     typealias PassTarget = Function
     static let minOptLevel: OptLevel = .high
     static let name = "cfg"
-
+    
     static func run(on function: Function) throws {
         
         /*

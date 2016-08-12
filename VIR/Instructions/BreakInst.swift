@@ -29,8 +29,8 @@ final class BreakInst : BreakInstruction, Inst {
         return "break $\(call.block.name)\(call.args?.virValueTuple() ?? "")"
     }
     
-    var instHasSideEffects: Bool { return true }
-    var instIsTerminator: Bool { return true }
+    var hasSideEffects: Bool { return true }
+    var isTerminator: Bool { return true }
     
     var parentBlock: BasicBlock?
     var irName: String?
@@ -58,8 +58,8 @@ final class CondBreakInst : Inst, BreakInstruction {
         return "break \(condition.vir), $\(thenCall.block.name)\(thenCall.args?.virValueTuple() ?? ""), $\(elseCall.block.name)\(elseCall.args?.virValueTuple() ?? "")"
     }
     
-    var instHasSideEffects: Bool { return true }
-    var instIsTerminator: Bool { return true }
+    var hasSideEffects: Bool { return true }
+    var isTerminator: Bool { return true }
     
     var parentBlock: BasicBlock?
     var irName: String?

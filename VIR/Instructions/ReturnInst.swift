@@ -34,10 +34,10 @@ final class ReturnInst : Inst {
     
     var type: Type? { return nil }
     
-    var instHasSideEffects: Bool { return true }
-    var instIsTerminator: Bool { return true }
+    var hasSideEffects: Bool { return true }
+    var isTerminator: Bool { return true }
     
-    func setArgs(args: [Operand]) {
+    func setArgs(_ args: [Operand]) {
         returnValue = args[0]
     }
     

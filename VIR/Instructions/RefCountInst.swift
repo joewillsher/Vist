@@ -67,7 +67,7 @@ final class RetainInst : Inst {
     var type: Type? { return object.memType.map { BuiltinType.pointer(to: $0) } }
     var memType: Type? { return object.memType }
     
-    var instHasSideEffects: Bool { return true }
+    var hasSideEffects: Bool { return true }
     
     var vir: String {
         return "\(name) = retain_object \(object.valueName)\(useComment)"
@@ -76,7 +76,7 @@ final class RetainInst : Inst {
     func copy() -> RetainInst {
         return RetainInst(object: object.formCopy(), irName: irName)
     }
-    func setArgs(args: [Operand]) {
+    func setArgs(_ args: [Operand]) {
         object = args[0] as! PtrOperand
     }
     
@@ -115,7 +115,7 @@ final class ReleaseInst : Inst {
     var type: Type? { return object.memType.map { BuiltinType.pointer(to: $0) } }
     var memType: Type? { return object.memType }
     
-    var instHasSideEffects: Bool { return true }
+    var hasSideEffects: Bool { return true }
     
     var vir: String {
         return "\(name) = \(unowned ? "release_unowned_object" : "release_object") \(object.valueName)\(useComment)"
@@ -154,7 +154,7 @@ final class DeallocObjectInst : Inst {
     var type: Type? { return object.memType.map { BuiltinType.pointer(to: $0) } }
     var memType: Type? { return object.memType }
     
-    var instHasSideEffects: Bool { return true }
+    var hasSideEffects: Bool { return true }
     
     var vir: String {
         return "\(name) = \(unowned ? "dealloc_unowned_object" : "dealloc_object") \(object.valueName)\(useComment)"

@@ -45,7 +45,7 @@ final class OpenExistentialPropertyInst: Inst, LValue {
         return OpenExistentialPropertyInst(existential: existential.formCopy(), propertyName: propertyName, existentialType: existentialType, irName: irName)
     }
     
-    func setArgs(args: [Operand]) {
+    func setArgs(_ args: [Operand]) {
         existential = args[0] as! PtrOperand
     }
     var parentBlock: BasicBlock?
@@ -83,7 +83,7 @@ final class ExistentialConstructInst : Inst {
     func copy() -> ExistentialConstructInst {
         return ExistentialConstructInst(value: value.formCopy(), existentialType: existentialType, irName: irName)
     }
-    func setArgs(args: [Operand]) {
+    func setArgs(_ args: [Operand]) {
         value = args[0] as! PtrOperand
     }
     var parentBlock: BasicBlock?
@@ -94,7 +94,7 @@ final class ExistentialWitnessInst : Inst, LValue {
     var existential: PtrOperand
     let methodName: String, argTypes: [Type], existentialType: ConceptType
     
-    var methodType: FunctionType? { return try? existentialType.methodType(methodNamed: methodName, argTypes: argTypes) }
+    var methodType: FunctionType? { return existentialType.methods.first(where: {$0.name == methodName})?.type }
     var type: Type? { return memType.map { BuiltinType.pointer(to: $0) } }
     var memType: Type? { return methodType }
     
@@ -122,7 +122,7 @@ final class ExistentialWitnessInst : Inst, LValue {
     func copy() -> ExistentialWitnessInst {
         return ExistentialWitnessInst(existential: existential.formCopy(), methodName: methodName, argTypes: argTypes, existentialType: existentialType, irName: irName)
     }
-    func setArgs(args: [Operand]) {
+    func setArgs(_ args: [Operand]) {
         existential = args[0] as! PtrOperand
     }
     
@@ -158,7 +158,7 @@ final class ExistentialProjectInst : Inst, LValue {
     func copy() -> ExistentialProjectInst {
         return ExistentialProjectInst(existential: existential.formCopy(), irName: irName)
     }
-    func setArgs(args: [Operand]) {
+    func setArgs(_ args: [Operand]) {
         existential = args[0] as! PtrOperand
     }
     var parentBlock: BasicBlock?

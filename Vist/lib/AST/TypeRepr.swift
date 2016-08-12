@@ -24,7 +24,7 @@ final class FunctionTypeRepr {
     }
     
     func returnType(scope: SemaScope) throws -> Type {
-        return try returnType.typeIn(scope: scope)
+        return try returnType.typeIn(scope)
     }
 }
 
@@ -34,7 +34,7 @@ final class FunctionTypeRepr {
 enum TypeRepr {
     case void
     case type(String)
-    indirect case tuple([TypeRepr])
+    case tuple([TypeRepr])
     case function(FunctionTypeRepr)
     
     init(_ str: String) {
@@ -49,25 +49,7 @@ enum TypeRepr {
         }
     }
     
-    fileprivate func tyArr(scope: SemaScope) throws -> [Type] {
-        switch self {
-        case .void:             return []
-        case .type, .function:  return [try typeIn(scope: scope)]
-        case .tuple(let ts):    return try ts.flatMap { try $0.typeIn(scope: scope) }
-        }
-    }
-    
-    func typeNames() -> [String] {
-        switch self {
-        case .void, .function:  return []
-        case let .type(t):      return [t]
-        case let .tuple(ts):    return ts.flatMap { $0.typeNames() }
-        }
-    }
-    
-    var isVoid: Bool { if case .void = self { return true } else { return false } }
-    
-    func typeIn(scope: SemaScope) throws -> Type {
+    func typeIn(_ scope: SemaScope) throws -> Type {
         switch self {
         case .void:
             return BuiltinType.void
@@ -87,12 +69,30 @@ enum TypeRepr {
         case .tuple(let elements):
             return elements.isEmpty ?
                 BuiltinType.void :
-                TupleType(members: try elements.map({try $0.typeIn(scope: scope)}))
+                TupleType(members: try elements.map({try $0.typeIn(scope)}))
             
         case .function(let functionType):
             return FunctionType(params: try functionType.paramType.tyArr(scope: scope),
-                                returns: try functionType.returnType.typeIn(scope: scope))
+                                returns: try functionType.returnType.typeIn(scope))
         }
     }
+    
+    fileprivate func tyArr(scope: SemaScope) throws -> [Type] {
+        switch self {
+        case .void:             return []
+        case .type, .function:  return [try typeIn(scope)]
+        case .tuple(let ts):    return try ts.flatMap { try $0.typeIn(scope) }
+        }
+    }
+    
+    func typeNames() -> [String] {
+        switch self {
+        case .void, .function:  return []
+        case let .type(t):      return [t]
+        case let .tuple(ts):    return ts.flatMap { $0.typeNames() }
+        }
+    }
+    
+    var isVoid: Bool { if case .void = self { return true } else { return false } }
 }
 

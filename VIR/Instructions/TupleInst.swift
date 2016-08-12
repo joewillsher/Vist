@@ -67,7 +67,7 @@ final class TupleExtractInst : Inst {
     func copy() -> TupleExtractInst {
         return TupleExtractInst(op: tuple.formCopy(), index: elementIndex, elType: elementType, irName: irName)
     }
-    func setArgs(args: [Operand]) {
+    func setArgs(_ args: [Operand]) {
         tuple = args[0]
     }
     var parentBlock: BasicBlock?

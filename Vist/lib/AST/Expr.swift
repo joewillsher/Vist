@@ -184,6 +184,10 @@ protocol FunctionCall : class, Expr, _Typed {
 
     var mangledName: String { get set }
     var fnType: FunctionType? { get set }
+    var base: NominalType? { get }
+}
+extension FunctionCall {
+    var base: NominalType? { return nil }
 }
 
 final class BinaryExpr : FunctionCall {

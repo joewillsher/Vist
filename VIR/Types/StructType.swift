@@ -36,7 +36,6 @@ extension StructType {
         return isHeapAllocated ? imported.refCountedBox(module: module) : imported
     }
     
-    /// TODO: docs
     func importedType(in module: Module) -> Type {
         let mappedEls = members.map { member in
             (member.name, member.type.importedType(in: module), member.isMutable) as StructMember
@@ -74,12 +73,15 @@ extension StructType {
 }
 
 
-extension StructType : Equatable {
-    static func == (lhs: StructType, rhs: StructType) -> Bool {
-        return lhs.name == rhs.name
+
+extension StructType : Hashable {
+    var hashValue: Int {
+        return name.hashValue
+    }
+    static func == (l: StructType, r: StructType) -> Bool {
+        return l.name == r.name
     }
 }
-
 
 
 

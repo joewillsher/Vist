@@ -30,7 +30,7 @@ final class VariableInst : Inst {
         return "variable_decl \(name) = \(value.valueName)\(useComment)"
     }
     
-    func setArgs(args: [Operand]) {
+    func setArgs(_ args: [Operand]) {
         value = args[0]
     }
     

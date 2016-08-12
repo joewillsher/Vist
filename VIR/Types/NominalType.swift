@@ -91,7 +91,6 @@ extension NominalType {
     }
 }
 
-
 func == (lhs: StructMember, rhs: StructMember) -> Bool {
     return lhs.name == rhs.name && lhs.type == rhs.type
 }

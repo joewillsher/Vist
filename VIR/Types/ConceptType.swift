@@ -54,4 +54,11 @@ extension ConceptType {
 
 }
 
-
+extension ConceptType : Hashable {
+    var hashValue: Int {
+        return name.hashValue
+    }
+    static func == (l: ConceptType, r: ConceptType) -> Bool {
+        return l.name == r.name
+    }
+}

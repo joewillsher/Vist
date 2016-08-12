@@ -189,6 +189,7 @@ extension FunctionCall/*: VIRGenerator*/ {
     
     func argOperands(module: Module, scope: Scope) throws -> [Operand] {
         guard case let fnType as FunctionType = fnType?.importedType(in: module) else {
+            print(self.name, self.mangledName, self.fnType?.prettyName)
             throw VIRError.paramsNotTyped
         }
         
@@ -214,7 +215,7 @@ extension FunctionCall/*: VIRGenerator*/ {
             let a = args.map { $0.value! }
             return try module.builder.build(inst: BuiltinInstCall(inst: instruction, args: a)).accessor()
         }
-        else if case let closure as LValue = try scope.variable(named: mangledName.demangleName())?.getValue() {
+        else if case let closure as LValue = try scope.variable(named: /*name*/mangledName.demangleName())?.getValue() {
             let ret = closure.memType!.importedType(in: module) as! FunctionType
             return try module.builder.buildFunctionApply(function: PtrOperand(closure),
                                                          returnType: ret.returns,
@@ -500,7 +501,7 @@ extension ConditionalStmt : StmtEmitter {
             
             // once we're done in success, break to the exit and
             // move into the fail for the next round
-            if !ifBlock.instructions.contains(where: {$0.instIsTerminator}) {
+            if !ifBlock.instructions.contains(where: {$0.isTerminator}) {
                 try module.builder.buildBreak(to: exitBlock)
                 module.builder.insertPoint.block = failBlock
             }
@@ -813,7 +814,7 @@ extension MethodCallExpr : ValueEmitter {
             
             // get the witness from the existential
             let fn = try module.builder.build(inst: ExistentialWitnessInst(existential: selfRef,
-                                                                           methodName: name,
+                                                                           methodName: mangledName,
                                                                            argTypes: argTypes,
                                                                            existentialType: existentialType,
                                                                            irName: "witness"))

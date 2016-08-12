@@ -57,8 +57,8 @@ struct FunctionContainer {
     /// - parameter named: Unmangled name
     /// - parameter argTypes: Applied arg types
     /// - returns: An optional tuple of `(mangledName, type)`
-    func lookupFunction(named fn: String, argTypes types: [Type], solver: ConstraintSolver) -> Solution? {
-        return functions.function(havingUnmangledName: fn, argTypes: types, solver: solver)
+    func lookupFunction(named fn: String, argTypes types: [Type], base: NominalType? = nil, solver: ConstraintSolver) -> Solution? {
+        return functions.function(havingUnmangledName: fn, argTypes: types, base: base, solver: solver)
     }
     /// unmangled
     subscript(mangledName mangledName: String) -> Solution? {

@@ -115,7 +115,7 @@ enum InlinePass : OptimisationPass {
                 
             default:
                 // fix-up the user of the inst's args
-                inlinedInst.setInstArgs(args: inlinedInst.args.map { arg in
+                inlinedInst.setInstArgs(inlinedInst.args.map { arg in
                     let operand = arg.formCopy(nullValue: true)
                     let v = getValue(replacing: arg)
                     arg.value = nil; arg.user = nil
