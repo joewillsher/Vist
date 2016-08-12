@@ -28,21 +28,21 @@ extension ExistentialConstructInst : VIRLower {
 
 extension ExistentialWitnessInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        
-        let i = try existentialType.index(ofMethodNamed: methodName, argTypes: argTypes)
-        let fnType = try existentialType
-            .methodType(methodNamed: methodName, argTypes: argTypes)
-            .asMethodWithOpaqueParent()
-            .cannonicalType(module: module)
-            .importedType(in: module)
-        
-        let ref = module.getRuntimeFunction(.getWitnessMethod, IGF: &IGF)
-        
-        let conformanceIndex = LLVMValue.constInt(value: 0, size: 32), methodIndex = LLVMValue.constInt(value: i, size: 32)
-        let functionPointer = try IGF.builder.buildCall(function: ref, args: [existential.loweredValue!, conformanceIndex, methodIndex])
-        
-        let functionType = BuiltinType.pointer(to: fnType).lowered(module: module)
-        return try IGF.builder.buildBitcast(value: functionPointer, to: functionType, name: irName) // fntype*
+        fatalError()
+//        let i = try existentialType.index(ofMethodNamed: methodName, argTypes: argTypes)
+//        let fnType = try existentialType
+//            .methodType(methodNamed: methodName, argTypes: argTypes)
+//            .asMethodWithOpaqueParent()
+//            .cannonicalType(module: module)
+//            .importedType(in: module)
+//        
+//        let ref = module.getRuntimeFunction(.getWitnessMethod, IGF: &IGF)
+//        
+//        let conformanceIndex = LLVMValue.constInt(value: 0, size: 32), methodIndex = LLVMValue.constInt(value: i, size: 32)
+//        let functionPointer = try IGF.builder.buildCall(function: ref, args: [existential.loweredValue!, conformanceIndex, methodIndex])
+//        
+//        let functionType = BuiltinType.pointer(to: fnType).lowered(module: module)
+//        return try IGF.builder.buildBitcast(value: functionPointer, to: functionType, name: irName) // fntype*
     }
 }
 

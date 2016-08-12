@@ -92,6 +92,7 @@ extension Module {
         let t = typeList.map { $0.declVIR }
         let f = functions.map { $0.vir }
         let g = globalValues.map { "global \($0.vir)" }
+        let w = witnessTables.map { $0.vir }
         return
             "\n" +
             t.joined(separator: "\n") +
@@ -99,6 +100,8 @@ extension Module {
             g.joined(separator: "\n") +
             "\n\n" +
             f.joined(separator: "\n\n") +
+            "\n\n" +
+            w.joined(separator: "\n") +
             "\n"
     }
 }

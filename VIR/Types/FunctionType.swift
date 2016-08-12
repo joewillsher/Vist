@@ -27,14 +27,6 @@ struct FunctionType : Type {
             case .method: return "&method"
             }
         }
-        func importedType(in module: Module) -> CallingConvention {
-            switch self {
-            case .thin: return self
-            case .method(let selfType, let mutating):
-                return .method(selfType: selfType.importedType(in: module),
-                               mutating: mutating)
-            }
-        }
     }
     
     // Generator functions yield this type
@@ -81,8 +73,7 @@ extension FunctionType {
     func importedType(in module: Module) -> Type {
         let params = self.params.map { $0.importedType(in: module) }
         let returns = self.returns.importedType(in: module)
-        let convention = self.callingConvention.importedType(in: module)
-        return FunctionType(params: params, returns: returns, callingConvention: convention, yieldType: yieldType)
+        return FunctionType(params: params, returns: returns, callingConvention: callingConvention, yieldType: yieldType)
     }
     
     

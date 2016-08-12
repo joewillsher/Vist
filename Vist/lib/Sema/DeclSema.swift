@@ -23,7 +23,7 @@ extension TypeDecl : ExprTypeProvider {
         // add generic params to scope
         structScope.genericParameters = genericParameters
         
-        // maps over properties and gens types
+        // type checks properties
         let members = try properties
             .flatMap { $0.declared }
             .flatMap { decl in
@@ -36,29 +36,35 @@ extension TypeDecl : ExprTypeProvider {
                 }
         }
         
+        // Find conforming concepts
         let cs = concepts.optionalMap { scope.concept(named: $0) }!
         let ty = StructType(members: members, methods: [], name: name, concepts: cs, isHeapAllocated: byRef)
         self.type = ty
         
+        // Add generic params
         try errorCollector.run {
             ty.genericTypes = try genericParameters?.map(GenericType.fromConstraint(inScope: scope))
         }
         
+        // Get the types of the methods
         let memberFunctions = try methods.flatMap { (method: FuncDecl) -> StructMethod? in
             return try errorCollector.run {
-                let t = try method.genFunctionInterface(scope: scope)
+                let t = try method.genFunctionInterface(scope: scope, addToScope: false)
                 let mutableSelf = method.attrs.contains(.mutating)
-                return (name: method.name, type: t, mutating: mutableSelf)
+                guard let mangledName = method.mangledName else {
+                    throw semaError(.noMangledName(unmangled: method.name), userVisible: false)
+                }
+                return (name: mangledName, type: t, mutating: mutableSelf)
             }
         }
-
         ty.methods = memberFunctions
         
+        // Record the (now finalised) type
         scope.addType(ty, name: name)
         self.type = ty
 
         for method in methods {
-            //method.parent?.declaredType = ty
+            // type check the method bodies
             try errorCollector.run {
                 let declScope = SemaScope(parent: scope)
                 declScope.genericParameters = method.genericParameters
@@ -66,6 +72,7 @@ extension TypeDecl : ExprTypeProvider {
             }
         }
         
+        // define an implicit initialiser
         if let implicit = implicitIntialiser() {
             initialisers.append(implicit)
         }
@@ -82,12 +89,14 @@ extension TypeDecl : ExprTypeProvider {
                 }
             }
         }
+        // type check the initialisers
         try initialisers.walkChildren(collector: errorCollector) { node in
             try node.typeForNode(scope: structScope)
         }
         
         for i in initialisers {
             if let initialiserType = i.typeRepr.type {
+                // ad initialisers to outer scope
                 scope.addFunction(name: name, type: initialiserType)
             }
         }
@@ -112,28 +121,40 @@ extension ConceptDecl : ExprTypeProvider {
     
     func typeForNode(scope: SemaScope) throws -> Type {
         
-        let conceptScope = SemaScope(parent: scope)
+        // inner concept scope
+        let conceptScope = SemaScope.capturingScope(parent: scope, overrideReturnType: nil)
         let errorCollector = ErrorCollector()
         
-        try requiredMethods.walkChildren(collector: errorCollector) { method in
-            try method.typeForNode(scope: conceptScope)
-        }
+        // type check properties briefly
         try requiredProperties
             .flatMap { $0.declared }
             .walkChildren(collector: errorCollector) { property in
                 try property.typeForNode(scope: conceptScope)
         }
+        // define a placeholder type, this is so inner contexts see theyre in a method
+        let placeholder = ConceptType(name: name, requiredFunctions: [], requiredProperties: [])
+        self.type = placeholder
         
+        // get the method types
         let methodTypes = try requiredMethods.walkChildren(collector: errorCollector) { method throws -> StructMethod in
-            guard let t = method.typeRepr.type else {
-                throw semaError(.structMethodNotTyped(type: name, methodName: method.name))
+            // add the method&type to outer scope
+            let t = try method.genFunctionInterface(scope: scope, addToScope: false)
+            
+            guard let mangledName = method.mangledName else {
+                throw semaError(.noMangledName(unmangled: method.name), userVisible: false)
             }
+            // requirememnts cannot have a body
+            guard !method.hasBody else {
+                throw semaError(.conceptBody(concept: placeholder, function: method))
+            }
+            
             return (
-                name: method.name,
+                name: mangledName,
                 type: t,
                 mutating: method.attrs.contains(.mutating)
             )
         }
+        // get property types from the typecked nodes
         let propertyTypes = try requiredProperties
             .flatMap { $0.declared }
             .walkChildren(collector: errorCollector) { prop throws -> StructMember in
@@ -142,10 +163,14 @@ extension ConceptDecl : ExprTypeProvider {
                 }
                 return (prop.name, t, true)
         }
-        
+        // define the concept
         let ty = ConceptType(name: name, requiredFunctions: methodTypes, requiredProperties: propertyTypes)
-        
         scope.addConcept(ty, name: name)
+        
+        // fix self references
+        for method in requiredMethods {
+            try method.typeForNode(scope: scope)
+        }
         
         try errorCollector.throwIfErrors()
         

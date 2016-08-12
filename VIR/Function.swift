@@ -221,7 +221,7 @@ final class FunctionRef : LValue {
     
     let function: Function
     
-    private init(toFunction function: Function, parentBlock: BasicBlock?) {
+    private init(toFunction function: Function, parentBlock: BasicBlock? = nil) {
         self.function = function
         self.parentBlock = parentBlock
         self.irName = function.name

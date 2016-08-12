@@ -93,7 +93,7 @@ extension Accessor {
     ///
     /// `func foo :: AConcept = ...` is called as `foo aConformant`. If aConformant
     /// is not already an existential we must construct one.
-    func boxedAggregateGetValue(expectedType: Type?) throws -> Value {
+    func boxedAggregateGetValue(expectedType: Type?, module: Module) throws -> Value {
         
         // if the function expects an existential, we construct one
         if case let existentialType as ConceptType = expectedType?.getConcreteNominalType() {
@@ -102,7 +102,7 @@ extension Accessor {
             }
             else {
                 let existentialRef = try referenceBacked().aggregateReference()
-                return try module.builder.build(inst: ExistentialConstructInst(value: existentialRef, existentialType: existentialType))
+                return try module.builder.build(inst: ExistentialConstructInst(value: existentialRef, existentialType: existentialType, module: module))
             }
         }
         else if case let refCounted as RefCountedAccessor = self {

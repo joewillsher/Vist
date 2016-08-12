@@ -189,14 +189,13 @@ extension FunctionCall/*: VIRGenerator*/ {
     
     func argOperands(module: Module, scope: Scope) throws -> [Operand] {
         guard case let fnType as FunctionType = fnType?.importedType(in: module) else {
-            print(self.name, self.mangledName, self.fnType?.prettyName)
             throw VIRError.paramsNotTyped
         }
         
         return try zip(argArr, fnType.params).map { rawArg, paramType in
             let arg = try rawArg.emitRValue(module: module, scope: scope)
             try arg.retain()
-            return try arg.boxedAggregateGetValue(expectedType: paramType)
+            return try arg.boxedAggregateGetValue(expectedType: paramType, module: module)
         }
             .map(Operand.init(_:))
     }
@@ -374,7 +373,7 @@ extension ReturnStmt : ValueEmitter {
             try retVal.release() // FIXME: CHECK THIS
         }
         
-        let boxed = try retVal.boxedAggregateGetValue(expectedType: expectedReturnType)
+        let boxed = try retVal.boxedAggregateGetValue(expectedType: expectedReturnType, module: module)
         return try module.builder.buildReturn(value: boxed).accessor()
     }
 }
@@ -775,7 +774,8 @@ extension MutationExpr : ValueEmitter {
     
     func emitRValue(module: Module, scope: Scope) throws -> Accessor {
         
-        let rval = try value.emitRValue(module: module, scope: scope).boxedAggregateGetValue(expectedType: object._type)
+        let rval = try value.emitRValue(module: module, scope: scope)
+            .boxedAggregateGetValue(expectedType: object._type, module: module)
         guard case let lhs as LValueEmitter = object else { fatalError() }
         
         // TODO: test aggregate stuff
@@ -810,12 +810,9 @@ extension MethodCallExpr : ValueEmitter {
             
         case let existentialType as ConceptType:
             
-            guard let argTypes = args.optionalMap({$0.type}) else { fatalError() }
-            
             // get the witness from the existential
             let fn = try module.builder.build(inst: ExistentialWitnessInst(existential: selfRef,
                                                                            methodName: mangledName,
-                                                                           argTypes: argTypes,
                                                                            existentialType: existentialType,
                                                                            irName: "witness"))
             guard case let fnType as FunctionType = fn.memType?.importedType(in: module) else { fatalError() }

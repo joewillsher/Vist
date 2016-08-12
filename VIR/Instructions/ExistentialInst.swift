@@ -57,18 +57,27 @@ final class OpenExistentialPropertyInst: Inst, LValue {
 /// When lowered it calculates the metadata for offsets and constructs
 /// the struct's witness table
 final class ExistentialConstructInst : Inst {
-    var value: PtrOperand, existentialType: ConceptType
+    var value: PtrOperand
+    let existentialType: ConceptType
+    let witnessTable: VIRWitnessTable
     
     var type: Type? { return existentialType.importedType(in: module) }
     
     var uses: [Operand] = []
     var args: [Operand]
     
-    convenience init(value: LValue, existentialType: ConceptType, irName: String? = nil) {
-        self.init(value: PtrOperand(value), existentialType: existentialType, irName: irName)
+    convenience init(value: LValue, existentialType: ConceptType, module: Module, irName: String? = nil) throws {
+        guard case let nom as NominalType = value.memType else {
+            fatalError()
+        }
+        self.init(value: PtrOperand(value),
+                  witnessTable: try VIRWitnessTable.create(module: module, type: nom, conforms: existentialType),
+                  existentialType: existentialType,
+                  irName: irName)
     }
     
-    private init(value: PtrOperand, existentialType: ConceptType, irName: String?) {
+    private init(value: PtrOperand, witnessTable: VIRWitnessTable, existentialType: ConceptType, irName: String?) {
+        self.witnessTable = witnessTable
         self.value = value
         self.existentialType = existentialType
         self.args = [value]
@@ -81,7 +90,7 @@ final class ExistentialConstructInst : Inst {
     }
     
     func copy() -> ExistentialConstructInst {
-        return ExistentialConstructInst(value: value.formCopy(), existentialType: existentialType, irName: irName)
+        return ExistentialConstructInst(value: value.formCopy(), witnessTable: witnessTable, existentialType: existentialType, irName: irName)
     }
     func setArgs(_ args: [Operand]) {
         value = args[0] as! PtrOperand
@@ -92,24 +101,35 @@ final class ExistentialConstructInst : Inst {
 
 final class ExistentialWitnessInst : Inst, LValue {
     var existential: PtrOperand
-    let methodName: String, argTypes: [Type], existentialType: ConceptType
+    let methodName: String
+    let existentialType: ConceptType
     
-    var methodType: FunctionType? { return existentialType.methods.first(where: {$0.name == methodName})?.type }
+    var methodType: FunctionType
     var type: Type? { return memType.map { BuiltinType.pointer(to: $0) } }
     var memType: Type? { return methodType }
     
     var uses: [Operand] = []
     var args: [Operand]
     
-    convenience init(existential: LValue, methodName: String, argTypes: [Type], existentialType: ConceptType, irName: String? = nil) {
-        self.init(existential: PtrOperand(existential), methodName: methodName, argTypes: argTypes, existentialType: existentialType, irName: irName)
+    convenience init(existential: LValue,
+                     methodName: String,
+                     existentialType: ConceptType,
+                     irName: String? = nil) throws {
+        guard let methodType = existentialType.methods.first(where: {$0.name == methodName}) else {
+            fatalError()
+        }
+        self.init(existential: PtrOperand(existential),
+                  methodName: methodName,
+                  methodType: methodType.type,
+                  existentialType: existentialType,
+                  irName: irName)
     }
     
-    private init(existential: PtrOperand, methodName: String, argTypes: [Type], existentialType: ConceptType, irName: String?) {
+    private init(existential: PtrOperand, methodName: String, methodType: FunctionType, existentialType: ConceptType, irName: String?) {
         self.existential = existential
         self.methodName = methodName
+        self.methodType = methodType
         self.existentialType = existentialType
-        self.argTypes = argTypes
         self.args = [existential]
         initialiseArgs()
         self.irName = irName
@@ -120,8 +140,13 @@ final class ExistentialWitnessInst : Inst, LValue {
     }
     
     func copy() -> ExistentialWitnessInst {
-        return ExistentialWitnessInst(existential: existential.formCopy(), methodName: methodName, argTypes: argTypes, existentialType: existentialType, irName: irName)
+        return ExistentialWitnessInst(existential: existential.formCopy(),
+                                      methodName: methodName,
+                                      methodType: methodType,
+                                      existentialType: existentialType,
+                                      irName: irName)
     }
+    
     func setArgs(_ args: [Operand]) {
         existential = args[0] as! PtrOperand
     }

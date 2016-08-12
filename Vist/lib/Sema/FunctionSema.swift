@@ -8,9 +8,10 @@
 
 extension FuncDecl : DeclTypeProvider {
     
-    /// Generate the function type and mangled name for a function
+    /// Generate the function type and mangled name for a function. This also
+    /// sets `self`'s properties
     /// - note: call `typeForNode(_:)` to sema the body 
-    func genFunctionInterface(scope: SemaScope) throws -> FunctionType {
+    func genFunctionInterface(scope: SemaScope, addToScope: Bool) throws -> FunctionType {
         
         let declScope = SemaScope(parent: scope)
         declScope.genericParameters = genericParameters
@@ -33,10 +34,11 @@ extension FuncDecl : DeclTypeProvider {
             ty.setGeneratorVariantType(yielding: returnType)
         }
         
-        mangledName = name.mangle(type: ty)
-        
-        scope.addFunction(name: name, type: ty)  // update function table
-        typeRepr.type = ty            // store type in fntype
+        typeRepr.type = ty
+        self.mangledName = name.mangle(type: ty)
+        if addToScope {
+            scope.addFunction(name: name, type: ty)
+        }
         return ty
     }
     
@@ -44,7 +46,7 @@ extension FuncDecl : DeclTypeProvider {
         
         // if we have already gen'ed the interface for this function, fnType.type
         // won't be nil, if we haven't, gen it now
-        let ty = try typeRepr.type ?? genFunctionInterface(scope: scope)
+        let ty = try typeRepr.type ?? genFunctionInterface(scope: scope, addToScope: true)
         
         guard let impl = self.impl else { return }
         // if body construct scope and parse inside it

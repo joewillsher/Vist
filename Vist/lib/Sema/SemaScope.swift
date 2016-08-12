@@ -56,7 +56,7 @@ final class SemaScope {
         if let stdLibFunction = StdLib.function(name: name, args: argTypes, base: base, solver: constraintSolver) { return stdLibFunction }
         else if isStdLib, let builtinFunction = Builtin.function(name: name, argTypes: argTypes) { return builtinFunction }
             // otherwise we search the user scopes recursively
-        else { return try recursivelyLookupFunction(named: name, argTypes: argTypes, base: base) }
+        return try recursivelyLookupFunction(named: name, argTypes: argTypes, base: base)
     }
     
     /// Recursvively searches this scope and its parents
@@ -197,7 +197,7 @@ extension Collection where
             }
             if let base = base {
                 guard case .method(let parent) = fnType.callingConvention,
-                    solver.typeSatisfies(parent.selfType, constraint: base) else { continue }
+                    parent.selfType.canAddConstraint(base, solver: solver) else { continue }
             }
             
             // arg types satisfy the params
@@ -213,6 +213,11 @@ extension Collection where
                     try! type.addConstraint(constraint, solver: solver)
                 }
                 try! returnTv.addConstraint(fnType.returns, solver: solver)
+                
+                if let base = base {
+                    guard case .method(let parent) = fnType.callingConvention else { fatalError() }
+                    try! parent.selfType.addConstraint(base, solver: solver)
+                }
                 
                 let overload = (mangledName: appliedName.mangle(type: fnType), type: fnType)
                 solutions.append(overload)

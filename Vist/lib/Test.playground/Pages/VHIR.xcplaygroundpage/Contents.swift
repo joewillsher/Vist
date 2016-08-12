@@ -51,7 +51,6 @@ let g = Foo().foo()
 */
 
 
-
 let c = { $0 } as (Int) -> Any
 
 let erased = c as Any

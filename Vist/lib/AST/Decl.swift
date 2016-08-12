@@ -147,6 +147,8 @@ final class FuncDecl : Decl, LibraryTopLevel {
     
     var mangledName: String?
     
+    var hasBody: Bool { return impl != nil }
+    
     /// `self` if the function is a member function
     weak var parent: NominalTypeDecl? = nil
 }

@@ -24,7 +24,8 @@ enum SemaError: VistError {
     case noPropertyNamed(type: String, property: String), noMethodNamed(type: String, property: String), cannotStoreInParameterStruct(propertyName: String), notStructType(Type?), notTupleType(Type?)
     case noModel(type: StructType, concept: ConceptType)
     
-    case functionNotMethod, mutatingMethodOnImmutable(method: String, baseType: String), closureNotFunctionType
+    case functionNotMethod, mutatingMethodOnImmutable(method: String, baseType: String), closureNotFunctionType, noMangledName(unmangled: String)
+    case conceptBody(concept: NominalType, function: FuncDecl)
     
     case unsatisfiableConstraints(constraints: [TypeConstraint]), noConstraints
     case couldNotAddConstraint(constraint: Type, to: Type)
@@ -116,6 +117,8 @@ enum SemaError: VistError {
             return "Type '\(type.name)' does not conform to concept '\(concept.name)'"
         case .notFunctionType(let repr):
             return "Function must have function type; '\(repr._astName_instance ?? "")' is not valid"
+        case .conceptBody(let type, let decl):
+            return "Concept method requirement '\(decl.name)' in '\(type.name)' cannot have a body"
             
         case .cannotInferClosureParamListSize:
             return "Cannot infer the size of a closure parameter list; either specify the type or provide an explicit parameter list"
@@ -126,6 +129,8 @@ enum SemaError: VistError {
             return "Use explicit self when calling method '\(name)' -- this is a bug"
         case .mutatingMethodOnImmutable(let method, let baseType):
             return "Cannot call mutating method '\(method)' on immutable object of type '\(baseType)'"
+        case .noMangledName(let name):
+            return "No mangled name for '\(name)'"
             
             // not user visible
         case .functionNotMethod: return "No method found"

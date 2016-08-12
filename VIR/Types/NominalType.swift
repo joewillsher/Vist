@@ -68,8 +68,16 @@ extension NominalType {
     /// Returns whether a type models a concept
     func models(concept: ConceptType) -> Bool {
         // TODO: explicit, opt into methods, this should be a check in sema
-        for f in concept.requiredFunctions where !methods.contains(where: { $0.name == f.name && $0.type == f.type }) { return false }
-        for p in concept.requiredProperties where !members.contains(where: { $0.name == p.name && $0.type == p.type }) { return false }
+        for conceptFn in concept.requiredFunctions where !methods.contains(where: {
+            $0.name.demangleName() == conceptFn.name.demangleName() && $0.type == conceptFn.type
+        }) {
+            return false
+        }
+        for conceptProp in concept.requiredProperties where !members.contains(where: {
+            $0.name == conceptProp.name && $0.type == conceptProp.type // TODO: property type *satisfies* concept type, not is equal to
+        }) {
+            return false
+        }
         return true
     }
     func validSubstitutionFor(generic: GenericType) -> Bool {

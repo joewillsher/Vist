@@ -19,6 +19,7 @@
  */
 final class Module : VIRElement {
     private(set) var functions: Set<Function> = [], typeList: Set<TypeAlias> = []
+    var witnessTables: [VIRWitnessTable] = []
     var globalValues: Set<GlobalValue> = []
     var builder: Builder!
     var loweredModule: LLVMModule! = nil
