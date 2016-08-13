@@ -166,12 +166,11 @@ extension FunctionCall {
 
 extension MethodCallExpr : ExprTypeProvider {
     
-    var base: NominalType? { return structType }
-    
     func typeForNode(scope: SemaScope) throws -> Type {
         
         let ty = try object.typeForNode(scope: scope)
         guard case let parentType as NominalType = ty else { throw semaError(.notStructType(ty), userVisible: false) }
+        self.structType = parentType
         
         // get the function type and sema the args
         let fnType = try semaFunctionCall(scope: scope).type
@@ -184,7 +183,6 @@ extension MethodCallExpr : ExprTypeProvider {
         }
         
         // assign type to self and return
-        self.structType = parentType
         return fnType.returns
     }
 }

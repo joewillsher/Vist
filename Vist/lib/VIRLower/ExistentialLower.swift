@@ -28,21 +28,21 @@ extension ExistentialConstructInst : VIRLower {
 
 extension ExistentialWitnessInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        fatalError()
-//        let i = try existentialType.index(ofMethodNamed: methodName, argTypes: argTypes)
-//        let fnType = try existentialType
-//            .methodType(methodNamed: methodName, argTypes: argTypes)
-//            .asMethodWithOpaqueParent()
-//            .cannonicalType(module: module)
-//            .importedType(in: module)
-//        
-//        let ref = module.getRuntimeFunction(.getWitnessMethod, IGF: &IGF)
-//        
-//        let conformanceIndex = LLVMValue.constInt(value: 0, size: 32), methodIndex = LLVMValue.constInt(value: i, size: 32)
-//        let functionPointer = try IGF.builder.buildCall(function: ref, args: [existential.loweredValue!, conformanceIndex, methodIndex])
-//        
-//        let functionType = BuiltinType.pointer(to: fnType).lowered(module: module)
-//        return try IGF.builder.buildBitcast(value: functionPointer, to: functionType, name: irName) // fntype*
+        
+        let i = existentialType.methods.index(where: {$0.name == methodName})!
+        
+        let fnType = existentialType.methods[i].type
+            .asMethodWithOpaqueParent()
+            .cannonicalType(module: module)
+            .importedType(in: module)
+        
+        let ref = module.getRuntimeFunction(.getWitnessMethod, IGF: &IGF)
+        
+        let conformanceIndex = LLVMValue.constInt(value: 0, size: 32), methodIndex = LLVMValue.constInt(value: i, size: 32)
+        let functionPointer = try IGF.builder.buildCall(function: ref, args: [existential.loweredValue!, conformanceIndex, methodIndex])
+        
+        let functionType = BuiltinType.pointer(to: fnType).lowered(module: module)
+        return try IGF.builder.buildBitcast(value: functionPointer, to: functionType, name: irName) // fntype*
     }
 }
 
@@ -134,7 +134,7 @@ extension StructType {
     func generateConformanceMetadata(concept: ConceptType, IGF: inout IRGenFunction, module: Module) throws -> (conformance: ConceptConformance, metadata: LLVMValue) {
         
         let valueWitnesses = try concept
-            .existentialValueWitnesses(structType: self, IGF: &IGF)
+            .existentialValueWitnesses(structType: self, module: module, IGF: &IGF)
             .map(UnsafeMutablePointer.allocInit(value:))
 //        defer {
 //            valueWitnesses.forEach {
@@ -201,14 +201,14 @@ private extension ConceptType {
             .map { index in Int32(conformingType.offsetOfElement(at: index, module: IGF.module)) } // make 'get offset' an extension on aggregate types
     }
     
-    func existentialValueWitnesses(structType: StructType, IGF: inout IRGenFunction) throws -> [ValueWitness] {
-        return requiredFunctions
-            .map { methodName, type, mutating in
-                ValueWitness(witness:
-                    structType.ptrToMethod(named: methodName,
-                                           type: type.asMethod(withSelf: structType, mutating: mutating),
-                                           IGF: &IGF).unsafePointer!
-                )
+    func existentialValueWitnesses(structType: StructType, module: Module, IGF: inout IRGenFunction) throws -> [ValueWitness] {
+        
+        guard let table = module.witnessTables.first(where: { $0.concept == self && $0.type == structType }) else { fatalError() }
+        
+        return try requiredFunctions
+            .map { methodName, _, _ in
+                let val = try table.getWitness(name: methodName, module: module).loweredValue!._value!
+                return ValueWitness(witness: UnsafeMutablePointer<Void>(val))
             }
     }
     

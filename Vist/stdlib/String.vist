@@ -31,7 +31,7 @@ type String {
         _capacityAndEncoding = c << 1
         
         // if it is UTF-8 we store true in the least significant bit of _capacityAndEncoding
-        if (Bool isUTF8Encoded) do
+        if Bool isUTF8Encoded do
              _capacityAndEncoding = _capacityAndEncoding ~| 1
     }
     

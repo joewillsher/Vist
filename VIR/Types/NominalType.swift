@@ -45,14 +45,6 @@ extension NominalType {
         }
         return i
     }
-    func ptrToMethod(named name: String, type: FunctionType, IGF: inout IRGenFunction) -> LLVMFunction {
-        return IGF.module.function(named: name.mangle(type: type))!
-    }
-    
-    func ptrToMethodNamed(name: String, type: FunctionType, module: Module) throws -> LLVMFunction {
-        guard let function = module.function(named: name.mangle(type: type)) else { fatalError() }
-        return function.loweredFunction!
-    }
     
     func propertyType(name: String) throws -> Type {
         return try members[index(ofMemberNamed: name)].type
@@ -85,7 +77,7 @@ extension NominalType {
     }
     
     func generatorFunction() -> FunctionType? {
-        return methods.first { method in method.name == "generate" && method.type.isGeneratorFunction }?.type
+        return methods.first { method in method.name.demangleName() == "generate" && method.type.isGeneratorFunction }?.type
     }
     
     func refCountedBox(module: Module) -> Type {

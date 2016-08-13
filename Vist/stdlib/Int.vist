@@ -18,7 +18,7 @@ func int64ToString :: Int -> String = (number) {
 
     // if its negative, print the normalised val, then later print a - sign
     let isNegative = n < 0
-    if (isNegative) do
+    if isNegative do
         val = 0 - val
 
     // until the val is 0 we add new chars to the buffer
@@ -35,7 +35,7 @@ func int64ToString :: Int -> String = (number) {
         bufferSize = bufferSize + 1 // increment buffer size
     }
     
-    if (isNegative) {
+    if isNegative {
         ptr = ptr - 1
         let minus = 45 
         let char = Builtin.trunc_int_8 minus.value

@@ -49,7 +49,7 @@ extension TypeDecl : ExprTypeProvider {
         // Get the types of the methods
         let memberFunctions = try methods.flatMap { (method: FuncDecl) -> StructMethod? in
             return try errorCollector.run {
-                let t = try method.genFunctionInterface(scope: scope, addToScope: false)
+                let t = try method.genFunctionInterface(scope: scope, addToScope: true)
                 let mutableSelf = method.attrs.contains(.mutating)
                 guard let mangledName = method.mangledName else {
                     throw semaError(.noMangledName(unmangled: method.name), userVisible: false)
@@ -138,7 +138,7 @@ extension ConceptDecl : ExprTypeProvider {
         // get the method types
         let methodTypes = try requiredMethods.walkChildren(collector: errorCollector) { method throws -> StructMethod in
             // add the method&type to outer scope
-            let t = try method.genFunctionInterface(scope: scope, addToScope: false)
+            let t = try method.genFunctionInterface(scope: scope, addToScope: true)
             
             guard let mangledName = method.mangledName else {
                 throw semaError(.noMangledName(unmangled: method.name), userVisible: false)

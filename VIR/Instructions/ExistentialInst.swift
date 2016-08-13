@@ -71,7 +71,7 @@ final class ExistentialConstructInst : Inst {
             fatalError()
         }
         self.init(value: PtrOperand(value),
-                  witnessTable: try VIRWitnessTable.create(module: module, type: nom, conforms: existentialType),
+                  witnessTable: .create(module: module, type: nom, conforms: existentialType),
                   existentialType: existentialType,
                   irName: irName)
     }

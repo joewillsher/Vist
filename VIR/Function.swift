@@ -172,7 +172,9 @@ extension Function {
     
     /// Return a reference to this function
     func buildFunctionPointer() -> PtrOperand {
-        return PtrOperand(FunctionRef(toFunction: self, parentBlock: module.builder.insertPoint.block))
+        let val = PtrOperand(FunctionRef(toFunction: self, parentBlock: module.builder.insertPoint.block))
+        if let lowered = loweredFunction?.function { val.setLoweredValue(lowered) }
+        return val
     }
     
     func getAsClosure() throws -> Closure {

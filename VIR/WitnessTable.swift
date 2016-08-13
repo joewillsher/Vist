@@ -10,7 +10,9 @@ final class VIRWitnessTable : VIRElement {
     let type: NominalType
     let concept: ConceptType
     
-    static func create(module: Module, type concrete: NominalType, conforms concept: ConceptType) throws -> VIRWitnessTable {
+    var loweredMetadata: LLVMValue!
+    
+    static func create(module: Module, type concrete: NominalType, conforms concept: ConceptType) -> VIRWitnessTable {
         
         // if the module already has this
         if let found = module.witnessTables.first(where: {
@@ -18,12 +20,12 @@ final class VIRWitnessTable : VIRElement {
         }) {
             return found
         }
-        let table = try VIRWitnessTable(type: concrete, conforms: concept)
+        let table = VIRWitnessTable(type: concrete, conforms: concept)
         module.witnessTables.append(table)
         return table
     }
     
-    private init(type concrete: NominalType, conforms concept: ConceptType) throws {
+    private init(type concrete: NominalType, conforms concept: ConceptType) {
         
         self.type = concrete
         self.concept = concept

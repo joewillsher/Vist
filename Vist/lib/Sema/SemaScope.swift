@@ -64,7 +64,7 @@ final class SemaScope {
     private func recursivelyLookupFunction(named name: String, argTypes: [Type], base: NominalType?) throws -> Solution {
         if let inScope = functions.function(havingUnmangledName: name, argTypes: argTypes, base: base, solver: constraintSolver) { return inScope }
             // lookup from parents
-        else if let inParent = try parent?.function(named: name, argTypes: argTypes) { return inParent }
+        else if let inParent = try parent?.function(named: name, argTypes: argTypes, base: base) { return inParent }
             // otherwise we havent found a match :(
         throw semaError(.noFunction(name, argTypes))
     }
@@ -197,7 +197,7 @@ extension Collection where
             }
             if let base = base {
                 guard case .method(let parent) = fnType.callingConvention,
-                    parent.selfType.canAddConstraint(base, solver: solver) else { continue }
+                    base.canAddConstraint(parent.selfType, solver: solver) else { continue }
             }
             
             // arg types satisfy the params

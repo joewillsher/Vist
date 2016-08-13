@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-enum IRLowerError: VistError {
+enum IRLowerError : VistError {
     case notLowerable(VIRElement)
     
     var description: String {
@@ -74,6 +74,11 @@ extension Module {
             }
         }
         
+        // TEST: build witness table metadata
+        for table in witnessTables {
+            _ = try table.lowerMetadata(IGF: &IGF)
+        }
+        
         for global in globalValues {
             try global.updateUsesWithLoweredVal(global.virLower(IGF: &IGF))
         }
@@ -102,13 +107,13 @@ extension Function : VIRLower {
     }
     private func applyVisibility() throws {
         switch visibility {
-        case .`public`:
+        case .public:
             loweredFunction?.visibility = LLVMDefaultVisibility
             loweredFunction?.linkage = LLVMExternalLinkage
-        case .`internal`:
+        case .internal:
             loweredFunction?.visibility = LLVMDefaultVisibility
             loweredFunction?.linkage = LLVMExternalLinkage
-        case .`private`:
+        case .private:
             loweredFunction?.visibility = LLVMProtectedVisibility
             loweredFunction?.linkage = LLVMPrivateLinkage
         }

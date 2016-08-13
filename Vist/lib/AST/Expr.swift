@@ -314,6 +314,7 @@ final class MethodCallExpr : ChainableExpr, FunctionCall {
     var mangledName: String = ""
     
     var argArr: [Expr] { return args.elements }
+    var base: NominalType? { return structType }
     
     var structType: NominalType? = nil
     var fnType: FunctionType? = nil

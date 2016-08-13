@@ -240,6 +240,11 @@ final class Parser {
                 && (allowsTrailingDo || !nextToken.isControlToken()) // if trailing do not allowed, only accept if not control token
         }
     }
+    func isValidParamToken() -> Bool {
+        return currentToken.isValidParamToken
+            && (allowsTrailingDo || !currentToken.isControlToken())
+    }
+
     
     /// When parsing a parameter list we want to lay out function parameters next to eachother
     ///
@@ -416,7 +421,7 @@ extension Parser {
         repeat {
             try exprs.append(parseOperatorExpr())
             guard !inTuple || consumeIf(.comma) else { break }
-        } while currentToken.isValidParamToken
+        } while isValidParamToken()
         
         try consume(.closeParen)
         
@@ -432,7 +437,7 @@ extension Parser {
         considerNewLines = true
         inTuple = true
         
-        while case let a = currentToken, a.isValidParamToken {
+        while isValidParamToken() {
             try exps.append(parseOperatorExpr())
         }
         
@@ -692,6 +697,7 @@ extension Parser {
             
             // An `if` statement
             if consumeIf(.if) {
+                print(currentToken)
                 condition = try parseInlineExpr()
                 
                 guard currentToken.isControlToken() else {
