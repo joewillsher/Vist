@@ -29,7 +29,9 @@ protocol ASTPrintable {
 
 extension ASTNode {
     
-    func astDescription() -> String { return _astDescription(indentLevel: 0).description }
+    func astDescription() -> String {
+        return _astDescription(indentLevel: 0).description
+    }
     
     func dump() {
         print(astDescription())
@@ -82,12 +84,11 @@ extension ASTPrintable {
         }
         
         if isTrivial {
-            
             if let instance = _astName_instance {
                 return (true, instance)
             }
             let a = s.map { "\($0.name)=\($0.valueString)" }
-            return (s.count < 3, "(" + Self._astName + " " + a.joined(separator: " ") + ")")
+            return (a.count < 4, "(" + Self._astName + " " + a.joined(separator: " ") + ")")
         }
         return (false, "(" + Self._astName + s.map { "\n\(n*tab)(\($0.name) \($0.valueString))" }.joined(separator: ""))
     }
@@ -138,22 +139,22 @@ extension TypeRepr : ASTPrintable {
     var _astName_instance: String? {
         switch self {
         case .function(let fn): return fn._astName_instance
-        case .void: return "'()'"
-        case .tuple(let tys): return "'(" + tys.map { $0._astName_instance ?? "" }.joined(separator: ", ") + ")'"
-        case .type(let str): return "'\(str)'"
+        case .void: return "()"
+        case .tuple(let tys): return "(" + tys.map { $0._astName_instance ?? "" }.joined(separator: ", ") + ")"
+        case .type(let str): return "\(str)"
         }
     }
     func _astDescription(indentLevel n: Int) -> (isTrivial: Bool, description: String) {
-        return (true, _astName_instance ?? "")
+        return (true, "'\(_astName_instance ?? "")'")
     }
 }
 extension FunctionTypeRepr : ASTPrintable {
     static var _astName: String { return "function_type_repr" }
     var _astName_instance: String? {
-        return "'\(paramType._astName_instance ?? "") -> \(returnType._astName_instance ?? "")'"
+        return "\(paramType._astName_instance ?? "") -> \(returnType._astName_instance ?? "")"
     }
     func _astDescription(indentLevel n: Int) -> (isTrivial: Bool, description: String) {
-        return (true, _astName_instance ?? "")
+        return (true, "'\(_astName_instance ?? "")'")
     }
 }
 extension FunctionBodyExpr : ASTPrintable {
@@ -265,7 +266,7 @@ extension ClosureExpr : ASTPrintable {
 }
 extension Optional : ASTPrintable {
     func _astDescription(indentLevel n: Int) -> (isTrivial: Bool, description: String) {
-        guard case let val as ASTPrintable = self else { return (false, "") }
+        guard case let val as ASTPrintable = self else { return (true, "nil") }
         return val._astDescription(indentLevel: n)
     }
     static var _astName: String { return "" }
