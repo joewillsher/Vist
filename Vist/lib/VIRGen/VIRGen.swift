@@ -213,14 +213,16 @@ extension FunctionCall/*: VIRGenerator*/ {
             
             return try module.builder.build(inst: BuiltinInstCall(inst: instruction, operands: args)).accessor()
         }
-        else if case let closure as LValue = try scope.variable(named: /*name*/mangledName.demangleName())?.getValue() {
-            let ret = closure.memType!.importedType(in: module) as! FunctionType
+        else if let function = module.function(named: mangledName) {
+            return try module.builder.buildFunctionCall(function: function, args: args).accessor()
+        }
+        else if
+            case let closure as LValue = try scope.variable(named: /*name*/mangledName.demangleName())?.getValue(),
+            case let ret as FunctionType = closure.memType?.importedType(in: module) {
+            
             return try module.builder.buildFunctionApply(function: PtrOperand(closure),
                                                          returnType: ret.returns,
                                                          args: args).accessor()
-        }
-        else if let function = module.function(named: mangledName) {
-            return try module.builder.buildFunctionCall(function: function, args: args).accessor()
         }
         else {
             fatalError("No function name=\(name), mangledName=\(mangledName)")

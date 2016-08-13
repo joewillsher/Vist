@@ -28,13 +28,15 @@ type String {
         let c = Int count
         length = c - 1
         // store the capacity in the most significant 63 bits of _capacityAndEncoding
-        _capacityAndEncoding = c << 1
+        let masked = c << 1
         
         // if it is UTF-8 we store true in the least significant bit of _capacityAndEncoding
         if Bool isUTF8Encoded do
-             _capacityAndEncoding = _capacityAndEncoding ~| 1
+             _capacityAndEncoding = masked ~| 1
+        else do
+            _capacityAndEncoding = masked
     }
-    
+
     //@private init UTF8CodeUnit = (unit) {
     //    let b = Builtin.heap_alloc 2 // alloc 2 bytes
     //    let s = String
@@ -57,7 +59,8 @@ type String {
     func generate:: -> UTF8CodeUnit = {
         var i = 0
         // FIXME: we go to the end of the buffer, even if it's not full
-        while i < self.bufferCapacity () - 1 {
+        let bufferSize = (self.bufferCapacity ()) - 1
+        while i < bufferSize {
             yield UTF8CodeUnit (Builtin.opaque_load (self.codeUnitAtIndex i))
             i = i + 1
         }

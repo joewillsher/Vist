@@ -155,6 +155,7 @@ enum AggrFlattenPass : OptimisationPass {
                     break instCheck
                 }
                 
+                // TODO: create a dominator tree
                 var structMembers: [String: Value] = [:]
                 var tupleMembers: [Int: Value] = [:]
                 
@@ -298,11 +299,17 @@ private extension Type {
 
 extension AllocInst {
     func isFlattenable() -> Bool {
+        var hasHadStore = false
+        
         for use in uses {
             let user = use.user!
             switch user {
             // We allow stores...
             case let store as StoreInst:
+                
+                // we can only optimise out memory we store into once
+                guard !hasHadStore else { return false }
+                hasHadStore = true
                 
                 guard case let initInst as Inst = store.value.value else { return false }
                 switch initInst {
