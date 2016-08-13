@@ -77,17 +77,20 @@ enum CFGFoldPass : OptimisationPass {
                 
                 
                 let toBlock: BasicBlock
+                let unreachableBlock: BasicBlock
                 let sourceBlock = condBreakInst.parentBlock!
                 let args: [BlockOperand]?
                 
                 // if unconditionally true
                 if literal.value {
                     toBlock = condBreakInst.thenCall.block
+                    unreachableBlock = condBreakInst.elseCall.block
                     args = condBreakInst.thenCall.args
                 }
                 // if unconditionally false
                 else {
                     toBlock = condBreakInst.elseCall.block
+                    unreachableBlock = condBreakInst.thenCall.block
                     args = condBreakInst.elseCall.args
                 }
                 
@@ -96,13 +99,60 @@ enum CFGFoldPass : OptimisationPass {
                 
                 try toBlock.addApplication(from: sourceBlock, args: args, breakInst: br)
                 try toBlock.removeApplication(break: condBreakInst)
+                try unreachableBlock.removeApplication(break: condBreakInst)
                 
                 try literal.eraseFromParent()
                 try condBreakInst.eraseFromParent(replacingAllUsesWith: br)
             }
         }
         
-        
+        // then remove any dead blocks, squash any pointless breaks
+        for block in function.blocks ?? [] {
+            switch block.applications.count {
+                // if the block has only 1 pred we can put this block's instructions into that
+            case 1:
+                let application = block.applications[0]
+                // if it is an unconditional break
+                guard case let breakInst as BreakInst = application.breakInst, let pred = application.predecessor else { continue }
+                
+                try block.removeApplication(break: breakInst)
+                try breakInst.eraseFromParent()
+                
+                for inst in block.instructions {
+                    
+                    // move any break insts
+                    if case let brToNext as BreakInstruction = inst {
+                        for succ in brToNext.successors {
+                            // rewire them to point from the pred block to the next block
+                            try succ.block.removeApplication(break: brToNext)
+                            try succ.block.addApplication(from: pred, args: succ.args, breakInst: brToNext)
+                        }
+                    }
+                    
+                    // move over the inst
+                    try block.remove(inst: inst)
+                    pred.append(inst)
+                }
+                
+                try block.eraseFromParent()
+                
+                // if the block has no preds, we can remove it
+            case 0:
+                for inst in block.instructions {
+                    // remove any break insts
+                    if case let brToNext as BreakInstruction = inst {
+                        for succ in brToNext.successors {
+                            try succ.block.removeApplication(break: brToNext)
+                        }
+                    }
+                }
+                // remove block
+                try block.removeFromParent()
+                
+            default:
+                break
+            }
+        }
         
         
     }

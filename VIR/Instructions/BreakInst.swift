@@ -9,6 +9,7 @@
 typealias BlockCall = (block: BasicBlock, args: [BlockOperand]?)
 
 protocol BreakInstruction : Inst {
+    var successors: [BlockCall] { get }
 }
 
 final class BreakInst : BreakInstruction, Inst {
@@ -34,6 +35,10 @@ final class BreakInst : BreakInstruction, Inst {
     
     var parentBlock: BasicBlock?
     var irName: String?
+    
+    var successors: [BlockCall] {
+        return [call]
+    }
 }
 
 final class CondBreakInst : Inst, BreakInstruction {
@@ -63,6 +68,10 @@ final class CondBreakInst : Inst, BreakInstruction {
     
     var parentBlock: BasicBlock?
     var irName: String?
+    
+    var successors: [BlockCall] {
+        return [thenCall, elseCall]
+    }
 }
 
 extension Builder {
