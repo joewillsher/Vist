@@ -211,8 +211,7 @@ extension FunctionCall/*: VIRGenerator*/ {
             let prefixRange = name.range(of: "Builtin."),
             let instruction = BuiltinInst(rawValue: name.replacingCharacters(in: prefixRange, with: "")) {
             
-            let a = args.map { $0.value! }
-            return try module.builder.build(inst: BuiltinInstCall(inst: instruction, args: a)).accessor()
+            return try module.builder.build(inst: BuiltinInstCall(inst: instruction, operands: args)).accessor()
         }
         else if case let closure as LValue = try scope.variable(named: /*name*/mangledName.demangleName())?.getValue() {
             let ret = closure.memType!.importedType(in: module) as! FunctionType

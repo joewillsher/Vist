@@ -697,7 +697,6 @@ extension Parser {
             
             // An `if` statement
             if consumeIf(.if) {
-                print(currentToken)
                 condition = try parseInlineExpr()
                 
                 guard currentToken.isControlToken() else {

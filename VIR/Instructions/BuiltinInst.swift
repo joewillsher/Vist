@@ -25,15 +25,18 @@ final class BuiltinInstCall : Inst {
     var irName: String?
     
     convenience init(inst: BuiltinInst, args: [Value], irName: String? = nil) throws {
+        try self.init(inst: inst, operands: args.map(Operand.init), irName: irName)
+    }
+    convenience init(inst: BuiltinInst, operands: [Operand], irName: String? = nil) throws {
         
-        guard args.count == inst.expectedNumOperands else {
-            throw VIRError.builtinIncorrectOperands(inst: inst, recieved: args.count)
+        guard operands.count == inst.expectedNumOperands else {
+            throw VIRError.builtinIncorrectOperands(inst: inst, recieved: operands.count)
         }
-        guard let retTy = try inst.returnType(params: args.map(getType(of:))) else {
+        guard let retTy = try inst.returnType(params: operands.map(getType(of:))) else {
             throw VIRError.noType(#file)
         }
         
-        self.init(inst: inst, retType: retTy, operands: args.map(Operand.init), irName: irName)
+        self.init(inst: inst, retType: retTy, operands: operands, irName: irName)
     }
     
     private init(inst: BuiltinInst, retType: Type, operands: [Operand], irName: String?) {
