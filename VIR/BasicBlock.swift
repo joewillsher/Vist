@@ -100,7 +100,15 @@ extension BasicBlock {
         else { guard args == nil else { throw VIRError.paramsNotTyped }}
         
         applications.append(.body(predecessor: block, params: args, breakInst: breakInst))
-//        block.successors.append(self)
+    }
+    
+    func removeApplication(break breakInst: BreakInstruction) throws {
+        
+        guard let i = applications.index(where: { application in
+            application.breakInst === breakInst
+        }) else { fatalError() }
+        
+        applications.remove(at: i)
     }
     
     /// Helper, the index of `inst` in self or throw

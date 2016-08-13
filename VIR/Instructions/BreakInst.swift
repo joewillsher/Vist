@@ -19,7 +19,7 @@ final class BreakInst : BreakInstruction, Inst {
     
     var type: Type? { return nil }
     
-    fileprivate init(call: BlockCall) {
+    init(call: BlockCall) {
         self.call = call
         self.args = call.args ?? []
         initialiseArgs()
@@ -45,7 +45,7 @@ final class CondBreakInst : Inst, BreakInstruction {
     
     var type: Type? { return nil }
     
-    fileprivate init(then: BlockCall, else: BlockCall, condition: Operand) {
+    init(then: BlockCall, else: BlockCall, condition: Operand) {
         self.thenCall = then
         self.elseCall = `else`
         self.condition = condition
@@ -55,7 +55,7 @@ final class CondBreakInst : Inst, BreakInstruction {
     }
     
     var vir: String {
-        return "break \(condition.vir), $\(thenCall.block.name)\(thenCall.args?.virValueTuple() ?? ""), $\(elseCall.block.name)\(elseCall.args?.virValueTuple() ?? "")"
+        return "cond_break \(condition.vir), $\(thenCall.block.name)\(thenCall.args?.virValueTuple() ?? ""), $\(elseCall.block.name)\(elseCall.args?.virValueTuple() ?? "")"
     }
     
     var hasSideEffects: Bool { return true }

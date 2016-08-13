@@ -57,20 +57,55 @@ enum CFGPass : OptimisationPass {
     static let name = "cfg"
     
     static func run(on function: Function) throws {
+        try CFGFoldPass.run(on: function)
+    }
+}
+
+enum CFGFoldPass : OptimisationPass {
+    
+    typealias PassTarget = Function
+    static let minOptLevel: OptLevel = .high
+    static let name = "cfg-fold"
+    
+    static func run(on function: Function) throws {
         
-        /*
-        for block in function.blocks {
-            for case let condBreakInst as CondBreakInst in function.blocks {
+        // remove any unconditional, conditional breaks
+        for block in function.blocks ?? [] {
+            for case let condBreakInst as CondBreakInst in block.instructions {
                 
-                guard case let literal as BoolLiteralInst = condBreakInst.condition else { continue }
+                guard case let literal as BoolLiteralInst = condBreakInst.condition.value else { continue }
                 
-                let br = BreakInst()
-                condBreakInst.parentBlock!.insert(br, after: condBreakInst)
+                
+                let toBlock: BasicBlock
+                let sourceBlock = condBreakInst.parentBlock!
+                let args: [BlockOperand]?
+                
+                // if unconditionally true
+                if literal.value {
+                    toBlock = condBreakInst.thenCall.block
+                    args = condBreakInst.thenCall.args
+                }
+                // if unconditionally false
+                else {
+                    toBlock = condBreakInst.elseCall.block
+                    args = condBreakInst.elseCall.args
+                }
+                
+                let br = BreakInst(call: (block: toBlock, args: args))
+                try sourceBlock.insert(inst: br, after: condBreakInst)
+                
+                try toBlock.addApplication(from: sourceBlock, args: args, breakInst: br)
+                try toBlock.removeApplication(break: condBreakInst)
+                
+                try literal.eraseFromParent()
                 try condBreakInst.eraseFromParent(replacingAllUsesWith: br)
             }
         }
-        */
+        
+        
+        
         
     }
 }
+
 
