@@ -9,7 +9,6 @@
 #ifndef Backend_hpp
 #define Backend_hpp
 
-#include <stdio.h>
 #include "LLVM.h"
 
 #ifdef __cplusplus

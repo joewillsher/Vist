@@ -91,11 +91,10 @@ extension AST {
         }
         else {
             let mainTy = FunctionType(params: [], returns: BuiltinType.void)
-            let main = try builder.buildFunction(name: "main", type: mainTy, paramNames: [])
+            _ = try builder.buildFunction(name: "main", type: mainTy, paramNames: [])
             
             try exprs.emitBody(module: module, scope: scope)
             
-            builder.insertPoint.function = main
             try scope.releaseVariables(deleting: true)
             try builder.buildReturnVoid()
         }
@@ -458,65 +457,46 @@ extension ConditionalStmt : StmtEmitter {
     func emitStmt(module: Module, scope: Scope) throws {
         
         // the if statement's exit bb
-        let exitBlock = try module.builder.appendBasicBlock(name: "exit")
+        let base = module.builder.insertPoint.block?.name.appending(".") ?? ""
+        let exitBlock = try module.builder.appendBasicBlock(name: "\(base)exit")
         
         for (index, branch) in statements.enumerated() {
             
-            // the success block, and the failure
-            let ifBlock = try module.builder.appendBasicBlock(name: branch.condition == nil ? "else.\(index)" : "if.\(index)")
-            try exitBlock.move(after: ifBlock)
-            let failBlock: BasicBlock
+            let isLast = branch === statements.last
+            
+            let backedgeBlock = isLast ?
+                exitBlock :
+                try module.builder.appendBasicBlock(name: "\(base)false\(index)")
+            if !isLast {
+                try exitBlock.move(after: backedgeBlock)
+            }
             
             if let c = branch.condition {
                 let cond = try c.emitRValue(module: module, scope: scope).getValue()
                 let v = try module.builder.build(inst: StructExtractInst(object: cond, property: "value"))
                 
-                // if its the last block, a condition fail takes
-                // us to the exit
-                if index == statements.index(before: statements.endIndex) {
-                    failBlock = exitBlock
-                }
-                    // otherwise it takes us to a landing pad for the next
-                    // condition to be evaluated
-                else {
-                    failBlock = try module.builder.appendBasicBlock(name: "fail.\(index)")
-                    try exitBlock.move(after: failBlock)
-                }
+                let bodyBlock = try module.builder.appendBasicBlock(name: branch.condition == nil ? "\(base)else\(index)" : "\(base)true\(index)")
+                try backedgeBlock.move(after: bodyBlock)
                 
                 try module.builder.buildCondBreak(if: Operand(v),
-                                                  to: (block: ifBlock, args: nil),
-                                                  elseTo: (block: failBlock, args: nil))
-            }
-                // if its unconditional, we go to the exit afterwards
-            else {
-                failBlock = exitBlock
-                try module.builder.buildBreak(to: ifBlock)
+                                                  to: (block: bodyBlock, args: nil),
+                                                  elseTo: (block: backedgeBlock, args: nil))
+                module.builder.insertPoint.block = bodyBlock
             }
             
             // move into the if block, and evaluate its expressions
             // in a new scope
             let ifScope = Scope(parent: scope, function: scope.function)
-            module.builder.insertPoint.block = ifBlock
             try branch.block.emitStmt(module: module, scope: ifScope)
             
             // once we're done in success, break to the exit and
             // move into the fail for the next round
-            if !ifBlock.instructions.contains(where: {$0.isTerminator}) {
+            if !(module.builder.insertPoint.block?.instructions.last?.isTerminator ?? false) {
                 try module.builder.buildBreak(to: exitBlock)
-                module.builder.insertPoint.block = failBlock
-            }
-                // if there is a return or break, we dont jump to exit
-                // if its the last block and the exit is not used, we can remove
-            else if index == statements.index(before: statements.endIndex) && exitBlock.predecessors.isEmpty {
-                try exitBlock.eraseFromParent()
-            }
-                // otherwise, if its not the end, we move to the exit
-            else {
-                module.builder.insertPoint.block = failBlock
             }
             
+            module.builder.insertPoint.block = backedgeBlock
         }
-        
     }
     
 }

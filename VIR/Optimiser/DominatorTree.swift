@@ -54,6 +54,37 @@ final class DominatorTree : FunctionAnalysis {
     }
 }
 
+extension DominatorTree {
+    
+    func inst(_ inst: Inst, dominates other: Inst) throws -> Bool {
+        
+        guard let b1 = inst.parentBlock, let b2 = other.parentBlock else { return false }
+        
+        if b1 === b2 {
+            return try b1.index(of: inst) < b1.index(of: other)
+        }
+        return block(b1, dominates: b2)
+    }
+    
+    /// - returns: true if `block` dominates `other`, so all paths to `other` go
+    ///            through `block`
+    func block(_ block: BasicBlock, dominates other: BasicBlock) -> Bool {
+        
+        let search = getNode(for: block)
+        var node = getNode(for: other)
+        
+        while let iDom = node.iDom {
+            if iDom === search {
+                return true
+            }
+            node = iDom
+        }
+        
+        return false
+    }
+}
+
+
 extension DominatorTree.Node {
     
     /// - returns: the node in this tree representing `block`
@@ -73,14 +104,15 @@ extension DominatorTree {
     /// Adds `block` to `iDom`’s children
     func add(block: BasicBlock, dominatedBy iDom: BasicBlock) {
         
-        guard let iDomNode = getNode(for: iDom) else { fatalError() }
+        let iDomNode = getNode(for: iDom)
+        if block === iDom { return } // this is implied
         let child = Node(block: block, iDom: iDomNode)
         
         iDomNode.children.append(child)
     }
     
-    private func getNode(for block: BasicBlock) -> Node? {
-        return root.getNode(for: block)
+    func getNode(for block: BasicBlock) -> Node {
+        return root.getNode(for: block)!
     }
 }
 
@@ -169,7 +201,7 @@ extension DepthFirstSearchTree {
                 // If pred is a nonancestor of block (so dfnum(pred) > dfnum(block)),
                 // then for each u that is an ancestor of pred (or u = pred), let semi(u) be a candidate for semi(block).
             else {
-                for ancestor in ancestors(of: pred) {
+                for ancestor in pred.predecessors {
                     candidates.append(semidominator(of: ancestor))
                 }
             }
@@ -263,6 +295,16 @@ extension BasicBlock {
     
 }
 
-
+extension DominatorTree : CustomStringConvertible {
+    var description: String {
+        return root.describe(indent: 0)
+    }
+}
+extension DominatorTree.Node {
+    private func describe(indent: Int) -> String {
+        return "\(indent*"  ")-\(block.name)\n" +
+            children.map { $0.describe(indent: indent+1) }.joined(separator: "")
+    }
+}
 
 

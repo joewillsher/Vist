@@ -112,10 +112,11 @@ extension BasicBlock {
         
         applications.remove(at: i)
         
+        let fromBlock = breakInst.parentBlock!
         // remove these blocks as successors
         for succ in breakInst.successors {
-            let i = successors.index { $0 === succ.block }!
-            successors.remove(at: i)
+            let i = fromBlock.successors.index { $0 === succ.block }!
+            fromBlock.successors.remove(at: i)
         }
     }
     

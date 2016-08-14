@@ -9,7 +9,6 @@
 #ifndef CreateType_hpp
 #define CreateType_hpp
 
-#include <stdio.h>
 #include "LLVM.h"
 
 #ifdef __cplusplus

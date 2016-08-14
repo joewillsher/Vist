@@ -8,7 +8,6 @@
 
 #include "Intrinsic.hpp"
 
-#include <stdio.h>
 #include <iostream>
 #include <stdlib.h>
 #include <string.h>

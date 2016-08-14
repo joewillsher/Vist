@@ -79,7 +79,6 @@ type String {
             vist_cshim_putchar c.unit
         return ()
     }
-    // there's a CFG bug where implict `return ()` are only added to the exit point
 }
 
 

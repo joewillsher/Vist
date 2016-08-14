@@ -8,7 +8,7 @@
 
 
 private let tab = "  "
-private func * (a: Int, b: String) -> String {
+func * (a: Int, b: String) -> String {
     var l = String()
     l.reserveCapacity(a*b.characters.count)
     var c = 0

@@ -32,6 +32,8 @@ enum RegisterPromotionPass : OptimisationPass {
     
     static func run(on function: Function) throws {
         
+//        let domAnalysis = function.dominator.analsis
+        
         // before handling memory, replace all VariableInst's with their values
         for case let varInst as VariableInst in function.instructions {
             let v = varInst.value.value!
@@ -46,6 +48,15 @@ enum RegisterPromotionPass : OptimisationPass {
         
         // TODO: Create a dominator tree, and move a block's value a BB param when removing the backing memory
         // http://pages.cs.wisc.edu/~fischer/cs701.f08/lectures/Lecture19.4up.pdf
+        
+//        for case let allocInst as AllocInst in function.instructions {
+//            
+//            let store = allocInst.stores().last!
+//            
+//            let s = try domAnalysis.inst(allocInst, dominates: store)
+//            
+//            allocInst.dump()
+//        }
         
         for case let allocInst as AllocInst in function.instructions where allocInst.isRegisterPromotable {
             
