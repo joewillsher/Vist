@@ -66,28 +66,6 @@ extension Function {
 }
 
 
-//final class DominatorTreeNode {
-////    let block: BasicBlock
-//}
-//
-///// A tree of dominating blocks in a function
-//final class DominatorTree : Sequence {
-//    
-//    private var function: Function
-//    
-//    init(function: Function) {
-//        self.function = function
-//    }
-//    
-//    typealias Iterator = AnyIterator<BasicBlock>
-//    
-//    func makeIterator() -> Iterator {
-//        return AnyIterator {
-//            return nil
-//        }
-//    }
-//}
-
 enum OptError : VistError {
     case invalidValue(Value)
     

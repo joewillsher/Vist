@@ -191,6 +191,10 @@
 		D4A000371CCA7FFA00157D90 /* OperandLower.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A000351CCA7FFA00157D90 /* OperandLower.swift */; };
 		D4A0003C1CCA9BC300157D90 /* LLVMWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A0003B1CCA9BC300157D90 /* LLVMWrapper.swift */; };
 		D4A0003D1CCA9BC300157D90 /* LLVMWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A0003B1CCA9BC300157D90 /* LLVMWrapper.swift */; };
+		D4AE8D671D609CAA00E2D480 /* Analysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4AE8D661D609CAA00E2D480 /* Analysis.swift */; };
+		D4AE8D681D609CAA00E2D480 /* Analysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4AE8D661D609CAA00E2D480 /* Analysis.swift */; };
+		D4AE8D6B1D60F63000E2D480 /* DominatorTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4AE8D6A1D60F63000E2D480 /* DominatorTree.swift */; };
+		D4AE8D6C1D60F63000E2D480 /* DominatorTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4AE8D6A1D60F63000E2D480 /* DominatorTree.swift */; };
 		D4CB751D1CB4612100FA2D8C /* vist in Copy Files */ = {isa = PBXBuildFile; fileRef = D47FF07A1B812052003F9920 /* vist */; };
 		D4CF76771C8CD4A70058A8EC /* TupleInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF76761C8CD4A70058A8EC /* TupleInst.swift */; };
 		D4CF76781C8CD4A70058A8EC /* TupleInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF76761C8CD4A70058A8EC /* TupleInst.swift */; };
@@ -362,6 +366,8 @@
 		D4A000321CCA7FD500157D90 /* PtrLower.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PtrLower.swift; path = lib/VIRLower/PtrLower.swift; sourceTree = "<group>"; };
 		D4A000351CCA7FFA00157D90 /* OperandLower.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OperandLower.swift; path = lib/VIRLower/OperandLower.swift; sourceTree = "<group>"; };
 		D4A0003B1CCA9BC300157D90 /* LLVMWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LLVMWrapper.swift; path = lib/VIRLower/LLVMWrapper.swift; sourceTree = "<group>"; };
+		D4AE8D661D609CAA00E2D480 /* Analysis.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Analysis.swift; path = Optimiser/Analysis.swift; sourceTree = "<group>"; };
+		D4AE8D6A1D60F63000E2D480 /* DominatorTree.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DominatorTree.swift; path = Optimiser/DominatorTree.swift; sourceTree = "<group>"; };
 		D4C0900E1CCFC931008B69F1 /* shims.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = shims.c; path = stdlib/shims.c; sourceTree = "<group>"; };
 		D4CA32071CEA7013009C2B10 /* runtime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = runtime.h; path = stdlib/runtime/runtime.h; sourceTree = "<group>"; };
 		D4CF76761C8CD4A70058A8EC /* TupleInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TupleInst.swift; path = Instructions/TupleInst.swift; sourceTree = "<group>"; };
@@ -663,6 +669,15 @@
 			name = AST;
 			sourceTree = "<group>";
 		};
+		D4AE8D691D60F61C00E2D480 /* Analysis */ = {
+			isa = PBXGroup;
+			children = (
+				D4AE8D661D609CAA00E2D480 /* Analysis.swift */,
+				D4AE8D6A1D60F63000E2D480 /* DominatorTree.swift */,
+			);
+			name = Analysis;
+			sourceTree = "<group>";
+		};
 		D4B1FA041C300AA8001E7BCC /* Sema */ = {
 			isa = PBXGroup;
 			children = (
@@ -721,6 +736,7 @@
 			children = (
 				D4728BE01C9475A5003294B0 /* Optimiser.swift */,
 				D4D386891D39B62700820E43 /* Explosion.swift */,
+				D4AE8D691D60F61C00E2D480 /* Analysis */,
 				D4D386861D39ACD000820E43 /* Passes */,
 			);
 			name = Optimiser;
@@ -874,6 +890,7 @@
 				D4CF767E1C8CF8490058A8EC /* Runtime.swift in Sources */,
 				D43B3A071C8A10390039FB2E /* Lexer.swift in Sources */,
 				D437F7FE1CA95E7F0089F5DE /* ArrayInst.swift in Sources */,
+				D4AE8D6C1D60F63000E2D480 /* DominatorTree.swift in Sources */,
 				D44529571CB00A6F00AFA099 /* RefCountInst.swift in Sources */,
 				D4A000281CCA7EC200157D90 /* AggregateLower.swift in Sources */,
 				D43B3A2B1C8A10A50039FB2E /* FunctionContainer.swift in Sources */,
@@ -899,6 +916,7 @@
 				D4E35B821C5E3ECE00683486 /* Expected.swift in Sources */,
 				D46D1F871D5CDD6C0001E327 /* Backend.cpp in Sources */,
 				D43B39921C8A0EDF0039FB2E /* BasicBlock.swift in Sources */,
+				D4AE8D681D609CAA00E2D480 /* Analysis.swift in Sources */,
 				D43B3A431C8A10C80039FB2E /* SemaScope.swift in Sources */,
 				D43B3A391C8A10C80039FB2E /* ExprSema.swift in Sources */,
 				D43B39DB1C8A0F3A0039FB2E /* FunctionInst.swift in Sources */,
@@ -973,6 +991,7 @@
 				D43B39D81C8A0F3A0039FB2E /* BuiltinInst.swift in Sources */,
 				D43B39B21C8A0F140039FB2E /* FunctionType.swift in Sources */,
 				D43B39BC1C8A0F140039FB2E /* Type.swift in Sources */,
+				D4AE8D671D609CAA00E2D480 /* Analysis.swift in Sources */,
 				D4326E3E1CA6F0140016E595 /* ExistentialInst.swift in Sources */,
 				D4A0001D1CC7C46500157D90 /* GlobalInst.swift in Sources */,
 				D41C73301D5D02D00047B373 /* AggregateFlatten.swift in Sources */,
@@ -1040,6 +1059,7 @@
 				D43B39931C8A0EDF0039FB2E /* Builder.swift in Sources */,
 				D43B3A3A1C8A10C80039FB2E /* FunctionSema.swift in Sources */,
 				D43B3A481C8A10C80039FB2E /* DeclSema.swift in Sources */,
+				D4AE8D6B1D60F63000E2D480 /* DominatorTree.swift in Sources */,
 				D43B39911C8A0EDF0039FB2E /* BasicBlock.swift in Sources */,
 				D488C2451D40595B000735DA /* RegisterPromotion.swift in Sources */,
 				D43B3A061C8A10390039FB2E /* Lexer.swift in Sources */,

@@ -31,6 +31,7 @@ final class BasicBlock : VIRElement {
     
     /// A list of the predecessor blocks. These blocks broke to `self`
     var predecessors: [BasicBlock] { return applications.flatMap { application in application.predecessor } }
+    var successors: [BasicBlock] = []
     
     init(name: String, parameters: [Param]?, parentFunction: Function?) {
         self.name = name
@@ -100,6 +101,7 @@ extension BasicBlock {
         else { guard args == nil else { throw VIRError.paramsNotTyped }}
         
         applications.append(.body(predecessor: block, params: args, breakInst: breakInst))
+        block.successors.append(self)
     }
     
     func removeApplication(break breakInst: BreakInstruction) throws {
@@ -109,6 +111,12 @@ extension BasicBlock {
         }) else { fatalError() }
         
         applications.remove(at: i)
+        
+        // remove these blocks as successors
+        for succ in breakInst.successors {
+            let i = successors.index { $0 === succ.block }!
+            successors.remove(at: i)
+        }
     }
     
     /// Helper, the index of `inst` in self or throw

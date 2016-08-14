@@ -26,6 +26,9 @@ final class Function : VIRElement {
     
     private(set) var globalLifetimes: [GlobalValue.Lifetime] = []
     
+    /// Dominator analysis
+    lazy var dominator: Analysis<DominatorTree> = { [unowned self] in Analysis<DominatorTree>(self) }()
+    
     /// The LLVM function this is lowered to
     var loweredFunction: LLVMFunction? = nil {
         // update function ref operands
@@ -203,14 +206,6 @@ extension Function {
             globalLifetimes.remove(at: i)
         }
     }
-    
-//    func getDominatorTree() -> DominatorTree {
-//        return _dominatorTree ?? DominatorTree(function: self)
-//    }
-//    
-//    func invalidateDominatorTree() {
-//        _dominatorTree = nil
-//    }
     
     func dumpIR() { loweredFunction?.function.dump() }
     func dump() { print(vir) }
