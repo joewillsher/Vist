@@ -42,7 +42,11 @@ extension StructType {
     
     func importedType(in module: Module) -> Type {
         let mappedEls = members.map { member in
-            (member.name, member.type.importedType(in: module), member.isMutable) as StructMember
+            (member.name,
+             member.type.isAddressOnly ?
+                BuiltinType.pointer(to: member.type.importedType(in: module)) :
+                member.type.importedType(in: module),
+             member.isMutable) as StructMember
         }
         let newTy = StructType(members: mappedEls, methods: methods, name: name, concepts: concepts, isHeapAllocated: isHeapAllocated)
         newTy.genericTypes = genericTypes

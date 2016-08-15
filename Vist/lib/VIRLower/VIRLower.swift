@@ -160,8 +160,7 @@ extension Function : VIRLower {
         // only in this scope, we define their lifetimes using intrinsics
         for lifetime in globalLifetimes {
             
-            guard
-                let global = IGF.module.global(named: lifetime.globalName) else {
+            guard let global = IGF.module.global(named: lifetime.globalName) else {
                 // the global couldn't be found -- try the next
                 continue
             }

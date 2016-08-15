@@ -215,11 +215,18 @@ extension FunctionCall/*: VIRGenerator*/ {
         else if let function = module.function(named: mangledName) {
             return try module.builder.buildFunctionCall(function: function, args: args).accessor()
         }
-        else if
-            case let closure as LValue = try scope.variable(named: /*name*/mangledName.demangleName())?.getValue(),
-            case let ret as FunctionType = closure.memType?.importedType(in: module) {
+        else if let closure = try scope.variable(named: name) {
             
-            return try module.builder.buildFunctionApply(function: PtrOperand(closure),
+            // If we only have an accessor, get the value from it, which must be a function* type
+            // because the only case this is allowed is GEPing a struct
+            // Otherwise we just get the lvalue from the byval accessor
+            let ref = (closure is IndirectAccessor ?
+                try! OpaqueLValue(rvalue: closure.aggregateGetValue()) :
+                try closure.getValue()) as! LValue
+            
+            guard case let ret as FunctionType = ref.memType?.importedType(in: module) else { fatalError() }
+            
+            return try module.builder.buildFunctionApply(function: PtrOperand(ref),
                                                          returnType: ret.returns,
                                                          args: args).accessor()
         }

@@ -81,8 +81,8 @@ final class Function : VIRElement {
         let rawValue: Int
         init(rawValue: Int) { self.rawValue = rawValue }
         
-        static var noreturn = Attributes(rawValue: 1 << 0)
-        static var readnone = Attributes(rawValue: 1 << 1)
+        static var noreturn = Attributes(rawValue: 1 << 1)
+        static var readnone = Attributes(rawValue: 1 << 2)
     }
 }
 
