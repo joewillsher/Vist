@@ -48,6 +48,22 @@ enum TypeRepr {
         case _: self = .tuple(strs.map(TypeRepr.init))
         }
     }
+    init(types: [Type]) {
+        self = .tuple(types.map(TypeRepr.init(type:)))
+    }
+    init(type: Type) {
+        switch type {
+        case let nominal as NominalType:
+            self = .type(nominal.name)
+        case let fn as FunctionType:
+            let params = fn.params.map(TypeRepr.init(type:))
+            self = .function(FunctionTypeRepr(paramType: .tuple(params), returnType: TypeRepr(type: fn.returns)))
+        case let tuple as TupleType:
+            self = .tuple(tuple.members.map(TypeRepr.init(type:)))
+        default:
+            self = .type(type.explicitName)
+        }
+    }
     
     func typeIn(_ scope: SemaScope) throws -> Type {
         switch self {

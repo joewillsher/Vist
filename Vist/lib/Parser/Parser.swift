@@ -583,7 +583,7 @@ extension Parser {
             let block = try parseBlockExpr()
             return ClosureExpr(exprs: block.exprs, params: block.parameters)
             
-        case .openParen:
+        case .openParen where allowsTrailingDo:
             // look past param list
             var lookaheadDist = 1
             

@@ -49,9 +49,7 @@ extension TypeDecl {
         guard !types.contains(where: {type in (type is TupleType)}) else {
             return nil
         }
-        
-        let typeNames = types.map { $0.explicitName }
-        
+                
         var initialisations: [ASTNode] = []
         for (i, name) in names.enumerated() {
             let object = VariableExpr(name: name)
@@ -64,7 +62,7 @@ extension TypeDecl {
         let block = BlockExpr(exprs: initialisations, parameters: params)
         let body = FunctionBodyExpr(params: params, body: block)
         
-        let ty = FunctionTypeRepr(paramType: TypeRepr(typeNames),
+        let ty = FunctionTypeRepr(paramType: TypeRepr(types: types),
                                   returnType: .type(name))
         return InitDecl(ty: ty,
                         impl: body,
