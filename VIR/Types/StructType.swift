@@ -27,7 +27,11 @@ final class StructType : NominalType {
 extension StructType {
     
     func lowered(module: Module) -> LLVMType {
-        var arr = members.map { $0.type.lowered(module: module).type }
+        var arr = members.map {
+            $0.type.isAddressOnly ?
+                $0.type.lowered(module: module).getPointerType().type :
+                $0.type.lowered(module: module).type
+        }
         return LLVMType(ref: LLVMStructType(&arr, UInt32(members.count), false))
     }
     
