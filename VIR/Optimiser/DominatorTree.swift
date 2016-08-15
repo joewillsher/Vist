@@ -10,6 +10,7 @@
 /// object y if every path in the CFG from the entry block to y must go through x.
 final class DominatorTree : FunctionAnalysis {
     
+    private let function: Function
     private var root: Node
     
     /// A node in the dom tree graph
@@ -19,11 +20,13 @@ final class DominatorTree : FunctionAnalysis {
         /// The block's immediate dominator
         let iDom: Node?
         /// The nodes dominated by `self`
-        var children: [Node] = []
+        var children: Set<Node> = []
+        let level: Int
         
         init(block: BasicBlock, iDom: Node?) {
             self.block = block
             self.iDom = iDom
+            self.level = iDom?.level.advanced(by: 1) ?? 0
         }
     }
     
@@ -31,9 +34,11 @@ final class DominatorTree : FunctionAnalysis {
     
     /// Constructs a dominator tree from the CFG of `function`
     ///
-    /// Uses the [Lengauer-Tarjan algorithm](https://www.cs.princeton.edu/courses/archive/fall03/cs528/handouts/a%20fast%20algorithm%20for%20finding.pdf) as implemented [here](http://staff.cs.upt.ro/~chirila/teaching/upt/c51-pt/aamcij/7113/Fly0143.html)
+    /// Uses the [Lengauer-Tarjan algorithm](https://www.cs.princeton.edu/courses/archive/fall03/cs528/handouts/a%20fast%20algorithm%20for%20finding.pdf)
+    /// as implemented [here](http://staff.cs.upt.ro/~chirila/teaching/upt/c51-pt/aamcij/7113/Fly0143.html)
     static func get(_ function: Function) -> DominatorTree {
-        let tree = DominatorTree(root: Node(block: function.entryBlock!, iDom: nil))
+        let tree = DominatorTree(function: function,
+                                 root: Node(block: function.entryBlock!, iDom: nil))
         
         /// The depth first search of the tree
         let dfs = DepthFirstSearchTree.get(function: function)
@@ -49,7 +54,8 @@ final class DominatorTree : FunctionAnalysis {
         return tree
     }
     
-    private init(root: Node) {
+    private init(function: Function, root: Node) {
+        self.function = function
         self.root = root
     }
 }
@@ -96,7 +102,13 @@ extension DominatorTree.Node {
         }
         return nil
     }
-    
+}
+
+extension DominatorTree.Node : Hashable {
+    var hashValue: Int { return block.hashValue }
+    static func == (l: DominatorTree.Node, r: DominatorTree.Node) -> Bool {
+        return l.block == r.block
+    }
 }
 
 extension DominatorTree {
@@ -108,7 +120,7 @@ extension DominatorTree {
         if block === iDom { return } // this is implied
         let child = Node(block: block, iDom: iDomNode)
         
-        iDomNode.children.append(child)
+        iDomNode.children.insert(child)
     }
     
     func getNode(for block: BasicBlock) -> Node {
@@ -166,7 +178,7 @@ extension DepthFirstSearchTree {
         return node(b, predecesses: a) && b.existsPath(to: a)
     }
     
-    /// Nodes which are ancestors of `block` in the DFST
+    /// Nodes which are ancestors of `block` in the DFST: they occur above `block`
     private func ancestors(of block: BasicBlock) -> [BasicBlock] {
         
         var ancestors: [BasicBlock] = []
@@ -201,8 +213,8 @@ extension DepthFirstSearchTree {
                 // If pred is a nonancestor of block (so dfnum(pred) > dfnum(block)),
                 // then for each u that is an ancestor of pred (or u = pred), let semi(u) be a candidate for semi(block).
             else {
-                for ancestor in pred.predecessors {
-                    candidates.append(semidominator(of: ancestor))
+                for u in [pred] + pred.predecessors where !node(u, predecesses: block) {
+                    candidates.append(semidominator(of: u))
                 }
             }
         }
@@ -293,7 +305,87 @@ extension BasicBlock {
         }
     }
     
+    var isJoinNode: Bool {
+        return predecessors.count > 1
+    }
 }
+
+extension DominatorTree.Node {
+    func getDescendants() -> [DominatorTree.Node] {
+        return [self] + children.flatMap { $0.getDescendants() }
+    }
+}
+
+extension BasicBlock : Hashable {
+    var hashValue: Int { return name.hashValue }
+    
+    static func ==(l: BasicBlock, r: BasicBlock) -> Bool {
+        return l === r
+    }
+}
+
+extension DominatorTree {
+    
+    /// A map from nodes to their dominator frontiers.
+    ///
+    /// A definition in node n forces a φ-function in join nodes that lie
+    /// just outside the region of the flow graph that n dominates; hence 
+    /// the name dominance frontier.
+    ///
+    /// Informally, DF(x) contains the first nodes reachable from x that x 
+    /// does not dominate, on each path leaving x
+    ///
+    /// http://www.iith.ac.in/~ramakrishna/fc5264/ssa-intro-construct.pdf
+    final class DominatorFrontierInfo {
+        
+        private var nodes: [Node: Set<Node>]
+        
+        /// constructs an empty map for the blocks in `function`
+        fileprivate init(domTree: DominatorTree) {
+            var nodes: [Node: Set<Node>] = [:]
+            for desc in domTree.root.getDescendants() {
+                nodes[desc] = []
+            }
+            self.nodes = nodes
+        }
+        
+        fileprivate func add(frontierNode: Node, to node: Node) {
+            nodes[node]!.insert(frontierNode)
+        }
+    }
+    
+    
+    /// Constructs the dominator frontier info from this tree
+    func dominatorFrontier() -> DominatorFrontierInfo {
+        
+        var info = DominatorFrontierInfo(domTree: self)
+        
+        // for each join node in the cfg
+        for block in function.blocks! where block.isJoinNode {
+            // (must have an idom -- can't be root)
+            guard let iDom = getNode(for: block).iDom else { continue }
+            let node = getNode(for: block)
+            
+            // for each CFG predecessor, walk up the dom tree -- until we reach the block's
+            // idom -- and add the block to this node's idom
+            for pred in block.predecessors {
+                let predNode = getNode(for: pred)
+                
+                var _currentNode: Node? = predNode
+                // walk up the tree until we reach the block's idom
+                while let currentNode = _currentNode, node !== iDom {
+                    defer { _currentNode = currentNode.iDom }
+                    
+                    info.add(frontierNode: node, to: currentNode)
+                }
+            }
+        }
+        
+        return info
+    }
+    
+}
+
 
 extension DominatorTree : CustomStringConvertible {
     var description: String {
@@ -304,6 +396,12 @@ extension DominatorTree.Node {
     private func describe(indent: Int) -> String {
         return "\(indent*"  ")-\(block.name)\n" +
             children.map { $0.describe(indent: indent+1) }.joined(separator: "")
+    }
+}
+
+extension DominatorTree.DominatorFrontierInfo.BlockInfo : CustomStringConvertible {
+    var description: String {
+        return "\(node.block.name) \tDF: \(frontier.map { $0.block.name }.joined(separator: ", "))"
     }
 }
 

@@ -24,15 +24,52 @@
    return %$0
  ```
 */
-enum RegisterPromotionPass : OptimisationPass {
+struct RegisterPromotionPass : OptimisationPass {
     
     typealias PassTarget = Function
     static let minOptLevel: OptLevel = .low
     static let name = "mem2reg"
     
+    let function: Function
+    let dominatorTree: DominatorTree
+    
+    
+    /// https://www.researchgate.net/profile/Jeanne_Ferrante/publication/225508360_Efficiently_computing_ph-nodes_on-the-fly/links/549458fd0cf22af911222521.pdf?origin=publication_detail
+    /// http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.8.1979&rep=rep1&type=pdf
+    /// https://github.com/apple/swift/blob/279726fe184400129664c3089160e00230cb485c/lib/SILOptimizer/Transforms/SILMem2Reg.cpp
+    private init(function: Function) {
+        self.function = function
+        self.dominatorTree = function.dominator.analsis
+        
+        let frontierAnalysis = dominatorTree.dominatorFrontier()
+        
+        // 1 Compute DF sets for each node of the flow graph
+        // 2 For each variable v, place trivial φ-functions in the nodes of
+        //   the flow graph using the algorithm place-phi-function(v)
+        // 3 Rename variables using the algorithm
+        
+        // φ-Placement Algorithm
+        //  - The φ-placement algorithm picks the nodes ni with
+        //    assignments to a variable
+        //  - It places trivial φ-functions in all the nodes which are in
+        //    DF(n_i), for each i
+        //  - It uses a work list (i.e., queue) for this purpose
+        
+    }
+    
+    
+    func placePhi() {
+        
+    }
+}
+
+
+
+extension RegisterPromotionPass {
+
     static func run(on function: Function) throws {
         
-//        let domAnalysis = function.dominator.analsis
+        //let pass = RegisterPromotionPass(function: function)
         
         // before handling memory, replace all VariableInst's with their values
         for case let varInst as VariableInst in function.instructions {
@@ -48,15 +85,6 @@ enum RegisterPromotionPass : OptimisationPass {
         
         // TODO: Create a dominator tree, and move a block's value a BB param when removing the backing memory
         // http://pages.cs.wisc.edu/~fischer/cs701.f08/lectures/Lecture19.4up.pdf
-        
-//        for case let allocInst as AllocInst in function.instructions {
-//            
-//            let store = allocInst.stores().last!
-//            
-//            let s = try domAnalysis.inst(allocInst, dominates: store)
-//            
-//            allocInst.dump()
-//        }
         
         for case let allocInst as AllocInst in function.instructions where allocInst.isRegisterPromotable {
             
@@ -76,7 +104,9 @@ enum RegisterPromotionPass : OptimisationPass {
             try allocInst.eraseFromParent()
         }
     }
+    
 }
+
 
 
 private extension AllocInst {
@@ -97,11 +127,6 @@ private extension AllocInst {
         for use in uses {
             guard use.user is LoadInst || use.user is StoreInst else { return false }
         }
-        
-        // for now we only do it if there is 1 store
-        // to do more requires constructing phi nodes/block applications
-        guard stores().count == 1 else { return false }
-        
         return true
     }
 }

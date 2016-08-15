@@ -194,11 +194,9 @@ func compileDocuments(
     
     // write out
     let unoptVIRPath = "\(currentDirectory)/\(file)_.vir"
-    try virModule.vir.write(toFile: unoptVIRPath, atomically: true, encoding: .utf8)
-    defer {
-        if !options.contains(.preserveTempFiles) { try! FileManager.default.removeItem(atPath: unoptVIRPath) }
+    if options.contains(.preserveTempFiles) {
+        try virModule.vir.write(toFile: unoptVIRPath, atomically: true, encoding: .utf8)
     }
-    
     if options.contains(.verbose) {
         print(virModule.vir)
     }
@@ -219,10 +217,9 @@ func compileDocuments(
     // write out
     let optVIRPath = "\(currentDirectory)/\(file).vir"
     try virModule.vir.write(toFile: optVIRPath, atomically: true, encoding: .utf8)
-    defer {
-        if !options.contains(.preserveTempFiles) { try! FileManager.default.removeItem(atPath: optVIRPath) }
+    if options.contains(.preserveTempFiles) {
+        try virModule.vir.write(toFile: optVIRPath, atomically: true, encoding: .utf8)
     }
-    
     if options.contains(.verbose) {
         print(virModule.vir)
     }
@@ -265,15 +262,12 @@ func compileDocuments(
     // print and write to file
     let unoptimisedIR = llvmModule.description()
     let unoptIRPath = "\(currentDirectory)/\(file)_.ll"
-    try unoptimisedIR.write(toFile: unoptIRPath, atomically: true, encoding: String.Encoding.utf8)
-    defer {
-        if !options.contains(.preserveTempFiles) { try! FileManager.default.removeItem(atPath: unoptIRPath) }
+    if options.contains(.preserveTempFiles) {
+        try llvmModule.description().write(toFile: unoptIRPath, atomically: true, encoding: String.Encoding.utf8)
     }
-
-    
     // MARK: LLVM Optimiser
     if options.contains(.verbose) {
-        print(unoptimisedIR, "\n\n----------------------------OPTIM----------------------------\n")
+        print(llvmModule.description(), "\n\n----------------------------OPTIM----------------------------\n")
     }
     
     // run LLVM opt passes
@@ -282,19 +276,16 @@ func compileDocuments(
                                  options.contains(.compileStdLib))
     
     // write out
-    let optimisedIR = llvmModule.description()
     let optIRPath = "\(currentDirectory)/\(file).ll"
-    try optimisedIR.write(toFile: optIRPath, atomically: true, encoding: .utf8)
-    defer {
-        if !options.contains(.preserveTempFiles) { try! FileManager.default.removeItem(atPath: optIRPath) }
+    if options.contains(.preserveTempFiles) {
+        try llvmModule.description().write(toFile: optIRPath, atomically: true, encoding: .utf8)
     }
-    
     if options.contains(.dumpLLVMIR) {
-        print(optimisedIR)
+        print(llvmModule.description())
         return
     }
     if options.contains(.verbose) {
-        print(optimisedIR, "\n\n----------------------------LINK-----------------------------\n")
+        print(llvmModule.description(), "\n\n----------------------------LINK-----------------------------\n")
     }
     
     

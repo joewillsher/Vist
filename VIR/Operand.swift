@@ -45,7 +45,8 @@ class Operand : VIRTyped {
     init(optionalValue value: Value?) {
         self.value = value
         self.user = nil
-        value?.addUse(self)
+        value?.uses.append(self)
+//        value?.addUse(self) // FIXME(Swift bug): This crashes in -O
     }
     
     /// An operand pointing to nothing
