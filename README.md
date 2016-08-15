@@ -1,5 +1,7 @@
 #README #
 
+![](https://travis-ci.org/joewillsher/Vist.svg?branch=master)
+
 ##About
 A functional, statically typed programming language using LLVM, inspired by Swift, Haskell, and Rust. Vist has a friendly & low weight syntax, and modern type system with a focus on generics and concepts.
 
@@ -93,7 +95,3 @@ func sum :: TwoInts Int -> Int = (x y) do
 func sum (T | TwoInts) :: T T -> Int = (u v) do
 	return u.a + v.b
 ```
-
-
-
-

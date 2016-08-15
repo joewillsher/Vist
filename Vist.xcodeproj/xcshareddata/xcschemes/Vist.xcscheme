@@ -183,7 +183,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "example.vist"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
    </ProfileAction>

@@ -1,0 +1,5 @@
+language: swift
+osx_image: xcode8.0 #2
+xcode_project: Vist.xcodeproj #3
+xcode_scheme: Vist #4
+
