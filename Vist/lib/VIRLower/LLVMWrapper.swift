@@ -305,7 +305,7 @@ extension LLVMRealPredicate {
 }
 
 
-struct LLVMBasicBlock : Dumpable {
+struct LLVMBasicBlock : Dumpable, Hashable {
 //    private
     var block: LLVMBasicBlockRef
     
@@ -320,6 +320,11 @@ struct LLVMBasicBlock : Dumpable {
     }
     
     private func dump() { LLVMDumpValue(block) }
+    
+    var hashValue: Int { return block.hashValue }
+    static func == (l: LLVMBasicBlock, r: LLVMBasicBlock) -> Bool {
+        return l.block == r.block
+    }
 }
 
 

@@ -134,10 +134,11 @@ extension Function : VIRLower {
         try applyAttributes()
         
         // if no body, return
-        guard let blocks = blocks else { return fn.function }
+        guard let _ = self.blocks else { return fn.function }
         
         // declare blocks, so break instructions have something to br to
-        for bb in blocks {
+        // loop over the dominance tree
+        for bb in dominator.analsis {
             bb.loweredBlock = try fn.appendBasicBlock(named: bb.name)
             IGF.builder.position(atEndOf: bb.loweredBlock!)
             
@@ -147,7 +148,8 @@ extension Function : VIRLower {
             }
         }
         
-        for bb in blocks {
+        // loop over the dominance tree
+        for bb in dominator.analsis {
             IGF.builder.position(atEndOf: bb.loweredBlock!)
             
             for case let inst as VIRLower & Inst in bb.instructions {
@@ -168,13 +170,13 @@ extension Function : VIRLower {
             let globalPointer = try IGF.builder.buildBitcast(value: global.value, to: LLVMType.opaquePointer)
             let constSize = LLVMValue.constInt(value: size, size: 64)
             
-            let startIntrinsic = try IGF.module.getIntrinsic(.lifetime_start)
-            let endIntrinsic = try IGF.module.getIntrinsic(.lifetime_end)
-            
             try IGF.builder.position(after: lifetime.start.loweredValue!)
-            try IGF.builder.buildCall(function: startIntrinsic, args: [constSize, globalPointer])
+            try IGF.builder.buildCall(function: IGF.module.getIntrinsic(.lifetime_start),
+                                      args: [constSize, globalPointer])
+            
             try IGF.builder.position(after: lifetime.end.loweredValue!)
-            try IGF.builder.buildCall(function: endIntrinsic, args: [constSize, globalPointer])
+            try IGF.builder.buildCall(function: IGF.module.getIntrinsic(.lifetime_end),
+                                      args: [constSize, globalPointer])
         }
         
         if let b = b { IGF.builder.position(atEndOf: b) }
@@ -215,8 +217,8 @@ extension Param : VIRLower {
             return phi
         }
         else {
-            let phi = try IGF.builder.buildPhi(type: type!.lowered(module: module), name: paramName)
-            
+            let phi = try IGF.builder.buildPhi(type: type!.lowered(module: module),
+                                               name: paramName)
             for operand in try block.blockArgs(for: self) {
                 operand.phi = phi
             }

@@ -195,6 +195,7 @@
 		D4AE8D681D609CAA00E2D480 /* Analysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4AE8D661D609CAA00E2D480 /* Analysis.swift */; };
 		D4AE8D6B1D60F63000E2D480 /* DominatorTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4AE8D6A1D60F63000E2D480 /* DominatorTree.swift */; };
 		D4AE8D6C1D60F63000E2D480 /* DominatorTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4AE8D6A1D60F63000E2D480 /* DominatorTree.swift */; };
+		D4B84E191D650B9B00B92CE5 /* CFGTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4B84E181D650B9B00B92CE5 /* CFGTest.swift */; };
 		D4CB751D1CB4612100FA2D8C /* vist in Copy Files */ = {isa = PBXBuildFile; fileRef = D47FF07A1B812052003F9920 /* vist */; };
 		D4CF76771C8CD4A70058A8EC /* TupleInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF76761C8CD4A70058A8EC /* TupleInst.swift */; };
 		D4CF76781C8CD4A70058A8EC /* TupleInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF76761C8CD4A70058A8EC /* TupleInst.swift */; };
@@ -368,6 +369,7 @@
 		D4A0003B1CCA9BC300157D90 /* LLVMWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LLVMWrapper.swift; path = lib/VIRLower/LLVMWrapper.swift; sourceTree = "<group>"; };
 		D4AE8D661D609CAA00E2D480 /* Analysis.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Analysis.swift; path = Optimiser/Analysis.swift; sourceTree = "<group>"; };
 		D4AE8D6A1D60F63000E2D480 /* DominatorTree.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DominatorTree.swift; path = Optimiser/DominatorTree.swift; sourceTree = "<group>"; };
+		D4B84E181D650B9B00B92CE5 /* CFGTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CFGTest.swift; sourceTree = "<group>"; };
 		D4C0900E1CCFC931008B69F1 /* shims.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = shims.c; path = stdlib/shims.c; sourceTree = "<group>"; };
 		D4CA32071CEA7013009C2B10 /* runtime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = runtime.h; path = stdlib/runtime/runtime.h; sourceTree = "<group>"; };
 		D4CF76761C8CD4A70058A8EC /* TupleInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TupleInst.swift; path = Instructions/TupleInst.swift; sourceTree = "<group>"; };
@@ -457,6 +459,7 @@
 				D41BF54C1C5CD797004A1962 /* Tests.swift */,
 				D4E35B7E1C5D216600683486 /* Pipe.swift */,
 				D4E35B801C5E3EC600683486 /* Expected.swift */,
+				D4B84E181D650B9B00B92CE5 /* CFGTest.swift */,
 				D41BF5541C5CDC8C004A1962 /* TestCases */,
 				D41BF54E1C5CD797004A1962 /* Info.plist */,
 			);
@@ -914,6 +917,7 @@
 				D4A000371CCA7FFA00157D90 /* OperandLower.swift in Sources */,
 				D43B39961C8A0EDF0039FB2E /* Function.swift in Sources */,
 				D4E35B821C5E3ECE00683486 /* Expected.swift in Sources */,
+				D4B84E191D650B9B00B92CE5 /* CFGTest.swift in Sources */,
 				D46D1F871D5CDD6C0001E327 /* Backend.cpp in Sources */,
 				D43B39921C8A0EDF0039FB2E /* BasicBlock.swift in Sources */,
 				D4AE8D681D609CAA00E2D480 /* Analysis.swift in Sources */,

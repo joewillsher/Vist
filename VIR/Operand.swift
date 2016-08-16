@@ -128,7 +128,8 @@ final class BlockOperand : Operand {
     }
     
     let param: Param
-    private unowned let predBlock: BasicBlock
+    /// Predecessor block -- where we are breaking from
+    unowned var predBlock: BasicBlock
     
     override var type: Type? { return param.type }
     
@@ -138,12 +139,18 @@ final class BlockOperand : Operand {
     
     /// Sets the phi's value for the incoming block `self.predBlock`
     override func setLoweredValue(_ val: LLVMValue) {
-        guard val._value != nil else {
+        let incomingBlock = predBlock.loweredBlock
+        // if there is no val we cannot add an incoming
+        guard let value = val._value, let incoming = incomingBlock?.block else {
             loweredValue = nil
             return
         }
-        var incoming = [val._value], incomingBlocks = [predBlock.loweredBlock?.block]
-        LLVMAddIncoming(param.phi!._value!, &incoming, &incomingBlocks, 1)
+        // if we have already added this incoming, return
+        if let i = incomingBlock, param.phiPreds.contains(i) { return }
+        
+        param.phiPreds.insert(incomingBlock!)
+        var incomingVals: [LLVMValueRef?] = [value], incomingBlocks: [LLVMBasicBlockRef?] = [incoming]
+        LLVMAddIncoming(param.phi!._value!, &incomingVals, &incomingBlocks, 1)
     }
     
     /// access to the underlying phi switch. Normal `setLoweredValue` 

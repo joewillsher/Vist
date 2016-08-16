@@ -87,7 +87,7 @@ final class BuiltinInstCall : Inst {
 /// by doing Builtin.intrinsic
 enum BuiltinInst : String {
     case iadd = "i_add", isub = "i_sub", imul = "i_mul", idiv = "i_div", irem = "i_rem", ieq = "i_eq", ineq = "i_neq", beq = "b_eq"
-    case iaddoverflow = "i_add_overflow"
+    case iaddoverflow = "i_add_overflow", imuloverflow = "i_mul_overflow"
     case condfail = "cond_fail"
     case ilte = "i_cmp_lte", igte = "i_cmp_gte", ilt = "i_cmp_lt", igt = "i_cmp_gt"
     case ishl = "i_shl", ishr = "i_shr", iand = "i_and", ior = "i_or", ixor = "i_xor"
@@ -105,7 +105,7 @@ enum BuiltinInst : String {
     var expectedNumOperands: Int {
         switch  self {
         case .memcpy: return 3
-        case .iadd, .isub, .imul, .idiv, .iaddoverflow, .irem, .ilte, .igte, .ilt, .igt,
+        case .iadd, .isub, .imul, .idiv, .iaddoverflow, .imuloverflow, .irem, .ilte, .igte, .ilt, .igt,
              .expect, .ieq, .ineq, .ishr, .ishl, .iand, .ior, .ixor, .fgt, .and, .or,
              .fgte, .flt, .flte, .fadd, .fsub, .fmul, .fdiv, .frem, .feq, .fneq, .beq,
              .opaquestore, .advancepointer:
@@ -121,7 +121,7 @@ enum BuiltinInst : String {
         case .iadd, .isub, .imul:
             return TupleType(members: [params.first!, Builtin.boolType]) // overflowing arithmetic
             
-        case .idiv, .iaddoverflow, .irem, .ishl, .ishr, .iand, .ior,
+        case .idiv, .iaddoverflow, .imuloverflow, .irem, .ishl, .ishr, .iand, .ior,
              .ixor, .fadd, .fsub, .fmul, .fdiv, .frem, .feq, .fneq:
             return params.first // normal arithmetic
             

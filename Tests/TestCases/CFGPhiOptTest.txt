@@ -1,0 +1,41 @@
+func @test : &thin () -> #Builtin.Int64 {
+$entry:
+  break $b1
+
+$b1:			// preds: entry
+  %1 = int_literal 0 	// users: %3, %22
+  %2 = int_literal 0 	// users: %8, %14, %17
+  break $b2(%1: #Builtin.Int64)
+
+$b2(%i.reg: #Builtin.Int64):			// preds: b1, b7
+  %4 = int_literal 1 	// user: %5
+  %5 = builtin i_eq %i.reg: #Builtin.Int64, %4: #Builtin.Int64 	// user: %6
+  cond_break %5: #Builtin.Bool, $b3, $b4
+
+$b3:			// preds: b2
+  %7 = int_literal 2 	// user: %8
+  %8 = builtin i_rem %2: #Builtin.Int64, %7: #Builtin.Int64 	// user: %10
+  %9 = int_literal 0 	// user: %10
+  %10 = builtin i_eq %8: #Builtin.Int64, %9: #Builtin.Int64 	// user: %11
+  cond_break %10: #Builtin.Bool, $b5, $b6
+
+$b4:			// preds: b2
+  return %i.reg
+
+$b5:			// preds: b3
+  %13 = int_literal 2 	// user: %14
+  %14 = builtin i_div %2: #Builtin.Int64, %13: #Builtin.Int64 	// user: %15
+  break $b7(%14: #Builtin.Int64)
+
+$b6:			// preds: b3
+  %16 = int_literal 3 	// user: %17
+  %17 = builtin i_mul_overflow %2: #Builtin.Int64, %16: #Builtin.Int64 	// user: %19
+  %18 = int_literal 1 	// user: %19
+  %19 = builtin i_add_overflow %17: #Builtin.Int64, %18: #Builtin.Int64 	// user: %20
+  break $b7(%19: #Builtin.Int64)
+
+$b7(%n.reg: #Builtin.Int64):			// preds: b5, b6
+  %21 = int_literal 1 	// user: %22
+  %22 = builtin i_add_overflow %1: #Builtin.Int64, %21: #Builtin.Int64 	// user: %23
+  break $b2(%22: #Builtin.Int64)
+}

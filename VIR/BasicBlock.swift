@@ -40,6 +40,11 @@ final class BasicBlock : VIRElement {
         self.applications = []
     }
     
+    /// The final break inst in this block
+    var breakInst: BreakInstruction? {
+        return instructions.last as? BreakInstruction
+    }
+    
     /// The application of a block, how you jump into the block. `nil` preds
     /// and breakInst implies it it an entry block
     final class BlockApplication {
@@ -69,7 +74,9 @@ extension BasicBlock {
     
     /// Get param named `name` or throw
     func param(named name: String) throws -> Param {
-        guard let param = parameters?.first(where: { param in param.paramName == name }) else { throw VIRError.noParamNamed(name) }
+        guard let param = parameters?.first(where: { param in param.paramName == name }) else {
+            throw VIRError.noParamNamed(name)
+        }
         return param
     }
     
@@ -78,7 +85,9 @@ extension BasicBlock {
         
         guard let paramIndex = parameters?.index(where: { blockParam in blockParam === param}),
             let args = applications.optionalMap({ application in application.args?[paramIndex] as? BlockOperand })
-            else { throw VIRError.noParamNamed(param.name) }
+            else {
+                throw VIRError.noParamNamed(param.name)
+        }
         
         return args
     }
@@ -98,26 +107,47 @@ extension BasicBlock {
                 throw VIRError.paramsNotTyped
             }
         }
-        else { guard args == nil else { throw VIRError.paramsNotTyped }}
+        else { guard args == nil else {
+            throw VIRError.paramsNotTyped
+            }}
         
         applications.append(.body(predecessor: block, params: args, breakInst: breakInst))
         block.successors.append(self)
     }
     
+    func addPhiArg(_ arg: BlockOperand, from block: BasicBlock) throws {
+        guard let index = applications.index(where: {$0.breakInst?.parentBlock === block}) else {
+            throw VIRError.paramsNotTyped
+        }
+        let application = applications.remove(at: index)
+        let args = (application.args as? [BlockOperand] ?? []) + [arg]
+        applications.insert(.body(predecessor: block, params: args, breakInst: application.breakInst!),
+                            at: index)
+    }
+    
     func removeApplication(break breakInst: BreakInstruction) throws {
         
-        guard let i = applications.index(where: { application in
+        guard let applicationIndex = applications.index(where: { application in
             application.breakInst === breakInst
         }) else { fatalError() }
         
-        applications.remove(at: i)
+        let application = applications.remove(at: applicationIndex)
+        //let fromBlock = breakInst.parentBlock!
         
-        let fromBlock = breakInst.parentBlock!
-        // remove these blocks as successors
-        for succ in breakInst.successors {
-            let i = fromBlock.successors.index { $0 === succ.block }!
-            fromBlock.successors.remove(at: i)
-        }
+        let successorIndex = application.predecessor!.successors.index(of: self)!
+        application.predecessor!.successors.remove(at: successorIndex)
+        
+        
+//        // remove this block as successor
+//        for succ in breakInst.successors {
+//            
+//            let i = fromBlock.successors.index { $0 === succ.block }!
+//            fromBlock.successors.remove(at: i)
+//            
+//            if let i = fromBlock.successors.index(where: { $0 === succ.block }) {
+//                fromBlock.successors.remove(at: i)
+//            }
+//        }
     }
     
     /// Helper, the index of `inst` in self or throw
@@ -144,6 +174,12 @@ extension BasicBlock {
         guard let entry = applications.first, entry.isEntry else { fatalError() }
         parameters?.append(param)
         entry.args?.append(Operand(param))
+    }
+    
+    /// Add a param to this block, used as a φ node
+    func addParam(_ param: Param) {
+        parameters = (parameters ?? []) + [param]
+        param.parentBlock = self
     }
     
     /// - returns: whether this block's instructions contains `inst`

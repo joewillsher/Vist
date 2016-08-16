@@ -26,6 +26,8 @@ protocol Value : class, VIRTyped, VIRElement {
     var module: Module { get }
     
     func copy() -> Self
+    
+    func updateUsesWithLoweredVal(_: LLVMValue)
 }
 
 /// A typed VIR object
@@ -122,6 +124,9 @@ extension Value {
     var name: String {
         get { return "%\(irName ?? getInstNumber() ?? "<null>")" }
         set { irName = newValue }
+    }
+    var unformattedName: String {
+        return irName ?? getInstNumber() ?? "<null>"
     }
 }
 

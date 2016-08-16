@@ -55,6 +55,7 @@ extension BuiltinInstCall: VIRLower {
         // handle calls which arent intrinsics, but builtin
         // instructions. We can just call them directly, and return
         case .iaddoverflow: return try IGF.builder.buildIAdd(lhs: lhs, rhs: rhs, name: irName)
+        case .imuloverflow: return try IGF.builder.buildIMul(lhs: lhs, rhs: rhs, name: irName)
         case .idiv: return try IGF.builder.buildIDiv(lhs: lhs, rhs: rhs, name: irName)
         case .irem: return try IGF.builder.buildIRem(lhs: lhs, rhs: rhs, name: irName)
         case .ieq, .beq:  return try IGF.builder.buildIntCompare(.equal, lhs: lhs, rhs: rhs, name: irName)

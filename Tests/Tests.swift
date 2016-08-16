@@ -451,6 +451,14 @@ extension OptimiserTests {
     func testConstantFolding() {
         XCTAssert(_testFile(name: "ConstantFolding"))
     }
+    func testPhiPlacement() {
+        do {
+            try XCTAssert(testExampleCFGOpt())
+        }
+        catch {
+            XCTFail("\(error)")
+        }
+    }
 }
 
 extension VIRGenTests {

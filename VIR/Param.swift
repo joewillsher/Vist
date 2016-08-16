@@ -28,6 +28,8 @@ class Param : Value {
     let convention: ParamConvention = .in
     
     var phi: LLVMValue? = nil
+    /// list of predecessor blocks which have added their phi incoming
+    var phiPreds: Set<LLVMBasicBlock> = []
     
     required init(paramName: String, type: Type) {
         self.paramName = paramName
@@ -36,6 +38,11 @@ class Param : Value {
     var irName: String? {
         get { return paramName }
         set { if let v = newValue { paramName = v } }
+    }
+    
+    func updateUsesWithLoweredVal(_ val: LLVMValue) {
+        for use in uses { use.setLoweredValue(val) }
+        phi = val
     }
 }
 

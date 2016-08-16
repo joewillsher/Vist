@@ -10,6 +10,10 @@ typealias BlockCall = (block: BasicBlock, args: [BlockOperand]?)
 
 protocol BreakInstruction : Inst {
     var successors: [BlockCall] { get }
+    
+    /// Adds `outgoingArg` to each outgoing edge
+    func addPhi(outgoingVal arg: Value, phi: Param, from block: BasicBlock) throws
+    func hasPhiArg(_: Param) -> Bool
 }
 
 final class BreakInst : BreakInstruction, Inst {
@@ -38,6 +42,18 @@ final class BreakInst : BreakInstruction, Inst {
     
     var successors: [BlockCall] {
         return [call]
+    }
+    
+    func addPhi(outgoingVal arg: Value, phi: Param, from block: BasicBlock) throws {
+        let arg = BlockOperand(value: arg, param: phi)
+        call.args = (call.args ?? []) + [arg]
+        try call.block.addPhiArg(arg, from: block)
+        args.append(arg)
+        initialiseArgs()
+    }
+    
+    func hasPhiArg(_ phi: Param) -> Bool {
+        return call.args?.contains(where: { $0.param === phi }) ?? false
     }
 }
 
@@ -71,6 +87,22 @@ final class CondBreakInst : Inst, BreakInstruction {
     
     var successors: [BlockCall] {
         return [thenCall, elseCall]
+    }
+    
+    func addPhi(outgoingVal arg: Value, phi: Param, from block: BasicBlock) throws {
+        let thenArg = BlockOperand(value: arg, param: phi)
+        thenCall.args = (thenCall.args ?? []) + [thenArg]
+        try thenCall.block.addPhiArg(thenArg, from: block)
+        let elseArg = BlockOperand(value: arg, param: phi)
+        elseCall.args = (elseCall.args ?? []) + [elseArg]
+        try elseCall.block.addPhiArg(elseArg, from: block)
+        args.append(thenArg)
+        args.append(elseArg)
+        initialiseArgs()
+    }
+    func hasPhiArg(_ phi: Param) -> Bool {
+        // both thenCall and elseCall should have it, so we only need to check 1
+        return thenCall.args?.contains(where: { $0.param === phi }) ?? false
     }
 }
 
