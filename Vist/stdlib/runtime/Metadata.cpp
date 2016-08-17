@@ -29,10 +29,10 @@ int32_t ConceptConformance::getOffset(int32_t index) {
 }
 
 extern "C"
-ExistentialObject *
-vist_constructExistential(ConceptConformance *conformance,
-                          void *instance) {
-    return new ExistentialObject(instance, 1, (ConceptConformance **)conformance);
+void vist_constructExistential(ConceptConformance *conformance,
+                          void *instance,
+                          ExistentialObject *outExistential) {
+    *outExistential = ExistentialObject(instance, 1, (ConceptConformance **)conformance);
 }
 
 //extern "C"

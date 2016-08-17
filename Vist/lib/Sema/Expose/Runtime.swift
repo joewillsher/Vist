@@ -32,6 +32,10 @@ enum Runtime {
     struct Function {
         let name: String, type: FunctionType
         
+        // as is described [here](http://llvm.org/devmtg/2014-10/Videos/Skip%20The%20FFI!%20Embedding%20Clang%20for%20C-360.mov)
+        // we cannot have a runtime function which uses anything other than a int or int sized pointer, or clang
+        // will not emit a simple mapping from clang type -> IR type and our call will fail
+        
         static let allocObject = Function(name: "vist_allocObject", type: FunctionType(params: [int32Type], returns: refcountedObjectPointerType))
         static let deallocObject = Function(name: "vist_deallocObject", type: FunctionType(params: [refcountedObjectPointerType], returns: voidType))
         static let retainObject  = Function(name: "vist_retainObject", type: FunctionType(params: [refcountedObjectPointerType], returns: voidType))
@@ -44,11 +48,11 @@ enum Runtime {
         
         static let getWitnessMethod = Function(name: "vist_getWitnessMethod", type: FunctionType(params: [BuiltinType.pointer(to: existentialObjectType), int32Type, int32Type], returns: Builtin.opaquePointerType))
         static let getPropertyOffset = Function(name: "vist_getPropertyOffset", type: FunctionType(params: [BuiltinType.pointer(to: existentialObjectType), int32Type, int32Type], returns: Builtin.int32Type))
-        static let constructExistential = Function(name: "vist_constructExistential", type: FunctionType(params: [BuiltinType.pointer(to: conceptConformanceType), BuiltinType.opaquePointer], returns:
-            BuiltinType.pointer(to:
-            existentialObjectType
-            )
-            ))
+        
+        // vist_constructExistential has type '(ExistentialObjectType) -> ExistentialObjectType', but is lowered to 
+        // define void @testLayout(%struct.ExistentialObject* noalias nocapture sret, %struct.ExistentialObject* byval nocapture readonly align 8)
+        // so we cannot use this from swift. Change this so it stores into a ptr param
+        static let constructExistential = Function(name: "vist_constructExistential", type: FunctionType(params: [BuiltinType.pointer(to: conceptConformanceType), BuiltinType.opaquePointer, /*out param=*/BuiltinType.pointer(to: existentialObjectType)], returns: BuiltinType.void))
     }
 }
 

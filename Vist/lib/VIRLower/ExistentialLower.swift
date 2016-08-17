@@ -12,15 +12,16 @@ extension ExistentialConstructInst : VIRLower {
         
         guard let structType = try value.memType?.getAsStructType() else { fatalError() }
         
+        let memory = try IGF.builder.buildAlloca(type: Runtime.existentialObjectType.lowered(module: module))
         let ref = module.getRuntimeFunction(.constructExistential, IGF: &IGF)
         
         let mem = try IGF.builder.buildBitcast(value: value.loweredValue!, to: LLVMType.opaquePointer)
         let conf = try structType.generateConformanceMetadata(concept: existentialType, IGF: &IGF, module: module).metadata
        
-        let ex = try IGF.builder.buildCall(function: ref, args: [conf, mem])
+        try IGF.builder.buildCall(function: ref, args: [conf, mem, memory])
         
         let exType = existentialType.importedType(in: module).lowered(module: module).getPointerType()
-        let bc = try IGF.builder.buildBitcast(value: ex, to: exType)
+        let bc = try IGF.builder.buildBitcast(value: memory, to: exType)
         
         return try IGF.builder.buildLoad(from: bc, name: irName)
     }
