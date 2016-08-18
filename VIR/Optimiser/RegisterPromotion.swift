@@ -108,9 +108,6 @@ enum RegisterPromotionPass : OptimisationPass {
         var dominatorTree: DominatorTree {
             return function.dominator.analsis
         }
-        var dominatorFrontierInfo: DominatorTree.DominatorFrontierInfo {
-            return dominatorTree.dominatorFrontier
-        }
     }
     
     static func run(on function: Function) throws {
@@ -137,10 +134,12 @@ extension RegisterPromotionPass.AllocStackPromoter {
         // TODO: all uses are in a block! globals not allowed
         guard isRegisterPromotable else { return }
         
+        // remove in-block use of the values
         try pruneAllocUsage()
+        // place phi nodes in the correct join nodes
         try placeφ()
+        // remove alloc, stores, loads
         try fixupMemoryUse()
-        
     }
     
     /// - returns: the last stores in each block
@@ -215,56 +214,92 @@ extension RegisterPromotionPass.AllocStackPromoter {
         try alloc.eraseFromParent()
     }
     
-    
     /// Replalces every use of the alloc memory in the iterated join set of the tree with
     /// a phi node variable passed as a block param
+    ///
+    /// Phi placement algorithm detailed in [A Linear Tifme Algorgithm for Placing φ Nodes
+    /// — Sreedhar and Gao.](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.8.1979&rep=rep1&type=pdf)
     private mutating func placeφ() throws {
         
-        // Used for processing dom tree bottom up: this array is in
-        // increasing node levels
-        let workList = stores()
-            .map { store in dominatorTree.getNode(for: store.parentBlock!) }
-            // Get only nodes dominated by the definition
-            .filter { dominatorTree.block(alloc.parentBlock!, dominates: $0.block) }
-            // TODO: Do I need to sort? if we arent doing the efficient frontier calculation
-            .sorted { l, r in l.level > r.level }
+        // - Initial priority queue is the set of sparse nodes (N_α)
+        // - This collection must remain ordered increasing dom tree levels, and
+        //   uses should work backwards through the priority queue
+        var priorityQueue = sparseNodes()
+            .sorted { $0.level <= $1.level }
         
-        for node in workList {
+        // all nodes visited, used to prevent re-walking subtrees
+        var visited: Set<DominatorTree.Node> = []
+        // list of blocks that require phi placement, these are
+        // members of IDF(N_α)
+        var phiBlocks: Set<DominatorTree.Node> = []
+        
+        // walk from the bottom of the dom tree up; in the order
+        // of decreasing node depth
+        while let x = priorityQueue.last {
+            defer { priorityQueue.removeLast() }
             
-            // - Add phi nodes to the dominator frontier nodes
-            // - These are the closest nodes which are successors of `node` in the CFG which
-            //   are not dominated by node, so they require a parameterised entry
-            let addedPhis = dominatorFrontierInfo.frontier(of: node).map { frontierNode -> Param in
-                // if already added, get it
-                if let alreadyAdded = placedPhiNodes[frontierNode.block] {
-                    return alreadyAdded
-                }
-                
-                // construct the φ param
-                let name = alloc.unformattedName + ".reg"
-                let p = Param(paramName: name, type: alloc.memType!)
-                frontierNode.block.addParam(p)
-                placedPhiNodes[frontierNode.block] = p
-                return p
-            }
+            // A node 'y ∈ DF(x)' iff
+            //  - there exists a 'z ∈ SubTree(x)'
+            //  - with a 'z -> y' J-edge
+            //  - where 'z.level ≤ y.level'
             
-            // for each phi we just added to the dom frontier, make sure that each application
-            // now also applies phi args
-            for phi in addedPhis {
+            // get nodes y in subtree of x
+            for subtreeBlock in dominatorTree.subtree(from: x) {
+                let y = dominatorTree.getNode(for: subtreeBlock)
                 
-                // for each predecessor of the DF node, we add that block's live out
-                // value as a phi param of the block's break inst
-                for application in phi.parentBlock!.applications where !application.breakInst!.hasPhiArg(phi) {
-                    let fromBlock = application.breakInst!.parentBlock!
-                    try application.breakInst!.addPhi(outgoingVal: try getLiveOutValue(of: fromBlock)!,
-                                                      phi: phi,
-                                                      from: fromBlock)
+                // get all edges 'z -> y'
+                for pred in subtreeBlock.successors {
+                    let z = dominatorTree.getNode(for: pred)
+                    
+                    // if z has already been visited, don't again
+                    guard !visited.insert(z).inserted else {
+                        continue
+                    }
+                    
+                    // 'y -> z' is a J-edge if 'y !sdom z'
+                    // ignore J-edges where 'z.level > y.level'
+                    guard !dominatorTree.node(y, strictlyDominates: z), z.level <= y.level else {
+                        continue
+                    }
+                    
+                    // if this is the first visit, add it to the priority queue
+                    if phiBlocks.insert(z).inserted {
+                        // insert this node in the priority queue at the index of
+                        // other element of the same level
+                        let index = priorityQueue.index { $0.level >= z.level } ?? priorityQueue.endIndex
+                        priorityQueue.insert(z, at: index)
+                    }
                 }
             }
         }
         
+        // add BB args to all phi blocks
+        try addBlockArguments(phis: phiBlocks)
     }
     
+    private mutating func addBlockArguments(phis: Set<DominatorTree.Node>) throws {
+        
+        // - Add phi nodes to the dominator frontier nodes
+        // - These are the closest nodes which are successors of `node` in the CFG which
+        //   are not dominated by node, so they require a parameterised entry
+        for phiNode in phis {
+            // construct the φ param
+            let name = alloc.unformattedName + ".reg"
+            let phi = Param(paramName: name, type: alloc.memType!)
+            phiNode.block.addParam(phi)
+            placedPhiNodes[phiNode.block] = phi
+            
+            // for each predecessor of the DF node, we add that block's live out
+            // value as a phi param of the block's break inst
+            for application in phi.parentBlock!.applications where !application.breakInst!.hasPhiArg(phi) {
+                let fromBlock = application.breakInst!.parentBlock!
+                try application.breakInst!.addPhi(outgoingVal: getLiveOutValue(of: fromBlock)!,
+                                                  phi: phi,
+                                                  from: fromBlock)
+            }
+        }
+    }
+
 }
 
 fileprivate extension RegisterPromotionPass.AllocStackPromoter {
@@ -312,6 +347,15 @@ fileprivate extension RegisterPromotionPass.AllocStackPromoter {
         return nil
     }
     
+    /// A set of the sparse nodes `N_α` in the tree; these are the nodes which
+    /// represent non identity transferrence of the value of the alloc inst
+    /// - note: Each node containing a store (apart from the node with 
+    ///         the allocation) is an element N_α
+    func sparseNodes() -> [DominatorTree.Node] {
+        return stores()
+            .map { store in dominatorTree.getNode(for: store.parentBlock!) }
+            .filter { node in node.block !== alloc.parentBlock! }
+    }
     
     /// The store instructions using self
     func stores() -> [StoreInst] {
@@ -332,39 +376,3 @@ fileprivate extension RegisterPromotionPass.AllocStackPromoter {
         return true
     }
 }
-
-extension DominatorTree {
-    /// Constructs the dominator frontier info from this tree
-    func generateFrontierInfo() -> DominatorFrontierInfo {
-        var info = DominatorFrontierInfo(domTree: self)
-        
-        // for each join node in the cfg
-        for block in function.blocks! where block.isJoinNode {
-            calculateFrontier(of: getNode(for: block),
-                              info: &info)
-        }
-        
-        return info
-    }
-    
-    private func calculateFrontier(of node: Node, info: inout DominatorFrontierInfo) {
-        
-        // (must have an idom -- can't be root)
-        guard let iDom = node.iDom else { return }
-        
-        // for each CFG predecessor, walk up the dom tree -- until we reach the block's
-        // idom -- and add the block to this node's idom
-        for pred in node.block.predecessors {
-            var _currentNode: Node? = getNode(for: pred)
-            // walk up the tree until we reach the block's idom
-            while let currentNode = _currentNode, currentNode !== iDom {
-                defer { _currentNode = currentNode.iDom }
-                // and add this block to the dominator frontier of that node
-                info.add(frontierNode: node, to: currentNode)
-            }
-        }
-    }
-}
-
-
-

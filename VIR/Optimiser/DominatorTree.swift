@@ -59,39 +59,11 @@ final class DominatorTree : FunctionAnalysis {
         self.root = root
     }
     
-    /// A map from nodes to their dominator frontiers.
-    ///
-    /// A definition in node n forces a φ-function in join nodes that lie
-    /// just outside the region of the flow graph that n dominates; hence
-    /// the name dominance frontier.
-    ///
-    /// Informally, DF(x) contains the first nodes reachable from x that x
-    /// does not dominate, on each path leaving x
-    ///
-    /// http://www.iith.ac.in/~ramakrishna/fc5264/ssa-intro-construct.pdf
-    final class DominatorFrontierInfo {
-        
-        private var nodes: [Node: Set<Node>]
-        
-        /// constructs an empty map for the blocks in `function`
-        init(domTree: DominatorTree) {
-            var nodes: [Node: Set<Node>] = [:]
-            for desc in domTree.root.getDescendants() {
-                nodes[desc] = []
-            }
-            self.nodes = nodes
-        }
-        
-        func frontier(of node: Node) -> Set<Node> {
-            return nodes[node]!
-        }
-        func add(frontierNode: Node, to node: Node) {
-            nodes[node]!.insert(frontierNode)
-        }
+    /// - returns: a subtree of `self` descending from `node`
+    /// - note: the levels are the same as the original tree
+    func subtree(from node: Node) -> DominatorTree {
+        return DominatorTree(function: function, root: node)
     }
-    
-    /// Constructs the dominator frontier info from this tree
-    lazy var dominatorFrontier: DominatorFrontierInfo = self.generateFrontierInfo()
 }
 
 extension DominatorTree {
@@ -109,19 +81,29 @@ extension DominatorTree {
     /// - returns: true if `block` dominates `other`, so all paths to `other` go
     ///            through `block`
     func block(_ block: BasicBlock, dominates other: BasicBlock) -> Bool {
+        return node(getNode(for: block), dominates: getNode(for: other))
+    }
+    
+    
+    func node(_ node: Node, dominates other: Node) -> Bool {
         
-        let search = getNode(for: block)
-        var node = getNode(for: other)
+        var currentNode = other
         
-        while let iDom = node.iDom {
-            if iDom === search {
+        while let iDom = currentNode.iDom {
+            if iDom == node {
                 return true
             }
-            node = iDom
+            currentNode = iDom
         }
         
         return false
     }
+    
+    /// `node sdom other` if `node dom other` and `node != other`
+    func node(_ node: Node, strictlyDominates other: Node) -> Bool {
+        return node.block !== other.block && self.node(node, dominates: other)
+    }
+
 }
 
 
@@ -408,10 +390,3 @@ extension DominatorTree.Node {
     }
 }
 
-extension DominatorTree.DominatorFrontierInfo : CustomStringConvertible {
-    var description: String {
-        return nodes.map { (node, frontier) in
-            "\(node.block.name) \tDF: \(frontier.map { $0.block.name }.joined(separator: ", "))"
-            }.joined(separator: "\n")
-    }
-}
