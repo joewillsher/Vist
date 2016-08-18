@@ -459,6 +459,10 @@ extension OptimiserTests {
             XCTFail("\(error)")
         }
     }
+    func testPhiPlacement2() {
+        XCTAssert(_testFile(name: "PhiPlacement2"))
+    }
+
 }
 
 extension VIRGenTests {

@@ -1,0 +1,52 @@
+// RUN: -Ohigh -emit-vir
+// CHECK: VIR
+
+
+// CHECK-VIR:
+// VIR: func @test_tB : &thin (#Bool) -> #Builtin.Void {
+// VIR: $entry(%cond: #Bool):
+// VIR:   %0 = struct_extract %cond: #Bool, !value 	// user: %1
+// VIR:   cond_break %0: #Builtin.Bool, $entry.true0, $entry.false0
+// VIR:
+// VIR: $entry.exit(%2.reg: #Int):			// preds: entry.false0, entry.true0
+// VIR:   %2 = call @print_tI (%2.reg: #Int)
+// VIR:   return ()
+// VIR:
+// VIR: $entry.true0:			// preds: entry
+// VIR:   %4 = int_literal 2 	// user: %5
+// VIR:   %5 = struct %Int, (%4: #Builtin.Int64) 	// users: %6, %12
+// VIR:   %6 = call @print_tI (%5: #Int)
+// VIR:   %7 = int_literal 1 	// user: %8
+// VIR:   %8 = struct %Int, (%7: #Builtin.Int64) 	// user: %<null>
+// VIR:   %9 = int_literal 4 	// user: %10
+// VIR:   %10 = struct %Int, (%9: #Builtin.Int64) 	// user: %11
+// VIR:   %11 = call @print_tI (%10: #Int)
+// VIR:   break $entry.exit(%5: #Int)
+// VIR:
+// VIR: $entry.false0:			// preds: entry
+// VIR:   %13 = int_literal 30 	// user: %14
+// VIR:   %14 = struct %Int, (%13: #Builtin.Int64) 	// user: %15
+// VIR:   break $entry.exit(%14: #Int)
+// VIR: }
+func test :: Bool = (cond) {
+    var x = 1
+    x = 100
+    
+    if cond {
+        x = 2
+        print x
+        var y = 1
+        if x == 1 {
+            x = 2
+        } else {
+            y = 4
+        }
+        print y
+        
+    } else {
+        x = 30
+    }
+    print x
+}
+
+

@@ -8,8 +8,7 @@
 
 
 /**
- ## Promotes variables which aren't mutated to be a constant
- passed in registers
+ ## Promotes variables to be passed in registers
  
  ```
  var x = 1
@@ -102,7 +101,6 @@ enum RegisterPromotionPass : OptimisationPass {
             self.alloc = alloc
         }
         
-        ///
         var lastStoreInBlock: [BasicBlock: StoreInst] = [:]
         /// The φ nodes we have placed in blocks
         var placedPhiNodes: [BasicBlock: Param] = [:]
@@ -117,7 +115,7 @@ enum RegisterPromotionPass : OptimisationPass {
     
     static func run(on function: Function) throws {
         
-        if !function.hasBody { return }
+        guard function.hasBody else { return }
         
         for case let varInst as VariableInst in function.instructions {
             let v = varInst.value.value!
@@ -224,13 +222,14 @@ extension RegisterPromotionPass.AllocStackPromoter {
         
         // Used for processing dom tree bottom up: this array is in
         // increasing node levels
-        let workList = stores().map { store in
-            dominatorTree.getNode(for: store.parentBlock!)
-            }
+        let workList = stores()
+            .map { store in dominatorTree.getNode(for: store.parentBlock!) }
+            // Get only nodes dominated by the definition
+            .filter { dominatorTree.block(alloc.parentBlock!, dominates: $0.block) }
             // TODO: Do I need to sort? if we arent doing the efficient frontier calculation
-            .sorted { l, r in l.level < r.level }
+            .sorted { l, r in l.level > r.level }
         
-        for node in workList.reversed() {
+        for node in workList {
             
             // - Add phi nodes to the dominator frontier nodes
             // - These are the closest nodes which are successors of `node` in the CFG which
@@ -263,6 +262,7 @@ extension RegisterPromotionPass.AllocStackPromoter {
                 }
             }
         }
+        
     }
     
 }

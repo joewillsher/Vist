@@ -45,7 +45,7 @@ final class BreakInst : BreakInstruction, Inst {
     }
     
     func addPhi(outgoingVal arg: Value, phi: Param, from block: BasicBlock) throws {
-        let arg = BlockOperand(value: arg, param: phi)
+        let arg = BlockOperand(optionalValue: arg, param: phi, block: block)
         call.args = (call.args ?? []) + [arg]
         try call.block.addPhiArg(arg, from: block)
         args.append(arg)
@@ -90,10 +90,10 @@ final class CondBreakInst : Inst, BreakInstruction {
     }
     
     func addPhi(outgoingVal arg: Value, phi: Param, from block: BasicBlock) throws {
-        let thenArg = BlockOperand(value: arg, param: phi)
+        let thenArg = BlockOperand(optionalValue: arg, param: phi, block: block)
         thenCall.args = (thenCall.args ?? []) + [thenArg]
         try thenCall.block.addPhiArg(thenArg, from: block)
-        let elseArg = BlockOperand(value: arg, param: phi)
+        let elseArg = BlockOperand(optionalValue: arg, param: phi, block: block)
         elseCall.args = (elseCall.args ?? []) + [elseArg]
         try elseCall.block.addPhiArg(elseArg, from: block)
         args.append(thenArg)

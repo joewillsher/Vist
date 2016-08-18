@@ -117,10 +117,6 @@ final class FunctionOperand : Operand {
 /// are avaliable
 final class BlockOperand : Operand {
     
-    convenience init(value: Value, param: Param) {
-        self.init(optionalValue: value, param: param, block: value.parentBlock!)
-    }
-    
     init(optionalValue value: Value?, param: Param, block: BasicBlock) {
         self.param = param
         self.predBlock = block
