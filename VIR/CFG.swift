@@ -25,23 +25,14 @@ enum CFGFoldPass : OptimisationPass {
                 
                 guard case let literal as BoolLiteralInst = condBreakInst.condition.value else { continue }
                 
-                let toBlock: BasicBlock
-                let unreachableBlock: BasicBlock
-                let sourceBlock = condBreakInst.parentBlock!
-                let args: [BlockOperand]?
+                let toBlock = literal.value ?
+                    condBreakInst.thenCall.block : condBreakInst.elseCall.block
+                let unreachableBlock = literal.value ?
+                    condBreakInst.elseCall.block : condBreakInst.thenCall.block
+                let args = literal.value ?
+                    condBreakInst.thenCall.args : condBreakInst.elseCall.args
                 
-                // if unconditionally true
-                if literal.value {
-                    toBlock = condBreakInst.thenCall.block
-                    unreachableBlock = condBreakInst.elseCall.block
-                    args = condBreakInst.thenCall.args
-                }
-                // if unconditionally false
-                else {
-                    toBlock = condBreakInst.elseCall.block
-                    unreachableBlock = condBreakInst.thenCall.block
-                    args = condBreakInst.elseCall.args
-                }
+                let sourceBlock = condBreakInst.parentBlock!
                 
                 let br = BreakInst(call: (block: toBlock, args: args))
                 try sourceBlock.insert(inst: br, after: condBreakInst)
@@ -121,6 +112,7 @@ private extension Function {
                     try succ.block.removeApplication(break: brToNext)
                 }
             }
+            try inst.eraseFromParent()
         }
         // remove block
         try block.removeFromParent()
