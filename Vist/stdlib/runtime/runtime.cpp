@@ -22,14 +22,14 @@
 static jmp_buf yieldTarget;
 
 /// Returns to the saved stack position
-extern "C"
+RUNTIME_COMPILER_INTERFACE
 void vist_yieldUnwind() {
     return longjmp(yieldTarget, 1);
 }
 
 /// Sets this stack state as the target state
 /// \returns whether we got to this spot by yielding
-extern "C"
+RUNTIME_COMPILER_INTERFACE
 bool vist_setYieldTarget() {
     return setjmp(yieldTarget);
 }

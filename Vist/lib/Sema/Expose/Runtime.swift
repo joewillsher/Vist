@@ -27,7 +27,7 @@ enum Runtime {
     static let conceptConformanceType = StructType.withTypes([BuiltinType.opaquePointer/*TypeMetadata *concept*/, int32Type.ptrType(), int32Type, witnessTableType.ptrType()], name: "Conformance")
     static let witnessTableType = StructType.withTypes([valueWitnessType.ptrType(), int32Type], name: "WitnessTable")
     static let typeMetadataType = StructType.withTypes([conceptConformanceType.ptrType().ptrType(), int32Type, int32Type, BuiltinType.pointer(to: int8Type)], name: "Metadata")
-    static let existentialObjectType = StructType.withTypes([BuiltinType.opaquePointer, int32Type, conceptConformanceType.ptrType().ptrType()], name: "Existential")
+    static let existentialObjectType = StructType.withTypes([BuiltinType.wordType, int32Type, conceptConformanceType.ptrType().ptrType(), typeMetadataType], name: "Existential")
     
     struct Function {
         let name: String, type: FunctionType
@@ -60,6 +60,11 @@ enum Runtime {
             FunctionType(params: [conceptConformanceType.ptrType(), /*instance=*/BuiltinType.opaquePointer,
                                   typeMetadataType.ptrType(), /*is nonlocal=*/BuiltinType.bool,
                                   /*out param=*/existentialObjectType.ptrType()], returns: BuiltinType.void))
+        
+        static let deallocExistentialBuffer = Function(name: "vist_deallocExistentialBuffer", type: FunctionType(params: [existentialObjectType.ptrType()], returns: BuiltinType.void))
+        static let exportExistentialBuffer = Function(name: "vist_exportExistentialBuffer", type: FunctionType(params: [existentialObjectType.ptrType()], returns: BuiltinType.void))
+        static let copyExistentialBuffer = Function(name: "vist_copyExistentialBuffer", type: FunctionType(params: [existentialObjectType.ptrType(), existentialObjectType.ptrType()], returns: BuiltinType.void))
+        
     }
 }
 

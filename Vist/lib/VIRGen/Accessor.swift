@@ -78,7 +78,13 @@ extension Accessor {
         return try aggregateGetValue().accessor().referenceBacked()
     }
     
-    func release() { }
+    func release() throws {
+        //
+        if let _ = try? storedType?.getAsConceptType() {
+            try module.builder.build(inst: ExistentialDeleteBufferInst(existential: aggregateGetValue()))
+        }
+    }
+    
     func retain() { }
     func releaseUnowned() { }
     func dealloc() { }

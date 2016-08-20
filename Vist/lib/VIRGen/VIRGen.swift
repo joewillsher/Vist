@@ -388,7 +388,15 @@ extension ReturnStmt : ValueEmitter {
             try retVal.release() // FIXME: CHECK THIS
         }
         
-        let boxed = try retVal.boxedAggregateGetValue(expectedType: expectedReturnType, module: module)
+        var boxed = try retVal.boxedAggregateGetValue(expectedType: expectedReturnType, module: module)
+        
+        // if returning an existential, export the buffer
+        if let _ = try? boxed.type?.getAsConceptType() {
+            // copy buffer to heap
+            let copied = try module.builder.build(inst: ExistentialCopyBufferInst(existential: boxed, irName: "escaping"))
+            boxed = try module.builder.build(inst: LoadInst(address: copied))
+        }
+        
         return try module.builder.buildReturn(value: boxed).accessor()
     }
 }

@@ -30,8 +30,8 @@ extension ReturnStmt : StmtTypeProvider {
         let exprType = try expr.typeForNode(scope: scope)
         
         do {
-            try returnType.addConstraint(exprType,
-                                         solver: scope.constraintSolver)
+            try exprType.addConstraint(returnType,
+                                       solver: scope.constraintSolver)
         }
         catch SemaError.couldNotAddConstraint {
             // diagnose why the constraint system couldn't add the constraint

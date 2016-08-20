@@ -15,6 +15,8 @@ enum BuiltinType : Type {
     indirect case pointer(to: Type)
     case opaquePointer
     
+    static let wordType: BuiltinType = .int(size: 64)
+    
     func lowered(module: Module) -> LLVMType {
         switch self {
         case .null:                     return .null

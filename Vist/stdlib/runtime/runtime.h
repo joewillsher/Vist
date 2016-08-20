@@ -20,6 +20,11 @@
 #define SWIFT_NAME(X)
 extern "C" {
     
+#define INLINE __attribute__((always_inline))
+    // These functions must have a definition in Vist/lib/Sema/Runtime.swift to
+    // be exposed to the compiler
+#define RUNTIME_COMPILER_INTERFACE extern "C"
+
 #else
     
 #define SWIFT_NAME(X) __attribute__((swift_name(#X)))
@@ -79,11 +84,6 @@ extern "C" {
     };
     
     struct ExistentialObject {
-        /// The instance
-        
-#ifdef __cplusplus
-    protected:
-#endif
         /// a tagged pointer containing the instance, and in the least
         /// significant bit, a flag stating whether the ptr is stored
         /// on the heap and needs deallocating
@@ -105,13 +105,17 @@ extern "C" {
                           ConceptConformance *_Nonnull *_Nullable conformances)
             : instanceTaggedPtr(object), metadata(metadata), numConformances(numConformances), conformances(conformances) {}
         
-        __attribute__((always_inline))
-        uintptr_t projectBuffer() {
+        INLINE uintptr_t projectBuffer() {
             return (uintptr_t)instanceTaggedPtr & ~0x1;
         }
-        __attribute__((always_inline))
-        bool isNonLocal() {
+        INLINE bool isNonLocal() {
             return (uintptr_t)instanceTaggedPtr & 0x1;
+        }
+        INLINE void setNonLocalTag(bool tag) {
+            if (tag)
+                instanceTaggedPtr |= tag;
+            else
+                instanceTaggedPtr &= ~0x1;
         }
 #endif
     };

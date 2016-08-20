@@ -8,7 +8,7 @@
 
 
 /// Opening an existential box to get a pointer to a member
-final class ExistentialProjectPropertyInst: Inst, LValue {
+final class ExistentialProjectPropertyInst : Inst, LValue {
     var existential: PtrOperand
     let propertyName: String, existentialType: ConceptType
     
@@ -60,6 +60,7 @@ final class ExistentialConstructInst : Inst {
     var value: Operand
     let existentialType: ConceptType
     let witnessTable: VIRWitnessTable
+    var isLocal: Bool
     
     var type: Type? { return existentialType.importedType(in: module) }
     
@@ -78,6 +79,7 @@ final class ExistentialConstructInst : Inst {
     
     private init(value: Operand, witnessTable: VIRWitnessTable, existentialType: ConceptType, irName: String?) {
         self.witnessTable = witnessTable
+        self.isLocal = true
         self.value = value
         self.existentialType = existentialType
         self.args = [value]
@@ -86,7 +88,7 @@ final class ExistentialConstructInst : Inst {
     }
     
     var vir: String {
-        return "\(name) = existential_construct \(value.valueName) in #\(existentialType.explicitName)\(useComment)"
+        return "\(name) = \(isLocal ? "existential_construct_local" : "existential_construct") \(value.valueName) in #\(existentialType.explicitName)\(useComment)"
     }
     
     func copy() -> ExistentialConstructInst {
@@ -185,6 +187,115 @@ final class ExistentialProjectInst : Inst, LValue {
     }
     func setArgs(_ args: [Operand]) {
         existential = args[0] as! PtrOperand
+    }
+    var parentBlock: BasicBlock?
+    var irName: String?
+}
+
+/// Places the existential buffer on the heap
+final class ExistentialExportBufferInst : Inst {
+    var existential: Operand
+    
+    var type: Type? { return nil }
+    
+    var uses: [Operand] = []
+    var args: [Operand]
+    
+    convenience init(existential: Value, irName: String? = nil) throws {
+        self.init(existential: Operand(existential), irName: irName)
+    }
+    
+    private init(existential: Operand, irName: String?) {
+        self.existential = existential
+        self.args = [existential]
+        initialiseArgs()
+        self.irName = irName
+    }
+    
+    var hasSideEffects: Bool { return true }
+    
+    var vir: String {
+        return "\(name) = existential_export_buffer \(existential.valueName)\(useComment)"
+    }
+    
+    func copy() -> ExistentialExportBufferInst {
+        return ExistentialExportBufferInst(existential: existential.formCopy(), irName: irName)
+    }
+    
+    func setArgs(_ args: [Operand]) {
+        existential = args[0]
+    }
+    var parentBlock: BasicBlock?
+    var irName: String?
+}
+
+/// Deallocate's the existential's buffer
+final class ExistentialDeleteBufferInst : Inst {
+    var existential: Operand
+    
+    var type: Type? { return nil }
+    
+    var uses: [Operand] = []
+    var args: [Operand]
+    
+    convenience init(existential: Value, irName: String? = nil) throws {
+        self.init(existential: Operand(existential), irName: irName)
+    }
+    
+    private init(existential: Operand, irName: String?) {
+        self.existential = existential
+        self.args = [existential]
+        initialiseArgs()
+        self.irName = irName
+    }
+    
+    var hasSideEffects: Bool { return true }
+    
+    var vir: String {
+        return "\(name) = existential_delete_buffer \(existential.valueName)\(useComment)"
+    }
+    
+    func copy() -> ExistentialDeleteBufferInst {
+        return ExistentialDeleteBufferInst(existential: existential.formCopy(), irName: irName)
+    }
+    
+    func setArgs(_ args: [Operand]) {
+        existential = args[0]
+    }
+    var parentBlock: BasicBlock?
+    var irName: String?
+}
+
+final class ExistentialCopyBufferInst : Inst, LValue {
+    var existential: Operand
+    
+    var type: Type? { return existential.type?.ptrType() }
+    var memType: Type? { return existential.type }
+    
+    var uses: [Operand] = []
+    var args: [Operand]
+    
+    convenience init(existential: Value, irName: String? = nil) throws {
+        self.init(existential: Operand(existential), irName: irName)
+    }
+    
+    private init(existential: Operand, irName: String?) {
+        self.existential = existential
+        self.args = [existential]
+        initialiseArgs()
+        self.irName = irName
+    }
+    
+    var vir: String {
+        return "\(name) = existential_copy_buffer \(existential.valueName)\(useComment)"
+    }
+    
+    func copy() -> ExistentialCopyBufferInst {
+        return ExistentialCopyBufferInst(existential: existential.formCopy(), irName: irName)
+    }
+    
+    func setArgs(_ args: [Operand]) {
+        existential = args[0]
     }
     var parentBlock: BasicBlock?
     var irName: String?

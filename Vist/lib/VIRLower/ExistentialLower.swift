@@ -19,7 +19,7 @@ extension ExistentialConstructInst : VIRLower {
         
         let type = try structType.getLLVMTypeMetadata(IGF: &IGF, module: module)
         let conf = try structType.generateConformanceMetadata(concept: existentialType, IGF: &IGF, module: module).metadata
-        let nonLocal = LLVMValue.constBool(value: true)
+        let nonLocal = LLVMValue.constBool(value: !isLocal)
         
         let ref = module.getRuntimeFunction(.constructExistential, IGF: &IGF)
         try IGF.builder.buildCall(function: ref, args: [conf, mem, type, nonLocal, exMemory])
@@ -87,6 +87,39 @@ extension ExistentialProjectInst : VIRLower {
         return try IGF.builder.buildCall(function: ref, args: [ex])
     }
 }
+
+extension ExistentialDeleteBufferInst : VIRLower {
+    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+        let existentialMemory = try IGF.builder.buildAlloca(type: Runtime.existentialObjectType.importedType(in: module).lowered(module: module))
+        try IGF.builder.buildStore(value: existential.loweredValue!, in: existentialMemory)
+        
+        let ref = module.getRuntimeFunction(.deallocExistentialBuffer, IGF: &IGF)
+        return try IGF.builder.buildCall(function: ref, args: [existentialMemory])
+    }
+}
+extension ExistentialCopyBufferInst : VIRLower {
+    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+        let existentialMemory = try IGF.builder.buildAlloca(type: Runtime.existentialObjectType.importedType(in: module).lowered(module: module))
+        try IGF.builder.buildStore(value: existential.loweredValue!, in: existentialMemory)
+        let copyMemory = try IGF.builder.buildAlloca(type: Runtime.existentialObjectType.importedType(in: module).lowered(module: module))
+        
+        let ref = module.getRuntimeFunction(.copyExistentialBuffer, IGF: &IGF)
+        try IGF.builder.buildCall(function: ref, args: [existentialMemory, copyMemory])
+        return copyMemory
+    }
+}
+
+extension ExistentialExportBufferInst : VIRLower {
+    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+        let existentialMemory = try IGF.builder.buildAlloca(type: Runtime.existentialObjectType.importedType(in: module).lowered(module: module))
+        try IGF.builder.buildStore(value: existential.loweredValue!, in: existentialMemory)
+        
+        let ref = module.getRuntimeFunction(.exportExistentialBuffer, IGF: &IGF)
+        return try IGF.builder.buildCall(function: ref, args: [existentialMemory])
+    }
+}
+
+
 
 
 
