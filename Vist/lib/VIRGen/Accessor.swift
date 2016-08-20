@@ -101,8 +101,9 @@ extension Accessor {
                 return try aggregateGetValue() // dont box it if its the same concept
             }
             else {
-                let existentialRef = try referenceBacked().aggregateReference()
-                return try module.builder.build(inst: ExistentialConstructInst(value: existentialRef, existentialType: existentialType, module: module))
+                return try module.builder.build(inst: ExistentialConstructInst(value: aggregateGetValue(),
+                                                                               existentialType: existentialType,
+                                                                               module: module))
             }
         }
         else if case let refCounted as RefCountedAccessor = self {

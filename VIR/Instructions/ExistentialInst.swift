@@ -8,7 +8,7 @@
 
 
 /// Opening an existential box to get a pointer to a member
-final class OpenExistentialPropertyInst: Inst, LValue {
+final class ExistentialProjectPropertyInst: Inst, LValue {
     var existential: PtrOperand
     let propertyName: String, existentialType: ConceptType
     
@@ -38,11 +38,11 @@ final class OpenExistentialPropertyInst: Inst, LValue {
     }
     
     var vir: String {
-        return "\(name) = existential_open \(existential.valueName), !\(propertyName)\(useComment)"
+        return "\(name) = existential_project_member \(existential.valueName), !\(propertyName)\(useComment)"
     }
     
-    func copy() -> OpenExistentialPropertyInst {
-        return OpenExistentialPropertyInst(existential: existential.formCopy(), propertyName: propertyName, existentialType: existentialType, irName: irName)
+    func copy() -> ExistentialProjectPropertyInst {
+        return ExistentialProjectPropertyInst(existential: existential.formCopy(), propertyName: propertyName, existentialType: existentialType, irName: irName)
     }
     
     func setArgs(_ args: [Operand]) {
@@ -57,7 +57,7 @@ final class OpenExistentialPropertyInst: Inst, LValue {
 /// When lowered it calculates the metadata for offsets and constructs
 /// the struct's witness table
 final class ExistentialConstructInst : Inst {
-    var value: PtrOperand
+    var value: Operand
     let existentialType: ConceptType
     let witnessTable: VIRWitnessTable
     
@@ -66,17 +66,17 @@ final class ExistentialConstructInst : Inst {
     var uses: [Operand] = []
     var args: [Operand]
     
-    convenience init(value: LValue, existentialType: ConceptType, module: Module, irName: String? = nil) throws {
-        guard case let nom as NominalType = value.memType else {
+    convenience init(value: Value, existentialType: ConceptType, module: Module, irName: String? = nil) throws {
+        guard case let nom as NominalType = value.type else {
             fatalError()
         }
-        self.init(value: PtrOperand(value),
+        self.init(value: Operand(value),
                   witnessTable: .create(module: module, type: nom, conforms: existentialType),
                   existentialType: existentialType,
                   irName: irName)
     }
     
-    private init(value: PtrOperand, witnessTable: VIRWitnessTable, existentialType: ConceptType, irName: String?) {
+    private init(value: Operand, witnessTable: VIRWitnessTable, existentialType: ConceptType, irName: String?) {
         self.witnessTable = witnessTable
         self.value = value
         self.existentialType = existentialType
@@ -86,14 +86,14 @@ final class ExistentialConstructInst : Inst {
     }
     
     var vir: String {
-        return "\(name) = existential \(value.valueName) in #\(existentialType.explicitName)\(useComment)"
+        return "\(name) = existential_construct \(value.valueName) in #\(existentialType.explicitName)\(useComment)"
     }
     
     func copy() -> ExistentialConstructInst {
         return ExistentialConstructInst(value: value.formCopy(), witnessTable: witnessTable, existentialType: existentialType, irName: irName)
     }
     func setArgs(_ args: [Operand]) {
-        value = args[0] as! PtrOperand
+        value = args[0]
     }
     var parentBlock: BasicBlock?
     var irName: String?

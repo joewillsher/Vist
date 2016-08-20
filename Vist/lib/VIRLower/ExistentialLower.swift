@@ -10,18 +10,22 @@ extension ExistentialConstructInst : VIRLower {
     
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         
-        guard let structType = try value.memType?.getAsStructType() else { fatalError() }
+        guard let structType = try value.type?.getAsStructType() else { fatalError() }
         
-        let memory = try IGF.builder.buildAlloca(type: Runtime.existentialObjectType.lowered(module: module))
-        let ref = module.getRuntimeFunction(.constructExistential, IGF: &IGF)
+        let exMemory = try IGF.builder.buildAlloca(type: Runtime.existentialObjectType.importedType(in: module).lowered(module: module))
+        let structMemory = try IGF.builder.buildAlloca(type: structType.importedType(in: module).lowered(module: module))
+        try IGF.builder.buildStore(value: value.loweredValue!, in: structMemory)
+        let mem = try IGF.builder.buildBitcast(value: structMemory, to: .opaquePointer)
         
-        let mem = try IGF.builder.buildBitcast(value: value.loweredValue!, to: LLVMType.opaquePointer)
+        let type = try structType.getLLVMTypeMetadata(IGF: &IGF, module: module)
         let conf = try structType.generateConformanceMetadata(concept: existentialType, IGF: &IGF, module: module).metadata
-       
-        try IGF.builder.buildCall(function: ref, args: [conf, mem, memory])
+        let nonLocal = LLVMValue.constBool(value: true)
+        
+        let ref = module.getRuntimeFunction(.constructExistential, IGF: &IGF)
+        try IGF.builder.buildCall(function: ref, args: [conf, mem, type, nonLocal, exMemory])
         
         let exType = existentialType.importedType(in: module).lowered(module: module).getPointerType()
-        let bc = try IGF.builder.buildBitcast(value: memory, to: exType)
+        let bc = try IGF.builder.buildBitcast(value: exMemory, to: exType)
         
         return try IGF.builder.buildLoad(from: bc, name: irName)
     }
@@ -47,7 +51,7 @@ extension ExistentialWitnessInst : VIRLower {
     }
 }
 
-extension OpenExistentialPropertyInst : VIRLower {
+extension ExistentialProjectPropertyInst : VIRLower {
     
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         
@@ -64,13 +68,10 @@ extension OpenExistentialPropertyInst : VIRLower {
         let ex = try IGF.builder.buildBitcast(value: existential.loweredValue!, to: exType)
         let conformanceIndex = LLVMValue.constInt(value: 0, size: 32), propertyIndex = LLVMValue.constInt(value: i, size: 32)
         
-        let ref = module.getRuntimeFunction(.getPropertyOffset, IGF: &IGF)
-        let offset = try IGF.builder.buildCall(function: ref, args: [ex, conformanceIndex, propertyIndex])
+        let ref = module.getRuntimeFunction(.getPropertyProjection, IGF: &IGF)
+        let instanceMemberPtr = try IGF.builder.buildCall(function: ref, args: [ex, conformanceIndex, propertyIndex])
 
         let elementPtrType = propertyPtrType.lowered(module: module) // ElTy*.Type
-        let structElementPointer = try IGF.builder.buildStructGEP(ofAggregate: existential.loweredValue!, index: 0, name: irName.+"element_pointer") // i8**
-        let opaqueInstancePointer = try IGF.builder.buildLoad(from: structElementPointer, name: irName.+"opaque_instance_pointer")  // i8*
-        let instanceMemberPtr = try IGF.builder.buildGEP(ofAggregate: opaqueInstancePointer, index: offset)
         return try IGF.builder.buildBitcast(value: instanceMemberPtr, to: elementPtrType, name: irName.+"ptr")  // ElTy*
     }
 }
@@ -79,9 +80,11 @@ extension OpenExistentialPropertyInst : VIRLower {
 
 extension ExistentialProjectInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        let p = try IGF.builder.buildStructGEP(ofAggregate: existential.loweredValue!, index: 0, name: irName.+"projection")
-        let v = try IGF.builder.buildLoad(from: p)
-        return try IGF.builder.buildBitcast(value: v, to: LLVMType.opaquePointer, name: irName)
+        let exType = Runtime.existentialObjectType.importedType(in: module).lowered(module: module).getPointerType()
+        let ex = try IGF.builder.buildBitcast(value: existential.loweredValue!, to: exType)
+        
+        let ref = module.getRuntimeFunction(.getBufferProjection, IGF: &IGF)
+        return try IGF.builder.buildCall(function: ref, args: [ex])
     }
 }
 
@@ -92,8 +95,8 @@ extension NominalType {
     
     func getTypeMetadata(IGF: inout IRGenFunction, module: Module) throws -> TypeMetadata {
         
-        if let g = IGF.module.typeMetadata[name] {
-            return g
+        if let metadata = IGF.module.typeMetadata[name] {
+            return metadata
         }
         
         var conformances: [UnsafeMutablePointer<ConceptConformance>?] = []
@@ -107,9 +110,11 @@ extension NominalType {
         
         let utf8 = UnsafePointer<Int8>(Array(name.nulTerminatedUTF8).copyBuffer())
         let c = conformances.copyBuffer()
+        let size = lowered(module: module).size(unit: .bytes, IGF: IGF)
         
         let md = TypeMetadata(conceptConformanceArr: c,
                               conceptConformanceArrCount: Int32(conformances.count),
+                              size: Int32(size),
                               name: utf8)
         IGF.module.typeMetadata[name] = md
         

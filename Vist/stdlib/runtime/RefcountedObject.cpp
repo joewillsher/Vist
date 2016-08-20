@@ -20,12 +20,12 @@ struct RefcountedObject {
 
 
 __attribute__((always_inline))
-void incrementRefCount(RefcountedObject *object) {
+void incrementRefCount(RefcountedObject *_Nonnull object) {
     __atomic_fetch_add(&object->refCount, 1, __ATOMIC_RELAXED);
 }
 
 __attribute__((always_inline))
-void decrementRefCount(RefcountedObject *object) {
+void decrementRefCount(RefcountedObject *_Nonnull object) {
     __atomic_fetch_sub(&object->refCount, 1, __ATOMIC_RELAXED);
 }
 
@@ -34,12 +34,12 @@ void decrementRefCount(RefcountedObject *object) {
 
 /// allocates a new heap object and returns the refcounted box
 extern "C"
-RefcountedObject *
+RefcountedObject *_Nonnull
 vist_allocObject(uint32_t size) {
     // malloc the object storage
     void *object = malloc(size);
     // calloc the box storage -- need calloc so it is initialised
-    auto refCountedObject = reinterpret_cast<RefcountedObject *>(malloc(sizeof(RefcountedObject)));
+    auto refCountedObject = reinterpret_cast<RefcountedObject *_Nonnull>(malloc(sizeof(RefcountedObject)));
     
     // store the object and initial ref count in the box
     refCountedObject->object = object;
@@ -53,7 +53,7 @@ vist_allocObject(uint32_t size) {
 
 /// Deallocs a heap object
 extern "C"
-void vist_deallocObject(RefcountedObject *object) {
+void vist_deallocObject(RefcountedObject *_Nonnull object) {
 #ifdef REFCOUNT_DEBUG
     printf(">dealloc\t%p\n", object->object);
 #endif
@@ -63,7 +63,7 @@ void vist_deallocObject(RefcountedObject *object) {
 
 /// Releases this capture. If its now unowned we dealloc
 extern "C"
-void vist_releaseObject(RefcountedObject *object) {
+void vist_releaseObject(RefcountedObject *_Nonnull object) {
 #ifdef REFCOUNT_DEBUG
     printf(">release\t%p, rc=%i\n", object->object, object->refCount-1);
 #endif
@@ -77,7 +77,7 @@ void vist_releaseObject(RefcountedObject *object) {
 
 /// Retain an object
 extern "C"
-void vist_retainObject(RefcountedObject *object) {
+void vist_retainObject(RefcountedObject *_Nonnull object) {
     incrementRefCount(object);
 #ifdef REFCOUNT_DEBUG
     printf(">retain \t%p, rc=%i\n", object->object, object->refCount);
@@ -86,7 +86,7 @@ void vist_retainObject(RefcountedObject *object) {
 
 /// Release an object without deallocating
 extern "C"
-void vist_releaseUnownedObject(RefcountedObject *object) {
+void vist_releaseUnownedObject(RefcountedObject *_Nonnull object) {
     decrementRefCount(object);
 #ifdef REFCOUNT_DEBUG
     printf(">release-unowned \t%p, rc=%i\n", object->object, object->refCount);
@@ -95,7 +95,7 @@ void vist_releaseUnownedObject(RefcountedObject *object) {
 
 /// Deallocate a -1 object if it is unowned
 extern "C"
-void vist_deallocUnownedObject(RefcountedObject *object) {
+void vist_deallocUnownedObject(RefcountedObject *_Nonnull object) {
 #ifdef REFCOUNT_DEBUG
     printf(">dealloc-unowned\t%p, rc=%i\n", object->object, object->refCount);
 #endif
@@ -105,13 +105,13 @@ void vist_deallocUnownedObject(RefcountedObject *object) {
 
 /// Get the ref count
 extern "C"
-uint32_t vist_getObjectRefcount(RefcountedObject *object) {
+uint32_t vist_getObjectRefcount(RefcountedObject *_Nonnull object) {
     return object->refCount;
 };
 
 /// Check if the object is singly referenced
 extern "C"
-bool vist_objectHasUniqueReference(RefcountedObject *object) {
+bool vist_objectHasUniqueReference(RefcountedObject *_Nonnull object) {
     return object->refCount == 1;
 };
 

@@ -47,6 +47,7 @@ extension RuntimeObject {
         if let g = IGF.module.global(named: baseName) {
             return g.value
         }
+        
         let children = Mirror(reflecting: self).children
         
         func arrayCount(property label: String?) -> Int32? {
@@ -61,12 +62,12 @@ extension RuntimeObject {
             .map { label, value -> LLVMValue in
                 
                 let newName = baseName + (label ?? "")
-                    if case let ptr as ArrayGenerator = value, let c = arrayCount(property: label) {
-                        return try ptr.lowerArray(IGF: &IGF, module: module, baseName: newName, arrayCount: Int(c))
-                    }
-                    else {
-                        return try value.lower(IGF: &IGF, module: module, baseName: newName)
-                    }
+                if case let ptr as ArrayGenerator = value, let c = arrayCount(property: label) {
+                    return try ptr.lowerArray(IGF: &IGF, module: module, baseName: newName, arrayCount: Int(c))
+                }
+                else {
+                    return try value.lower(IGF: &IGF, module: module, baseName: newName)
+                }
         }
         
         return try LLVMBuilder.constAggregate(type: type(IGF: &IGF, module: module),
@@ -206,13 +207,20 @@ extension UnsafeMutablePointer : RuntimeObject, ArrayGenerator {
             return try IGF.module.createLLVMGlobal(forPointer: self, baseName: baseName, IGF: &IGF, module: module)
         }
     }
-
+    
 }
 
 extension Int32 : RuntimeObject {
-    func type(IGF: inout IRGenFunction, module: Module) -> LLVMType { return LLVMType.intType(size: 32) }
-    func lower(IGF: inout IRGenFunction, baseName: String) -> LLVMValue { return LLVMValue.constInt(value: Int(self), size: 32) }
+    func type(IGF: inout IRGenFunction, module: Module) -> LLVMType {
+        return LLVMType.intType(size: 32)
+    }
+    func lower(IGF: inout IRGenFunction, baseName: String) -> LLVMValue {
+        return LLVMValue.constInt(value: Int(self), size: 32)
+    }
     
+    func lower(IGF: inout IRGenFunction, module: Module, baseName: String) throws -> LLVMValue {
+        return LLVMValue.constInt(value: Int(self), size: 32)
+    }
 }
 
 

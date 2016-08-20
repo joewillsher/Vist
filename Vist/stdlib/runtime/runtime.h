@@ -48,7 +48,7 @@ extern "C" {
         
 #ifdef __cplusplus
         /// Returns the witness at `index` from the static metadata
-        void *getWitness(int32_t index);
+        void *_Nullable getWitness(int32_t index);
 #endif
     };
     
@@ -57,6 +57,7 @@ extern "C" {
         ConceptConformance *_Nullable *_Nonnull  SWIFT_NAME(conceptConformanceArr) conceptConformances;
         int32_t SWIFT_NAME(conceptConformanceArrCount) numConformances;
         
+        int32_t size;
         const char *_Nonnull name;
     };
     
@@ -79,20 +80,39 @@ extern "C" {
     
     struct ExistentialObject {
         /// The instance
-        void *_Nonnull object;
         
+#ifdef __cplusplus
+    protected:
+#endif
+        /// a tagged pointer containing the instance, and in the least
+        /// significant bit, a flag stating whether the ptr is stored
+        /// on the heap and needs deallocating
+        uintptr_t instanceTaggedPtr;
+#ifdef __cplusplus
+    public:
+#endif
         int32_t SWIFT_NAME(conformanceArrCount) numConformances;
         ConceptConformance *_Nullable *_Nonnull SWIFT_NAME(conformanceArr) conformances;
+        TypeMetadata *_Nonnull metadata;
         
 #ifdef __cplusplus
         /// Returns the concept at `index` from the existential's metadata
-        ConceptConformance *getConformance(int32_t index);
+        ConceptConformance *_Nonnull getConformance(int32_t index);
         
-    public:
-        ExistentialObject(void *object,
+        ExistentialObject(uintptr_t object,
+                          TypeMetadata *_Nonnull metadata,
                           int32_t numConformances,
-                          ConceptConformance **conformances)
-            : object(object), numConformances(numConformances), conformances(conformances) {}
+                          ConceptConformance *_Nonnull *_Nullable conformances)
+            : instanceTaggedPtr(object), metadata(metadata), numConformances(numConformances), conformances(conformances) {}
+        
+        __attribute__((always_inline))
+        uintptr_t projectBuffer() {
+            return (uintptr_t)instanceTaggedPtr & ~0x1;
+        }
+        __attribute__((always_inline))
+        bool isNonLocal() {
+            return (uintptr_t)instanceTaggedPtr & 0x1;
+        }
 #endif
     };
     
@@ -100,9 +120,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-
-
-
 
 
 

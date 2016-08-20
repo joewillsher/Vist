@@ -73,6 +73,9 @@ extension Type {
         else if case let c as ConceptType = self { return c }
         else { return nil }
     }
+    func ptrType() -> BuiltinType {
+        return .pointer(to: self)
+    }
 }
 
 

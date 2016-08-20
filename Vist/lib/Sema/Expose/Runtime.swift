@@ -20,14 +20,14 @@ enum Runtime {
     static let refcountedObjectType = StructType.withTypes([BuiltinType.opaquePointer, int32Type], name: "Refcounted")
     static let refcountedObjectPointerType = BuiltinType.pointer(to: refcountedObjectType)
 
-    private static let __typeMetadataType = StructType.withTypes([BuiltinType.pointer(to: BuiltinType.pointer(to: conceptConformanceType)), int32Type, BuiltinType.pointer(to: int8Type)], name: "TypeMetadata")
+    private static let __typeMetadataType = StructType.withTypes([conceptConformanceType.ptrType().ptrType(), int32Type, int32Type, BuiltinType.opaquePointer], name: "TypeMetadata")
     
     
     static let valueWitnessType = StructType.withTypes([BuiltinType.opaquePointer], name: "Witness")
-    static let conceptConformanceType = StructType.withTypes([BuiltinType.opaquePointer/*TypeMetadata *concept*/, BuiltinType.pointer(to: int32Type), int32Type, BuiltinType.pointer(to: witnessTableType)], name: "Conformance")
-    static let witnessTableType = StructType.withTypes([BuiltinType.pointer(to: valueWitnessType), int32Type], name: "WitnessTable")
-    static let typeMetadataType = StructType.withTypes([BuiltinType.pointer(to: BuiltinType.pointer(to: conceptConformanceType)), int32Type, BuiltinType.pointer(to: int8Type)], name: "Metadata")
-    static let existentialObjectType = StructType.withTypes([BuiltinType.opaquePointer, int32Type, BuiltinType.pointer(to: BuiltinType.pointer(to: conceptConformanceType))], name: "Existential")
+    static let conceptConformanceType = StructType.withTypes([BuiltinType.opaquePointer/*TypeMetadata *concept*/, int32Type.ptrType(), int32Type, witnessTableType.ptrType()], name: "Conformance")
+    static let witnessTableType = StructType.withTypes([valueWitnessType.ptrType(), int32Type], name: "WitnessTable")
+    static let typeMetadataType = StructType.withTypes([conceptConformanceType.ptrType().ptrType(), int32Type, int32Type, BuiltinType.pointer(to: int8Type)], name: "Metadata")
+    static let existentialObjectType = StructType.withTypes([BuiltinType.opaquePointer, int32Type, conceptConformanceType.ptrType().ptrType()], name: "Existential")
     
     struct Function {
         let name: String, type: FunctionType
@@ -46,13 +46,20 @@ enum Runtime {
         static let setYieldTarget = Function(name: "vist_setYieldTarget", type: FunctionType(params: [], returns: boolType))
         static let yieldUnwind = Function(name: "vist_yieldUnwind", type: FunctionType(params: [], returns: voidType))
         
-        static let getWitnessMethod = Function(name: "vist_getWitnessMethod", type: FunctionType(params: [BuiltinType.pointer(to: existentialObjectType), int32Type, int32Type], returns: Builtin.opaquePointerType))
-        static let getPropertyOffset = Function(name: "vist_getPropertyOffset", type: FunctionType(params: [BuiltinType.pointer(to: existentialObjectType), int32Type, int32Type], returns: Builtin.int32Type))
+        static let getWitnessMethod = Function(name: "vist_getWitnessMethod",
+                                               type: FunctionType(params: [existentialObjectType.ptrType(), int32Type, int32Type], returns: Builtin.opaquePointerType))
+        static let getPropertyProjection = Function(name: "vist_getPropertyProjection",
+                                                    type: FunctionType(params: [existentialObjectType.ptrType(), int32Type, int32Type], returns: Builtin.opaquePointerType))
+        static let getBufferProjection = Function(name: "vist_getExistentialBufferProjection",
+                                                  type: FunctionType(params: [existentialObjectType.ptrType()], returns: Builtin.opaquePointerType))
         
-        // vist_constructExistential has type '(ExistentialObjectType) -> ExistentialObjectType', but is lowered to 
+        // vist_constructExistential has type '(ExistentialObjectType) -> ExistentialObjectType', but is lowered to
         // define void @testLayout(%struct.ExistentialObject* noalias nocapture sret, %struct.ExistentialObject* byval nocapture readonly align 8)
         // so we cannot use this from swift. Change this so it stores into a ptr param
-        static let constructExistential = Function(name: "vist_constructExistential", type: FunctionType(params: [BuiltinType.pointer(to: conceptConformanceType), BuiltinType.opaquePointer, /*out param=*/BuiltinType.pointer(to: existentialObjectType)], returns: BuiltinType.void))
+        static let constructExistential = Function(name: "vist_constructExistential", type:
+            FunctionType(params: [conceptConformanceType.ptrType(), /*instance=*/BuiltinType.opaquePointer,
+                                  typeMetadataType.ptrType(), /*is nonlocal=*/BuiltinType.bool,
+                                  /*out param=*/existentialObjectType.ptrType()], returns: BuiltinType.void))
     }
 }
 

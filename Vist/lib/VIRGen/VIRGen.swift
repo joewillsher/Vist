@@ -20,6 +20,10 @@ protocol StmtEmitter {
 protocol LValueEmitter: ValueEmitter {
     /// Emit the get/set-accessor for a VIR lvalue
     func emitLValue(module: Module, scope: Scope) throws -> IndirectAccessor
+    func canEmitLValue(module: Module, scope: Scope) throws -> Bool
+}
+extension LValueEmitter {
+    func canEmitLValue(module: Module, scope: Scope) throws -> Bool { return true }
 }
 
 /// A libaray without a main function can emit vir for this
@@ -361,6 +365,10 @@ extension VariableExpr : LValueEmitter {
     func emitLValue(module: Module, scope: Scope) throws -> IndirectAccessor {
         return try scope.variable(named: name)! as! IndirectAccessor
     }
+    
+    func canEmitLValue(module: Module, scope: Scope) throws -> Bool {
+        return try scope.variable(named: name) is LValueEmitter
+    }
 }
 
 extension ReturnStmt : ValueEmitter {
@@ -420,7 +428,8 @@ extension PropertyLookupExpr : LValueEmitter {
         switch object._type {
         case is StructType:
             switch object {
-            case let lValEmitter as LValueEmitter:
+            case let lValEmitter as LValueEmitter
+                where try lValEmitter.canEmitLValue(module: module, scope: scope):
                 // if self is backed by a ptr, do a GEP then load
                 let object = try lValEmitter.emitLValue(module: module, scope: scope)
                 let elPtr = try module.builder.build(inst: StructElementPtrInst(object: object.reference(), property: propertyName))
@@ -433,7 +442,7 @@ extension PropertyLookupExpr : LValueEmitter {
             
         case is ConceptType:
             let object = try self.object.emitRValue(module: module, scope: scope).referenceBacked().reference()
-            let ptr = try module.builder.build(inst: OpenExistentialPropertyInst(existential: object, propertyName: propertyName))
+            let ptr = try module.builder.build(inst: ExistentialProjectPropertyInst(existential: object, propertyName: propertyName))
             return try module.builder.build(inst: LoadInst(address: ptr)).accessor()
             
         default:
@@ -451,7 +460,7 @@ extension PropertyLookupExpr : LValueEmitter {
             
         case is ConceptType:
             let object = try self.object.emitRValue(module: module, scope: scope).referenceBacked().reference()
-            return try module.builder.build(inst: OpenExistentialPropertyInst(existential: object, propertyName: propertyName)).accessor
+            return try module.builder.build(inst: ExistentialProjectPropertyInst(existential: object, propertyName: propertyName)).accessor
             
         default:
             fatalError()

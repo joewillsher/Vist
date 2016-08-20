@@ -83,7 +83,7 @@ final class FunctionApplyInst : Inst, VIRFunctionCall {
     }
     
     var vir: String {
-        return "\(name) = apply \(function.name) \(args.virValueTuple())\(useComment)"
+        return "\(name) = apply \(function.name) \(functionArgs.virValueTuple())\(useComment)"
     }
     var hasSideEffects: Bool { return true }
     
