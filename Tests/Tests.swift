@@ -459,6 +459,15 @@ extension OptimiserTests {
             XCTFail("\(error)")
         }
     }
+    func testPhiPlacementStruct() {
+        // tests phi placement when there is a use which is a struct GEP
+        do {
+            try XCTAssert(testExampleCFGOpt2())
+        }
+        catch {
+            XCTFail("\(error)")
+        }
+    }
     func testPhiPlacement2() {
         XCTAssert(_testFile(name: "PhiPlacement2"))
     }

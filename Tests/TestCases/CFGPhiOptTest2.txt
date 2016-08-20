@@ -1,0 +1,23 @@
+func @main : &thin (#Builtin.Bool) -> #Builtin.Int64 {
+$entry(%cond: #Builtin.Bool):
+  break $b1
+
+$b1:			// preds: entry
+  %1 = int_literal 0 	// user: %iaggr
+  %iaggr = struct %Int, (%1: #Builtin.Int64)
+  cond_break %cond: #Builtin.Bool, $b2, $b3
+
+$b2:			// preds: b1
+  %3 = int_literal 1 	// user: %i2aggr
+  %i2aggr = struct %Int, (%3: #Builtin.Int64) 	// user: %4
+  break $b4(%i2aggr: #Int)
+
+$b3:			// preds: b1
+  %5 = int_literal 2 	// user: %i3aggr
+  %i3aggr = struct %Int, (%5: #Builtin.Int64) 	// user: %6
+  break $b4(%i3aggr: #Int)
+
+$b4(%i.reg: #Int):			// preds: b2, b3
+  %7 = struct_extract %i.reg: #Int, !value 	// user: %8
+  return %7
+}

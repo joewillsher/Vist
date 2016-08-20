@@ -419,8 +419,17 @@ extension PropertyLookupExpr : LValueEmitter {
         
         switch object._type {
         case is StructType:
-            let object = try self.object.emitRValue(module: module, scope: scope)
-            return try module.builder.build(inst: StructExtractInst(object: object.getValue(), property: propertyName)).accessor()
+            switch object {
+            case let lValEmitter as LValueEmitter:
+                // if self is backed by a ptr, do a GEP then load
+                let object = try lValEmitter.emitLValue(module: module, scope: scope)
+                let elPtr = try module.builder.build(inst: StructElementPtrInst(object: object.reference(), property: propertyName))
+                return try module.builder.build(inst: LoadInst(address: elPtr)).accessor()
+            case let rValEmitter:
+                // otherwise just get the struct element
+                let object = try rValEmitter.emitRValue(module: module, scope: scope)
+                return try module.builder.build(inst: StructExtractInst(object: object.getValue(), property: propertyName)).accessor()
+            }
             
         case is ConceptType:
             let object = try self.object.emitRValue(module: module, scope: scope).referenceBacked().reference()

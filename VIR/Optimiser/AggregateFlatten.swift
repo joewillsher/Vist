@@ -49,35 +49,38 @@ enum AggrFlattenPass : OptimisationPass {
     static let maxAttempts = 10
     
     static func run(on function: Function) throws {
+        guard function.hasBody else { return }
+        
+        let tree = function.dominator.analsis
+        
         // run the opt pass while it still wants change
-        for block in function.blocks ?? [] where !block.instructions.isEmpty {
+        for block in tree where !block.instructions.isEmpty {
             var attempt = 0
-            var startInst = block.instructions.first!
             
-            while let tryAgainIndex = try runAggrOpt(block, startingFrom: startInst), attempt < maxAttempts {
+            while let tryAgainBlock = try runAggrOpt(block), attempt < maxAttempts {
                 attempt += 1
-                startInst = tryAgainIndex
+                if tryAgainBlock != block {
+                    try optimiseAncestors(of: block, tree: tree)
+                }
             }
         }
-        
     }
     
-    /// - returns: if not nil, the inst to try optimising again from
-    private static func runAggrOpt(_ block: BasicBlock, startingFrom: Inst) throws -> Inst? {
-        
-        let index = try block.index(of: startingFrom)
-        for inst in block.instructions.lazy.suffix(from: index) {
-            
-            var returnAndGoAgainIndex: Int?
-            
-            /// A helper function to recurse through args of an init inst to find
-            /// other init insts
-            func getChildInits<Type : Inst>(init inst: Inst, ofType: Type.Type) -> [Type] {
-                let member = inst as? Type
-                return (member.map({[$0]}) ?? []) + inst.args
-                    .flatMap { $0.value as? Inst }
-                    .flatMap { getChildInits(init: $0, ofType: Type.self) }
+    private static func optimiseAncestors(of block: BasicBlock, tree: DominatorTree) throws {
+        for ancestor in tree.ancestors(of: tree.getNode(for: block)) {
+            if let again = try runAggrOpt(ancestor.block) {
+                try optimiseAncestors(of: again, tree: tree)
             }
+        }
+    }
+    
+    
+    /// - returns: if not nil, the inst to try optimising again from
+    private static func runAggrOpt(_ block: BasicBlock) throws -> BasicBlock? {
+        
+        for inst in block.instructions {
+            
+            var returnAndGoAgainInst: Inst?
             
             instCheck: switch inst {
             // If we have a struct
@@ -97,10 +100,10 @@ enum AggrFlattenPass : OptimisationPass {
                     // if the element is a tuple/struct -- we may have missed an optimisation
                     // opportunity; try again from there after flattening this
                     if case let inst as TupleCreateInst = member {
-                        returnAndGoAgainIndex = try block.index(of: inst)
+                        returnAndGoAgainInst = inst
                     }
                     else if case let inst as StructInitInst = member  {
-                        returnAndGoAgainIndex = try block.index(of: inst)
+                        returnAndGoAgainInst = inst
                     }
                     
                 }
@@ -120,10 +123,10 @@ enum AggrFlattenPass : OptimisationPass {
                     // if the element is a tuple/struct -- we may have missed an optimisation
                     // opportunity; try again from there after flattening this
                     if case let inst as TupleCreateInst = member {
-                        returnAndGoAgainIndex = try block.index(of: inst)
+                        returnAndGoAgainInst = inst
                     }
                     else if case let inst as StructInitInst = member  {
-                        returnAndGoAgainIndex = try block.index(of: inst)
+                        returnAndGoAgainInst = inst
                     }
                 }
                 
@@ -137,10 +140,10 @@ enum AggrFlattenPass : OptimisationPass {
                 // try again from that point
             case let ex as StructExtractInst:
                 guard case let create as StructInitInst = ex.object.value else { break instCheck }
-                returnAndGoAgainIndex = try block.index(of: create)
+                returnAndGoAgainInst = create
             case let ex as TupleExtractInst:
                 guard case let create as TupleCreateInst = ex.tuple.value else { break instCheck }
-                returnAndGoAgainIndex = try block.index(of: create)
+                returnAndGoAgainInst = create
                 
                 /*
                  We can simplify struct memory insts, given:
@@ -192,7 +195,7 @@ enum AggrFlattenPass : OptimisationPass {
                         // an optimisation opportunity, make sure we go back go back over it
                         if let _ = try? gep.propertyType.getAsTupleType(),
                             case let mem as Inst = gep.object.value {
-                            returnAndGoAgainIndex = try block.index(of: mem)
+                            returnAndGoAgainInst = mem
                         }
 
                         for use in user.uses {
@@ -220,7 +223,7 @@ enum AggrFlattenPass : OptimisationPass {
                         // an optimisation opportunity, make sure we go back go back over it
                         if let _ = try? gep.elementType.getAsStructType(),
                             case let mem as Inst = gep.tuple.value {
-                            returnAndGoAgainIndex = try block.index(of: mem)
+                            returnAndGoAgainInst = mem
                         }
                         
                         for use in user.uses {
@@ -276,8 +279,8 @@ enum AggrFlattenPass : OptimisationPass {
                 continue
             }
             
-            if let i = returnAndGoAgainIndex {
-                return block.instructions[i]
+            if let i = returnAndGoAgainInst {
+                return i.parentBlock!
             }
             
         }

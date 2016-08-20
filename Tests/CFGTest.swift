@@ -97,3 +97,54 @@ func testExampleCFGOpt() throws -> Bool {
     let expected = try String(contentsOfFile: OutputTests.testDir + "/CFGPhiOptTest.txt")
     return expected == fn.vir
 }
+
+func testExampleCFGOpt2() throws -> Bool {
+    let module = Module()
+    let intType = BuiltinType.int(size: 64)
+    let fn = try module.builder.buildFunction(name: "main", type: FunctionType(params: [BuiltinType.bool], returns: intType), paramNames: ["cond"])
+    
+    let b1 = try module.builder.appendBasicBlock(name: "b1")
+    try module.builder.buildBreak(to: b1)
+    module.builder.insertPoint.block = b1
+    
+    
+    let imem = try module.builder.build(inst: AllocInst(memType: StdLib.intType.importedType(in: module), irName: "i"))
+    let i = try module.builder.build(inst: IntLiteralInst(val: 0, size: 64))
+    let iaggr = try module.builder.build(inst: StructInitInst(type: StdLib.intType, values: i, irName: "iaggr"))
+    try module.builder.build(inst: StoreInst(address: imem, value: iaggr))
+    
+    let b2 = try module.builder.appendBasicBlock(name: "b2")
+    let b3 = try module.builder.appendBasicBlock(name: "b3")
+    let b4 = try module.builder.appendBasicBlock(name: "b4")
+    
+    try module.builder.buildCondBreak(if: Operand(fn.param(named: "cond")),
+                                      to: (b2, nil),
+                                      elseTo: (b3, nil))
+    
+    do {
+        module.builder.insertPoint.block = b2
+        let i2 = try module.builder.build(inst: IntLiteralInst(val: 1, size: 64))
+        let i2aggr = try module.builder.build(inst: StructInitInst(type: StdLib.intType, values: i2, irName: "i2aggr"))
+        try module.builder.build(inst: StoreInst(address: imem, value: i2aggr))
+        try module.builder.buildBreak(to: b4)
+    }
+    do {
+        module.builder.insertPoint.block = b3
+        let i3 = try module.builder.build(inst: IntLiteralInst(val: 2, size: 64))
+        let i3aggr = try module.builder.build(inst: StructInitInst(type: StdLib.intType, values: i3, irName: "i3aggr"))
+        try module.builder.build(inst: StoreInst(address: imem, value: i3aggr))
+        try module.builder.buildBreak(to: b4)
+    }
+    do {
+        module.builder.insertPoint.block = b4
+        let ptr = try module.builder.build(inst: StructElementPtrInst(object: imem, property: "value"))
+        let val = try module.builder.build(inst: LoadInst(address: ptr))
+        try module.builder.buildReturn(value: val)
+    }
+    
+    try RegisterPromotionPass.run(on: fn)
+    
+    let expected = try String(contentsOfFile: OutputTests.testDir + "/CFGPhiOptTest2.txt")
+    return expected == fn.vir
+}
+

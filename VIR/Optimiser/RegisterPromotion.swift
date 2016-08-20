@@ -167,15 +167,13 @@ extension RegisterPromotionPass.AllocStackPromoter {
         
         for inst in block.instructions {
             switch inst {
-            case let loadInst as LoadInst where loadInst.address.value === alloc:
-                
+            case let loadInst as LoadInst:
                 // if we already have a running val, replace this load
                 if let val = runningValue {
-                    try loadInst.eraseFromParent(replacingAllUsesWith: val)
+                    try replaceLoad(loadInst, with: val)
                 }
                 
             case let storeInst as StoreInst where storeInst.address.value === alloc:
-                
                 // this becomes the running val
                 runningValue = storeInst.value.value
                 
@@ -199,9 +197,12 @@ extension RegisterPromotionPass.AllocStackPromoter {
     /// - precondition: There is max 1 load or store per block,
     private func fixupMemoryUse() throws {
         
-        // A block's load can be replaced by its live in value
-        for load in loads() {
-            try load.eraseFromParent(replacingAllUsesWith: getLiveInValue(of: load.parentBlock!)!)
+        // for all load insts in the fn, check if it is uses `alloc` or a 
+        // projection thereof
+        for block in dominatorTree {
+            for case let load as LoadInst in block.instructions {
+                try replaceLoad(load, with: getLiveInValue(of: load.parentBlock!)!)
+            }
         }
         
         // the stores can be removed; their value is being sent to the dominator
@@ -214,6 +215,51 @@ extension RegisterPromotionPass.AllocStackPromoter {
         try alloc.eraseFromParent()
     }
     
+    
+    /// If this load is an access of `alloc` or a projection of `alloc` then
+    /// replace its uses with `value` or a member access of `value`
+    /// - parameter value: returns the value we use to replace, lazily evaluated
+    ///                    if `load` is an access/projection of `alloc`
+    func replaceLoad(_ load: LoadInst, with value: @autoclosure () throws -> Value) throws {
+        var op = load.address.value
+        var projection: [Inst] = []
+        
+        allocLoop: while !(op is AllocInst) {
+            switch op {
+            case let structElement as StructElementPtrInst:
+                projection.append(structElement)
+                op = structElement.object.value!
+            case let tupleElement as TupleElementPtrInst:
+                projection.append(tupleElement)
+                op = tupleElement.tuple.value!
+            default:
+                break allocLoop
+            }
+        }
+        
+        // must be the same memory
+        guard op === alloc else { return }
+        
+        var v = try value()
+        
+        for proj in projection {
+            switch proj {
+            case let gep as StructElementPtrInst:
+                let el = try StructExtractInst(object: v, property: gep.propertyName)
+                try gep.parentBlock!.insert(inst: el, after: gep)
+                v = el
+            case let gep as TupleElementPtrInst:
+                let el = try TupleExtractInst(tuple: v, index: gep.elementIndex)
+                try gep.parentBlock!.insert(inst: el, after: gep)
+                v = el
+            default: fatalError()
+            }
+            try proj.eraseFromParent()
+        }
+        
+        try load.eraseFromParent(replacingAllUsesWith: v)
+    }
+    
     /// Replalces every use of the alloc memory in the iterated join set of the tree with
     /// a phi node variable passed as a block param
     ///
@@ -224,7 +270,8 @@ extension RegisterPromotionPass.AllocStackPromoter {
         // - Initial priority queue is the set of sparse nodes (N_α)
         // - This collection must remain ordered increasing dom tree levels, and
         //   uses should work backwards through the priority queue
-        var priorityQueue = sparseNodes()
+        let sparseSet = sparseNodes()
+        var priorityQueue = sparseSet
             .sorted { $0.level <= $1.level }
         
         // all nodes visited, used to prevent re-walking subtrees
@@ -232,42 +279,46 @@ extension RegisterPromotionPass.AllocStackPromoter {
         // list of blocks that require phi placement, these are
         // members of IDF(N_α)
         var phiBlocks: Set<DominatorTree.Node> = []
+        let allocNode = dominatorTree.getNode(for: alloc.parentBlock!)
         
         // walk from the bottom of the dom tree up; in the order
         // of decreasing node depth
-        while let x = priorityQueue.last {
-            defer { priorityQueue.removeLast() }
+        while let rootNode = priorityQueue.last {
+            priorityQueue.removeLast()
             
             // A node 'y ∈ DF(x)' iff
             //  - there exists a 'z ∈ SubTree(x)'
             //  - with a 'z -> y' J-edge
             //  - where 'z.level ≤ y.level'
             
-            // get nodes y in subtree of x
-            for subtreeBlock in dominatorTree.subtree(from: x) {
-                let y = dominatorTree.getNode(for: subtreeBlock)
+            // get nodes z in subtree of x
+            for subtreeBlock in dominatorTree.subtree(from: rootNode) {
+                let z = dominatorTree.getNode(for: subtreeBlock)
+                
+                // if we have already visited this subnode, because we are traversing
+                // the tree from the bottom up, we know its IDF has been added to the
+                // set of phi nodes
+                guard visited.insert(z).inserted else { continue }
                 
                 // get all edges 'z -> y'
-                for pred in subtreeBlock.successors {
-                    let z = dominatorTree.getNode(for: pred)
+                for succBlock in subtreeBlock.successors {
+                    let succ = dominatorTree.getNode(for: succBlock)
                     
-                    // if z has already been visited, don't again
-                    guard !visited.insert(z).inserted else {
-                        continue
-                    }
+                    guard
+                        // 'z -> y' is a J-edge if 'z !sdom y'
+                        !dominatorTree.node(z, strictlyDominates: succ),
+                        // we only want J-edges where 'y.level <= root.level'
+                        succ.level <= rootNode.level,
+                        // the alloc must dominate this phi
+                        dominatorTree.node(allocNode, dominates: succ)
+                        else { continue }
                     
-                    // 'y -> z' is a J-edge if 'y !sdom z'
-                    // ignore J-edges where 'z.level > y.level'
-                    guard !dominatorTree.node(y, strictlyDominates: z), z.level <= y.level else {
-                        continue
-                    }
-                    
-                    // if this is the first visit, add it to the priority queue
-                    if phiBlocks.insert(z).inserted {
+                    // if this is the first visit, and isnt in N_α, add it to the priority queue
+                    if phiBlocks.insert(succ).inserted, !sparseSet.contains(succ) {
                         // insert this node in the priority queue at the index of
                         // other element of the same level
-                        let index = priorityQueue.index { $0.level >= z.level } ?? priorityQueue.endIndex
-                        priorityQueue.insert(z, at: index)
+                        let index = priorityQueue.index { $0.level >= succ.level } ?? priorityQueue.endIndex
+                        priorityQueue.insert(succ, at: index)
                     }
                 }
             }
@@ -351,19 +402,15 @@ fileprivate extension RegisterPromotionPass.AllocStackPromoter {
     /// represent non identity transferrence of the value of the alloc inst
     /// - note: Each node containing a store (apart from the node with 
     ///         the allocation) is an element N_α
-    func sparseNodes() -> [DominatorTree.Node] {
-        return stores()
+    func sparseNodes() -> Set<DominatorTree.Node> {
+        return Set(stores()
             .map { store in dominatorTree.getNode(for: store.parentBlock!) }
-            .filter { node in node.block !== alloc.parentBlock! }
+            .filter { node in node.block !== alloc.parentBlock! })
     }
     
     /// The store instructions using self
     func stores() -> [StoreInst] {
         return alloc.uses.flatMap { $0.user as? StoreInst }
-    }
-    /// The store instructions using self
-    func loads() -> [LoadInst] {
-        return alloc.uses.flatMap { $0.user as? LoadInst }
     }
     
     /// Can this stack memory be promoted to register uses
@@ -371,7 +418,17 @@ fileprivate extension RegisterPromotionPass.AllocStackPromoter {
     ///         and stores
     var isRegisterPromotable: Bool {
         for use in alloc.uses {
-            guard use.user is LoadInst || use.user is StoreInst else { return false }
+            
+            switch use.user {
+            case is LoadInst, is StoreInst:
+                continue
+            case is StructElementPtrInst, is TupleElementPtrInst:
+                for use in use.user!.uses {
+                    guard use.user is LoadInst else { return false }
+                }
+            default:
+                return false
+            }
         }
         return true
     }

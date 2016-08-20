@@ -64,6 +64,18 @@ final class DominatorTree : FunctionAnalysis {
     func subtree(from node: Node) -> DominatorTree {
         return DominatorTree(function: function, root: node)
     }
+    
+    func ancestors(of node: Node) -> [Node] {
+        var ancs: [Node] = []
+        ancs.reserveCapacity(node.level)
+        
+        var c = node
+        while let idom = c.iDom {
+            ancs.append(idom)
+            c = idom
+        }
+        return ancs
+    }
 }
 
 extension DominatorTree {

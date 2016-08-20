@@ -50,3 +50,36 @@ func test :: Bool = (cond) {
 }
 
 
+
+type Box {
+    var a: Int
+}
+
+// CHECK-VIR:
+// VIR: func @foo_tB : &thin (#Bool) -> #Builtin.Void {
+// VIR: $entry(%cond: #Bool):
+// VIR:   %0 = int_literal 1 	// user: %1
+// VIR:   %1 = struct %Int, (%0: #Builtin.Int64) 	// user: %2
+// VIR:   %2 = struct %Box, (%1: #Int) 	// users: %4, %4
+// VIR:   %3 = struct_extract %cond: #Bool, !value 	// user: %4
+// VIR:   cond_break %3: #Builtin.Bool, $entry.true0(%2: #Box), $entry.exit(%2: #Box)
+// VIR:
+// VIR: $entry.true0:			// preds: entry
+// VIR:   %5 = int_literal 2 	// user: %6
+// VIR:   %6 = struct %Int, (%5: #Builtin.Int64) 	// user: %7
+// VIR:   %7 = struct %Box, (%6: #Int) 	// user: %8
+// VIR:   break $entry.exit(%7: #Box)
+// VIR:
+// VIR: $entry.exit(%4.reg: #Box):			// preds: entry, entry.true0
+// VIR:   %9 = struct_extract %4.reg: #Box, !a 	// user: %10
+// VIR:   %10 = call @print_tI (%9: #Int)
+// VIR:   return ()
+// VIR: }
+func foo :: Bool = (cond) {
+    var b = Box 1
+    if cond {
+        b = Box 2
+    }
+    print b.a
+}
+

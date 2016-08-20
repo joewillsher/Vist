@@ -132,22 +132,9 @@ extension BasicBlock {
         }) else { fatalError() }
         
         let application = applications.remove(at: applicationIndex)
-        //let fromBlock = breakInst.parentBlock!
         
         let successorIndex = application.predecessor!.successors.index(of: self)!
         application.predecessor!.successors.remove(at: successorIndex)
-        
-        
-//        // remove this block as successor
-//        for succ in breakInst.successors {
-//            
-//            let i = fromBlock.successors.index { $0 === succ.block }!
-//            fromBlock.successors.remove(at: i)
-//            
-//            if let i = fromBlock.successors.index(where: { $0 === succ.block }) {
-//                fromBlock.successors.remove(at: i)
-//            }
-//        }
     }
     
     /// Helper, the index of `inst` in self or throw
