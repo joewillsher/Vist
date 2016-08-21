@@ -19,7 +19,7 @@ enum LLVMError : VistError {
     case notAFunction, notAGlobal
     case invalidParamCount(expected: Int, got: Int)
     case invalidParamIndex(Int, function: String?)
-    case noSuccessor
+    case noSuccessor, notPhi
     
     var description: String {
         switch self {
@@ -28,6 +28,7 @@ enum LLVMError : VistError {
         case .invalidParamCount(let e, let g): return "Expected \(e) params, got \(g)"
         case .invalidParamIndex(let i, let f): return "No param at index \(i)" + (f.map { " for function '\($0)'" } ?? "")
         case .noSuccessor: return "Inst does not have a successor"
+        case .notPhi: return "Can only add incoming values to a phi node"
         }
     }
 }
@@ -48,7 +49,12 @@ extension LLVMBuilder {
     }
     func position(after: LLVMValue) throws {
         let successor = LLVMGetNextInstruction(after._value)
-        guard successor != nil else { throw error(LLVMError.noSuccessor) }
+        guard successor != nil else {
+            // if we are at the end of a block
+            let parentBlock = LLVMGetInstructionParent(after._value)
+            LLVMPositionBuilderAtEnd(builder, parentBlock)
+            return
+        }
         LLVMPositionBuilderBefore(builder, successor)
     }
     func position(before: LLVMValue) {
@@ -226,7 +232,8 @@ extension LLVMBuilder {
     @discardableResult func buildFree(ptr: LLVMValue, name: String? = nil) throws -> LLVMValue {
         return try wrap(LLVMBuildFree(builder, ptr.val()))
     }
-
+    
+    
 }
 
 extension LLVMBuilder {
@@ -308,6 +315,7 @@ extension LLVMRealPredicate {
 struct LLVMBasicBlock : Dumpable, Hashable {
 //    private
     var block: LLVMBasicBlockRef
+    var phiUses: Set<PhiTrackingOperand> = []
     
 //    private
     init(ref: LLVMBasicBlockRef) { block = ref }
@@ -324,6 +332,10 @@ struct LLVMBasicBlock : Dumpable, Hashable {
     var hashValue: Int { return block.hashValue }
     static func == (l: LLVMBasicBlock, r: LLVMBasicBlock) -> Bool {
         return l.block == r.block
+    }
+    
+    mutating func addPhiUse(_ op: PhiTrackingOperand) {
+        phiUses.insert(op).memberAfterInsert.setLoweredValue(op.loweredValue!)
     }
 }
 
@@ -525,9 +537,13 @@ struct LLVMType : Dumpable {
     }
 }
 
-struct LLVMValue : Dumpable {
+struct LLVMValue : Dumpable, Hashable {
 //    private
     var _value: LLVMValueRef? = nil
+    
+    var parentBlock: LLVMBasicBlock {
+        return LLVMBasicBlock(ref: LLVMGetInstructionParent(_value))
+    }
     
     private func val() throws -> LLVMValueRef? {
         guard let v = _value else { throw NullLLVMRef() }
@@ -566,6 +582,38 @@ struct LLVMValue : Dumpable {
     func dump() { try! LLVMDumpValue(val()) }
     var type: LLVMType { return LLVMType(ref: try! LLVMTypeOf(val())) }
     
+    var hashValue: Int { return _value?.hashValue ?? 0 }
+    static func == (l: LLVMValue, r: LLVMValue) -> Bool {
+        return l._value == r._value
+    }
+    
+    func eraseFromParent(replacingAllUsesWith val: LLVMValue? = nil) {
+        if let val = val {
+            LLVMReplaceAllUsesWith(_value, val._value)
+        }
+        LLVMInstructionEraseFromParent(_value)
+    }
+    
+    /// - precondition: `self` is a Phi node
+    func addPhiIncoming(_ incoming: [(value: LLVMValue, from: LLVMBasicBlock)]) {
+        precondition(LLVMGetInstructionOpcode(_value) == LLVMPHI)
+        
+        var incomingVals = incoming.map { $0.value._value }
+        var incomingBlocks = incoming.map { $0.from.block } as [LLVMValueRef?]
+        
+        LLVMAddIncoming(_value, &incomingVals, &incomingBlocks, UInt32(incomingBlocks.count))
+    }
+    
+    /// - precondition: `self` is a Phi node
+    func incomingBlock(at index: Int) -> LLVMBasicBlock {
+        precondition(LLVMGetInstructionOpcode(_value) == LLVMPHI)
+        return LLVMBasicBlock(ref: LLVMGetIncomingBlock(_value, UInt32(index)))
+    }
+    /// - precondition: `self` is a Phi node
+    func incomingValue(at index: Int) -> LLVMValue {
+        precondition(LLVMGetInstructionOpcode(_value) == LLVMPHI)
+        return LLVMValue(ref: LLVMGetIncomingValue(_value, UInt32(index)))
+    }
 }
 
 struct LLVMGlobalValue : Dumpable {
@@ -573,6 +621,10 @@ struct LLVMGlobalValue : Dumpable {
     
     init(module: LLVMModule, type: LLVMType, name: String) {
         value = LLVMValue(ref: LLVMAddGlobal(module.module, type.type!, name))
+    }
+    
+    var parent: LLVMModule {
+        return LLVMModule(ref: LLVMGetGlobalParent(value._value))
     }
     
 //    private

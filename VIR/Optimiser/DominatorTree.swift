@@ -227,7 +227,11 @@ extension DepthFirstSearchTree {
     /// - parameter block: `n`: the node who's semidominator we will find
     /// - returns: `s`: the semidominator of `block`
     func semidominator(of block: BasicBlock) -> BasicBlock {
-        
+        var considered: Set<BasicBlock> = []
+        return _semidominator(of: block, considered: &considered)
+    }
+
+    private func _semidominator(of block: BasicBlock, considered: inout Set<BasicBlock>) -> BasicBlock {
         var candidates: [BasicBlock] = []
         
         // To find the semidominator of a node n, consider all predecessors v of n in the CFG.
@@ -242,7 +246,9 @@ extension DepthFirstSearchTree {
                 // then for each u that is an ancestor of pred (or u = pred), let semi(u) be a candidate for semi(block).
             else {
                 for u in [pred] + pred.predecessors where !node(u, predecesses: block) {
-                    candidates.append(semidominator(of: u))
+                    // if we have already considered u, dont try again
+                    guard considered.insert(u).inserted else { continue }
+                    candidates.append(_semidominator(of: u, considered: &considered))
                 }
             }
         }
@@ -250,7 +256,9 @@ extension DepthFirstSearchTree {
         return candidates
             .min(by: node(_:predecesses:))
             ?? block
+
     }
+
     
     /// Return the path through the DFST from `block` to `other`
     /// - returns: the path, excluding `other` and `block`

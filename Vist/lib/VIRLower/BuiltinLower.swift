@@ -45,10 +45,11 @@ extension BuiltinInstCall: VIRLower {
             
         case .condfail:
             guard let fn = parentFunction, let current = parentBlock else { fatalError() }
-            let success = try fn.loweredFunction!.appendBasicBlock(named: "\(current.name).cont"), fail = try fn.buildCondFailBlock(IGF: &IGF)
+            var success = try fn.loweredFunction!.appendBasicBlock(named: "\(current.name).cont"), fail = try fn.buildCondFailBlock(IGF: &IGF)
             
             success.move(after: current.loweredBlock!)
             try module.loweredBuilder.buildCondBr(if: lhs, to: fail, elseTo: success)
+            try parentBlock!.splitBlock(backEdge: &success, IGF: &IGF)
             module.loweredBuilder.position(atEndOf: success)
             return .nullptr
             
@@ -118,4 +119,42 @@ extension Function {
     
 }
 
+private extension BasicBlock {
+    
+    /// Corrects any phi nodes which were changed by splitting the block
+    /// - note moves the insert point away from the current position
+    func splitBlock(backEdge new: inout LLVMBasicBlock, IGF: inout IRGenFunction) throws {
+        // for each phi which references this block
+        for phiOperand in loweredBlock!.phiUses {
+            let phi = loweredBlock!.phiUses.remove(phiOperand)!.loweredValue!
+            
+            // move after it, and build a replacement
+            try IGF.builder.position(after: phi)
+            let newPhi = try IGF.builder.buildPhi(type: phi.type)
+            
+            // add the incoming vals
+            let range = 0 ..< Int(LLVMCountIncoming(phi._value!))
+            let incoming = range.map { incomingIndex -> (value: LLVMValue, from: LLVMBasicBlock) in
+                switch (phi.incomingBlock(at: incomingIndex), phi.incomingValue(at: incomingIndex)) {
+                case (loweredBlock!, let val):
+                    // repalce incoming from the old block with the new
+                    return (value: val, from: new)
+                case (let block, let val):
+                    return (value: val, from: block)
+                }
+            }
+            // add thses incoming to the phi
+            newPhi.addPhiIncoming(incoming)
+            phiOperand.setLoweredValue(newPhi)
+            
+            phi.eraseFromParent(replacingAllUsesWith: newPhi)
+            newPhi.name = phi.name
+            // move the phi uses from the old block to the new
+            new.addPhiUse(phiOperand)
+        }
+        
+        // set the current lowered block to be the continuation block
+        loweredBlock = new
+    }
+}
 

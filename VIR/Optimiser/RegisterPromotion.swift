@@ -328,6 +328,8 @@ extension RegisterPromotionPass.AllocStackPromoter {
         try addBlockArguments(phis: phiBlocks)
     }
     
+    private static var count = 0
+    
     private mutating func addBlockArguments(phis: Set<DominatorTree.Node>) throws {
         
         // - Add phi nodes to the dominator frontier nodes
@@ -335,7 +337,8 @@ extension RegisterPromotionPass.AllocStackPromoter {
         //   are not dominated by node, so they require a parameterised entry
         for phiNode in phis {
             // construct the φ param
-            let name = alloc.unformattedName + ".reg"
+            let name = alloc.unformattedName + ".reg.\(RegisterPromotionPass.AllocStackPromoter.count)"
+            RegisterPromotionPass.AllocStackPromoter.count += 1 // FIXME: Hack
             let phi = Param(paramName: name, type: alloc.memType!)
             phiNode.block.addParam(phi)
             placedPhiNodes[phiNode.block] = phi

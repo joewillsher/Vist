@@ -27,6 +27,7 @@ class Param : Value {
     
     let convention: ParamConvention = .in
     
+    /// This param's incoming val
     var phi: LLVMValue? = nil
     /// list of predecessor blocks which have added their phi incoming
     var phiPreds: Set<LLVMBasicBlock> = []
@@ -41,8 +42,8 @@ class Param : Value {
     }
     
     func updateUsesWithLoweredVal(_ val: LLVMValue) {
-        for use in uses { use.setLoweredValue(val) }
         phi = val
+        for use in uses { use.setLoweredValue(val) }
     }
 }
 

@@ -98,7 +98,7 @@ final class PtrOperand : Operand {
 }
 
 
-/// An operand which doesn't capture self to
+/// An operand which doesn't *use* the value they capture
 final class FunctionOperand : Operand {
     
     convenience init(param: Param) {
@@ -137,7 +137,7 @@ final class BlockOperand : Operand {
     override func setLoweredValue(_ val: LLVMValue) {
         let incomingBlock = predBlock.loweredBlock
         // if there is no val we cannot add an incoming
-        guard let value = val._value, let incoming = incomingBlock?.block else {
+        guard let incoming = incomingBlock else {
             loweredValue = nil
             return
         }
@@ -145,8 +145,9 @@ final class BlockOperand : Operand {
         if let i = incomingBlock, param.phiPreds.contains(i) { return }
         
         param.phiPreds.insert(incomingBlock!)
-        var incomingVals: [LLVMValueRef?] = [value], incomingBlocks: [LLVMBasicBlockRef?] = [incoming]
-        LLVMAddIncoming(param.phi!._value!, &incomingVals, &incomingBlocks, 1)
+        param.phi!.addPhiIncoming([(val, incoming)])
+        // set the phi use
+        predBlock.loweredBlock!.addPhiUse(PhiTrackingOperand(param: param, val: param.phi!))
     }
     
     /// access to the underlying phi switch. Normal `setLoweredValue` 
@@ -154,6 +155,34 @@ final class BlockOperand : Operand {
     var phi: LLVMValue {
         get { return loweredValue! }
         set(phi) { loweredValue = phi }
+    }
+}
+
+/// PhiTrackingOperand allows us to update the reference to a lowered
+/// phi; each LLVM block holds a set of PhiTrackingOperands which
+/// reference it, which they must update if they wish to split.
+final class PhiTrackingOperand : Operand, Hashable {
+    
+    var param: Param? { return value as? Param }
+    
+    convenience init(param: Param, val: LLVMValue) {
+        self.init(param)
+        setLoweredValue(val)
+    }
+    
+    override func setLoweredValue(_ val: LLVMValue) {
+        (value as! Param).phi = val
+        for use in param?.uses ?? [] {
+            use.loweredValue = val
+        }
+        loweredValue = val
+    }
+    
+    var hashValue: Int {
+        return loweredValue?.hashValue ?? 0
+    }
+    static func == (l: PhiTrackingOperand, r: PhiTrackingOperand) -> Bool {
+        return l === r
     }
 }
 

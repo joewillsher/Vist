@@ -476,6 +476,15 @@ extension PropertyLookupExpr : LValueEmitter {
         
     }
     
+    func canEmitLValue(module: Module, scope: Scope) throws -> Bool {
+        guard case let o as LValueEmitter = object else { fatalError() }
+        switch object._type {
+        case is StructType: return try o.canEmitLValue(module: module, scope: scope)
+        case is ConceptType: return true
+        default: fatalError()
+        }
+    }
+    
 }
 
 extension BlockExpr : StmtEmitter {

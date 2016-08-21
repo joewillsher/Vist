@@ -143,8 +143,14 @@ extension Function : VIRLower {
             IGF.builder.position(atEndOf: bb.loweredBlock!)
             
             for param in bb.parameters ?? [] {
-                let v = try param.virLower(IGF: &IGF)
-                param.updateUsesWithLoweredVal(v)
+                let val = try param.virLower(IGF: &IGF)
+                param.phi = val
+            }
+        }
+        for bb in dominator.analsis {
+            IGF.builder.position(atEndOf: bb.loweredBlock!)
+            for param in bb.parameters ?? [] {
+                param.updateUsesWithLoweredVal(param.phi!)
             }
         }
         
@@ -210,8 +216,14 @@ extension Param : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         guard let function = parentFunction, let block = parentBlock else { throw VIRError.noParentBlock }
         
-        if let functionParamIndex = function.params?.index(where: {$0.name == name}) {
-            return try function.loweredFunction!.param(at: functionParamIndex)
+        // search entry block
+        if let functionParamIndex = function.params?.index(where: {$0 === self}) {
+            let v = try function.loweredFunction!.param(at: functionParamIndex)
+            // set operands applied to the entry block
+            for operand in try block.args(for: self) {
+                operand.setLoweredValue(v)
+            }
+            return v
         }
         else if let phi = phi {
             return phi
