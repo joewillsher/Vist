@@ -471,6 +471,9 @@ extension OptimiserTests {
     func testPhiPlacement2() {
         XCTAssert(_testFile(name: "PhiPlacement2"))
     }
+    func testPhiPlacementLoop() {
+        XCTAssert(_testFile(name: "PhiPlacement3"))
+    }
 
 }
 

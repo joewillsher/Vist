@@ -1,0 +1,41 @@
+// RUN: -Ohigh -emit-llvm
+// CHECK: LLVM
+
+
+// LLVM-CHECK:
+// LLVM: define void @num_t() #2 {
+// LLVM: entry:
+// LLVM:   br label %loop.cont
+// LLVM:
+// LLVM: loop.cont:                                        ; preds = %entry, %loop.cont2
+// LLVM:   %i_sub4 = phi { i64, i1 } [ { i64 20, i1 false }, %entry ], [ %i_sub, %loop.cont2 ]
+// LLVM:   %value = extractvalue { i64, i1 } %i_sub4, 0
+// LLVM:   %i_add = tail call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %value, i64 1)
+// LLVM:   %overflow1 = extractvalue { i64, i1 } %i_add, 1
+// LLVM:   br i1 %overflow1, label %num.trap, label %loop.cont2
+// LLVM:
+// LLVM: loop.cont2:                                       ; preds = %loop.cont
+// LLVM:   %value3 = extractvalue { i64, i1 } %i_add, 0
+// LLVM:   %0 = insertvalue %Int undef, i64 %value3, 0
+// LLVM:   tail call void @print_tI(%Int %0)
+// LLVM:   %i_sub = tail call { i64, i1 } @llvm.ssub.with.overflow.i64(i64 %value, i64 1)
+// LLVM:   %overflow = extractvalue { i64, i1 } %i_sub, 1
+// LLVM:   br i1 %overflow, label %num.trap, label %loop.cont
+// LLVM:
+// LLVM: num.trap:                                         ; preds = %loop.cont, %loop.cont2
+// LLVM:   tail call void @llvm.trap()
+// LLVM:   unreachable
+// LLVM: }
+func num :: () = {
+    
+    var count = 10
+    var ptr = 21
+    
+    while count != 0 {
+        ptr = ptr - 1
+        print ptr + 1
+        count = count
+    }
+}
+
+

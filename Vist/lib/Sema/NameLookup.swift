@@ -27,8 +27,8 @@ extension Collection where
         
         functionSearch: for (fnName, fnType) in self {
             
-            // base names match
-            guard fnName.demangleName() == appliedName else {
+            // base names match and param counts are the same
+            guard fnName.demangleName() == appliedName, argTypes.count == fnType.params.count else {
                 continue functionSearch
             }
             // if it is a method, does the base satisfy the method's self type
