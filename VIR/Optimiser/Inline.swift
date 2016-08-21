@@ -65,6 +65,9 @@ enum InlinePass : OptimisationPass {
             if try inline(call, calledFunction: function, explosion: &explosion) {
                 // If it was inlined, replace the inst with the explosion
                 try explosion.replaceInst()
+                
+                if call is FunctionCallInst { OptStatistics.functionCallsInlined += 1 }
+                else { OptStatistics.functionApplysInlined += 1 }
             }
         }
     }
@@ -170,3 +173,9 @@ private extension FunctionApplyInst {
         }
     }
 }
+
+extension OptStatistics {
+    static var functionCallsInlined = 0
+    static var functionApplysInlined = 0
+}
+

@@ -202,6 +202,7 @@ extension RegisterPromotionPass.AllocStackPromoter {
         for block in dominatorTree {
             for case let load as LoadInst in block.instructions {
                 try replaceLoad(load, with: getLiveInValue(of: load.parentBlock!)!)
+                OptStatistics.loadsPromotedToPhiUse += 1
             }
         }
         
@@ -209,10 +210,12 @@ extension RegisterPromotionPass.AllocStackPromoter {
         // frontier nodes through the phis already
         for store in stores() {
             try store.eraseFromParent()
+            OptStatistics.storesPromotedToPhiUse += 1
         }
         
         // we can erase the alloc inst
         try alloc.eraseFromParent()
+        OptStatistics.allocationsPromotedToPhi += 1
     }
     
     
@@ -342,6 +345,7 @@ extension RegisterPromotionPass.AllocStackPromoter {
             let phi = Param(paramName: name, type: alloc.memType!)
             phiNode.block.addParam(phi)
             placedPhiNodes[phiNode.block] = phi
+            OptStatistics.phiNodesPlaced += 1
             
             // for each predecessor of the DF node, we add that block's live out
             // value as a phi param of the block's break inst
@@ -435,4 +439,11 @@ fileprivate extension RegisterPromotionPass.AllocStackPromoter {
         }
         return true
     }
+}
+
+extension OptStatistics {
+    static var phiNodesPlaced = 0
+    static var allocationsPromotedToPhi = 0
+    static var storesPromotedToPhiUse = 0
+    static var loadsPromotedToPhiUse = 0
 }

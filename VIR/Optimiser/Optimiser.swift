@@ -30,6 +30,7 @@ struct PassManager {
             try create(pass: CFGFoldPass.self, runOn: function)
             try create(pass: DCEPass.self, runOn: function)
         }
+        
     }
 }
 
@@ -48,6 +49,13 @@ extension PassManager {
     func create<PassType : OptimisationPass>(pass: PassType.Type, runOn target: PassType.PassTarget) throws {
         guard optLevel.rawValue >= pass.minOptLevel.rawValue else { return }
         return try PassType.run(on: target)
+    }
+}
+
+/// An opt pass statistic type
+enum OptStatistics {
+    func description() -> String {
+        return ""
     }
 }
 

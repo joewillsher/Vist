@@ -55,6 +55,7 @@ enum StdLibInlinePass : OptimisationPass {
                         let structType = try call.function.type.returns.getAsStructType()
                         explosion.insertTail(StructInitInst(type: returnType ?? structType, values: virInst, irName: call.irName))
                     }
+                    OptStatistics.stdlibCallsInlined += 1
                 }
                 
                 /// Explode the call to an overflow checking op
@@ -72,6 +73,7 @@ enum StdLibInlinePass : OptimisationPass {
                         let val = try explosion.insert(inst: TupleExtractInst(tuple: virInst, index: 0, irName: "value"))
                         explosion.insertTail(StructInitInst(type: structType, values: val, irName: call.irName))
                     }
+                    OptStatistics.overflowCheckedStdlibCallsInlined += 1
                 }
                 
                 // Now we switch over the mangled function name, if its a stdlib
@@ -129,6 +131,11 @@ enum StdLibInlinePass : OptimisationPass {
     }
 }
 
+extension OptStatistics {
+    static var stdlibCallsInlined = 0
+    static var overflowCheckedStdlibCallsInlined = 0
+}
+
 
 /*
  So the vist
@@ -175,5 +182,6 @@ enum StdLibInlinePass : OptimisationPass {
 	ud2
  ```
  */
+
 
 

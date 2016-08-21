@@ -22,6 +22,7 @@ enum DCEPass : OptimisationPass {
             for inst in block.instructions.reversed() where
                 inst.uses.isEmpty && !inst.hasSideEffects {
                     try inst.eraseFromParent()
+                    OptStatistics.deadInstructionsRemoved += 1
             }
         }
     }
@@ -45,6 +46,7 @@ private enum UnreachableRemovePass : OptimisationPass {
             if case let trap as BuiltinInstCall = inst, trap.inst == .trap {
                 for i in after {
                     try i.eraseFromParent()
+                    OptStatistics.unreachableInstructionsRemoved += 1
                 }
             }
             after.append(inst)
@@ -81,4 +83,8 @@ enum CFGSimplificationPass : OptimisationPass {
     }
 }
 
+extension OptStatistics {
+    static var deadInstructionsRemoved = 0
+    static var unreachableInstructionsRemoved = 0
+}
 

@@ -45,6 +45,7 @@ enum CFGFoldPass : OptimisationPass {
                 try condBreakInst.eraseFromParent(replacingAllUsesWith: br)
                 
                 function.dominator.invalidate()
+                OptStatistics.condBreakChecksRemoved += 1
             }
         }
         
@@ -92,6 +93,8 @@ enum CFGFoldPass : OptimisationPass {
             
             try block.eraseFromParent()
             function.dominator.invalidate()
+            
+            OptStatistics.blocksMerged += 1
         }
         
         
@@ -116,7 +119,14 @@ private extension Function {
         }
         // remove block
         try block.removeFromParent()
+        OptStatistics.deadBlocksRemoved += 1
     }
 }
 
+extension OptStatistics {
+    static var deadBlocksRemoved = 0
+    static var blocksMerged = 0
+    /// How many `cond_break` insts are promoted to `break`
+    static var condBreakChecksRemoved = 0
+}
 

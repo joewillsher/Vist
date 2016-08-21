@@ -68,6 +68,8 @@ enum ConstantFoldingPass : OptimisationPass {
                 let literalOverflow = BoolLiteralInst(val: overflow)
                 try block.insert(inst: literalOverflow, after: inst)
                 
+                OptStatistics.overflowingArithmeticOpsFolded += 1
+                
                 // All uses must be tuple extracts
                 guard let uses = inst.uses.optionalMap({ $0.user as? TupleExtractInst }) else {
                     // if the tuple is used directly (for some reason?) we construct 
@@ -91,6 +93,8 @@ enum ConstantFoldingPass : OptimisationPass {
                     try valueInst.eraseFromParent(replacingAllUsesWith: literalVal)
                 }
                 
+                OptStatistics.arithmeticOpsFolded += 1
+                
             case .condfail:
                 guard case let cond as BoolLiteralInst = inst.args[0].value else { break }
                 
@@ -104,6 +108,7 @@ enum ConstantFoldingPass : OptimisationPass {
                 else {
                     try inst.eraseFromParent()
                 }
+                OptStatistics.overflowChecksFolded += 1
                 
             case .ilte, .ilt, .igte, .igt, .ieq, .ineq:
                 guard
@@ -125,6 +130,8 @@ enum ConstantFoldingPass : OptimisationPass {
                 let resultLiteral = BoolLiteralInst(val: op(lhs.value, rhs.value))
                 try block.insert(inst: resultLiteral, after: inst)
                 try inst.eraseFromParent(replacingAllUsesWith: resultLiteral)
+                
+                OptStatistics.arithmeticOpsFolded += 1
                 
             case .ishl, .ishr, .iand, .ixor, .ior, .idiv, .irem, .iaddoverflow:
                 guard
@@ -149,6 +156,8 @@ enum ConstantFoldingPass : OptimisationPass {
                 try block.insert(inst: resultLiteral, after: inst)
                 try inst.eraseFromParent(replacingAllUsesWith: resultLiteral)
                 
+                OptStatistics.arithmeticOpsFolded += 1
+                
             case .trunc8, .trunc16, .trunc32:
                 guard case let val as IntLiteralInst = inst.args[0].value else { break }
                 
@@ -163,10 +172,18 @@ enum ConstantFoldingPass : OptimisationPass {
                 try block.insert(inst: literal, after: inst)
                 try inst.eraseFromParent(replacingAllUsesWith: literal)
                 
+                OptStatistics.arithmeticOpsFolded += 1
+                
             default:
                 break // not implemented
             }
         }
     }
+}
+
+extension OptStatistics {
+    static var overflowingArithmeticOpsFolded = 0
+    static var arithmeticOpsFolded = 0
+    static var overflowChecksFolded = 0
 }
 

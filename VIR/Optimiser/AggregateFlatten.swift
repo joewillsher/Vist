@@ -108,8 +108,9 @@ enum AggrFlattenPass : OptimisationPass {
                     
                 }
                 // If all struct users have been removed and it has not, remove the init
-                if inst.uses.isEmpty {
-                    try inst.eraseFromParent()
+                if initInst.uses.isEmpty {
+                    try initInst.eraseFromParent()
+                    OptStatistics.structInitsFlattened += 1
                 }
                 
             case let createInst as TupleCreateInst:
@@ -119,7 +120,7 @@ enum AggrFlattenPass : OptimisationPass {
                     let member = tupleMembers[extract.elementIndex]
                     // replace the extract inst with the member
                     try extract.eraseFromParent(replacingAllUsesWith: member)
-
+                    
                     // if the element is a tuple/struct -- we may have missed an optimisation
                     // opportunity; try again from there after flattening this
                     if case let inst as TupleCreateInst = member {
@@ -134,7 +135,7 @@ enum AggrFlattenPass : OptimisationPass {
                 if inst.uses.isEmpty {
                     try inst.eraseFromParent()
                 }
-                
+                OptStatistics.tupleInitsFlattened += 1
                 
                 // If we hit a struct or tuple which takes an struct/tuple init
                 // try again from that point
@@ -274,6 +275,7 @@ enum AggrFlattenPass : OptimisationPass {
                 }
                 
                 try allocInst.eraseFromParent()
+                OptStatistics.aggrMemoryFlattened += 1
                 
             default:
                 continue
@@ -343,5 +345,11 @@ extension AllocInst {
         
         return true
     }
+}
+
+extension OptStatistics {
+    static var structInitsFlattened = 0
+    static var tupleInitsFlattened = 0
+    static var aggrMemoryFlattened = 0
 }
 
