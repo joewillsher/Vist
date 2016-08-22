@@ -121,9 +121,14 @@ extension Accessor {
 final class ExistentialRefAccessor : IndirectAccessor {
     
     var mem: LValue
-    var isUsed = false
+    
+    /// Does this accessor abstract the allocation of the existential?
+    private let canSeeInit: Bool
+    private var isUsed = false
+    
     init(memory: LValue) throws {
         self.mem = memory
+        self.canSeeInit = memory is ExistentialConstructInst
         try module.builder.build(inst: ExistentialExportBufferInst(existential: mem))
     }
     /// allocates memory and defensively exports it
@@ -132,10 +137,15 @@ final class ExistentialRefAccessor : IndirectAccessor {
         try module.builder.build(inst: StoreInst(address: mem, value: value))
         try module.builder.build(inst: ExistentialExportBufferInst(existential: mem))
         self.mem = mem
+        self.canSeeInit = false
     }
     
     func release() throws {
-        try module.builder.build(inst: ExistentialDeleteBufferInst(existential: mem))
+        // If this accessor abstracts the allocation, we can delete it when this scope
+        // releases its use
+        if canSeeInit {
+            try module.builder.build(inst: ExistentialDeleteBufferInst(existential: mem))
+        }
     }
     
     func getValue() throws -> Value {
