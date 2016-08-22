@@ -194,7 +194,7 @@ extension InitDecl : DeclTypeProvider {
         
         let params = try typeRepr.params(scope: scope)
         
-        let initialiserFunctionType = FunctionType(params: params, returns: parentType)
+        let initialiserFunctionType = FunctionType(params: params, returns: parentType, callingConvention: .initialiser)
         mangledName = parentName.mangle(type: initialiserFunctionType)
         typeRepr.type = initialiserFunctionType
         

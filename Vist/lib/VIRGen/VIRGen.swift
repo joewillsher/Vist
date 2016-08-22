@@ -147,7 +147,7 @@ extension StringLiteral : ValueEmitter {
         let isUTFU = try module.builder.build(inst: BoolLiteralInst(val: string.isUTF8Encoded, irName: "isUTF8"))
         
         let paramTypes: [Type] = [BuiltinType.opaquePointer, BuiltinType.int(size: 64), BuiltinType.bool]
-        let initName = "String".mangle(type: FunctionType(params: paramTypes, returns: StdLib.stringType))
+        let initName = "String".mangle(type: FunctionType(params: paramTypes, returns: StdLib.stringType, callingConvention: .initialiser))
         let initialiser = try module.getOrInsertStdLibFunction(mangledName: initName)!
         let std = try module.builder.buildFunctionCall(function: initialiser,
                                                        args: [Operand(string), Operand(length), Operand(isUTFU)])
@@ -388,14 +388,15 @@ extension ReturnStmt : ValueEmitter {
             try retVal.release() // FIXME: CHECK THIS
         }
         
-        var boxed = try retVal.boxedAggregateGetValue(expectedType: expectedReturnType, module: module)
+        let boxed = try retVal.boxedAggregateGetValue(expectedType: expectedReturnType, module: module)
+            .accessor().owningAccessor().aggregateGetValue()
         
-        // if returning an existential, export the buffer
-        if let _ = try? boxed.type?.getAsConceptType() {
-            // copy buffer to heap
-            let copied = try module.builder.build(inst: ExistentialCopyBufferInst(existential: boxed, irName: "escaping"))
-            boxed = try module.builder.build(inst: LoadInst(address: copied))
-        }
+//        // if returning an existential, export the buffer
+//        if let _ = try? boxed.type?.getAsConceptType() {
+//            // copy buffer to heap
+//            let copied = try module.builder.build(inst: ExistentialCopyBufferInst(existential: boxed, irName: "escaping"))
+//            boxed = try module.builder.build(inst: LoadInst(address: copied))
+//        }
         
         return try module.builder.buildReturn(value: boxed).accessor()
     }

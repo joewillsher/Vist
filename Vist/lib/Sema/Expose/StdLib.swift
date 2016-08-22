@@ -108,17 +108,17 @@ enum StdLib {
 
         //         initialisers
         // ones which take Builtin types are used to wrap literals
-        ("Int",     FunctionType(params: [BuiltinType.int(size: 64)],   returns: intType)),
-        ("Int",     FunctionType(params: [intType],                     returns: intType)),
-        ("Int32",   FunctionType(params: [BuiltinType.int(size: 32)],   returns: int32Type)),
-        ("Int32",   FunctionType(params: [int32Type],                   returns: int32Type)),
-        ("Bool",    FunctionType(params: [BuiltinType.bool],            returns: boolType)),
-        ("Bool",    FunctionType(params: [boolType],                    returns: intType)),
-        ("Double",  FunctionType(params: [BuiltinType.float(size: 64)], returns: doubleType)),
-        ("Double",  FunctionType(params: [doubleType],                  returns: intType)),
-        ("Range",   FunctionType(params: [intType, intType],            returns: rangeType)),
-        ("Range",   FunctionType(params: [rangeType],                   returns: rangeType)),
-        ("String",  FunctionType(params: [BuiltinType.opaquePointer, BuiltinType.int(size: 64), BuiltinType.bool], returns: stringType)),
+        ("Int",     FunctionType(params: [BuiltinType.int(size: 64)],   returns: intType, callingConvention: .initialiser)),
+        ("Int",     FunctionType(params: [intType],                     returns: intType, callingConvention: .initialiser)),
+        ("Int32",   FunctionType(params: [BuiltinType.int(size: 32)],   returns: int32Type, callingConvention: .initialiser)),
+        ("Int32",   FunctionType(params: [int32Type],                   returns: int32Type, callingConvention: .initialiser)),
+        ("Bool",    FunctionType(params: [BuiltinType.bool],            returns: boolType, callingConvention: .initialiser)),
+        ("Bool",    FunctionType(params: [boolType],                    returns: intType, callingConvention: .initialiser)),
+        ("Double",  FunctionType(params: [BuiltinType.float(size: 64)], returns: doubleType, callingConvention: .initialiser)),
+        ("Double",  FunctionType(params: [doubleType],                  returns: intType, callingConvention: .initialiser)),
+        ("Range",   FunctionType(params: [intType, intType],            returns: rangeType, callingConvention: .initialiser)),
+        ("Range",   FunctionType(params: [rangeType],                   returns: rangeType, callingConvention: .initialiser)),
+        ("String",  FunctionType(params: [BuiltinType.opaquePointer, BuiltinType.int(size: 64), BuiltinType.bool], returns: stringType, callingConvention: .initialiser)),
         
         // shim fns
         ("vist_cshim_print", FunctionType(params: [BuiltinType.int(size: 64)], returns: voidType)),

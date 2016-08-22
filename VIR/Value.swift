@@ -87,11 +87,17 @@ extension Value {
             if case let nominal as NominalType = to, nominal.isHeapAllocated {
                 return RefCountedAccessor(refcountedBox: lVal)
             }
+            else if let _ = try? to.getAsConceptType() {
+                return ExistentialRefAccessor(memory: lVal)
+            }
             else {
                 // BUG: Accessing self in a method and using it in if expressions breaks
                 // stuff -- the accessor is a ValAccessor so self has type Self*
                 return RefAccessor(memory: lVal)
             }
+        }
+        else if let _ = try? type?.getAsConceptType() {
+            return ExistentialAccessor(value: self)
         }
         else {
             return ValAccessor(value: self)

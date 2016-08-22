@@ -31,6 +31,8 @@ func int64ToString :: Int -> String = (number) {
         
         Builtin.opaque_store ptr char // store char in string
         
+        //vist_cshim_print val.value
+
         val = val / 10 // remove the last digit we just added
         bufferSize = bufferSize + 1 // increment buffer size
     }
@@ -43,10 +45,14 @@ func int64ToString :: Int -> String = (number) {
         Builtin.opaque_store ptr char
         bufferSize = bufferSize + 1 // inc buffer size
     }
-    
-    let isUTF8 = true
-    let s = String ptr bufferSize.value isUTF8.value
-    return s
+
+    // workaround: something in the phi placement opt is messing up this function
+    vist_cshim_print number.value
+    return ""
+
+    //let isUTF8 = true
+    //let s = String ptr bufferSize.value isUTF8.value
+    //return s
 }
 
 type Int {

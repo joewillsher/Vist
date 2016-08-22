@@ -58,12 +58,9 @@ void vist_constructExistential(ConceptConformance *_Nonnull conformance,
 RUNTIME_COMPILER_INTERFACE
 void vist_deallocExistentialBuffer(ExistentialObject *_Nonnull existential) {
     // if stored on the heap, dealloc it
-    if (existential->isNonLocal()) {
-//        printf("dealloc: %p\n", existential->projectBuffer());
-        free((void*)existential->projectBuffer());
-    } else {
-//        printf("dealloc_stack: %p\n", existential->projectBuffer());
-    }
+    if (existential->isNonLocal())
+        if (auto buff = (void *)existential->projectBuffer())
+            free(buff);
 }
 
 RUNTIME_COMPILER_INTERFACE
@@ -107,6 +104,7 @@ vist_getExistentialBufferProjection(ExistentialObject *_Nonnull existential) {
 
 RUNTIME_COMPILER_INTERFACE
 void vist_exportExistentialBuffer(ExistentialObject *_Nonnull existential) {
+    if (existential->isNonLocal()) return;
     auto mem = malloc(existential->metadata->size);
     // copy stack into new buffer
     memcpy(mem, (void*)existential->projectBuffer(), existential->metadata->size);

@@ -194,18 +194,18 @@ final class ExistentialProjectInst : Inst, LValue {
 
 /// Places the existential buffer on the heap
 final class ExistentialExportBufferInst : Inst {
-    var existential: Operand
+    var existential: PtrOperand
     
     var type: Type? { return nil }
     
     var uses: [Operand] = []
     var args: [Operand]
     
-    convenience init(existential: Value, irName: String? = nil) throws {
-        self.init(existential: Operand(existential), irName: irName)
+    convenience init(existential: LValue, irName: String? = nil) throws {
+        self.init(existential: PtrOperand(existential), irName: irName)
     }
     
-    private init(existential: Operand, irName: String?) {
+    private init(existential: PtrOperand, irName: String?) {
         self.existential = existential
         self.args = [existential]
         initialiseArgs()
@@ -215,7 +215,7 @@ final class ExistentialExportBufferInst : Inst {
     var hasSideEffects: Bool { return true }
     
     var vir: String {
-        return "\(name) = existential_export_buffer \(existential.valueName)\(useComment)"
+        return "existential_export_buffer \(existential.valueName)\(useComment)"
     }
     
     func copy() -> ExistentialExportBufferInst {
@@ -223,7 +223,7 @@ final class ExistentialExportBufferInst : Inst {
     }
     
     func setArgs(_ args: [Operand]) {
-        existential = args[0]
+        existential = args[0] as! PtrOperand
     }
     var parentBlock: BasicBlock?
     var irName: String?
@@ -252,7 +252,7 @@ final class ExistentialDeleteBufferInst : Inst {
     var hasSideEffects: Bool { return true }
     
     var vir: String {
-        return "\(name) = existential_delete_buffer \(existential.valueName)\(useComment)"
+        return "existential_delete_buffer \(existential.valueName)\(useComment)"
     }
     
     func copy() -> ExistentialDeleteBufferInst {

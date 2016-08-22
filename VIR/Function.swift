@@ -20,8 +20,8 @@ final class Function : VIRElement {
     var uses: [Operand] = []
     
     // Attrs
-    var visibility: Visibility = .`internal`
-    var inlineRequirement: InlineRequirement = .`default`
+    var visibility: Visibility = .internal
+    var inlineRequirement: InlineRequirement = .default
     var attributes: Attributes = []
     
     private(set) var globalLifetimes: [GlobalValue.Lifetime] = []
