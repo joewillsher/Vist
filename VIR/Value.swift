@@ -88,7 +88,7 @@ extension Value {
                 return RefCountedAccessor(refcountedBox: lVal)
             }
             else if let _ = try? to.getAsConceptType() {
-                return ExistentialRefAccessor(memory: lVal)
+                return try ExistentialRefAccessor(memory: lVal)
             }
             else {
                 // BUG: Accessing self in a method and using it in if expressions breaks
@@ -96,8 +96,8 @@ extension Value {
                 return RefAccessor(memory: lVal)
             }
         }
-        else if let _ = try? type?.getAsConceptType() {
-            return ExistentialAccessor(value: self)
+        else if let t = type, let concept = try? t.getAsConceptType() {
+            return try ExistentialRefAccessor(value: self, type: concept, module: module)
         }
         else {
             return ValAccessor(value: self)

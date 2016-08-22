@@ -25,9 +25,7 @@ extension ExistentialConstructInst : VIRLower {
         try IGF.builder.buildCall(function: ref, args: [conf, mem, type, nonLocal, exMemory])
         
         let exType = existentialType.importedType(in: module).lowered(module: module).getPointerType()
-        let bc = try IGF.builder.buildBitcast(value: exMemory, to: exType)
-        
-        return try IGF.builder.buildLoad(from: bc, name: irName)
+        return try IGF.builder.buildBitcast(value: exMemory, to: exType)
     }
 }
 
@@ -90,25 +88,19 @@ extension ExistentialProjectInst : VIRLower {
 
 extension ExistentialDeleteBufferInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        // alloc memory to store the existential into
-        let existentialMemory = try IGF.builder.buildAlloca(type: Runtime.existentialObjectType.importedType(in: module).lowered(module: module))
-        try IGF.builder.buildStore(value: existential.loweredValue!, in: existentialMemory)
         // call into the runtime to delete the existential's buffer
         let ref = module.getRuntimeFunction(.deallocExistentialBuffer, IGF: &IGF)
-        return try IGF.builder.buildCall(function: ref, args: [existentialMemory])
+        return try IGF.builder.buildCall(function: ref, args: [existential.loweredValue!])
     }
 }
 extension ExistentialCopyBufferInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        // alloc memory to store the existential into
-        let existentialMemory = try IGF.builder.buildAlloca(type: Runtime.existentialObjectType.importedType(in: module).lowered(module: module))
-        try IGF.builder.buildStore(value: existential.loweredValue!, in: existentialMemory)
         // alloc the out memory
         let copyMemory = try IGF.builder.buildAlloca(type: Runtime.existentialObjectType.importedType(in: module).lowered(module: module))
         // call into the runtime to copy the existential (and copy its
         // buffer onto the heap)
         let ref = module.getRuntimeFunction(.copyExistentialBuffer, IGF: &IGF)
-        try IGF.builder.buildCall(function: ref, args: [existentialMemory, copyMemory])
+        try IGF.builder.buildCall(function: ref, args: [existential.loweredValue!, copyMemory])
         return copyMemory
     }
 }

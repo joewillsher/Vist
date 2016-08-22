@@ -134,8 +134,8 @@ enum AggrFlattenPass : OptimisationPass {
                 // If all struct users have been removed and it has not, remove the init
                 if inst.uses.isEmpty {
                     try inst.eraseFromParent()
+                    OptStatistics.tupleInitsFlattened += 1
                 }
-                OptStatistics.tupleInitsFlattened += 1
                 
                 // If we hit a struct or tuple which takes an struct/tuple init
                 // try again from that point

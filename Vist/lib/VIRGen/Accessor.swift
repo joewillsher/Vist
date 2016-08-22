@@ -100,97 +100,60 @@ extension Accessor {
     ///
     /// `func foo :: AConcept = ...` is called as `foo aConformant`. If aConformant
     /// is not already an existential we must construct one.
-    func boxedAggregateGetValue(expectedType: Type?, module: Module) throws -> Value {
+    func coercedAccessor(to expectedType: Type?, module: Module) throws -> Accessor {
         
         // if the function expects an existential, we construct one
-        if case let existentialType as ConceptType = expectedType?.getConcreteNominalType() {
-            if storedType?.mangledName == existentialType.mangledName {
-                return try aggregateGetValue() // dont box it if its the same concept
-            }
-            else {
-                return try module.builder.build(inst: ExistentialConstructInst(value: aggregateGetValue(),
-                                                                               existentialType: existentialType,
-                                                                               module: module))
-            }
+        if case let existentialType as ConceptType = expectedType?.getConcreteNominalType(),
+            // dont box it if it is already boxed
+            storedType?.mangledName != existentialType.mangledName {
+            let mem = try module.builder.build(inst: ExistentialConstructInst(value: aggregateGetValue(),
+                                                                              existentialType: existentialType,
+                                                                              module: module))
+            return try ExistentialRefAccessor(memory: mem)
         }
-        else if case let refCounted as RefCountedAccessor = self {
-            // retain the parameters -- pass them in at +1 so the function can release them at its end
-            return refCounted.aggregateReference()
-        }
-            // if its a nominal type we get the object and pass it in
         else {
-            return try aggregateGetValue()
+            return self
         }
     }
 }
 
-
-final class ExistentialAccessor : Accessor {
-    
-    private var value: Value
-    private var isNonLocal = true
-    init(value: Value) {
-        self.value = value
-    }
-    
-    func getValue() throws -> Value {
-//        return value
-        let copy = try module.builder.build(inst: ExistentialCopyBufferInst(existential: value))
-        return try module.builder.build(inst: LoadInst(address: copy))
-    }
-    
-    func release() throws {
-        try module.builder.build(inst: ExistentialDeleteBufferInst(existential: value))
-    }
-    
-    /// Returns the accessor of an owned value
-    func owningAccessor() throws -> Accessor {
-        let mem = try module.builder.build(inst: AllocInst(memType: value.type!.importedType(in: module)))
-        try module.builder.build(inst: StoreInst(address: mem, value: value))
-        try module.builder.build(inst: ExistentialExportBufferInst(existential: mem))
-        return ExistentialRefAccessor(memory: mem, isNonLocal: true)
-    }
-    
-    /// Alloc a new accessor and store self into it.
-    /// - returns: a reference backed *copy* of `self`
-    func referenceBacked() throws -> IndirectAccessor {
-        let mem = try module.builder.build(inst: AllocInst(memType: value.type!.importedType(in: module)))
-        let accessor = ExistentialRefAccessor(memory: mem)
-        try accessor.setValue(value)
-        return accessor
-    }
-    
-    var storedType: Type? { return value.type }
-    var module: Module { return value.module }
-}
 
 final class ExistentialRefAccessor : IndirectAccessor {
     
     var mem: LValue
-    private var isNonLocal: Bool
-    init(memory: LValue, isNonLocal: Bool = false) {
+    var isUsed = false
+    init(memory: LValue) throws {
         self.mem = memory
-        self.isNonLocal = isNonLocal
+        try module.builder.build(inst: ExistentialExportBufferInst(existential: mem))
+    }
+    /// allocates memory and defensively exports it
+    init(value: Value, type: ConceptType, module: Module) throws {
+        let mem = try module.builder.build(inst: AllocInst(memType: type.importedType(in: module)))
+        try module.builder.build(inst: StoreInst(address: mem, value: value))
+        try module.builder.build(inst: ExistentialExportBufferInst(existential: mem))
+        self.mem = mem
     }
     
     func release() throws {
-        if isNonLocal {
-            try module.builder.build(inst: ExistentialDeleteBufferInst(existential: aggregateGetValue()))
-        }
+        try module.builder.build(inst: ExistentialDeleteBufferInst(existential: mem))
     }
     
-    func retain() throws {
-        if !isNonLocal {
-            try module.builder.build(inst: ExistentialExportBufferInst(existential: aggregateReference()))
-            isNonLocal = true
-        }
-    }
-
     func getValue() throws -> Value {
+        defer { isUsed = true }
+        guard isUsed else {
+            return try module.builder.build(inst: LoadInst(address: mem))
+        }
         let copy = try module.builder.build(inst: ExistentialCopyBufferInst(existential: mem))
         return try module.builder.build(inst: LoadInst(address: copy))
     }
-
+    
+    func aggregateGetValue() throws -> Value {
+        return try getValue()
+    }
+    
+    func getMemCopy() throws -> IndirectAccessor {
+        return try ExistentialRefAccessor(memory: module.builder.build(inst: ExistentialCopyBufferInst(existential: mem)))
+    }
 }
 
 

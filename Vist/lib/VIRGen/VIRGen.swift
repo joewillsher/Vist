@@ -198,7 +198,7 @@ extension FunctionCall/*: VIRGenerator*/ {
         return try zip(argArr, fnType.params).map { rawArg, paramType in
             let arg = try rawArg.emitRValue(module: module, scope: scope)
             try arg.retain()
-            return try arg.boxedAggregateGetValue(expectedType: paramType, module: module)
+            return try arg.coercedAccessor(to: paramType, module: module).aggregateGetValue()
         }
             .map(Operand.init(_:))
     }
@@ -388,16 +388,9 @@ extension ReturnStmt : ValueEmitter {
             try retVal.release() // FIXME: CHECK THIS
         }
         
-        let boxed = try retVal.boxedAggregateGetValue(expectedType: expectedReturnType, module: module)
-            .accessor().owningAccessor().aggregateGetValue()
-        
-//        // if returning an existential, export the buffer
-//        if let _ = try? boxed.type?.getAsConceptType() {
-//            // copy buffer to heap
-//            let copied = try module.builder.build(inst: ExistentialCopyBufferInst(existential: boxed, irName: "escaping"))
-//            boxed = try module.builder.build(inst: LoadInst(address: copied))
-//        }
-        
+        let boxed = try retVal
+            .coercedAccessor(to: expectedReturnType, module: module)
+            .aggregateGetValue()
         return try module.builder.buildReturn(value: boxed).accessor()
     }
 }
@@ -799,7 +792,8 @@ extension MutationExpr : ValueEmitter {
     func emitRValue(module: Module, scope: Scope) throws -> Accessor {
         
         let rval = try value.emitRValue(module: module, scope: scope)
-            .boxedAggregateGetValue(expectedType: object._type, module: module)
+            .coercedAccessor(to: object._type, module: module)
+            .aggregateGetValue()
         guard case let lhs as LValueEmitter = object else { fatalError() }
         
         // TODO: test aggregate stuff

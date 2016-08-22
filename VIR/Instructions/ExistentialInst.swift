@@ -56,13 +56,14 @@ final class ExistentialProjectPropertyInst : Inst, LValue {
 ///
 /// When lowered it calculates the metadata for offsets and constructs
 /// the struct's witness table
-final class ExistentialConstructInst : Inst {
+final class ExistentialConstructInst : Inst, LValue {
     var value: Operand
     let existentialType: ConceptType
     let witnessTable: VIRWitnessTable
     var isLocal: Bool
     
-    var type: Type? { return existentialType.importedType(in: module) }
+    var memType: Type? { return existentialType.importedType(in: module) }
+    var type: Type? { return memType?.ptrType() }
     
     var uses: [Operand] = []
     var args: [Operand]
@@ -88,7 +89,7 @@ final class ExistentialConstructInst : Inst {
     }
     
     var vir: String {
-        return "\(name) = \(isLocal ? "existential_construct_local" : "existential_construct") \(value.valueName) in #\(existentialType.explicitName)\(useComment)"
+        return "\(name) = \(isLocal ? "existential_construct" : "existential_construct_nonlocal") \(value.valueName) in #\(existentialType.explicitName)\(useComment)"
     }
     
     func copy() -> ExistentialConstructInst {
@@ -267,7 +268,7 @@ final class ExistentialDeleteBufferInst : Inst {
 }
 
 final class ExistentialCopyBufferInst : Inst, LValue {
-    var existential: Operand
+    var existential: PtrOperand
     
     var type: Type? { return existential.type?.ptrType() }
     var memType: Type? { return existential.type }
@@ -275,11 +276,11 @@ final class ExistentialCopyBufferInst : Inst, LValue {
     var uses: [Operand] = []
     var args: [Operand]
     
-    convenience init(existential: Value, irName: String? = nil) throws {
-        self.init(existential: Operand(existential), irName: irName)
+    convenience init(existential: LValue, irName: String? = nil) throws {
+        self.init(existential: PtrOperand(existential), irName: irName)
     }
     
-    private init(existential: Operand, irName: String?) {
+    private init(existential: PtrOperand, irName: String?) {
         self.existential = existential
         self.args = [existential]
         initialiseArgs()
@@ -295,7 +296,7 @@ final class ExistentialCopyBufferInst : Inst, LValue {
     }
     
     func setArgs(_ args: [Operand]) {
-        existential = args[0]
+        existential = args[0] as! PtrOperand
     }
     var parentBlock: BasicBlock?
     var irName: String?
