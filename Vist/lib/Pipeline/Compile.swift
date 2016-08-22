@@ -277,9 +277,13 @@ func compileDocuments(
     
     // write out
     let optIRPath = "\(currentDirectory)/\(file).ll"
-    if options.contains(.preserveTempFiles) {
-        try llvmModule.description().write(toFile: optIRPath, atomically: true, encoding: .utf8)
+    try llvmModule.description().write(toFile: optIRPath, atomically: true, encoding: .utf8)
+    defer {
+        if !options.contains(.preserveTempFiles) {
+            try! FileManager.default.removeItem(atPath: optIRPath)
+        }
     }
+    
     if options.contains(.dumpLLVMIR) {
         print(llvmModule.description())
         return
