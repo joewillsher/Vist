@@ -89,7 +89,7 @@ extension Function {
 
 extension Module {
     var vir: String {
-        let t = typeList.map { $0.declVIR }
+        let t = typeList.values.map { $0.declVIR }
         let f = functions.map { $0.vir }
         let g = globalValues.map { "global \($0.vir)" }
         let w = witnessTables.map { $0.vir }

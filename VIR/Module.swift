@@ -18,7 +18,7 @@
     - During lowering it holds a reference to a LLVM module and builder
  */
 final class Module : VIRElement {
-    private(set) var functions: Set<Function> = [], typeList: Set<TypeAlias> = []
+    private(set) var functions: Set<Function> = [], typeList: [String: TypeAlias] = [:]
     var witnessTables: [VIRWitnessTable] = []
     var globalValues: Set<GlobalValue> = []
     var builder: Builder!
@@ -36,19 +36,19 @@ final class Module : VIRElement {
     
     /// Insert a type to the module
     func insert(targetType: NominalType, name: String) {
-        typeList.insert(TypeAlias(name: name, targetType: targetType))
+        typeList[name] = TypeAlias(name: name, targetType: targetType)
     }
     
     /// Insert a defined typealias to the module
     private func insert(alias: TypeAlias) {
-        typeList.insert(alias)
+        typeList[alias.name] = alias
     }
     
     /// Returns the module's definition of `type`
     @discardableResult
     func getOrInsert(type: Type) -> TypeAlias {
         // if it exists, return it
-        if case let t as NominalType = type, let found = typeList.first(where: {$0.targetType.name == t.name}) {
+        if case let t as NominalType = type, let found = typeList[t.name] {
             return found
         }
         
@@ -58,7 +58,7 @@ final class Module : VIRElement {
     }
     
     func type(named name: String) -> TypeAlias? {
-        return typeList.first {$0.name == name}
+        return typeList[name]
     }
     
     func global(named name: String) -> GlobalValue? {

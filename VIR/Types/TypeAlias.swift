@@ -15,6 +15,7 @@ final class TypeAlias : Type {
     let name: String, targetType: NominalType
     
     var witnessTables: [ConceptType: VIRWitnessTable] = [:]
+    var destructor: Function? = nil
     
     init(name: String, targetType: NominalType) {
         self.name = name

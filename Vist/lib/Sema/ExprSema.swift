@@ -83,8 +83,11 @@ extension MutationExpr : ExprTypeProvider {
         let new = try value.typeForNode(scope: scope)
         
         // make sure consistent types
-        guard old == new else { throw semaError(.differentTypeForMutation(name: (object as? VariableExpr)?.name, from: old, to: new)) }
-
+        guard new.canAddConstraint(old, solver: scope.constraintSolver) else {
+            throw semaError(.differentTypeForMutation(name: (object as? VariableExpr)?.name, from: old, to: new))
+        }
+        try new.addConstraint(old, solver: scope.constraintSolver)
+        
         // switch over object being mutated
         switch object {
         case let variable as VariableExpr:

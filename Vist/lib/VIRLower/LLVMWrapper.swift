@@ -135,22 +135,19 @@ extension LLVMBuilder {
     @discardableResult
     static func constInsert(value val: LLVMValue, in aggr: LLVMValue, index: Int, name: String? = nil) throws -> LLVMValue {
         var v = [UInt32(index)]
-        
         var value = val
         
+        var types = [LLVMTypeRef?](repeating: nil, count: Int(LLVMCountStructElementTypes(aggr.type.type)))
+        LLVMGetStructElementTypes(aggr.type.type, &types)
+        let type = types[index]
+        
         // cast the pointer if its the wrong target
-        let kind = LLVMGetTypeKind(val.type.type!)
+        let kind = LLVMGetTypeKind(type)
         if kind == LLVMPointerTypeKind || kind == LLVMArrayTypeKind {
-            let ptr = LLVMGetElementType(val.type.type!)
-            if ptr != nil {
-                
-                var els = [LLVMTypeRef?](repeating: nil, count: Int(LLVMCountStructElementTypes(aggr.type.type!)))
-                
-                LLVMGetStructElementTypes(aggr.type.type!, &els)
-                
-                if els[index] != val.type.type {
+            if LLVMGetElementType(type) != nil {
+                if let hasType = val._value.map(LLVMTypeOf), hasType != type {
                     if kind == LLVMPointerTypeKind {
-                        value = try constBitcast(value: value, to: LLVMType(ref: els[index]))
+                        value = try constBitcast(value: value, to: LLVMType(ref: type))
                     }
                     else if kind == LLVMArrayTypeKind {
                         value = try constGEP(ofAggregate: value, index: LLVMValue.constInt(value: 0, size: 32))
@@ -159,7 +156,11 @@ extension LLVMBuilder {
             }
         }
         
-        return try LLVMValue(ref: LLVMConstInsertValue(aggr.val(), value.val(), &v, 1))
+        // correct null value type (which we get from the struct
+        return try LLVMValue(ref: LLVMConstInsertValue(aggr.val(),
+                                                       value._value ?? LLVMConstNull(type),
+                                                       &v,
+                                                       1))
     }
     func buildExtractValue(from val: LLVMValue, index: Int, name: String? = nil) throws -> LLVMValue {
         return try wrap(LLVMBuildExtractValue(builder, val.val(), UInt32(index), name ?? ""))

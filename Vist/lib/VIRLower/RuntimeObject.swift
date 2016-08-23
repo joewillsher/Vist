@@ -29,6 +29,8 @@ protocol RuntimeObject {
     /// - returns: The LLVM type of self
     /// - note: A helper function, implemented by all types
     func type(IGF: inout IRGenFunction, module: Module) -> LLVMType
+    
+    func getFnPtr() -> LLVMValue
 }
 private protocol ArrayGenerator : RuntimeObject {
     func lowerArray(IGF: inout IRGenFunction, module: Module, baseName: String, arrayCount: Int) throws -> LLVMValue
@@ -65,6 +67,9 @@ extension RuntimeObject {
                 if case let ptr as ArrayGenerator = value, let c = arrayCount(property: label) {
                     return try ptr.lowerArray(IGF: &IGF, module: module, baseName: newName, arrayCount: Int(c))
                 }
+                else if label == "destructor" {
+                    return value.getFnPtr()
+                }
                 else {
                     return try value.lower(IGF: &IGF, module: module, baseName: newName)
                 }
@@ -86,7 +91,10 @@ extension RuntimeObject {
             return IGF.module.createGlobal(value: val, forPtr: ptr, baseName: name, IGF: &IGF).value
         }
     }
+    
+    func getFnPtr() -> LLVMValue { fatalError("This hack is only for Optional<UnsafeMutablePointer<Void>>") }
 }
+
 // MARK: Runtime types
 extension ValueWitness : RuntimeObject {
     func type(IGF: inout IRGenFunction, module: Module) -> LLVMType { return Runtime.valueWitnessType.importedType(in: module).lowered(module: module) }
@@ -136,7 +144,7 @@ extension ImplicitlyUnwrappedOptional : RuntimeObject {
         return x.type(IGF: &IGF, module: module)
     }
     func lower(IGF: inout IRGenFunction, module: Module, baseName: String) throws -> LLVMValue {
-        guard case let x as RuntimeObject = self else { fatalError() }
+        guard case let x as RuntimeObject = self else { fatalError("\(self.dynamicType)") }
         return try x.lower(IGF: &IGF, module: module, baseName: baseName)
     }
 }
@@ -207,7 +215,6 @@ extension UnsafeMutablePointer : RuntimeObject, ArrayGenerator {
             return try IGF.module.createLLVMGlobal(forPointer: self, baseName: baseName, IGF: &IGF, module: module)
         }
     }
-    
 }
 
 extension Int32 : RuntimeObject {
@@ -220,6 +227,16 @@ extension Int32 : RuntimeObject {
     
     func lower(IGF: inout IRGenFunction, module: Module, baseName: String) throws -> LLVMValue {
         return LLVMValue.constInt(value: Int(self), size: 32)
+    }
+}
+
+extension Optional {
+    func getFnPtr() -> LLVMValue {
+        if case let opt as UnsafeMutablePointer<Void>? = self, opt == nil {
+            return LLVMValue(ref: LLVMValueRef(nil as UnsafeMutablePointer<Void>?))
+        }
+        let t = unsafeBitCast(self, to: UnsafeMutablePointer<Void>.self)
+        return LLVMValue(ref: LLVMValueRef(t))
     }
 }
 

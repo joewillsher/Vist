@@ -52,16 +52,23 @@ void vist_constructExistential(ConceptConformance *_Nonnull conformance,
     // mask tagged pointer
     ptr |= isNonLocal;
     *outExistential = ExistentialObject(ptr, metadata, 1, (ConceptConformance **)conformance);
-//    printf("alloc_md: %p\n", outExistential->metadata);
 }
 
 RUNTIME_COMPILER_INTERFACE
 void vist_deallocExistentialBuffer(ExistentialObject *_Nonnull existential) {
     printf("dealloc: %p\n", existential->projectBuffer());
-    // if stored on the heap, dealloc it
-    if (existential->isNonLocal())
-        if (auto buff = (void *)existential->projectBuffer())
+    if (auto buff = (void *)existential->projectBuffer()) {
+        // call the destructor
+        if (auto destructor = existential->metadata->destructor) {
+            printf("destructor: %p\n", existential->metadata->destructor);
+            destructor(buff);
+        }
+        // if stored on the heap, dealloc it
+        if (existential->isNonLocal())
             free(buff);
+        else // for debugging we also memset stack to 0
+            memset(buff, 0, existential->metadata->size);
+    }
 }
 
 RUNTIME_COMPILER_INTERFACE

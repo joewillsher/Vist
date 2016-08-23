@@ -140,7 +140,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "Random.vist"
+            argument = "stuff.vist"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument

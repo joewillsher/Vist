@@ -20,13 +20,13 @@ enum Runtime {
     static let refcountedObjectType = StructType.withTypes([BuiltinType.opaquePointer, int32Type], name: "Refcounted")
     static let refcountedObjectPointerType = BuiltinType.pointer(to: refcountedObjectType)
 
-    private static let __typeMetadataType = StructType.withTypes([conceptConformanceType.ptrType().ptrType(), int32Type, int32Type, BuiltinType.opaquePointer], name: "TypeMetadata")
+    private static let __typeMetadataType = StructType.withTypes([conceptConformanceType.ptrType().ptrType(), int32Type, int32Type, BuiltinType.opaquePointer, BuiltinType.opaquePointer], name: "TypeMetadata")
     
     
     static let valueWitnessType = StructType.withTypes([BuiltinType.opaquePointer], name: "Witness")
     static let conceptConformanceType = StructType.withTypes([BuiltinType.opaquePointer/*TypeMetadata *concept*/, int32Type.ptrType(), int32Type, witnessTableType.ptrType()], name: "Conformance")
     static let witnessTableType = StructType.withTypes([valueWitnessType.ptrType(), int32Type], name: "WitnessTable")
-    static let typeMetadataType = StructType.withTypes([conceptConformanceType.ptrType().ptrType(), int32Type, int32Type, BuiltinType.pointer(to: int8Type)], name: "Metadata")
+    static let typeMetadataType = StructType.withTypes([conceptConformanceType.ptrType().ptrType(), int32Type, int32Type, BuiltinType.opaquePointer, BuiltinType.opaquePointer], name: "Metadata")
     static let existentialObjectType = StructType.withTypes([BuiltinType.wordType, int32Type, conceptConformanceType.ptrType().ptrType(), typeMetadataType], name: "Existential")
     
     struct Function {

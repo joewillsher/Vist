@@ -232,18 +232,18 @@ final class ExistentialExportBufferInst : Inst {
 
 /// Deallocate's the existential's buffer
 final class ExistentialDeleteBufferInst : Inst {
-    var existential: Operand
+    var existential: PtrOperand
     
     var type: Type? { return nil }
     
     var uses: [Operand] = []
     var args: [Operand]
     
-    convenience init(existential: Value, irName: String? = nil) throws {
-        self.init(existential: Operand(existential), irName: irName)
+    convenience init(existential: LValue, irName: String? = nil) throws {
+        self.init(existential: PtrOperand(existential), irName: irName)
     }
     
-    private init(existential: Operand, irName: String?) {
+    private init(existential: PtrOperand, irName: String?) {
         self.existential = existential
         self.args = [existential]
         initialiseArgs()
@@ -261,7 +261,7 @@ final class ExistentialDeleteBufferInst : Inst {
     }
     
     func setArgs(_ args: [Operand]) {
-        existential = args[0]
+        existential = args[0] as! PtrOperand
     }
     var parentBlock: BasicBlock?
     var irName: String?

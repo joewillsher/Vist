@@ -64,6 +64,12 @@ extern "C" {
         
         int32_t size;
         const char *_Nonnull name;
+        // optional destructor function
+#ifdef __cplusplus
+        void (*_Nullable destructor)(void *_Nullable);
+#else
+        void *_Nullable destructor;
+#endif
     };
     
     /// The modeling of a concept -- the concept and witness table

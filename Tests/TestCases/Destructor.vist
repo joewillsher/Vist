@@ -1,0 +1,139 @@
+
+
+
+concept Con {
+    let a: String
+}
+type Ty {
+    let a: String
+}
+
+concept Fn {
+    let b: String
+}
+type Container {
+    var conc: Con
+    let b: String
+
+    init Con = {
+        conc = $0
+        b = $0.a
+    }
+
+    init String = {
+        conc = Ty $0
+	b = $0
+    }
+}
+
+func takes :: Fn = do
+    print $0.b
+
+let cont = Container "Sup"
+
+takes cont
+
+/*
+alloc_stack: 0x7fff5fbff978
+export: 0x7fff5fbff978 to: 0x1003004d0
+alloc_stack: 0x7fff5fbff8f0
+export: 0x7fff5fbff8f0 to: 0x100302190
+dupe_export: 0x100302190
+Sup
+dealloc: 0x100302190
+destructor: 0x100000870
+dealloc: 0x1003004d0
+*/
+
+/*
+func @main : &thin () -> #Builtin.Void {
+$entry:
+  %0 = string_literal utf8 "Sup"  	// user: %1
+  %size = int_literal 4 	// user: %1
+  %isUTF8 = bool_literal true 	// user: %1
+  %1 = call @String_iopi64b (%0: #Builtin.OpaquePointer, %size: #Builtin.Int64, %isUTF8: #Builtin.Bool) 	// users: %6, %2
+  %2 = struct %Ty, (%1: #String) 	// user: %3
+  %3 = existential_construct %2: #Ty in #Con 	// users: %4, %5
+  existential_export_buffer %3: #*Con
+  %5 = load %3: #*Con 	// user: %6
+  %6 = struct %Container, (%5: #Con, %1: #String) 	// user: %7
+  %7 = existential_construct %6: #Container in #Fn 	// users: %8, %9, %16
+  existential_export_buffer %7: #*Fn
+  %9 = load %7: #*Fn 	// user: %11
+  %10 = alloc #Fn 	// users: %11, %12, %13
+  store %9 in %10: #*Fn
+  existential_export_buffer %10: #*Fn
+  %13 = existential_project_member %10: #*Fn, !b 	// user: %14
+  %14 = load %13: #*String 	// user: %15
+  %15 = call @print_tString (%14: #String)
+  existential_delete_buffer %7: #*Fn
+  return ()
+}
+
+func @Container_iString : &init (#String) -> #Container {
+$entry(%$0: #String):
+  %0 = struct %Ty, (%$0: #String) 	// user: %1
+  %1 = existential_construct %0: #Ty in #Con 	// users: %2, %3
+  existential_export_buffer %1: #*Con
+  %3 = load %1: #*Con 	// user: %4
+  %4 = struct %Container, (%3: #Con, %$0: #String) 	// user: %5
+  return %4
+}
+
+func @Ty_iString : &init (#String) -> #Ty {
+$entry(%$0: #String):
+  %0 = struct %Ty, (%$0: #String) 	// user: %1
+  return %0
+}
+
+func @Container_iCon : &init (#Con) -> #Container {
+$entry(%$0: #Con):
+  %0 = alloc #Con 	// users: %1, %2, %3, %4
+  store %$0 in %0: #*Con
+  existential_export_buffer %0: #*Con
+  %3 = load %0: #*Con 	// user: %6
+  %4 = existential_project_member %0: #*Con, !a 	// user: %5
+  %5 = load %4: #*String 	// user: %6
+  %6 = struct %Container, (%3: #Con, %5: #String) 	// user: %7
+  return %6
+}
+
+func @destroy_dPContainer : &destructor (#*Container) -> #Builtin.Void {
+$entry(%self: #*Container):
+  %conc = struct_element %self: #*Container, !conc 	// user: %0
+  existential_delete_buffer %conc: #*Con
+  return ()
+}
+
+func @print_tString : &thin (#String) -> #Builtin.Void
+
+func @String_iopi64b : &init (#Builtin.OpaquePointer, #Builtin.Int64, #Builtin.Bool) -> #String
+
+func @Container_iConString : &init (#Con, #String) -> #Container {
+$entry(%$0: #Con, %$1: #String):
+  %0 = alloc #Con 	// users: %1, %2, %3
+  store %$0 in %0: #*Con
+  existential_export_buffer %0: #*Con
+  %3 = load %0: #*Con 	// user: %4
+  %4 = struct %Container, (%3: #Con, %$1: #String) 	// user: %5
+  return %4
+}
+
+func @takes_tFn : &thin (#Fn) -> #Builtin.Void {
+$entry(%$0: #Fn):
+  %0 = alloc #Fn 	// users: %1, %2, %3
+  store %$0 in %0: #*Fn
+  existential_export_buffer %0: #*Fn
+  %3 = existential_project_member %0: #*Fn, !b 	// user: %4
+  %4 = load %3: #*String 	// user: %5
+  %5 = call @print_tString (%4: #String)
+  return ()
+}
+
+witness_table Ty conforms Con {
+
+}
+witness_table Container conforms Fn {
+
+}*/
+

@@ -196,7 +196,7 @@ extension VariableGroupDecl : StmtEmitter {
 
 extension FunctionCall/*: VIRGenerator*/ {
     
-    func argOperands(module: Module, scope: Scope) throws -> [Operand] {
+    func argOperands(module: Module, scope: Scope) throws -> [Accessor] {
         guard case let fnType as FunctionType = fnType?.importedType(in: module) else {
             throw VIRError.paramsNotTyped
         }
@@ -204,14 +204,19 @@ extension FunctionCall/*: VIRGenerator*/ {
         return try zip(argArr, fnType.params).map { rawArg, paramType in
             let arg = try rawArg.emitRValue(module: module, scope: scope)
             try arg.retain()
-            return try arg.coercedAccessor(to: paramType, module: module).aggregateGetValue()
+            return try arg.coercedAccessor(to: paramType, module: module)
         }
-            .map(Operand.init(_:))
     }
     
     func emitRValue(module: Module, scope: Scope) throws -> Accessor {
         
-        let args = try argOperands(module: module, scope: scope)
+        let argAccessors = try argOperands(module: module, scope: scope)
+        let args = try argAccessors.map { try $0.aggregateGetValue() }.map(Operand.init)
+        defer {
+            for accessor in argAccessors {
+                try! accessor.releaseCoercionTemp()
+            }
+        }
         
         if let stdlib = try module.getOrInsertStdLibFunction(mangledName: mangledName) {
             return try module.builder.buildFunctionCall(function: stdlib, args: args).accessor()
@@ -688,13 +693,13 @@ extension WhileLoopStmt : StmtEmitter {
     }
 }
 
-extension TypeDecl : ValueEmitter {
+extension TypeDecl : StmtEmitter {
     
-    func emitRValue(module: Module, scope: Scope) throws -> Accessor {
+    func emitStmt(module: Module, scope: Scope) throws {
         
         guard let type = type else { throw irGenError(.notTyped) }
         
-        module.getOrInsert(type: type)
+        let alias = module.getOrInsert(type: type)
         
         for i in initialisers {
             try i.emitStmt(module: module, scope: scope)
@@ -708,13 +713,65 @@ extension TypeDecl : ValueEmitter {
             try m.emitStmt(module: module, scope: scope)
         }
         
-        return try VoidLiteralValue().accessor()
+        alias.destructor = try emitImplicitDestructorDecl(module: module)
+        
+    }
+    
+    private func emitImplicitDestructorDecl(module: Module) throws -> Function? {
+        
+        // if any of the members need deallocating
+        guard let type = self.type, type.needsDestructor() else {
+            return nil
+        }
+        
+        let startInsert = module.builder.insertPoint
+        defer { module.builder.insertPoint = startInsert }
+        
+        let fnType = FunctionType(params: [type.importedType(in: module).ptrType()],
+                                  returns: BuiltinType.void,
+                                  callingConvention: .destructor)
+        let fnName = "destroy".mangle(type: fnType)
+        let fn = try module.builder.buildFunction(name: fnName, type: fnType, paramNames: ["self"])
+        
+        
+        let selfAccessor = try fn.param(named: "self").accessor() as! IndirectAccessor
+        
+        for member in type.members {
+            
+            let ptr = try module.builder.build(inst: StructElementPtrInst(object: selfAccessor.reference(),
+                                                                          property: member.name,
+                                                                          irName: member.name))
+            switch member.type {
+            case is ConceptType:
+                try module.builder.build(inst: ExistentialDeleteBufferInst(existential: ptr))
+            case let type where type.isHeapAllocated:
+                try module.builder.build(inst: ReleaseInst(val: ptr, unowned: false))
+            default:
+                break
+            }
+        }
+        
+        try module.builder.buildReturnVoid()
+        
+        return fn
+    }
+    
+}
+
+private extension Type {
+    func needsDestructor() -> Bool {
+        return (self as? NominalType)?.members.contains {
+            $0.type is ConceptType ||
+                $0.type.isHeapAllocated ||
+                $0.type.needsDestructor()
+        } ?? false
     }
 }
 
-extension ConceptDecl : ValueEmitter {
 
-    func emitRValue(module: Module, scope: Scope) throws -> Accessor {
+extension ConceptDecl : StmtEmitter {
+
+    func emitStmt(module: Module, scope: Scope) throws {
         
         guard let type = type else { throw irGenError(.notTyped) }
         
@@ -723,8 +780,6 @@ extension ConceptDecl : ValueEmitter {
         for m in requiredMethods {
             try m.emitStmt(module: module, scope: scope)
         }
-        
-        return try VoidLiteralValue().accessor()
     }
 
 }
@@ -817,10 +872,15 @@ extension MethodCallExpr : ValueEmitter {
     func emitRValue(module: Module, scope: Scope) throws -> Accessor {
         
         // build self and args' values
-        let args = try argOperands(module: module, scope: scope)
+        let argAccessors = try argOperands(module: module, scope: scope)
+        let args = try argAccessors.map { try $0.aggregateGetValue() }.map(Operand.init)
+        defer {
+            for accessor in argAccessors {
+                try! accessor.releaseCoercionTemp()
+            }
+        }
         let selfVarAccessor = try object.emitRValue(module: module, scope: scope)
         try selfVarAccessor.retain()
-        let selfRef = try selfVarAccessor.referenceBacked().aggregateReference()
         
         guard let fnType = fnType else { fatalError() }
         
@@ -828,11 +888,14 @@ extension MethodCallExpr : ValueEmitter {
         switch object._type {
         case is StructType:
             guard case .method = fnType.callingConvention else { fatalError() }
+            let selfRef = try selfVarAccessor.referenceBacked().aggregateReference()
             
             let function = try module.getOrInsertFunction(named: mangledName, type: fnType)
             return try module.builder.buildFunctionCall(function: function, args: [PtrOperand(selfRef)] + args).accessor()
             
         case let existentialType as ConceptType:
+            
+            let selfRef = try selfVarAccessor.referenceBacked().aggregateReference()
             
             // get the witness from the existential
             let fn = try module.builder.build(inst: ExistentialWitnessInst(existential: selfRef,

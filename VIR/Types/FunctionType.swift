@@ -18,13 +18,14 @@ struct FunctionType : Type {
     }
     
     enum CallingConvention {
-        case thin, initialiser
+        case thin, initialiser, destructor
         case method(selfType: Type, mutating: Bool)
         
         var name: String {
             switch self {
             case .thin: return "&thin"
             case .initialiser: return "&init"
+            case .destructor: return "&destructor"
             case .method: return "&method"
             }
         }
@@ -112,11 +113,7 @@ extension FunctionType {
             else { return param }
         }
         
-        switch callingConvention {
-        case .thin, .initialiser:
-            break
-            
-        case .method(let selfType, _):
+        if case .method(let selfType, _) = callingConvention {
             t.params.insert(BuiltinType.pointer(to: selfType), at: 0)
         }
         t.isCanonicalType = true
@@ -143,6 +140,8 @@ extension FunctionType {
             conventionPrefix = "t"
         case .initialiser: // init
             conventionPrefix = "i"
+        case .destructor: // deallocator
+            conventionPrefix = "d"
         }
         return conventionPrefix + params
             .map { $0.mangledName }

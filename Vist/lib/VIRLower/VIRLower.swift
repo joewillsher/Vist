@@ -56,13 +56,25 @@ extension Module {
         loweredModule = module
         var IGF = (builder, module) as IRGenFunction
         
-        for type in typeList where type.targetType is ConceptType {
+        // first emit any type destructors, needed for the metadata
+        for type in typeList.values {
+            if let destructor = type.destructor {
+                let fn = getOrAddFunction(named: destructor.name,
+                                          type: destructor.type,
+                                          IGF: &IGF)
+                destructor.loweredFunction = fn
+                try destructor.virLower(IGF: &IGF)
+            }
+        }
+        // emit concepts, needed for conformances
+        for type in typeList.values where type.targetType is ConceptType {
             _ = try type.getLLVMTypeMetadata(IGF: &IGF, module: self)
         }
-        for type in typeList where type.targetType is StructType {
+        // finally emit struct metadata
+        for type in typeList.values where type.targetType is StructType {
             _ = try type.getLLVMTypeMetadata(IGF: &IGF, module: self)
         }
-
+        
         for fn in functions {
             // create function proto
             let function = getOrAddFunction(named: fn.name, type: fn.type, IGF: &IGF)
@@ -85,7 +97,7 @@ extension Module {
         
         // lower the function bodies
         for fn in functions {
-            _ = try fn.virLower(IGF: &IGF)
+            try fn.virLower(IGF: &IGF)
         }
         
         try loweredModule?.validate()
@@ -123,7 +135,7 @@ extension Function : VIRLower {
         if attributes.contains(.readnone) { try loweredFunction?.addAttr(LLVMReadNoneAttribute) }
     }
     
-    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+    @discardableResult func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         
         let b = IGF.builder.getInsertBlock()
         guard let fn = IGF.module.function(named: name) else { fatalError() }

@@ -32,7 +32,11 @@ protocol Accessor : class {
     ///          original, mutating it may not affect `self`
     func referenceBacked() throws -> IndirectAccessor
     
+    /// A scope releases control of this accessor
     func release() throws
+    /// Release the temp result of a coersion -- this isn't added to a scope
+    /// so cannot be released any other way
+    func releaseCoercionTemp() throws
     func retain() throws
     func releaseUnowned() throws
     func dealloc() throws
@@ -90,6 +94,7 @@ extension Accessor {
     func releaseUnowned() { }
     func dealloc() { }
     func deallocUnowned() { }
+    func releaseCoercionTemp() { }
     
     func aggregateGetValue() throws -> Value {
         return try getValue()
@@ -143,6 +148,11 @@ final class ExistentialRefAccessor : IndirectAccessor {
     func release() throws {
         // If this accessor abstracts the allocation, we can delete it when this scope
         // releases its use
+        if canSeeInit {
+            try module.builder.build(inst: ExistentialDeleteBufferInst(existential: mem))
+        }
+    }
+    func releaseCoercionTemp() throws {
         if canSeeInit {
             try module.builder.build(inst: ExistentialDeleteBufferInst(existential: mem))
         }

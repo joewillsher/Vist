@@ -61,7 +61,7 @@ final class TypeDecl: ScopeNode, NominalTypeDecl, LibraryTopLevel {
     }
 }
 
-final class ConceptDecl : TypedExpr, ScopeNode, NominalTypeDecl, LibraryTopLevel {
+final class ConceptDecl : ScopeNode, NominalTypeDecl, LibraryTopLevel {
     let name: String
     let requiredProperties: [TypeMemberVariableDecl]
     let requiredMethods: [FuncDecl]

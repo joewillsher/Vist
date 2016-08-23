@@ -138,10 +138,15 @@ extension NominalType {
         let c = conformances.copyBuffer()
         let size = lowered(module: module).size(unit: .bytes, IGF: IGF)
         
+        let destructor = module.type(named: name)!.destructor?
+            .buildFunctionPointer().loweredValue?
+            ._value.map(UnsafeMutablePointer<Void>.init)
+        
         let md = TypeMetadata(conceptConformanceArr: c,
                               conceptConformanceArrCount: Int32(conformances.count),
                               size: Int32(size),
-                              name: utf8)
+                              name: utf8,
+                              destructor: destructor)
         IGF.module.typeMetadata[name] = md
         
         return md
