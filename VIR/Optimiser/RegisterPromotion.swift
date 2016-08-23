@@ -118,6 +118,10 @@ enum RegisterPromotionPass : OptimisationPass {
             let v = varInst.value.value!
             try varInst.eraseFromParent(replacingAllUsesWith: v)
         }
+        for case let varInst as VariableAddrInst in function.instructions {
+            let v = varInst.addr.value!
+            try varInst.eraseFromParent(replacingAllUsesWith: v)
+        }
         
         for block in function.blocks! {
             for case let allocInst as AllocInst in block.instructions {

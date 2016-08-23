@@ -32,3 +32,56 @@ extension FunctionRefInst : VIRLower {
         return IGF.module.function(named: functionName)!.function
     }
 }
+extension DestroyAddrInst : VIRLower {
+    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+        
+        switch addr.memType {
+        case let type? where type.isConceptType():
+            let ref = module.getRuntimeFunction(.destroyExistentialBuffer, IGF: &IGF)
+            return try IGF.builder.buildCall(function: ref, args: [addr.loweredValue!])
+            
+        case let type as NominalType where type.isStructType():
+            let metadata = try type.getLLVMTypeMetadata(IGF: &IGF, module: module)
+            let bc = try IGF.builder.buildBitcast(value: addr.loweredValue!, to: LLVMType.opaquePointer)
+            let ref = module.getRuntimeFunction(.destroyStructAddr, IGF: &IGF)
+            return try IGF.builder.buildCall(function: ref, args: [bc, metadata])
+            
+        default:
+            return LLVMValue.nullptr
+        }
+    }
+}
+extension DestroyValInst : VIRLower {
+    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+        let mem = try IGF.builder.buildAlloca(type: val.type!.importedType(in: module).lowered(module: module), name: irName)
+        try IGF.builder.buildStore(value: val.loweredValue!, in: mem)
+        
+        switch val.type {
+        case let type? where type.isConceptType():
+            let ref = module.getRuntimeFunction(.destroyExistentialBuffer, IGF: &IGF)
+            return try IGF.builder.buildCall(function: ref, args: [mem])
+            
+        case let type as NominalType where type.isStructType():
+            let bc = try IGF.builder.buildBitcast(value: mem, to: LLVMType.opaquePointer)
+            let metadata = try type.getLLVMTypeMetadata(IGF: &IGF, module: module)
+            let ref = module.getRuntimeFunction(.destroyStructAddr, IGF: &IGF)
+            return try IGF.builder.buildCall(function: ref, args: [bc, metadata])
+            
+        default:
+            return LLVMValue.nullptr
+        }
+    }
+}
+
+
+extension VariableInst : VIRLower {
+    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+        return value.loweredValue!
+    }
+}
+
+extension VariableAddrInst : VIRLower {
+    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+        return addr.loweredValue!
+    }
+}

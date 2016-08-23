@@ -88,9 +88,10 @@ extension Accessor {
         return self
     }
     
-    func release() throws { }
-    
     func retain() { }
+    func release() throws {
+        try module.builder.build(inst: DestroyValInst(val: getValue()))
+    }
     func releaseUnowned() { }
     func dealloc() { }
     func deallocUnowned() { }
@@ -171,11 +172,11 @@ final class ExistentialRefAccessor : IndirectAccessor {
         // If this accessor abstracts the allocation, we can delete it when this scope
         // releases its use
         if passing == .owning || passing == .down {
-            try module.builder.build(inst: ExistentialDeleteBufferInst(existential: mem))
+            try module.builder.build(inst: DestroyAddrInst(addr: mem))
         }
     }
 //    func releaseCoercionTemp() throws {
-//        try module.builder.build(inst: ExistentialDeleteBufferInst(existential: mem))
+//        try module.builder.build(inst: DestroyAddrInst(existential: mem))
 //    }
     
     func getValue() throws -> Value {
@@ -247,6 +248,11 @@ extension IndirectAccessor {
     }
     
     var module: Module { return mem.module }
+    
+    
+    func release() throws {
+        try module.builder.build(inst: DestroyAddrInst(addr: mem))
+    }
 }
 
 

@@ -36,6 +36,9 @@ enum Runtime {
         // we cannot have a runtime function which uses anything other than a int or int sized pointer, or clang
         // will not emit a simple mapping from clang type -> IR type and our call will fail
         
+        static let destroyExistentialBuffer = Function(name: "vist_deallocExistentialBuffer", type: FunctionType(params: [existentialObjectType.ptrType()], returns: BuiltinType.void))
+        static let destroyStructAddr = Function(name: "vist_destroyStructAddr", type: FunctionType(params: [BuiltinType.opaquePointer, typeMetadataType.ptrType()], returns: BuiltinType.void))
+
         static let allocObject = Function(name: "vist_allocObject", type: FunctionType(params: [typeMetadataType.ptrType()], returns: refcountedObjectPointerType))
         static let deallocObject = Function(name: "vist_deallocObject", type: FunctionType(params: [refcountedObjectPointerType], returns: voidType))
         static let retainObject  = Function(name: "vist_retainObject", type: FunctionType(params: [refcountedObjectPointerType], returns: voidType))
@@ -61,7 +64,6 @@ enum Runtime {
                                   typeMetadataType.ptrType(), /*is nonlocal=*/BuiltinType.bool,
                                   /*out param=*/existentialObjectType.ptrType()], returns: BuiltinType.void))
         
-        static let deallocExistentialBuffer = Function(name: "vist_deallocExistentialBuffer", type: FunctionType(params: [existentialObjectType.ptrType()], returns: BuiltinType.void))
         static let exportExistentialBuffer = Function(name: "vist_exportExistentialBuffer", type: FunctionType(params: [existentialObjectType.ptrType()], returns: BuiltinType.void))
         static let copyExistentialBuffer = Function(name: "vist_copyExistentialBuffer", type: FunctionType(params: [existentialObjectType.ptrType(), existentialObjectType.ptrType()], returns: BuiltinType.void))
         

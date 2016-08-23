@@ -83,7 +83,7 @@ extension IndirectAccessor {
                                                                               irName: member.name))
                 switch member.type {
                 case let type where type.isConceptType():
-                    try module.builder.build(inst: ExistentialDeleteBufferInst(existential: ptr))
+                    try module.builder.build(inst: DestroyAddrInst(addr: ptr))
                 case let type where type.isHeapAllocated:
                     // release the box
                     try module.builder.build(inst: ReleaseInst(val: ptr, unowned: false))

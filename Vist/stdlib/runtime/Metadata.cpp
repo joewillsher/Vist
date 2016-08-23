@@ -146,6 +146,15 @@ void vist_copyExistentialBuffer(ExistentialObject *_Nonnull existential,
                                         existential->conformances);
 }
 
+RUNTIME_COMPILER_INTERFACE
+void vist_destroyStructAddr(void *_Nonnull instance,
+                            TypeMetadata *_Nullable metadata) {
+    if (auto destructor = metadata->destructor) {
+        printf("→dealloc_struct %s:\t%p\n", metadata->name, instance);
+        printf("   ↳destructor_struct_fn=%p\n", metadata->destructor);
+        destructor(instance);
+    }
+}
 
 
 

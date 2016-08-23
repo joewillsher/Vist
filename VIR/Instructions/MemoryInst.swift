@@ -169,7 +169,76 @@ final class BitcastInst : Inst, LValue {
     var irName: String?
 }
 
-
+final class DestroyAddrInst : Inst {
+    var addr: PtrOperand
+    
+    var type: Type? { return nil }
+    
+    var uses: [Operand] = []
+    var args: [Operand]
+    
+    convenience init(addr: LValue, irName: String? = nil) throws {
+        self.init(addr: PtrOperand(addr), irName: irName)
+    }
+    
+    private init(addr: PtrOperand, irName: String?) {
+        self.addr = addr
+        self.args = [addr]
+        initialiseArgs()
+        self.irName = irName
+    }
+    
+    var hasSideEffects: Bool { return true }
+    
+    var vir: String {
+        return "destroy_addr \(addr.valueName)\(useComment)"
+    }
+    
+    func copy() -> DestroyAddrInst {
+        return DestroyAddrInst(addr: addr.formCopy(), irName: irName)
+    }
+    
+    func setArgs(_ args: [Operand]) {
+        addr = args[0] as! PtrOperand
+    }
+    var parentBlock: BasicBlock?
+    var irName: String?
+}
+final class DestroyValInst : Inst {
+    var val: Operand
+    
+    var type: Type? { return nil }
+    
+    var uses: [Operand] = []
+    var args: [Operand]
+    
+    convenience init(val: Value, irName: String? = nil) throws {
+        self.init(val: Operand(val), irName: irName)
+    }
+    
+    private init(val: Operand, irName: String?) {
+        self.val = val
+        self.args = [val]
+        initialiseArgs()
+        self.irName = irName
+    }
+    
+    var hasSideEffects: Bool { return true }
+    
+    var vir: String {
+        return "destroy_val \(val.valueName)\(useComment)"
+    }
+    
+    func copy() -> DestroyValInst {
+        return DestroyValInst(val: val.formCopy(), irName: irName)
+    }
+    
+    func setArgs(_ args: [Operand]) {
+        val = args[0]
+    }
+    var parentBlock: BasicBlock?
+    var irName: String?
+}
 
 
 

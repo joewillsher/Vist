@@ -230,43 +230,6 @@ final class ExistentialExportBufferInst : Inst {
     var irName: String?
 }
 
-/// Deallocate's the existential's buffer
-final class ExistentialDeleteBufferInst : Inst {
-    var existential: PtrOperand
-    
-    var type: Type? { return nil }
-    
-    var uses: [Operand] = []
-    var args: [Operand]
-    
-    convenience init(existential: LValue, irName: String? = nil) throws {
-        self.init(existential: PtrOperand(existential), irName: irName)
-    }
-    
-    private init(existential: PtrOperand, irName: String?) {
-        self.existential = existential
-        self.args = [existential]
-        initialiseArgs()
-        self.irName = irName
-    }
-    
-    var hasSideEffects: Bool { return true }
-    
-    var vir: String {
-        return "existential_delete_buffer \(existential.valueName)\(useComment)"
-    }
-    
-    func copy() -> ExistentialDeleteBufferInst {
-        return ExistentialDeleteBufferInst(existential: existential.formCopy(), irName: irName)
-    }
-    
-    func setArgs(_ args: [Operand]) {
-        existential = args[0] as! PtrOperand
-    }
-    var parentBlock: BasicBlock?
-    var irName: String?
-}
-
 final class ExistentialCopyBufferInst : Inst, LValue {
     var existential: PtrOperand
     

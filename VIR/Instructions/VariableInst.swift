@@ -8,8 +8,6 @@
 
 final class VariableInst : Inst {
     var value: Operand
-    //var attrs: [OwnershipAttrs] // specify ref/val semantics
-    // also memory management info stored
     
     var uses: [Operand] = []
     var args: [Operand]
@@ -27,7 +25,7 @@ final class VariableInst : Inst {
     }
     
     var vir: String {
-        return "variable_decl \(name) = \(value.valueName)\(useComment)"
+        return "variable \(name) = \(value.valueName)\(useComment)"
     }
     
     func setArgs(_ args: [Operand]) {
@@ -40,4 +38,39 @@ final class VariableInst : Inst {
     var parentBlock: BasicBlock?
     var irName: String?
 }
+
+final class VariableAddrInst : Inst, LValue {
+    var addr: PtrOperand
+    
+    var uses: [Operand] = []
+    var args: [Operand]
+    
+    var type: Type? { return addr.type }
+    var memType: Type? { return addr.memType }
+    
+    convenience init(addr: LValue, irName: String? = nil) {
+        self.init(operand: PtrOperand(addr), irName: irName)
+    }
+    private init(operand: PtrOperand, irName: String?) {
+        self.addr = operand
+        self.args = [operand]
+        initialiseArgs()
+        self.irName = irName
+    }
+    
+    var vir: String {
+        return "variable_addr \(name) = \(addr.valueName)\(useComment)"
+    }
+    
+    func setArgs(_ args: [Operand]) {
+        addr = args[0] as! PtrOperand
+    }
+    
+    func copy() -> VariableAddrInst {
+        return VariableAddrInst(operand: addr.formCopy(), irName: irName)
+    }
+    var parentBlock: BasicBlock?
+    var irName: String?
+}
+
 

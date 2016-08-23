@@ -163,20 +163,20 @@ extension VariableDecl : ValueEmitter {
         
         let val = try value.emitRValue(module: module, scope: scope)
         
+        let mem = try val
+            .coercedAccessor(to: value._type?.importedType(in: module), module: module)
+
         if isMutable {
             // if its mutable, allocate stack memory to store into
-            let variable = try val
-                .coercedAccessor(to: value._type?.importedType(in: module), module: module)
-                .getMemCopy()
+            let val = try mem.referenceBacked().aggregateReference()
+            let variable = try module.builder.build(inst: VariableAddrInst(addr: val, irName: name)).accessor
+            
             scope.insert(variable: variable, name: name)
             return variable
         }
         else {
             // if immutable, pass by reg value
-            let variable = try module.builder
-                .build(inst: VariableInst(value: val.aggregateGetValue(), irName: name))
-                .accessor()
-                .coercedAccessor(to: value._type?.importedType(in: module), module: module)
+            let variable = try module.builder.build(inst: VariableInst(value: mem.aggregateGetValue(), irName: name)).accessor()
             
             try variable.retain()
             scope.insert(variable: variable, name: name)

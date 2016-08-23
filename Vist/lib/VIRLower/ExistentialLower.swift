@@ -86,13 +86,6 @@ extension ExistentialProjectInst : VIRLower {
     }
 }
 
-extension ExistentialDeleteBufferInst : VIRLower {
-    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        // call into the runtime to delete the existential's buffer
-        let ref = module.getRuntimeFunction(.deallocExistentialBuffer, IGF: &IGF)
-        return try IGF.builder.buildCall(function: ref, args: [existential.loweredValue!])
-    }
-}
 extension ExistentialCopyBufferInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         // alloc the out memory
