@@ -43,9 +43,9 @@ void vist_constructExistential(ConceptConformance *_Nonnull conformance,
         // set stack source to 0
         memset(instance, 0, metadata->size);
         ptr = (uintptr_t)mem;
-        printf("alloc: %p\n", mem);
+        printf("→alloc %s:\t%p\n", metadata->name, mem);
     } else {
-        printf("alloc_stack: %p\n", instance);
+        printf("→alloc_stack %s:\t%p\n", metadata->name, instance);
         ptr = (uintptr_t)instance;
     }
     
@@ -56,11 +56,11 @@ void vist_constructExistential(ConceptConformance *_Nonnull conformance,
 
 RUNTIME_COMPILER_INTERFACE
 void vist_deallocExistentialBuffer(ExistentialObject *_Nonnull existential) {
-    printf("dealloc: %p\n", existential->projectBuffer());
+    printf("→dealloc %s:\t%p\n", existential->metadata->name, existential->projectBuffer());
     if (auto buff = (void *)existential->projectBuffer()) {
         // call the destructor
         if (auto destructor = existential->metadata->destructor) {
-            printf("destructor: %p\n", existential->metadata->destructor);
+            printf("   ↳destructor_fn=%p\n", existential->metadata->destructor);
             destructor(buff);
         }
         // if stored on the heap, dealloc it
@@ -114,28 +114,36 @@ RUNTIME_COMPILER_INTERFACE
 void vist_exportExistentialBuffer(ExistentialObject *_Nonnull existential) {
     auto in = existential->projectBuffer();
     if (existential->isNonLocal()) {
-        printf("dupe_export: %p\n", in);
+        printf("     ↳dupe_export %s:\t%p\n", existential->metadata->name, in);
         return;
     }
     auto mem = malloc(existential->metadata->size);
     // copy stack into new buffer
     memcpy(mem, (void*)existential->projectBuffer(), existential->metadata->size);
     existential->instanceTaggedPtr = (uintptr_t)mem | true;
-    printf("export: %p to: %p\n", in, existential->projectBuffer());
+    printf("   ↳export %s:\t%p to: %p\n", existential->metadata->name, in, existential->projectBuffer());
 }
 
 RUNTIME_COMPILER_INTERFACE
 void vist_copyExistentialBuffer(ExistentialObject *_Nonnull existential,
                                 ExistentialObject *_Nullable outExistential) {
-    auto in = existential->projectBuffer();
+    
+    auto in = (void*)existential->projectBuffer();
     auto mem = malloc(existential->metadata->size);
-    // copy stack into new buffer
-    memcpy(mem, (void*)existential->projectBuffer(), existential->metadata->size);
+    if (auto copyConstructor = existential->metadata->copyConstructor) {
+        printf("   ↳deep_copy %s:\t%p to: %p\n", existential->metadata->name, in, mem);
+        printf("       ↳deep_copy_fn=%p\n", copyConstructor);
+        copyConstructor((void*)existential->projectBuffer(), mem);
+    }
+    else {
+        // if there is no copy constructor, we just have to do a shallow copy
+        memcpy(mem, (void*)existential->projectBuffer(), existential->metadata->size);
+        printf("   ↳copy %s:\t%p to: %p\n", existential->metadata->name, in, mem);
+    }
     *outExistential = ExistentialObject((uintptr_t)mem | true,
-                                        existential->metadata, 
+                                        existential->metadata,
                                         existential->numConformances,
                                         existential->conformances);
-    printf("copy: %p to: %p\n", in, outExistential->projectBuffer());
 }
 
 

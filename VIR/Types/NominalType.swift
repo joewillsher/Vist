@@ -81,8 +81,9 @@ extension NominalType {
     }
     
     func refCountedBox(module: Module) -> Type {
-        return StructType(members: [("object", BuiltinType.pointer(to: importedType(in: module)), true),
-                                    ("refCount", BuiltinType.int(size: 32), false)],
+        return StructType(members: [("object", ptrType(), true),
+                                    ("refCount", BuiltinType.int(size: 32), false),
+                                    ("metadata", Runtime.typeMetadataType.ptrType(), false)],
                           methods: methods,
                           name: "\(name).refcounted",
                           concepts: concepts,

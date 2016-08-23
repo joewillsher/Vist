@@ -76,6 +76,21 @@ extension Type {
     func ptrType() -> BuiltinType {
         return .pointer(to: self)
     }
+    func isConceptType() -> Bool {
+        if case let s as TypeAlias = self { return s.targetType.isConceptType() }
+        else if self is ConceptType { return true }
+        else { return false }
+    }
+    func isStructType() -> Bool {
+        if case let s as TypeAlias = self { return s.targetType.isStructType() }
+        else if self is StructType { return true }
+        else { return false }
+    }
+    func isTupleType() -> Bool {
+        if case let s as TypeAlias = self { return s.targetType.isTupleType() }
+        else if self is TupleType { return true }
+        else { return false }
+    }
 }
 
 

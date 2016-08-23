@@ -123,46 +123,62 @@ extension Accessor {
 }
 
 
+/// How was this accessor added to the scope?
+enum AccessorPassing {
+    /// Passed up from a lower scope, like in a param
+    case up
+    /// Declared in this scope
+    case owning
+    /// Passed down from another scope, through a return value
+    /// or @out param
+    case down
+}
+
 final class ExistentialRefAccessor : IndirectAccessor {
     
     var mem: LValue
-    
-    /// Does this accessor abstract the allocation of the existential?
-    private let canSeeInit: Bool
-    private var isUsed = false
+    let passing: AccessorPassing
     
     init(memory: LValue) throws {
         self.mem = memory
-        self.canSeeInit = memory is ExistentialConstructInst
-        try module.builder.build(inst: ExistentialExportBufferInst(existential: mem))
+        
+        if memory is ExistentialConstructInst {
+            passing = .owning
+        }
+        else {
+            var p = AccessorPassing.owning
+            for case let use as StoreInst in memory.uses.map({$0.user}) {
+                if use.value.value is Param {
+                    p = .up
+                }
+                else if use.value.value is VIRFunctionCall {
+                    p = .down
+                }
+            }
+            passing = p
+        }
     }
     /// allocates memory and defensively exports it
     init(value: Value, type: ConceptType, module: Module) throws {
         let mem = try module.builder.build(inst: AllocInst(memType: type.importedType(in: module)))
         try module.builder.build(inst: StoreInst(address: mem, value: value))
-        try module.builder.build(inst: ExistentialExportBufferInst(existential: mem))
+//        try module.builder.build(inst: ExistentialExportBufferInst(existential: mem))
         self.mem = mem
-        self.canSeeInit = false
+        self.passing = value is Param ? .down : .owning
     }
     
     func release() throws {
         // If this accessor abstracts the allocation, we can delete it when this scope
         // releases its use
-        if canSeeInit {
+        if passing == .owning || passing == .down {
             try module.builder.build(inst: ExistentialDeleteBufferInst(existential: mem))
         }
     }
-    func releaseCoercionTemp() throws {
-        if canSeeInit {
-            try module.builder.build(inst: ExistentialDeleteBufferInst(existential: mem))
-        }
-    }
+//    func releaseCoercionTemp() throws {
+//        try module.builder.build(inst: ExistentialDeleteBufferInst(existential: mem))
+//    }
     
     func getValue() throws -> Value {
-        defer { isUsed = true }
-        guard isUsed else {
-            return try module.builder.build(inst: LoadInst(address: mem))
-        }
         let copy = try module.builder.build(inst: ExistentialCopyBufferInst(existential: mem))
         return try module.builder.build(inst: LoadInst(address: copy))
     }
@@ -174,6 +190,15 @@ final class ExistentialRefAccessor : IndirectAccessor {
     func getMemCopy() throws -> IndirectAccessor {
         return try ExistentialRefAccessor(memory: module.builder.build(inst: ExistentialCopyBufferInst(existential: mem)))
     }
+    
+    
+    func getEscapingValue() throws -> Value {
+        // make sure this buffer is exported
+        try module.builder.build(inst: ExistentialExportBufferInst(existential: mem))
+        return try module.builder.build(inst: LoadInst(address: mem))
+    }
+    
+    
 }
 
 

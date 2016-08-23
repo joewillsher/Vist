@@ -141,12 +141,16 @@ extension NominalType {
         let destructor = module.type(named: name)!.destructor?
             .buildFunctionPointer().loweredValue?
             ._value.map(UnsafeMutablePointer<Void>.init)
+        let copyConstructor = module.type(named: name)!.copyConstructor?
+            .buildFunctionPointer().loweredValue?
+            ._value.map(UnsafeMutablePointer<Void>.init)
         
         let md = TypeMetadata(conceptConformanceArr: c,
                               conceptConformanceArrCount: Int32(conformances.count),
                               size: Int32(size),
                               name: utf8,
-                              destructor: destructor)
+                              destructor: destructor,
+                              copyConstructor: copyConstructor)
         IGF.module.typeMetadata[name] = md
         
         return md

@@ -166,7 +166,7 @@ extension VariableDecl : ValueEmitter {
         if isMutable {
             // if its mutable, allocate stack memory to store into
             let variable = try val
-//                .coercedAccessor(to: value._type?.importedType(in: module), module: module)
+                .coercedAccessor(to: value._type?.importedType(in: module), module: module)
                 .getMemCopy()
             scope.insert(variable: variable, name: name)
             return variable
@@ -176,7 +176,7 @@ extension VariableDecl : ValueEmitter {
             let variable = try module.builder
                 .build(inst: VariableInst(value: val.aggregateGetValue(), irName: name))
                 .accessor()
-//                .coercedAccessor(to: value._type?.importedType(in: module), module: module)
+                .coercedAccessor(to: value._type?.importedType(in: module), module: module)
             
             try variable.retain()
             scope.insert(variable: variable, name: name)
@@ -714,63 +714,13 @@ extension TypeDecl : StmtEmitter {
         }
         
         alias.destructor = try emitImplicitDestructorDecl(module: module)
-        
-    }
-    
-    private func emitImplicitDestructorDecl(module: Module) throws -> Function? {
-        
-        // if any of the members need deallocating
-        guard let type = self.type, type.needsDestructor() else {
-            return nil
-        }
-        
-        let startInsert = module.builder.insertPoint
-        defer { module.builder.insertPoint = startInsert }
-        
-        let fnType = FunctionType(params: [type.importedType(in: module).ptrType()],
-                                  returns: BuiltinType.void,
-                                  callingConvention: .destructor)
-        let fnName = "destroy".mangle(type: fnType)
-        let fn = try module.builder.buildFunction(name: fnName, type: fnType, paramNames: ["self"])
-        
-        
-        let selfAccessor = try fn.param(named: "self").accessor() as! IndirectAccessor
-        
-        for member in type.members {
-            
-            let ptr = try module.builder.build(inst: StructElementPtrInst(object: selfAccessor.reference(),
-                                                                          property: member.name,
-                                                                          irName: member.name))
-            switch member.type {
-            case is ConceptType:
-                try module.builder.build(inst: ExistentialDeleteBufferInst(existential: ptr))
-            case let type where type.isHeapAllocated:
-                try module.builder.build(inst: ReleaseInst(val: ptr, unowned: false))
-            default:
-                break
-            }
-        }
-        
-        try module.builder.buildReturnVoid()
-        
-        return fn
-    }
-    
-}
-
-private extension Type {
-    func needsDestructor() -> Bool {
-        return (self as? NominalType)?.members.contains {
-            $0.type is ConceptType ||
-                $0.type.isHeapAllocated ||
-                $0.type.needsDestructor()
-        } ?? false
+        alias.copyConstructor = try emitImplicitCopyConstructorDecl(module: module)
     }
 }
 
 
 extension ConceptDecl : StmtEmitter {
-
+    
     func emitStmt(module: Module, scope: Scope) throws {
         
         guard let type = type else { throw irGenError(.notTyped) }
@@ -781,7 +731,7 @@ extension ConceptDecl : StmtEmitter {
             try m.emitStmt(module: module, scope: scope)
         }
     }
-
+    
 }
 
 extension InitDecl : StmtEmitter {

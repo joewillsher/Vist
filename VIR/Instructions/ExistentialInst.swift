@@ -270,8 +270,8 @@ final class ExistentialDeleteBufferInst : Inst {
 final class ExistentialCopyBufferInst : Inst, LValue {
     var existential: PtrOperand
     
-    var type: Type? { return existential.type?.ptrType() }
-    var memType: Type? { return existential.type }
+    var type: Type? { return existential.type }
+    var memType: Type? { return existential.memType }
     
     var uses: [Operand] = []
     var args: [Operand]

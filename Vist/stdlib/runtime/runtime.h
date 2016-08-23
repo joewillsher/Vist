@@ -67,8 +67,10 @@ extern "C" {
         // optional destructor function
 #ifdef __cplusplus
         void (*_Nullable destructor)(void *_Nullable);
+        void (*_Nullable copyConstructor)(void *_Nullable, void *_Nullable);
 #else
         void *_Nullable destructor;
+        void *_Nullable copyConstructor;
 #endif
     };
     

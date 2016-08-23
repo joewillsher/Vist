@@ -8,16 +8,17 @@
 
 extension AllocObjectInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        let ty = storedType.lowered(module: module)
-        let sizeValue = ty.size(unit: .bytes, IGF: IGF)
-        let size = LLVMValue.constInt(value: sizeValue, size: 32)
+        
+//        let metadataMem = try IGF.builder.buildAlloca(type: Runtime.typeMetadataType.importedType(in: module).lowered(module: module))
+        let metadata = try storedType.getLLVMTypeMetadata(IGF: &IGF, module: module)
+//        try IGF.builder.buildStore(value: metadata, in: <#T##LLVMValue#>)
         
         let ref = module.getRuntimeFunction(.allocObject, IGF: &IGF)
         let alloced = try IGF.builder.buildCall(function: ref,
-                                                args: [size],
+                                                args: [metadata],
                                                 name: irName)
         
-        return try IGF.builder.buildBitcast(value: alloced, to: ty.getPointerType())
+        return try IGF.builder.buildBitcast(value: alloced, to: storedType.lowered(module: module).getPointerType())
     }
 }
 

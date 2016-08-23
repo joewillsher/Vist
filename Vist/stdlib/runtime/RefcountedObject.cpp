@@ -13,6 +13,7 @@
 struct RefcountedObject {
     void *object;
     uint32_t refCount;
+    TypeMetadata *metadata;
 };
 
 
@@ -32,9 +33,9 @@ void decrementRefCount(RefcountedObject *_Nonnull object) {
 /// allocates a new heap object and returns the refcounted box
 RUNTIME_COMPILER_INTERFACE
 RefcountedObject *_Nonnull
-vist_allocObject(uint32_t size) {
+vist_allocObject(TypeMetadata *metadata) {
     // malloc the object storage
-    void *object = malloc(size);
+    void *object = malloc(metadata->size);
     // calloc the box storage -- need calloc so it is initialised
     auto refCountedObject = reinterpret_cast<RefcountedObject *_Nonnull>(malloc(sizeof(RefcountedObject)));
     
@@ -54,6 +55,9 @@ void vist_deallocObject(RefcountedObject *_Nonnull object) {
 #ifdef REFCOUNT_DEBUG
     printf(">dealloc\t%p\n", object->object);
 #endif
+    if (auto destructor = object->metadata->destructor) {
+        destructor(object->object);
+    }
     free(object->object);
     // this is probably leaking -- `object` is on the heap and we can't dispose of it
 };

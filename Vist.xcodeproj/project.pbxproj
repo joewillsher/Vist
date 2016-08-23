@@ -206,6 +206,8 @@
 		D4D8B25D1D0301BC00D1F455 /* RuntimeObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D8B25C1D0301BC00D1F455 /* RuntimeObject.swift */; };
 		D4D8B25E1D0301BC00D1F455 /* RuntimeObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D8B25C1D0301BC00D1F455 /* RuntimeObject.swift */; };
 		D4DE28191C5969830096E798 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4DE28181C5969830096E798 /* libz.tbd */; };
+		D4E225B61D6C7BCB0055A5CA /* Lifetime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E225B51D6C7BCB0055A5CA /* Lifetime.swift */; };
+		D4E225B71D6C7BCB0055A5CA /* Lifetime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E225B51D6C7BCB0055A5CA /* Lifetime.swift */; };
 		D4E35B7D1C5D0F0700683486 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4DE28181C5969830096E798 /* libz.tbd */; };
 		D4E35B7F1C5D216600683486 /* Pipe.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E35B7E1C5D216600683486 /* Pipe.swift */; };
 		D4E35B821C5E3ECE00683486 /* Expected.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E35B801C5E3EC600683486 /* Expected.swift */; };
@@ -382,6 +384,7 @@
 		D4DB92771C866FF300718B78 /* example.vir */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vir; path = RUN/example.vir; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		D4DE28181C5969830096E798 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		D4E225B51D6C7BCB0055A5CA /* Lifetime.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Lifetime.swift; path = lib/VIRGen/Lifetime.swift; sourceTree = "<group>"; };
 		D4E35B7E1C5D216600683486 /* Pipe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pipe.swift; sourceTree = "<group>"; };
 		D4E35B801C5E3EC600683486 /* Expected.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Expected.swift; sourceTree = "<group>"; };
 		D4E615431D54DE2A00A10DA4 /* ConstraintSolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ConstraintSolver.swift; path = lib/Sema/ConstraintSolver.swift; sourceTree = "<group>"; };
@@ -558,6 +561,7 @@
 			isa = PBXGroup;
 			children = (
 				D43B3A4D1C8A11180039FB2E /* VIRGen.swift */,
+				D4E225B51D6C7BCB0055A5CA /* Lifetime.swift */,
 				D43B3A4C1C8A11180039FB2E /* Scope.swift */,
 				D46A68DC1D5E288500FF9144 /* Accessor.swift */,
 				D46A68DD1D5E288500FF9144 /* Closure.swift */,
@@ -867,6 +871,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D4E225B71D6C7BCB0055A5CA /* Lifetime.swift in Sources */,
 				D411C8991C8DD00000478988 /* DCE.swift in Sources */,
 				D41C73311D5D02D00047B373 /* AggregateFlatten.swift in Sources */,
 				D43B39E11C8A0F3A0039FB2E /* StructInst.swift in Sources */,
@@ -1000,6 +1005,7 @@
 				D4AE8D671D609CAA00E2D480 /* Analysis.swift in Sources */,
 				D4326E3E1CA6F0140016E595 /* ExistentialInst.swift in Sources */,
 				D4A0001D1CC7C46500157D90 /* GlobalInst.swift in Sources */,
+				D4E225B61D6C7BCB0055A5CA /* Lifetime.swift in Sources */,
 				D41C73301D5D02D00047B373 /* AggregateFlatten.swift in Sources */,
 				D4CF76771C8CD4A70058A8EC /* TupleInst.swift in Sources */,
 				D41C732A1D5CEEC30047B373 /* Diagnose.swift in Sources */,

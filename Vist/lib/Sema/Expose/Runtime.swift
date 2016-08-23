@@ -17,16 +17,16 @@ enum Runtime {
     private static let voidType = BuiltinType.void
     private static let opaquePointerType = BuiltinType.opaquePointer
     
-    static let refcountedObjectType = StructType.withTypes([BuiltinType.opaquePointer, int32Type], name: "Refcounted")
+    static let refcountedObjectType = StructType.withTypes([BuiltinType.opaquePointer, int32Type, BuiltinType.opaquePointer], name: "Refcounted")
     static let refcountedObjectPointerType = BuiltinType.pointer(to: refcountedObjectType)
 
-    private static let __typeMetadataType = StructType.withTypes([conceptConformanceType.ptrType().ptrType(), int32Type, int32Type, BuiltinType.opaquePointer, BuiltinType.opaquePointer], name: "TypeMetadata")
+    private static let __typeMetadataType = StructType.withTypes([conceptConformanceType.ptrType().ptrType(), int32Type, int32Type, BuiltinType.opaquePointer, BuiltinType.opaquePointer, BuiltinType.opaquePointer], name: "TypeMetadata")
     
     
     static let valueWitnessType = StructType.withTypes([BuiltinType.opaquePointer], name: "Witness")
     static let conceptConformanceType = StructType.withTypes([BuiltinType.opaquePointer/*TypeMetadata *concept*/, int32Type.ptrType(), int32Type, witnessTableType.ptrType()], name: "Conformance")
     static let witnessTableType = StructType.withTypes([valueWitnessType.ptrType(), int32Type], name: "WitnessTable")
-    static let typeMetadataType = StructType.withTypes([conceptConformanceType.ptrType().ptrType(), int32Type, int32Type, BuiltinType.opaquePointer, BuiltinType.opaquePointer], name: "Metadata")
+    static let typeMetadataType = StructType.withTypes([conceptConformanceType.ptrType().ptrType(), int32Type, int32Type, BuiltinType.opaquePointer, BuiltinType.opaquePointer, BuiltinType.opaquePointer], name: "Metadata")
     static let existentialObjectType = StructType.withTypes([BuiltinType.wordType, int32Type, conceptConformanceType.ptrType().ptrType(), typeMetadataType], name: "Existential")
     
     struct Function {
@@ -36,7 +36,7 @@ enum Runtime {
         // we cannot have a runtime function which uses anything other than a int or int sized pointer, or clang
         // will not emit a simple mapping from clang type -> IR type and our call will fail
         
-        static let allocObject = Function(name: "vist_allocObject", type: FunctionType(params: [int32Type], returns: refcountedObjectPointerType))
+        static let allocObject = Function(name: "vist_allocObject", type: FunctionType(params: [typeMetadataType.ptrType()], returns: refcountedObjectPointerType))
         static let deallocObject = Function(name: "vist_deallocObject", type: FunctionType(params: [refcountedObjectPointerType], returns: voidType))
         static let retainObject  = Function(name: "vist_retainObject", type: FunctionType(params: [refcountedObjectPointerType], returns: voidType))
         static let releaseObject  = Function(name: "vist_releaseObject", type: FunctionType(params: [refcountedObjectPointerType], returns: voidType))

@@ -194,7 +194,7 @@ enum AggrFlattenPass : OptimisationPass {
                         
                         // if the element of the tuple is a struct, we may have missed
                         // an optimisation opportunity, make sure we go back go back over it
-                        if let _ = try? gep.propertyType.getAsTupleType(),
+                        if gep.propertyType.isTupleType(),
                             case let mem as Inst = gep.object.value {
                             returnAndGoAgainInst = mem
                         }
@@ -222,7 +222,7 @@ enum AggrFlattenPass : OptimisationPass {
                         
                         // if the element of the tuple is a struct, we may have missed
                         // an optimisation opportunity, make sure we go back go back over it
-                        if let _ = try? gep.elementType.getAsStructType(),
+                        if gep.elementType.isStructType(),
                             case let mem as Inst = gep.tuple.value {
                             returnAndGoAgainInst = mem
                         }

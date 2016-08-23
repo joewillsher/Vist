@@ -65,6 +65,13 @@ extension Module {
                 destructor.loweredFunction = fn
                 try destructor.virLower(IGF: &IGF)
             }
+            if let copyConstructor = type.copyConstructor {
+                let fn = getOrAddFunction(named: copyConstructor.name,
+                                          type: copyConstructor.type,
+                                          IGF: &IGF)
+                copyConstructor.loweredFunction = fn
+                try copyConstructor.virLower(IGF: &IGF)
+            }
         }
         // emit concepts, needed for conformances
         for type in typeList.values where type.targetType is ConceptType {

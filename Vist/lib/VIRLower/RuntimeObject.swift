@@ -67,7 +67,7 @@ extension RuntimeObject {
                 if case let ptr as ArrayGenerator = value, let c = arrayCount(property: label) {
                     return try ptr.lowerArray(IGF: &IGF, module: module, baseName: newName, arrayCount: Int(c))
                 }
-                else if label == "destructor" {
+                else if label == "destructor" || label == "copyConstructor" {
                     return value.getFnPtr()
                 }
                 else {
