@@ -71,7 +71,7 @@ final class StoreInst : Inst {
     }
     
     var vir: String {
-        return "store \(value.name) in \(address.valueName)\(useComment)"
+        return "store \(value.name) in \(address.valueName)\(useComment) // id: \(name)"
     }
     
     func copy() -> StoreInst {
@@ -169,6 +169,8 @@ final class BitcastInst : Inst, LValue {
     var irName: String?
 }
 
+/// Destroys the value stored in this addr; it frees existential buffers,
+/// and calls destructors of any elements stored in it
 final class DestroyAddrInst : Inst {
     var addr: PtrOperand
     
@@ -191,7 +193,7 @@ final class DestroyAddrInst : Inst {
     var hasSideEffects: Bool { return true }
     
     var vir: String {
-        return "destroy_addr \(addr.valueName)\(useComment)"
+        return "destroy_addr \(addr.valueName)\(useComment) // id: \(name)"
     }
     
     func copy() -> DestroyAddrInst {
@@ -204,6 +206,8 @@ final class DestroyAddrInst : Inst {
     var parentBlock: BasicBlock?
     var irName: String?
 }
+
+/// Same as `DestroyAddrInst` but can operate on a value
 final class DestroyValInst : Inst {
     var val: Operand
     
@@ -226,7 +230,7 @@ final class DestroyValInst : Inst {
     var hasSideEffects: Bool { return true }
     
     var vir: String {
-        return "destroy_val \(val.valueName)\(useComment)"
+        return "destroy_val \(val.valueName)\(useComment) // id: \(name)"
     }
     
     func copy() -> DestroyValInst {
@@ -240,5 +244,74 @@ final class DestroyValInst : Inst {
     var irName: String?
 }
 
-
+final class CopyAddrInst : Inst {
+    var addr: PtrOperand
+    var outAddr: PtrOperand
+    
+    var type: Type? { return nil }
+    
+    var uses: [Operand] = []
+    var args: [Operand]
+    
+    convenience init(addr: LValue, out: LValue, irName: String? = nil) throws {
+        self.init(addr: PtrOperand(addr), out: PtrOperand(out), irName: irName)
+    }
+    
+    private init(addr: PtrOperand, out: PtrOperand, irName: String?) {
+        self.addr = addr
+        self.outAddr = out
+        self.args = [addr, out]
+        initialiseArgs()
+        self.irName = irName
+    }
+    
+    var vir: String {
+        return "copy_addr \(addr.valueName) to \(outAddr.valueName) // id: \(name)"
+    }
+    
+    func copy() -> CopyAddrInst {
+        return CopyAddrInst(addr: addr.formCopy(), out: outAddr.formCopy(), irName: irName)
+    }
+    
+    func setArgs(_ args: [Operand]) {
+        addr = args[0] as! PtrOperand
+        outAddr = args[1] as! PtrOperand
+    }
+    var parentBlock: BasicBlock?
+    var irName: String?
+}
+final class DeallocStackInst : Inst {
+    private(set) var address: PtrOperand
+    
+    var type: Type? { return nil }
+    
+    var uses: [Operand] = []
+    var args: [Operand]
+    
+    convenience init(address: LValue, irName: String? = nil) {
+        self.init(address: PtrOperand(address), irName: irName)
+    }
+    
+    private init(address: PtrOperand, irName: String?) {
+        self.address = address
+        self.args = [address]
+        initialiseArgs()
+        self.irName = irName
+    }
+    
+    var vir: String {
+        return "dealloc_stack \(address.valueName) // id: \(name)"
+    }
+    
+    func copy() -> DeallocStackInst {
+        return DeallocStackInst(address: address.formCopy(), irName: irName)
+    }
+    
+    func setArgs(_ args: [Operand]) {
+        address = args[0] as! PtrOperand
+    }
+    
+    weak var parentBlock: BasicBlock?
+    var irName: String?
+}
 

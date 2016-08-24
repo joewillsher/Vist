@@ -41,10 +41,12 @@ extension DestroyAddrInst : VIRLower {
             return try IGF.builder.buildCall(function: ref, args: [addr.loweredValue!])
             
         case let type as NominalType where type.isStructType():
-            let metadata = try type.getLLVMTypeMetadata(IGF: &IGF, module: module)
-            let bc = try IGF.builder.buildBitcast(value: addr.loweredValue!, to: LLVMType.opaquePointer)
-            let ref = module.getRuntimeFunction(.destroyStructAddr, IGF: &IGF)
-            return try IGF.builder.buildCall(function: ref, args: [bc, metadata])
+            guard case let modType as TypeAlias = addr.memType, let destructor = modType.destructor else {
+                return LLVMValue.nullptr
+            }
+            
+            _ = try IGF.builder.buildApply(function: destructor.loweredFunction!.function, args: [addr.loweredValue!])
+            return LLVMValue.nullptr
             
         default:
             return LLVMValue.nullptr
@@ -62,10 +64,13 @@ extension DestroyValInst : VIRLower {
             return try IGF.builder.buildCall(function: ref, args: [mem])
             
         case let type as NominalType where type.isStructType():
-            let bc = try IGF.builder.buildBitcast(value: mem, to: LLVMType.opaquePointer)
-            let metadata = try type.getLLVMTypeMetadata(IGF: &IGF, module: module)
-            let ref = module.getRuntimeFunction(.destroyStructAddr, IGF: &IGF)
-            return try IGF.builder.buildCall(function: ref, args: [bc, metadata])
+            // if it requires a custom deallocator, call that
+            guard case let modType as TypeAlias = val.type, let destructor = modType.destructor else {
+                return LLVMValue.nullptr // if not, we dont emit any destruction IR
+            }
+            
+            try IGF.builder.buildApply(function: destructor.loweredFunction!.function, args: [mem])
+            return LLVMValue.nullptr
             
         default:
             return LLVMValue.nullptr
@@ -73,7 +78,35 @@ extension DestroyValInst : VIRLower {
     }
 }
 
-
+extension CopyAddrInst : VIRLower {
+    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+        
+        switch addr.memType {
+        case let type? where type.isConceptType():
+            // call into the runtime to copy the existential -- this calls the existential's
+            // copy constructor, which copies over all vals stored in the existential.
+            let ref = module.getRuntimeFunction(.copyExistentialBuffer, IGF: &IGF)
+            try IGF.builder.buildCall(function: ref, args: [addr.loweredValue!, outAddr.loweredValue!])
+            return outAddr.loweredValue!
+            
+        case let type as NominalType where type.isStructType():
+            
+            // if there is a copy constructor, call into that to init the new mem
+            guard case let modType as TypeAlias = addr.memType, let copyConstructor = modType.copyConstructor else {
+                // otheriwse we just do a shallow copy
+                let val = try IGF.builder.buildLoad(from: addr.loweredValue!)
+                try IGF.builder.buildStore(value: val, in: outAddr.loweredValue!)
+                return outAddr.loweredValue!
+            }
+            
+            _ = try IGF.builder.buildApply(function: copyConstructor.loweredFunction!.function, args: [addr.loweredValue!, outAddr.loweredValue!])
+            return outAddr.loweredValue!
+            
+        default:
+            return LLVMValue.nullptr
+        }
+    }
+}
 extension VariableInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         return value.loweredValue!

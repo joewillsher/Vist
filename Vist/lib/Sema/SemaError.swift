@@ -158,7 +158,7 @@ enum SemaError: VistError {
         case .noConstraints:
             return "Could not satisfy empty type constraints"
         case .couldNotAddConstraint(let constraint, let type):
-            return "Count not constrain type '\(type.prettyName)' to '\(constraint.prettyName)'"
+            return "Could not constrain type '\(type.prettyName)' to '\(constraint.prettyName)'"
         }
     }
 }

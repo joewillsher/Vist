@@ -70,7 +70,7 @@ final class RetainInst : Inst {
     var hasSideEffects: Bool { return true }
     
     var vir: String {
-        return "\(name) = retain_object \(object.valueName)\(useComment)"
+        return "retain_object \(object.valueName)\(useComment) // id: \(name)"
     }
     
     func copy() -> RetainInst {
@@ -118,7 +118,7 @@ final class ReleaseInst : Inst {
     var hasSideEffects: Bool { return true }
     
     var vir: String {
-        return "\(name) = \(unowned ? "release_unowned_object" : "release_object") \(object.valueName)\(useComment)"
+        return "\(unowned ? "release_unowned_object" : "release_object") \(object.valueName) // id: \(name)"
     }
     weak var parentBlock: BasicBlock?
     var irName: String?
@@ -157,7 +157,7 @@ final class DeallocObjectInst : Inst {
     var hasSideEffects: Bool { return true }
     
     var vir: String {
-        return "\(name) = \(unowned ? "dealloc_unowned_object" : "dealloc_object") \(object.valueName)\(useComment)"
+        return "\(unowned ? "dealloc_unowned_object" : "dealloc_object") \(object.valueName) // id: \(name)"
     }
     weak var parentBlock: BasicBlock?
     var irName: String?

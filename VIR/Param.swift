@@ -6,17 +6,6 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-enum ParamConvention {
-    case `in`, refIn, capture
-    
-    var name: String {
-        switch self {
-        case .in: return "@in"
-        case .refIn: return "@in_ref"
-        case .capture: return "@capture"
-        }
-    }
-}
 
 /// A parameter passed between blocks and functions
 class Param : Value {
@@ -25,16 +14,23 @@ class Param : Value {
     weak var parentBlock: BasicBlock?
     var uses: [Operand] = []
     
-    let convention: ParamConvention = .in
+    let convention: Convention?
     
     /// This param's incoming val
     var phi: LLVMValue? = nil
     /// list of predecessor blocks which have added their phi incoming
     var phiPreds: Set<LLVMBasicBlock> = []
     
-    required init(paramName: String, type: Type) {
+    required init(paramName: String, type: Type, convention: Convention? = nil) {
         self.paramName = paramName
         self.type = type
+        
+        if case BuiltinType.pointer = type {
+            self.convention = convention ?? .in
+        }
+        else {
+            self.convention = nil
+        }
     }
     var irName: String? {
         get { return paramName }
@@ -45,6 +41,18 @@ class Param : Value {
         phi = val
         for use in uses { use.setLoweredValue(val) }
     }
+    
+    enum Convention {
+        case `in`, out, `inout`
+        
+        var name: String {
+            switch self {
+            case .in: return "@in"
+            case .out: return "@out"
+            case .inout: return "@inout"
+            }
+        }
+    }
 }
 
 /// A param backed by a pointer
@@ -52,9 +60,9 @@ final class RefParam : Param, LValue {
     var memType: Type?
     
     /// - parameter type: The memType of the reference param
-    required init(paramName: String, type memType: Type) {
+    required init(paramName: String, type memType: Type, convention: Convention? = nil) {
         self.memType = memType
-        super.init(paramName: paramName, type: BuiltinType.pointer(to: memType))
+        super.init(paramName: paramName, type: BuiltinType.pointer(to: memType), convention: convention)
     }
     
 }
@@ -64,7 +72,14 @@ extension Param {
     // param has no params so a copy is clean
     func copy() -> Self {
         assert(phi == nil) // cannot copy if we are in VIRLower
-        return self.dynamicType.init(paramName: paramName, type: type!)
+        return self.dynamicType.init(paramName: paramName, type: type!, convention: convention)
+    }
+}
+
+extension Param : Hashable {
+    var hashValue: Int { return name.hashValue }
+    static func == (l: Param, r: Param) -> Bool {
+        return l === r
     }
 }
 

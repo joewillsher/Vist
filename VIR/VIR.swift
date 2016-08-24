@@ -82,8 +82,11 @@ extension Function {
     var vir: String {
         let b = blocks?.map { $0.vir }
         let bString = b.map { " {\n\($0.joined(separator: "\n"))}" } ?? ""
-        let conv = type.callingConvention.name
-        return "func @\(name) : \(conv) \(type.vir)\(bString)"
+        
+        let params = zip(type.params, self.params ?? []).map {
+            ($1.convention?.name.appending(" ") ?? "") + $0.vir
+        }.joined(separator: ", ")
+        return "func @\(name) : \(type.callingConvention.name) (\(params)) -> \(type.returns.vir)\(bString)"
     }
 }
 

@@ -58,7 +58,7 @@ final class BuiltinInstCall : Inst {
         let w = a.joined(separator: ", ")
         switch inst {
         case .condfail:
-            return "cond_fail \(w)"
+            return "cond_fail \(w) // id: \(name)"
         default:
             return "\(name) = builtin \(instName) \(w)\(useComment)"
         }

@@ -86,18 +86,6 @@ extension ExistentialProjectInst : VIRLower {
     }
 }
 
-extension ExistentialCopyBufferInst : VIRLower {
-    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        // alloc the out memory
-        let copyMemory = try IGF.builder.buildAlloca(type: Runtime.existentialObjectType.importedType(in: module).lowered(module: module))
-        // call into the runtime to copy the existential (and copy its
-        // buffer onto the heap)
-        let ref = module.getRuntimeFunction(.copyExistentialBuffer, IGF: &IGF)
-        try IGF.builder.buildCall(function: ref, args: [existential.loweredValue!, copyMemory])
-        return copyMemory
-    }
-}
-
 extension ExistentialExportBufferInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         let ref = module.getRuntimeFunction(.exportExistentialBuffer, IGF: &IGF)

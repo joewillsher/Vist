@@ -235,4 +235,14 @@ extension Inst {
         }
     }
     
+    /// The predecessor of `self`
+    func predecessorOrSelf() -> Inst {
+        let v: Inst? = parentBlock.map { parent in
+            guard let x = try? parent.index(of: self) else { return self }
+            return parent.instructions[parent.instructions.index(before: x)]
+        }
+        return v ?? self
+    }
+
+    
 }

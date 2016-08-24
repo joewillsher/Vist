@@ -65,6 +65,7 @@ final class DominatorTree : FunctionAnalysis {
         return DominatorTree(function: function, root: node)
     }
     
+    /// The ancestors of `node`, ordered walking up the tree
     func ancestors(of node: Node) -> [Node] {
         var ancs: [Node] = []
         ancs.reserveCapacity(node.level)

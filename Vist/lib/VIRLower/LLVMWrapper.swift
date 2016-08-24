@@ -115,6 +115,7 @@ extension LLVMBuilder {
     func buildRetVoid() throws -> LLVMValue {
         return try wrap(LLVMBuildRetVoid(builder))
     }
+    @discardableResult
     func buildApply(function: LLVMValue, args: [LLVMValue], name: String? = nil) throws -> LLVMValue {
         return try buildCall(function: LLVMFunction(ref: function._value), args: args)
     }

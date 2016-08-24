@@ -15,7 +15,7 @@
 protocol CaptureDelegate : class {
     var captured: [Accessor] { get }
     /// The delegate action to capture a vairable
-    func capture(variable: Accessor, scope: Scope, name: String) throws -> Accessor
+    func capture(variable: Accessor, scope: VIRGenScope, name: String) throws -> Accessor
 }
 
 /// A thunk object -- wraps a function. Can be used for captruing scopes
@@ -73,7 +73,7 @@ final class Closure : ThunkFunction, VIRElement {
 
 extension Closure : CaptureDelegate {
     
-    func capture(variable: Accessor, scope: Scope, name: String) throws -> Accessor {
+    func capture(variable: Accessor, scope: VIRGenScope, name: String) throws -> Accessor {
         // add to self capture list
         // update function
         

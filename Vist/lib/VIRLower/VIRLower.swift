@@ -153,7 +153,8 @@ extension Function : VIRLower {
         try applyAttributes()
         
         // if no body, return
-        guard let _ = self.blocks else { return fn.function }
+        guard let _ = self.blocks, !emmitedBody else { return fn.function }
+        defer { emmitedBody = true }
         
         // declare blocks, so break instructions have something to br to
         // loop over the dominance tree

@@ -94,7 +94,7 @@ extension FunctionType {
                     throw SemaError.couldNotAddConstraint(constraint: constraint, to: self)
                 }
             }
-            guard solver.typeSatisfies(self.returns, constraint: constraint) else {
+            guard solver.typeSatisfies(self.returns, constraint: constraint.returns) else {
                 throw SemaError.couldNotAddConstraint(constraint: constraint, to: self)
             }
             
