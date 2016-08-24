@@ -216,7 +216,7 @@ final class ExistentialExportBufferInst : Inst {
     var hasSideEffects: Bool { return true }
     
     var vir: String {
-        return "existential_export_buffer \(existential.valueName)\(useComment)"
+        return "existential_export_buffer \(existential.valueName)\(useComment) // id: \(name)"
     }
     
     func copy() -> ExistentialExportBufferInst {
@@ -229,39 +229,3 @@ final class ExistentialExportBufferInst : Inst {
     var parentBlock: BasicBlock?
     var irName: String?
 }
-
-final class ExistentialCopyBufferInst : Inst, LValue {
-    var existential: PtrOperand
-    
-    var type: Type? { return existential.type }
-    var memType: Type? { return existential.memType }
-    
-    var uses: [Operand] = []
-    var args: [Operand]
-    
-    convenience init(existential: LValue, irName: String? = nil) throws {
-        self.init(existential: PtrOperand(existential), irName: irName)
-    }
-    
-    private init(existential: PtrOperand, irName: String?) {
-        self.existential = existential
-        self.args = [existential]
-        initialiseArgs()
-        self.irName = irName
-    }
-    
-    var vir: String {
-        return "\(name) = existential_copy_buffer \(existential.valueName)\(useComment)"
-    }
-    
-    func copy() -> ExistentialCopyBufferInst {
-        return ExistentialCopyBufferInst(existential: existential.formCopy(), irName: irName)
-    }
-    
-    func setArgs(_ args: [Operand]) {
-        existential = args[0] as! PtrOperand
-    }
-    var parentBlock: BasicBlock?
-    var irName: String?
-}
-

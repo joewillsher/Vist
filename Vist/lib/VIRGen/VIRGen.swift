@@ -140,7 +140,7 @@ extension StringLiteral : ValueEmitter {
         // String exposes methods to move buffer and change size
         // String `print` passes `base` into a cshim functions which print the buffer
         //    - wholly if its contiguous UTF8
-        //    - char by char if it contains UTF16 ocde units
+        //    - char by char if it contains UTF16 code units
         
         let string = try module.builder.build(inst: StringLiteralInst(val: str))
         let length = try module.builder.build(inst: IntLiteralInst(val: str.utf8.count + 1, size: 64, irName: "size"))
@@ -330,7 +330,9 @@ extension FuncDecl : StmtEmitter {
             case let selfRef as IndirectAccessor:
                 for property in type.members {
                     let pVar = LazyRefAccessor {
-                        try module.builder.build(inst: StructElementPtrInst(object: selfRef.reference(), property: property.name, irName: property.name))
+                        try module.builder.build(inst: StructElementPtrInst(object: selfRef.lValueReference(),
+                                                                            property: property.name,
+                                                                            irName: property.name))
                     }
                     fnScope.insert(variable: pVar, name: property.name)
                 }
@@ -401,7 +403,7 @@ extension ReturnStmt : ValueEmitter {
         
         let boxed = try retVal
             .coercedAccessor(to: expectedReturnType, module: module)
-            .aggregateGetValue()
+            .getEscapingValue()
         return try module.builder.buildReturn(value: boxed).accessor()
     }
 }
@@ -430,7 +432,7 @@ extension TupleMemberLookupExpr : ValueEmitter, LValueEmitter {
         guard case let o as LValueEmitter = object else { fatalError() }
         
         let tuple = try o.emitLValue(module: module, scope: scope)
-        return try module.builder.build(inst: TupleElementPtrInst(tuple: tuple.reference(), index: index)).accessor
+        return try module.builder.build(inst: TupleElementPtrInst(tuple: tuple.lValueReference(), index: index)).accessor
     }
 }
 
@@ -464,15 +466,14 @@ extension PropertyLookupExpr : LValueEmitter {
     }
     
     func emitLValue(module: Module, scope: Scope) throws -> IndirectAccessor {
-        guard case let o as LValueEmitter = object else { fatalError() }
+        guard case let o as LValueEmitter = self.object else { fatalError() }
+        let object = try o.emitLValue(module: module, scope: scope).lValueReference()
         
-        switch object._type {
+        switch self.object._type {
         case is StructType:
-            let str = try o.emitLValue(module: module, scope: scope)
-            return try module.builder.build(inst: StructElementPtrInst(object: str.reference(), property: propertyName)).accessor
+            return try module.builder.build(inst: StructElementPtrInst(object: object, property: propertyName)).accessor
             
         case is ConceptType:
-            let object = try self.object.emitRValue(module: module, scope: scope).referenceBacked().reference()
             return try module.builder.build(inst: ExistentialProjectPropertyInst(existential: object, propertyName: propertyName)).accessor
             
         default:
@@ -773,7 +774,7 @@ extension InitDecl : StmtEmitter {
         
         // add self’s elements into the scope, whose accessors are elements of selfvar
         for member in selfType.members {
-            let structElement = try module.builder.build(inst: StructElementPtrInst(object: selfVar.reference(),
+            let structElement = try module.builder.build(inst: StructElementPtrInst(object: selfVar.lValueReference(),
                                                                                     property: member.name,
                                                                                     irName: member.name))
             fnScope.insert(variable: structElement.accessor, name: member.name)
@@ -790,7 +791,7 @@ extension InitDecl : StmtEmitter {
         try fnScope.removeVariable(named: "self")?.releaseUnowned()
         try fnScope.releaseVariables(deleting: true)
         
-        try module.builder.buildReturn(value: selfVar.aggregateGetValue())
+        try module.builder.buildReturn(value: selfVar.getEscapingValue())
         
         // move out of function
         module.builder.insertPoint = originalInsertPoint
@@ -806,8 +807,6 @@ extension MutationExpr : ValueEmitter {
             .coercedAccessor(to: object._type, module: module)
             .aggregateGetValue()
         guard case let lhs as LValueEmitter = object else { fatalError() }
-        
-        // TODO: test aggregate stuff
         
         // set the lhs to rval
         try lhs.emitLValue(module: module, scope: scope).setValue(rval)

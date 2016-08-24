@@ -23,8 +23,8 @@ extension TypeDecl {
                                   returns: BuiltinType.void,
                                   callingConvention: .runtime)
         let fnName = "destroy".mangle(type: fnType)
-        let fn = try module.builder.buildFunction(name: fnName, type: fnType, paramNames: ["self"])
-        
+        let fn = try module.builder.buildFunctionPrototype(name: fnName, type: fnType)
+        try fn.defineBody(params: [(name: "self", convention: .inout)])
         
         let selfAccessor = try fn.param(named: "self").accessor() as! IndirectAccessor
         
@@ -48,7 +48,8 @@ extension TypeDecl {
                                   returns: BuiltinType.void,
                                   callingConvention: .runtime)
         let fnName = "deepCopy".mangle(type: fnType)
-        let fn = try module.builder.buildFunction(name: fnName, type: fnType, paramNames: ["self", "out"])
+        let fn = try module.builder.buildFunctionPrototype(name: fnName, type: fnType)
+        try fn.defineBody(params: [(name: "self", convention: .inout), (name: "out", convention: .out)])
         
         let selfAccessor = try fn.param(named: "self").accessor() as! IndirectAccessor
         let outAccessor = try fn.param(named: "out").accessor() as! IndirectAccessor
@@ -62,11 +63,13 @@ extension TypeDecl {
 
 private extension Type {
     func needsDestructor() -> Bool {
-        return (self as? NominalType)?.members.contains {
+        return
+            isConceptType() ||
+            ((self as? NominalType)?.members.contains {
             $0.type is ConceptType ||
                 $0.type.isHeapAllocated ||
                 $0.type.needsDestructor()
-            } ?? false
+            } ?? false)
     }
 }
 
@@ -78,7 +81,7 @@ extension IndirectAccessor {
         case let type as NominalType:
             for member in type.members {
                 
-                let ptr = try module.builder.build(inst: StructElementPtrInst(object: reference(),
+                let ptr = try module.builder.build(inst: StructElementPtrInst(object: lValueReference(),
                                                                               property: member.name,
                                                                               irName: member.name))
                 switch member.type {
@@ -103,20 +106,21 @@ extension IndirectAccessor {
     func emitCopyConstruction(into outAccessor: IndirectAccessor, module: Module) throws {
         
         switch storedType {
-        case let type as NominalType:
+        case let type as NominalType where type.needsDestructor():
+            
             for member in type.members {
-                let ptr = try module.builder.build(inst: StructElementPtrInst(object: reference(),
+                let ptr = try module.builder.build(inst: StructElementPtrInst(object: lValueReference(),
                                                                               property: member.name,
                                                                               irName: member.name))
                 /// The ptr to the value we load from to store into the target
                 let valuePtr: LValue
-                let outPtr = try module.builder.build(inst: StructElementPtrInst(object: outAccessor.reference(),
+                let outPtr = try module.builder.build(inst: StructElementPtrInst(object: outAccessor.lValueReference(),
                                                                                  property: member.name,
                                                                                  irName: member.name))
                 switch member.type {
                 case let type where type.isConceptType():
                     // if it is a concept, copy the buffer in the runtime
-                    valuePtr = try module.builder.build(inst: ExistentialCopyBufferInst(existential: ptr))
+                    valuePtr = try module.builder.build(inst: CopyAddrInst(addr: ptr))
                     
                 case let type where type.isHeapAllocated:
                     // if we need to retaun it
@@ -143,6 +147,22 @@ extension IndirectAccessor {
     }
     
 }
+
+
+extension Function {
+    
+    func insertDeallocations() throws {
+        
+        
+        /*
+         
+         */
+        
+    }
+    
+}
+
+
 
 
 

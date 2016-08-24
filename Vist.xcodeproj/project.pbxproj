@@ -385,6 +385,7 @@
 		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		D4DE28181C5969830096E798 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		D4E225B51D6C7BCB0055A5CA /* Lifetime.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Lifetime.swift; path = lib/VIRGen/Lifetime.swift; sourceTree = "<group>"; };
+		D4E225BB1D6DDC2D0055A5CA /* Dispatch.s */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; name = Dispatch.s; path = stdlib/runtime/Dispatch.s; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.i386; };
 		D4E35B7E1C5D216600683486 /* Pipe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pipe.swift; sourceTree = "<group>"; };
 		D4E35B801C5E3EC600683486 /* Expected.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Expected.swift; sourceTree = "<group>"; };
 		D4E615431D54DE2A00A10DA4 /* ConstraintSolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ConstraintSolver.swift; path = lib/Sema/ConstraintSolver.swift; sourceTree = "<group>"; };
@@ -532,6 +533,7 @@
 			children = (
 				D4CA32071CEA7013009C2B10 /* runtime.h */,
 				D49BC2971CE25B1C0071D3AD /* Metadata.cpp */,
+				D4E225BB1D6DDC2D0055A5CA /* Dispatch.s */,
 				D49BC2981CE25B1C0071D3AD /* RefcountedObject.cpp */,
 				D49BC29B1CE27F8C0071D3AD /* Casting.cpp */,
 				D49BC2991CE25B1C0071D3AD /* runtime.cpp */,

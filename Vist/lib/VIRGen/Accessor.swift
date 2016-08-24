@@ -43,6 +43,7 @@ protocol Accessor : class {
     func deallocUnowned() throws
     
     func owningAccessor() throws -> Accessor
+    func getEscapingValue() throws -> Value
     
     var module: Module { get }
 }
@@ -121,6 +122,10 @@ extension Accessor {
             return self
         }
     }
+    
+    func getEscapingValue() throws -> Value {
+        return try getValue()
+    }
 }
 
 
@@ -179,19 +184,13 @@ final class ExistentialRefAccessor : IndirectAccessor {
 //        try module.builder.build(inst: DestroyAddrInst(existential: mem))
 //    }
     
-    func getValue() throws -> Value {
-        let copy = try module.builder.build(inst: ExistentialCopyBufferInst(existential: mem))
-        return try module.builder.build(inst: LoadInst(address: copy))
-    }
-    
     func aggregateGetValue() throws -> Value {
         return try getValue()
     }
     
     func getMemCopy() throws -> IndirectAccessor {
-        return try ExistentialRefAccessor(memory: module.builder.build(inst: ExistentialCopyBufferInst(existential: mem)))
+        return try ExistentialRefAccessor(memory: module.builder.build(inst: CopyAddrInst(addr: mem)))
     }
-    
     
     func getEscapingValue() throws -> Value {
         // make sure this buffer is exported
@@ -214,9 +213,12 @@ protocol IndirectAccessor : Accessor {
     /// The pointer to the stored object
     func reference() throws -> LValue
     
+    /// A reference into the original value's memory
+    func lValueReference() throws -> LValue
+    
     /// Return the aggregate reference -- not guaranteed to be the same
     /// as the location `reference` uses to access elements
-    func aggregateReference() -> LValue
+    func aggregateReference() throws -> LValue
         
 }
 
@@ -231,14 +233,21 @@ extension IndirectAccessor {
     }
     
     func setValue(_ val: Value) throws {
-        try module.builder.build(inst: StoreInst(address: reference(), value: val))
+        try module.builder.build(inst: StoreInst(address: lValueReference(), value: val))
     }
     
     // default impl of `reference` is a projection of the storage
-    func reference() -> LValue { return mem }
+    func reference() throws -> LValue {
+        return try module.builder.build(inst: CopyAddrInst(addr: mem))
+    }
+    func lValueReference() throws -> LValue {
+        return mem
+    }
     
     // default impl of `aggregateReference` is the same as `reference`
-    func aggregateReference() -> LValue { return mem }
+    func aggregateReference() throws -> LValue {
+        return try module.builder.build(inst: CopyAddrInst(addr: mem))
+    }
     
     func aggregateGetValue() throws -> Value {
         return try module.builder.build(inst: LoadInst(address: aggregateReference()))
@@ -252,6 +261,15 @@ extension IndirectAccessor {
     
     func release() throws {
         try module.builder.build(inst: DestroyAddrInst(addr: mem))
+    }
+    
+    func getMemCopy() throws -> IndirectAccessor {
+        return try aggregateReference().accessor().referenceBacked()
+    }
+    
+    /// Just loads from the val
+    func getEscapingValue() throws -> Value {
+        return try module.builder.build(inst: LoadInst(address: mem))
     }
 }
 
@@ -327,6 +345,9 @@ final class RefCountedAccessor : IndirectAccessor {
         let load = try module.builder.build(inst: LoadInst(address: ref, irName: mem.irName.+"instance"))
         
         return try OpaqueLValue(rvalue: load)
+    }
+    func lValueReference() throws -> LValue {
+        return try reference()
     }
     
     func aggregateReference() -> LValue {

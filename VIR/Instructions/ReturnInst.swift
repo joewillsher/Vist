@@ -29,7 +29,7 @@ final class ReturnInst : Inst {
     }
     
     var vir: String {
-        return "return \(returnValue.name)"
+        return "return \(returnValue.name) // id: \(name)"
     }
     
     var type: Type? { return nil }

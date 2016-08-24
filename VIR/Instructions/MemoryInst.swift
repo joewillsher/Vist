@@ -71,7 +71,7 @@ final class StoreInst : Inst {
     }
     
     var vir: String {
-        return "store \(value.name) in \(address.valueName)\(useComment)"
+        return "store \(value.name) in \(address.valueName)\(useComment) // id: \(name)"
     }
     
     func copy() -> StoreInst {
@@ -169,6 +169,8 @@ final class BitcastInst : Inst, LValue {
     var irName: String?
 }
 
+/// Destroys the value stored in this addr; it frees existential buffers,
+/// and calls destructors of any elements stored in it
 final class DestroyAddrInst : Inst {
     var addr: PtrOperand
     
@@ -191,7 +193,7 @@ final class DestroyAddrInst : Inst {
     var hasSideEffects: Bool { return true }
     
     var vir: String {
-        return "destroy_addr \(addr.valueName)\(useComment)"
+        return "destroy_addr \(addr.valueName)\(useComment) // id: \(name)"
     }
     
     func copy() -> DestroyAddrInst {
@@ -204,6 +206,8 @@ final class DestroyAddrInst : Inst {
     var parentBlock: BasicBlock?
     var irName: String?
 }
+
+/// Same as `DestroyAddrInst` but can operate on a value
 final class DestroyValInst : Inst {
     var val: Operand
     
@@ -226,7 +230,7 @@ final class DestroyValInst : Inst {
     var hasSideEffects: Bool { return true }
     
     var vir: String {
-        return "destroy_val \(val.valueName)\(useComment)"
+        return "destroy_val \(val.valueName)\(useComment) // id: \(name)"
     }
     
     func copy() -> DestroyValInst {
@@ -240,5 +244,37 @@ final class DestroyValInst : Inst {
     var irName: String?
 }
 
-
-
+final class CopyAddrInst : Inst, LValue {
+    var addr: PtrOperand
+    
+    var type: Type? { return addr.type }
+    var memType: Type? { return addr.memType }
+    
+    var uses: [Operand] = []
+    var args: [Operand]
+    
+    convenience init(addr: LValue, irName: String? = nil) throws {
+        self.init(addr: PtrOperand(addr), irName: irName)
+    }
+    
+    private init(addr: PtrOperand, irName: String?) {
+        self.addr = addr
+        self.args = [addr]
+        initialiseArgs()
+        self.irName = irName
+    }
+    
+    var vir: String {
+        return "\(name) = copy_addr \(addr.valueName)\(useComment)"
+    }
+    
+    func copy() -> CopyAddrInst {
+        return CopyAddrInst(addr: addr.formCopy(), irName: irName)
+    }
+    
+    func setArgs(_ args: [Operand]) {
+        addr = args[0] as! PtrOperand
+    }
+    var parentBlock: BasicBlock?
+    var irName: String?
+}

@@ -43,24 +43,31 @@ void vist_constructExistential(ConceptConformance *_Nonnull conformance,
         // set stack source to 0
         memset(instance, 0, metadata->size);
         ptr = (uintptr_t)mem;
+#ifdef REFCOUNT_DEBUG
         printf("→alloc %s:\t%p\n", metadata->name, mem);
+#endif
     } else {
+#ifdef REFCOUNT_DEBUG
         printf("→alloc_stack %s:\t%p\n", metadata->name, instance);
+#endif
         ptr = (uintptr_t)instance;
     }
     
-    // mask tagged pointer
-    ptr |= isNonLocal;
-    *outExistential = ExistentialObject(ptr, metadata, 1, (ConceptConformance **)conformance);
+    *outExistential = ExistentialObject(ptr | isNonLocal, metadata, 1,
+                                        (ConceptConformance **)conformance);
 }
 
 RUNTIME_COMPILER_INTERFACE
 void vist_deallocExistentialBuffer(ExistentialObject *_Nonnull existential) {
+#ifdef REFCOUNT_DEBUG
     printf("→dealloc %s:\t%p\n", existential->metadata->name, existential->projectBuffer());
+#endif
     if (auto buff = (void *)existential->projectBuffer()) {
         // call the destructor
         if (auto destructor = existential->metadata->destructor) {
+#ifdef REFCOUNT_DEBUG
             printf("   ↳destructor_fn=%p\n", existential->metadata->destructor);
+#endif
             destructor(buff);
         }
         // if stored on the heap, dealloc it
@@ -114,14 +121,18 @@ RUNTIME_COMPILER_INTERFACE
 void vist_exportExistentialBuffer(ExistentialObject *_Nonnull existential) {
     auto in = existential->projectBuffer();
     if (existential->isNonLocal()) {
+#ifdef REFCOUNT_DEBUG
         printf("     ↳dupe_export %s:\t%p\n", existential->metadata->name, in);
+#endif
         return;
     }
     auto mem = malloc(existential->metadata->size);
     // copy stack into new buffer
     memcpy(mem, (void*)existential->projectBuffer(), existential->metadata->size);
     existential->instanceTaggedPtr = (uintptr_t)mem | true;
+#ifdef REFCOUNT_DEBUG
     printf("   ↳export %s:\t%p to: %p\n", existential->metadata->name, in, existential->projectBuffer());
+#endif
 }
 
 RUNTIME_COMPILER_INTERFACE
@@ -131,14 +142,18 @@ void vist_copyExistentialBuffer(ExistentialObject *_Nonnull existential,
     auto in = (void*)existential->projectBuffer();
     auto mem = malloc(existential->metadata->size);
     if (auto copyConstructor = existential->metadata->copyConstructor) {
+#ifdef REFCOUNT_DEBUG
         printf("   ↳deep_copy %s:\t%p to: %p\n", existential->metadata->name, in, mem);
         printf("       ↳deep_copy_fn=%p\n", copyConstructor);
+#endif
         copyConstructor((void*)existential->projectBuffer(), mem);
     }
     else {
         // if there is no copy constructor, we just have to do a shallow copy
         memcpy(mem, (void*)existential->projectBuffer(), existential->metadata->size);
+#ifdef REFCOUNT_DEBUG
         printf("   ↳copy %s:\t%p to: %p\n", existential->metadata->name, in, mem);
+#endif
     }
     *outExistential = ExistentialObject((uintptr_t)mem | true,
                                         existential->metadata,
@@ -150,8 +165,10 @@ RUNTIME_COMPILER_INTERFACE
 void vist_destroyStructAddr(void *_Nonnull instance,
                             TypeMetadata *_Nullable metadata) {
     if (auto destructor = metadata->destructor) {
+#ifdef REFCOUNT_DEBUG
         printf("→dealloc_struct %s:\t%p\n", metadata->name, instance);
         printf("   ↳destructor_struct_fn=%p\n", metadata->destructor);
+#endif
         destructor(instance);
     }
 }

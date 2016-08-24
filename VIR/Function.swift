@@ -29,6 +29,7 @@ final class Function : VIRElement {
     /// Dominator analysis
     lazy var dominator: Analysis<DominatorTree> = { [unowned self] in Analysis<DominatorTree>(self) }()
     
+    var emmitedBody = false
     /// The LLVM function this is lowered to
     var loweredFunction: LLVMFunction? = nil {
         // update function ref operands
@@ -101,32 +102,36 @@ extension Function {
     /// - precondition: self `hasBody`
     var params: [Param]? { return body?.params }
     
-    /// Creates the function body, and applies `paramNames` as the 
+    
+    func defineBody(paramNames: [String]) throws {
+        try defineBody(params: paramNames.map {($0, nil)})
+    }
+    /// Creates the function body, and applies `paramNames` as the
     /// args to the entry block
     /// - precondition: Body is undefined
-    func defineBody(paramNames pNames: [String]) throws {
+    func defineBody(params: [(name: String, convention: Param.Convention?)]) throws {
         guard !hasBody else { throw VIRError.hasBody }
         
-        let paramNames: [String]
+        let paramNames: [(name: String, convention: Param.Convention?)]
         
         if case .method = type.callingConvention {
-            paramNames = ["self"] + pNames
+            paramNames = [(name: "self", convention: .inout)] + params
         }
         else {
-            paramNames = pNames
+            paramNames = params
         }
         
         // values for the explicit params
-        let params = zip(paramNames, type.params).map { name, type -> Param in
+        let params = zip(paramNames, type.params).map { param, type -> Param in
             let t = type.importedType(in: module)
             if case let bt as BuiltinType = t, case .pointer(let pointee) = bt {
-                return RefParam(paramName: name, type: pointee)
+                return RefParam(paramName: param.name, type: pointee, convention: param.convention)
             }
             else if case let ft as FunctionType = t {
-                return RefParam(paramName: name, type: ft)
+                return RefParam(paramName: param.name, type: ft, convention: param.convention)
             }
             else {
-                return Param(paramName: name, type: t)
+                return Param(paramName: param.name, type: t, convention: param.convention)
             }
         }
         
