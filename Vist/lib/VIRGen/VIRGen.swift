@@ -10,20 +10,20 @@ import class Foundation.NSString
 
 protocol ValueEmitter {
     /// Emit the get-accessor for a VIR rvalue
-    func emitRValue(module: Module, scope: Scope) throws -> Accessor
+    func emitRValue(module: Module, scope: VIRGenScope) throws -> Accessor
 }
 protocol StmtEmitter {
     /// Emit the VIR for an AST statement
-    func emitStmt(module: Module, scope: Scope) throws
+    func emitStmt(module: Module, scope: VIRGenScope) throws
 }
 
 protocol LValueEmitter: ValueEmitter {
     /// Emit the get/set-accessor for a VIR lvalue
-    func emitLValue(module: Module, scope: Scope) throws -> IndirectAccessor
-    func canEmitLValue(module: Module, scope: Scope) throws -> Bool
+    func emitLValue(module: Module, scope: VIRGenScope) throws -> IndirectAccessor
+    func canEmitLValue(module: Module, scope: VIRGenScope) throws -> Bool
 }
 extension LValueEmitter {
-    func canEmitLValue(module: Module, scope: Scope) throws -> Bool { return true }
+    func canEmitLValue(module: Module, scope: VIRGenScope) throws -> Bool { return true }
 }
 
 /// A libaray without a main function can emit vir for this
@@ -31,22 +31,22 @@ protocol LibraryTopLevel: ASTNode {}
 
 
 extension Expr {
-    func emitRValue(module: Module, scope: Scope) throws -> Accessor {
+    func emitRValue(module: Module, scope: VIRGenScope) throws -> Accessor {
         throw VIRError.notGenerator(self.dynamicType)
     }
 }
 extension Stmt {
-    func emitStmt(module: Module, scope: Scope) throws {
+    func emitStmt(module: Module, scope: VIRGenScope) throws {
         throw VIRError.notGenerator(self.dynamicType)
     }
 }
 extension Decl {
-    func emitStmt(module: Module, scope: Scope) throws {
+    func emitStmt(module: Module, scope: VIRGenScope) throws {
         throw VIRError.notGenerator(self.dynamicType)
     }
 }
 extension ASTNode {
-    func emit(module: Module, scope: Scope) throws {
+    func emit(module: Module, scope: VIRGenScope) throws {
         if case let rval as ValueEmitter = self {
             let unusedAccessor = try rval.emitRValue(module: module, scope: scope)
             // function calls return values at -1
@@ -64,7 +64,7 @@ extension ASTNode {
 
 extension Collection where Iterator.Element == ASTNode {
     
-    func emitBody(module: Module, scope: Scope) throws {
+    func emitBody(module: Module, scope: VIRGenScope) throws {
         for x in self {
             try x.emit(module: module, scope: scope)
         }
@@ -85,7 +85,7 @@ extension AST {
     func emitVIR(module: Module, isLibrary: Bool) throws {
         
         let builder = module.builder!
-        let scope = Scope(module: module)
+        let scope = VIRGenScope(module: module)
         
         if isLibrary {
             // if its a library we dont emit a main, and just virgen on any decls/statements
@@ -112,7 +112,7 @@ extension AST {
 
 extension IntegerLiteral : ValueEmitter {
     
-    func emitRValue(module: Module, scope: Scope) throws -> Accessor {
+    func emitRValue(module: Module, scope: VIRGenScope) throws -> Accessor {
         let int = try module.builder.build(inst: IntLiteralInst(val: val, size: 64))
         let std = try module.builder.build(inst: StructInitInst(type: StdLib.intType, values: int))
         return try std.accessor()
@@ -121,7 +121,7 @@ extension IntegerLiteral : ValueEmitter {
 
 extension BooleanLiteral : ValueEmitter {
     
-    func emitRValue(module: Module, scope: Scope) throws -> Accessor {
+    func emitRValue(module: Module, scope: VIRGenScope) throws -> Accessor {
         let bool = try module.builder.build(inst: BoolLiteralInst(val: val))
         let std = try module.builder.build(inst: StructInitInst(type: StdLib.boolType, values: bool))
         return try std.accessor()
@@ -130,7 +130,7 @@ extension BooleanLiteral : ValueEmitter {
 
 extension StringLiteral : ValueEmitter {
     
-    func emitRValue(module: Module, scope: Scope) throws -> Accessor {
+    func emitRValue(module: Module, scope: VIRGenScope) throws -> Accessor {
        
         // string_literal lowered to:
         //  - make global string constant
@@ -159,7 +159,7 @@ extension StringLiteral : ValueEmitter {
 
 extension VariableDecl : ValueEmitter {
         
-    func emitRValue(module: Module, scope: Scope) throws -> Accessor {
+    func emitRValue(module: Module, scope: VIRGenScope) throws -> Accessor {
         
         let val = try value.emitRValue(module: module, scope: scope)
         
@@ -187,7 +187,7 @@ extension VariableDecl : ValueEmitter {
 
 extension VariableGroupDecl : StmtEmitter {
     
-    func emitStmt(module: Module, scope: Scope) throws {
+    func emitStmt(module: Module, scope: VIRGenScope) throws {
         for decl in declared {
             _ = try decl.emitRValue(module: module, scope: scope)
         }
@@ -196,7 +196,7 @@ extension VariableGroupDecl : StmtEmitter {
 
 extension FunctionCall/*: VIRGenerator*/ {
     
-    func argOperands(module: Module, scope: Scope) throws -> [Accessor] {
+    func argOperands(module: Module, scope: VIRGenScope) throws -> [Accessor] {
         guard case let fnType as FunctionType = fnType?.importedType(in: module) else {
             throw VIRError.paramsNotTyped
         }
@@ -208,7 +208,7 @@ extension FunctionCall/*: VIRGenerator*/ {
         }
     }
     
-    func emitRValue(module: Module, scope: Scope) throws -> Accessor {
+    func emitRValue(module: Module, scope: VIRGenScope) throws -> Accessor {
         
         let argAccessors = try argOperands(module: module, scope: scope)
         let args = try argAccessors.map { try $0.aggregateGetValue() }.map(Operand.init)
@@ -253,7 +253,7 @@ extension FunctionCall/*: VIRGenerator*/ {
 
 extension ClosureExpr : ValueEmitter {
     
-    func emitRValue(module: Module, scope: Scope) throws -> Accessor {
+    func emitRValue(module: Module, scope: VIRGenScope) throws -> Accessor {
         
         // get the name and type
         guard let mangledName = self.mangledName, let type = self.type else {
@@ -270,7 +270,7 @@ extension ClosureExpr : ValueEmitter {
         
         // Create the closure to delegate captures
         let closure = Closure.wrapping(function: thunk)
-        let closureScope = Scope.capturing(parent: scope,
+        let closureScope = VIRGenScope.capturing(parent: scope,
                                            function: closure.thunk,
                                            captureDelegate: closure,
                                            breakPoint: entry)
@@ -290,7 +290,7 @@ extension ClosureExpr : ValueEmitter {
 
 extension FuncDecl : StmtEmitter {
         
-    func emitStmt(module: Module, scope: Scope) throws {
+    func emitStmt(module: Module, scope: VIRGenScope) throws {
         
         guard let type = typeRepr.type else { throw VIRError.noType(#function) }
         guard let mangledName = self.mangledName else { throw VIRError.noMangledName }
@@ -308,7 +308,7 @@ extension FuncDecl : StmtEmitter {
         module.builder.insertPoint.function = function
         
         // make scope and occupy it with params
-        let fnScope = Scope(parent: scope, function: function)
+        let fnScope = VIRGenScope(parent: scope, function: function)
         
         // add the explicit method parameters
         for paramName in impl.params {
@@ -372,21 +372,21 @@ extension FuncDecl : StmtEmitter {
 
 extension VariableExpr : LValueEmitter {
     
-    func emitRValue(module: Module, scope: Scope) throws -> Accessor {
+    func emitRValue(module: Module, scope: VIRGenScope) throws -> Accessor {
         return try scope.variable(named: name)!
     }
-    func emitLValue(module: Module, scope: Scope) throws -> IndirectAccessor {
+    func emitLValue(module: Module, scope: VIRGenScope) throws -> IndirectAccessor {
         return try scope.variable(named: name)! as! IndirectAccessor
     }
     
-    func canEmitLValue(module: Module, scope: Scope) throws -> Bool {
+    func canEmitLValue(module: Module, scope: VIRGenScope) throws -> Bool {
         return try scope.variable(named: name) is LValueEmitter
     }
 }
 
 extension ReturnStmt : ValueEmitter {
     
-    func emitRValue(module: Module, scope: Scope) throws -> Accessor {
+    func emitRValue(module: Module, scope: VIRGenScope) throws -> Accessor {
         let retVal = try expr.emitRValue(module: module, scope: scope)
         
         // before returning, we release all variables in the scope...
@@ -410,7 +410,7 @@ extension ReturnStmt : ValueEmitter {
 
 extension TupleExpr : ValueEmitter {
     
-    func emitRValue(module: Module, scope: Scope) throws -> Accessor {
+    func emitRValue(module: Module, scope: VIRGenScope) throws -> Accessor {
         
         if self.elements.isEmpty { return try VoidLiteralValue().accessor() }
         
@@ -423,12 +423,12 @@ extension TupleExpr : ValueEmitter {
 
 extension TupleMemberLookupExpr : ValueEmitter, LValueEmitter {
     
-    func emitRValue(module: Module, scope: Scope) throws -> Accessor {
+    func emitRValue(module: Module, scope: VIRGenScope) throws -> Accessor {
         let tuple = try object.emitRValue(module: module, scope: scope).getValue()
         return try module.builder.build(inst: TupleExtractInst(tuple: tuple, index: index)).accessor()
     }
     
-    func emitLValue(module: Module, scope: Scope) throws -> IndirectAccessor {
+    func emitLValue(module: Module, scope: VIRGenScope) throws -> IndirectAccessor {
         guard case let o as LValueEmitter = object else { fatalError() }
         
         let tuple = try o.emitLValue(module: module, scope: scope)
@@ -438,7 +438,7 @@ extension TupleMemberLookupExpr : ValueEmitter, LValueEmitter {
 
 extension PropertyLookupExpr : LValueEmitter {
     
-    func emitRValue(module: Module, scope: Scope) throws -> Accessor {
+    func emitRValue(module: Module, scope: VIRGenScope) throws -> Accessor {
         
         switch object._type {
         case is StructType:
@@ -465,7 +465,7 @@ extension PropertyLookupExpr : LValueEmitter {
         }
     }
     
-    func emitLValue(module: Module, scope: Scope) throws -> IndirectAccessor {
+    func emitLValue(module: Module, scope: VIRGenScope) throws -> IndirectAccessor {
         guard case let o as LValueEmitter = self.object else { fatalError() }
         let object = try o.emitLValue(module: module, scope: scope).lValueReference()
         
@@ -482,7 +482,7 @@ extension PropertyLookupExpr : LValueEmitter {
         
     }
     
-    func canEmitLValue(module: Module, scope: Scope) throws -> Bool {
+    func canEmitLValue(module: Module, scope: VIRGenScope) throws -> Bool {
         guard case let o as LValueEmitter = object else { fatalError() }
         switch object._type {
         case is StructType: return try o.canEmitLValue(module: module, scope: scope)
@@ -495,14 +495,14 @@ extension PropertyLookupExpr : LValueEmitter {
 
 extension BlockExpr : StmtEmitter {
     
-    func emitStmt(module: Module, scope: Scope) throws {
+    func emitStmt(module: Module, scope: VIRGenScope) throws {
         try exprs.emitBody(module: module, scope: scope)
     }
 }
 
 extension ConditionalStmt : StmtEmitter {
     
-    func emitStmt(module: Module, scope: Scope) throws {
+    func emitStmt(module: Module, scope: VIRGenScope) throws {
         
         // the if statement's exit bb
         let base = module.builder.insertPoint.block?.name.appending(".") ?? ""
@@ -534,7 +534,7 @@ extension ConditionalStmt : StmtEmitter {
             
             // move into the if block, and evaluate its expressions
             // in a new scope
-            let ifScope = Scope(parent: scope, function: scope.function)
+            let ifScope = VIRGenScope(parent: scope, function: scope.function)
             try branch.block.emitStmt(module: module, scope: ifScope)
             
             // once we're done in success, break to the exit and
@@ -579,7 +579,7 @@ extension ForInLoopStmt : StmtEmitter {
      The `yield` applies this closure. The closure can also be thick, this allows
      it to capture state from the loop's scope.
      */
-    func emitStmt(module: Module, scope: Scope) throws {
+    func emitStmt(module: Module, scope: VIRGenScope) throws {
         
         // get generator function
         guard let functionName = generatorFunctionName,
@@ -606,7 +606,7 @@ extension ForInLoopStmt : StmtEmitter {
         // make the semantic scope for the loop
         // if the scope captures from the parent, it goes through a global variable
         let loopClosure = Closure.wrapping(function: loopThunk), generatorClosure = Closure.wrapping(function: generatorFunction)
-        let loopScope = Scope.capturing(parent: scope,
+        let loopScope = VIRGenScope.capturing(parent: scope,
                                         function: loopClosure.thunk,
                                         captureDelegate: loopClosure,
                                         breakPoint: module.builder.insertPoint)
@@ -649,7 +649,7 @@ extension ForInLoopStmt : StmtEmitter {
 
 
 extension YieldStmt : StmtEmitter {
-    func emitStmt(module: Module, scope: Scope) throws {
+    func emitStmt(module: Module, scope: VIRGenScope) throws {
         
         guard case let loopThunk as RefParam = module.builder.insertPoint.function?.params?[1]
 //            where loopThunk as
@@ -665,7 +665,7 @@ extension YieldStmt : StmtEmitter {
 
 extension WhileLoopStmt : StmtEmitter {
     
-    func emitStmt(module: Module, scope: Scope) throws {
+    func emitStmt(module: Module, scope: VIRGenScope) throws {
         
         // setup blocks
         let condBlock = try module.builder.appendBasicBlock(name: "cond")
@@ -684,7 +684,7 @@ extension WhileLoopStmt : StmtEmitter {
                                           to: (block: loopBlock, args: nil),
                                           elseTo: (block: exitBlock, args: nil))
         
-        let loopScope = Scope(parent: scope, function: scope.function)
+        let loopScope = VIRGenScope(parent: scope, function: scope.function)
         // build loop block
         module.builder.insertPoint.block = loopBlock // move into
         try block.emitStmt(module: module, scope: loopScope) // gen stmts
@@ -696,7 +696,7 @@ extension WhileLoopStmt : StmtEmitter {
 
 extension TypeDecl : StmtEmitter {
     
-    func emitStmt(module: Module, scope: Scope) throws {
+    func emitStmt(module: Module, scope: VIRGenScope) throws {
         
         guard let type = type else { throw irGenError(.notTyped) }
         
@@ -722,7 +722,7 @@ extension TypeDecl : StmtEmitter {
 
 extension ConceptDecl : StmtEmitter {
     
-    func emitStmt(module: Module, scope: Scope) throws {
+    func emitStmt(module: Module, scope: VIRGenScope) throws {
         
         guard let type = type else { throw irGenError(.notTyped) }
         
@@ -737,7 +737,7 @@ extension ConceptDecl : StmtEmitter {
 
 extension InitDecl : StmtEmitter {
     
-    func emitStmt(module: Module, scope: Scope) throws {
+    func emitStmt(module: Module, scope: VIRGenScope) throws {
         guard let initialiserType = typeRepr.type,
             case let selfType as StructType = parent?.declaredType,
             let mangledName = self.mangledName else {
@@ -759,7 +759,7 @@ extension InitDecl : StmtEmitter {
         function.inlineRequirement = .always
         
         // make scope and occupy it with params
-        let fnScope = Scope(parent: scope, function: function)
+        let fnScope = VIRGenScope(parent: scope, function: function)
         
         let selfVar: IndirectAccessor
         
@@ -789,9 +789,10 @@ extension InitDecl : StmtEmitter {
         try impl.body.emitStmt(module: module, scope: fnScope)
         
         try fnScope.removeVariable(named: "self")?.releaseUnowned()
-        try fnScope.releaseVariables(deleting: true)
         
-        try module.builder.buildReturn(value: selfVar.getEscapingValue())
+        let ret = try module.builder.buildReturn(value: selfVar.getEscapingValue())
+        try fnScope.releaseVariables(deleting: true)
+//        try fnScope.emitDestructors(builder: module.builder, return: ret)
         
         // move out of function
         module.builder.insertPoint = originalInsertPoint
@@ -801,11 +802,10 @@ extension InitDecl : StmtEmitter {
 
 extension MutationExpr : ValueEmitter {
     
-    func emitRValue(module: Module, scope: Scope) throws -> Accessor {
+    func emitRValue(module: Module, scope: VIRGenScope) throws -> Accessor {
         
         let rval = try value.emitRValue(module: module, scope: scope)
             .coercedAccessor(to: object._type, module: module)
-            .aggregateGetValue()
         guard case let lhs as LValueEmitter = object else { fatalError() }
         
         // set the lhs to rval
@@ -818,7 +818,7 @@ extension MutationExpr : ValueEmitter {
 
 extension MethodCallExpr : ValueEmitter {
     
-    func emitRValue(module: Module, scope: Scope) throws -> Accessor {
+    func emitRValue(module: Module, scope: VIRGenScope) throws -> Accessor {
         
         // build self and args' values
         let argAccessors = try argOperands(module: module, scope: scope)

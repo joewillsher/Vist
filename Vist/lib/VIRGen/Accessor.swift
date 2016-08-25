@@ -6,6 +6,172 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
+
+typealias Cleanup = (VIRGenFunction, ManagedValue) throws -> ()
+
+struct VIRGenFunction {
+    var managedValues: [ManagedValue] = []
+    let scope: VIRGenScope, builder: Builder
+    
+    init(scope: VIRGenScope, builder: Builder) {
+        self.scope = scope
+        self.builder = builder
+    }
+    
+    mutating func emitTempAlloc(memType: Type) throws -> ManagedValue {
+        
+        let alloc = try builder.build(inst: AllocInst(memType: memType.importedType(in: builder.module)))
+        let managed = ManagedValue(value: alloc)
+        managedValues.append(managed)
+        return managed
+    }
+    
+    mutating func cleanup() throws {
+        for m in managedValues.reversed() {
+            if let cleanup = m.cleanup {
+                try cleanup(self, m)
+            }
+        }
+        managedValues.removeAll()
+    }
+    
+    mutating func createManaged(_ managed: ManagedValue) -> ManagedValue {
+        managedValues.append(managed)
+        return managed
+    }
+    
+}
+
+struct ManagedValue {
+    
+    let value: Value
+    let isIndirect: Bool
+    let type: Type
+    
+    var cleanup: Cleanup?
+    
+    private init(value: Value) {
+        self.value = value
+        self.isIndirect = value is LValue
+        self.type = (value as? LValue)?.memType ?? value.type!
+        if type.isConceptType(), isIndirect {
+            cleanup = CleanupManager.destroyAddrCleanup
+        }
+        else if isIndirect {
+            cleanup = CleanupManager.addrCleanup
+        }
+        else {
+            cleanup = nil
+        }
+    }
+    
+    private init(value: Value, cleanup: Cleanup?) {
+        self.value = value
+        self.isIndirect = value is LValue
+        self.type = (value as? LValue)?.memType ?? value.type!
+        self.cleanup = cleanup
+    }
+    
+    init(value: Value, cleanup: Cleanup) {
+        self.init(value: value, cleanup: cleanup)
+    }
+    
+    static func forUnmanaged(_ value: Value, gen: inout VIRGenFunction) -> ManagedValue {
+        return gen.createManaged(ManagedValue(value: value))
+    }
+    /// Like lvalue params, not just any reference
+    static func forLValue(_ value: Value, gen: inout VIRGenFunction) -> ManagedValue {
+        return gen.createManaged(ManagedValue(value: value, cleanup: nil))
+    }
+
+    /// `managed` says `returnValue` will clear it up
+    static func forwardingCleanup(value: Value, cleanup: Cleanup, from managed: inout ManagedValue, gen: inout VIRGenFunction) -> ManagedValue {
+        managed.forwardCleanup()
+        return gen.createManaged(ManagedValue(value: value, cleanup: cleanup))
+    }
+    
+    var lValue: LValue { return try! OpaqueLValue(rvalue: value) }
+    
+    
+    mutating func forwardCleanup() {
+        cleanup = nil
+    }
+    mutating func forward() -> Value {
+        forwardCleanup()
+        return value
+    }
+    
+    func borrow() throws -> ManagedValue {
+        return self
+    }
+    func copy(gen: inout VIRGenFunction) throws -> ManagedValue {
+        guard isIndirect, let type = self.type.getPointeeType(), !type.isTrivial() else {
+            return self
+        }
+        if type.isAddressOnly {
+            try gen.builder.build(inst: RetainInst(val: lValue))
+            return self
+        }
+        
+        let mem = try gen.emitTempAlloc(memType: type)
+        try gen.builder.build(inst: CopyAddrInst(addr: lValue,
+                                                 out: mem.lValue))
+        return mem
+    }
+    func copy(into dest: ManagedValue, gen: inout VIRGenFunction) throws {
+        if type.isAddressOnly {
+            try gen.builder.build(inst: RetainInst(val: lValue))
+        }
+        
+        try gen.builder.build(inst: CopyAddrInst(addr: lValue,
+                                                 out: dest.lValue))
+    }
+    
+    /// Assigns this value to `dest`
+    mutating func forward(into dest: ManagedValue, gen: inout VIRGenFunction) throws {
+        forwardCleanup()
+        if isIndirect {
+            try gen.builder.build(inst: CopyAddrInst(addr: lValue,
+                                                     out: dest.lValue))
+        }
+        else {
+            try gen.builder.build(inst: StoreInst(address: dest.lValue,
+                                                  value: value))
+        }
+    }
+    
+}
+
+final class CleanupManager {
+    
+    var cleanups: [Cleanup] = []
+    
+//    static let releaseCleanup: Cleanup = { vgf, val in
+//        _ = try vgf.builder.build(inst: RetainInst(val: OpaqueLValue(rvalue: val)))
+//    }
+    
+    static let destroyAddrCleanup: Cleanup = { vgf, val in
+        try vgf.builder.build(inst: DestroyAddrInst(addr: val.lValue))
+        try vgf.builder.build(inst: DeallocStackInst(address: val.lValue))
+    }
+    static let addrCleanup: Cleanup = { vgf, val in
+        try vgf.builder.build(inst: DeallocStackInst(address: val.lValue))
+    }
+
+    
+}
+
+
+
+
+
+
+
+
+
+
+
+
 /**
  Provides means of reading a value from memory. A `getter` allows loading of a value.
  
@@ -49,9 +215,9 @@ protocol Accessor : class {
 }
 
 /// Provides access to values by exposing a getter which returns the value
-final class ValAccessor : Accessor {
+final class ValAccessor : ByValueAccessor, Accessor {
     
-    private var value: Value
+    var value: Value
     init(value: Value) { self.value = value }
     
     func getValue() -> Value { return value }
@@ -59,7 +225,7 @@ final class ValAccessor : Accessor {
     /// Alloc a new accessor and store self into it.
     /// - returns: a reference backed *copy* of `self`
     func referenceBacked() throws -> IndirectAccessor {
-        return try value.allocReferenceBackedAccessor()
+        return try allocReferenceBackedAccessor()
     }
     
     var storedType: Type? { return value.type }
@@ -67,13 +233,15 @@ final class ValAccessor : Accessor {
 }
 
 // Helper function for constructing a reference copy
-extension Value {
+private extension ByValueAccessor {
     
     /// Builds a reference accessor which can store into & load from
     /// the memory it allocates
     func allocReferenceBackedAccessor() throws -> IndirectAccessor {
-        guard let memType = type?.importedType(in: module) else { throw VIRError.noType(#file) }
-        let accessor = RefAccessor(memory: try module.builder.build(inst: AllocInst(memType: memType)))
+        guard let memType = value.type?.importedType(in: module) else {
+            throw VIRError.noType(#file)
+        }
+        let accessor = RefAccessor(memory: try value.module.builder.build(inst: AllocInst(memType: memType)))
         try accessor.setValue(self)
         return accessor
     }
@@ -189,13 +357,15 @@ final class ExistentialRefAccessor : IndirectAccessor {
     }
     
     func getMemCopy() throws -> IndirectAccessor {
-        return try ExistentialRefAccessor(memory: module.builder.build(inst: CopyAddrInst(addr: mem)))
+        let outMem = try module.builder.build(inst: AllocInst(memType: storedType!.importedType(in: module)))
+        try module.builder.build(inst: CopyAddrInst(addr: mem, out: outMem))
+        return try ExistentialRefAccessor(memory: outMem)
     }
     
     func getEscapingValue() throws -> Value {
         // make sure this buffer is exported
-        try module.builder.build(inst: ExistentialExportBufferInst(existential: mem))
-        return try module.builder.build(inst: LoadInst(address: mem))
+//        try module.builder.build(inst: ExistentialExportBufferInst(existential: mem))
+        return try module.builder.build(inst: LoadInst(address: reference()))
     }
     
     
@@ -203,13 +373,15 @@ final class ExistentialRefAccessor : IndirectAccessor {
 
 
 
-
+private protocol ByValueAccessor : Accessor {
+    var value: Value { get }
+}
 
 /// An Accessor which allows setting, as well as self lookup by ptr
 protocol IndirectAccessor : Accessor {
     var mem: LValue { get }
     /// Stores `val` in the stored object
-    func setValue(_ val: Value) throws
+    func setValue(_ val: Accessor) throws
     /// The pointer to the stored object
     func reference() throws -> LValue
     
@@ -232,13 +404,18 @@ extension IndirectAccessor {
         return try module.builder.build(inst: LoadInst(address: reference()))
     }
     
-    func setValue(_ val: Value) throws {
-        try module.builder.build(inst: StoreInst(address: lValueReference(), value: val))
+    func setValue(_ accessor: Accessor) throws {
+        try module.builder.build(inst: StoreInst(address: lValueReference(),
+                                                 value: projectsEscapingMemory() ?
+                                                    accessor.getEscapingValue() :
+                                                    accessor.aggregateGetValue()))
     }
     
     // default impl of `reference` is a projection of the storage
     func reference() throws -> LValue {
-        return try module.builder.build(inst: CopyAddrInst(addr: mem))
+        let outMem = try module.builder.build(inst: AllocInst(memType: storedType!.importedType(in: module)))
+        try module.builder.build(inst: CopyAddrInst(addr: mem, out: outMem))
+        return outMem
     }
     func lValueReference() throws -> LValue {
         return mem
@@ -246,7 +423,7 @@ extension IndirectAccessor {
     
     // default impl of `aggregateReference` is the same as `reference`
     func aggregateReference() throws -> LValue {
-        return try module.builder.build(inst: CopyAddrInst(addr: mem))
+        return try reference()
     }
     
     func aggregateGetValue() throws -> Value {
@@ -260,7 +437,10 @@ extension IndirectAccessor {
     
     
     func release() throws {
-        try module.builder.build(inst: DestroyAddrInst(addr: mem))
+        mem.dump()
+        if !projectsEscapingMemory() {
+            try module.builder.build(inst: DestroyAddrInst(addr: mem))
+        }
     }
     
     func getMemCopy() throws -> IndirectAccessor {
@@ -271,6 +451,7 @@ extension IndirectAccessor {
     func getEscapingValue() throws -> Value {
         return try module.builder.build(inst: LoadInst(address: mem))
     }
+    
 }
 
 
@@ -427,9 +608,11 @@ final class LazyRefAccessor : IndirectAccessor {
 }
 
 
-final class LazyAccessor : Accessor {
+final class LazyAccessor : ByValueAccessor, Accessor {
     private var build: () throws -> Value
     private lazy var val: Value? = try? self.build()
+    
+    private var value: Value { return val! }
     
     var storedType: Type? { return val?.type }
 
@@ -439,8 +622,7 @@ final class LazyAccessor : Accessor {
     }
     
     func referenceBacked() throws -> IndirectAccessor {
-        guard let v = val else { fatalError() }
-        return try v.allocReferenceBackedAccessor()
+        return try allocReferenceBackedAccessor()
     }
     
     init(module: Module, fn: () throws -> Value) {

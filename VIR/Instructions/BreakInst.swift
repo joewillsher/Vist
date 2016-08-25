@@ -117,6 +117,7 @@ extension Builder {
 //        }
         let s = BreakInst(call: (block: block, args: args))
         try addToCurrentBlock(inst: s)
+        block.parentFunction!.dominator.invalidate()
         
         guard let sourceBlock = insertPoint.block else { throw VIRError.noParentBlock }
         try block.addApplication(from: sourceBlock, args: args, breakInst: s)
@@ -133,6 +134,7 @@ extension Builder {
 //        }
         let s = CondBreakInst(then: then, else: elseTo, condition: condition)
         try addToCurrentBlock(inst: s)
+        then.block.parentFunction!.dominator.invalidate()
         
         guard let sourceBlock = insertPoint.block else { throw VIRError.noParentBlock }
         try then.block.addApplication(from: sourceBlock, args: then.args, breakInst: s)

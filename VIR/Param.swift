@@ -76,4 +76,11 @@ extension Param {
     }
 }
 
+extension Param : Hashable {
+    var hashValue: Int { return name.hashValue }
+    static func == (l: Param, r: Param) -> Bool {
+        return l === r
+    }
+}
+
 

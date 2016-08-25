@@ -91,6 +91,15 @@ extension Type {
         else if self is TupleType { return true }
         else { return false }
     }
+    func getPointeeType() -> Type? {
+        guard case let bt as BuiltinType = self, case .pointer(let pointee) = bt else { return nil }
+        return pointee
+    }
+    func isPointerType() -> Bool {
+        guard case let bt as BuiltinType = self, case .pointer = bt else { return false }
+        return true
+    }
+
 }
 
 

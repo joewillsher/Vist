@@ -1,5 +1,5 @@
 //
-//  Scope.swift
+//  VIRGenScope.swift
 //  Vist
 //
 //  Created by Josef Willsher on 03/03/2016.
@@ -8,9 +8,9 @@
 
 /// A semantic scope, containing the declared vars for
 /// the VIRGen phase.
-final class Scope {
-    private var variables: [String: Accessor]
-    private(set) weak var parent: Scope?
+final class VIRGenScope {
+    private(set) var variables: [String: Accessor]
+    private(set) weak var parent: VIRGenScope?
     private unowned var module: Module
     private(set) var function: Function?
     /// Deleagte for managing captured variables 
@@ -22,7 +22,7 @@ final class Scope {
         self.module = module
         self.variables = [:]
     }
-    init(parent: Scope,
+    init(parent: VIRGenScope,
          function: Function?,
          captureDelegate: CaptureDelegate? = nil,
          breakPoint: Builder.InsertPoint? = nil) {
@@ -34,11 +34,11 @@ final class Scope {
         self.breakPoint = breakPoint ?? parent.breakPoint
     }
     /// Create a scope which captures from `parent`
-    static func capturing(parent: Scope,
+    static func capturing(parent: VIRGenScope,
                           function: Function,
                           captureDelegate: CaptureDelegate,
-                          breakPoint: Builder.InsertPoint) -> Scope {
-        return Scope(parent: parent,
+                          breakPoint: Builder.InsertPoint) -> VIRGenScope {
+        return VIRGenScope(parent: parent,
                      function: function, 
                      captureDelegate: captureDelegate,
                      breakPoint: breakPoint)
@@ -86,6 +86,10 @@ final class Scope {
     func removeVariables() {
         variables.removeAll()
     }
+    
+    
+    
+    
 }
 
 

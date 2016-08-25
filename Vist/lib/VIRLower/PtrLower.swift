@@ -81,16 +81,13 @@ extension DestroyValInst : VIRLower {
 extension CopyAddrInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         
-        // alloc the out memory
-        let copyMemory = try IGF.builder.buildAlloca(type: memType!.importedType(in: module).lowered(module: module))
-        
         switch addr.memType {
         case let type? where type.isConceptType():
             // call into the runtime to copy the existential -- this calls the existential's
             // copy constructor, which copies over all vals stored in the existential.
             let ref = module.getRuntimeFunction(.copyExistentialBuffer, IGF: &IGF)
-            try IGF.builder.buildCall(function: ref, args: [addr.loweredValue!, copyMemory])
-            return copyMemory
+            try IGF.builder.buildCall(function: ref, args: [addr.loweredValue!, outAddr.loweredValue!])
+            return outAddr.loweredValue!
             
         case let type as NominalType where type.isStructType():
             
@@ -98,12 +95,12 @@ extension CopyAddrInst : VIRLower {
             guard case let modType as TypeAlias = addr.memType, let copyConstructor = modType.copyConstructor else {
                 // otheriwse we just do a shallow copy
                 let val = try IGF.builder.buildLoad(from: addr.loweredValue!)
-                try IGF.builder.buildStore(value: val, in: copyMemory)
-                return copyMemory
+                try IGF.builder.buildStore(value: val, in: outAddr.loweredValue!)
+                return outAddr.loweredValue!
             }
             
-            _ = try IGF.builder.buildApply(function: copyConstructor.loweredFunction!.function, args: [addr.loweredValue!, copyMemory])
-            return copyMemory
+            _ = try IGF.builder.buildApply(function: copyConstructor.loweredFunction!.function, args: [addr.loweredValue!, outAddr.loweredValue!])
+            return outAddr.loweredValue!
             
         default:
             return LLVMValue.nullptr

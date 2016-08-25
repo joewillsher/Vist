@@ -288,6 +288,13 @@ extension Builder {
         try f.defineBody(paramNames: paramNames)
         return f
     }
+    /// Builds a function called `name` and adds it to the module
+    func buildFunction(name: String, type: FunctionType, params: [(name: String, convention: Param.Convention?)], attrs: [FunctionAttributeExpr] = []) throws -> Function {
+        let f = try buildFunctionPrototype(name: name, type: type, attrs: attrs)
+        try f.defineBody(params: params)
+        return f
+    }
+
     
     /// Builds a unique function, modifying the name if there is a collision
     func buildUniqueFunction(name: String, type: FunctionType, paramNames: [String], attrs: [FunctionAttributeExpr] = []) throws -> Function {
