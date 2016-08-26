@@ -196,8 +196,6 @@
 		D4AE8D6B1D60F63000E2D480 /* DominatorTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4AE8D6A1D60F63000E2D480 /* DominatorTree.swift */; };
 		D4AE8D6C1D60F63000E2D480 /* DominatorTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4AE8D6A1D60F63000E2D480 /* DominatorTree.swift */; };
 		D4B84E191D650B9B00B92CE5 /* CFGTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4B84E181D650B9B00B92CE5 /* CFGTest.swift */; };
-		D4BE16431D6F6013003F087D /* DominanceFrontier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4BE16421D6F6013003F087D /* DominanceFrontier.swift */; };
-		D4BE16441D6F6013003F087D /* DominanceFrontier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4BE16421D6F6013003F087D /* DominanceFrontier.swift */; };
 		D4CB751D1CB4612100FA2D8C /* vist in Copy Files */ = {isa = PBXBuildFile; fileRef = D47FF07A1B812052003F9920 /* vist */; };
 		D4CF76771C8CD4A70058A8EC /* TupleInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF76761C8CD4A70058A8EC /* TupleInst.swift */; };
 		D4CF76781C8CD4A70058A8EC /* TupleInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF76761C8CD4A70058A8EC /* TupleInst.swift */; };
@@ -375,7 +373,6 @@
 		D4AE8D661D609CAA00E2D480 /* Analysis.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Analysis.swift; path = Optimiser/Analysis.swift; sourceTree = "<group>"; };
 		D4AE8D6A1D60F63000E2D480 /* DominatorTree.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DominatorTree.swift; path = Optimiser/DominatorTree.swift; sourceTree = "<group>"; };
 		D4B84E181D650B9B00B92CE5 /* CFGTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CFGTest.swift; sourceTree = "<group>"; };
-		D4BE16421D6F6013003F087D /* DominanceFrontier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DominanceFrontier.swift; path = Optimiser/DominanceFrontier.swift; sourceTree = "<group>"; };
 		D4C0900E1CCFC931008B69F1 /* shims.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = shims.c; path = stdlib/shims.c; sourceTree = "<group>"; };
 		D4CA32071CEA7013009C2B10 /* runtime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = runtime.h; path = stdlib/runtime/runtime.h; sourceTree = "<group>"; };
 		D4CF76761C8CD4A70058A8EC /* TupleInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TupleInst.swift; path = Instructions/TupleInst.swift; sourceTree = "<group>"; };
@@ -688,7 +685,6 @@
 			children = (
 				D4AE8D661D609CAA00E2D480 /* Analysis.swift */,
 				D4AE8D6A1D60F63000E2D480 /* DominatorTree.swift */,
-				D4BE16421D6F6013003F087D /* DominanceFrontier.swift */,
 			);
 			name = Analysis;
 			sourceTree = "<group>";
@@ -974,7 +970,6 @@
 				D43B3A8B1C8A12090039FB2E /* Interpreter.swift in Sources */,
 				D4E35B7F1C5D216600683486 /* Pipe.swift in Sources */,
 				D4728BE81C960E22003294B0 /* Folding.swift in Sources */,
-				D4BE16441D6F6013003F087D /* DominanceFrontier.swift in Sources */,
 				D454444D1D181AB900C7B02A /* Inline.swift in Sources */,
 				D43FE1CB1D5E2EBF003494C9 /* WitnessTable.swift in Sources */,
 				D41C732B1D5CEEC30047B373 /* Diagnose.swift in Sources */,
@@ -1093,7 +1088,6 @@
 				D437F7FD1CA95E7F0089F5DE /* ArrayInst.swift in Sources */,
 				D4A000241CCA7E8F00157D90 /* CFGLower.swift in Sources */,
 				D488C2421D405942000735DA /* Verify.swift in Sources */,
-				D4BE16431D6F6013003F087D /* DominanceFrontier.swift in Sources */,
 				D4728BE71C960E22003294B0 /* Folding.swift in Sources */,
 				D46A68DE1D5E288500FF9144 /* Accessor.swift in Sources */,
 			);

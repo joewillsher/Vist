@@ -18,12 +18,11 @@ struct VIRGenFunction {
         self.builder = builder
     }
     
+    /// Emits a tempory allocation as a managed value; its cleanup
+    /// depends on the type stored
     mutating func emitTempAlloc(memType: Type) throws -> ManagedValue {
-        
         let alloc = try builder.build(inst: AllocInst(memType: memType.importedType(in: builder.module)))
-        let managed = ManagedValue(value: alloc)
-        managedValues.append(managed)
-        return managed
+        return createManaged(ManagedValue(value: alloc))
     }
     
     mutating func cleanup() throws {
@@ -90,7 +89,7 @@ struct ManagedValue {
         return gen.createManaged(ManagedValue(value: value, cleanup: cleanup))
     }
     
-    var lValue: LValue { return try! OpaqueLValue(rvalue: value) }
+    var lValue: LValue { return value as! LValue }
     
     
     mutating func forwardCleanup() {
@@ -127,7 +126,7 @@ struct ManagedValue {
                                                  out: dest.lValue))
     }
     
-    /// Assigns this value to `dest`
+    /// Assigns this value to `dest`, removing this val's cleanup
     mutating func forward(into dest: ManagedValue, gen: inout VIRGenFunction) throws {
         forwardCleanup()
         if isIndirect {
@@ -141,6 +140,57 @@ struct ManagedValue {
     }
     
 }
+
+extension ManagedValue {
+    
+    /// Creates a managed value abstracting `self.value` which is of value type
+    mutating func coerceToValue(gen: inout VIRGenFunction) throws -> ManagedValue {
+        let cpy = try copy(gen: &gen)
+        // if we already have the value type, return the copy
+        guard isIndirect else { return cpy }
+        // otherwise load once to get it
+        return try gen.builder.buildManaged(inst: LoadInst(address: cpy.lValue), gen: &gen)
+    }
+    
+    /// Creates a managed value abstracting `self.value` with its own clearup which has the formal type `type`
+    /// 
+    /// This can transform the value by:
+    /// - changing the indirection: loading from an indirect value if a loaded type is required
+    /// - Wrapping the inst in its own existentital container
+    mutating func coerce(to targetType: Type, gen: inout VIRGenFunction) throws -> ManagedValue {
+        // if no work is needed, return
+        guard targetType != type else {
+            return try copy(gen: &gen)
+        }
+        
+        // if we want to load
+        if isIndirect, let ptr = type.getPointeeType(), ptr == targetType {
+            assert(!targetType.isAddressOnly)
+            return try coerceToValue(gen: &gen)
+        }
+        
+        if targetType.isConceptType() {
+            let conceptType = try targetType.getAsConceptType()
+            // Create a copy of this value, and forward its clearup to the existential
+            var taken = try coerceToValue(gen: &gen)
+            return try gen.builder.buildManaged(inst: ExistentialConstructInst(value: taken.forward(),
+                                                                               existentialType: conceptType,
+                                                                               module: gen.builder.module),
+                                                gen: &gen)
+            
+        }
+        
+    }
+    
+}
+
+
+
+
+
+
+
+
 
 final class CleanupManager {
     
