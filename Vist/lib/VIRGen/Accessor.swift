@@ -95,9 +95,17 @@ struct ManagedValue {
     mutating func forwardCleanup() {
         cleanup = nil
     }
+    /// Disable this managed value's cleanup, the user of `forward` must
+    /// take care to cleanup this val
     mutating func forward() -> Value {
         forwardCleanup()
         return value
+    }
+    /// Disable this managed value's cleanup, the user of `forward` must
+    /// take care to cleanup this lval
+    mutating func forwardLValue() -> LValue {
+        forwardCleanup()
+        return lValue
     }
     
     func borrow() throws -> ManagedValue {
@@ -105,11 +113,11 @@ struct ManagedValue {
     }
     func copy(gen: inout VIRGenFunction) throws -> ManagedValue {
         guard isIndirect, let type = self.type.getPointeeType(), !type.isTrivial() else {
-            return self
+            return self // return a copy
         }
         if type.isAddressOnly {
             try gen.builder.build(inst: RetainInst(val: lValue))
-            return self
+            return self // return a copy
         }
         
         let mem = try gen.emitTempAlloc(memType: type)
@@ -156,17 +164,25 @@ extension ManagedValue {
     /// 
     /// This can transform the value by:
     /// - changing the indirection: loading from an indirect value if a loaded type is required
+    ///   or storing into new memory if a more indirect type is
     /// - Wrapping the inst in its own existentital container
+    /// - note: when changing indirection, we can only coerce 1 different ptr level
     mutating func coerce(to targetType: Type, gen: inout VIRGenFunction) throws -> ManagedValue {
         // if no work is needed, return
         guard targetType != type else {
             return try copy(gen: &gen)
         }
         
-        // if we want to load
-        if isIndirect, let ptr = type.getPointeeType(), ptr == targetType {
-            assert(!targetType.isAddressOnly)
-            return try coerceToValue(gen: &gen)
+        // if we want to load; decreasing the indirection level
+        if isIndirect, let pointee = type.getPointeeType(), pointee == targetType {
+            var cpy = try copy(gen: &gen)
+            return try gen.builder.buildManaged(inst: LoadInst(address: cpy.forwardLValue()), gen: &gen)
+        }
+        // if we want to store; increasing the indirection level
+        if let pointee = targetType.getPointeeType(), pointee == type {
+            let alloc = try gen.emitTempAlloc(memType: pointee)
+            try copy(into: alloc, gen: &gen)
+            return alloc
         }
         
         if targetType.isConceptType() {
@@ -177,9 +193,9 @@ extension ManagedValue {
                                                                                existentialType: conceptType,
                                                                                module: gen.builder.module),
                                                 gen: &gen)
-            
         }
         
+        fatalError("Could not coerce \(type.prettyName) to \(targetType.prettyName)")
     }
     
 }
