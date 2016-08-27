@@ -160,16 +160,18 @@ extension VariableDecl : ValueEmitter {
     
     func emitRValue(module: Module, gen: inout VIRGenFunction) throws -> ManagedValue {
         
-        let val = try value.emitRValue(module: module, gen: &gen)
+        let type = value._type!.importedType(in: module)
+        // gen the ManagedValue for the variable's value
+        var val = try value.emitRValue(module: module, gen: &gen)
+        // alloc variable memory
+        var alloc = try gen.emitTempAlloc(memType: type)
+        // coeerce to the right type and forward the cleanup to the memory
+        var managed = try val.coerce(to: type, gen: &gen)
+        try managed.forward(into: alloc, gen: &gen) // forward the temp
         
-        let mem = try val
-            .coercedAccessor(to: value._type?.importedType(in: module), module: module)
-        
-        // if its mutable, allocate stack memory to store into
-        let val = try mem.referenceBacked().aggregateReference()
-        let variable = try gen.builder.build(inst: VariableAddrInst(addr: val, irName: name)).accessor
-        
-        scope.insert(variable: variable, name: name)
+        // create a variableaddr inst and forward the memory's cleanup onto it
+        let variable = try gen.builder.build(inst: VariableAddrInst(addr: alloc.forwardLValue(), irName: name))
+        gen.managedValues.append(variable)
         return variable
     }
 }
