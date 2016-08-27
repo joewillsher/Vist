@@ -9,7 +9,8 @@
 /// AST walker node
 ///
 /// Provides common interfaces for expressions, declarations, and statements
-protocol ASTNode : ASTPrintable { }
+protocol ASTNode : ASTPrintable {
+}
 
 final class AST : ASTNode, ScopeNode {
     var exprs: [ASTNode]

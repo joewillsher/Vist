@@ -60,6 +60,7 @@ extension Type {
     func getAsTupleType() throws -> TupleType {
         if case let s as TypeAlias = self { return try s.targetType.getAsTupleType() }
         else if case let s as TupleType = self { return s }
+        if case let s as BuiltinType = self, case .void = s { return TupleType(members: []) }
         else { throw VIRError.notTupleType(self) }
     }
     func getAsConceptType() throws -> ConceptType {

@@ -8,7 +8,7 @@
 
 /// - Declaration / Decl
 
-protocol Decl : ASTNode, DeclTypeProvider, StmtEmitter { }
+protocol Decl : ASTNode, DeclTypeProvider { }
 
 typealias ConstrainedType = (name: String, constraints: [String], parentName: String)
 

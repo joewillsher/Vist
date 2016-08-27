@@ -23,29 +23,28 @@ do {
     var gen = VIRGenFunction(scope: VIRGenScope(module: module),
                              builder: module.builder)
     
-    let param = try ManagedValue.forLValue(fn.param(named: "val"), gen: &gen)
     
-    // create an owned int
-    let int = try gen.builder.build(inst: IntLiteralInst(val: 1, size: 64))
-    var managedInt = ManagedValue.forUnmanaged(int, gen: &gen)
+    let param = try fn.param(named: "val").managed(gen: gen)
+    let int = try gen.builder.build(IntLiteralInst(val: 1, size: 64))
+    var managedInt = Managed<IntLiteralInst>.forUnmanaged(int, gen: gen)
     // create owned memory for the int
     let intMem = try gen.emitTempAlloc(memType: intType)
     // forward the int's destructor responisbility to the memory, as we assign into it
-    try managedInt.forward(into: intMem, gen: &gen)
+    try managedInt.forward(into: intMem, gen: gen)
     
     // init a struct
-    let str = try gen.builder.build(inst: StructInitInst(type: conf,
+    let str = try gen.builder.build(StructInitInst(type: conf,
                                                          values: managedInt.forward()))
-    var managedStr = ManagedValue.forUnmanaged(str, gen: &gen)
+    var managedStr = Managed<StructInitInst>.forUnmanaged(str, gen: gen)
     
     // create an existential which owns its own memory
-    let ex = try gen.builder.build(inst: ExistentialConstructInst(value: managedStr.value,
+    let ex = try gen.builder.build(ExistentialConstructInst(value: managedStr.value,
                                                                   existentialType: conc,
                                                                   module: module))
-    var managedEx = ManagedValue.forUnmanaged(ex, gen: &gen)
+    var managedEx = Managed<ExistentialConstructInst>.forUnmanaged(ex, gen: gen)
     
-
-    try managedEx.copy(into: param, gen: &gen)
+    
+    try managedEx.copy(into: param, gen: gen)
     
     try gen.cleanup()
     

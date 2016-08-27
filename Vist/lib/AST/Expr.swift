@@ -11,7 +11,7 @@
 ///      - literals, tuples, parens, array, closure
 ///      - Call expression, operator, methods, casts
 ///      - Sub expressions of syntax structures, like `type name generic params`
-protocol Expr : ASTNode, _Typed, ExprTypeProvider, ValueEmitter {}
+protocol Expr : ASTNode, _Typed, ExprTypeProvider, _ValueEmitter {}
 protocol TypedExpr : Expr, Typed {}
 
 final class BlockExpr : TypedExpr, ScopeNode {

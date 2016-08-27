@@ -8,7 +8,7 @@
 
 final class VariableInst : Inst {
     var value: Operand
-    
+
     var uses: [Operand] = []
     var args: [Operand]
     
@@ -41,6 +41,7 @@ final class VariableInst : Inst {
 
 final class VariableAddrInst : Inst, LValue {
     var addr: PtrOperand
+    let mutable: Bool
     
     var uses: [Operand] = []
     var args: [Operand]
@@ -48,18 +49,19 @@ final class VariableAddrInst : Inst, LValue {
     var type: Type? { return addr.type }
     var memType: Type? { return addr.memType }
     
-    convenience init(addr: LValue, irName: String? = nil) {
-        self.init(operand: PtrOperand(addr), irName: irName)
+    convenience init(addr: LValue, mutable: Bool, irName: String? = nil) {
+        self.init(operand: PtrOperand(addr), mutable: mutable, irName: irName)
     }
-    private init(operand: PtrOperand, irName: String?) {
+    private init(operand: PtrOperand, mutable: Bool, irName: String?) {
         self.addr = operand
+        self.mutable = mutable
         self.args = [operand]
         initialiseArgs()
         self.irName = irName
     }
     
     var vir: String {
-        return "variable_addr \(name) = \(addr.valueName)\(useComment)"
+        return "\(mutable ? "mutable_variable_addr" : "variable_addr") \(name) = \(addr.valueName)\(useComment)"
     }
     
     func setArgs(_ args: [Operand]) {
@@ -67,7 +69,7 @@ final class VariableAddrInst : Inst, LValue {
     }
     
     func copy() -> VariableAddrInst {
-        return VariableAddrInst(operand: addr.formCopy(), irName: irName)
+        return VariableAddrInst(operand: addr.formCopy(), mutable: mutable, irName: irName)
     }
     var parentBlock: BasicBlock?
     var irName: String?

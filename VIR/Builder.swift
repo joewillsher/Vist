@@ -70,13 +70,13 @@ extension Builder {
     
     /// Build an instruction and add to the current block
     @discardableResult
-    func build<I : Inst>(inst: I) throws -> I {
+    func build<I : Inst>(_ inst: I) throws -> I {
         try addToCurrentBlock(inst: inst)
         return inst
     }
-    func buildManaged<I : Inst>(inst: I, gen: inout VIRGenFunction) throws -> ManagedValue {
+    func buildManaged<I : Inst>(_ inst: I, gen: VIRGenFunction) throws -> Managed<I> {
         try addToCurrentBlock(inst: inst)
-        return ManagedValue.forUnmanaged(inst, gen: &gen)
+        return Managed<I>.forUnmanaged(inst, gen: gen)
     }
     
 }
