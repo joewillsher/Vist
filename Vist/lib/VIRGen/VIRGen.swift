@@ -620,7 +620,7 @@ extension ForInLoopStmt : StmtEmitter {
         generatorClosure.thunk.inlineRequirement = .always
         
         // get the instance of the generator
-        let generator = try self.generator.emitRValue(module: module, gen: gen)
+        var generator = try self.generator.emitRValue(module: module, gen: gen)
             .coerce(to: self.generator._type!.ptrType(), gen: gen)
         
         // call the generator function from loop position

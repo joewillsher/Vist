@@ -151,8 +151,6 @@
 		D454444D1D181AB900C7B02A /* Inline.swift in Sources */ = {isa = PBXBuildFile; fileRef = D454444B1D181AB900C7B02A /* Inline.swift */; };
 		D4654F991D50F02A005B3637 /* VIRType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4654F981D50F02A005B3637 /* VIRType.swift */; };
 		D4654F9A1D50F02A005B3637 /* VIRType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4654F981D50F02A005B3637 /* VIRType.swift */; };
-		D46A68DE1D5E288500FF9144 /* Accessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46A68DC1D5E288500FF9144 /* Accessor.swift */; };
-		D46A68DF1D5E288500FF9144 /* Accessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46A68DC1D5E288500FF9144 /* Accessor.swift */; };
 		D46A68E01D5E288500FF9144 /* Closure.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46A68DD1D5E288500FF9144 /* Closure.swift */; };
 		D46A68E11D5E288500FF9144 /* Closure.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46A68DD1D5E288500FF9144 /* Closure.swift */; };
 		D46D1F861D5CDD6C0001E327 /* Backend.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D46D1F841D5CDD6B0001E327 /* Backend.cpp */; };
@@ -340,7 +338,6 @@
 		D44529551CB00A6F00AFA099 /* RefCountInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RefCountInst.swift; path = Instructions/RefCountInst.swift; sourceTree = "<group>"; };
 		D454444B1D181AB900C7B02A /* Inline.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Inline.swift; path = Optimiser/Inline.swift; sourceTree = "<group>"; };
 		D4654F981D50F02A005B3637 /* VIRType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VIRType.swift; path = VIR/Types/VIRType.swift; sourceTree = SOURCE_ROOT; };
-		D46A68DC1D5E288500FF9144 /* Accessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Accessor.swift; path = lib/VIRGen/Accessor.swift; sourceTree = "<group>"; };
 		D46A68DD1D5E288500FF9144 /* Closure.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Closure.swift; path = lib/VIRGen/Closure.swift; sourceTree = "<group>"; };
 		D46D1F841D5CDD6B0001E327 /* Backend.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Backend.cpp; path = lib/Pipeline/Backend.cpp; sourceTree = "<group>"; };
 		D46D1F851D5CDD6B0001E327 /* Backend.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Backend.hpp; path = lib/Pipeline/Backend.hpp; sourceTree = "<group>"; };
@@ -569,7 +566,6 @@
 				D4E225B51D6C7BCB0055A5CA /* Lifetime.swift */,
 				D4BE16451D70BE8B003F087D /* VIRGenFunction.swift */,
 				D43B3A4C1C8A11180039FB2E /* Scope.swift */,
-				D46A68DC1D5E288500FF9144 /* Accessor.swift */,
 				D46A68DD1D5E288500FF9144 /* Closure.swift */,
 			);
 			name = VIRGen;
@@ -898,7 +894,6 @@
 				D49248551CF7788A009FD509 /* StdLibInline.swift in Sources */,
 				D43B39E31C8A0F3A0039FB2E /* VariableInst.swift in Sources */,
 				D43B3A0F1C8A104F0039FB2E /* Parser.swift in Sources */,
-				D46A68DF1D5E288500FF9144 /* Accessor.swift in Sources */,
 				D411C8961C8DB61D00478988 /* BreakInst.swift in Sources */,
 				D43FE1CE1D5E86EA003494C9 /* Metadata.swift in Sources */,
 				D4F3D7FB1CAC35AE005A3B07 /* Attribute.swift in Sources */,
@@ -1095,7 +1090,6 @@
 				D4A000241CCA7E8F00157D90 /* CFGLower.swift in Sources */,
 				D488C2421D405942000735DA /* Verify.swift in Sources */,
 				D4728BE71C960E22003294B0 /* Folding.swift in Sources */,
-				D46A68DE1D5E288500FF9144 /* Accessor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
