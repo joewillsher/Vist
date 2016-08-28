@@ -1,5 +1,5 @@
 //
-//  Lifetime.swift
+//  Destructor.swift
 //  Vist
 //
 //  Created by Josef Willsher on 23/08/2016.
@@ -9,53 +9,53 @@
 
 extension TypeDecl {
     
-    func emitImplicitDestructorDecl(module: Module) throws -> Function? {
+    func emitImplicitDestructorDecl(module: Module, gen: VIRGenFunction) throws -> Function? {
         
         // if any of the members need deallocating
         guard let type = self.type, type.isTrivial() else {
             return nil
         }
         
-        let startInsert = module.builder.insertPoint
-        defer { module.builder.insertPoint = startInsert }
+        let startInsert = gen.builder.insertPoint
+        defer { gen.builder.insertPoint = startInsert }
         
         let fnType = FunctionType(params: [type.importedType(in: module).ptrType()],
                                   returns: BuiltinType.void,
                                   callingConvention: .runtime)
         let fnName = "destroy".mangle(type: fnType)
-        let fn = try module.builder.buildFunctionPrototype(name: fnName, type: fnType)
+        let fn = try gen.builder.buildFunctionPrototype(name: fnName, type: fnType)
         try fn.defineBody(params: [(name: "self", convention: .inout)])
         
-        let selfAccessor = try fn.param(named: "self").accessor() as! IndirectAccessor
+        let managedSelf = try fn.param(named: "self").managed(gen: gen)
         
-        try selfAccessor.emitDestruction(module: module)
-        try module.builder.buildReturnVoid()
+        try managedSelf.emitDestruction(gen: gen)
+        try gen.builder.buildReturnVoid()
         
         return fn
     }
     
-    func emitImplicitCopyConstructorDecl(module: Module) throws -> Function? {
+    func emitImplicitCopyConstructorDecl(module: Module, gen: VIRGenFunction) throws -> Function? {
         
         // if any of the members need deallocating
         guard let type = self.type, type.isTrivial() else {
             return nil
         }
         
-        let startInsert = module.builder.insertPoint
-        defer { module.builder.insertPoint = startInsert }
+        let startInsert = gen.builder.insertPoint
+        defer { gen.builder.insertPoint = startInsert }
         
         let fnType = FunctionType(params: [type.importedType(in: module).ptrType(), type.importedType(in: module).ptrType()],
                                   returns: BuiltinType.void,
                                   callingConvention: .runtime)
         let fnName = "deepCopy".mangle(type: fnType)
-        let fn = try module.builder.buildFunctionPrototype(name: fnName, type: fnType)
+        let fn = try gen.builder.buildFunctionPrototype(name: fnName, type: fnType)
         try fn.defineBody(params: [(name: "self", convention: .inout), (name: "out", convention: .out)])
         
-        let selfAccessor = try fn.param(named: "self").accessor() as! IndirectAccessor
-        let outAccessor = try fn.param(named: "out").accessor() as! IndirectAccessor
+        let managedSelf = try fn.param(named: "self").managed(gen: gen)
+        let managedOut = try fn.param(named: "out").managed(gen: gen)
         
-        try selfAccessor.emitCopyConstruction(into: outAccessor, module: module)
-        try module.builder.buildReturnVoid()
+        try managedSelf.emitCopyConstruction(into: managedOut, gen: gen)
+        try gen.builder.buildReturnVoid()
         
         return fn
     }
@@ -73,26 +73,26 @@ extension Type {
     }
 }
 
-extension IndirectAccessor {
+private extension ManagedValue {
     
     /// Emit VIR which ends this val's lifetime
-    func emitDestruction(module: Module) throws {
-        switch storedType {
+    func emitDestruction(gen: VIRGenFunction) throws {
+        switch type {
         case let type as NominalType:
             for member in type.members {
                 
-                let ptr = try module.builder.build(StructElementPtrInst(object: lValueReference(),
-                                                                        property: member.name,
-                                                                        irName: member.name))
+                let ptr = try gen.builder.buildManaged(StructElementPtrInst(object: lValue,
+                                                                            property: member.name,
+                                                                            irName: member.name), gen: gen)
                 switch member.type {
                 case let type where type.isConceptType():
-                    try module.builder.build(DestroyAddrInst(addr: ptr))
+                    try gen.builder.build(DestroyAddrInst(addr: ptr.managedValue))
                 case let type where type.isHeapAllocated:
                     // release the box
-                    try module.builder.build(ReleaseInst(val: ptr, unowned: false))
+                    try gen.builder.build(ReleaseInst(val: ptr.managedValue, unowned: false))
                 case let type where type.isStructType():
                     // destruct the struct elements
-                    try ptr.accessor.emitDestruction(module: module)
+                    try ptr.emitDestruction(gen: gen)
                 default:
                     break
                 }
@@ -109,36 +109,34 @@ extension IndirectAccessor {
     }
     
     /// Emit VIR which creates a deep copy of this val
-    func emitCopyConstruction(into outAccessor: IndirectAccessor, module: Module) throws {
+    func emitCopyConstruction(into outAccessor: ManagedValue, gen: VIRGenFunction) throws {
         
-        
-        switch storedType {
+        switch type {
         case let type as NominalType where type.isTrivial():
             
             for member in type.members {
-                let ptr = try module.builder.build(StructElementPtrInst(object: lValueReference(),
-                                                                        property: member.name))
-                let outPtr = try module.builder.build(StructElementPtrInst(object: outAccessor.lValueReference(),
-                                                                           property: member.name))
+                let ptr = try gen.builder.buildManaged(StructElementPtrInst(object: lValue,
+                                                                            property: member.name), gen: gen)
+                let outPtr = try gen.builder.buildManaged(StructElementPtrInst(object: outAccessor.lValue,
+                                                                               property: member.name), gen: gen)
                 switch member.type {
                 case let type where type.isHeapAllocated:
                     // if we need to retaun it
-                    try module.builder.build(RetainInst(val: ptr))
-                    try module.builder.build(CopyAddrInst(addr: ptr, out: outPtr))
+                    try gen.builder.build(RetainInst(val: ptr.managedValue))
+                    try gen.builder.build(CopyAddrInst(addr: ptr.managedValue, out: outPtr.managedValue))
                     
                 case let type where type.isStructType() && type.isTrivial():
                     // copy-construct the struct elements into the struct ptr
-                    try ptr.accessor.emitCopyConstruction(into: outPtr.accessor, module: module)
+                    try ptr.emitCopyConstruction(into: outPtr, gen: gen)
                     
                 default:
                     // concepts and trivial structs
-                    try module.builder.build(CopyAddrInst(addr: ptr, out: outPtr))
+                    try gen.builder.build(CopyAddrInst(addr: ptr.managedValue, out: outPtr.managedValue))
                 }
-                
             }
         default:
             // if it isnt a nominal type, shallow copy the entire thing
-            try module.builder.build(CopyAddrInst(addr: lValueReference(), out: outAccessor.lValueReference()))
+            _ = try gen.builder.buildManaged(CopyAddrInst(addr: lValue, out: outAccessor.lValue), gen: gen)
         }
     }
     

@@ -23,7 +23,7 @@ protocol StmtEmitter {
     func emitStmt(module: Module, gen: VIRGenFunction) throws
 }
 
-protocol LValueEmitter : ValueEmitter {
+protocol LValueEmitter : ValueEmitter, _LValueEmitter {
     associatedtype ManagedEmittedType : ManagedValue
     /// Emit the get/set-accessor for a VIR lvalue
     func emitLValue(module: Module, gen: VIRGenFunction) throws -> ManagedEmittedType
@@ -37,6 +37,14 @@ protocol _LValueEmitter : _ValueEmitter {
 extension LValueEmitter {
     func canEmitLValue(module: Module, gen: VIRGenFunction) throws -> Bool { return true }
 }
+extension _LValueEmitter where Self : LValueEmitter {
+    func emitLValue(module: Module, gen: VIRGenFunction) throws -> AnyManagedValue {
+        return (try emitLValue(module: module, gen: gen) as ManagedEmittedType).erased
+    }
+    func canEmitLValue(module: Module, gen: VIRGenFunction) throws -> Bool {
+        return try canEmitLValue(module: module, gen: gen)
+    }
+}
 
 /// A libaray without a main function can emit vir for this
 protocol LibraryTopLevel: ASTNode {}
@@ -49,6 +57,11 @@ extension ASTNode {
 extension ASTNode where Self : StmtEmitter {
     func emit(module: Module, gen: VIRGenFunction) throws {
         try emitStmt(module: module, gen: gen)
+    }
+}
+extension ASTNode where Self : ValueEmitter {
+    func emit(module: Module, gen: VIRGenFunction) throws {
+        _ = try emitRValue(module: module, gen: gen)
     }
 }
 
@@ -96,7 +109,7 @@ extension AST {
     func emitVIR(module: Module, isLibrary: Bool) throws {
         
         let builder = module.builder!
-        var gen = VIRGenFunction(scope: VIRGenScope(module: module),
+        let gen = VIRGenFunction(scope: VIRGenScope(module: module),
                                  builder: builder)
         if isLibrary {
             // if its a library we dont emit a main, and just virgen on any decls/statements
@@ -183,7 +196,7 @@ extension VariableDecl : ValueEmitter {
                                                                      mutable: isMutable,
                                                                      irName: name),
                                                     gen: gen)
-        gen.managedValues.append(variable)
+        gen.addVariable(variable, name: name)
         return variable
     }
 }
@@ -227,20 +240,20 @@ extension FunctionCall/*: ValueEmitter*/ {
         else if let function = module.function(named: mangledName) {
             return try AnyManagedValue.forUnmanaged(gen.builder.buildFunctionCall(function: function, args: args), gen: gen)
         }
-        else if let closure = gen.variable(named: name) {
+        else if let closure = try gen.variable(named: name) {
             fatalError("TODO")
-//            // If we only have an accessor, get the value from it, which must be a function* type
-//            // because the only case this is allowed is GEPing a struct
-//            // Otherwise we just get the lvalue from the byval accessor
-//            let ref = (closure is IndirectAccessor ?
-//                try! OpaqueLValue(rvalue: closure.aggregateGetValue()) :
-//                try closure.getValue()) as! LValue
-//            
-//            guard case let ret as FunctionType = ref.memType?.importedType(in: module) else { fatalError() }
-//            
-//            return try gen.builder.buildFunctionApply(function: PtrOperand(ref),
-//                                                      returnType: ret.returns,
-//                                                      args: args)
+            //            // If we only have an accessor, get the value from it, which must be a function* type
+            //            // because the only case this is allowed is GEPing a struct
+            //            // Otherwise we just get the lvalue from the byval accessor
+            //            let ref = (closure is IndirectAccessor ?
+            //                try! OpaqueLValue(rvalue: closure.aggregateGetValue()) :
+            //                try closure.getValue()) as! LValue
+            //
+            //            guard case let ret as FunctionType = ref.memType?.importedType(in: module) else { fatalError() }
+            //
+            //            return try gen.builder.buildFunctionApply(function: PtrOperand(ref),
+            //                                                      returnType: ret.returns,
+            //                                                      args: args)
         }
         else {
             fatalError("No function name=\(name), mangledName=\(mangledName)")
@@ -271,11 +284,11 @@ extension ClosureExpr : ValueEmitter {
                                                  function: closure.thunk,
                                                  captureDelegate: closure,
                                                  breakPoint: entry)
-        var closureVGF = VIRGenFunction(scope: closureScope, builder: gen.builder)
+        let closureVGF = VIRGenFunction(scope: closureScope, builder: gen.builder)
         // add params
-        for param in parameters! {
-            let param = try closure.thunk.param(named: param).managed(gen: closureVGF)
-            gen.managedValues.append(param)
+        for paramName in parameters! {
+            let param = try closure.thunk.param(named: paramName).managed(gen: closureVGF)
+            gen.addVariable(param, name: paramName)
         }
         // emit body
         try exprs.emitBody(module: module, gen: closureVGF)
@@ -308,12 +321,12 @@ extension FuncDecl : StmtEmitter {
         
         // make scope and occupy it with params
         let fnScope = VIRGenScope(parent: gen.scope, function: function)
-        var vgf = VIRGenFunction(scope: fnScope, builder: gen.builder)
+        let vgf = VIRGenFunction(scope: fnScope, builder: gen.builder)
         
         // add the explicit method parameters
         for paramName in impl.params {
             let param = try function.param(named: paramName).managed(gen: vgf)
-            gen.managedValues.append(param)
+            gen.addVariable(param, name: paramName)
         }
         // A method calling convention means we have to pass `self` in, and tell vars how
         // to access it, and `self`’s properties
@@ -321,7 +334,7 @@ extension FuncDecl : StmtEmitter {
             // We need self to be passed by ref as a `RefParam`
             let selfParam = function.params![0] as! RefParam
             let selfVar = Managed<RefParam>.forLValue(selfParam, gen: vgf)
-            vgf.managedValues.append(selfVar)
+            vgf.addVariable(selfVar, name: "self")
             
             guard case let type as NominalType = selfType else { fatalError() }
             
@@ -332,7 +345,7 @@ extension FuncDecl : StmtEmitter {
                                                                                  property: property.name,
                                                                                  irName: property.name),
                                                             gen: vgf)
-                    vgf.managedValues.append(pVar)
+                    vgf.addVariable(pVar, name: property.name)
                 }
                 // If it is a value self then we do a struct extract to get self elements
                 // case is Accessor:
@@ -342,7 +355,7 @@ extension FuncDecl : StmtEmitter {
                                                                               property: property.name,
                                                                               irName: property.name),
                                                             gen: vgf)
-                    vgf.managedValues.append(pVar)
+                    vgf.addVariable(pVar, name: property.name)
                 }
             }
         }
@@ -367,14 +380,14 @@ extension FuncDecl : StmtEmitter {
 extension VariableExpr : LValueEmitter {
     
     func emitRValue(module: Module, gen: VIRGenFunction) throws -> AnyManagedValue {
-        return gen.variable(named: name)!
+        return try gen.variable(named: name)!.erased
     }
     func emitLValue(module: Module, gen: VIRGenFunction) throws -> AnyManagedValue {
-        return gen.variable(named: name)!
+        return try gen.variable(named: name)!.erased
     }
     
     func canEmitLValue(module: Module, gen: VIRGenFunction) throws -> Bool {
-        return gen.variable(named: name)?.managedValue is LValue
+        return try gen.variable(named: name)?.isIndirect ?? false
     }
 }
 
@@ -396,10 +409,10 @@ extension TupleExpr : ValueEmitter {
         guard let type = try _type?.importedType(in: module).getAsTupleType() else {
             throw VIRError.noType(#file)
         }
-        let elements = try self.elements.map {
-            try $0.emitRValue(module: module, gen: gen)
-                .coerce(to: $0._type!, gen: gen).forward()
+        let elements = try self.elements.map { el -> Value in
+            var managed = try el.emitRValue(module: module, gen: gen).coerceToValue(gen: gen)
             // forward the clearup to the tuple
+            return managed.forward()
         }
         
         return try gen.builder.buildManaged(TupleCreateInst(type: type, elements: elements), gen: gen)
@@ -412,19 +425,26 @@ extension TupleMemberLookupExpr : ValueEmitter, LValueEmitter {
         let tuple = try object.emitRValue(module: module, gen: gen)
         
         if tuple.isIndirect {
-            return try gen.builder.buildManaged(TupleElementPtrInst(tuple: tuple.value, index: index))
+            let tuplePtr = try tuple.coerce(to: object._type!.ptrType(), gen: gen)
+            return try gen.builder.buildManaged(TupleElementPtrInst(tuple: tuplePtr.lValue,
+                                                                    index: index),
+                                                gen: gen).erased
         }
         else {
-            let tuplePtr = try tuple.coerce(to: tuple.object._type!.ptrType(), gen: gen)
-            return try gen.builder.buildManaged(TupleExtractInst(tuple: tuplePtr.lValue,
+            return try gen.builder.buildManaged(TupleExtractInst(tuple: tuple.coerceToValue(gen: gen).value,
                                                                  index: index),
-                                                gen: gen)
+                                                gen: gen).erased
         }
     }
     
     func emitLValue(module: Module, gen: VIRGenFunction) throws -> Managed<TupleElementPtrInst> {
+        guard case let o as _LValueEmitter = object else { fatalError() }
         let tuple = try o.emitLValue(module: module, gen: gen)
-        return try gen.builder.build(TupleElementPtrInst(tuple: tuple.lValueReference(), index: index)).accessor
+        assert(tuple.isIndirect)
+        let tuplePtr = try tuple.coerce(to: object._type!.ptrType(), gen: gen)
+        return try gen.builder.buildManaged(TupleElementPtrInst(tuple: tuplePtr.lValue,
+                                                                index: index),
+                                            gen: gen)
     }
 }
 
@@ -433,24 +453,28 @@ extension PropertyLookupExpr : LValueEmitter {
     func emitRValue(module: Module, gen: VIRGenFunction) throws -> AnyManagedValue {
         
         switch object._type {
-        case is StructType:
+        case let ty as StructType:
             switch object {
             case let lValEmitter as _LValueEmitter
                 where try lValEmitter.canEmitLValue(module: module, gen: gen):
                 // if self is backed by a ptr, do a GEP then load
                 let object = try lValEmitter.emitLValue(module: module, gen: gen)
-                let elPtr = try gen.builder.build(StructElementPtrInst(object: object.reference(), property: propertyName))
-                return try gen.builder.build(LoadInst(address: elPtr))
+                    .coerce(to: ty.ptrType(), gen: gen)
+                let elPtr = try gen.builder.build(StructElementPtrInst(object: object.lValue, property: propertyName))
+                return try gen.builder.buildManaged(LoadInst(address: elPtr), gen: gen).erased
             case let rValEmitter:
                 // otherwise just get the struct element
                 let object = try rValEmitter.emitRValue(module: module, gen: gen)
-                return try gen.builder.build(StructExtractInst(object: object.getValue(), property: propertyName))
+                return try gen.builder.buildManaged(StructExtractInst(object: object.lValue, property: propertyName), gen: gen).erased
             }
             
-        case is ConceptType:
-            let object = try self.object.emitRValue(module: module, gen: gen).referenceBacked().reference()
-            let ptr = try gen.builder.build(ExistentialProjectPropertyInst(existential: object, propertyName: propertyName))
-            return try gen.builder.build(LoadInst(address: ptr))
+        case let ex as ConceptType:
+            let object = try self.object.emitRValue(module: module, gen: gen)
+                .coerce(to: ex.ptrType(), gen: gen)
+            var ptr = try gen.builder.buildManaged(ExistentialProjectPropertyInst(existential: object.lValue,
+                                                                                  propertyName: propertyName),
+                                                   gen: gen)
+            return try gen.builder.buildManaged(LoadInst(address: ptr.forward()), gen: gen).erased
             
         default:
             fatalError()
@@ -459,15 +483,18 @@ extension PropertyLookupExpr : LValueEmitter {
     
     func emitLValue(module: Module, gen: VIRGenFunction) throws -> AnyManagedValue {
         guard case let o as _LValueEmitter = self.object else { fatalError() }
-        let object = try o.emitLValue(module: module, gen: gen).lValueReference()
+        let object = try o.emitLValue(module: module, gen: gen)
+            .coerce(to: self.object._type!.ptrType(), gen: gen)
         
         switch self.object._type {
         case is StructType:
-            return try gen.builder.build(StructElementPtrInst(object: object, property: propertyName)).accessor
-            
+            return try gen.builder.buildManaged(StructElementPtrInst(object: object.lValue,
+                                                                     property: propertyName),
+                                                gen: gen).erased
         case is ConceptType:
-            return try gen.builder.build(ExistentialProjectPropertyInst(existential: object, propertyName: propertyName)).accessor
-            
+            return try gen.builder.buildManaged(ExistentialProjectPropertyInst(existential: object.lValue,
+                                                                               propertyName: propertyName),
+                                                gen: gen).erased
         default:
             fatalError()
         }
@@ -486,7 +513,6 @@ extension PropertyLookupExpr : LValueEmitter {
 }
 
 extension BlockExpr : StmtEmitter {
-    
     func emitStmt(module: Module, gen: VIRGenFunction) throws {
         try exprs.emitBody(module: module, gen: gen)
     }
@@ -605,7 +631,7 @@ extension ForInLoopStmt : StmtEmitter {
                                               breakPoint: gen.builder.insertPoint)
         var loopGen = VIRGenFunction(scope: loopScope, builder: gen.builder)
         let loopVar = try loopClosure.thunk.param(named: binded.name).managed(gen: gen)
-        loopGen.managedValues.append(loopVar)
+        loopGen.addVariable(loopVar, name: binded.name)
         
         // emit body for loop thunk
         gen.builder.insertPoint.function = loopClosure.thunk // move to loop thunk
@@ -638,7 +664,7 @@ extension ForInLoopStmt : StmtEmitter {
             }
         }
         
-        try loopScope.releaseVariables(deleting: true)
+        try loopGen.cleanup()
     }
 }
 
@@ -651,9 +677,9 @@ extension YieldStmt : StmtEmitter {
         }
         
         let val = try expr.emitRValue(module: module, gen: gen)
-        let param = try val.aggregateGetValue()
+        let param = try val.coerce(to: expr._type!, gen: gen)
         
-        try gen.builder.buildFunctionApply(function: PtrOperand(loopThunk), returnType: BuiltinType.void, args: [Operand(param)])
+        try gen.builder.buildFunctionApply(function: PtrOperand(loopThunk), returnType: BuiltinType.void, args: [Operand(param.borrow().value)])
     }
 }
 
@@ -671,19 +697,20 @@ extension WhileLoopStmt : StmtEmitter {
         try gen.builder.buildBreak(to: condBlock)
         gen.builder.insertPoint.block = condBlock
         
-        let condBool = try condition.emitRValue(module: module, gen: gen).forward().value
-        let cond = try gen.builder.build(StructExtractInst(object: condBool, property: "value", irName: "cond"))
+        var condBool = try condition.emitRValue(module: module, gen: gen)
+        let cond = try gen.builder.build(StructExtractInst(object: condBool.forward(), property: "value", irName: "cond"))
         
         // cond break into/past loop
         try gen.builder.buildCondBreak(if: Operand(cond),
                                        to: (block: loopBlock, args: nil),
                                        elseTo: (block: exitBlock, args: nil))
         
-        let loopScope = VIRGenScope(parent: scope, function: scope.function)
+        let loopScope = VIRGenScope(parent: gen.scope, function: gen.scope.function)
+        let loopVGF = VIRGenFunction(scope: loopScope, builder: gen.builder)
         // build loop block
         gen.builder.insertPoint.block = loopBlock // move into
-        try block.emitStmt(module: module, scope: loopScope) // gen stmts
-        try loopScope.releaseVariables(deleting: true)
+        try block.emitStmt(module: module, gen: loopVGF) // gen stmts
+        try loopVGF.cleanup()
         try gen.builder.buildBreak(to: condBlock) // break back to condition check
         gen.builder.insertPoint.block = exitBlock  // move past -- we're done
     }
@@ -709,8 +736,8 @@ extension TypeDecl : StmtEmitter {
             try m.emitStmt(module: module, gen: gen)
         }
         
-        alias.destructor = try emitImplicitDestructorDecl(module: module)
-        alias.copyConstructor = try emitImplicitCopyConstructorDecl(module: module)
+        alias.destructor = try emitImplicitDestructorDecl(module: module, gen: gen)
+        alias.copyConstructor = try emitImplicitCopyConstructorDecl(module: module, gen: gen)
     }
 }
 
@@ -754,39 +781,38 @@ extension InitDecl : StmtEmitter {
         function.inlineRequirement = .always
         
         // make scope and occupy it with params
-        let fnScope = VIRGenScope(parent: scope, function: function)
+        let fnScope = VIRGenScope(parent: gen.scope, function: function)
+        let fnVGF = VIRGenFunction(scope: fnScope, builder: gen.builder)
         
-        let selfVar: IndirectAccessor
+        var selfVar: AnyManagedValue
         
         if selfType.isHeapAllocated {
-            selfVar = try RefCountedAccessor.allocObject(type: selfType, module: module)
+            selfVar = try module.builder.buildManaged(AllocObjectInst(memType: selfType, irName: "storage"), gen: gen).erased
         }
         else {
-            selfVar = try gen.builder.build(AllocInst(memType: selfType.importedType(in: module), irName: "self")).accessor
+            selfVar = try gen.emitTempAlloc(memType: selfType).erased
         }
         
-        fnScope.insert(variable: selfVar, name: "self")
+        fnVGF.addVariable(selfVar, name: "self")
         
         // add self’s elements into the scope, whose accessors are elements of selfvar
         for member in selfType.members {
-            let structElement = try gen.builder.build(StructElementPtrInst(object: selfVar.lValueReference(),
-                                                                           property: member.name,
-                                                                           irName: member.name))
-            fnScope.insert(variable: structElement.accessor, name: member.name)
+            let structElement = try fnVGF.builder.buildManaged(StructElementPtrInst(object: selfVar.lValue,
+                                                                                    property: member.name,
+                                                                                    irName: member.name), gen: fnVGF)
+            fnVGF.addVariable(structElement, name: member.name)
         }
         
         // add the initialiser’s params
         for param in impl.params {
-            try fnScope.insert(variable: function.param(named: param), name: param)
+            try fnVGF.addVariable(function.param(named: param).managed(gen: gen), name: param)
         }
         
         // vir gen for body
-        try impl.body.emitStmt(module: module, scope: fnScope)
+        try impl.body.emitStmt(module: module, gen: fnVGF)
         
-        try fnScope.removeVariable(named: "self")?.releaseUnowned()
-        
-        let ret = try gen.builder.buildReturn(value: selfVar.getEscapingValue())
-        try fnScope.releaseVariables(deleting: true)
+        try gen.builder.buildReturn(value: selfVar.forward())
+        try fnVGF.cleanup()
         //        try fnScope.emitDestructors(builder: gen.builder, return: ret)
         
         // move out of function
@@ -816,46 +842,40 @@ extension MutationExpr : ValueEmitter {
 extension MethodCallExpr : ValueEmitter {
     
     func emitRValue(module: Module, gen: VIRGenFunction) throws -> AnyManagedValue {
+        guard let fnType = fnType else { fatalError() }
         
         // build self and args' values
         let argAccessors = try argOperands(module: module, gen: gen)
-        let args = try argAccessors.map { try $0.aggregateGetValue() }.map(Operand.init)
-        defer {
-            for accessor in argAccessors {
-                try! accessor.releaseCoercionTemp()
-            }
-        }
-        let selfVarAccessor = try object.emitRValue(module: module, gen: gen)
-        try selfVarAccessor.retain()
-        
-        guard let fnType = fnType else { fatalError() }
+        let args = try argAccessors.map { try Operand($0.borrow().value) }
+        let selfRef = try object.emitRValue(module: module, gen: gen)
+            .coerce(to: object._type!.ptrType(), gen: gen)
         
         // construct function call
         switch object._type {
         case is StructType:
             guard case .method = fnType.callingConvention else { fatalError() }
-            let selfRef = try selfVarAccessor.referenceBacked().aggregateReference()
             
             let function = try module.getOrInsertFunction(named: mangledName, type: fnType)
-            return try gen.builder.buildFunctionCall(function: function, args: [PtrOperand(selfRef)] + args)
+            let call = try gen.builder.buildFunctionCall(function: function, args: [PtrOperand(selfRef.borrow().lValue)] + args)
+            return AnyManagedValue.forUnmanaged(call, gen: gen)
             
         case let existentialType as ConceptType:
             
-            let selfRef = try selfVarAccessor.referenceBacked().aggregateReference()
-            
             // get the witness from the existential
-            let fn = try gen.builder.build(ExistentialWitnessInst(existential: selfRef,
+            let fn = try gen.builder.build(ExistentialWitnessInst(existential: selfRef.borrow().lValue,
                                                                   methodName: mangledName,
                                                                   existentialType: existentialType,
                                                                   irName: "witness"))
             guard case let fnType as FunctionType = fn.memType?.importedType(in: module) else { fatalError() }
             
             // get the instance from the existential
-            let unboxedSelf = try gen.builder.build(ExistentialProjectInst(existential: selfRef, irName: "unboxed"))
+            let unboxedSelf = try gen.builder.build(ExistentialProjectInst(existential: selfRef.borrow().lValue, irName: "unboxed"))
             // call the method by applying the opaque ptr to self as the first param
-            return try gen.builder.buildFunctionApply(function: PtrOperand(fn),
-                                                      returnType: fnType.returns,
-                                                      args: [PtrOperand(unboxedSelf)] + args)
+            let call = try gen.builder.buildFunctionApply(function: PtrOperand(fn),
+                                                          returnType: fnType.returns,
+                                                          args: [PtrOperand(unboxedSelf)] + args)
+            return AnyManagedValue.forUnmanaged(call, gen: gen)
+            
         default:
             fatalError()
         }

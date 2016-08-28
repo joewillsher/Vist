@@ -13,9 +13,9 @@
  so it can be used as a semantic variable here.
  */
 protocol CaptureDelegate : class {
-    var captured: [Accessor] { get }
+    var captured: [ManagedValue] { get }
     /// The delegate action to capture a vairable
-    func capture(variable: Accessor, scope: VIRGenScope, name: String) throws -> Accessor
+    func capture(variable: ManagedValue, scope: VIRGenScope, name: String) throws -> ManagedValue
 }
 
 /// A thunk object -- wraps a function. Can be used for captruing scopes
@@ -58,7 +58,7 @@ extension ThunkFunction {
 final class Closure : ThunkFunction, VIRElement {
     let thunk: Function
     var function: Function { return thunk }
-    var captured: [Accessor] = []
+    var captured: [ManagedValue] = []
     fileprivate(set) var capturedGlobals: [GlobalValue] = []
     
     var thunkName = ""
@@ -73,42 +73,43 @@ final class Closure : ThunkFunction, VIRElement {
 
 extension Closure : CaptureDelegate {
     
-    func capture(variable: Accessor, scope: VIRGenScope, name: String) throws -> Accessor {
-        // add to self capture list
-        // update function
-        
-        let initialInsert = module.builder.insertPoint
-        defer { module.builder.insertPoint = initialInsert }
-        module.builder.insertPoint = scope.breakPoint!
-
-        let g: GlobalValue, accessor: IndirectAccessor
-        
-        if
-            case let variableAccessor as IndirectAccessor = variable,
-            case let decl as IndirectAccessor = try scope.parent?.variable(named: name),
-            let type = variableAccessor.mem.type {
-           
-            g = GlobalValue(name: "\(name).globlstorage", type: type, module: module)
-            try module.builder.build(StoreInst(address: g, value: decl.aggregateReference()))
-            accessor = GlobalIndirectRefAccessor(memory: g, module: function.module)
-        }
-        else if
-            let type = variable.storedType,
-            let decl = try scope.parent?.variable(named: name) {
-            
-            g = GlobalValue(name: "\(name).globl", type: type, module: module)
-            try module.builder.build(StoreInst(address: g, value: decl.aggregateGetValue()))
-            accessor = GlobalRefAccessor(memory: g, module: function.module)
-        }
-        else {
-            fatalError()
-        }
-        
-        scope.insert(variable: accessor, name: name)
-        captured.append(variable)
-        capturedGlobals.append(g)
-        module.globalValues.insert(g)
-        return accessor
+    func capture(variable: ManagedValue, scope: VIRGenScope, name: String) throws -> ManagedValue {
+//        // add to self capture list
+//        // update function
+//        
+//        let initialInsert = module.builder.insertPoint
+//        defer { module.builder.insertPoint = initialInsert }
+//        module.builder.insertPoint = scope.breakPoint!
+//
+//        let g: GlobalValue, accessor: IndirectAccessor
+//        
+//        if
+//            case let variableAccessor as IndirectAccessor = variable,
+//            case let decl as IndirectAccessor = try scope.parent?.variable(named: name),
+//            let type = variableAccessor.mem.type {
+//           
+//            g = GlobalValue(name: "\(name).globlstorage", type: type, module: module)
+//            try module.builder.build(StoreInst(address: g, value: decl.aggregateReference()))
+//            accessor = GlobalIndirectRefAccessor(memory: g, module: function.module)
+//        }
+//        else if
+//            let type = variable.storedType,
+//            let decl = try scope.parent?.variable(named: name) {
+//            
+//            g = GlobalValue(name: "\(name).globl", type: type, module: module)
+//            try module.builder.build(StoreInst(address: g, value: decl.aggregateGetValue()))
+//            accessor = GlobalRefAccessor(memory: g, module: function.module)
+//        }
+//        else {
+//            fatalError()
+//        }
+//        
+//        scope.insert(variable: accessor, name: name)
+//        captured.append(variable)
+//        capturedGlobals.append(g)
+//        module.globalValues.insert(g)
+//        return accessor
+        return variable
     }
     
     

@@ -169,6 +169,8 @@
 		D488C2461D40595B000735DA /* RegisterPromotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = D488C2441D40595B000735DA /* RegisterPromotion.swift */; };
 		D49248541CF77883009FD509 /* StdLibInline.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49248531CF77883009FD509 /* StdLibInline.swift */; };
 		D49248551CF7788A009FD509 /* StdLibInline.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49248531CF77883009FD509 /* StdLibInline.swift */; };
+		D4960F071D7211910058D9EF /* Accessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4960F061D7211910058D9EF /* Accessor.swift */; };
+		D4960F081D7211910058D9EF /* Accessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4960F061D7211910058D9EF /* Accessor.swift */; };
 		D4A0001D1CC7C46500157D90 /* GlobalInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A0001C1CC7C46500157D90 /* GlobalInst.swift */; };
 		D4A0001E1CC7C46500157D90 /* GlobalInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A0001C1CC7C46500157D90 /* GlobalInst.swift */; };
 		D4A000211CCA7E4D00157D90 /* LiteralLower.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A000201CCA7E4D00157D90 /* LiteralLower.swift */; };
@@ -206,8 +208,8 @@
 		D4D8B25D1D0301BC00D1F455 /* RuntimeObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D8B25C1D0301BC00D1F455 /* RuntimeObject.swift */; };
 		D4D8B25E1D0301BC00D1F455 /* RuntimeObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D8B25C1D0301BC00D1F455 /* RuntimeObject.swift */; };
 		D4DE28191C5969830096E798 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4DE28181C5969830096E798 /* libz.tbd */; };
-		D4E225B61D6C7BCB0055A5CA /* Lifetime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E225B51D6C7BCB0055A5CA /* Lifetime.swift */; };
-		D4E225B71D6C7BCB0055A5CA /* Lifetime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E225B51D6C7BCB0055A5CA /* Lifetime.swift */; };
+		D4E225B61D6C7BCB0055A5CA /* Destructor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E225B51D6C7BCB0055A5CA /* Destructor.swift */; };
+		D4E225B71D6C7BCB0055A5CA /* Destructor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E225B51D6C7BCB0055A5CA /* Destructor.swift */; };
 		D4E35B7D1C5D0F0700683486 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4DE28181C5969830096E798 /* libz.tbd */; };
 		D4E35B7F1C5D216600683486 /* Pipe.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E35B7E1C5D216600683486 /* Pipe.swift */; };
 		D4E35B821C5E3ECE00683486 /* Expected.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E35B801C5E3EC600683486 /* Expected.swift */; };
@@ -355,6 +357,7 @@
 		D489F3BD1C1E392D00254FFC /* example.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vist; path = RUN/example.vist; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		D489F3C01C1E396E00254FFC /* example */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = example; path = RUN/example; sourceTree = "<group>"; };
 		D49248531CF77883009FD509 /* StdLibInline.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StdLibInline.swift; path = Optimiser/StdLibInline.swift; sourceTree = "<group>"; };
+		D4960F061D7211910058D9EF /* Accessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Accessor.swift; path = lib/VIRGen/Accessor.swift; sourceTree = "<group>"; };
 		D49BC2971CE25B1C0071D3AD /* Metadata.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Metadata.cpp; path = stdlib/runtime/Metadata.cpp; sourceTree = "<group>"; };
 		D49BC2981CE25B1C0071D3AD /* RefcountedObject.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = RefcountedObject.cpp; path = stdlib/runtime/RefcountedObject.cpp; sourceTree = "<group>"; };
 		D49BC2991CE25B1C0071D3AD /* runtime.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = runtime.cpp; path = stdlib/runtime/runtime.cpp; sourceTree = "<group>"; };
@@ -384,7 +387,7 @@
 		D4DB92771C866FF300718B78 /* example.vir */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vir; path = RUN/example.vir; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		D4DE28181C5969830096E798 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
-		D4E225B51D6C7BCB0055A5CA /* Lifetime.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Lifetime.swift; path = lib/VIRGen/Lifetime.swift; sourceTree = "<group>"; };
+		D4E225B51D6C7BCB0055A5CA /* Destructor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Destructor.swift; path = lib/VIRGen/Destructor.swift; sourceTree = "<group>"; };
 		D4E225BB1D6DDC2D0055A5CA /* Dispatch.s */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; name = Dispatch.s; path = stdlib/runtime/Dispatch.s; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.asm.i386; };
 		D4E35B7E1C5D216600683486 /* Pipe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pipe.swift; sourceTree = "<group>"; };
 		D4E35B801C5E3EC600683486 /* Expected.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Expected.swift; sourceTree = "<group>"; };
@@ -563,10 +566,11 @@
 			isa = PBXGroup;
 			children = (
 				D43B3A4D1C8A11180039FB2E /* VIRGen.swift */,
-				D4E225B51D6C7BCB0055A5CA /* Lifetime.swift */,
+				D4E225B51D6C7BCB0055A5CA /* Destructor.swift */,
 				D4BE16451D70BE8B003F087D /* VIRGenFunction.swift */,
 				D43B3A4C1C8A11180039FB2E /* Scope.swift */,
 				D46A68DD1D5E288500FF9144 /* Closure.swift */,
+				D4960F061D7211910058D9EF /* Accessor.swift */,
 			);
 			name = VIRGen;
 			sourceTree = "<group>";
@@ -873,7 +877,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D4E225B71D6C7BCB0055A5CA /* Lifetime.swift in Sources */,
+				D4E225B71D6C7BCB0055A5CA /* Destructor.swift in Sources */,
 				D411C8991C8DD00000478988 /* DCE.swift in Sources */,
 				D41C73311D5D02D00047B373 /* AggregateFlatten.swift in Sources */,
 				D43B39E11C8A0F3A0039FB2E /* StructInst.swift in Sources */,
@@ -965,6 +969,7 @@
 				D4F3D7FF1CAC419E005A3B07 /* CreateType.cpp in Sources */,
 				D43B39FB1C8A100E0039FB2E /* Compile.swift in Sources */,
 				D43B39B31C8A0F140039FB2E /* FunctionType.swift in Sources */,
+				D4960F081D7211910058D9EF /* Accessor.swift in Sources */,
 				D43B39BF1C8A0F140039FB2E /* TypeAlias.swift in Sources */,
 				D41BF54D1C5CD797004A1962 /* Tests.swift in Sources */,
 				D43B3A8B1C8A12090039FB2E /* Interpreter.swift in Sources */,
@@ -999,6 +1004,7 @@
 				D43FE1CA1D5E2EBF003494C9 /* WitnessTable.swift in Sources */,
 				D427DA9C1CA05976000708E2 /* Param.swift in Sources */,
 				D43B39B81C8A0F140039FB2E /* StructType.swift in Sources */,
+				D4960F071D7211910058D9EF /* Accessor.swift in Sources */,
 				D4728BE41C960D79003294B0 /* MemoryInst.swift in Sources */,
 				D43B39991C8A0EDF0039FB2E /* Module.swift in Sources */,
 				D43B39D81C8A0F3A0039FB2E /* BuiltinInst.swift in Sources */,
@@ -1007,7 +1013,7 @@
 				D4AE8D671D609CAA00E2D480 /* Analysis.swift in Sources */,
 				D4326E3E1CA6F0140016E595 /* ExistentialInst.swift in Sources */,
 				D4A0001D1CC7C46500157D90 /* GlobalInst.swift in Sources */,
-				D4E225B61D6C7BCB0055A5CA /* Lifetime.swift in Sources */,
+				D4E225B61D6C7BCB0055A5CA /* Destructor.swift in Sources */,
 				D41C73301D5D02D00047B373 /* AggregateFlatten.swift in Sources */,
 				D4CF76771C8CD4A70058A8EC /* TupleInst.swift in Sources */,
 				D41C732A1D5CEEC30047B373 /* Diagnose.swift in Sources */,

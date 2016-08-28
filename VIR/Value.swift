@@ -75,35 +75,6 @@ extension Value {
         for use in uses { use.setLoweredValue(val) }
     }
     
-    /// Create an accessor which accesses `self`.
-    /// 
-    /// If `self` is ref counted, this creates a refcounted accessor, otherwise
-    /// it returns a by-val accessor for value types (or address only ptr types)
-    /// and returns a ref accessor for all other lvalues with ptr type
-    func accessor() throws -> Accessor {
-        
-        if case BuiltinType.pointer(let to)? = type, !to.isAddressOnly {
-            let lVal = try OpaqueLValue(rvalue: self)
-            if case let nominal as NominalType = to, nominal.isHeapAllocated {
-                return RefCountedAccessor(refcountedBox: lVal)
-            }
-            else if to.isConceptType() {
-                return try ExistentialRefAccessor(memory: lVal)
-            }
-            else {
-                // BUG: Accessing self in a method and using it in if expressions breaks
-                // stuff -- the accessor is a ValAccessor so self has type Self*
-                return RefAccessor(memory: lVal)
-            }
-        }
-        else if let t = type, let concept = try? t.getAsConceptType() {
-            return try ExistentialRefAccessor(value: self, type: concept, module: module)
-        }
-        else {
-            return ValAccessor(value: self)
-        }
-    }
-    
     func dump() { print(vir) }
     
     var module: Module { return parentBlock!.module }
@@ -135,13 +106,6 @@ extension Value {
         return irName ?? getInstNumber() ?? "<null>"
     }
 }
-
-extension LValue {
-    /// Initialise a ref accessor accessing `self`
-    var accessor: IndirectAccessor { return RefAccessor(memory: self) }
-}
-
-
 
 /// A value known to be an LValue, under the hood is an 
 /// rvalue with a pointer type

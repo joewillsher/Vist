@@ -9,7 +9,7 @@
 /// A semantic scope, containing the declared vars for
 /// the VIRGen phase.
 final class VIRGenScope {
-    private(set) var variables: [String: Accessor]
+    fileprivate(set) var variables: [String: ManagedValue]
     private(set) weak var parent: VIRGenScope?
     private unowned var module: Module
     private(set) var function: Function?
@@ -44,13 +44,11 @@ final class VIRGenScope {
                      breakPoint: breakPoint)
     }
     
-    func insert(variable: Accessor, name: String) {
-        variables[name] = variable
-    }
+    // TODO: move managed value scope info here
     
     /// - Returns: The accessor of a variable named `name`
     /// - Note: Updates the capture handler if we read from a parent
-    func variable(named name: String) throws -> Accessor? {
+    fileprivate func variable(named name: String) throws -> ManagedValue? {
         if let v = variables[name] { return v }
         
         let foundInParent = try parent?.variable(named: name)
@@ -58,38 +56,21 @@ final class VIRGenScope {
             // if we have a capture handler, infor that it 
             // captures this accessor
             let accessor = try handler.capture(variable: f, scope: self, name: name)
-            insert(variable: accessor, name: name)
+            variables[name] = accessor
             return accessor
         }
         return foundInParent
     }
-
-    func removeVariable(named name: String) -> Accessor? {
-        if let v = variables.removeValue(forKey: name) { return v }
-        return parent?.removeVariable(named: name)
-    }
-    
-    func isInScope(variable: Accessor) -> Bool {
-        return variables.values.contains { $0 === variable }
-    }
-    
-    /// Release all refcounted and captuted variables in this scope
-    /// - parameter deleting: Whether to delete the scope's variables after releasing
-    /// - parameter except: Do not release this variable
-    func releaseVariables(deleting: Bool, except: Accessor? = nil) throws {
-        if deleting {
-            for (name, _) in variables {
-                try variables.removeValue(forKey: name)?.release()
-            }
-        }
-    }
-    func removeVariables() {
-        variables.removeAll()
-    }
-    
-    
-    
-    
 }
 
+extension VIRGenFunction {
+    func addVariable(_ variable: ManagedValue, name: String) {
+        managedValues.append(variable)
+        scope.variables[name] = variable
+    }
+    func variable(named name: String) throws -> ManagedValue? {
+        return try scope.variable(named: name)
+    }
+    
+}
 

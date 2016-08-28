@@ -12,6 +12,8 @@ final class VIRGenFunction {
     var managedValues: [ManagedValue] = []
     let scope: VIRGenScope, builder: Builder
     
+    var module: Module { return builder.module }
+    
     init(scope: VIRGenScope, builder: Builder) {
         self.scope = scope
         self.builder = builder
@@ -19,12 +21,11 @@ final class VIRGenFunction {
     
     /// Emits a tempory allocation as a managed value; its cleanup
     /// depends on the type stored
-    mutating func emitTempAlloc(memType: Type) throws -> Managed<AllocInst> {
-        let alloc = try builder.build(AllocInst(memType: memType.importedType(in: builder.module)))
-        return createManaged(Managed<AllocInst>.forUnmanaged(alloc, gen: self))
+    func emitTempAlloc(memType: Type) throws -> Managed<AllocInst> {
+        return try builder.buildManaged(AllocInst(memType: memType.importedType(in: builder.module)), gen: self)
     }
     
-    mutating func cleanup() throws {
+    func cleanup() throws {
         for m in managedValues.reversed() {
             if let cleanup = m.cleanup {
                 try cleanup(self, m)
@@ -33,15 +34,10 @@ final class VIRGenFunction {
         managedValues.removeAll()
     }
     
-    mutating func createManaged<ManagedType : ManagedValue>(_ managed: ManagedType) -> ManagedType {
+    func createManaged<ManagedType : ManagedValue>(_ managed: ManagedType) -> ManagedType {
         managedValues.append(managed)
         return managed
     }
-    
-    func variable(named name: String) -> AnyManagedValue? {
-        return managedValues.first { $0.value.name == name }?.erased
-    }
-    
 }
 
 protocol ManagedValue {
@@ -75,6 +71,11 @@ struct Managed<Val : Value> : ManagedValue {
     }
     
     var erased: AnyManagedValue { return AnyManagedValue(erasing: self) }
+    
+    mutating func forward() -> Val {
+        forwardCleanup()
+        return managedValue
+    }
 }
 
 struct AnyManagedValue : ManagedValue {
@@ -125,8 +126,16 @@ extension ManagedValue {
             }
         }
         else if isIndirect {
-            return { vgf, val in
-                try vgf.builder.build(DeallocStackInst(address: val.lValue))
+            if type.isHeapAllocated {
+                return { vgf, val in
+                    try vgf.builder.build(ReleaseInst(val: val.lValue, unowned: false))
+                    try vgf.builder.build(DeallocStackInst(address: val.lValue))
+                }
+            }
+            else {
+                return { vgf, val in
+                    try vgf.builder.build(DeallocStackInst(address: val.lValue))
+                }
             }
         }
         return nil
@@ -204,9 +213,11 @@ extension ManagedValue {
         if type.isAddressOnly {
             try gen.builder.build(RetainInst(val: lValue))
         }
-        
-        try gen.builder.build(CopyAddrInst(addr: lValue,
-                                           out: dest.lValue))
+        if isIndirect {
+            try gen.builder.build(CopyAddrInst(addr: lValue,
+                                               out: dest.lValue))
+        }
+        try gen.builder.build(StoreInst(address: dest.lValue, value: value))
     }
     
     /// Assigns this value to `dest`, removing this val's cleanup

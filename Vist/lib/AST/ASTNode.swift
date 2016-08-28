@@ -10,6 +10,7 @@
 ///
 /// Provides common interfaces for expressions, declarations, and statements
 protocol ASTNode : ASTPrintable {
+    func emit(module: Module, gen: VIRGenFunction) throws
 }
 
 final class AST : ASTNode, ScopeNode {
