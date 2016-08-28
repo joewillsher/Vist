@@ -12,7 +12,7 @@ extension TypeDecl {
     func emitImplicitDestructorDecl(module: Module, gen: VIRGenFunction) throws -> Function? {
         
         // if any of the members need deallocating
-        guard let type = self.type, type.isTrivial() else {
+        guard let type = self.type, !type.isTrivial() else {
             return nil
         }
         
@@ -37,7 +37,7 @@ extension TypeDecl {
     func emitImplicitCopyConstructorDecl(module: Module, gen: VIRGenFunction) throws -> Function? {
         
         // if any of the members need deallocating
-        guard let type = self.type, type.isTrivial() else {
+        guard let type = self.type, !type.isTrivial() else {
             return nil
         }
         
@@ -49,7 +49,7 @@ extension TypeDecl {
                                   callingConvention: .runtime)
         let fnName = "deepCopy".mangle(type: fnType)
         let fn = try gen.builder.buildFunctionPrototype(name: fnName, type: fnType)
-        try fn.defineBody(params: [(name: "self", convention: .inout), (name: "out", convention: .out)])
+        try fn.defineBody(params: [(name: "self", convention: .inout), (name: "out", convention: .inout)])
         
         let managedSelf = try fn.param(named: "self").managed(gen: gen)
         let managedOut = try fn.param(named: "out").managed(gen: gen)
@@ -61,17 +61,33 @@ extension TypeDecl {
     }
 }
 
-extension Type {
+extension ConceptType {
     func isTrivial() -> Bool {
-        return
-            isConceptType() ||
-                ((self as? NominalType)?.members.contains {
-                    $0.type is ConceptType ||
-                        $0.type.isHeapAllocated ||
-                        $0.type.isTrivial()
-                    } ?? false)
+        return false
     }
 }
+extension TypeAlias {
+    func isTrivial() -> Bool {
+        return targetType.isTrivial()
+    }
+}
+extension NominalType {
+    func isTrivial() -> Bool {
+        if isHeapAllocated {
+            return false
+        }
+        for member in members where !member.type.isTrivial() {
+            return false
+        }
+        return true
+    }
+}
+extension Type {
+    func isTrivial() -> Bool {
+        return true
+    }
+}
+
 
 private extension ManagedValue {
     
@@ -81,9 +97,9 @@ private extension ManagedValue {
         case let type as NominalType:
             for member in type.members {
                 
-                let ptr = try gen.builder.buildUnmanaged(StructElementPtrInst(object: lValue,
-                                                                            property: member.name,
-                                                                            irName: member.name), gen: gen)
+                let ptr = try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: lValue,
+                                                                                    property: member.name,
+                                                                                    irName: member.name), gen: gen)
                 switch member.type {
                 case let type where type.isConceptType():
                     try gen.builder.build(DestroyAddrInst(addr: ptr.managedValue))
@@ -115,10 +131,10 @@ private extension ManagedValue {
         case let type as NominalType where type.isTrivial():
             
             for member in type.members {
-                let ptr = try gen.builder.buildUnmanaged(StructElementPtrInst(object: lValue,
-                                                                            property: member.name), gen: gen)
-                let outPtr = try gen.builder.buildUnmanaged(StructElementPtrInst(object: outAccessor.lValue,
-                                                                               property: member.name), gen: gen)
+                let ptr = try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: lValue,
+                                                                                    property: member.name), gen: gen)
+                let outPtr = try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: outAccessor.lValue,
+                                                                                       property: member.name), gen: gen)
                 switch member.type {
                 case let type where type.isHeapAllocated:
                     // if we need to retaun it
@@ -136,7 +152,7 @@ private extension ManagedValue {
             }
         default:
             // if it isnt a nominal type, shallow copy the entire thing
-            _ = try gen.builder.buildUnmanaged(CopyAddrInst(addr: lValue, out: outAccessor.lValue), gen: gen)
+            _ = try gen.builder.build(CopyAddrInst(addr: lValue, out: outAccessor.lValue))
         }
     }
     
