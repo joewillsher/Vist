@@ -63,6 +63,6 @@ extension Builder {
     }
     @discardableResult
     func buildManagedReturn(value: Value, gen: VIRGenFunction) throws -> Managed<ReturnInst> {
-        return try buildManaged(ReturnInst(value: value, parentBlock: insertPoint.block), gen: gen)
+        return try buildUnmanaged(ReturnInst(value: value, parentBlock: insertPoint.block), gen: gen)
     }
 }

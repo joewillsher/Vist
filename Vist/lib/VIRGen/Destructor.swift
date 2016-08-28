@@ -81,7 +81,7 @@ private extension ManagedValue {
         case let type as NominalType:
             for member in type.members {
                 
-                let ptr = try gen.builder.buildManaged(StructElementPtrInst(object: lValue,
+                let ptr = try gen.builder.buildUnmanaged(StructElementPtrInst(object: lValue,
                                                                             property: member.name,
                                                                             irName: member.name), gen: gen)
                 switch member.type {
@@ -115,9 +115,9 @@ private extension ManagedValue {
         case let type as NominalType where type.isTrivial():
             
             for member in type.members {
-                let ptr = try gen.builder.buildManaged(StructElementPtrInst(object: lValue,
+                let ptr = try gen.builder.buildUnmanaged(StructElementPtrInst(object: lValue,
                                                                             property: member.name), gen: gen)
-                let outPtr = try gen.builder.buildManaged(StructElementPtrInst(object: outAccessor.lValue,
+                let outPtr = try gen.builder.buildUnmanaged(StructElementPtrInst(object: outAccessor.lValue,
                                                                                property: member.name), gen: gen)
                 switch member.type {
                 case let type where type.isHeapAllocated:
@@ -136,7 +136,7 @@ private extension ManagedValue {
             }
         default:
             // if it isnt a nominal type, shallow copy the entire thing
-            _ = try gen.builder.buildManaged(CopyAddrInst(addr: lValue, out: outAccessor.lValue), gen: gen)
+            _ = try gen.builder.buildUnmanaged(CopyAddrInst(addr: lValue, out: outAccessor.lValue), gen: gen)
         }
     }
     

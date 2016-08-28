@@ -22,7 +22,7 @@ final class VIRGenFunction {
     /// Emits a tempory allocation as a managed value; its cleanup
     /// depends on the type stored
     func emitTempAlloc(memType: Type) throws -> Managed<AllocInst> {
-        return try builder.buildManaged(AllocInst(memType: memType.importedType(in: builder.module)), gen: self)
+        return try builder.buildUnmanaged(AllocInst(memType: memType.importedType(in: builder.module)), gen: self)
     }
     
     func cleanup() throws {
@@ -60,7 +60,7 @@ struct Managed<Val : Value> : ManagedValue {
     private init(_ value: Val) {
         self.managedValue = value
         self.isIndirect = value is LValue
-        self.type = (value as? LValue)?.memType ?? value.type!
+        self.type = (value as? LValue)?.memType!.getConcreteNominalType() ?? value.type!.getCannonicalType()
         self.cleanup = Managed.cleanupFor(value, type: type, isIndirect: isIndirect)
     }
     private init(value: Val, cleanup: Cleanup?) {
@@ -75,6 +75,16 @@ struct Managed<Val : Value> : ManagedValue {
     mutating func forward() -> Val {
         forwardCleanup()
         return managedValue
+    }
+    
+    static func forUnmanaged(_ value: Val, gen: VIRGenFunction) -> Managed<Val> {
+        return gen.createManaged(Managed(value))
+    }
+    static func forLValue(_ value: Val, gen: VIRGenFunction) -> Managed<Val> {
+        return gen.createManaged(Managed(value: value, cleanup: nil))
+    }
+    static func forManaged(_ value: Val, clearup: Cleanup?, gen: VIRGenFunction) -> Managed<Val> {
+        return gen.createManaged(Managed(value: value, cleanup: clearup))
     }
 }
 
@@ -92,7 +102,7 @@ struct AnyManagedValue : ManagedValue {
     private init(_ value: Value) {
         self.managedValue = value
         self.isIndirect = value is LValue
-        self.type = (value as? LValue)?.memType ?? value.type!
+        self.type = (value as? LValue)?.memType!.getConcreteNominalType() ?? value.type!.getCannonicalType()
         self.cleanup = AnyManagedValue.cleanupFor(value, type: type, isIndirect: isIndirect)
     }
     private init(value: Value, cleanup: Cleanup?) {
@@ -109,6 +119,14 @@ struct AnyManagedValue : ManagedValue {
         self.cleanup = managed.cleanup
     }
     var erased: AnyManagedValue { return self }
+    
+    static func forUnmanaged(_ value: Value, gen: VIRGenFunction) -> AnyManagedValue {
+        return gen.createManaged(AnyManagedValue(value))
+    }
+    /// Like lvalue params, not just any reference
+    static func forLValue(_ value: LValue, gen: VIRGenFunction) -> AnyManagedValue {
+        return gen.createManaged(AnyManagedValue(value: value, cleanup: nil))
+    }
 }
 
 extension ManagedValue {
@@ -141,19 +159,6 @@ extension ManagedValue {
         return nil
     }
     
-    static func forUnmanaged(_ value: Value, gen: VIRGenFunction) -> AnyManagedValue {
-        return gen.createManaged(AnyManagedValue(value))
-    }
-    static func forUnmanaged<Val : Value>(_ value: Val, gen: VIRGenFunction) -> Managed<Val> {
-        return gen.createManaged(Managed(value))
-    }
-    /// Like lvalue params, not just any reference
-    static func forLValue(_ value: LValue, gen: VIRGenFunction) -> AnyManagedValue {
-        return gen.createManaged(AnyManagedValue(value: value, cleanup: nil))
-    }
-    static func forLValue<Val : LValue>(_ value: Val, gen: VIRGenFunction) -> Managed<Val> {
-        return gen.createManaged(Managed(value: value, cleanup: nil))
-    }
     
     /// `managed` says `returnValue` will clear it up
     static func forwardingCleanup<ManagedType : ManagedValue>(value: Value,
@@ -204,6 +209,7 @@ extension ManagedValue {
             return self.erased // return a retained copy
         }
         
+        // this creates the new cleanup
         let mem = try gen.emitTempAlloc(memType: type)
         try gen.builder.build(CopyAddrInst(addr: lValue,
                                            out: mem.lValue))
@@ -221,7 +227,10 @@ extension ManagedValue {
     }
     
     /// Assigns this value to `dest`, removing this val's cleanup
-    mutating func forward(into dest: ManagedValue, gen: VIRGenFunction) throws {
+    mutating func forward<Man : ManagedValue>(into dest: inout Man, gen: VIRGenFunction) throws {
+        if self.cleanup == nil {
+            dest.forwardCleanup()
+        }
         forwardCleanup()
         if isIndirect {
             try gen.builder.build(CopyAddrInst(addr: lValue,
@@ -238,12 +247,10 @@ extension ManagedValue {
 extension ManagedValue {
     
     /// Creates a managed value abstracting `self.value` which is of value type
-    func coerceToValue(gen: VIRGenFunction) throws -> AnyManagedValue {
-        let cpy = try copy(gen: gen)
-        // if we already have the value type, return the copy
-        guard isIndirect else { return cpy.erased }
-        // otherwise load once to get it
-        return try gen.builder.buildManaged(LoadInst(address: cpy.lValue), gen: gen).erased
+    func coerceCopy(to targetType: Type, gen: VIRGenFunction) throws -> AnyManagedValue {
+        var new = try copy(gen: gen)
+        try new.forwardCoerce(to: targetType, gen: gen)
+        return new
     }
     
     /// Creates a managed value abstracting `self.value` with its own clearup which has the formal type `type`
@@ -253,32 +260,59 @@ extension ManagedValue {
     ///   or storing into new memory if a more indirect type is
     /// - Wrapping the inst in its own existentital container
     /// - note: when changing indirection, we can only coerce 1 different ptr level
-    func coerce(to targetType: Type, gen: VIRGenFunction) throws -> AnyManagedValue {
-        // if no work is needed, return
+    func coerceCopyToValue(gen: VIRGenFunction) throws -> AnyManagedValue {
+        var new = try copy(gen: gen)
+        try new.forwardCoerceToValue(gen: gen)
+        return new
+    }
+    
+}
+
+extension AnyManagedValue {
+    
+    mutating func forwardCoerceToValue(gen: VIRGenFunction) throws {
+        // dig through pointer levels until its raw type is not a ptr
+        while isIndirect, rawType.isPointerType() {
+            // forward the temp's cleanup to the next load
+            self = try gen.builder.buildUnmanaged(LoadInst(address: forwardLValue()), gen: gen).erased
+        }
+    }
+    /// Forms `self` into a managed value abstracting an object of type `targetType`
+    mutating func forwardCoerce(to targetType: Type, gen: VIRGenFunction) throws {
         guard targetType != type else {
-            return try copy(gen: gen)
+            // if no work is needed
+            return
         }
         
         // if we want to load; decreasing the indirection level
         if isIndirect, let pointee = type.getPointeeType(), pointee == targetType {
-            var cpy = try copy(gen: gen)
-            return try gen.builder.buildManaged(LoadInst(address: cpy.forwardLValue()), gen: gen).erased
+            self = try gen.builder.buildUnmanaged(LoadInst(address: lValue), gen: gen).erased
+            return
         }
         // if we want to store; increasing the indirection level
         if let pointee = targetType.getPointeeType(), pointee == type {
-            let alloc = try gen.emitTempAlloc(memType: pointee)
-            try copy(into: alloc, gen: gen)
-            return alloc.erased
+            var alloc = try gen.builder.buildUnmanaged(AllocInst(memType: pointee.importedType(in: gen.builder.module)),
+                                                       gen: gen).erased
+            try forward(into: &alloc, gen: gen)
+            self = alloc
+            return
         }
         
-        if targetType.isConceptType() {
-            let conceptType = try targetType.getAsConceptType()
-            // Create a copy of this value, and forward its clearup to the existential
-            var taken = try coerceToValue(gen: gen)
-            return try gen.builder.buildManaged(ExistentialConstructInst(value: taken.forward(),
+        if targetType.getBasePointeeType().isConceptType() {
+            let conceptType = try targetType.getBasePointeeType().getAsConceptType()
+            // coerce self's managed val to a value type
+            try forwardCoerceToValue(gen: gen)
+            assert(type is NominalType)
+            assert((type as! NominalType).models(concept: conceptType))
+            // form an existential by forwarding self's cleanup to it
+            self = try gen.builder.buildUnmanaged(ExistentialConstructInst(value: forward(),
                                                                          existentialType: conceptType,
-                                                                         module: gen.builder.module),
+                                                                         module: gen.module),
                                                 gen: gen).erased
+            // coerce the existential to the target type; this should just change the
+            // indirection level as self.type is Concept*
+            try forwardCoerce(to: targetType, gen: gen)
+            return
         }
         
         fatalError("Could not coerce \(type.prettyName) to \(targetType.prettyName)")
@@ -286,4 +320,17 @@ extension ManagedValue {
     
 }
 
-
+extension Builder {
+    func buildUnmanaged<I : Inst>(_ inst: I, gen: VIRGenFunction) throws -> Managed<I> {
+        try addToCurrentBlock(inst: inst)
+        return Managed<I>.forUnmanaged(inst, gen: gen)
+    }
+    func buildManaged<I : Inst>(_ inst: I, cleanup: Cleanup?, gen: VIRGenFunction) throws -> Managed<I> {
+        try addToCurrentBlock(inst: inst)
+        return Managed<I>.forManaged(inst, clearup: cleanup, gen: gen)
+    }
+    func buildUnmanagedLValue<I : Inst>(_ inst: I, gen: VIRGenFunction) throws -> Managed<I> {
+        try addToCurrentBlock(inst: inst)
+        return Managed<I>.forLValue(inst, gen: gen)
+    }
+}

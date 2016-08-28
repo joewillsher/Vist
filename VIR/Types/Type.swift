@@ -74,6 +74,15 @@ extension Type {
         else if case let c as ConceptType = self { return c }
         else { return nil }
     }
+    /// If the type is imported into a module, just get the cannonical type
+    func getCannonicalType() -> Type {
+        if case let s as TypeAlias = self { return s.targetType }
+        else if case let s as TupleType = self { return TupleType(members: s.members.map { $0.getCannonicalType() }) }
+        else if case let s as FunctionType = self {
+            return FunctionType(params: s.params.map { $0.getCannonicalType() }, returns: s.returns.getCannonicalType(), callingConvention: s.callingConvention, yieldType: s.yieldType)
+        }
+        else { return self }
+    }
     func ptrType() -> BuiltinType {
         return .pointer(to: self)
     }
@@ -100,7 +109,11 @@ extension Type {
         guard case let bt as BuiltinType = self, case .pointer = bt else { return false }
         return true
     }
-
+    /// See through all ptr types
+    func getBasePointeeType() -> Type {
+        guard case let bt as BuiltinType = self, case .pointer(let pointee) = bt else { return self }
+        return pointee.getBasePointeeType()
+    }
 }
 
 

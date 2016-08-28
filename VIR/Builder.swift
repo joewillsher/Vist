@@ -74,9 +74,5 @@ extension Builder {
         try addToCurrentBlock(inst: inst)
         return inst
     }
-    func buildManaged<I : Inst>(_ inst: I, gen: VIRGenFunction) throws -> Managed<I> {
-        try addToCurrentBlock(inst: inst)
-        return Managed<I>.forUnmanaged(inst, gen: gen)
-    }
-    
+
 }

@@ -59,9 +59,9 @@ class Param : Value {
     func managed(gen: VIRGenFunction) -> AnyManagedValue {
         switch convention {
         case .in?, nil:
-            return Managed<Param>.forUnmanaged(self, gen: gen)
+            return Managed<Param>.forUnmanaged(self, gen: gen).erased
         case .out?, .inout?:
-            return Managed<RefParam>.forLValue(self as! RefParam, gen: gen)
+            return Managed<RefParam>.forLValue(self as! RefParam, gen: gen).erased
         }
     }
 }

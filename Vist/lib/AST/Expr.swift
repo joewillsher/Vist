@@ -177,7 +177,7 @@ final class TupleMemberLookupExpr : LookupExpr {
 //-------------------------------------------------------------------------------------------------------------------------
 
 /// Any function, operator, or method call expression
-protocol FunctionCall : class, Expr, _Typed {
+protocol FunctionCall : class, Expr, _Typed, ValueEmitter {
     var name: String { get }
     var argArr: [Expr] { get }
     var _type: Type? { get set }
