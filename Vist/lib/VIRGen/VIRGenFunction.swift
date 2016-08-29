@@ -208,7 +208,7 @@ extension ManagedValue {
             // - forward self into a temp alloc
             try forward(into: &mem, gen: gen)
             let copiedMem = try gen.emitTempAlloc(memType: self.type)
-            try copy(into: copiedMem, gen: gen)
+            try mem.copy(into: copiedMem, gen: gen)
             return copiedMem.erased
         }
         if type.isAddressOnly {

@@ -128,7 +128,7 @@ private extension ManagedValue {
     func emitCopyConstruction(into outAccessor: ManagedValue, gen: VIRGenFunction) throws {
         
         switch type {
-        case let type as NominalType where type.isTrivial():
+        case let type as NominalType where !type.isTrivial():
             
             for member in type.members {
                 let ptr = try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: lValue,

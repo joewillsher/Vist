@@ -65,7 +65,6 @@ final class VIRGenScope {
 
 extension VIRGenFunction {
     func addVariable(_ variable: ManagedValue, name: String) {
-        managedValues.append(variable)
         scope.variables[name] = variable
     }
     func variable(named name: String) throws -> ManagedValue? {
