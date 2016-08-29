@@ -54,7 +54,7 @@ final class SemaScope {
     func function(named name: String, argTypes: [Type], base: NominalType? = nil) throws -> Solution {
         // lookup from stdlib/builtin
         if let stdLibFunction = StdLib.function(name: name, args: argTypes, base: base, solver: constraintSolver) { return stdLibFunction }
-        else if isStdLib, let builtinFunction = Builtin.function(name: name, argTypes: argTypes) { return builtinFunction }
+        else if isStdLib, let builtinFunction = Builtin.function(name: name, argTypes: argTypes, solver: constraintSolver) { return builtinFunction }
             // otherwise we search the user scopes recursively
         return try recursivelyLookupFunction(named: name, argTypes: argTypes, base: base)
     }

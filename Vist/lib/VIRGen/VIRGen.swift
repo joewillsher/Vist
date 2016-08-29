@@ -471,7 +471,7 @@ extension PropertyLookupExpr : LValueEmitter {
             case let rValEmitter:
                 // otherwise just get the struct element
                 var object = try rValEmitter.emitRValue(module: module, gen: gen)
-                return try gen.builder.buildManaged(StructExtractInst(object: object.forwardLValue(gen),
+                return try gen.builder.buildManaged(StructExtractInst(object: object.forward(gen),
                                                                       property: propertyName),
                                                     gen: gen).erased
             }

@@ -12,7 +12,7 @@
 ///
 struct FunctionContainer {
     
-    private let functions: [String: FunctionType]
+    let functions: [String: FunctionType]
     private let types: [StructType]
     private let concepts: [ConceptType]
     
@@ -59,10 +59,6 @@ struct FunctionContainer {
     /// - returns: An optional tuple of `(mangledName, type)`
     func lookupFunction(named fn: String, argTypes types: [Type], base: NominalType? = nil, solver: ConstraintSolver) -> Solution? {
         return functions.function(havingUnmangledName: fn, argTypes: types, base: base, solver: solver)
-    }
-    /// unmangled
-    subscript(mangledName mangledName: String) -> Solution? {
-        return functions[mangledName].map { (mangledName, $0) }
     }
     
     /// Returns type from type name

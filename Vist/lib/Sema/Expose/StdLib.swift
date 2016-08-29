@@ -142,7 +142,7 @@ enum StdLib {
     /// Get the type of a function from the standard library by mangled name
     /// - parameter mangledName: Mangled function name
     static func function(mangledName name: String) -> FunctionType? {
-        return functionContainer[mangledName: name]?.type
+        return functionContainer.functions[name]
     }
     
     /// Get a named function from the standard library
