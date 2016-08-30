@@ -37,7 +37,7 @@ enum SemaError: VistError {
     case noMemberwiseInit
     
     case useExplicitSelf(methodName: String)
-    case cannotCoerce(from: Type, to: Type)
+    case cannotCoerce(from: Type, to: Type), dynamicCastFail(label: String, from: Type, to: Type)
     
     case invalidYield, invalidReturn, notGenerator(Type?)
     case cannotInferClosureParamListSize
@@ -134,8 +134,10 @@ enum SemaError: VistError {
             return "No mangled name for '\(name)'"
         case .cannotCoerce(let from, let to):
             return "Could not coerce expression of type '\(from.prettyName)' to '\(to.prettyName)'"
+        case .dynamicCastFail(let name, let from, let to):
+            return "Dynamic cast of '\(name)' from '\(from.prettyName)' to '\(to.prettyName)' will always fail"
             
-            // not user visible
+        // not user visible
         case .functionNotMethod: return "No method found"
         case .noStdBoolType: return "Stdlib did not provide a Bool type"
         case .noStdIntType: return "Stdlib did not provide an Int type"

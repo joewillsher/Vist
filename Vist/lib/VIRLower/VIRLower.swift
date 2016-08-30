@@ -232,7 +232,7 @@ extension BasicBlock {
 
 
 extension Param : VIRLower {
-
+    
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         guard let function = parentFunction, let block = parentBlock else { throw VIRError.noParentBlock }
         
@@ -252,7 +252,6 @@ extension Param : VIRLower {
             let phi = try IGF.builder.buildPhi(type: type!.lowered(module: module),
                                                name: paramName)
             for operand in try block.blockArgs(for: self) {
-                if operand is CastResultBlockOperand { continue }
                 operand.phi = phi
             }
             

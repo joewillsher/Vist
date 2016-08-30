@@ -114,7 +114,7 @@ private extension ConditionalPattern {
                 try exprType.addConstraint(targetType, solver: scope.constraintSolver)
             }
             catch SemaError.couldNotAddConstraint {
-//                throw semaError(.cannotCoerce(from: exprType, to: targetType))
+                throw semaError(.dynamicCastFail(label: match.variable, from: exprType, to: targetType))
             }
             
             match.boundExpr = bound

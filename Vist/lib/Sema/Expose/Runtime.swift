@@ -66,7 +66,8 @@ enum Runtime {
         
         static let exportExistentialBuffer = Function(name: "vist_exportExistentialBuffer", type: FunctionType(params: [existentialObjectType.ptrType()], returns: BuiltinType.void))
         static let copyExistentialBuffer = Function(name: "vist_copyExistentialBuffer", type: FunctionType(params: [existentialObjectType.ptrType(), existentialObjectType.ptrType()], returns: BuiltinType.void))
-        
+        static let castExistentialToConcrete = Function(name: "vist_castExistentialToConcrete", type: FunctionType(params: [existentialObjectType.ptrType(), typeMetadataType.ptrType(), opaquePointerType], returns: BuiltinType.bool))
+
     }
 }
 

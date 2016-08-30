@@ -165,12 +165,6 @@ final class CastResultBlockOperand : BlockOperand {
     override func formCopy(nullValue: Bool = false) -> CastResultBlockOperand {
         return CastResultBlockOperand(optionalValue: nullValue ? nil : value, param: param, block: predBlock)
     }
-    
-    /// Set the LLVM value for uses of this operand
-    override func setLoweredValue(_ val: LLVMValue) {
-        loweredValue = val
-    }
-    
 }
 
 

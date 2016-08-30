@@ -110,7 +110,7 @@ final class CheckedCastBreakInst : Inst, BreakInstruction {
     var successCall: BlockCall, failCall: BlockCall
     var val: PtrOperand, targetType: Type
     
-    var successVariable: Value
+    var successVariable: Param
     
     var uses: [Operand] = []
     var args: [Operand]
