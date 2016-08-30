@@ -264,6 +264,18 @@ extension YieldStmt : ASTPrintable {
 extension ClosureExpr : ASTPrintable {
     static var _astName: String { return "closure_expr" }
 }
+extension CoercionExpr : ASTPrintable {
+    static var _astName: String { return "coercion_expr" }
+}
+extension ImplicitCoercionExpr : ASTPrintable {
+    static var _astName: String { return "implicit_coercion_expr" }
+}
+extension TypeMatchPattern : ASTPrintable {
+    static var _astName: String { return "type_match_pattern" }
+}
+extension ConditionalPattern : ASTPrintable {
+    static var _astName: String { return "condition_pattern" }
+}
 extension Optional : ASTPrintable {
     func _astDescription(indentLevel n: Int) -> (isTrivial: Bool, description: String) {
         guard case let val as ASTPrintable = self else { return (true, "nil") }

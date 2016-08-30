@@ -97,6 +97,32 @@ final class StringLiteral : TypedExpr {
     var type: StructType? = nil
 }
 
+final class CoercionExpr : Expr {
+    let base: Expr
+    let type: TypeRepr
+    
+    init(base: Expr, type: TypeRepr) {
+        self.base = base
+        self.type = type
+    }
+    
+    var _type: Type?
+}
+/// Implicitly coerced expressions, e.g. in variable decls, 
+final class ImplicitCoercionExpr : Expr {
+    let expr: Expr
+    var type: Type
+    
+    init(expr: Expr, type: Type) {
+        self.expr = expr
+        self.type = type
+        self._type = type
+    }
+    
+    var _type: Type?
+}
+
+
 
 final class CommentExpr : Expr {
     let str: String

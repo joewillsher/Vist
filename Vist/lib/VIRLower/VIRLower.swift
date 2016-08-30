@@ -252,6 +252,7 @@ extension Param : VIRLower {
             let phi = try IGF.builder.buildPhi(type: type!.lowered(module: module),
                                                name: paramName)
             for operand in try block.blockArgs(for: self) {
+                if operand is CastResultBlockOperand { continue }
                 operand.phi = phi
             }
             

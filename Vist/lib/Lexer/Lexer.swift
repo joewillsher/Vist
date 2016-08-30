@@ -161,6 +161,8 @@ private extension Token {
         case "init": return .`init`
         case "ref": return .ref
         case "yield": return .yield
+        case "the": return .the
+        case "as": return .as
         default: return .identifier(alpha)
         }
     }

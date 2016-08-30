@@ -31,6 +31,17 @@ extension CondBreakInst : VIRLower {
                                            elseTo: elseCall.block.loweredBlock!)
     }
 }
+//extension CheckedCastBreakInst : VIRLower {
+//    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+//        
+//        let inMem = val.loweredValue!
+//        
+//        return try IGF.builder.buildCondBr(if: condition.loweredValue!,
+//                                           to: thenCall.block.loweredBlock!,
+//                                           elseTo: elseCall.block.loweredBlock!)
+//    }
+//}
+
 
 extension VIRFunctionCall {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {

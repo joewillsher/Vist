@@ -525,6 +525,21 @@ extension PropertyLookupExpr : LValueEmitter {
     
 }
 
+extension CoercionExpr {
+    func emitRValue(module: Module, gen: VIRGenFunction) throws -> AnyManagedValue {
+        var val = try base.emitRValue(module: module, gen: gen)
+        try val.forwardCoerce(to: _type!.importedType(in: module), gen: gen)
+        return val
+    }
+}
+extension ImplicitCoercionExpr {
+    func emitRValue(module: Module, gen: VIRGenFunction) throws -> AnyManagedValue {
+        var val = try expr.emitRValue(module: module, gen: gen)
+        try val.forwardCoerce(to: type.importedType(in: module), gen: gen)
+        return val
+    }
+}
+
 extension BlockExpr : StmtEmitter {
     func emitStmt(module: Module, gen: VIRGenFunction) throws {
         try exprs.emitBody(module: module, gen: gen)
@@ -550,24 +565,48 @@ extension ConditionalStmt : StmtEmitter {
                 try exitBlock.move(after: backedgeBlock)
             }
             
-            if let c = branch.condition {
+            // move into the if block, and evaluate its expressions
+            // in a new scope
+            let ifScope = VIRGenScope(parent: gen.scope, function: gen.scope.function)
+            let ifVGF = VIRGenFunction(scope: ifScope, builder: gen.builder)
+            
+            switch branch.condition {
+            case .boolean(let c):
                 var cond = try c.emitRValue(module: module, gen: gen)
                 try cond.forwardCoerceToValue(gen: gen)
                 let v = try gen.builder.build(StructExtractInst(object: cond.forward(gen), property: "value"))
                 
-                let bodyBlock = try gen.builder.appendBasicBlock(name: branch.condition == nil ? "\(base)else\(index)" : "\(base)true\(index)")
+                let bodyBlock = try gen.builder.appendBasicBlock(name: "\(base)true\(index)")
                 try backedgeBlock.move(after: bodyBlock)
                 
                 try gen.builder.buildCondBreak(if: Operand(v),
                                                to: (block: bodyBlock, args: nil),
                                                elseTo: (block: backedgeBlock, args: nil))
                 gen.builder.insertPoint.block = bodyBlock
+            case .typeMatch(let match):
+                var val = try match.boundExpr.emitRValue(module: module, gen: gen)
+                try val.forwardCoerce(to: val.type.ptrType(), gen: gen)
+                
+                let targetType = match._type!.importedType(in: module)
+                var castParam = Managed<Param>.forManaged(Param(paramName: match.variable, type: targetType),
+                                                          hasCleanup: val.hasCleanup,
+                                                          gen: gen)
+                ifVGF.addVariable(castParam, name: match.variable)
+                
+                let bodyBlock = try gen.builder.appendBasicBlock(name: "\(base)cast\(index)", parameters: [castParam.managedValue])
+                try backedgeBlock.move(after: bodyBlock)
+                
+                try gen.builder.buildCastBreak(val: PtrOperand(val.forwardLValue(gen)),
+                                               successVariable: castParam.forward(gen),
+                                               targetType: targetType,
+                                               success: (block: bodyBlock, args: nil),
+                                               fail: (block: backedgeBlock, args: nil))
+                gen.builder.insertPoint.block = bodyBlock
+                
+            default:
+                break
             }
             
-            // move into the if block, and evaluate its expressions
-            // in a new scope
-            let ifScope = VIRGenScope(parent: gen.scope, function: gen.scope.function)
-            let ifVGF = VIRGenFunction(scope: ifScope, builder: gen.builder)
             try branch.block.emitStmt(module: module, gen: ifVGF)
             
             // once we're done in success, break to the exit and

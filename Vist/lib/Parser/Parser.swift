@@ -647,6 +647,10 @@ extension Parser {
             return try parseOperationRHS(precedence: precedence + 1,
                                          lhs: BinaryExpr(op: op, lhs: lhs, rhs: rhs))
             
+        case .as:
+            try consume(.as)
+            return try CoercionExpr(base: lhs, type: parseTypeRepr())
+            
             // Collapse the postfix operator and continue parsing
         case .postfixOperator(let op):
             consumeToken()
@@ -693,11 +697,25 @@ extension Parser {
         var usesBraces: Bool? = nil
         
         repeat {
-            var condition: Expr? = nil
+            var condition: ConditionalPattern
             
             // An `if` statement
             if consumeIf(.if) {
-                condition = try parseInlineExpr()
+                
+                // if x the Type
+                if case .identifier = currentToken, case .the? = inspectNextToken() {
+                    let id = try! consumeIdentifier()
+                    try! consume(.the)
+                    let repr = try parseTypeRepr()
+                    // if there is an assignent
+                    // if x the Type = foo
+                    let bound: Expr? = try consumeIf(.assign) ? parseInlineExpr() : nil
+                    condition = .typeMatch(TypeMatchPattern(variable: id, explicitBoundExpr: bound, type: repr))
+                }
+                // if cond
+                else {
+                    condition = try .boolean(parseInlineExpr())
+                }
                 
                 guard currentToken.isControlToken() else {
                     throw parseError(.notBlock, loc: .at(pos: currentPos))
@@ -708,6 +726,9 @@ extension Parser {
                 else {
                     usesBraces = currentToken.isBrace()
                 }
+            }
+            else {
+                condition = .none
             }
             
             let block = try parseBlockExpr()

@@ -278,11 +278,11 @@ extension ManagedValue {
 extension AnyManagedValue {
     
     mutating func forwardCoerceToValue(gen: VIRGenFunction) throws {
-        defer { forwardCleanup(gen) }
         // dig through pointer levels until its raw type is not a ptr
         while isIndirect, rawType.isPointerType() {
             // forward the temp's cleanup to the next load
             self = try gen.builder.buildManaged(LoadInst(address: forwardLValue(gen)), hasCleanup: hasCleanup, gen: gen).erased
+            forwardCleanup(gen)
         }
     }
     /// Forms `self` into a managed value abstracting an object of type `targetType`
@@ -294,7 +294,9 @@ extension AnyManagedValue {
         
         // if we want to load; decreasing the indirection level
         if isIndirect, let pointee = rawType.getPointeeType(), pointee == targetType {
-            self = try gen.builder.buildManaged(LoadInst(address: forwardLValue(gen)), hasCleanup: hasCleanup, gen: gen).erased
+            let load = try gen.builder.buildManaged(LoadInst(address: lValue), hasCleanup: hasCleanup, gen: gen).erased
+            forwardCleanup(gen)
+            self = load
             return
         }
         // if we want to store; increasing the indirection level
@@ -314,11 +316,13 @@ extension AnyManagedValue {
             assert(rawType is NominalType)
             assert((rawType as! NominalType).models(concept: conceptType))
             // form an existential by forwarding self's cleanup to it
-            self = try gen.builder.buildManaged(ExistentialConstructInst(value: forward(gen),
-                                                                         existentialType: conceptType,
-                                                                         module: gen.module),
-                                                hasCleanup: hasCleanup,
-                                                gen: gen).erased
+            let ex = try gen.builder.buildManaged(ExistentialConstructInst(value: value,
+                                                                           existentialType: conceptType,
+                                                                           module: gen.module),
+                                                  hasCleanup: hasCleanup,
+                                                  gen: gen).erased
+            forwardCleanup(gen)
+            self = ex
             // coerce the existential to the target type; this should just change the
             // indirection level as self.type is Concept*
             try forwardCoerce(to: targetType, gen: gen)

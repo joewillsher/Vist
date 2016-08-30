@@ -38,7 +38,7 @@ struct SourceLoc {
 enum Token {
     case `let`, `var`, `func`, `return`, void
     case EOF
-    case `if`, `else`, `for`, `in`, `while`, `do`, yield
+    case `if`, `else`, `for`, `in`, `while`, `do`, yield, the, `as`
     case ref, type, `init`, `operator`, `concept`
     case assign, sqbrOpen, sqbrClose, comma, period, colon, semicolon, openParen, closeParen, returnArrow, bar, openBrace, closeBrace
     case infixOperator(String), prefixOperator(String), postfixOperator(String)
@@ -75,6 +75,8 @@ extension Token : Equatable {
         case (.while, .while): return true
         case (.do, .do): return true
         case (.yield, .yield): return true
+        case (.the, .the): return true
+        case (.as, .as): return true
         case (.ref, .ref): return true
         case (.type, .type): return true
         case (.init, .init): return true

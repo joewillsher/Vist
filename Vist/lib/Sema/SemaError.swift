@@ -37,6 +37,7 @@ enum SemaError: VistError {
     case noMemberwiseInit
     
     case useExplicitSelf(methodName: String)
+    case cannotCoerce(from: Type, to: Type)
     
     case invalidYield, invalidReturn, notGenerator(Type?)
     case cannotInferClosureParamListSize
@@ -131,6 +132,8 @@ enum SemaError: VistError {
             return "Cannot call mutating method '\(method)' on immutable object of type '\(baseType)'"
         case .noMangledName(let name):
             return "No mangled name for '\(name)'"
+        case .cannotCoerce(let from, let to):
+            return "Could not coerce expression of type '\(from.prettyName)' to '\(to.prettyName)'"
             
             // not user visible
         case .functionNotMethod: return "No method found"

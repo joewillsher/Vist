@@ -50,7 +50,7 @@ final class VIRWitnessTable : VIRElement {
     }
     
     var vir: String {
-        return "witness_table \(type.name) conforms \(concept.name) {\n" +
+        return "witness_table #\(type.name) conforms #\(concept.name) {\n" +
                table.map { "  #\($0.key) : @\($0.value)" }.joined(separator: "\n") +
                "\n}"
     }

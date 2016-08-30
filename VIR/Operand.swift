@@ -115,7 +115,7 @@ final class FunctionOperand : Operand {
 /// An operand applied to a block, loweredValue is lazily evaluated
 /// so phi nodes can be created when they're needed and the values
 /// are avaliable
-final class BlockOperand : Operand {
+class BlockOperand : Operand {
     
     init(optionalValue value: Value?, param: Param, block: BasicBlock) {
         self.param = param
@@ -123,11 +123,11 @@ final class BlockOperand : Operand {
         super.init(optionalValue: value)
     }
     
-    let param: Param
+    final let param: Param
     /// Predecessor block -- where we are breaking from
-    unowned var predBlock: BasicBlock
+    final unowned var predBlock: BasicBlock
     
-    override var type: Type? { return param.type }
+    final override var type: Type? { return param.type }
     
     override func formCopy(nullValue: Bool = false) -> BlockOperand {
         return BlockOperand(optionalValue: nullValue ? nil : value, param: param, block: predBlock)
@@ -152,11 +152,27 @@ final class BlockOperand : Operand {
     
     /// access to the underlying phi switch. Normal `setLoweredValue` 
     /// adds incomings to the phi
-    var phi: LLVMValue {
+    final var phi: LLVMValue {
         get { return loweredValue! }
         set(phi) { loweredValue = phi }
     }
 }
+
+/// When performing a cast, we need to create this operand to apply
+/// to the success block
+final class CastResultBlockOperand : BlockOperand {
+    
+    override func formCopy(nullValue: Bool = false) -> CastResultBlockOperand {
+        return CastResultBlockOperand(optionalValue: nullValue ? nil : value, param: param, block: predBlock)
+    }
+    
+    /// Set the LLVM value for uses of this operand
+    override func setLoweredValue(_ val: LLVMValue) {
+        loweredValue = val
+    }
+    
+}
+
 
 /// PhiTrackingOperand allows us to update the reference to a lowered
 /// phi; each LLVM block holds a set of PhiTrackingOperands which

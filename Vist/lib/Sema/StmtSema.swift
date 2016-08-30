@@ -68,27 +68,63 @@ extension ConditionalStmt : StmtTypeProvider {
 }
 
 
-extension ElseIfBlockStmt: StmtTypeProvider {
+extension ElseIfBlockStmt : StmtTypeProvider {
     
     func typeForNode(scope: SemaScope) throws {
         
         // get condition type
-        let c = try condition?.typeForNode(scope: scope)
+        let blockScope = SemaScope.capturingScope(parent: scope)
+        let c = try condition.typeForPattern(scope: blockScope)
         
         // gen types for cond block
         try block.exprs.walkChildren { exp in
-            try exp.typeForNode(scope: scope)
-        }
-
-        // if no condition we're done
-        if condition == nil { return }
-        
-        // otherwise make sure its a Bool
-        guard let condition = c, condition == StdLib.boolType else {
-            throw semaError(.nonBooleanCondition)
+            try exp.typeForNode(scope: blockScope)
         }
     }
     
+}
+
+private extension ConditionalPattern {
+    
+    func typeForPattern(scope: SemaScope) throws -> Type? {
+        
+        switch self {
+        case .boolean(let cond):
+            let condType = try cond.typeForNode(scope: scope)
+            
+            guard condType == StdLib.boolType else {
+                throw semaError(.nonBooleanCondition)
+            }
+            return condType
+            
+        case .typeMatch(let match):
+            // if c the Int do
+            // if c the Int = x.a.y do
+            
+            let targetType = try match.type.typeIn(scope)
+            
+            // add the implicit variable
+            scope.addVariable(variable: (type: targetType, mutable: false, isImmutableCapture: false),
+                              name: match.variable)
+            
+            let bound = match.explicitBoundExpr ?? VariableExpr(name: match.variable)
+            let exprType = try bound.typeForNode(scope: scope)
+            
+            do {
+                try exprType.addConstraint(targetType, solver: scope.constraintSolver)
+            }
+            catch SemaError.couldNotAddConstraint {
+//                throw semaError(.cannotCoerce(from: exprType, to: targetType))
+            }
+            
+            match.boundExpr = bound
+            match._type = targetType
+            return targetType
+            
+        case .none:
+            return nil
+        }
+    }
 }
 
 

@@ -133,6 +133,39 @@ extension MutationExpr : ExprTypeProvider {
     }
 }
 
+extension CoercionExpr : ExprTypeProvider {
+    
+    func typeForNode(scope: SemaScope) throws -> Type {
+        
+        let oldType = try base.typeForNode(scope: scope)
+        let newType = try type.typeIn(scope)
+        
+        do {
+            try oldType.addConstraint(newType, solver: scope.constraintSolver)
+        }
+        catch SemaError.couldNotAddConstraint {
+            throw semaError(.cannotCoerce(from: oldType, to: newType))
+        }
+        self._type = newType
+        return newType
+    }
+    
+}
+
+extension ImplicitCoercionExpr : ExprTypeProvider {
+    
+    func typeForNode(scope: SemaScope) throws -> Type {
+        let exprType = try expr.typeForNode(scope: scope)
+        do {
+            try exprType.addConstraint(type, solver: scope.constraintSolver)
+        }
+        catch SemaError.couldNotAddConstraint {
+            throw semaError(.cannotCoerce(from: exprType, to: type))
+        }
+        return type
+    }
+    
+}
 
 extension ChainableExpr {
     

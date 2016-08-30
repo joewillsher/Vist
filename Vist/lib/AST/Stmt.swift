@@ -11,16 +11,25 @@
 ///      - brace, return, conditional, if, while, for in, switch, break, fallthrough, continue
 protocol Stmt : ASTNode, StmtTypeProvider {}
 
+protocol Pattern : ASTNode, Expr {
+}
+
+/// The pattern that matches a conditional expr
+enum ConditionalPattern {
+    case boolean(Expr)
+    case typeMatch(TypeMatchPattern)
+    case none // < the pattern matching an else block
+}
+
 final class ElseIfBlockStmt : Stmt {
-    var condition: Expr?
+    var condition: ConditionalPattern
     var block: BlockExpr
     
-    init(condition: Expr?, block: BlockExpr) {
+    init(condition: ConditionalPattern, block: BlockExpr) {
         self.condition = condition
         self.block = block
     }
 }
-
 
 final class ConditionalStmt : Stmt {
     let statements: [ElseIfBlockStmt]
@@ -28,6 +37,26 @@ final class ConditionalStmt : Stmt {
     init(statements: [ElseIfBlockStmt]) {
         self.statements = statements
     }
+}
+
+/// `x the Type` or `x the type = foo` pattern
+final class TypeMatchPattern : Pattern {
+    let variable: String
+    let explicitBoundExpr: Expr?
+    let type: TypeRepr
+    
+    init(variable: String, explicitBoundExpr: Expr?, type: TypeRepr) {
+        self.variable = variable
+        self.explicitBoundExpr = explicitBoundExpr
+        self.type = type
+    }
+    
+    /// The expr we are binding to, if there is no
+    /// explicit expr then after sema this is a type
+    /// checked variable expr
+    var boundExpr: Expr!
+    
+    var _type: Type?
 }
 
 

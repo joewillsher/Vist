@@ -106,6 +106,60 @@ final class CondBreakInst : Inst, BreakInstruction {
     }
 }
 
+final class CheckedCastBreakInst : Inst, BreakInstruction {
+    var successCall: BlockCall, failCall: BlockCall
+    var val: PtrOperand, targetType: Type
+    
+    var successVariable: Value
+    
+    var uses: [Operand] = []
+    var args: [Operand]
+    
+    var type: Type? { return nil }
+    
+    init(successCall: BlockCall, successVariable: Param, failCall: BlockCall, val: PtrOperand, targetType: Type) {
+        self.val = val
+        self.targetType = targetType
+        self.successVariable = successVariable
+        
+        self.successCall = successCall
+        self.failCall = failCall
+        let blockArgs = (successCall.args ?? []) + (failCall.args ?? []) as [Operand]
+        self.args = [val] + blockArgs
+        initialiseArgs()
+    }
+    
+    var vir: String {
+        return "cast_break \(val.valueName) as \(targetType.prettyName), $\(successCall.block.name)\(successCall.args?.virValueTuple() ?? ""), $\(failCall.block.name)\(failCall.args?.virValueTuple() ?? "") // id: \(name)"
+    }
+    
+    var hasSideEffects: Bool { return true }
+    var isTerminator: Bool { return true }
+    
+    var parentBlock: BasicBlock?
+    var irName: String?
+    
+    var successors: [BlockCall] {
+        return [successCall, failCall]
+    }
+    
+    func addPhi(outgoingVal arg: Value, phi: Param, from block: BasicBlock) throws {
+        let successArg = BlockOperand(optionalValue: arg, param: phi, block: block)
+        successCall.args = (successCall.args ?? []) + [successArg]
+        try successCall.block.addPhiArg(successArg, from: block)
+        let failArg = BlockOperand(optionalValue: arg, param: phi, block: block)
+        failCall.args = (failCall.args ?? []) + [failArg]
+        try failCall.block.addPhiArg(failArg, from: block)
+        args.append(successArg)
+        args.append(failArg)
+        initialiseArgs()
+    }
+    func hasPhiArg(_ phi: Param) -> Bool {
+        // both thenCall and elseCall should have it, so we only need to check 1
+        return successCall.args?.contains(where: { $0.param === phi }) ?? false
+    }
+}
+
 extension Builder {
     
     @discardableResult
@@ -139,6 +193,20 @@ extension Builder {
         guard let sourceBlock = insertPoint.block else { throw VIRError.noParentBlock }
         try then.block.addApplication(from: sourceBlock, args: then.args, breakInst: s)
         try elseTo.block.addApplication(from: sourceBlock, args: elseTo.args, breakInst: s)
+        return s
+    }
+    @discardableResult
+    func buildCastBreak(val: PtrOperand, successVariable: Param, targetType: Type, success: BlockCall, fail: BlockCall) throws -> CheckedCastBreakInst {
+        
+        let s = CheckedCastBreakInst(successCall: success, successVariable: successVariable, failCall: fail, val: val, targetType: targetType)
+        try addToCurrentBlock(inst: s)
+        success.block.parentFunction!.dominator.invalidate()
+        
+        guard let sourceBlock = insertPoint.block else { throw VIRError.noParentBlock }
+        let operand = CastResultBlockOperand(optionalValue: nil, param: successVariable, block: sourceBlock)
+        let successOps = success.args ?? []
+        try success.block.addApplication(from: sourceBlock, args: [operand] + successOps, breakInst: s)
+        try fail.block.addApplication(from: sourceBlock, args: fail.args, breakInst: s)
         return s
     }
 }

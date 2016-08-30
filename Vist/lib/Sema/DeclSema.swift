@@ -243,14 +243,19 @@ extension VariableDecl : DeclTypeProvider {
         } ?? (scopeName + "." + self.name) // default to the unmangled
         let declScope = SemaScope.capturingScope(parent: scope,
                                                  overrideReturnType: nil,
-                                                 context: explicitType as? FunctionType,
+                                                 context: explicitType,
                                                  scopeName: contextName)
         
         let objectType = try value.typeForNode(scope: declScope)
         
         let type = explicitType ?? objectType
         scope.addVariable(variable: (type, isMutable, false), name: name)
-        value._type = type
+        
+        if let ex = explicitType, objectType != explicitType {
+            try objectType.addConstraint(ex, solver: scope.constraintSolver)
+            // if we implicitly coerce the expr
+            value = ImplicitCoercionExpr(expr: value, type: ex)
+        }
         
         // if the type is null and no explicit type is specified, diagnose
         if explicitType == nil, value is NullExpr {

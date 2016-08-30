@@ -28,16 +28,17 @@ syn region vistTypeBody start="{" end="}" fold transparent
 syn match vistTypeConstraint /|/ nextgroup=vistTypeName skipwhite
 syn match vistReturnTypeDeclaration /->/ nextgroup=vistTypeName skipwhite
 
-syn keyword vistFuncKeyword func skipwhite nextGroup=vistFuncName
-syn keyword vistInitKeyword init skipwhite nextGroup=vistTypeInstanceName
+syn keyword vistFuncKeyword func skipwhite nextgroup=vistFuncName
+syn keyword vistInitKeyword init skipwhite nextgroup=vistTypeInstanceName
 
+syn keyword typeCoerceKeyword as the skipwhite nextgroup=vistTypeInstanceName
 
 syn keyword vistDeclKeyword let var skipwhite nextgroup=vistVarName
 syn match vistVarName /\<[A-Za-z_][A-Za-z_0-9]*\>/ skipwhite contained nextgroup=vistTypeDeclaration
 syn match vistTypeDeclaration /:/ skipwhite contained nextgroup=vistTypeInstanceName
 syn match vistTypeListDeliminer /,/ contained skipwhite nextgroup=vistVarName
 
-syn match vistTypeInstanceName /\<[A-Za-z_][A-Za-z_0-9\.]*\>/ skipwhite contained nextgroup=vistTypeInstanceName,vistReturnTypeDeclaration,vistTypeListDeliminer
+syn match vistTypeInstanceName /\<[A-Za-z_][A-Za-z_0-9\.]*\>/ skipwhite contained nextgroup=vistKeywords,vistTypeInstanceName,vistReturnTypeDeclaration,vistTypeListDeliminer
 syn match vistFuncName /\<[A-Za-z_][A-Za-z_0-9]*\>/ skipwhite contained nextgroup=vistFunctionTypeDeclaration
 syn match vistFunctionTypeDeclaration /::/ nextgroup=vistTypeInstanceName skipwhite
 
@@ -51,6 +52,7 @@ let b:current_syntax = "vist"
 hi def link vistKeywords Statement
 hi def link vistFuncKeyword Statement
 hi def link vistInitKeyword Statement
+hi def link typeCoerceKeyword Statement
 hi def link vistComment	 Comment
 hi def link vistBoolean	 Boolean
 hi def link vistTypeName Type
