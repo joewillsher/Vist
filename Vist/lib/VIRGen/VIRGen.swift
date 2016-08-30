@@ -215,7 +215,7 @@ extension FunctionCall/*: ValueEmitter*/ {
             throw VIRError.paramsNotTyped
         }
         
-        return try zip(argArr, fnType.params).map { rawArg, paramType in
+        return try zip(argArr, fnType.cannonicalisedParamTypes()).map { rawArg, paramType in
             var arg = try rawArg.emitRValue(module: module, gen: gen)
             return try arg.coerceCopy(to: paramType, gen: gen)
         }
@@ -239,19 +239,18 @@ extension FunctionCall/*: ValueEmitter*/ {
             return try AnyManagedValue.forUnmanaged(gen.builder.buildFunctionCall(function: function, args: args), gen: gen)
         }
         else if let closure = try gen.variable(named: name) {
-            fatalError("TODO")
-            //            // If we only have an accessor, get the value from it, which must be a function* type
-            //            // because the only case this is allowed is GEPing a struct
-            //            // Otherwise we just get the lvalue from the byval accessor
-            //            let ref = (closure is IndirectAccessor ?
-            //                try! OpaqueLValue(rvalue: closure.aggregateGetValue()) :
-            //                try closure.getValue()) as! LValue
-            //
-            //            guard case let ret as FunctionType = ref.memType?.importedType(in: module) else { fatalError() }
-            //
-            //            return try gen.builder.buildFunctionApply(function: PtrOperand(ref),
-            //                                                      returnType: ret.returns,
-            //                                                      args: args)
+            
+            guard case let fnType as FunctionType = closure.type.getBasePointeeType().importedType(in: module) else {
+                fatalError()
+            }
+            // we can always just forward the function's clearup; it will never have any
+            var coerced = closure.erased
+            try coerced.forwardCoerce(to: fnType.ptrType(), gen: gen)
+            
+            let apply = try gen.builder.buildFunctionApply(function: PtrOperand(coerced.lValue),
+                                                           returnType: fnType.returns,
+                                                           args: args)
+            return AnyManagedValue.forUnmanaged(apply, gen: gen)
         }
         else {
             fatalError("No function name=\(name), mangledName=\(mangledName)")
@@ -290,6 +289,11 @@ extension ClosureExpr : ValueEmitter {
         }
         // emit body
         try exprs.emitBody(module: module, gen: closureVGF)
+        
+        if type.returns == BuiltinType.void && !thunk.instructions.contains(where: {$0 is ReturnInst}) {
+            try closureVGF.cleanup()
+            try closureVGF.builder.buildReturnVoid()
+        }
         // move back out
         gen.builder.insertPoint = entry
         
@@ -361,7 +365,6 @@ extension FuncDecl : StmtEmitter {
         // vir gen for body
         try impl.body.emitStmt(module: module, gen: vgf)
         
-        // TODO: look at exit nodes of block, not just place we're left off
         // add implicit `return ()` for a void function without a return expression
         if type.returns == BuiltinType.void && !function.instructions.contains(where: {$0 is ReturnInst}) {
             try vgf.cleanup()
@@ -786,7 +789,6 @@ extension InitDecl : StmtEmitter {
             try gen.builder.buildFunctionPrototype(name: mangledName, type: initialiserType)
             return
         }
-        dump()
         
         let originalInsertPoint = gen.builder.insertPoint
         

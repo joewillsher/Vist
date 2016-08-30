@@ -167,7 +167,7 @@ extension ManagedValue {
         return gen.createManaged(Managed(value, hasCleanup: hasCleanup))
     }
     
-    var lValue: LValue { return value as! LValue }
+    var lValue: LValue { return (value as? LValue) ?? (try! OpaqueLValue(rvalue: value)) }
     
     
     mutating func forwardCleanup(_ gen: VIRGenFunction) {
@@ -238,7 +238,8 @@ extension ManagedValue {
     /// Assigns this value to `dest`, removing this val's cleanup
     mutating func forward<Man : ManagedValue>(into dest: inout Man, gen: VIRGenFunction) throws {
         forwardCleanup(gen)
-        if isIndirect {
+        // if they are the same indirection level
+        if rawType == dest.rawType {
             try gen.builder.build(CopyAddrInst(addr: lValue,
                                                out: dest.lValue))
         }

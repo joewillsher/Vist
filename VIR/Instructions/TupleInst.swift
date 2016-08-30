@@ -12,12 +12,15 @@ final class TupleCreateInst : Inst {
     
     var uses: [Operand] = []
     var args: [Operand]
-    
+
     /// - precondition: `type` has been included in the module using
     ///                 `type.importedType(in: module)`
-    init(type: TupleType, elements: [Value], irName: String? = nil) {
-        self.tupleType = type//.importedType(in: module) as! TupleType
-        let els = elements.map(Operand.init)
+    convenience init(type: TupleType, elements: [Value], irName: String? = nil) {
+        self.init(type: type, operands: elements.map(Operand.init), irName: irName)
+    }
+    
+    private init(type: TupleType, operands els: [Operand], irName: String?) {
+        self.tupleType = type
         self.elements = els
         args = els
         initialiseArgs()
@@ -25,6 +28,15 @@ final class TupleCreateInst : Inst {
     }
     
     var type: Type? { return tupleType }
+    
+    func copy() -> TupleCreateInst {
+        return TupleCreateInst(type: tupleType, operands: elements.map { $0.formCopy() }, irName: irName)
+    }
+    
+    func setArgs(_ args: [Operand]) {
+        precondition(elements.count == args.count)
+        elements = args
+    }
     
     var vir: String {
         return "\(name) = tuple \(args.virValueTuple())\(useComment)"
@@ -82,13 +94,13 @@ final class TupleElementPtrInst : Inst, LValue {
     var uses: [Operand] = []
     var args: [Operand]
     
-    init(tuple: LValue, index: Int, irName: String? = nil) throws {
-        
+    convenience init(tuple: LValue, index: Int, irName: String? = nil) throws {
         guard let elType = try tuple.memType?.getAsTupleType().elementType(at: index) else {
             throw VIRError.noType(#file)
         }
-
-        let op = PtrOperand(tuple)
+        self.init(op: PtrOperand(tuple), elType: elType, index: index, irName: irName)
+    }
+    private init(op: PtrOperand, elType: Type, index: Int, irName: String?) {
         self.tuple = op
         self.elementIndex = index
         self.elementType = elType
@@ -100,6 +112,13 @@ final class TupleElementPtrInst : Inst, LValue {
     var type: Type? { return BuiltinType.pointer(to: elementType) }
     var memType: Type? { return elementType }
 
+    func copy() -> TupleElementPtrInst {
+        return TupleElementPtrInst(op: tuple.formCopy(), elType: elementType, index: elementIndex, irName: irName)
+    }
+    func setArgs(_ args: [Operand]) {
+        tuple = args[0] as! PtrOperand
+    }
+    
     var vir: String {
         return "\(name) = tuple_element \(tuple.valueName), !\(elementIndex)\(useComment)"
     }
