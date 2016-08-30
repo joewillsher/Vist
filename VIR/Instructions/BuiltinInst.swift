@@ -121,12 +121,12 @@ enum BuiltinInst : String {
         case .iadd, .isub, .imul:
             return TupleType(members: [params.first!, Builtin.boolType]) // overflowing arithmetic
             
-        case .idiv, .iaddoverflow, .imuloverflow, .irem, .ishl, .ishr, .iand, .ior,
-             .ixor, .fadd, .fsub, .fmul, .fdiv, .frem, .feq, .fneq:
+        case .idiv, .iaddoverflow, .imuloverflow, .irem, .ishl, .ishr,
+             .iand, .ior, .ixor, .fadd, .fsub, .fmul, .fdiv, .frem:
             return params.first // normal arithmetic
             
-        case .ilte, .igte, .ilt, .igt, .flte, .fgte, .flt,
-             .fgt, .expect, .ieq, .ineq, .and, .or, .beq:
+        case .ilte, .igte, .ilt, .igt, .flte, .fgte, .flt, .fgt,
+             .expect, .ieq, .ineq, .and, .or, .beq, .feq, .fneq:
             return Builtin.boolType // bool ops
            
         case .allocstack, .allocheap, .advancepointer:

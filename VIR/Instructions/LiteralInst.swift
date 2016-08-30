@@ -98,17 +98,4 @@ final class StringLiteralInst : Inst {
     var irName: String?
 }
 
-/// A void literal: `()`
-final class VoidLiteralValue : Value {
-    var type: Type? { return BuiltinType.void }
-    weak var parentBlock: BasicBlock?
-    var uses: [Operand] = []
-    var irName: String? = nil
-    
-    var name: String {
-        get { return "()" }
-        set { }
-    }
-}
-
 

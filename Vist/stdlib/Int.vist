@@ -46,13 +46,9 @@ func int64ToString :: Int -> String = (number) {
         bufferSize = bufferSize + 1 // inc buffer size
     }
 
-    // workaround: something in the phi placement opt is messing up this function
-    vist_cshim_print number.value
-    return ""
-
-    //let isUTF8 = true
-    //let s = String ptr bufferSize.value isUTF8.value
-    //return s
+    let isUTF8 = true
+    let s = String ptr bufferSize.value isUTF8.value
+    return s
 }
 
 type Int {

@@ -153,6 +153,12 @@ func == (lhs: Type?, rhs: Type?) -> Bool {
         return l == r
     case let (l as TypeAlias, r as TypeAlias):
         return l == r
+        // special case builtin void and empty tuple
+    case (BuiltinType.void?, let r as TupleType) where r.members.isEmpty:
+        return true
+    case (let r as TupleType, BuiltinType.void?) where r.members.isEmpty:
+        return true
+        
     case (nil, nil):
         return true
     default:

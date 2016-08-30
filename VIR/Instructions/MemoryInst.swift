@@ -264,6 +264,7 @@ final class CopyAddrInst : Inst {
         initialiseArgs()
         self.irName = irName
     }
+    var hasSideEffects: Bool { return true }
     
     var vir: String {
         return "copy_addr \(addr.valueName) to \(outAddr.valueName) // id: \(name)"
@@ -298,6 +299,8 @@ final class DeallocStackInst : Inst {
         initialiseArgs()
         self.irName = irName
     }
+    
+    var hasSideEffects: Bool { return true }
     
     var vir: String {
         return "dealloc_stack \(address.valueName) // id: \(name)"

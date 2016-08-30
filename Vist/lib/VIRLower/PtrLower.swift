@@ -103,7 +103,9 @@ extension CopyAddrInst : VIRLower {
             return outAddr.loweredValue!
             
         default:
-            return LLVMValue.nullptr
+            let val = try IGF.builder.buildLoad(from: addr.loweredValue!)
+            try IGF.builder.buildStore(value: val, in: outAddr.loweredValue!)
+            return outAddr.loweredValue!
         }
     }
 }

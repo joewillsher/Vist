@@ -9,12 +9,11 @@
 extension ReturnInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         
-        if case _ as VoidLiteralValue = returnValue.value {
+        if (returnValue.value as? TupleCreateInst)?.elements.isEmpty ?? false {
             return try IGF.builder.buildRetVoid()
         }
         else {
-            let v = try returnValue.virLower(IGF: &IGF)
-            return try IGF.builder.buildRet(val: v)
+            return try IGF.builder.buildRet(val: returnValue.loweredValue!)
         }
     }
 }

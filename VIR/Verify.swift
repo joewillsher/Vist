@@ -30,10 +30,10 @@ extension Function {
                         throw VIRVerifierError.nilArg(in: inst)
                     }
                     guard let parent = val.parentFunction else {
-                        if val is VoidLiteralValue || val is GlobalValue { continue }
+                        if val is GlobalValue { continue }
                         throw VIRVerifierError.nilParentFunction(of: inst)
                     }
-                    guard parent == val.parentFunction || arg.value is VoidLiteralValue else {
+                    guard parent == val.parentFunction else {
                         throw VIRVerifierError.crossFunctionArg(inst: inst, arg: val, otherFn: val.parentFunction)
                     }
                 }

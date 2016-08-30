@@ -54,15 +54,12 @@ extension Builder {
     
     @discardableResult
     func buildReturnVoid() throws -> ReturnInst {
-        return try buildReturn(value: VoidLiteralValue())
+        let tuple = try build(TupleCreateInst(type: TupleType(members: []), elements: []))
+        return try buildReturn(value: tuple)
     }
     
     @discardableResult
     func buildReturn(value: Value) throws -> ReturnInst {
         return try build(ReturnInst(value: value, parentBlock: insertPoint.block))
-    }
-    @discardableResult
-    func buildManagedReturn(value: Value, gen: VIRGenFunction) throws -> Managed<ReturnInst> {
-        return try buildUnmanaged(ReturnInst(value: value, parentBlock: insertPoint.block), gen: gen)
     }
 }

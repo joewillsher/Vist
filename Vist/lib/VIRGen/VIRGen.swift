@@ -389,15 +389,15 @@ extension VariableExpr : LValueEmitter {
     }
 }
 
-extension ReturnStmt : ValueEmitter {
+extension ReturnStmt : StmtEmitter {
     
-    func emitRValue(module: Module, gen: VIRGenFunction) throws -> Managed<ReturnInst> {
+    func emitStmt(module: Module, gen: VIRGenFunction) throws {
         var retVal = try expr.emitRValue(module: module, gen: gen)
         // coerce to expected return type, managing abstraction differences
         var boxed = try retVal.coerceCopy(to: expectedReturnType!, gen: gen)
         try gen.cleanup()
         // forward clearup to caller function
-        return try gen.builder.buildManagedReturn(value: boxed.forward(gen), gen: gen)
+        try gen.builder.buildReturn(value: boxed.forward(gen))
     }
 }
 
@@ -570,7 +570,8 @@ extension ConditionalStmt : StmtEmitter {
             // once we're done in success, break to the exit and
             // move into the fail for the next round
             if !(gen.builder.insertPoint.block?.instructions.last?.isTerminator ?? false) {
-                try gen.builder.buildBreak(to: exitBlock)
+                try ifVGF.cleanup()
+                try ifVGF.builder.buildBreak(to: exitBlock)
             }
             
             gen.builder.insertPoint.block = backedgeBlock
@@ -702,9 +703,10 @@ extension WhileLoopStmt : StmtEmitter {
     func emitStmt(module: Module, gen: VIRGenFunction) throws {
         
         // setup blocks
-        let condBlock = try gen.builder.appendBasicBlock(name: "cond")
-        let loopBlock = try gen.builder.appendBasicBlock(name: "loop")
-        let exitBlock = try gen.builder.appendBasicBlock(name: "loop.exit")
+        let base = gen.builder.insertPoint.block?.name.appending(".") ?? ""
+        let condBlock = try gen.builder.appendBasicBlock(name: "\(base)loop.cond")
+        let loopBlock = try gen.builder.appendBasicBlock(name: "\(base)loop.body")
+        let exitBlock = try gen.builder.appendBasicBlock(name: "\(base)loop.exit")
         
         // condition check in cond block
         try gen.builder.buildBreak(to: condBlock)
@@ -784,6 +786,7 @@ extension InitDecl : StmtEmitter {
             try gen.builder.buildFunctionPrototype(name: mangledName, type: initialiserType)
             return
         }
+        dump()
         
         let originalInsertPoint = gen.builder.insertPoint
         
@@ -807,7 +810,7 @@ extension InitDecl : StmtEmitter {
         else {
             selfVar = try gen.builder.buildManaged(AllocInst(memType: selfType.importedType(in: fnVGF.module)),
                                                    hasCleanup: false,
-                                                   gen: gen).erased
+                                                   gen: fnVGF).erased
         }
         
         fnVGF.addVariable(selfVar, name: "self")
@@ -841,9 +844,9 @@ extension InitDecl : StmtEmitter {
 }
 
 
-extension MutationExpr : ValueEmitter {
+extension MutationExpr : StmtEmitter {
     
-    func emitRValue(module: Module, gen: VIRGenFunction) throws -> Managed<VoidLiteralValue> {
+    func emitStmt(module: Module, gen: VIRGenFunction) throws {
         guard case let lhs as _LValueEmitter = object else { fatalError() }
         var lval = try lhs.emitLValue(module: module, gen: gen)
         
@@ -852,8 +855,6 @@ extension MutationExpr : ValueEmitter {
         // the lhs takes over the clearup of the temp
         try rval.forwardCoerce(to: lval.rawType, gen: gen)
         try rval.forward(into: &lval, gen: gen)
-        
-        return Managed<VoidLiteralValue>.forUnmanaged(VoidLiteralValue(), gen: gen)
     }
     
 }
