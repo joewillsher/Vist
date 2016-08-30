@@ -55,7 +55,7 @@ extension LLVMModule {
         if demanglingSymbols {
             for function in sourceModule.functions {
                 let name = function.name!
-                guard name.hasPrefix("vist$U") else { continue }
+                guard name.hasPrefix("_Vvist$U") else { continue }
                 function.name = name.demangleRuntimeName()
             }
         }

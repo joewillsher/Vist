@@ -167,8 +167,8 @@ extension Function {
     /// Apply AST attributes to set linkage, inline status, and attrs
     private func applyAttributes(attrs: [FunctionAttributeExpr]) {
         // linkage
-        if attrs.contains(.`private`) { visibility = .`private` }
-        else if attrs.contains(.`public`) { visibility = .`public` }
+        if attrs.contains(.private) { visibility = .private }
+        else if attrs.contains(.public) { visibility = .public }
         
         // inline attrs
         if attrs.contains(.inline) { inlineRequirement = .always }
@@ -176,6 +176,9 @@ extension Function {
         
         // other attrs
         if attrs.contains(.noreturn) { _ = attributes.insert(.noreturn) }
+        
+        // other attrs
+        if attrs.contains(.runtime) { visibility = .public }
     }
     
     /// Return a reference to this function

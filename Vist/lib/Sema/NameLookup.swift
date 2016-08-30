@@ -31,6 +31,7 @@ extension Collection where
             guard fnName.demangleName() == appliedName, argTypes.count == fnType.params.count else {
                 continue functionSearch
             }
+            
             // if it is a method, does the base satisfy the method's self type
             if let base = base {
                 guard case .method(let parent) = fnType.callingConvention,
@@ -48,6 +49,7 @@ extension Collection where
                 }
             }
             
+            
             if reqiresFullSweep {
                 // add the constraints
                 for (type, constraint) in zip(argTypes, fnType.params) {
@@ -60,18 +62,20 @@ extension Collection where
                     try! parent.selfType.addConstraint(base, solver: solver)
                 }
                 
-                let overload = (mangledName: appliedName.mangle(type: fnType), type: fnType)
+                let overload = (mangledName: fnName, type: fnType)
                 solutions.append(overload)
             }
             else {
                 // if we are not using type variables, we can return the first
                 // matching solution
-                return (mangledName: appliedName.mangle(type: fnType), type: fnType)
+                return (mangledName: fnName, type: fnType)
             }
         }
         
         // if no overloads were found
-        if solutions.isEmpty || !reqiresFullSweep { return nil }
+        if solutions.isEmpty || !reqiresFullSweep {
+            return nil
+        }
         
         // the return type depends on the chosen overload
         let fnType = FunctionType(params: argTypes, returns: returnTv)

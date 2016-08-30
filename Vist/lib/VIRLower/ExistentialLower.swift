@@ -223,14 +223,14 @@ private extension ConceptType {
             .map { index in Int32(conformingType.offsetOfElement(at: index, module: IGF.module)) } // make 'get offset' an extension on aggregate types
     }
     
-    func existentialValueWitnesses(structType: StructType, module: Module, IGF: inout IRGenFunction) throws -> [ValueWitness] {
+    func existentialValueWitnesses(structType: StructType, module: Module, IGF: inout IRGenFunction) throws -> [Witness] {
         
         guard let table = module.witnessTables.first(where: { $0.concept == self && $0.type == structType }) else { fatalError() }
         
         return try requiredFunctions
             .map { methodName, _, _ in
                 let val = try table.getWitness(name: methodName, module: module).loweredValue!._value!
-                return ValueWitness(witness: UnsafeMutablePointer<Void>(val))
+                return Witness(witness: UnsafeMutablePointer<Void>(val))
             }
     }
     

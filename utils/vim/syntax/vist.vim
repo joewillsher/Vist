@@ -7,7 +7,7 @@ if exists("b:current_syntax")
 	finish
 endif
 
-syn keyword vistKeywords for in return do return while if else skipwhite
+syn keyword vistKeywords for in return do return while if else typeof skipwhite
 
 syn match vistAttribute /@\<\w\+\>/ skipwhite nextgroup=vistTypeKeyword,vistFuncKeyword,vistInitKeyword,vistAttribute
 

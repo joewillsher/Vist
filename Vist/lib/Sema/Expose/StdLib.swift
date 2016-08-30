@@ -35,10 +35,14 @@ enum StdLib {
         ], name: "String")
     private static let voidType = BuiltinType.void
     
-    private static let types = [intType, int32Type, boolType, doubleType, rangeType, utf8CodeUnitType, utf16CodeUnitType, stringType]
+    static let metatypeType = StructType(members: [("_metadata", BuiltinType.opaquePointer, true)], methods: [(name: "size", type: FunctionType(params: [], returns: intType), mutating: false), (name: "name", type: FunctionType(params: [], returns: stringType), mutating: false)], name: "Metatype")
     
-    private static let printableConcept = ConceptType(name: "Printable", requiredFunctions: [(name: "description", type: FunctionType(params: [], returns: stringType), mutating: false)], requiredProperties: [])
-        
+    private static let types = [intType, int32Type, boolType, doubleType, rangeType, utf8CodeUnitType, utf16CodeUnitType, stringType, metatypeType]
+    private static let concepts = [printableConcept, anyConcept]
+    
+    static let printableConcept = ConceptType(name: "Printable", requiredFunctions: [(name: "description", type: FunctionType(params: [], returns: stringType), mutating: false)], requiredProperties: [])
+    static let anyConcept = ConceptType(name: "Any", requiredFunctions: [], requiredProperties: [])
+    
     private static let functions: [(String, FunctionType)] = [
         // int
         ("+", FunctionType(params: [intType, intType], returns: intType)),
@@ -101,12 +105,13 @@ enum StdLib {
         ("fatalError", FunctionType(params: [],           returns: voidType)),
         ("fatalError", FunctionType(params: [stringType], returns: voidType)),
         
+        ("typeof",     FunctionType(params: [anyConcept],   returns: metatypeType)),
         
         // TODO: when we can link parallel compiled files' AST we 
         //       won't need to expose private stdlib function
         ("_print",      FunctionType(params: [stringType], returns: voidType)),
-
-        //         initialisers
+        
+        // initialisers
         // ones which take Builtin types are used to wrap literals
         ("Int",     FunctionType(params: [BuiltinType.int(size: 64)],   returns: intType, callingConvention: .initialiser)),
         ("Int",     FunctionType(params: [intType],                     returns: intType, callingConvention: .initialiser)),
@@ -127,12 +132,13 @@ enum StdLib {
         ("vist_cshim_print", FunctionType(params: [BuiltinType.int(size: 32)], returns: voidType)),
         ("vist_cshim_putchar", FunctionType(params: [BuiltinType.int(size: 8)], returns: voidType)),
         ("vist_cshim_write", FunctionType(params: [BuiltinType.opaquePointer, BuiltinType.int(size: 64)], returns: voidType)),
+        ("vist_cshim_strlen", FunctionType(params: [BuiltinType.opaquePointer], returns: BuiltinType.int(size: 64))),
     ]
     
     /// Container initialised with functions, provides subscript to look up functions by name and type
     ///
     /// Adds the `stdlib.call.optim` metadata tag to all of them
-    private static let functionContainer = FunctionContainer(functions: functions, types: types, concepts: [printableConcept])
+    private static let functionContainer = FunctionContainer(functions: functions, types: types, concepts: concepts)
     
     /// Returns the struct type of a named StdLib object
     static func type(name id: String) -> NominalType? {

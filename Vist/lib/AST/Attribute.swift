@@ -14,9 +14,10 @@ enum ASTAttributeExpr: AttributeExpr {
 }
 
 enum FunctionAttributeExpr: String, AttributeExpr {
-    case inline = "inline"
-    case noreturn = "noreturn"
-    case noinline = "noinline"
-    case mutating = "mutating"
-    case `private` = "private", `public` = "public"
+    case inline
+    case noreturn
+    case noinline
+    case mutating
+    case `private`, `public`
+    case runtime
 }

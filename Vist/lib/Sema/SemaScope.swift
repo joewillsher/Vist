@@ -64,11 +64,14 @@ final class SemaScope {
     private func recursivelyLookupFunction(named name: String, argTypes: [Type], base: NominalType?) throws -> Solution {
         if let inScope = functions.function(havingUnmangledName: name, argTypes: argTypes, base: base, solver: constraintSolver) { return inScope }
             // lookup from parents
-        else if let inParent = try parent?.function(named: name, argTypes: argTypes, base: base) { return inParent }
+        else if let inParent = try parent?.recursivelyLookupFunction(named: name, argTypes: argTypes, base: base) { return inParent }
             // otherwise we havent found a match :(
         throw semaError(.noFunction(name, argTypes))
     }
     
+    func addFunction(mangledName: String, type: FunctionType) {
+        functions[mangledName] = type
+    }
     func addFunction(name: String, type: FunctionType) {
         functions[name.mangle(type: type)] = type
     }

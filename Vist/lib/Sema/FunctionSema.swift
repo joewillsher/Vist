@@ -35,9 +35,11 @@ extension FuncDecl : DeclTypeProvider {
         }
         
         typeRepr.type = ty
-        self.mangledName = name.mangle(type: ty)
+        // mangle non runtime exposed names
+        let mangled = attrs.contains(.runtime) ? name : name.mangle(type: ty)
+        self.mangledName = mangled
         if addToScope {
-            scope.addFunction(name: name, type: ty)
+            scope.addFunction(mangledName: mangled, type: ty)
         }
         return ty
     }

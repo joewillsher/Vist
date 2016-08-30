@@ -11,7 +11,7 @@ import class Foundation.NSString
 extension String {
     
     func mangle(type: FunctionType) -> String {
-        return "\(mappedChars())_\(type.mangledName)"
+        return "_V\(mappedChars())_\(type.mangledName)"
     }
 //    func mangle(params type: [Type]) -> String {
 //        return mangle(type: FunctionType(params: type, returns: BuiltinType.void/*Doesnt matter*/))
@@ -54,8 +54,12 @@ extension String {
     /// returns the raw name, getting rid of type info at end, 
     /// (and type prefix for methods)
     func demangleName() -> String {
-        guard let ui = characters.index(of: "_") else { return self }
-        let nameString = String(characters[startIndex..<ui])
+        // is this a mangled string
+        guard hasPrefix("_V") else { return self }
+        let r = characters.index(characters.startIndex, offsetBy: 2)
+        let consider = characters.suffix(from: r)
+        guard let ui = consider.index(of: "_") else { return self }
+        let nameString = String(consider[consider.startIndex..<ui])
         
         var resStr: [Character] = []
         var pred: Character? = nil
@@ -76,6 +80,7 @@ extension String {
     }
     
     func demangleRuntimeName() -> String {
+        guard hasPrefix("_V") else { return self }
         return replacingOccurrences(of: "$", with: "-")
     }
     

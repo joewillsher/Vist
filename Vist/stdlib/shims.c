@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 #define NORETURN __attribute__((noreturn))
 #define NOINLINE __attribute__((noinline))
@@ -18,15 +19,13 @@
 
 // Printing
 
-ALWAYSINLINE
 void
-vist$Ucshim$Uwrite_topi64(const void *str, int64_t size) {
+_Vvist$Ucshim$Uwrite_topi64(const void *str, int64_t size) {
     fwrite(str, size, 1, stdout);
 };
 
-ALWAYSINLINE
 void
-vist$Ucshim$Uputchar_ti8(char c) {
+_Vvist$Ucshim$Uputchar_ti8(char c) {
     putchar_unlocked(c);
 };
 
@@ -35,31 +34,38 @@ vist$Ucshim$Uputchar_ti8(char c) {
 
 NOINLINE
 void
-vist$Ucshim$Uprint_ti64(int64_t i) {
+_Vvist$Ucshim$Uprint_ti64(int64_t i) {
     printf("%lli\n", i);
 };
 
 NOINLINE
 void
-vist$Ucshim$Uprint_ti32(int32_t i) {
+_Vvist$Ucshim$Uprint_ti32(int32_t i) {
     printf("%i\n", i);
 };
 
 NOINLINE
 void
-vist$Ucshim$Uprint_tf64(double d)
+_Vvist$Ucshim$Uprint_tf64(double d)
 {
     printf("%f\n", d);
 };
 
 NOINLINE
 void
-vist$Ucshim$Uprint_tf32(float d) {
+_Vvist$Ucshim$Uprint_tf32(float d) {
     printf("%f\n", d);
 };
 
 NOINLINE
 void
-vist$Ucshim$Uprint_tb(bool b) {
+_Vvist$Ucshim$Uprint_tb(bool b) {
     printf(b ? "true\n" : "false\n");
 };
+
+NOINLINE
+int64_t
+_Vvist$Ucshim$Ustrlen_top(void *c) {
+    return strlen(c);
+};
+

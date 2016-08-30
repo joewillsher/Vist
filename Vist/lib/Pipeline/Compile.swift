@@ -388,7 +388,7 @@ func buildRuntime(debugRuntime debug: Bool) {
     // .cpp -> .dylib
     // to link against program
     Task.execute(exec: .clang,
-                 files: ["runtime.cpp", "Metadata.cpp", "RefcountedObject.cpp"],
+                 files: ["Metadata.cpp", "RefcountedObject.cpp", "Casting.cpp", "Demangle.cpp"],
                  outputName: libVistRuntimePath,
                  cwd: runtimeDirectory,
                  args: "-dynamiclib", "-std=c++14", "-O3", "-lstdc++", "-includeruntime.h", debug ? "-DREFCOUNT_DEBUG" : "")

@@ -34,7 +34,12 @@ extension BuiltinInstCall: VIRLower {
             // add extra memcpy args
             args.append(LLVMValue.constInt(value: 1, size: 32)) // i32 align -- align 1
             args.append(LLVMValue.constBool(value: false)) // i1 isVolatile -- false
-                
+            
+        case .withptr:
+            let alloc = try IGF.builder.buildAlloca(type: lhs.type)
+            try IGF.builder.buildStore(value: lhs, in: alloc)
+            return try IGF.builder.buildBitcast(value: alloc, to: LLVMType.opaquePointer)
+            
         case .allocstack: return try IGF.builder.buildArrayAlloca(size: lhs, elementType: .intType(size: 8), name: irName)
         case .allocheap:  return try IGF.builder.buildArrayMalloc(size: lhs, elementType: .intType(size: 8), name: irName)
         case .heapfree: return try IGF.builder.buildFree(ptr: lhs, name: irName)

@@ -59,7 +59,7 @@ struct Builtin {
         ("Builtin.f_cmp_gte", FunctionType(params: [doubleType, doubleType], returns: boolType)),
         ("Builtin.f_eq", FunctionType(params: [doubleType, doubleType], returns: boolType)),
         ("Builtin.f_neq", FunctionType(params: [doubleType, doubleType], returns: boolType)),
-                
+        
         // intrinsic fns
         ("Builtin.trap", FunctionType(params: [], returns: voidType)),
         ("Builtin.cond_fail", FunctionType(params: [boolType], returns: voidType)),
@@ -72,7 +72,9 @@ struct Builtin {
         ("Builtin.opaque_load", FunctionType(params: [opaquePointerType], returns: BuiltinType.int(size: 8))),
         ("Builtin.opaque_store", FunctionType(params: [opaquePointerType, int8Type], returns: voidType)),
         ("Builtin.heap_free", FunctionType(params: [opaquePointerType], returns: voidType)),
-
+        
+        ("Builtin.with_ptr", FunctionType(params: [StdLib.anyConcept], returns: opaquePointerType)),
+        
         ("Builtin.trunc_int_8", FunctionType(params: [intType], returns: int8Type)),
         ("Builtin.trunc_int_8", FunctionType(params: [int32Type], returns: int8Type)),
         ("Builtin.trunc_int_8", FunctionType(params: [int16Type], returns: int8Type)),

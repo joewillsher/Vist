@@ -24,6 +24,8 @@ extern "C" {
     // These functions must have a definition in Vist/lib/Sema/Runtime.swift to
     // be exposed to the compiler
 #define RUNTIME_COMPILER_INTERFACE extern "C"
+    // These functions must have a stub decl with the @runtime attr in the stdlib
+#define RUNTIME_STDLIB_INTERFACE extern "C"
 
 #else
     
@@ -34,21 +36,21 @@ extern "C" {
     
 #endif
     
-    typedef struct ValueWitness ValueWitness;
+    typedef struct Witness Witness;
     typedef struct ConceptConformance ConceptConformance;
     typedef struct TypeMetadata TypeMetadata;
     typedef struct ExistentialObject ExistentialObject;
     typedef struct WitnessTable WitnessTable;
     
     /// A witness function
-    struct ValueWitness {
+    struct Witness {
         void *_Nonnull witness;
     };
     
     /// A concept witness table
     struct WitnessTable {
         /// The witnesses
-        ValueWitness *_Nullable *_Nonnull SWIFT_NAME(witnessArr) witnesses;
+        Witness *_Nullable *_Nonnull SWIFT_NAME(witnessArr) witnesses;
         int32_t SWIFT_NAME(witnessArrCount) numWitnesses;
         
 #ifdef __cplusplus
@@ -131,6 +133,8 @@ extern "C" {
     
 #ifdef __cplusplus
 }
+
+const char * _Nonnull vist_demangle(const char * _Nonnull);
 #endif
 
 

@@ -102,6 +102,8 @@ enum BuiltinInst : String {
     
     case trunc8 = "trunc_int_8", trunc16 = "trunc_int_16", trunc32 = "trunc_int_32"
     
+    case withptr = "with_ptr"
+    
     var expectedNumOperands: Int {
         switch  self {
         case .memcpy: return 3
@@ -110,7 +112,7 @@ enum BuiltinInst : String {
              .fgte, .flt, .flte, .fadd, .fsub, .fmul, .fdiv, .frem, .feq, .fneq, .beq,
              .opaquestore, .advancepointer:
             return 2
-        case .condfail, .allocstack, .allocheap, .heapfree, .opaqueload, .trunc8, .trunc16, .trunc32:
+        case .condfail, .allocstack, .allocheap, .heapfree, .opaqueload, .trunc8, .trunc16, .trunc32, .withptr:
             return 1
         case .trap:
             return 0
@@ -129,7 +131,7 @@ enum BuiltinInst : String {
              .expect, .ieq, .ineq, .and, .or, .beq, .feq, .fneq:
             return Builtin.boolType // bool ops
            
-        case .allocstack, .allocheap, .advancepointer:
+        case .allocstack, .allocheap, .advancepointer, .withptr:
             return Builtin.opaquePointerType
             
         case .opaqueload, .trunc8:

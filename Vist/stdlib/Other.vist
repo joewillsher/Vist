@@ -35,6 +35,37 @@ type Range {
     }
 }
 
+concept Any {}
+
+
+// ----------------------------------------------------
+// dynamic
+// ----------------------------------------------------
+
+
+
+// pass in Any*, get out Metadata*
+@private @runtime func vist_runtime_getMetadata :: Builtin.OpaquePointer -> Builtin.OpaquePointer
+@private @runtime func vist_runtime_metadataGetSize :: Builtin.OpaquePointer -> Builtin.Int64
+@private @runtime func vist_runtime_metadataGetName :: Builtin.OpaquePointer -> Builtin.OpaquePointer
+
+type Metatype {
+    var _metadata: Builtin.OpaquePointer
+    func name :: -> String = {
+        let ptr = vist_runtime_metadataGetName _metadata
+        let length = (Int (vist_cshim_strlen ptr)) + 1
+        let utf8 = true
+        return String ptr length.value utf8.value
+    }
+    func size :: -> Int = do
+        return Int (vist_runtime_metadataGetSize _metadata)
+}
+
+func typeof :: Any -> Metatype = do
+    return Metatype (vist_runtime_getMetadata (Builtin.with_ptr $0))
+
+
+
 // ----------------------------------------------------
 // free functions
 // ----------------------------------------------------

@@ -80,45 +80,45 @@ enum StdLibInlinePass : OptimisationPass {
                 // one we know how to explode, do it!
                 
                 switch call.function.name {
-                case "-A_tII": // l * r
+                case "_V-A_tII": // l * r
                     try replaceWithOverflowCheckedBuiltin(.imul)
-                case "-P_tII": // l + r
+                case "_V-P_tII": // l + r
                     try replaceWithOverflowCheckedBuiltin(.iadd)
-                case "-M_tII": // l - r
+                case "_V-M_tII": // l - r
                     try replaceWithOverflowCheckedBuiltin(.isub)
-                case "-S_tII": // l / r
+                case "_V-S_tII": // l / r
                     try replaceWithBuiltin(.idiv)
-                case "-C_tII": // l % r
+                case "_V-C_tII": // l % r
                     try replaceWithBuiltin(.irem)
-                case "-T-R_tII": // l ~^ r
+                case "_V-T-R_tII": // l ~^ r
                     try replaceWithBuiltin(.ixor)
-                case "-L-L_tII": // l << r
+                case "_V-L-L_tII": // l << r
                     try replaceWithBuiltin(.ishl)
-                case "-G-G_tII": // l >> r
+                case "_V-G-G_tII": // l >> r
                     try replaceWithBuiltin(.ishr)
-                case "-T-N_tII": // l ~& r
+                case "_V-T-N_tII": // l ~& r
                     try replaceWithBuiltin(.iand)
-                case "-T-O_tII": // l ~| r
+                case "_V-T-O_tII": // l ~| r
                     try replaceWithBuiltin(.ior)
-                case "-T-R_tII": // l ~^ r
+                case "_V-T-R_tII": // l ~^ r
                     try replaceWithBuiltin(.ixor)
                     
-                case "-L_tII": // l < r
+                case "_V-L_tII": // l < r
                     try replaceWithBuiltin(.ilt, returnType: StdLib.boolType)
-                case "-G_tII": // l > r
+                case "_V-G_tII": // l > r
                     try replaceWithBuiltin(.igt, returnType: StdLib.boolType)
-                case "-L-E_tII": // l <= r
+                case "_V-L-E_tII": // l <= r
                     try replaceWithBuiltin(.ilte, returnType: StdLib.boolType)
-                case "-G-E_tII": // l >= r
+                case "_V-G-E_tII": // l >= r
                     try replaceWithBuiltin(.igte, returnType: StdLib.boolType)
-                case "-E-E_tII": // l == r
+                case "_V-E-E_tII": // l == r
                     try replaceWithBuiltin(.ieq, returnType: StdLib.boolType)
-                case "-B-E_tII": // l != r
+                case "_V-B-E_tII": // l != r
                     try replaceWithBuiltin(.ineq, returnType: StdLib.boolType)
                     
-                case "-N-N_tBB": // l && r
+                case "_V-N-N_tBB": // l && r
                     try replaceWithBuiltin(.and, returnType: StdLib.boolType)
-                case "-O-O_tBB": // l || r
+                case "_V-O-O_tBB": // l || r
                     try replaceWithBuiltin(.or, returnType: StdLib.boolType)
                     
                 default:

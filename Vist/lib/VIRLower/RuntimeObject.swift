@@ -96,7 +96,7 @@ extension RuntimeObject {
 }
 
 // MARK: Runtime types
-extension ValueWitness : RuntimeObject {
+extension Witness : RuntimeObject {
     func type(IGF: inout IRGenFunction, module: Module) -> LLVMType { return Runtime.valueWitnessType.importedType(in: module).lowered(module: module) }
     
     func lower(IGF: inout IRGenFunction, module: Module, baseName: String) throws -> LLVMValue {
