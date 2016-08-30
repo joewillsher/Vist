@@ -201,9 +201,6 @@ extension Float : ASTPrintable {
 extension VoidExpr : ASTPrintable {
     static var _astName: String { return "void_expr" }
 }
-extension NullExpr : ASTPrintable {
-    static var _astName: String { return "null" }
-}
 extension BinaryExpr : ASTPrintable {
     static var _astName: String { return "binary_operator_expr" }
 }

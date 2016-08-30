@@ -182,7 +182,10 @@ extension VariableDecl : ValueEmitter {
     
     func emitRValue(module: Module, gen: VIRGenFunction) throws -> Managed<VariableAddrInst> {
         
-        let type = value._type!.importedType(in: module)
+        guard let type = self.type, let value = self.value else {
+            fatalError()
+        }
+        
         // gen the ManagedValue for the variable's value
         var managed = try value.emitRValue(module: module, gen: gen)
         // coeerce to the correct type (as a pointer) and forward

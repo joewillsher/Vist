@@ -85,17 +85,19 @@ final class VariableDecl : Decl, TypeMemberVariableDecl {
     let name: String
     let typeRepr: TypeRepr?
     let isMutable: Bool
-    var value: Expr
+    var value: Expr?
     
-    init(name: String, typeRepr: TypeRepr?, isMutable: Bool, value: Expr) {
+    init(name: String, typeRepr: TypeRepr?, isMutable: Bool, value: Expr?) {
         self.name = name
         self.typeRepr = typeRepr
         self.isMutable = isMutable
         self.value = value
     }
     
+    var type: Type?
+    
     /// `self` if the function is a type member decl
-    var parent: NominalTypeDecl? = nil
+    var parent: NominalTypeDecl?
     
     var declared: [VariableDecl] { return [self] }
 }

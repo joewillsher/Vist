@@ -29,7 +29,7 @@ extension TypeDecl : ExprTypeProvider {
             .flatMap { decl in
                 try errorCollector.run { _ -> StructMember in
                     try decl.typeForNode(scope: structScope)
-                    guard let t = decl.value._type else {
+                    guard let t = decl.type else {
                         throw semaError(.structPropertyNotTyped(type: name, property: decl.name), userVisible: false)
                     }
                     return (decl.name, t, decl.isMutable)
@@ -158,7 +158,7 @@ extension ConceptDecl : ExprTypeProvider {
         let propertyTypes = try requiredProperties
             .flatMap { $0.declared }
             .walkChildren(collector: errorCollector) { prop throws -> StructMember in
-                guard let t = prop.value._type else {
+                guard let t = prop.type else {
                     throw semaError(.structPropertyNotTyped(type: name, property: prop.name))
                 }
                 return (prop.name, t, true)
@@ -246,21 +246,23 @@ extension VariableDecl : DeclTypeProvider {
                                                  context: explicitType,
                                                  scopeName: contextName)
         
-        let objectType = try value.typeForNode(scope: declScope)
+        let objectType = try value?.typeForNode(scope: declScope)
         
-        let type = explicitType ?? objectType
+        // if the type is null and no explicit type is specified, diagnose
+        if explicitType == nil, value == nil {
+            throw semaError(.cannotAssignToNullExpression(name))
+        }
+        
+        let type = explicitType ?? objectType!
         scope.addVariable(variable: (type, isMutable, false), name: name)
         
         if let ex = explicitType, objectType != explicitType {
-            try objectType.addConstraint(ex, solver: scope.constraintSolver)
+            try objectType?.addConstraint(ex, solver: scope.constraintSolver)
             // if we implicitly coerce the expr
-            value = ImplicitCoercionExpr(expr: value, type: ex)
+            value = value.map { ImplicitCoercionExpr(expr: $0, type: ex) }
         }
         
-        // if the type is null and no explicit type is specified, diagnose
-        if explicitType == nil, value is NullExpr {
-            throw semaError(.cannotAssignToNullExpression(name))
-        }
+        self.type = type
     }
 }
 

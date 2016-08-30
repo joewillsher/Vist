@@ -810,7 +810,7 @@ extension Parser {
                 decl = VariableDecl(name: id,
                                     typeRepr: explicitType,
                                     isMutable: mutable,
-                                    value: NullExpr())
+                                    value: nil)
             }
             decls.append(decl)
         } while consumeIf(.comma)

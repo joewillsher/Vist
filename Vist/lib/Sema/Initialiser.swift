@@ -13,9 +13,7 @@ extension TypeDecl {
     func implicitIntialiser() -> InitDecl? {
         // filter out non initilaised values, return nil if not all values have an initial value
         let properties = self.properties.flatMap { $0.declared }
-        let values = properties
-            .filter { !($0.value is NullExpr) }
-            .map { $0.value }
+        let values = properties.flatMap { $0.value }
         let names = properties.map { $0.name }
         guard values.count == properties.count else { return nil }
         
@@ -41,7 +39,7 @@ extension TypeDecl {
         let properties = self.properties.flatMap { $0.declared }
         let names = properties.map { $0.name }
         
-        guard let types = properties.optionalMap({ $0.value._type }) else {
+        guard let types = properties.optionalMap({ $0.type }) else {
             throw semaError(.noMemberwiseInit, userVisible: false)
         }
         

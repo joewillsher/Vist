@@ -115,6 +115,7 @@ final class ImplicitCoercionExpr : Expr {
     
     init(expr: Expr, type: Type) {
         self.expr = expr
+        expr._type = type
         self.type = type
         self._type = type
     }
@@ -366,11 +367,6 @@ final class PropertyLookupExpr : LookupExpr {
 //-------------------------------------------------------------------------------------------------------------------------
 //  MARK:                                               Other
 //-------------------------------------------------------------------------------------------------------------------------
-
-
-final class NullExpr : Expr {
-    var _type: Type? = BuiltinType.null
-}
 
 
 final class TupleExpr : ChainableExpr {

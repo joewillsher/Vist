@@ -47,14 +47,6 @@ extension StringLiteral : ExprTypeProvider {
     }
 }
 
-extension NullExpr : ExprTypeProvider {
-    
-    func typeForNode(scope: SemaScope) throws -> Type {
-        _type = nil
-        return BuiltinType.null
-    }
-}
-
 //-------------------------------------------------------------------------------------------------------------------------
 //  MARK:                                                 Variables
 //-------------------------------------------------------------------------------------------------------------------------
@@ -154,8 +146,9 @@ extension CoercionExpr : ExprTypeProvider {
 
 extension ImplicitCoercionExpr : ExprTypeProvider {
     
+    /// the expr was given a type when it was type checked
     func typeForNode(scope: SemaScope) throws -> Type {
-        let exprType = try expr.typeForNode(scope: scope)
+        let exprType = expr._type!
         do {
             try exprType.addConstraint(type, solver: scope.constraintSolver)
         }

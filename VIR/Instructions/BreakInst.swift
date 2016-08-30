@@ -130,7 +130,7 @@ final class CheckedCastBreakInst : Inst, BreakInstruction {
     }
     
     var vir: String {
-        return "cast_break \(val.valueName) as \(targetType.prettyName), $\(successCall.block.name)\(successCall.args?.virValueTuple() ?? ""), $\(failCall.block.name)\(failCall.args?.virValueTuple() ?? "") // id: \(name)"
+        return "cast_break \(val.valueName) as #\(targetType.prettyName), $\(successCall.block.name)\(successCall.args?.virValueTuple() ?? ""), $\(failCall.block.name)\(failCall.args?.virValueTuple() ?? "") // id: \(name)"
     }
     
     var hasSideEffects: Bool { return true }
