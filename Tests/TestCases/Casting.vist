@@ -1,0 +1,92 @@
+// RUN: -r -build-runtime -debug-runtime
+// CHECK: OUT
+
+concept Conc { 
+    func foo :: ()
+}
+
+concept Conc2 { 
+    func foo22 :: Int -> Int
+}
+
+type Foo {
+    let a: Int
+    let y: Any
+
+    func foo :: () = do print a
+}
+
+// -- Struct -> Concept (always true)
+let h = 1
+if h the Any do
+    print 2
+
+// -- Struct -> Concept (always false)
+let t = 3
+if t the Conc do
+    print 4
+
+
+// -- Concept -> Struct (dynamic check)
+let r = 5 as Any
+if r the Int do
+    print r
+
+// -- Struct -> Same Struct (always true)
+let ww = 6
+if ww the Int do
+    print ww
+
+// Concept -> other Concept (dynamic check)
+let b = (Foo 7 8) as Any
+if b the Conc do
+    b.foo ()
+
+
+// Concept -> other Concept (dynamic check fails)
+let v = (Foo 9 10) as Any
+if v the Conc2 do
+    print (v.foo22 11)
+
+
+// OUT-CHECK:
+// OUT: →alloc_stack Int:	0x7fff5fbff870
+// OUT: 2
+// OUT: →dealloc Int:	0x7fff5fbff870
+// OUT: →alloc_stack Int:	0x7fff5fbff5d0
+// OUT: 5
+// OUT: 6
+// OUT: →alloc_stack Int:	0x7fff5fbff520
+// OUT:    ↳copy Int:	0x7fff5fbff520 to: 0x100202b30
+// OUT: →alloc_stack Foo:	0x7fff5fbff490
+// OUT: →cast Foo:	0x7fff5fbff490 to	Conc
+// OUT:    ↳witness=0x100002360:	Any
+// OUT:    ↳witness=0x100002390:	Conc
+// OUT:      ↳cast_deep_copy Foo:	0x7fff5fbff490 to: 0x100202b40
+// OUT:          ↳cast_deep_copy_fn=0x1000011b0
+// OUT:    ↳copy Int:	0x100202b30 to: 0x100202b90
+// OUT: -→was cast to: 0x100202b40
+// OUT:    ↳copy Conc:	0x100202b40 to: 0x100202bd0
+// OUT: 7
+// OUT: →dealloc Int:	0x100202b90
+// OUT: →dealloc Conc:	0x100202bd0
+// OUT: →dealloc Conc:	0x100202b40
+// OUT: →alloc_stack Int:	0x7fff5fbff340
+// OUT:    ↳copy Int:	0x7fff5fbff340 to: 0x100202b90
+// OUT: →alloc_stack Foo:	0x7fff5fbff2b0
+// OUT: →cast Foo:	0x7fff5fbff2b0 to	Conc2
+// OUT:    ↳witness=0x100002360:	Any
+// OUT:    ↳witness=0x100002390:	Conc
+// OUT:    ↳witness=0x100002410:	Conc
+// OUT:      ↳no match found
+// OUT: →dealloc Foo:	0x7fff5fbff2b0
+// OUT:    ↳destructor_fn=0x1000011a0
+// OUT: →dealloc Int:	0x100202b90
+// OUT: →dealloc Int:	0x7fff5fbff340
+// OUT: →dealloc Foo:	0x7fff5fbff490
+// OUT:    ↳destructor_fn=0x1000011a0
+// OUT: →dealloc Int:	0x100202b30
+// OUT: →dealloc Int:	0x7fff5fbff520
+// OUT: →dealloc Int:	0x7fff5fbff5d0
+
+
