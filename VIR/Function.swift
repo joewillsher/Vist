@@ -184,7 +184,13 @@ extension Function {
     /// Return a reference to this function
     func buildFunctionPointer() -> PtrOperand {
         let val = PtrOperand(FunctionRef(toFunction: self, parentBlock: module.builder.insertPoint.block))
-        if let lowered = loweredFunction?.function { val.setLoweredValue(lowered) }
+        // swift bug workaround
+        if let lowered = loweredFunction?.function {
+            val.setLoweredValue(lowered)
+        }
+        else if module.hasLoweredModule, let lowered = module.loweredModule.function(named: name)?.function {
+            val.setLoweredValue(lowered)
+        }
         return val
     }
     

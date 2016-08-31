@@ -73,14 +73,6 @@ extension Module {
                 try copyConstructor.virLower(IGF: &IGF)
             }
         }
-        // emit concepts, needed for conformances
-        for type in typeList.values where type.targetType is ConceptType {
-            _ = try type.getLLVMTypeMetadata(IGF: &IGF, module: self)
-        }
-        // finally emit struct metadata
-        for type in typeList.values where type.targetType is StructType {
-            _ = try type.getLLVMTypeMetadata(IGF: &IGF, module: self)
-        }
         
         for fn in functions {
             // create function proto
@@ -92,7 +84,15 @@ extension Module {
                 try function.param(at: i).name = p.irName
             }
         }
-        
+        // emit concepts, needed for conformances
+        for type in typeList.values where type.targetType is ConceptType {
+            _ = try type.getLLVMTypeMetadata(IGF: &IGF, module: self)
+        }
+        // finally emit struct metadata
+        for type in typeList.values where type.targetType is StructType {
+            _ = try type.getLLVMTypeMetadata(IGF: &IGF, module: self)
+        }
+
         // TEST: build witness table metadata
         for table in witnessTables {
             _ = try table.lowerMetadata(IGF: &IGF)

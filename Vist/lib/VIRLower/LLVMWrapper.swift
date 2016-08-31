@@ -443,7 +443,9 @@ struct LLVMModule : Dumpable {
             return global
         }
         let v = try value.lowerMemory(IGF: &IGF, module: module, baseName: baseName)
-        return createGlobal(value: v, forPtr: value, baseName: baseName, IGF: &IGF)
+        let glob = createGlobal(value: v, forPtr: value, baseName: baseName, IGF: &IGF)
+        globals.cachedGlobals[value] = glob
+        return glob
     }
     
     /// Add a LLVM global value to the module

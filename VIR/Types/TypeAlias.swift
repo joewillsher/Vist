@@ -55,7 +55,10 @@ extension TypeAlias : NominalType {
     var methods: [StructMethod] { return targetType.methods }
     var irName: String { return targetType.irName }
     var isHeapAllocated: Bool { return targetType.isHeapAllocated }
-    var concepts: [ConceptType] { return targetType.concepts }
+    var concepts: [ConceptType] {
+        get { return targetType.concepts }
+        set { targetType.concepts = newValue }
+    }
     var explicitName: String { return targetType.explicitName }
     var mangledName: String { return targetType.mangledName }
 }
@@ -104,7 +107,10 @@ final class RefCountedType : NominalType {
     var methods: [StructMethod] { return targetType.methods }
     var irName: String { return targetType.irName }
     var isHeapAllocated: Bool { return true }
-    var concepts: [ConceptType] { return targetType.concepts }
+    var concepts: [ConceptType] {
+        get { return targetType.concepts }
+        set { targetType.concepts = newValue }
+    }
     var explicitName: String { return targetType.explicitName }
     var mangledName: String { return targetType.mangledName }
 }

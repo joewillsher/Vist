@@ -182,7 +182,7 @@ extension VariableDecl : ValueEmitter {
     
     func emitRValue(module: Module, gen: VIRGenFunction) throws -> Managed<VariableAddrInst> {
         
-        guard let type = self.type, let value = self.value else {
+        guard let type = self.type?.importedType(in: module), let value = self.value else {
             fatalError()
         }
         
@@ -591,9 +591,8 @@ extension ConditionalStmt : StmtEmitter {
                 try val.forwardCoerce(to: val.type.ptrType(), gen: gen)
                 
                 let targetType = match._type!.importedType(in: module)
-                var castParam = Managed<Param>.forManaged(Param(paramName: match.variable, type: targetType),
-                                                          hasCleanup: val.hasCleanup,
-                                                          gen: gen)
+                var castParam = Managed<Param>.forUnmanaged(Param(paramName: match.variable, type: targetType),
+                                                            gen: ifVGF)
                 ifVGF.addVariable(castParam, name: match.variable)
                 
                 let bodyBlock = try gen.builder.appendBasicBlock(name: "\(base)cast\(index)", parameters: [castParam.managedValue])

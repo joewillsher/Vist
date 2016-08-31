@@ -9,7 +9,7 @@
 final class ConceptType : NominalType {
     let name: String
     var requiredFunctions: [StructMethod], requiredProperties: [StructMember]
-    let concepts: [ConceptType] = []
+    var concepts: [ConceptType] = []
     let isHeapAllocated = false
     
     init(name: String, requiredFunctions: [StructMethod], requiredProperties: [StructMember]) {

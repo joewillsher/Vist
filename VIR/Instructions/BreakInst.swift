@@ -198,6 +198,17 @@ extension Builder {
     @discardableResult
     func buildCastBreak(val: PtrOperand, successVariable: Param, targetType: Type, success: BlockCall, fail: BlockCall) throws -> CheckedCastBreakInst {
         
+        // HACK: we need to generate the witness tables if our target type is a concept
+        if targetType.isConceptType() {
+            let concept = try targetType.getAsConceptType()
+            for type in module.typeList.values {
+                guard case let structType as StructType = type.getConcreteNominalType() else { continue }
+                guard structType.models(concept: concept) else { continue }
+                _ = VIRWitnessTable.create(module: module, type: structType, conforms: concept)
+                type.concepts.append(concept)
+            }
+        }
+        
         let s = CheckedCastBreakInst(successCall: success, successVariable: successVariable, failCall: fail, val: val, targetType: targetType)
         try addToCurrentBlock(inst: s)
         success.block.parentFunction!.dominator.invalidate()

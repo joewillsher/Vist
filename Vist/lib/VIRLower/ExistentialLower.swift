@@ -13,10 +13,27 @@ extension ExistentialConstructInst : VIRLower {
         guard let structType = try value.type?.getAsStructType() else { fatalError() }
         
         let exMemory = try IGF.builder.buildAlloca(type: Runtime.existentialObjectType.importedType(in: module).lowered(module: module))
+        // in
         let structMemory = try IGF.builder.buildAlloca(type: structType.importedType(in: module).lowered(module: module))
         try IGF.builder.buildStore(value: value.loweredValue!, in: structMemory)
         let mem = try IGF.builder.buildBitcast(value: structMemory, to: .opaquePointer)
         
+        return try ExistentialConstructInst.gen(instance: mem,
+                                                out: exMemory,
+                                                structType: structType,
+                                                existentialType: existentialType,
+                                                isLocal: isLocal,
+                                                module: module,
+                                                IGF: &IGF)
+    }
+    
+    static func gen(instance mem: LLVMValue,
+                    out exMemory: LLVMValue,
+                    structType: StructType,
+                    existentialType: ConceptType,
+                    isLocal: Bool,
+                    module: Module,
+                    IGF: inout IRGenFunction) throws -> LLVMValue {
         let type = try structType.getLLVMTypeMetadata(IGF: &IGF, module: module)
         let conf = try structType.generateConformanceMetadata(concept: existentialType, IGF: &IGF, module: module).metadata
         let nonLocal = LLVMValue.constBool(value: !isLocal)
@@ -28,6 +45,7 @@ extension ExistentialConstructInst : VIRLower {
         return try IGF.builder.buildBitcast(value: exMemory, to: exType)
     }
 }
+
 
 extension ExistentialWitnessInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
@@ -109,7 +127,7 @@ extension NominalType {
         var conformances: [UnsafeMutablePointer<ConceptConformance>?] = []
         
         // if its a struct, we can emit the conformance tables
-        if case let s as StructType = self {
+        if case let s as StructType = getConcreteNominalType() {
             conformances = try concepts
                 .map { concept in try s.generateConformanceMetadata(concept: concept, IGF: &IGF, module: module).conformance }
                 .map (UnsafeMutablePointer.allocInit(value:))
@@ -225,7 +243,7 @@ private extension ConceptType {
     
     func existentialValueWitnesses(structType: StructType, module: Module, IGF: inout IRGenFunction) throws -> [Witness] {
         
-        guard let table = module.witnessTables.first(where: { $0.concept == self && $0.type == structType }) else { fatalError() }
+        guard let table = module.witnessTables.first(where: { $0.concept == self && $0.type == structType }) else { return [] }
         
         return try requiredFunctions
             .map { methodName, _, _ in

@@ -74,7 +74,7 @@ extension ElseIfBlockStmt : StmtTypeProvider {
         
         // get condition type
         let blockScope = SemaScope.capturingScope(parent: scope)
-        let c = try condition.typeForPattern(scope: blockScope)
+        _ = try condition.typeForPattern(scope: blockScope)
         
         // gen types for cond block
         try block.exprs.walkChildren { exp in

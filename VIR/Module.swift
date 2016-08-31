@@ -18,7 +18,8 @@
     - During lowering it holds a reference to a LLVM module and builder
  */
 final class Module : VIRElement {
-    private(set) var functions: Set<Function> = [], typeList: [String: TypeAlias] = [:]
+    private(set) var functions: Set<Function> = []
+    var typeList: [String: TypeAlias] = [:]
     var witnessTables: [VIRWitnessTable] = []
     var globalValues: Set<GlobalValue> = []
     var builder: Builder!
@@ -67,4 +68,8 @@ final class Module : VIRElement {
     
     func dumpIR() { loweredModule?.dump() }
     func dump() { print(vir) }
+    
+    var hasLoweredModule: Bool {
+        return loweredModule != nil
+    }
 }

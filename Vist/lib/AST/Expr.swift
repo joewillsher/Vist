@@ -115,7 +115,6 @@ final class ImplicitCoercionExpr : Expr {
     
     init(expr: Expr, type: Type) {
         self.expr = expr
-        expr._type = type
         self.type = type
         self._type = type
     }

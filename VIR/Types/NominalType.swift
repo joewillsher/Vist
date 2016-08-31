@@ -21,7 +21,7 @@ protocol NominalType : class, Type {
     /// Name this type is given at the global scope of IR
     var irName: String { get }
     
-    var concepts: [ConceptType] { get }
+    var concepts: [ConceptType] { get set }
     
     var isHeapAllocated: Bool { get }
 }
