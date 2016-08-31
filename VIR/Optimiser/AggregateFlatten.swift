@@ -51,7 +51,7 @@ enum AggrFlattenPass : OptimisationPass {
     static func run(on function: Function) throws {
         guard function.hasBody else { return }
         
-        let tree = function.dominator.analsis
+        let tree = function.dominator.analysis
         
         // run the opt pass while it still wants change
         for block in tree where !block.instructions.isEmpty {

@@ -158,7 +158,7 @@ extension Function : VIRLower {
         
         // declare blocks, so break instructions have something to br to
         // loop over the dominance tree
-        for bb in dominator.analsis {
+        for bb in dominator.analysis {
             bb.loweredBlock = try fn.appendBasicBlock(named: bb.name)
             IGF.builder.position(atEndOf: bb.loweredBlock!)
             
@@ -167,7 +167,7 @@ extension Function : VIRLower {
                 param.phi = val
             }
         }
-        for bb in dominator.analsis {
+        for bb in dominator.analysis {
             IGF.builder.position(atEndOf: bb.loweredBlock!)
             for param in bb.parameters ?? [] {
                 param.updateUsesWithLoweredVal(param.phi!)
@@ -175,7 +175,7 @@ extension Function : VIRLower {
         }
         
         // loop over the dominance tree
-        for bb in dominator.analsis {
+        for bb in dominator.analysis {
             IGF.builder.position(atEndOf: bb.loweredBlock!)
             
             for case let inst as VIRLower & Inst in bb.instructions {

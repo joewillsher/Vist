@@ -106,7 +106,7 @@ enum RegisterPromotionPass : OptimisationPass {
         var placedPhiNodes: [BasicBlock: Param] = [:]
         
         var dominatorTree: DominatorTree {
-            return function.dominator.analsis
+            return function.dominator.analysis
         }
     }
     

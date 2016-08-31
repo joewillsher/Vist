@@ -213,21 +213,21 @@ extension VariableGroupDecl : StmtEmitter {
 
 extension FunctionCall/*: ValueEmitter*/ {
     
-    func argOperands(module: Module, gen: VIRGenFunction) throws -> [ManagedValue] {
+    func argOperands(module: Module, gen: VIRGenFunction) throws -> [Operand] {
         guard case let fnType as FunctionType = fnType?.importedType(in: module) else {
             throw VIRError.paramsNotTyped
         }
         
         return try zip(argArr, fnType.cannonicalisedParamTypes()).map { rawArg, paramType in
             var arg = try rawArg.emitRValue(module: module, gen: gen)
-            return try arg.coerceCopy(to: paramType, gen: gen)
+            var copy = try arg.coerceCopy(to: paramType, gen: gen)
+            return Operand(copy.forward(gen))
         }
     }
     
     func emitRValue(module: Module, gen: VIRGenFunction) throws -> AnyManagedValue {
         
-        let argAccessors = try argOperands(module: module, gen: gen)
-        let args = try argAccessors.map { try Operand($0.borrow().value) }
+        let args = try argOperands(module: module, gen: gen)
         
         if let stdlib = try module.getOrInsertStdLibFunction(mangledName: mangledName) {
             return try AnyManagedValue.forUnmanaged(gen.builder.buildFunctionCall(function: stdlib, args: args), gen: gen)
@@ -908,8 +908,7 @@ extension MethodCallExpr : ValueEmitter {
         guard let fnType = fnType else { fatalError() }
         
         // build self and args' values
-        let argAccessors = try argOperands(module: module, gen: gen)
-        let args = try argAccessors.map { try Operand($0.borrow().value) }
+        let args = try argOperands(module: module, gen: gen)
         var selfRef = try object.emitRValue(module: module, gen: gen)
         let selfVal = try selfRef.coerceCopy(to: object._type!.ptrType(), gen: gen)
 

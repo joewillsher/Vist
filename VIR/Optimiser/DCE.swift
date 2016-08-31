@@ -18,7 +18,7 @@ enum DCEPass : OptimisationPass {
         
         try function.blocks?.forEach(UnreachableRemovePass.run(on:))
 
-        for block in function.dominator.analsis.reversed() {
+        for block in function.dominator.analysis.reversed() {
             for inst in block.instructions.reversed() where
                 inst.uses.isEmpty && !inst.hasSideEffects {
                     try inst.eraseFromParent()

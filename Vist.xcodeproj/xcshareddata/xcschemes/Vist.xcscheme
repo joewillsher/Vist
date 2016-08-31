@@ -77,15 +77,15 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "-Ohigh"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "-O0"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "-disable-opt=inline"
+            argument = "-O0"
             isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-disable-opt=inline"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-run-preprocessor"

@@ -22,7 +22,7 @@ struct Analysis<AnalysisType : FunctionAnalysis> {
         self.base = base
     }
     
-    var analsis: AnalysisType {
+    var analysis: AnalysisType {
         mutating get {
             if let computed = _analysis {
                 return computed

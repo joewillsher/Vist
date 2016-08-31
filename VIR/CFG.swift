@@ -19,7 +19,7 @@ enum CFGFoldPass : OptimisationPass {
         
         // iterate up the dom tree, starting at the children; if we change
         // the CFG below, we invalidate this tree and start again
-        for block in function.dominator.analsis.reversed() {
+        for block in function.dominator.analysis.reversed() {
             // First we remove any unconditional, conditional breaks
             for case let condBreakInst as CondBreakInst in block.instructions {
                 
@@ -55,7 +55,7 @@ enum CFGFoldPass : OptimisationPass {
         }
         
         // then squash any pointless breaks
-        for block in function.dominator.analsis.reversed() where block.predecessors.count == 1 {
+        for block in function.dominator.analysis.reversed() where block.predecessors.count == 1 {
             let application = block.applications[0]
             // if it is an unconditional break
             guard case let breakInst as BreakInst = application.breakInst, let pred = application.predecessor else {
