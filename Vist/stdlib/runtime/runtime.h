@@ -21,12 +21,14 @@
 extern "C" {
     
 #define INLINE __attribute__((always_inline))
+    
     // These functions must have a definition in Vist/lib/Sema/Runtime.swift to
     // be exposed to the compiler
 #define RUNTIME_COMPILER_INTERFACE extern "C"
+    
     // These functions must have a stub decl with the @runtime attr in the stdlib
 #define RUNTIME_STDLIB_INTERFACE extern "C"
-
+    
 #else
     
 #define SWIFT_NAME(X) __attribute__((swift_name(#X)))
@@ -41,6 +43,65 @@ extern "C" {
     typedef struct TypeMetadata TypeMetadata;
     typedef struct ExistentialObject ExistentialObject;
     typedef struct WitnessTable WitnessTable;
+    
+#ifdef __cplusplus
+    
+    // Existential
+    RUNTIME_COMPILER_INTERFACE
+    void vist_constructExistential(ConceptConformance *_Nonnull,
+                                   void *_Nonnull, TypeMetadata *_Nonnull,
+                                   bool, ExistentialObject *_Nullable);
+    RUNTIME_COMPILER_INTERFACE
+    void vist_deallocExistentialBuffer(ExistentialObject *_Nonnull);
+    
+    RUNTIME_COMPILER_INTERFACE
+    void *_Nonnull
+    vist_getWitnessMethod(ExistentialObject *_Nonnull,
+                          int32_t, int32_t);
+    
+    RUNTIME_COMPILER_INTERFACE
+    void *_Nonnull
+    vist_getPropertyProjection(ExistentialObject *_Nonnull,
+                               int32_t, int32_t);
+    
+    RUNTIME_COMPILER_INTERFACE
+    void *_Nonnull
+    vist_getExistentialBufferProjection(ExistentialObject *_Nonnull);
+    
+    RUNTIME_COMPILER_INTERFACE
+    void vist_exportExistentialBuffer(ExistentialObject *_Nonnull);
+    
+    RUNTIME_COMPILER_INTERFACE
+    void vist_copyExistentialBuffer(ExistentialObject *_Nonnull,
+                                    ExistentialObject *_Nullable);
+    
+    RUNTIME_COMPILER_INTERFACE
+    void vist_destroyStructAddr(void *_Nonnull,
+                                TypeMetadata *_Nullable);
+    
+    // Casting
+    RUNTIME_COMPILER_INTERFACE
+    bool vist_castExistentialToConcrete(ExistentialObject *_Nonnull,
+                                        TypeMetadata *_Nonnull,
+                                        void *_Nullable);
+    
+    RUNTIME_COMPILER_INTERFACE
+    bool vist_castExistentialToConcept(ExistentialObject *_Nonnull,
+                                       TypeMetadata *_Nonnull,
+                                       ExistentialObject *_Nullable);
+    
+    // introspection
+    RUNTIME_STDLIB_INTERFACE
+    void *_Nonnull vist_runtime_getMetadata(ExistentialObject *_Nonnull);
+    
+    RUNTIME_STDLIB_INTERFACE
+    int64_t vist_runtime_metadataGetSize(void *_Nonnull);
+    
+    RUNTIME_STDLIB_INTERFACE
+    void *_Nonnull vist_runtime_metadataGetName(void *_Nonnull);
+    
+#endif
+    
     
     /// A witness function
     struct Witness {

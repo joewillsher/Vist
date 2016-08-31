@@ -42,7 +42,7 @@ vist_allocObject(TypeMetadata *metadata) {
     // store the object and initial ref count in the box
     refCountedObject->object = object;
     refCountedObject->refCount = 0;
-#ifdef REFCOUNT_DEBUG
+#ifdef RUNTIME_DEBUG
     printf(">alloc  \t%p, rc=%i\n", refCountedObject->object, refCountedObject->refCount);
 #endif
     // return heap pointer to ref counted box
@@ -52,7 +52,7 @@ vist_allocObject(TypeMetadata *metadata) {
 /// Deallocs a heap object
 RUNTIME_COMPILER_INTERFACE
 void vist_deallocObject(RefcountedObject *_Nonnull object) {
-#ifdef REFCOUNT_DEBUG
+#ifdef RUNTIME_DEBUG
     printf(">dealloc\t%p\n", object->object);
 #endif
     if (auto destructor = object->metadata->destructor) {
@@ -65,7 +65,7 @@ void vist_deallocObject(RefcountedObject *_Nonnull object) {
 /// Releases this capture. If its now unowned we dealloc
 RUNTIME_COMPILER_INTERFACE
 void vist_releaseObject(RefcountedObject *_Nonnull object) {
-#ifdef REFCOUNT_DEBUG
+#ifdef RUNTIME_DEBUG
     printf(">release\t%p, rc=%i\n", object->object, object->refCount-1);
 #endif
     // if no more references, we dealloc it
@@ -80,7 +80,7 @@ void vist_releaseObject(RefcountedObject *_Nonnull object) {
 RUNTIME_COMPILER_INTERFACE
 void vist_retainObject(RefcountedObject *_Nonnull object) {
     incrementRefCount(object);
-#ifdef REFCOUNT_DEBUG
+#ifdef RUNTIME_DEBUG
     printf(">retain \t%p, rc=%i\n", object->object, object->refCount);
 #endif
 };
@@ -89,7 +89,7 @@ void vist_retainObject(RefcountedObject *_Nonnull object) {
 RUNTIME_COMPILER_INTERFACE
 void vist_releaseUnownedObject(RefcountedObject *_Nonnull object) {
     decrementRefCount(object);
-#ifdef REFCOUNT_DEBUG
+#ifdef RUNTIME_DEBUG
     printf(">release-unowned \t%p, rc=%i\n", object->object, object->refCount);
 #endif
 };
@@ -97,7 +97,7 @@ void vist_releaseUnownedObject(RefcountedObject *_Nonnull object) {
 /// Deallocate a -1 object if it is unowned
 RUNTIME_COMPILER_INTERFACE
 void vist_deallocUnownedObject(RefcountedObject *_Nonnull object) {
-#ifdef REFCOUNT_DEBUG
+#ifdef RUNTIME_DEBUG
     printf(">dealloc-unowned\t%p, rc=%i\n", object->object, object->refCount);
 #endif
     if (object->refCount == 0)

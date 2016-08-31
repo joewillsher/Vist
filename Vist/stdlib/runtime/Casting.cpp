@@ -8,24 +8,6 @@
 
 #include <cstring>
 
-// introspection
-
-RUNTIME_STDLIB_INTERFACE
-void *vist_runtime_getMetadata(ExistentialObject *ex) {
-    return ex->metadata;
-}
-RUNTIME_STDLIB_INTERFACE
-int64_t vist_runtime_metadataGetSize(void *md) {
-    auto metadata = (TypeMetadata*)md;
-    return metadata->size;
-}
-RUNTIME_STDLIB_INTERFACE
-void *vist_runtime_metadataGetName(void *md) {
-    auto metadata = (TypeMetadata*)md;
-    return (void *)vist_demangle(metadata->name);
-}
-
-
 RUNTIME_COMPILER_INTERFACE
 bool vist_castExistentialToConcrete(ExistentialObject *_Nonnull existential,
                                     TypeMetadata *_Nonnull targetMetadata,
@@ -36,38 +18,53 @@ bool vist_castExistentialToConcrete(ExistentialObject *_Nonnull existential,
     memcpy(out, (void*)existential->projectBuffer(), targetMetadata->size);
     return true;
 }
+
 RUNTIME_COMPILER_INTERFACE
 bool vist_castExistentialToConcept(ExistentialObject *_Nonnull existential,
                                    TypeMetadata *_Nonnull conceptMetadata,
                                    ExistentialObject *_Nullable out) {
     auto conformances = existential->metadata->conceptConformances;
     
-#ifdef REFCOUNT_DEBUG
-    printf("→cast %p %s to %s\n", existential->projectBuffer(), existential->metadata->name, conceptMetadata->name);
+#ifdef RUNTIME_DEBUG
+    printf("→cast %s:\t%p to\t%s\n", existential->metadata->name, (void*)existential->projectBuffer(), conceptMetadata->name);
 #endif
     
     for (int index = 0; index < existential->metadata->numConformances; index += 1) {
         auto conf = *(ConceptConformance **)(conformances[index]);
-#ifdef REFCOUNT_DEBUG
-        printf("   ↳candidate=%p: %s %s\n", conf, conf->concept->name, conceptMetadata->name);
+#ifdef RUNTIME_DEBUG
+        printf("   ↳witness=%p:\t%s\n", conf, conf->concept->name);
 #endif
         // TODO: when the compiler can guarantee only 1 metadata entry per type,
-        //       do a ptr comparison here
-        if (strcmp(conf->concept->name, conceptMetadata->name) == 0) {
-            // if the metadata is the same, we can copy into the out param
-            auto mem = malloc(conceptMetadata->size);
-            memcpy(mem, (void*)existential->projectBuffer(), conceptMetadata->size);
-            *out = ExistentialObject((uintptr_t)mem | true,
-                                     conceptMetadata,
-                                     1, (ConceptConformance **)conf);
-#ifdef REFCOUNT_DEBUG
-            printf("     ↳cast to: %p\n", mem);
+        //       do a ptr comparison of metadata not the name ptrs
+        if (conf->concept->name == conceptMetadata->name) {
+            // if the metadata is the same, we can construct a non local existential
+            
+            auto in = (void*)existential->projectBuffer();
+            auto mem = malloc(existential->metadata->size);
+            if (auto copyConstructor = existential->metadata->copyConstructor) {
+#ifdef RUNTIME_DEBUG
+                printf("     ↳cast_deep_copy %s:\t%p to: %p\n", existential->metadata->name, in, mem);
+                printf("         ↳cast_deep_copy_fn=%p\n", copyConstructor);
 #endif
+                copyConstructor(in, mem);
+            }
+            else {
+                // if there is no copy constructor, we just have to do a shallow copy
+                memcpy(mem, in, existential->metadata->size);
+#ifdef RUNTIME_DEBUG
+                printf("     ↳cast_copy %s:\t%p to: %p\n", conceptMetadata->name, in, mem);
+#endif
+            }
+#ifdef RUNTIME_DEBUG
+            printf("-→was cast to: %p\n", mem);
+#endif
+            *out = ExistentialObject((uintptr_t)mem, conceptMetadata, 1,
+                                     (ConceptConformance **)conf);
             return true;
         }
     }
-#ifdef REFCOUNT_DEBUG
-    printf("   ↳no match found\n");
+#ifdef RUNTIME_DEBUG
+    printf("     ↳no match found\n");
 #endif
     return false;
 }

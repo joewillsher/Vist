@@ -355,13 +355,14 @@
 		D4851F4A1C28A08A0009233E /* example.s */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; name = example.s; path = RUN/example.s; sourceTree = "<group>"; };
 		D48739581C9D4E0B00D4D1C2 /* example_.vir */ = {isa = PBXFileReference; lastKnownFileType = text; name = example_.vir; path = RUN/example_.vir; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		D48837D01D758EE200E50B18 /* Demangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Demangle.cpp; path = stdlib/runtime/Demangle.cpp; sourceTree = "<group>"; };
+		D48837D31D7709D600E50B18 /* Introspection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Introspection.cpp; path = stdlib/runtime/Introspection.cpp; sourceTree = "<group>"; };
 		D488C2411D405942000735DA /* Verify.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Verify.swift; sourceTree = "<group>"; };
 		D488C2441D40595B000735DA /* RegisterPromotion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RegisterPromotion.swift; path = Optimiser/RegisterPromotion.swift; sourceTree = "<group>"; };
 		D489F3BD1C1E392D00254FFC /* example.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vist; path = RUN/example.vist; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		D489F3C01C1E396E00254FFC /* example */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = example; path = RUN/example; sourceTree = "<group>"; };
 		D49248531CF77883009FD509 /* StdLibInline.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StdLibInline.swift; path = Optimiser/StdLibInline.swift; sourceTree = "<group>"; };
 		D4960F061D7211910058D9EF /* Accessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Accessor.swift; path = lib/VIRGen/Accessor.swift; sourceTree = "<group>"; };
-		D49BC2971CE25B1C0071D3AD /* Metadata.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Metadata.cpp; path = stdlib/runtime/Metadata.cpp; sourceTree = "<group>"; };
+		D49BC2971CE25B1C0071D3AD /* Existential.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Existential.cpp; path = stdlib/runtime/Existential.cpp; sourceTree = "<group>"; };
 		D49BC2981CE25B1C0071D3AD /* RefcountedObject.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = RefcountedObject.cpp; path = stdlib/runtime/RefcountedObject.cpp; sourceTree = "<group>"; };
 		D49BC29B1CE27F8C0071D3AD /* Casting.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Casting.cpp; path = stdlib/runtime/Casting.cpp; sourceTree = "<group>"; };
 		D4A0001C1CC7C46500157D90 /* GlobalInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GlobalInst.swift; path = Instructions/GlobalInst.swift; sourceTree = "<group>"; };
@@ -537,11 +538,12 @@
 			isa = PBXGroup;
 			children = (
 				D4CA32071CEA7013009C2B10 /* runtime.h */,
-				D49BC2971CE25B1C0071D3AD /* Metadata.cpp */,
-				D4E225BB1D6DDC2D0055A5CA /* Dispatch.s */,
+				D49BC2971CE25B1C0071D3AD /* Existential.cpp */,
 				D49BC2981CE25B1C0071D3AD /* RefcountedObject.cpp */,
 				D49BC29B1CE27F8C0071D3AD /* Casting.cpp */,
 				D48837D01D758EE200E50B18 /* Demangle.cpp */,
+				D48837D31D7709D600E50B18 /* Introspection.cpp */,
+				D4E225BB1D6DDC2D0055A5CA /* Dispatch.s */,
 			);
 			name = Runtime;
 			sourceTree = "<group>";
