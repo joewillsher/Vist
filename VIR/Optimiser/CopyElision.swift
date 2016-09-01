@@ -18,7 +18,6 @@ enum CopyElisionPass : OptimisationPass {
     
     static func run(on function: Function) throws {
         
-        
         for block in function.dominator.analysis {
             
             instPass: for inst in block.instructions {

@@ -114,15 +114,6 @@ enum RegisterPromotionPass : OptimisationPass {
         
         guard function.hasBody else { return }
         
-        for case let varInst as VariableInst in function.instructions {
-            let v = varInst.value.value!
-            try varInst.eraseFromParent(replacingAllUsesWith: v)
-        }
-        for case let varInst as VariableAddrInst in function.instructions {
-            let v = varInst.addr.value!
-            try varInst.eraseFromParent(replacingAllUsesWith: v)
-        }
-        
         for block in function.blocks! {
             for case let allocInst as AllocInst in block.instructions {
                 var promoter = AllocStackPromoter(function: function, alloc: allocInst)
@@ -150,10 +141,7 @@ extension RegisterPromotionPass.AllocStackPromoter {
     /// - postcondition: self's `lastStoreInBlock` dictionary is an updated
     ///                  list of all live uses of `alloc`
     private mutating func pruneAllocUsage() throws {
-        
-        let blocks = alloc.uses.map { $0.user!.parentBlock! }
-        
-        for block in Set(blocks) {
+        for block in alloc.useBlocks {
             lastStoreInBlock[block] = try promoteAllocation(in: block)
         }
     }
@@ -184,6 +172,7 @@ extension RegisterPromotionPass.AllocStackPromoter {
                 // remove the last store
                 if let last = lastStore {
                     try last.eraseFromParent()
+                    OptStatistics.storesPromotedToPhiUse += 1
                 }
                 // and update it
                 lastStore = storeInst
@@ -208,6 +197,10 @@ extension RegisterPromotionPass.AllocStackPromoter {
                 try replaceLoad(load, with: getLiveInValue(of: load.parentBlock!)!)
                 OptStatistics.loadsPromotedToPhiUse += 1
             }
+        }
+        // remove deallocations
+        for dealloc in alloc.deallocInsts {
+            try dealloc.eraseFromParent()
         }
         
         // the stores can be removed; their value is being sent to the dominator
@@ -239,6 +232,9 @@ extension RegisterPromotionPass.AllocStackPromoter {
             case let tupleElement as TupleElementPtrInst:
                 projection.append(tupleElement)
                 op = tupleElement.tuple.value!
+            case let addr as VariableAddrInst:
+                projection.append(addr)
+                op = addr.addr.value!
             default:
                 break allocLoop
             }
@@ -259,12 +255,17 @@ extension RegisterPromotionPass.AllocStackPromoter {
                 let el = try TupleExtractInst(tuple: v, index: gep.elementIndex)
                 try gep.parentBlock!.insert(inst: el, after: gep)
                 v = el
+            case let addr as VariableAddrInst:
+                let variable = VariableInst(value: v, irName: addr.irName)
+                try addr.parentBlock!.insert(inst: variable, after: addr)
+                v = variable
             default: fatalError()
             }
             try proj.eraseFromParent()
         }
         
         try load.eraseFromParent(replacingAllUsesWith: v)
+        OptStatistics.loadsPromotedToPhiUse += 1
     }
     
     /// Replalces every use of the alloc memory in the iterated join set of the tree with
@@ -428,20 +429,50 @@ fileprivate extension RegisterPromotionPass.AllocStackPromoter {
     /// - note: returns true if the only uses are loads
     ///         and stores
     var isRegisterPromotable: Bool {
-        for use in alloc.uses {
-            
+        return alloc.isRegisterPromotable
+    }
+}
+private extension Inst {
+    var isRegisterPromotable: Bool {
+        for use in uses {
             switch use.user {
-            case is LoadInst, is StoreInst:
+            case is LoadInst, is StoreInst, is DeallocStackInst:
                 continue
             case is StructElementPtrInst, is TupleElementPtrInst:
                 for use in use.user!.uses {
                     guard use.user is LoadInst else { return false }
                 }
+            case let addr as VariableAddrInst:
+                if !addr.isRegisterPromotable { return false }
             default:
                 return false
             }
         }
         return true
+    }
+    var useBlocks: Set<BasicBlock> {
+        
+        return Set(uses.flatMap { use -> [BasicBlock] in
+            let user = use.user!
+            switch user {
+            case is VariableAddrInst, is StructElementPtrInst, is TupleElementPtrInst:
+                return [user.parentBlock!] + user.useBlocks
+            default:
+                return [user.parentBlock!]
+            }
+            })
+    }
+}
+extension AllocInst {
+    var deallocInsts: [Inst] {
+        return uses.flatMap {
+            switch $0.user {
+            case is DeallocStackInst, is DestroyAddrInst:
+                return $0.user
+            default:
+                return nil
+            }
+        }
     }
 }
 

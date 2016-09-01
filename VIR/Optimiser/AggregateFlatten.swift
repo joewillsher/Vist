@@ -51,6 +51,16 @@ enum AggrFlattenPass : OptimisationPass {
     static func run(on function: Function) throws {
         guard function.hasBody else { return }
         
+        // First remove all variable insts
+        for case let varInst as VariableInst in function.instructions {
+            let v = varInst.value.value!
+            try varInst.eraseFromParent(replacingAllUsesWith: v)
+        }
+        for case let varInst as VariableAddrInst in function.instructions {
+            let v = varInst.addr.value!
+            try varInst.eraseFromParent(replacingAllUsesWith: v)
+        }
+        
         let tree = function.dominator.analysis
         
         // run the opt pass while it still wants change
