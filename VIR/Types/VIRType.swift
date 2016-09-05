@@ -6,6 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
+/*
 struct VIRType<T : Type> {
     let type: T
     
@@ -55,4 +56,4 @@ struct AnyType : Type {
     
     var vir: String { return type.vir }
 }
-
+*/

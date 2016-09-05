@@ -50,7 +50,7 @@ final class ReturnInst : Inst {
 }
 
 
-extension Builder {
+extension VIRBuilder {
     
     @discardableResult
     func buildReturnVoid() throws -> ReturnInst {

@@ -6,9 +6,13 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
+protocol Builder : class {
+    weak var module: Module! { get set }
+    init(module: Module)
+}
 
 /// Handles adding instructions to the module
-final class Builder {
+final class VIRBuilder : Builder {
     weak var module: Module!
     var insertPoint = InsertPoint()
     
@@ -51,7 +55,20 @@ final class Builder {
     }
 }
 
-extension Builder {
+final class AIRBuilder : Builder {
+    weak var module: Module!
+    var insertPoint = InsertPoint(block: nil)
+    
+    /// AIR builder just needs a block; it inserts at the beginning
+    struct InsertPoint {
+        var block: AIRBlock?
+    }
+    var registerIndex: Int = 0
+    
+    init(module: Module) { self.module = module }
+}
+
+extension VIRBuilder {
     
     /// Inserts the instruction to the end of the block, and updates its
     /// parent and the builder's insert point
@@ -61,7 +78,7 @@ extension Builder {
         block.append(inst)
         insertPoint.inst = inst
     }
-    
+
     /// Handles adding the instruction to the block -- then returns it
     func _add<I: Inst>(instruction: I) throws -> I {
         try addToCurrentBlock(inst: instruction)
@@ -75,4 +92,27 @@ extension Builder {
         return inst
     }
 
+}
+extension AIRBuilder {
+    
+    /// Inserts the instruction to the end of the block, and updates its
+    /// parent and the builder's insert point
+    func addToCurrentBlock<Op: AIROp>(op: Op) throws {
+        guard let block = insertPoint.block else { throw VIRError.noParentBlock }
+        block.insts.append(op)
+    }
+
+    /// Handles adding the instruction to the block -- then returns it
+    func _add<Op: AIROp>(_ op: Op) throws -> Op {
+        try addToCurrentBlock(op: op)
+        return op
+    }
+    
+    /// Build an instruction and add to the current block
+    @discardableResult
+    func build<Op : AIROp>(_ op: Op) throws -> Op {
+        try addToCurrentBlock(op: op)
+        return op
+    }
+    
 }

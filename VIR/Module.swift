@@ -13,7 +13,7 @@
  This contians a record of
     - Defined functions, using their mangled names and cannonical types
     - A list of nominal types for the module.
-    - A `Builder` instance which can be used to modify the module by adding
+    - A `VIRBuilder` instance which can be used to modify the module by adding
       instructions
     - During lowering it holds a reference to a LLVM module and builder
  */
@@ -22,11 +22,12 @@ final class Module : VIRElement {
     var typeList: [String: TypeAlias] = [:]
     var witnessTables: [VIRWitnessTable] = []
     var globalValues: Set<GlobalValue> = []
-    var builder: Builder!
+    var builder: VIRBuilder!
     var loweredModule: LLVMModule! = nil
     var loweredBuilder: LLVMBuilder! = nil
     
-    init() { builder = Builder(module: self) }
+    init() { self.builder = VIRBuilder(module: self) }
+    
     var module: Module { return self }
     
     

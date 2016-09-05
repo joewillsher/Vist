@@ -42,6 +42,11 @@ class Operand : VIRTyped {
         loweredValue = val
     }
     
+    final private(set) var airValue: AIRValue? = nil
+    func setAirValue(_ val: AIRValue) {
+        airValue = val
+    }
+    
     init(optionalValue value: Value?) {
         self.value = value
         self.user = nil

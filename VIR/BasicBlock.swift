@@ -203,7 +203,7 @@ extension BasicBlock.BlockApplication {
     var isEntry: Bool { return predecessor == nil }
 }
 
-extension Builder {
+extension VIRBuilder {
     
     /// Appends this block to the function. Thus does not modify the insert
     /// point, make any breaks to this block, or apply any params to it

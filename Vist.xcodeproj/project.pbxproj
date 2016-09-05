@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D4060DB51D7C9A4E009F363A /* AIR.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4060DB41D7C9A4E009F363A /* AIR.swift */; };
+		D4060DB61D7C9A4E009F363A /* AIR.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4060DB41D7C9A4E009F363A /* AIR.swift */; };
+		D4060DBA1D7CA008009F363A /* MachineFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4060DB91D7CA008009F363A /* MachineFunction.swift */; };
+		D4060DBB1D7CA008009F363A /* MachineFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4060DB91D7CA008009F363A /* MachineFunction.swift */; };
 		D411C8951C8DB61D00478988 /* BreakInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D411C8941C8DB61D00478988 /* BreakInst.swift */; };
 		D411C8961C8DB61D00478988 /* BreakInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D411C8941C8DB61D00478988 /* BreakInst.swift */; };
 		D411C8981C8DD00000478988 /* DCE.swift in Sources */ = {isa = PBXBuildFile; fileRef = D411C8971C8DD00000478988 /* DCE.swift */; };
@@ -258,6 +262,8 @@
 		D40239021CFA2E8800BBF0AA /* Operators.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = Operators.vist; path = stdlib/Operators.vist; sourceTree = "<group>"; };
 		D40239031CFA2E8800BBF0AA /* Other.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = Other.vist; path = stdlib/Other.vist; sourceTree = "<group>"; };
 		D40239041CFA2E8800BBF0AA /* String.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = String.vist; path = stdlib/String.vist; sourceTree = "<group>"; };
+		D4060DB41D7C9A4E009F363A /* AIR.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIR.swift; path = AIR/AIR.swift; sourceTree = "<group>"; };
+		D4060DB91D7CA008009F363A /* MachineFunction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MachineFunction.swift; path = lib/Codegen/MachineFunction.swift; sourceTree = "<group>"; };
 		D411C8941C8DB61D00478988 /* BreakInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BreakInst.swift; path = Instructions/BreakInst.swift; sourceTree = "<group>"; };
 		D411C8971C8DD00000478988 /* DCE.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DCE.swift; path = Optimiser/DCE.swift; sourceTree = "<group>"; };
 		D41BF54A1C5CD797004A1962 /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -426,6 +432,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		D4060DB71D7C9A51009F363A /* AIR */ = {
+			isa = PBXGroup;
+			children = (
+				D4060DB41D7C9A4E009F363A /* AIR.swift */,
+			);
+			name = AIR;
+			sourceTree = "<group>";
+		};
+		D4060DB81D7C9FED009F363A /* Codegen */ = {
+			isa = PBXGroup;
+			children = (
+				D4060DB91D7CA008009F363A /* MachineFunction.swift */,
+			);
+			name = Codegen;
+			sourceTree = "<group>";
+		};
 		D408D9531C8A0905002E364D /* Interpreter */ = {
 			isa = PBXGroup;
 			children = (
@@ -532,6 +554,7 @@
 				D457F6191C835EF40095EDED /* VIRGen */,
 				D409D2161C86018A002D5863 /* VIRLower */,
 				D431F4C01C556DF5005D439F /* LLVM Optimiser */,
+				D4060DB81D7C9FED009F363A /* Codegen */,
 				D408D9531C8A0905002E364D /* Interpreter */,
 			);
 			name = Compiler;
@@ -627,6 +650,7 @@
 				D4DB9D641C1DFB8700503153 /* Source */,
 				D43B39E71C8A0F920039FB2E /* Include */,
 				D47D4BE01C38427200B22B3C /* Docs */,
+				D4060DB71D7C9A51009F363A /* AIR */,
 				D457F6221C83658C0095EDED /* VIR */,
 				D47FF07C1B812052003F9920 /* Vist */,
 				D43B39E81C8A0FA60039FB2E /* Error.swift */,
@@ -896,6 +920,7 @@
 				D43B3A181C8A105B0039FB2E /* ASTNode.swift in Sources */,
 				D43B39B51C8A0F140039FB2E /* GenericType.swift in Sources */,
 				D43B39F91C8A100E0039FB2E /* CommandLine.swift in Sources */,
+				D4060DBB1D7CA008009F363A /* MachineFunction.swift in Sources */,
 				D43B39A41C8A0EDF0039FB2E /* VIR.swift in Sources */,
 				D43B39DD1C8A0F3A0039FB2E /* LiteralInst.swift in Sources */,
 				D4D8B25E1D0301BC00D1F455 /* RuntimeObject.swift in Sources */,
@@ -934,6 +959,7 @@
 				D43B3A541C8A11410039FB2E /* VIRLower.swift in Sources */,
 				D43B39EA1C8A0FA60039FB2E /* Error.swift in Sources */,
 				D427DA9D1CA05976000708E2 /* Param.swift in Sources */,
+				D4060DB61D7C9A4E009F363A /* AIR.swift in Sources */,
 				D43B3A241C8A105B0039FB2E /* Stmt.swift in Sources */,
 				D4D3868B1D39B62700820E43 /* Explosion.swift in Sources */,
 				D4A000371CCA7FFA00157D90 /* OperandLower.swift in Sources */,
@@ -1054,6 +1080,7 @@
 				D43B3A381C8A10C80039FB2E /* ExprSema.swift in Sources */,
 				D43B39BE1C8A0F140039FB2E /* TypeAlias.swift in Sources */,
 				D43B39E21C8A0F3A0039FB2E /* VariableInst.swift in Sources */,
+				D4060DB51D7C9A4E009F363A /* AIR.swift in Sources */,
 				D4A000361CCA7FFA00157D90 /* OperandLower.swift in Sources */,
 				D43B39F81C8A100E0039FB2E /* CommandLine.swift in Sources */,
 				D43B39AE1C8A0F140039FB2E /* BuiltinType.swift in Sources */,
@@ -1108,6 +1135,7 @@
 				D4A000241CCA7E8F00157D90 /* CFGLower.swift in Sources */,
 				D488C2421D405942000735DA /* Verify.swift in Sources */,
 				D4728BE71C960E22003294B0 /* Folding.swift in Sources */,
+				D4060DBA1D7CA008009F363A /* MachineFunction.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

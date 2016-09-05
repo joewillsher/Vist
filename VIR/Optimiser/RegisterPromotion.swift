@@ -195,7 +195,6 @@ extension RegisterPromotionPass.AllocStackPromoter {
         for block in dominatorTree {
             for case let load as LoadInst in block.instructions {
                 try replaceLoad(load, with: getLiveInValue(of: load.parentBlock!)!)
-                OptStatistics.loadsPromotedToPhiUse += 1
             }
         }
         // remove deallocations
@@ -268,7 +267,7 @@ extension RegisterPromotionPass.AllocStackPromoter {
         OptStatistics.loadsPromotedToPhiUse += 1
     }
     
-    /// Replalces every use of the alloc memory in the iterated join set of the tree with
+    /// Replaces every use of the alloc memory in the iterated join set of the tree with
     /// a phi node variable passed as a block param
     ///
     /// Phi placement algorithm detailed in [A Linear Tifme Algorgithm for Placing φ Nodes
@@ -451,7 +450,6 @@ private extension Inst {
         return true
     }
     var useBlocks: Set<BasicBlock> {
-        
         return Set(uses.flatMap { use -> [BasicBlock] in
             let user = use.user!
             switch user {
@@ -463,7 +461,7 @@ private extension Inst {
             })
     }
 }
-extension AllocInst {
+private extension AllocInst {
     var deallocInsts: [Inst] {
         return uses.flatMap {
             switch $0.user {

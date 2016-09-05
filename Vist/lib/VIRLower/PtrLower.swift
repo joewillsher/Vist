@@ -99,7 +99,7 @@ extension CopyAddrInst : VIRLower {
                 return outAddr.loweredValue!
             }
             
-            _ = try IGF.builder.buildApply(function: copyConstructor.loweredFunction!.function, args: [addr.loweredValue!, outAddr.loweredValue!])
+            _ = try IGF.builder.buildCall(function: copyConstructor.loweredFunction!, args: [addr.loweredValue!, outAddr.loweredValue!])
             return outAddr.loweredValue!
             
         default:

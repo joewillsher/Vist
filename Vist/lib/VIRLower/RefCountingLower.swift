@@ -9,9 +9,7 @@
 extension AllocObjectInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         
-//        let metadataMem = try IGF.builder.buildAlloca(type: Runtime.typeMetadataType.importedType(in: module).lowered(module: module))
         let metadata = try storedType.getLLVMTypeMetadata(IGF: &IGF, module: module)
-//        try IGF.builder.buildStore(value: metadata, in: <#T##LLVMValue#>)
         
         let ref = module.getRuntimeFunction(.allocObject, IGF: &IGF)
         let alloced = try IGF.builder.buildCall(function: ref,
@@ -34,7 +32,7 @@ extension RetainInst : VIRLower {
 extension ReleaseInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         let ref = module.getRuntimeFunction(unowned ? .releaseUnownedObject : .releaseObject,
-                                                 IGF: &IGF)
+                                            IGF: &IGF)
         return try IGF.builder.buildCall(function: ref,
                                          args: [object.bitcastToOpaqueRefCountedType()],
                                          name: irName)
@@ -45,7 +43,7 @@ extension ReleaseInst : VIRLower {
 extension DeallocObjectInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         let ref = module.getRuntimeFunction(unowned ? .deallocUnownedObject : .deallocObject,
-                                                 IGF: &IGF)
+                                            IGF: &IGF)
         return try IGF.builder.buildCall(function: ref,
                                          args: [object.bitcastToOpaqueRefCountedType()],
                                          name: irName)

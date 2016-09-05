@@ -30,15 +30,15 @@ final class GlobalRefAccessor : Accessor {
 /// and loads are
 final class GlobalIndirectRefAccessor : Accessor {
     var mem: LValue
-    unowned var module: Module
+    unowned var builder: VIRBuilder
     
-    init(memory: LValue, module: Module) {
+    init(memory: LValue, builder: VIRBuilder) {
         self.mem = memory
-        self.module = module
+        self.builder = builder
     }
     
     private lazy var memsubsc: LValue = { [unowned self] in
-        let mem = try! self.module.builder.build(LoadInst(address: self.mem))
+        let mem = try! self.builder.build(LoadInst(address: self.mem))
         return try! OpaqueLValue(rvalue: mem)
         }()
     

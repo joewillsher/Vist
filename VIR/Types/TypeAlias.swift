@@ -61,6 +61,7 @@ extension TypeAlias : NominalType {
     }
     var explicitName: String { return targetType.explicitName }
     var mangledName: String { return targetType.mangledName }
+    func machineType() -> AIRType { return targetType.machineType() }
 }
 
 extension TypeAlias {
@@ -113,6 +114,7 @@ final class RefCountedType : NominalType {
     }
     var explicitName: String { return targetType.explicitName }
     var mangledName: String { return targetType.mangledName }
+    func machineType() -> AIRType { return targetType.machineType() }
 }
 
 

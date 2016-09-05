@@ -10,11 +10,11 @@ typealias Cleanup = (VIRGenFunction, ManagedValue) throws -> ()
 
 final class VIRGenFunction {
     var managedValues: [ManagedValue] = []
-    let scope: VIRGenScope, builder: Builder
+    let scope: VIRGenScope, builder: VIRBuilder
     
     var module: Module { return builder.module }
     
-    init(scope: VIRGenScope, builder: Builder) {
+    init(scope: VIRGenScope, builder: VIRBuilder) {
         self.scope = scope
         self.builder = builder
     }
@@ -334,7 +334,7 @@ extension AnyManagedValue {
     
 }
 
-extension Builder {
+extension VIRBuilder {
     func buildUnmanaged<I : Inst>(_ inst: I, gen: VIRGenFunction) throws -> Managed<I> {
         try addToCurrentBlock(inst: inst)
         return Managed<I>.forUnmanaged(inst, gen: gen)

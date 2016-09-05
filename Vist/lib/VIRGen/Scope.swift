@@ -16,7 +16,7 @@ final class VIRGenScope {
     /// Deleagte for managing captured variables 
     var captureDelegate: CaptureDelegate?
     /// The point from which we entered this scope
-    var breakPoint: Builder.InsertPoint?
+    var breakPoint: VIRBuilder.InsertPoint?
     
     init(module: Module) {
         self.module = module
@@ -25,7 +25,7 @@ final class VIRGenScope {
     init(parent: VIRGenScope,
          function: Function?,
          captureDelegate: CaptureDelegate? = nil,
-         breakPoint: Builder.InsertPoint? = nil) {
+         breakPoint: VIRBuilder.InsertPoint? = nil) {
         self.parent = parent
         self.function = function
         self.variables = [:]
@@ -37,7 +37,7 @@ final class VIRGenScope {
     static func capturing(parent: VIRGenScope,
                           function: Function,
                           captureDelegate: CaptureDelegate,
-                          breakPoint: Builder.InsertPoint) -> VIRGenScope {
+                          breakPoint: VIRBuilder.InsertPoint) -> VIRGenScope {
         return VIRGenScope(parent: parent,
                      function: function, 
                      captureDelegate: captureDelegate,

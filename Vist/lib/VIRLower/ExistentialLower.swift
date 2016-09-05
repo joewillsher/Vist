@@ -195,7 +195,7 @@ extension StructType {
 //            witnessTable.deallocateCapacity(1)
 //        }
         
-        let witnesses = try concept.existentialWitnessOffsets(structType: self, IGF: &IGF)
+        let witnesses = try concept.existentialWitnessOffsets(structType: self, module: module, IGF: &IGF)
             .map(UnsafeMutablePointer.allocInit(value:))
         let witnessOffsets = witnesses.copyBuffer()
         let metadata = try UnsafeMutablePointer.allocInit(value: concept.getTypeMetadata(IGF: &IGF, module: module))!
@@ -232,8 +232,8 @@ extension Array {
 
 private extension ConceptType {
     
-    func existentialWitnessOffsets(structType: StructType, IGF: inout IRGenFunction) throws -> [Int32] {
-        let conformingType = structType.lowered(module: Module()) as LLVMType
+    func existentialWitnessOffsets(structType: StructType, module: Module, IGF: inout IRGenFunction) throws -> [Int32] {
+        let conformingType = structType.lowered(module: module) as LLVMType
         
         // a table of offsets
         return try requiredProperties

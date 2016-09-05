@@ -52,6 +52,9 @@ extension ConceptType {
         return module.getOrInsert(type: TypeAlias(name: name, targetType: c))
     }
 
+    func machineType() -> AIRType {
+        return Runtime.existentialObjectType.machineType()
+    }
 }
 
 extension ConceptType : Hashable {

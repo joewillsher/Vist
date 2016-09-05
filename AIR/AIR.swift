@@ -1,0 +1,293 @@
+//
+//  AIR.swift
+//  Vist
+//
+//  Created by Josef Willsher on 04/09/2016.
+//  Copyright © 2016 vistlang. All rights reserved.
+//
+
+/// A value which is representable in VIR
+protocol AIRValue {
+    var air: String { get }
+    var valueAIR: String { get }
+    func dagNode() -> DAGNode
+}
+extension AIRValue {
+    var valueAIR: String { return air }
+}
+
+/// An AIR value who's identity is tied to the operation -- these appear
+/// top level in an AIRBB and cannot be copied into each use
+protocol AIROp : class, AIRValue {
+    var result: AIRRegister { get set }
+}
+extension AIROp {
+    var valueAIR: String { return result.air }
+}
+
+struct AIRArg {
+    var val: AIRValue, type: AIRType
+    
+    init(value: AIRValue, type: AIRType) {
+        self.val = value
+        self.type = type
+    }
+    init(reg: AIRRegister, type: AIRType) {
+        self.val = reg
+        self.type = type
+    }
+    init(imm: AIRImm) {
+        self.val = imm
+        self.type = imm.type
+    }
+}
+
+
+final class AIRFunction : AIRImm {
+    var blocks: [AIRBlock] = []
+    var params: [Param]
+    var type: AIRType, name: String
+    
+    init(name: String, type: AIRType, params: [Param]) {
+        self.name = name
+        self.type = type
+        self.params = params
+    }
+    
+    var airType: AIRType? { return type }
+    var air: String { return "@\(name)" }
+    
+    final class Param : AIRValue {
+        let name: String, type: AIRType
+        var register: AIRRegister
+        
+        init(name: String, type: AIRType, register: AIRRegister) {
+            self.name = name
+            self.type = type
+            self.register = register
+        }
+        
+        var result: AIRRegister {
+            get { return register }
+            set { register = newValue }
+        }
+    }
+}
+
+extension AIRFunction.Param {
+    var air: String { return register.air }
+    var airType: AIRType? { return type }
+}
+
+typealias AIRGenFunction = (builder: AIRBuilder, module: Module)
+
+final class AIRBlock {
+    var insts: [AIROp] = []
+}
+
+
+enum AIRType {
+    case int(size: Int), float(size: Int), void
+    case aggregate(elements: [AIRType])
+    indirect case named(name: String, type: AIRType)
+    indirect case function(params: [AIRType], returns: AIRType)
+    
+    var air: String {
+        switch self {
+        case .int(let size): return "i\(size)"
+        case .float(let size): return "f\(size)"
+        case .function: return "i64"
+        case .named(let name, _): return "%\(name)"
+        case .void: return "void"
+        case .aggregate(let els): return "{\(els.map { $0.air }.joined(separator: ", "))}"
+        }
+    }
+}
+
+
+
+
+
+
+
+protocol AIRImm : AIRValue {
+    var type: AIRType { get }
+}
+
+// immediates are constructed inline
+struct IntImm : AIRImm {
+    let value: Int, size: Int
+    
+    var type: AIRType { return .int(size: size) }
+    var air: String { return "\(type.air) \(value)"  }
+}
+struct FloatImm : AIRImm {
+    let value: Int, size: Int
+    
+    var type: AIRType { return .int(size: size) }
+    var air: String { return "\(type.air) \(value)"  }
+}
+struct AggregateImm : AIRImm {
+    let elements: [AIRValue]
+    var type: AIRType
+    
+    var air: String { return "\(type.air) { \(elements.map { $0.valueAIR }.joined(separator: ", ")) }" }
+}
+
+// ops are calls to processor ops
+final class CallOp : AIROp {
+    let function: AIRArg
+    let args: [AIRArg]
+    var result: AIRRegister
+    let returnType: AIRType
+    
+    init(vir: Function, args: [AIRArg], result: AIRRegister) {
+        self.function = AIRArg(imm: vir.airFunction!)
+        self.returnType = vir.type.returns.machineType()
+        self.args = args
+        self.result = result
+    }
+    
+    var airType: AIRType? { return returnType }
+    var air: String { return "\(result.air) = call \(returnType.air) \(function.val.air) (\(args.map { $0.val.valueAIR }.joined(separator: ", ")))" }
+}
+// ops are calls to processor ops
+final class RetOp : AIROp {
+    let val: AIRArg
+    /// The return addr
+    var result: AIRRegister
+    
+    init(val: AIRArg, result: AIRRegister) {
+        self.val = val
+        self.result = result
+    }
+    
+    var air: String { return "ret \(val.type.air) \(val.val.valueAIR) // to \(result.air)" }
+}
+
+/// A processor op
+final class BuiltinOp : AIROp {
+    let op: AIROpCode
+    let arg1: AIRArg, arg2: AIRArg
+    var result: AIRRegister
+    let returnType: AIRType
+    
+    init(op: AIROpCode, arg1: AIRArg, arg2: AIRArg, returnType: AIRType, result: AIRRegister) {
+        self.op = op
+        self.arg1 = arg1; self.arg2 = arg2
+        self.returnType = returnType
+        self.result = result
+    }
+    
+    var airType: AIRType? { return returnType }
+    var air: String { return "\(result.air) = \(returnType.air) \(op.rawValue) \(arg1.val.valueAIR), \(arg2.val.valueAIR)" }
+    var args: [AIRArg] { return [arg1, arg2] }
+}
+
+enum AIROpCode : String {
+    case add, mul, sub, div
+}
+
+
+
+
+protocol AIRRegister : AIRValue {
+    var air: String { get }
+}
+
+struct HighLevelRegister : AIRRegister {
+    let id: Int
+    var air: String { return "%reg\(id)" }
+}
+enum X86Register : String, AIRRegister {
+    case eax, ebp, esp// ...
+    var air: String { return "%\(rawValue)" }
+}
+
+extension AIRBuilder {
+    func getRegister() -> HighLevelRegister {
+        defer { registerIndex += 1 }
+        return HighLevelRegister(id: registerIndex)
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+protocol AIRLower {
+    func lowerVIRToAIR(builder: AIRBuilder) throws -> AIRValue
+}
+extension Operand {
+    func getAIR(builder: AIRBuilder) throws -> AIRValue {
+        if let lowered = airValue { return lowered }
+        guard case let val as AIRLower & Value = value else { fatalError() }
+        let air = try val.lowerVIRToAIR(builder: builder)
+        val.updateUsesWithAIR(air)
+        if case let op as AIROp = air { return op.result }
+        return air
+    }
+}
+
+extension IntLiteralInst : AIRLower {
+    func lowerVIRToAIR(builder: AIRBuilder) throws -> AIRValue {
+        return IntImm(value: value, size: 64)
+    }
+}
+extension FunctionCallInst : AIRLower {
+    func lowerVIRToAIR(builder: AIRBuilder) throws -> AIRValue {
+        return try builder.build(CallOp(vir: function,
+                                        args: try functionArgs
+                                            .map { try AIRArg(value: $0.getAIR(builder: builder), type: $0.type!.machineType()) },
+                                        result: builder.getRegister())).result
+    }
+}
+extension ReturnInst : AIRLower {
+    func lowerVIRToAIR(builder: AIRBuilder) throws -> AIRValue {
+        return try builder.build(RetOp(val: AIRArg(value: returnValue.getAIR(builder: builder), type: returnValue.type!.machineType()),
+                                       result: builder.getRegister())).result
+    }
+}
+extension StructInitInst : AIRLower {
+    func lowerVIRToAIR(builder: AIRBuilder) throws -> AIRValue {
+        return AggregateImm(elements: try args.map { try $0.getAIR(builder: builder) }, type: type!.machineType())
+    }
+}
+extension TupleCreateInst : AIRLower {
+    func lowerVIRToAIR(builder: AIRBuilder) throws -> AIRValue {
+        return AggregateImm(elements: try args.map { try $0.getAIR(builder: builder) }, type: type!.machineType())
+    }
+}
+extension Param : AIRLower {
+    func lowerVIRToAIR(builder: AIRBuilder) throws -> AIRValue {
+        return AIRFunction.Param(name: name, type: type!.machineType(), register: builder.getRegister())
+    }
+}
+extension BuiltinInstCall : AIRLower {
+    func lowerVIRToAIR(builder: AIRBuilder) throws -> AIRValue {
+        let args = try self.args.map {
+            try AIRArg(value: $0.getAIR(builder: builder), type: $0.type!.machineType())
+        }
+        let op: AIROpCode
+        switch inst {
+        case .idiv:         op = .div
+        case .iaddoverflow: op = .add
+        default:
+            fatalError("TODO")
+        }
+        return try builder.build(BuiltinOp(op: op, arg1: args[0],
+                                           arg2: args[1], returnType: returnType.machineType(),
+                                           result: builder.getRegister())).result
+    }
+}
+
+
+

@@ -45,6 +45,9 @@ final class TupleType : Type {
         return !members.map { $0.isInModule() }.contains(false)
     }
 
+    func machineType() -> AIRType {
+        return .aggregate(elements: members.map { $0.machineType() })
+    }
 }
 
 extension TupleType : Equatable {

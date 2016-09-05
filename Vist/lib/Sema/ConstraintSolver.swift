@@ -65,6 +65,10 @@ final class TypeVariable : Type {
             }
         }
     }
+    
+    func machineType() -> AIRType {
+        fatalError()
+    }
 }
 extension Type {
     // For normal types adding a constraint doesn't make sense. Because we have a concrete type

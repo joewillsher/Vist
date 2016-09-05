@@ -110,6 +110,23 @@ enum BuiltinType : Type {
             return true
         }
     }
+    
+    func machineType() -> AIRType {
+        switch self {
+        case .int(let size):
+            return .int(size: size)
+        case .bool:
+            return .int(size: 1)
+        case .float(let size):
+            return .float(size: size)
+        case .array, .pointer, .opaquePointer:
+            return .int(size: 64)
+        case .void:
+            return .void
+        default:
+            fatalError()
+        }
+    }
 }
 
 extension BuiltinType : Equatable {

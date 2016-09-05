@@ -53,12 +53,10 @@ enum AggrFlattenPass : OptimisationPass {
         
         // First remove all variable insts
         for case let varInst as VariableInst in function.instructions {
-            let v = varInst.value.value!
-            try varInst.eraseFromParent(replacingAllUsesWith: v)
+            try varInst.eraseFromParent(replacingAllUsesWith: varInst.value.value!)
         }
         for case let varInst as VariableAddrInst in function.instructions {
-            let v = varInst.addr.value!
-            try varInst.eraseFromParent(replacingAllUsesWith: v)
+            try varInst.eraseFromParent(replacingAllUsesWith: varInst.addr.value!)
         }
         
         let tree = function.dominator.analysis
@@ -74,6 +72,7 @@ enum AggrFlattenPass : OptimisationPass {
                 }
             }
         }
+        
     }
     
     private static func optimiseAncestors(of block: BasicBlock, tree: DominatorTree) throws {
@@ -88,9 +87,20 @@ enum AggrFlattenPass : OptimisationPass {
     /// - returns: if not nil, the inst to try optimising again from
     private static func runAggrOpt(_ block: BasicBlock) throws -> BasicBlock? {
         
-        for inst in block.instructions {
+        for thisInst in block.instructions {
             
             var returnAndGoAgainInst: Inst?
+            
+            var inst = thisInst
+            
+            if case let variable as VariableInst = inst,
+                case let i as Inst = variable.value.value {
+                inst = i
+            } else if case let variable as VariableAddrInst = inst,
+                case let i as Inst = variable.addr.value {
+                inst = i
+            }
+            
             
             instCheck: switch inst {
             // If we have a struct
@@ -155,7 +165,7 @@ enum AggrFlattenPass : OptimisationPass {
             case let ex as TupleExtractInst:
                 guard case let create as TupleCreateInst = ex.tuple.value else { break instCheck }
                 returnAndGoAgainInst = create
-                
+                                
                 /*
                  We can simplify struct memory insts, given:
                  - Memory is struct type
@@ -172,9 +182,10 @@ enum AggrFlattenPass : OptimisationPass {
                 // TODO: create a dominator tree
                 var structMembers: [String: Value] = [:]
                 var tupleMembers: [Int: Value] = [:]
+                var uses = allocInst.uses
                 
                 // Check the memory's uses
-                for use in allocInst.uses {
+                for use in uses {
                     let user = use.user!
                     switch user {
                     // We allow stores...
@@ -278,6 +289,14 @@ enum AggrFlattenPass : OptimisationPass {
                         try user.parentBlock!.insert(inst: val, after: user)
                         try user.eraseFromParent(replacingAllUsesWith: val)
                         
+                        // remove the deallocation
+                    case is DeallocStackInst:
+                        try use.user?.eraseFromParent()
+                        
+                    case let addr as VariableAddrInst:
+                        uses.append(contentsOf: addr.uses)
+                        try addr.eraseFromParent()
+                        
                     // The memory can only be stored into, loaded from, or GEP'd
                     default:
                         break instCheck
@@ -312,7 +331,7 @@ private extension Type {
     }
 }
 
-extension AllocInst {
+extension Inst {
     func isFlattenable() -> Bool {
         var hasHadStore = false
         
@@ -346,6 +365,8 @@ extension AllocInst {
                 
             // We allow all loads
             case is LoadInst:
+                break
+            case is DeallocStackInst:
                 break
             // The memory can only be stored into, loaded from, or GEP'd
             default:

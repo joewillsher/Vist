@@ -162,6 +162,10 @@ extension FunctionType {
     func isInModule() -> Bool {
         return !params.contains { !$0.isInModule() } && returns.isInModule()
     }
+    
+    func machineType() -> AIRType {
+        return .function(params: params.map { $0.machineType() }, returns: returns.machineType())
+    }
 }
 
 extension FunctionType : Equatable {

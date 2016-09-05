@@ -143,7 +143,7 @@ final class FunctionRefInst : Inst, LValue {
 
 
 
-extension Builder {
+extension VIRBuilder {
     
     /// Calls a VIR function with given args
     @discardableResult

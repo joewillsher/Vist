@@ -108,7 +108,7 @@ extension AST {
     
     func emitVIR(module: Module, isLibrary: Bool) throws {
         
-        let builder = module.builder!
+        let builder = module.builder! as! VIRBuilder
         let gen = VIRGenFunction(scope: VIRGenScope(module: module),
                                  builder: builder)
         if isLibrary {
@@ -846,14 +846,14 @@ extension InitDecl : StmtEmitter {
         var selfVar: AnyManagedValue
         
         if selfType.isHeapAllocated {
-            selfVar = try module.builder.buildManaged(AllocObjectInst(memType: selfType, irName: "storage"),
-                                                      hasCleanup: false,
-                                                      gen: fnVGF).erased
+            selfVar = try fnVGF.builder.buildManaged(AllocObjectInst(memType: selfType, irName: "storage"),
+                                                     hasCleanup: false,
+                                                     gen: fnVGF).erased
         }
         else {
-            selfVar = try gen.builder.buildManaged(AllocInst(memType: selfType.importedType(in: fnVGF.module)),
-                                                   hasCleanup: false,
-                                                   gen: fnVGF).erased
+            selfVar = try fnVGF.builder.buildManaged(AllocInst(memType: selfType.importedType(in: fnVGF.module)),
+                                                     hasCleanup: false,
+                                                     gen: fnVGF).erased
         }
         
         fnVGF.addVariable(selfVar, name: "self")

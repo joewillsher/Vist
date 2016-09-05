@@ -160,7 +160,7 @@ final class CheckedCastBreakInst : Inst, BreakInstruction {
     }
 }
 
-extension Builder {
+extension VIRBuilder {
     
     @discardableResult
     func buildBreak(to block: BasicBlock, args: [BlockOperand]? = nil) throws -> BreakInst {

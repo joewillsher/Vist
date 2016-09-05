@@ -38,11 +38,11 @@ final class Function : VIRElement {
             for user in uses { user.value?.updateUsesWithLoweredVal(loweredFunction.function) }
         }
     }
+    var airFunction: AIRFunction? = nil
     
     /// The block self's errors should jmp to
     var _condFailBlock: LLVMBasicBlock? = nil
     
-//    private weak var _dominatorTree: DominatorTree? = nil
     var hasHadInline : Bool = false
     
     private init(name: String, type: FunctionType, module: Module) {
@@ -150,7 +150,7 @@ extension Function {
     private func index(of block: BasicBlock) throws -> Int {
         if let body = body { return try body.index(of: block) } else { throw VIRError.bbNotInFn }
     }
-
+    
     /// Get the Param `name` from `self`
     func param(named name: String) throws -> Param {
         if let p = try body?.blocks.first?.param(named: name) { return p } else { throw VIRError.noParamNamed(name) }
@@ -289,7 +289,7 @@ extension BasicBlock {
     }
 }
 
-extension Builder {
+extension VIRBuilder {
     
     /// Builds a function called `name` and adds it to the module
     func buildFunction(name: String, type: FunctionType, paramNames: [String], attrs: [FunctionAttributeExpr] = []) throws -> Function {

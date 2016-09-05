@@ -28,6 +28,16 @@ final class VariableInst : Inst {
         return "variable \(name) = \(value.valueName)\(useComment)"
     }
     
+    func getAs<I : Inst>(_ type: I.Type) -> I? {
+        if case let i as I = self {
+            return i
+        }
+        else if case let i as I = value.value {
+            return i
+        }
+        return nil
+    }
+    
     func setArgs(_ args: [Operand]) {
         value = args[0]
     }
@@ -62,6 +72,16 @@ final class VariableAddrInst : Inst, LValue {
     
     var vir: String {
         return "\(mutable ? "mutable_variable_addr" : "variable_addr") \(name) = \(addr.valueName)\(useComment)"
+    }
+    
+    func getAs<I : Inst>(_ type: I.Type) -> I? {
+        if case let i as I = self {
+            return i
+        }
+        else if case let i as I = addr.value {
+            return i
+        }
+        return nil
     }
     
     func setArgs(_ args: [Operand]) {

@@ -39,6 +39,8 @@ protocol Type : VIRElement, ASTPrintable {
     var isAddressOnly: Bool { get }
     /// Can this type be trivially destructed or copied
     func isTrivial() -> Bool
+    
+    func machineType() -> AIRType
 }
 
 extension Type {

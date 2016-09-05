@@ -55,6 +55,7 @@ final class GenericType : NominalType {
     var mangledName: String {
         return name
     }
+    func machineType() -> AIRType { fatalError() }
 }
 
 

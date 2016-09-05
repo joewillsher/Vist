@@ -88,6 +88,13 @@ extension Value {
             use.value = val
         }
     }
+    
+    func getAs<I : Inst>(_ type: I.Type) -> I? {
+        if case let i as I = self {
+            return i
+        }
+        return nil
+    }
 }
 
 

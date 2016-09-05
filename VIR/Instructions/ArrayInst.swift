@@ -33,7 +33,7 @@ final class ArrayInst : Inst {
     var irName: String?
 }
 
-extension Builder {
+extension VIRBuilder {
     
     func buildArray(values: [Operand], memType: Type, irName: String? = nil) throws -> ArrayInst {
         guard values.index(where: {value in value.type != memType}) == nil else { fatalError("Not homogenous array") }

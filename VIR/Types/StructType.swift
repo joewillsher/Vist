@@ -78,6 +78,10 @@ extension StructType {
         }
     }
     var explicitName: String { return name }
+    
+    func machineType() -> AIRType {
+        return .named(name: name, type: .aggregate(elements: members.map { $0.type.machineType() }))
+    }
 }
 
 

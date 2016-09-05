@@ -28,6 +28,9 @@ protocol Value : class, VIRTyped, VIRElement {
     func copy() -> Self
     
     func updateUsesWithLoweredVal(_: LLVMValue)
+    func updateUsesWithAIR(_: AIRValue)
+    
+    func getAs<I : Inst>(_ type: I.Type) -> I?
 }
 
 /// A typed VIR object
@@ -73,6 +76,10 @@ extension Value {
     /// Adds the lowered val to all users
     func updateUsesWithLoweredVal(_ val: LLVMValue) {
         for use in uses { use.setLoweredValue(val) }
+    }
+    /// Adds the lowered val to all users
+    func updateUsesWithAIR(_ air: AIRValue) {
+        for use in uses { use.setAirValue(air) }
     }
     
     func dump() { print(vir) }
