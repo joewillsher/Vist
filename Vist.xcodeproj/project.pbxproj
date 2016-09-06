@@ -25,6 +25,10 @@
 		D41C73311D5D02D00047B373 /* AggregateFlatten.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41C732F1D5D02D00047B373 /* AggregateFlatten.swift */; };
 		D427DA9C1CA05976000708E2 /* Param.swift in Sources */ = {isa = PBXBuildFile; fileRef = D427DA9B1CA05976000708E2 /* Param.swift */; };
 		D427DA9D1CA05976000708E2 /* Param.swift in Sources */ = {isa = PBXBuildFile; fileRef = D427DA9B1CA05976000708E2 /* Param.swift */; };
+		D42814051D7F5F0800B90A09 /* SelectionDAG.swift in Sources */ = {isa = PBXBuildFile; fileRef = D42814041D7F5F0800B90A09 /* SelectionDAG.swift */; };
+		D42814061D7F5F0800B90A09 /* SelectionDAG.swift in Sources */ = {isa = PBXBuildFile; fileRef = D42814041D7F5F0800B90A09 /* SelectionDAG.swift */; };
+		D42814081D7F5F2100B90A09 /* DAGMatching.swift in Sources */ = {isa = PBXBuildFile; fileRef = D42814071D7F5F2100B90A09 /* DAGMatching.swift */; };
+		D42814091D7F5F2100B90A09 /* DAGMatching.swift in Sources */ = {isa = PBXBuildFile; fileRef = D42814071D7F5F2100B90A09 /* DAGMatching.swift */; };
 		D4326E3B1CA5FB7E0016E595 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4326E3A1CA5FB7E0016E595 /* Task.swift */; };
 		D4326E3C1CA5FB7E0016E595 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4326E3A1CA5FB7E0016E595 /* Task.swift */; };
 		D4326E3E1CA6F0140016E595 /* ExistentialInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4326E3D1CA6F0140016E595 /* ExistentialInst.swift */; };
@@ -274,6 +278,8 @@
 		D41C732C1D5D02CA0047B373 /* ExistentialUnbox.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ExistentialUnbox.swift; path = Optimiser/ExistentialUnbox.swift; sourceTree = "<group>"; };
 		D41C732F1D5D02D00047B373 /* AggregateFlatten.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AggregateFlatten.swift; path = Optimiser/AggregateFlatten.swift; sourceTree = "<group>"; };
 		D427DA9B1CA05976000708E2 /* Param.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Param.swift; sourceTree = "<group>"; };
+		D42814041D7F5F0800B90A09 /* SelectionDAG.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SelectionDAG.swift; path = lib/Codegen/SelectionDAG.swift; sourceTree = "<group>"; };
+		D42814071D7F5F2100B90A09 /* DAGMatching.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DAGMatching.swift; path = lib/Codegen/DAGMatching.swift; sourceTree = "<group>"; };
 		D4326E3A1CA5FB7E0016E595 /* Task.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Task.swift; path = lib/Pipeline/Task.swift; sourceTree = "<group>"; };
 		D4326E3D1CA6F0140016E595 /* ExistentialInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ExistentialInst.swift; path = Instructions/ExistentialInst.swift; sourceTree = "<group>"; };
 		D437F7FC1CA95E7F0089F5DE /* ArrayInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ArrayInst.swift; path = Instructions/ArrayInst.swift; sourceTree = "<group>"; };
@@ -444,6 +450,8 @@
 			isa = PBXGroup;
 			children = (
 				D4060DB91D7CA008009F363A /* MachineFunction.swift */,
+				D42814071D7F5F2100B90A09 /* DAGMatching.swift */,
+				D42814041D7F5F0800B90A09 /* SelectionDAG.swift */,
 			);
 			name = Codegen;
 			sourceTree = "<group>";
@@ -980,6 +988,7 @@
 				D43FE1D41D5F7354003494C9 /* NameLookup.swift in Sources */,
 				D46A68E11D5E288500FF9144 /* Closure.swift in Sources */,
 				D43B39941C8A0EDF0039FB2E /* Builder.swift in Sources */,
+				D42814091D7F5F2100B90A09 /* DAGMatching.swift in Sources */,
 				D4BE16471D70BE8C003F087D /* VIRGenFunction.swift in Sources */,
 				D43B39AF1C8A0F140039FB2E /* BuiltinType.swift in Sources */,
 				D43B39981C8A0EDF0039FB2E /* Inst.swift in Sources */,
@@ -1003,6 +1012,7 @@
 				D43B3A3D1C8A10C80039FB2E /* Initialiser.swift in Sources */,
 				D4A000341CCA7FD500157D90 /* PtrLower.swift in Sources */,
 				D4F3D7FF1CAC419E005A3B07 /* CreateType.cpp in Sources */,
+				D42814061D7F5F0800B90A09 /* SelectionDAG.swift in Sources */,
 				D43B39FB1C8A100E0039FB2E /* Compile.swift in Sources */,
 				D43B39B31C8A0F140039FB2E /* FunctionType.swift in Sources */,
 				D4960F081D7211910058D9EF /* Accessor.swift in Sources */,
@@ -1030,6 +1040,7 @@
 			files = (
 				D4A000331CCA7FD500157D90 /* PtrLower.swift in Sources */,
 				D454444C1D181AB900C7B02A /* Inline.swift in Sources */,
+				D42814051D7F5F0800B90A09 /* SelectionDAG.swift in Sources */,
 				D43B3A1F1C8A105B0039FB2E /* Print.swift in Sources */,
 				D411C8951C8DB61D00478988 /* BreakInst.swift in Sources */,
 				D4D8B25D1D0301BC00D1F455 /* RuntimeObject.swift in Sources */,
@@ -1100,6 +1111,7 @@
 				D4D3868A1D39B62700820E43 /* Explosion.swift in Sources */,
 				D4E615441D54DE2A00A10DA4 /* ConstraintSolver.swift in Sources */,
 				D43B39DC1C8A0F3A0039FB2E /* LiteralInst.swift in Sources */,
+				D42814081D7F5F2100B90A09 /* DAGMatching.swift in Sources */,
 				D43B39E91C8A0FA60039FB2E /* Error.swift in Sources */,
 				D4F3D8021CAC41EB005A3B07 /* Intrinsic.cpp in Sources */,
 				D43B3A1B1C8A105B0039FB2E /* TypeRepr.swift in Sources */,
