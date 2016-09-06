@@ -36,6 +36,7 @@ public func compile(withFlags flags: [String], inDirectory dir: String, out: URL
         "-build-runtime": .buildRuntime,
         "-debug-runtime": .debugRuntime,
         "-run-preprocessor": .runPreprocessor,
+        "-use-air": .useAIRBackend,
     ]
     
     for flag in flags.flatMap({map[$0]}) {

@@ -3,7 +3,7 @@
 ![](https://travis-ci.org/joewillsher/Vist.svg?branch=master)
 
 ##About
-A functional, statically typed programming language using LLVM, inspired by Swift, Haskell, and Rust. Vist has a friendly & low weight syntax, and modern type system with a focus on generics and concepts.
+A functional, statically typed programming language using LLVM, inspired by Swift, Haskell, and Rust. Vist has a friendly & low weight syntax, and modern type system with a focus on concepts, and plans for generics.
 
 
 ##Installing
@@ -18,8 +18,6 @@ cd vist
 ``` 
 
 This downloads the LLVM libraries, builds the libvist standard library and runtime and installs the compiler. To use it call `vist` from the command line, use `-h` to see options.
-
-To develop in Xcode, go to ‘Edit Scheme’ (⌘<) and under *Options* set the ‘Custom Working Directory’ to the location of your test files, and under *arguments* include `-verbose -preserve` to log and save the compiler temp files.
 
 
 ##The Language
@@ -38,9 +36,14 @@ func factorial :: Int -> Int = (n) do
 
 ##Architecture
 
-Vist is a high level and strongly typed language aimed at being concise, flexible, and safe. The Vist code compiles to VIR, a high level intermediary representation which will allows optimisations specific to Vist’s semantics and its type system’s guarantees. Vist code is lowered to native, performant machine code and provides efficient abstractions.
+Vist is a high level and strongly typed language aimed at being concise, flexible, and safe. The Vist AST is lowered to VIR, a high level intermediary representation which will allows optimisations specific to Vist’s semantics. For example VIR has high level instructions like checked cast branches, retain/release operations, and it abstracts the code which interacts with the runtime to create and copy existential concept objects. It exposes the `existential_construct`, `copy_addr`, and `destroy_addr` instructions which construct, move, and copy the existential buffer. The VIR optimiser has special knowledge of these instructions, so can elide unnecessary copies, promote the existential to the stack, or remove the existential box if allowed.
 
 The Vist compiler is mainly implemented in Swift but much of the functionality is written in Vist itself. All standard types—like ints, floats, and bools—are implemented in the standard library, as well as core language functionality like printing.
+
+The runtime allows for much of vist’s dynamic behaviour: types which conform to a concept have a ‘witness table’ which is read by the runtime to emit calls to the concept’s methods and to copy or delete complex objects. This type metadata can also be read by the user, using the `typeof` function, and the runtime can perform dynamic type casts to allow patterns like `if x the Int do print x`.
+
+LLVM is used for code generation, but there is experimental work to replace it with vist’s own backend. Here, LLVM IR is replaced by an assembly intermediate language (AIR), which can be used for instruction selection.
+
 
 ##Design
 
@@ -83,7 +86,7 @@ type Foo {
 }
 ```
 
-Vist’s type system is based around *concepts* and *generics*. Concepts describe what a type can do—its properties and methods. Concepts can be used as constraints or existentially as types.
+Vist’s type system is based around *concepts* and *generics*. Concepts describe what a type can do—its properties and methods. Concepts can be used as existentially as types, and eventually as generic constraints.
 ```swift
 concept TwoInts {
     var a: Int, b: Int
@@ -91,7 +94,19 @@ concept TwoInts {
 
 func sum :: TwoInts Int -> Int = (x y) do
     return x.a + y + x.b
+```
 
-func sum (T | TwoInts) :: T T -> Int = (u v) do
-	return u.a + v.b
+You can cast objects from one type to another, and introspect a type:
+
+```swift
+func foo :: Any = (val) do
+	if val the Int do
+		print val + 1
+
+func foo :: Box = (box) do
+	if p the Printable = box.field do
+		print p
+
+func foo :: Any = (some) do
+	print ((typeof some).name ()) // > "String"
 ```

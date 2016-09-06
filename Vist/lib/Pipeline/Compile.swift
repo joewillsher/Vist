@@ -56,6 +56,8 @@ struct CompileOptions : OptionSet {
     static let disableInline = CompileOptions(rawValue: 1 << 17)
     
     static let runPreprocessor = CompileOptions(rawValue: 1 << 18)
+    
+    static let useAIRBackend = CompileOptions(rawValue: 1 << 19)
 }
 
 
@@ -232,7 +234,13 @@ func compileDocuments(
         print(virModule.vir)
         return
     }
-
+    
+    // use experimental AIR backend
+    guard !options.contains(.useAIRBackend) else {
+        let airBuilder = AIRBuilder(module: virModule)
+        try virModule.emitAIR(builder: airBuilder)
+        return
+    }
     
     // MARK: Build runtime
     if options.contains(.buildRuntime) {

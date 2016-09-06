@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-private protocol OpPattern {
+protocol OpPattern {
     /// Does this node have the correct op, if so we can descend down it
     /// to continue pattern matching
     static func opMatches(node: DAGNode) -> Bool
@@ -98,22 +98,22 @@ extension Reg {
 }
 
 private struct AddPattern<VAL0 : OpPattern, VAL1 : OpPattern> : CommutativeBinaryOpPattern {
-    private typealias PAT0 = VAL0
-    private typealias PAT1 = VAL1
+    typealias PAT0 = VAL0
+    typealias PAT1 = VAL1
     static var op: SelectionDAGOp { return .add }
 }
 private struct StorePattern<DEST : Reg, SRC : OpPattern> : BinaryOpPattern {
-    private typealias PAT0 = DEST
-    private typealias PAT1 = SRC
+    typealias PAT0 = DEST
+    typealias PAT1 = SRC
     static var op: SelectionDAGOp { return .store }
 }
 private struct LoadPattern<SRC : Reg> : UnaryOpPattern {
-    private typealias PAT = SRC
+    typealias PAT = SRC
     static var op: SelectionDAGOp { return .load }
 }
 
-private struct RetPattern<VAL: OpPattern> : UnaryOpPattern {
-    private typealias PAT = VAL
+private struct RetPattern<VAL: OpPattern> : SimpleOpPattern {
+    typealias PAT = VAL
     static var op: SelectionDAGOp { return .ret }
     static func matches(subtree: DAGNode) -> Bool {
         guard opMatches(node: subtree) else {
@@ -125,18 +125,15 @@ private struct RetPattern<VAL: OpPattern> : UnaryOpPattern {
 
 /// Matches any DAG tree without checking it
 struct AnyOpPattern : OpPattern {
-    private static func opMatches(node: DAGNode) -> Bool { return true }
-    private static func matches(subtree: DAGNode) -> Bool { return true }
+    static func opMatches(node: DAGNode) -> Bool { return true }
+    static func matches(subtree: DAGNode) -> Bool { return true }
 }
-
 
 private typealias IADD64RR_Pattern = StorePattern<GPR, AddPattern<RegisterUse_Pattern, RegisterUse_Pattern>>
 private typealias IADD64_Pattern = AddPattern<RegisterUse_Pattern, RegisterUse_Pattern>
 
 private typealias RET_Pattern<T : OpPattern> = RetPattern<StorePattern<GPR, T>>
 private typealias RegisterUse_Pattern = LoadPattern<GPR>
-
-
 
 
 extension SelectionDAG {
