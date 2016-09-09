@@ -110,14 +110,25 @@ private class StorePattern<DEST : Reg, SRC : OpPattern> : BinaryOpPattern {
     typealias PAT1 = SRC
     static var op: SelectionDAGOp { return .store }
 }
-private class LoadPattern<SRC : Reg> : UnaryOpPattern {
-    typealias PAT = SRC
+private class LoadPattern<DEST : Reg, SRC : OpPattern> : BinaryOpPattern {
+    typealias PAT0 = DEST
+    typealias PAT1 = SRC
     static var op: SelectionDAGOp { return .load }
 }
 
 private class RetPattern : SimpleOpPattern {
     static var op: SelectionDAGOp { return .ret }
     static func matches(subtree: DAGNode) -> Bool {
+        return opMatches(node: subtree)
+    }
+}
+private class IntImmPattern : OpPattern {
+    static func opMatches(node: DAGNode) -> Bool {
+        if case .int = node.op { return true }
+        return false
+    }
+    static func matches(subtree: DAGNode) -> Bool {
+        // registers must only compare this node
         return opMatches(node: subtree)
     }
 }
@@ -155,44 +166,95 @@ extension ControlFlowRewritingPattern {
 }
 
 
-//     reg     ==>    reg
+//         |
+//  reg1  reg2
+//     \  /
+//     load     ==>    reg1    +   "movq reg1 reg2"
+//       |               |
 private class RegisterUseRewritingPattern :
-    LoadPattern<GPR>,
+    LoadPattern<GPR, GPR>,
     DataFlowRewritingPattern
 {
-    static func rewrite(_ node: DAGNode, dag: SelectionDAG, emission: MCEmission) -> AIRRegister {
-        guard case .reg(let r) = op else { fatalError() }
-        return r
+    static func rewrite(_ load: DAGNode, dag: SelectionDAG, emission: MCEmission) throws -> AIRRegister {
+        guard case .reg(let dest) = load.args[0].op, case .reg(let src) = load.args[1].op else { fatalError() }
+        load.replace(with: load.args[0])
+        emission.emit(.mov(dest: dest, src: src))
+        return dest
     }
 }
 
-//      reg1  reg2
-//        |    |
-//      load  load     ==>    reg1    +   "addq reg1 reg2"
-//         \  /                |
-//          \/
-//          add
-//           |
-private class IADD64RewritingPattern :
-    AddPattern<LoadPattern<GPR>, LoadPattern<GPR>>,
+//   reg  int
+//     \  /
+//     load     ==>     reg    +   "movq reg $int"
+//       |               |
+private class IntImmUseRewritingPattern :
+    LoadPattern<GPR, IntImmPattern>,
     DataFlowRewritingPattern
 {
-    static func rewrite(_ add: DAGNode, dag: SelectionDAG, emission: MCEmission) -> AIRRegister {
-        
-        // get info about the registers
-        let regs = add.args.map { load -> AIRRegister in
-            guard case .reg(let r)? = load.args.first?.op else { fatalError() }
-            return r
-        }
-        let r0 = regs[0], r1 = regs[1]
-        // Rewrite the tree
-        let replacement = DAGNode(op: .reg(r0), args: [])
-        add.replace(with: replacement)
-        // emit the asm
-        emission.emit(MCInst.add(r0, r1))
-        return r0 // return the out register
+    static func rewrite(_ load: DAGNode, dag: SelectionDAG, emission: MCEmission) throws -> AIRRegister {
+        guard case .reg(let dest) = load.args[0].op, case .int(let val) = load.args[1].op else { fatalError() }
+        load.replace(with: load.args[0])
+        emission.emit(.movImm(dest: dest, val: val))
+        return dest
     }
 }
+
+
+//      reg1
+//        |
+//      load  val     ==>    reg1    +   "addq reg1 val"
+//         \  /                |
+//          add
+//           |
+//  (commutative but the `load-reg1` pattern is always used
+//   as the out register)
+private class IADD64RewritingPattern :
+    AddPattern<AnyOpPattern, AnyOpPattern>,
+    DataFlowRewritingPattern
+{
+    static func rewrite(_ add: DAGNode, dag: SelectionDAG, emission: MCEmission) throws -> AIRRegister {
+        
+        return try emission.withEmmited(add.args[0]) { r0 in
+            try emission.withEmmited(add.args[1]) { r1 in
+                // emit the asm
+                emission.emit(.add(r0, r1))
+            }
+            // Rewrite the tree to point to the out reg
+            add.replace(with: DAGNode(op: .reg(r0), args: []))
+        }
+    }
+}
+
+//    r1  r2   int r3
+//     \  |     | /
+//      load  load     ==>     r1    +   "addq reg1 $int"
+//         \  /                |
+//          add
+//           |
+private class IADD64ImmRewritingPattern :
+    AddPattern<AnyOpPattern, IntImmUseRewritingPattern>,
+    DataFlowRewritingPattern
+{
+    static func rewrite(_ add: DAGNode, dag: SelectionDAG, emission: MCEmission) throws -> AIRRegister {
+        
+        // get the out register
+        let dest: (Int, Int) = add.args.enumerated().flatMap {
+            // get the dest reg of the move
+            guard $0.1.args.count == 2, case .int(let r) = $0.1.args[1].op else { return nil }
+            return ($0.0, r)
+            }.first!
+        // the index of the out reg
+        let otherIndex = dest.0 == 0 ? 1 : 0
+        let val = dest.1
+        
+        return try emission.withEmmited(add.args[otherIndex]) { r1 in
+            add.replace(with: DAGNode(op: .reg(r1), args: []))
+            // emit the asm
+            emission.emit(.addImm(dest: r1, val: val))
+        }
+    }
+}
+
 
 //     ret     ==>    ❌   +   "retq"
 private class RetRewritingPattern :
@@ -201,7 +263,7 @@ private class RetRewritingPattern :
 {
     static func rewrite(_ node: DAGNode, dag: SelectionDAG, emission: MCEmission) {
         node.remove(dag: dag)
-        emission.emit(MCInst.ret)
+        emission.emit(.ret)
     }
 }
 
@@ -217,10 +279,9 @@ private class StoreRewritingPattern :
     static func rewrite(_ store: DAGNode, dag: SelectionDAG, emission: MCEmission) throws {
         // get info about the dest
         guard case .reg(let dest) = store.args[0].op else { fatalError() }
-        // Rewrite the tree
         
         try emission.withEmmited(store.args[1]) { reg in
-            MCInst.mov(dest: dest, src: reg)
+            emission.emit(.mov(dest: dest, src: reg))
         }
         // rewrite this node with just the new
         store.remove(dag: dag)
@@ -231,7 +292,7 @@ private class StoreRewritingPattern :
 /// An object responsible for managing the emission of machine insts
 final class MCEmission {
     
-    var mcInsts: [MCInst] = []
+    private var mcInsts: [MCInst] = []
     var dag: SelectionDAG
     
     init(dag: SelectionDAG) { self.dag = dag }
@@ -252,16 +313,20 @@ final class MCEmission {
     /// which can use that to produce an inst. This inst is added to the final
     /// inst list so it comes after the preceeding insts.
     @discardableResult
-    func withEmmited(_ node: DAGNode, closure: (AIRRegister) -> MCInst) throws {
+    func withEmmited(_ node: DAGNode, closure: (AIRRegister) throws -> ()) throws -> AIRRegister {
         guard case let pattern as DataFlowRewritingPattern.Type = try node.match(emission: self) else { fatalError() }
+        
         waitList.append([])
-        defer { waitList.removeLast() }
-        
         let reg = try pattern.rewrite(node, dag: dag, emission: self)
-        let inst = closure(reg)
+        let added = waitList.removeLast()
         
-        mcInsts.insert(inst, at: 0)
-        mcInsts.insert(contentsOf: waitList.last!, at: 0)
+        // add this value first, so its last in the list
+        try closure(reg)
+        // add each value needed for that in reverse order
+        for added in added.reversed() {
+            emit(added)
+        }
+        return reg
     }
 }
 
@@ -293,11 +358,13 @@ extension SelectionDAG {
     
     // known patterns
     fileprivate static let patterns: [(RewritingPattern & OpPattern).Type] = [
+        RegisterUseRewritingPattern.self,
+        IntImmUseRewritingPattern.self,
         IADD64RewritingPattern.self,
+        IADD64ImmRewritingPattern.self,
         RegisterUseRewritingPattern.self,
         RetRewritingPattern.self,
         StoreRewritingPattern.self,
-        RegisterUseRewritingPattern.self
     ]
 }
 
@@ -317,8 +384,8 @@ fileprivate extension DAGNode {
         return matched.last!
     }
     
-     func remove(dag: SelectionDAG) {
-    for child in children {
+    func remove(dag: SelectionDAG) {
+        for child in children {
             guard let i = child.args.index(where: {$0 === self}) else { continue }
             child.args.remove(at: i)
         }
@@ -328,7 +395,7 @@ fileprivate extension DAGNode {
             }
         }
     }
-
+    
     func replace(with node: DAGNode) {
         for child in children {
             guard let i = child.args.index(where: {$0 === self}) else { continue }

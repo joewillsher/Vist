@@ -45,10 +45,9 @@ extension Module {
                     print(s.air)
                 }
                 
-                let dag = SelectionDAG()
+                let dag = SelectionDAG(builder: builder)
                 dag.build(block: airBB)
                 try dag.runInstructionSelection()
-                
             }
             
             
@@ -67,7 +66,9 @@ extension AIRValue {
 }
 extension AIRFunction.Param {
     func dagNode(dag: SelectionDAG) -> DAGNode {
-        return DAGNode(op: .load, args: [dag.buildDAGNode(for: register)], chainParent: dag.chainNode)
+        return DAGNode(op: .load,
+                       args: [DAGNode(op: .reg(dag.builder.getRegister()), args: []), dag.buildDAGNode(for: register)],
+                       chainParent: dag.chainNode)
     }
 }
 extension AIRRegister {
@@ -78,7 +79,9 @@ extension AIRRegister {
 
 extension IntImm {
     func dagNode(dag: SelectionDAG) -> DAGNode {
-        return DAGNode(op: .int(value), args: [])
+        return DAGNode(op: .load,
+                       args: [DAGNode(op: .reg(dag.builder.getRegister()), args: []), DAGNode(op: .int(value), args: [])],
+                       chainParent: dag.chainNode)
     }
 }
 
@@ -99,12 +102,14 @@ final class SelectionDAG {
     var rootNode: DAGNode!
     let entryNode: DAGNode
     var allNodes: [DAGNode] = []
+    let builder: AIRBuilder
     
     /// used in construction
     private var chainNode: DAGNode!
     
-    init() {
-        entryNode = DAGNode(op: .entry, args: [])
+    init(builder: AIRBuilder) {
+        self.entryNode = DAGNode(op: .entry, args: [])
+        self.builder = builder
     }
     
     // eew, hashing by AIR string
@@ -159,7 +164,7 @@ enum SelectionDAGOp {
     // a reference to a register
     case reg(AIRRegister)
     case int(Int)
-    /// load src
+    /// load dest src
     case load
     /// store dest src
     case store
