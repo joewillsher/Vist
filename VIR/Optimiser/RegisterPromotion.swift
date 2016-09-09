@@ -290,9 +290,7 @@ extension RegisterPromotionPass.AllocStackPromoter {
         
         // walk from the bottom of the dom tree up; in the order
         // of decreasing node depth
-        while let rootNode = priorityQueue.last {
-            priorityQueue.removeLast()
-            
+        while let rootNode = priorityQueue.popLast() {
             // A node 'y ∈ DF(x)' iff
             //  - there exists a 'z ∈ SubTree(x)'
             //  - with a 'z -> y' J-edge

@@ -22,18 +22,20 @@ protocol AIROp : class, AIRValue {
     var args: [AIRArg] { get }
     var dagOp: SelectionDAGOp { get }
 }
-/// An AIR op which has a side effect -- passes its value out into 
+/// An AIR op which has a side effect -- passes its value out into
 /// `register`
 protocol AIRSideEffectingOp : AIROp {
     var result: AIRRegister { get }
 }
-extension AIROp {
-    // cannot make it hashable, hash by string
-    var hashValue: Int {
-        return valueAIR.hashValue
+struct AIROpHash : Hashable {
+    var hashValue: Int
+    static func == (l: AIROpHash, r: AIROpHash) -> Bool {
+        return l.hashValue == r.hashValue
     }
-    static func == (l: Self, r: Self) -> Bool {
-        return l === r
+}
+extension AIROp {
+    var hashValue: AIROpHash {
+        return AIROpHash(hashValue: valueAIR.hashValue)
     }
 }
 
@@ -214,15 +216,18 @@ enum AIROpCode : String {
 
 protocol AIRRegister : AIRValue {
     var air: String { get }
+    var hash: AIRRegisterHash { get }
 }
 
 struct HighLevelRegister : AIRRegister {
     let id: Int
     var air: String { return "%reg\(id)" }
+    var hash: AIRRegisterHash { return AIRRegisterHash(hashValue: id) }
 }
 enum X86Register : String, AIRRegister {
     case eax, ebp, esp// ...
     var air: String { return "%\(rawValue)" }
+    var hash: AIRRegisterHash { return AIRRegisterHash(hashValue: rawValue.hashValue) }
 }
 
 extension AIRBuilder {
@@ -232,6 +237,12 @@ extension AIRBuilder {
     }
 }
 
+struct AIRRegisterHash : Hashable {
+    var hashValue: Int
+    static func == (l: AIRRegisterHash, r: AIRRegisterHash) -> Bool {
+        return l.hashValue == r.hashValue
+    }
+}
 
 
 

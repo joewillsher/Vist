@@ -12,7 +12,7 @@ enum MCInst {
     case ret
 }
 
-extension MCInst : CustomStringConvertible {
+extension MCInst : CustomStringConvertible, Hashable {
     var description: String {
         switch self {
         case .add(let a, let b):        return "addq \(a.air), \(b.air)"
@@ -22,10 +22,40 @@ extension MCInst : CustomStringConvertible {
         case .ret:                      return "retq"
         }
     }
+    var hashValue: Int {
+        return description.hashValue
+    }
+    static func == (l: MCInst, r: MCInst) -> Bool {
+        return l.hashValue == r.hashValue
+    }
+    
+    
+    // used in live variable analysis
+    
+    /// regs with live values into this inst
+    var used: Set<AIRRegisterHash> {
+        switch self {
+        case .add(let l, let r): return [l.hash, r.hash]
+        case .addImm(let l, _): return [l.hash]
+        case .mov(_, let src): return [src.hash]
+        default: return []
+        }
+    }
+    /// reg vals defined in this inst
+    var def: Set<AIRRegisterHash> {
+        // workaround for swift bug, this can be comma seperated
+        switch self {
+        case .add(let out, _): return [out.hash]
+        case .mov(let out, _): return [out.hash]
+        case .movImm(let out, _): return [out.hash]
+        case .addImm(let out, _): return [out.hash]
+        case .ret: return []
+        }
+    }
 }
 
 struct MCFunction {
-    
+    let insts: [MCInst]
 }
 struct GPR : Reg {
 }

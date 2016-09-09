@@ -47,7 +47,12 @@ extension Module {
                 
                 let dag = SelectionDAG(builder: builder)
                 dag.build(block: airBB)
-                try dag.runInstructionSelection()
+                let fn = try MCFunction(insts: dag.runInstructionSelection())
+                
+                for inst in fn.insts {
+                    print(inst)
+                }
+                try fn.allocateRegisters()
             }
             
             

@@ -200,9 +200,7 @@ private class IntImmUseRewritingPattern :
 }
 
 
-//      reg1
-//        |
-//      load  val     ==>    reg1    +   "addq reg1 val"
+//      val0  val1     ==>   val0    +   "addq reg0 reg1"
 //         \  /                |
 //          add
 //           |
@@ -238,14 +236,14 @@ private class IADD64ImmRewritingPattern :
     static func rewrite(_ add: DAGNode, dag: SelectionDAG, emission: MCEmission) throws -> AIRRegister {
         
         // get the out register
-        let dest: (Int, Int) = add.args.enumerated().flatMap {
+        let dest: (index: Int, val: Int) = add.args.enumerated().flatMap {
             // get the dest reg of the move
             guard $0.1.args.count == 2, case .int(let r) = $0.1.args[1].op else { return nil }
             return ($0.0, r)
             }.first!
         // the index of the out reg
-        let otherIndex = dest.0 == 0 ? 1 : 0
-        let val = dest.1
+        let otherIndex = dest.index == 0 ? 1 : 0
+        let val = dest.val
         
         return try emission.withEmmited(add.args[otherIndex]) { r1 in
             add.replace(with: DAGNode(op: .reg(r1), args: []))
@@ -342,8 +340,7 @@ extension SelectionDAG {
         
         // walk up from the DAG root, making sure to visit
         // any node before a chain parent
-        while let node = nodes.last {
-            nodes.removeLast()
+        while let node = nodes.popLast() {
             
             try node.match(emission: emission)
                 .performRewrite(node, dag: self, emission: emission)
