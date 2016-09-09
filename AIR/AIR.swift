@@ -28,7 +28,7 @@ protocol AIRSideEffectingOp : AIROp {
     var result: AIRRegister { get }
 }
 extension AIROp {
-    // cannot make it hashable, hash by
+    // cannot make it hashable, hash by string
     var hashValue: Int {
         return valueAIR.hashValue
     }

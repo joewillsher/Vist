@@ -67,7 +67,7 @@ extension AIRValue {
 }
 extension AIRFunction.Param {
     func dagNode(dag: SelectionDAG) -> DAGNode {
-        return DAGNode(op: .load, args: [dag.buildDAGNode(for: register)])
+        return DAGNode(op: .load, args: [dag.buildDAGNode(for: register)], chainParent: dag.chainNode)
     }
 }
 extension AIRRegister {
@@ -84,7 +84,7 @@ extension IntImm {
 
 extension RetOp {
     func dagNode(dag: SelectionDAG) -> DAGNode {
-        let out = DAGNode(op: .store, args: [dag.buildDAGNode(for: result), dag.buildDAGNode(for: val.val)])
+        let out = DAGNode(op: .store, args: [dag.buildDAGNode(for: result), dag.buildDAGNode(for: val.val)], chainParent: dag.chainNode)
         return DAGNode(op: .ret, args: [], chainParent: out)
     }
 }
@@ -100,38 +100,36 @@ final class SelectionDAG {
     let entryNode: DAGNode
     var allNodes: [DAGNode] = []
     
+    /// used in construction
+    private var chainNode: DAGNode!
+    
     init() {
         entryNode = DAGNode(op: .entry, args: [])
     }
     
-    private var map: [Int: DAGNode] = [:]
-    
-    func node(for op: AIROp) -> DAGNode? {
-        return map[op.hashValue]
-    }
+    // eew, hashing by AIR string
+    private var map: [String: DAGNode] = [:]
     
     func buildDAGNode(for val: AIRValue) -> DAGNode {
-        if case let op as AIROp = val {
-            if let already = self.node(for: op) { return already }
-        }
+        if let already = map[val.air] { return already }
         let v = val.dagNode(dag: self)
+        map[val.air] = v
         allNodes.append(v)
-        if case let op as AIROp = val { map[op.hashValue] = v }
         return v
     }
     
     func build(block: AIRBlock) {
         
+        chainNode = entryNode
+        defer { chainNode = nil }
+        
         // loop over insts
         for op in block.insts {
             // get the value of the args, from the tree if already added
             let args: [DAGNode] = op.args.map { arg in
-                guard case let op as AIROp = arg.val else { return buildDAGNode(for: arg.val) }
-                if let already = self.node(for: op) { return already }
-                return buildDAGNode(for: op)
+                buildDAGNode(for: arg.val)
             }
             // if we have a matching op in the tree, use that
-            
             var alreadyNode: DAGNode? = nil
             for node in allNodes {
                 if node.op == op.dagOp, args.count == node.args.count, args.elementsEqual(node.args, by: ===) {
@@ -139,14 +137,16 @@ final class SelectionDAG {
                     break
                 }
             }
+            // build a node if we don't
             let node = alreadyNode ?? buildDAGNode(for: op)
-            map[op.hashValue] = node
             
+            // reroot the tree
             if node.op.hasSideEffects {
                 rootNode = node
             }
+            // root the next inst in this one
+            chainNode = node
         }
-        
     }
     
 }
@@ -205,7 +205,7 @@ final class DAGNode {
     
     let op: SelectionDAGOp
     
-    let args: [DAGNode]
+    var args: [DAGNode]
     var children: [DAGNode] = []
     
     init(op: SelectionDAGOp, args: [DAGNode], chainParent: DAGNode? = nil) {
@@ -214,16 +214,19 @@ final class DAGNode {
         for arg in args {
             arg.children.append(self)
         }
+        // update the chain
         self.chainParent = chainParent
+        chainParent?.chainChildren.append(self)
     }
     
     var chainParent: DAGNode? {
         willSet(newParent) {
-            newParent?.chainChild = self
-            chainParent?.chainChild = nil
+            newParent?.chainChildren.append(self)
+            // TODO: update removal properly
+            //chainParent?.chainChild = nil
         }
     }
-    weak var chainChild: DAGNode?
+    var chainChildren: [DAGNode] = []
     
     var glued: DAGNode? {
         didSet {
