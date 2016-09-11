@@ -35,6 +35,15 @@ extension MCInst : CustomStringConvertible, Hashable {
         }
     }
     
+    mutating func updateRegisters(concreteRegisters: [AIRRegisterHash: TargetRegister]) {
+        switch self {
+        case .add(let a, let b):        self = .add(concreteRegisters[a.hash]!, concreteRegisters[b.hash]!)
+        case .addImm(let a, let val):   self = .addImm(dest: concreteRegisters[a.hash]!, val: val)
+        case .mov(let dest, let src):   self = .mov(dest: concreteRegisters[dest.hash]!, src: concreteRegisters[src.hash]!)
+        case .movImm(let dest, let v):  self = .movImm(dest: concreteRegisters[dest.hash]!, val: v)
+        default: break
+        }
+    }
     
     // used in live variable analysis
     
@@ -64,22 +73,33 @@ extension MCInst : CustomStringConvertible, Hashable {
 struct TargetMachine {
     let nativeIntSize: Int
     let register: TargetRegister.Type
+    init(reg: TargetRegister.Type) {
+        self.nativeIntSize = 64
+        self.register = reg
+    }
 }
 
 final class MCFunction {
     var insts: [MCInst]
-    init(insts: [MCInst]) { self.insts = insts }
+    var precoloured: [AIRRegisterHash: TargetRegister] = [:]
+    
+    init(dag: SelectionDAG) throws {
+        self.insts = try dag.runInstructionSelection()
+        self.precoloured = dag.precoloured
+    }
 }
 struct GPR : Reg {}
 
-protocol TargetRegister {
+protocol TargetRegister : AIRRegister {
     static var gpr: [X86Register] { get }
+    static var returnRegister: X86Register { get }
+    static func paramRegister(at: Int) -> X86Register
 }
 extension TargetRegister {
     static var availiableRegisters: Int { return gpr.count }
 }
 
-enum X86Register : String, AIRRegister, TargetRegister {
+enum X86Register : String, TargetRegister {
     // 64bit general purpose registers
     case rax, rbx, rcx, rdx, rdi, rsi, rbp, rsp
     case r8, r9, r10, r11, r12, r13, r14, r15
@@ -101,10 +121,10 @@ enum X86Register : String, AIRRegister, TargetRegister {
 //    static let gpr: [X86Register] = [.rax, .rbx, .rcx, .rdx, .rdi, .rbp, .rsp,
 //                                     .r8, .r9, .r10, .r11, .r12, .r13, .r14, .r15]
     // 4 regs availiable for testing
-    static let gpr: [X86Register] = [.rax, .rbx]
+    static let gpr: [X86Register] = [.r8, .r9]
     
-    // args in rdi, rsi, rdx, rcx, r8d, r9d; then stack
-    // return to rax
+    static var returnRegister: X86Register { return .rax }
+    static func paramRegister(at i: Int) -> X86Register { return [.rdi, .rsi, .rdx, .rcx][i] }
 }
 
 extension MCFunction : CustomStringConvertible {

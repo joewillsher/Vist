@@ -85,7 +85,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-use-air"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-disable-opt=inline"

@@ -183,6 +183,18 @@ private class RegisterUseRewritingPattern :
     }
 }
 
+//     reg     ==>     reg
+//      |               |
+private class RegisterRewritingPattern :
+    Reg,
+    DataFlowRewritingPattern
+{
+    static func rewrite(_ load: DAGNode, dag: SelectionDAG, emission: MCEmission) throws -> AIRRegister {
+        guard case .reg(let reg) = load.op else { fatalError() }
+        return reg
+    }
+}
+
 //   reg  int
 //     \  /
 //     load     ==>     reg    +   "movq reg $int"
@@ -292,8 +304,13 @@ final class MCEmission {
     
     private var mcInsts: [MCInst] = []
     var dag: SelectionDAG
+    let target: TargetRegister.Type
+    var precoloured: [AIRRegisterHash: TargetRegister] = [:]
     
-    init(dag: SelectionDAG) { self.dag = dag }
+    init(dag: SelectionDAG, target: TargetRegister.Type) {
+        self.dag = dag
+        self.target = target
+    }
     
     func emit(_ op: MCInst) {
         if let wait = waitList.last {
@@ -303,6 +320,9 @@ final class MCEmission {
         else {
             mcInsts.insert(op, at: 0)
         }
+    }
+    func constrain(reg: AIRRegisterHash, to targetReg: TargetRegister) {
+        
     }
     
     private var waitList: [[MCInst]] = []
@@ -335,7 +355,7 @@ extension SelectionDAG {
     /// - returns: An array of machine insts to represent this DAG
     func runInstructionSelection() throws -> [MCInst] {
         
-        let emission = MCEmission(dag: self)
+        let emission = MCEmission(dag: self, target: target)
         var nodes = [rootNode!]
         
         // walk up from the DAG root, making sure to visit
@@ -356,10 +376,10 @@ extension SelectionDAG {
     // known patterns
     fileprivate static let patterns: [(RewritingPattern & OpPattern).Type] = [
         RegisterUseRewritingPattern.self,
+        RegisterRewritingPattern.self,
         IntImmUseRewritingPattern.self,
         IADD64RewritingPattern.self,
         IADD64ImmRewritingPattern.self,
-        RegisterUseRewritingPattern.self,
         RetRewritingPattern.self,
         StoreRewritingPattern.self,
     ]

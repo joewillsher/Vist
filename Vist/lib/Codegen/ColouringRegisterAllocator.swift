@@ -10,7 +10,7 @@
 extension MCFunction {
     
     func allocateRegisters() throws {
-        let allocator = ColouringRegisterAllocator(function: self)
+        let allocator = ColouringRegisterAllocator(function: self, target: X86Register.self)
         try allocator.run()
     }
 }
@@ -23,10 +23,11 @@ final class ColouringRegisterAllocator {
     var interferenceGraph: InterferenceGraph
     let target: TargetMachine
     
-    init(function: MCFunction) {
+    init<Target : TargetRegister>(function: MCFunction, target: Target.Type) {
         self.function = function
+        self.precoloured = function.precoloured
         self.interferenceGraph = InterferenceGraph(function: function)
-        self.target = TargetMachine(nativeIntSize: 64, register: X86Register.self)
+        self.target = TargetMachine(reg: target)
     }
     
     // TODO: set this up; params and return must be precoloured and we can't move them
@@ -34,6 +35,8 @@ final class ColouringRegisterAllocator {
     fileprivate var precoloured: [AIRRegisterHash: TargetRegister] = [:]
     
     fileprivate var worklist: [IGNode] = []
+    fileprivate var coalesceWorklist: Set<IGNode> = []
+    
     /// Maps a register to the reg it was mapped into
     fileprivate var coalescedMap: [AIRRegisterHash: AIRRegisterHash] = [:]
     
@@ -48,6 +51,7 @@ final class ColouringRegisterAllocator {
         simplify()
         
         select()
+        updateRegUse()
         
     }
 }
@@ -62,7 +66,7 @@ private extension ColouringRegisterAllocator {
             guard case .mov(let dest, let src) = inst else {
                 continue
             }
-            guard let _ = coalescedMap[dest.hash] ?? coalescedMap[src.hash] else {
+            guard src.hash == coalescedMap[dest.hash] || dest.hash == coalescedMap[src.hash] else {
                 continue
             }
             // remove the inst if it was
@@ -74,9 +78,17 @@ private extension ColouringRegisterAllocator {
         for i in removalSet.reversed() {
             function.insts.remove(at: i)
         }
-        coalescedMap.removeAll()
+//        coalescedMap.removeAll()
         interferenceGraph = InterferenceGraph(function: function)
         return true
+    }
+    
+    func updateRegUse() {
+        
+        for i in 0..<function.insts.count {
+            function.insts[i].updateRegisters(concreteRegisters: concreteRegisters)
+        }
+        
     }
     
     func coalesce() {
@@ -99,9 +111,11 @@ private extension ColouringRegisterAllocator {
     var k: Int { return target.register.availiableRegisters }
     
     func simplify(node: IGNode) {
-        guard node.order < k, !worklist.contains(node) else { return }
+        guard (node.order < k && !worklist.contains(node)) || isPrecoloured(node) else { return }
         
-        worklist.append(node)
+        if !isPrecoloured(node) {
+            worklist.append(node)
+        }
         interferenceGraph.remove(node)
         // simplfy nodes this is connected to
         for edge in node.interferences {
@@ -111,6 +125,16 @@ private extension ColouringRegisterAllocator {
     
     /// Combine these nodes
     func combine(_ u: IGNode, _ v: IGNode) {
+        var u = u, v = v
+        // u is going to be removed; which we can't do if it is precoloured
+        if isPrecoloured(u) {
+            swap(&u, &v)
+        }
+        // if both nodes are precoloured, bail on combine
+        if isPrecoloured(u) {
+            return
+        }
+        
         // record the coalesce
         coalescedMap[u.reg] = v.reg
         // combine the nodes
@@ -120,24 +144,39 @@ private extension ColouringRegisterAllocator {
     /// Chaitin style aggressive coalescing pass
     func aggressiveCoalesce() {
         
-        for node in interferenceGraph.nodes {
-            for nonInterferingMoveEdge in node.moves.subtracting(node.interferences) {
-                // don't try to recombine nodes which have already been combined
-                guard coalescedMap[nonInterferingMoveEdge.reg] == nil else {
-                    continue
-                }
+        coalesceWorklist = interferenceGraph.nodes
+        
+        while let node = coalesceWorklist.popFirst() {
+            for nonInterferingMoveEdge in node.moves.subtracting(node.interferences).intersection(coalesceWorklist) {
                 combine(node, nonInterferingMoveEdge)
             }
         }
         
     }
     
+    func isPrecoloured(_ node: IGNode) -> Bool {
+        return precoloured.keys.contains(getRepresentingReg(node))
+    }
+    /// - returns: the reg hash representing `node`, taking into account
+    ///            coalesced moves
+    func getRepresentingReg(_ node: IGNode) -> AIRRegisterHash {
+        return coalescedMap[node.reg] ?? node.reg
+    }
     
     func select() {
         
-        for (workitem, reg) in zip(worklist.reversed(), target.register.gpr) {
-            concreteRegisters[workitem.reg] = reg
+        concreteRegisters = precoloured
+        
+        var regs = target.register.gpr
+        func getReg() -> TargetRegister { return regs.popLast()! }
+        
+        for workitem in worklist.reversed() {
+            concreteRegisters[workitem.reg] = precoloured[getRepresentingReg(workitem)] ?? getReg()
             interferenceGraph.reinsert(workitem)
+        }
+        
+        for coalesced in coalescedMap {
+            concreteRegisters[coalesced.key] = concreteRegisters[coalesced.value]
         }
         
     }

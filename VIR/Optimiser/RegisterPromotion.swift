@@ -260,7 +260,7 @@ extension RegisterPromotionPass.AllocStackPromoter {
                 v = variable
             default: fatalError()
             }
-            try proj.eraseFromParent()
+            if proj.uses.isEmpty { try proj.eraseFromParent() }
         }
         
         try load.eraseFromParent(replacingAllUsesWith: v)

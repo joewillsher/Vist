@@ -20,8 +20,9 @@ extension AIRValue {
 /// top level in an AIRBB and cannot be copied into each use
 protocol AIROp : class, AIRValue {
     var args: [AIRArg] { get }
-    var dagOp: SelectionDAGOp { get }
+    var dagOp: SelectionDAGOp? { get }
 }
+
 /// An AIR op which has a side effect -- passes its value out into
 /// `register`
 protocol AIRSideEffectingOp : AIROp {
@@ -73,12 +74,14 @@ final class AIRFunction : AIRImm {
     
     final class Param : AIRValue {
         let name: String, type: AIRType
+        let index: Int
         var register: AIRRegister
         
-        init(name: String, type: AIRType, register: AIRRegister) {
+        init(name: String, type: AIRType, register: AIRRegister, index: Int) {
             self.name = name
             self.type = type
             self.register = register
+            self.index = index
         }
         
         var result: AIRRegister {
@@ -165,7 +168,7 @@ final class CallOp : AIRSideEffectingOp {
     var airType: AIRType? { return returnType }
     var air: String { return "\(result.air) = call \(returnType.air) \(function.val.air) (\(args.map { $0.val.valueAIR }.joined(separator: ", ")))" }
     var valueAIR: String { return result.air }
-    var dagOp: SelectionDAGOp { return .call }
+    var dagOp: SelectionDAGOp? { return .call }
 }
 // ops are calls to processor ops
 final class RetOp : AIRSideEffectingOp {
@@ -181,7 +184,7 @@ final class RetOp : AIRSideEffectingOp {
     var air: String { return "ret \(val.type.air) \(val.val.valueAIR) // to \(result.air)" }
     var valueAIR: String { return result.air }
     var args: [AIRArg] { return [val] }
-    var dagOp: SelectionDAGOp { return .ret }
+    var dagOp: SelectionDAGOp? { return .ret }
 }
 
 /// A processor op
@@ -199,13 +202,31 @@ final class BuiltinOp : AIROp {
     var airType: AIRType? { return returnType }
     var air: String { return "\(returnType.air) \(op.rawValue) \(arg1.val.valueAIR), \(arg2.val.valueAIR)" }
     var args: [AIRArg] { return [arg1, arg2] }
-    var dagOp: SelectionDAGOp {
+    var dagOp: SelectionDAGOp? {
         switch op {
         case .add: return .add
         default: fatalError("TODO")
         }
     }
 }
+
+//// ops are calls to processor ops
+final class StructExtractOp : AIROp {
+    let aggr: AIRArg, index: Int
+    var elType: AIRType
+    
+    init(aggr: AIRArg, index: Int, elType: AIRType) {
+        self.aggr = aggr
+        self.index = index
+        self.elType = elType
+    }
+    
+    var airType: AIRType? { return elType }
+    var air: String { return "\(elType.air) element \(index) \(aggr.val.valueAIR)" }
+    var args: [AIRArg] { return [aggr] }
+    var dagOp: SelectionDAGOp? { return nil }
+}
+
 
 enum AIROpCode : String {
     case add, mul, sub, div
@@ -295,7 +316,8 @@ extension TupleCreateInst : AIRLower {
 }
 extension Param : AIRLower {
     func lowerVIRToAIR(builder: AIRBuilder) throws -> AIRValue {
-        return AIRFunction.Param(name: name, type: type!.machineType(), register: builder.getRegister())
+        let i = parentFunction!.params!.index(of: self)!
+        return AIRFunction.Param(name: name, type: type!.machineType(), register: builder.getRegister(), index: i)
     }
 }
 extension BuiltinInstCall : AIRLower {

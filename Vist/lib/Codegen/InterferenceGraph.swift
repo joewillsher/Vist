@@ -90,6 +90,8 @@ final class InterferenceGraph {
         }
         nodeMap[node.reg] = node
     }
+    /// Combines these nodes
+    /// - note: removes `u` from the graph
     func combine(_ u: IGNode, _ v: IGNode) {
         // rewire up the edges
         for interference in u.interferences {

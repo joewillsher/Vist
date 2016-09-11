@@ -34,14 +34,16 @@ extension Module {
                     print(s.air)
                 }
                 
-                let dag = SelectionDAG(builder: builder)
+                let dag = SelectionDAG(builder: builder, target: X86Register.self)
                 dag.build(block: airBB)
-                let fn = try MCFunction(insts: dag.runInstructionSelection())
+                let fn = try MCFunction(dag: dag)
                 
-                for inst in fn.insts {
-                    print(inst)
-                }
+                print(fn)
+                
                 try fn.allocateRegisters()
+                
+                print(fn)
+
             }
             
             
@@ -60,6 +62,8 @@ extension AIRValue {
 }
 extension AIRFunction.Param {
     func dagNode(dag: SelectionDAG) -> DAGNode {
+        // TODO: spill onto stack if too many params
+        dag.precoloured[register.hash] = dag.target.paramRegister(at: index)
         return DAGNode(op: .load,
                        args: [DAGNode(op: .reg(dag.builder.getRegister()), args: []), dag.buildDAGNode(for: register)],
                        chainParent: dag.chainNode)
@@ -81,6 +85,7 @@ extension IntImm {
 
 extension RetOp {
     func dagNode(dag: SelectionDAG) -> DAGNode {
+        dag.precoloured[result.hash] = dag.target.returnRegister
         let out = DAGNode(op: .store, args: [dag.buildDAGNode(for: result), dag.buildDAGNode(for: val.val)], chainParent: dag.chainNode)
         return DAGNode(op: .ret, args: [], chainParent: out)
     }
@@ -98,12 +103,17 @@ final class SelectionDAG {
     var allNodes: [DAGNode] = []
     let builder: AIRBuilder
     
+    let target: TargetRegister.Type
+    
+    var precoloured: [AIRRegisterHash: TargetRegister] = [:]
+    
     /// used in construction
     private var chainNode: DAGNode!
     
-    init(builder: AIRBuilder) {
+    init(builder: AIRBuilder, target: TargetRegister.Type) {
         self.entryNode = DAGNode(op: .entry, args: [])
         self.builder = builder
+        self.target = target
     }
     
     // eew, hashing by AIR string
