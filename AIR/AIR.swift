@@ -219,21 +219,16 @@ protocol AIRRegister : AIRValue {
     var hash: AIRRegisterHash { get }
 }
 
-struct HighLevelRegister : AIRRegister {
+struct VirtualRegister : AIRRegister {
     let id: Int
-    var air: String { return "%reg\(id)" }
+    var air: String { return "%vreg\(id)" }
     var hash: AIRRegisterHash { return AIRRegisterHash(hashValue: id) }
-}
-enum X86Register : String, AIRRegister {
-    case eax, ebp, esp// ...
-    var air: String { return "%\(rawValue)" }
-    var hash: AIRRegisterHash { return AIRRegisterHash(hashValue: rawValue.hashValue) }
 }
 
 extension AIRBuilder {
-    func getRegister() -> HighLevelRegister {
+    func getRegister() -> VirtualRegister {
         defer { registerIndex += 1 }
-        return HighLevelRegister(id: registerIndex)
+        return VirtualRegister(id: registerIndex)
     }
 }
 

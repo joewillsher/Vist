@@ -28,6 +28,12 @@ extension MCInst : CustomStringConvertible, Hashable {
     static func == (l: MCInst, r: MCInst) -> Bool {
         return l.hashValue == r.hashValue
     }
+    var isMove: Bool {
+        switch self {
+        case .mov, .movImm: return true
+        default: return false
+        }
+    }
     
     
     // used in live variable analysis
@@ -54,9 +60,56 @@ extension MCInst : CustomStringConvertible, Hashable {
     }
 }
 
-struct MCFunction {
-    let insts: [MCInst]
+
+struct TargetMachine {
+    let nativeIntSize: Int
+    let register: TargetRegister.Type
 }
-struct GPR : Reg {
+
+final class MCFunction {
+    var insts: [MCInst]
+    init(insts: [MCInst]) { self.insts = insts }
+}
+struct GPR : Reg {}
+
+protocol TargetRegister {
+    static var gpr: [X86Register] { get }
+}
+extension TargetRegister {
+    static var availiableRegisters: Int { return gpr.count }
+}
+
+enum X86Register : String, AIRRegister, TargetRegister {
+    // 64bit general purpose registers
+    case rax, rbx, rcx, rdx, rdi, rsi, rbp, rsp
+    case r8, r9, r10, r11, r12, r13, r14, r15
+    // 32bit general purpose registers
+    case eax, ebx, ecx, edx, edi, esi, ebp, esp
+    case r8d, r9d, r10d, r11d, r12d, r13d, r14d, r15d
+    // flag register
+    case eflags, rflags
+    // MMX
+    case mm0, mm1, mm2, mm3, mm4, mm5, mm6, mm7
+    // XMM
+    case xmm0, xmm1, xmm2, xmm3, xmm4, xmm5, xmm6, xmm7
+    case xmm8, xmm9, xmm10, xmm11, xmm12, xmm13, xmm14, xmm15
+    
+    var air: String { return "%\(rawValue)" }
+    var hash: AIRRegisterHash { return AIRRegisterHash(hashValue: rawValue.hashValue) }
+    
+    /// General purpose registers
+//    static let gpr: [X86Register] = [.rax, .rbx, .rcx, .rdx, .rdi, .rbp, .rsp,
+//                                     .r8, .r9, .r10, .r11, .r12, .r13, .r14, .r15]
+    // 4 regs availiable for testing
+    static let gpr: [X86Register] = [.rax, .rbx]
+    
+    // args in rdi, rsi, rdx, rcx, r8d, r9d; then stack
+    // return to rax
+}
+
+extension MCFunction : CustomStringConvertible {
+    var description: String {
+        return insts.map { $0.description }.joined(separator: "\n")
+    }
 }
 

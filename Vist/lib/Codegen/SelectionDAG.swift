@@ -6,17 +6,6 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-
-enum TargetRegister {
-    /// General purpose registers
-    case GPR
-}
-
-struct TargetMachine {
-    let nativeIntSize: Int
-}
-
-
 extension Module {
     
     func emitAIR(builder: AIRBuilder) throws {
