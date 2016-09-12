@@ -3,5 +3,7 @@
     <pages>
         <page name='Untitled Page'/>
         <page name='VHIR'/>
+        <page name='Stack'/>
+        <page name='Pow2'/>
     </pages>
 </playground>

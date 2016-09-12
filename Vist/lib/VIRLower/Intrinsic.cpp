@@ -26,6 +26,7 @@ Intrinsic::ID getIntrinsicID(LLVMIntrinsic intrinsic) {
             case LLVMIntrinsic::i_add_overflow: return Intrinsic::sadd_with_overflow;
             case LLVMIntrinsic::i_sub_overflow: return Intrinsic::ssub_with_overflow;
             case LLVMIntrinsic::i_mul_overflow: return Intrinsic::smul_with_overflow;
+            case LLVMIntrinsic::i_pow: return Intrinsic::powi;
             case LLVMIntrinsic::expect: return Intrinsic::expect;
             case LLVMIntrinsic::trap: return Intrinsic::trap;
             case LLVMIntrinsic::memcopy: return Intrinsic::memcpy;

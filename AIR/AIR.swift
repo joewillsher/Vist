@@ -328,7 +328,7 @@ extension BuiltinInstCall : AIRLower {
         let op: AIROpCode
         switch inst {
         case .idiv:         op = .div
-        case .iaddoverflow: op = .add
+        case .iaddunchecked: op = .add
         default:
             fatalError("TODO")
         }

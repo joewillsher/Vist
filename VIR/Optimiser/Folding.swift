@@ -133,7 +133,7 @@ enum ConstantFoldingPass : OptimisationPass {
                 
                 OptStatistics.arithmeticOpsFolded += 1
                 
-            case .ishl, .ishr, .iand, .ixor, .ior, .idiv, .irem, .iaddoverflow:
+            case .ishl, .ishr, .iand, .ixor, .ior, .idiv, .irem, .iaddunchecked, .ipow:
                 guard
                     case let lhs as IntLiteralInst = inst.args[0].value,
                     case let rhs as IntLiteralInst = inst.args[1].value else { break }
@@ -143,12 +143,13 @@ enum ConstantFoldingPass : OptimisationPass {
                 switch inst.inst {
                 case .idiv: op = (/)
                 case .irem: op = (%)
+                case .ipow: op = { Int(pow(Double($0), Double($1))) }
                 case .ishl: op = (<<)
                 case .ishr: op = (>>)
                 case .iand: op = (&)
                 case .ior:  op = (|)
                 case .ixor: op = (^)
-                case .iaddoverflow: op = (&+)
+                case .iaddunchecked: op = (&+)
                 default: fatalError("Not a trunc inst")
                 }
                 

@@ -28,7 +28,8 @@ extern "C" {
         i_add_overflow,
         i_sub_overflow,
         i_mul_overflow,
-        
+        i_pow,
+
         expect,
         trap,
         memcopy,

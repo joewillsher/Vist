@@ -22,6 +22,7 @@ extension BuiltinInstCall: VIRLower {
         case .iadd: intrinsic = try IGF.module.getIntrinsic(.i_add_overflow, overload: lhs.type)
         case .imul: intrinsic = try IGF.module.getIntrinsic(.i_mul_overflow, overload: lhs.type)
         case .isub: intrinsic = try IGF.module.getIntrinsic(.i_sub_overflow, overload: lhs.type)
+        case .ipow: intrinsic = try IGF.module.getIntrinsic(.i_pow, overload: lhs.type)
             
         // other intrinsics
         case .expect: intrinsic = try IGF.module.getIntrinsic(.expect, overload: lhs.type)
@@ -60,8 +61,8 @@ extension BuiltinInstCall: VIRLower {
             
         // handle calls which arent intrinsics, but builtin
         // instructions. We can just call them directly, and return
-        case .iaddoverflow: return try IGF.builder.buildIAdd(lhs: lhs, rhs: rhs, name: irName)
-        case .imuloverflow: return try IGF.builder.buildIMul(lhs: lhs, rhs: rhs, name: irName)
+        case .iaddunchecked: return try IGF.builder.buildIAdd(lhs: lhs, rhs: rhs, name: irName)
+        case .imulunchecked: return try IGF.builder.buildIMul(lhs: lhs, rhs: rhs, name: irName)
         case .idiv: return try IGF.builder.buildIDiv(lhs: lhs, rhs: rhs, name: irName)
         case .irem: return try IGF.builder.buildIRem(lhs: lhs, rhs: rhs, name: irName)
         case .ieq, .beq:  return try IGF.builder.buildIntCompare(.equal, lhs: lhs, rhs: rhs, name: irName)

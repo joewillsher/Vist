@@ -27,7 +27,7 @@ struct Builtin {
         
         ("Builtin.i_div", FunctionType(params: [intType, intType], returns: intType)),
         ("Builtin.i_rem", FunctionType(params: [intType, intType], returns: intType)),
-        ("Builtin.i_add_overflow", FunctionType(params: [intType, intType], returns: intType)),
+        ("Builtin.i_add_unchecked", FunctionType(params: [intType, intType], returns: intType)),
         ("Builtin.i_mul_overflow", FunctionType(params: [intType, intType], returns: intType)),
         
         ("Builtin.i_shr", FunctionType(params: [intType, intType], returns: intType)),

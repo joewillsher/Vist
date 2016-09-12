@@ -28,6 +28,7 @@ struct PassManager {
             try create(pass: ExistentialUnboxPass.self, runOn: function)
             try create(pass: AggrFlattenPass.self, runOn: function)
             try create(pass: ConstantFoldingPass.self, runOn: function)
+            try create(pass: StrengthReductionPass.self, runOn: function)
             try create(pass: CFGFoldPass.self, runOn: function)
             try create(pass: DCEPass.self, runOn: function)
         }

@@ -87,7 +87,7 @@ final class BuiltinInstCall : Inst {
 /// by doing Builtin.intrinsic
 enum BuiltinInst : String {
     case iadd = "i_add", isub = "i_sub", imul = "i_mul", idiv = "i_div", irem = "i_rem", ieq = "i_eq", ineq = "i_neq", beq = "b_eq"
-    case iaddoverflow = "i_add_overflow", imuloverflow = "i_mul_overflow"
+    case iaddunchecked = "i_add_unchecked" , imulunchecked = "i_mul_unchecked", ipow = "i_pow"
     case condfail = "cond_fail"
     case ilte = "i_cmp_lte", igte = "i_cmp_gte", ilt = "i_cmp_lt", igt = "i_cmp_gt"
     case ishl = "i_shl", ishr = "i_shr", iand = "i_and", ior = "i_or", ixor = "i_xor"
@@ -107,10 +107,10 @@ enum BuiltinInst : String {
     var expectedNumOperands: Int {
         switch  self {
         case .memcpy: return 3
-        case .iadd, .isub, .imul, .idiv, .iaddoverflow, .imuloverflow, .irem, .ilte, .igte, .ilt, .igt,
+        case .iadd, .isub, .imul, .idiv, .iaddunchecked, .imulunchecked, .irem, .ilte, .igte, .ilt, .igt,
              .expect, .ieq, .ineq, .ishr, .ishl, .iand, .ior, .ixor, .fgt, .and, .or,
              .fgte, .flt, .flte, .fadd, .fsub, .fmul, .fdiv, .frem, .feq, .fneq, .beq,
-             .opaquestore, .advancepointer:
+             .opaquestore, .advancepointer, .ipow:
             return 2
         case .condfail, .allocstack, .allocheap, .heapfree, .opaqueload, .trunc8, .trunc16, .trunc32, .withptr:
             return 1
@@ -123,8 +123,8 @@ enum BuiltinInst : String {
         case .iadd, .isub, .imul:
             return TupleType(members: [params.first!, Builtin.boolType]) // overflowing arithmetic
             
-        case .idiv, .iaddoverflow, .imuloverflow, .irem, .ishl, .ishr,
-             .iand, .ior, .ixor, .fadd, .fsub, .fmul, .fdiv, .frem:
+        case .idiv, .iaddunchecked, .imulunchecked, .irem, .ishl, .ishr,
+             .iand, .ior, .ixor, .fadd, .fsub, .fmul, .fdiv, .frem, .ipow:
             return params.first // normal arithmetic
             
         case .ilte, .igte, .ilt, .igt, .flte, .fgte, .flt, .fgt,

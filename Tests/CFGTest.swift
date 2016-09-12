@@ -78,7 +78,7 @@ func testExampleCFGOpt() throws -> Bool {
         let three = try module.builder.build(IntLiteralInst(val: 3, size: 64))
         let mul = try module.builder.build(BuiltinInstCall(inst: .imuloverflow, args: [val, three]))
         let one = try module.builder.build(IntLiteralInst(val: 1, size: 64))
-        let add = try module.builder.build(BuiltinInstCall(inst: .iaddoverflow, args: [mul, one]))
+        let add = try module.builder.build(BuiltinInstCall(inst: .iaddunchecked, args: [mul, one]))
         try module.builder.build(StoreInst(address: nmem, value: add))
         try module.builder.buildBreak(to: b7)
     }
@@ -87,7 +87,7 @@ func testExampleCFGOpt() throws -> Bool {
         module.builder.insertPoint.block = b7
         let val = try module.builder.build(LoadInst(address: imem))
         let one = try module.builder.build(IntLiteralInst(val: 1, size: 64))
-        let add = try module.builder.build(BuiltinInstCall(inst: .iaddoverflow, args: [val, one]))
+        let add = try module.builder.build(BuiltinInstCall(inst: .iaddunchecked, args: [val, one]))
         try module.builder.build(StoreInst(address: imem, value: add))
         try module.builder.buildBreak(to: b2)
     }
