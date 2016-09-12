@@ -43,6 +43,10 @@ func == :: Bool Bool -> Bool = (a b) do
 func != :: Int Int -> Bool = (a b) do
     return Bool (Builtin.i_neq a.value b.value)
 
+@public @inline @operator(20)
+func != :: Bool Bool -> Bool = (a b) do
+    return Bool (Builtin.b_neq a.value b.value)
+
 @public @inline @operator(100)
 func / :: Int Int -> Int = (a b) {
     //assert b != 0
@@ -51,6 +55,10 @@ func / :: Int Int -> Int = (a b) {
 @public @inline @operator(90)
 func % :: Int Int -> Int = (a b) do
     return Int (Builtin.i_rem a.value b.value)
+
+@public @inline @operator(110)
+func ^ :: Int Int -> Int = (a b) do
+    return Int (Builtin.i_pow a.value b.value)
 
 @public @inline @operator(30)
 func < :: Int Int -> Bool = (a b) do
@@ -99,6 +107,8 @@ func && :: Bool Bool -> Bool = (a b) do
 func || :: Bool Bool -> Bool = (a b) do
     return Bool (Builtin.b_or a.value b.value)
 // TODO:: ! prefix operator
+func not :: Bool -> Bool = (b) do
+    return Bool (Builtin.b_not b.value)
 
 
 // float

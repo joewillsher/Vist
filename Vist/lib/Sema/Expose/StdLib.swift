@@ -50,6 +50,7 @@ enum StdLib {
         ("*", FunctionType(params: [intType, intType], returns: intType)),
         ("/", FunctionType(params: [intType, intType], returns: intType)),
         ("%", FunctionType(params: [intType, intType], returns: intType)),
+        ("^", FunctionType(params: [intType, intType], returns: intType)),
         
         (">>", FunctionType(params: [intType, intType], returns: intType)),
         ("<<", FunctionType(params: [intType, intType], returns: intType)),
@@ -71,6 +72,8 @@ enum StdLib {
         ("&&", FunctionType(params: [boolType, boolType], returns: boolType)),
         ("||", FunctionType(params: [boolType, boolType], returns: boolType)),
         ("==", FunctionType(params: [boolType, boolType], returns: boolType)),
+        ("!=", FunctionType(params: [boolType, boolType], returns: boolType)),
+        ("not", FunctionType(params: [boolType], returns: boolType)),
         
         // double
         ("+", FunctionType(params: [doubleType, doubleType], returns: doubleType)),

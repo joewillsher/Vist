@@ -269,6 +269,9 @@ extension LLVMBuilder {
     func buildOr(lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
         return try wrap(LLVMBuildOr(builder, lhs.val(), rhs.val(), name ?? ""))
     }
+    func buildNot(val: LLVMValue, name: String? = nil) throws -> LLVMValue {
+        return try wrap(LLVMBuildNot(builder, val.val(), name ?? ""))
+    }
     func buildXor(lhs: LLVMValue, rhs: LLVMValue, name: String? = nil) throws -> LLVMValue {
         return try wrap(LLVMBuildXor(builder, lhs.val(), rhs.val(), name ?? ""))
     }

@@ -86,12 +86,12 @@ final class BuiltinInstCall : Inst {
 /// A builtin VIR function. Each can be called in Vist code (stdlib only)
 /// by doing Builtin.intrinsic
 enum BuiltinInst : String {
-    case iadd = "i_add", isub = "i_sub", imul = "i_mul", idiv = "i_div", irem = "i_rem", ieq = "i_eq", ineq = "i_neq", beq = "b_eq"
+    case iadd = "i_add", isub = "i_sub", imul = "i_mul", idiv = "i_div", irem = "i_rem", ieq = "i_eq", ineq = "i_neq", beq = "b_eq", bneq = "b_neq"
     case iaddunchecked = "i_add_unchecked" , imulunchecked = "i_mul_unchecked", ipow = "i_pow"
     case condfail = "cond_fail"
     case ilte = "i_cmp_lte", igte = "i_cmp_gte", ilt = "i_cmp_lt", igt = "i_cmp_gt"
     case ishl = "i_shl", ishr = "i_shr", iand = "i_and", ior = "i_or", ixor = "i_xor"
-    case and = "b_and", or = "b_or"
+    case and = "b_and", or = "b_or", not = "b_not"
     
     case expect, trap
     case allocstack = "stack_alloc", allocheap = "heap_alloc", heapfree = "heap_free", memcpy = "mem_copy", opaquestore = "opaque_store"
@@ -108,8 +108,8 @@ enum BuiltinInst : String {
         switch  self {
         case .memcpy: return 3
         case .iadd, .isub, .imul, .idiv, .iaddunchecked, .imulunchecked, .irem, .ilte, .igte, .ilt, .igt,
-             .expect, .ieq, .ineq, .ishr, .ishl, .iand, .ior, .ixor, .fgt, .and, .or,
-             .fgte, .flt, .flte, .fadd, .fsub, .fmul, .fdiv, .frem, .feq, .fneq, .beq,
+             .expect, .ieq, .ineq, .ishr, .ishl, .iand, .ior, .ixor, .fgt, .and, .or, .not,
+             .fgte, .flt, .flte, .fadd, .fsub, .fmul, .fdiv, .frem, .feq, .fneq, .beq, .bneq,
              .opaquestore, .advancepointer, .ipow:
             return 2
         case .condfail, .allocstack, .allocheap, .heapfree, .opaqueload, .trunc8, .trunc16, .trunc32, .withptr:
@@ -128,7 +128,7 @@ enum BuiltinInst : String {
             return params.first // normal arithmetic
             
         case .ilte, .igte, .ilt, .igt, .flte, .fgte, .flt, .fgt,
-             .expect, .ieq, .ineq, .and, .or, .beq, .feq, .fneq:
+             .expect, .ieq, .ineq, .and, .or, .not, .beq, .bneq, .feq, .fneq:
             return Builtin.boolType // bool ops
            
         case .allocstack, .allocheap, .advancepointer, .withptr:

@@ -65,8 +65,8 @@ extension BuiltinInstCall: VIRLower {
         case .imulunchecked: return try IGF.builder.buildIMul(lhs: lhs, rhs: rhs, name: irName)
         case .idiv: return try IGF.builder.buildIDiv(lhs: lhs, rhs: rhs, name: irName)
         case .irem: return try IGF.builder.buildIRem(lhs: lhs, rhs: rhs, name: irName)
-        case .ieq, .beq:  return try IGF.builder.buildIntCompare(.equal, lhs: lhs, rhs: rhs, name: irName)
-        case .ineq: return try IGF.builder.buildIntCompare(.notEqual, lhs: lhs, rhs: rhs)
+        case .ieq, .beq:   return try IGF.builder.buildIntCompare(.equal, lhs: lhs, rhs: rhs, name: irName)
+        case .ineq, .bneq: return try IGF.builder.buildIntCompare(.notEqual, lhs: lhs, rhs: rhs)
         case .ilt:  return try IGF.builder.buildIntCompare(.lessThan, lhs: lhs, rhs: rhs, name: irName)
         case .igt:  return try IGF.builder.buildIntCompare(.greaterThan, lhs: lhs, rhs: rhs, name: irName)
         case .ilte: return try IGF.builder.buildIntCompare(.lessThanEqual, lhs: lhs, rhs: rhs, name: irName)
@@ -74,8 +74,9 @@ extension BuiltinInstCall: VIRLower {
         case .ishl: return try IGF.builder.buildIShiftL(lhs: lhs, rhs: rhs, name: irName)
         case .ishr: return try IGF.builder.buildIShiftR(lhs: lhs, rhs: rhs, name: irName)
         case .iand, .and: return try IGF.builder.buildAnd(lhs: lhs, rhs: rhs, name: irName)
-        case .ior, .or:  return try IGF.builder.buildOr(lhs: lhs, rhs: rhs, name: irName)
-        case .ixor: return try IGF.builder.buildXor(lhs: lhs, rhs: rhs, name: irName)
+        case .not:        return try IGF.builder.buildNot(val: lhs, name: irName)
+        case .ior, .or:   return try IGF.builder.buildOr(lhs: lhs, rhs: rhs, name: irName)
+        case .ixor:       return try IGF.builder.buildXor(lhs: lhs, rhs: rhs, name: irName)
         
         case .fadd: return try IGF.builder.buildFAdd(lhs: lhs, rhs: rhs, name: irName)
         case .fsub: return try IGF.builder.buildFSub(lhs: lhs, rhs: rhs, name: irName)
@@ -89,7 +90,7 @@ extension BuiltinInstCall: VIRLower {
         case .flte: return try IGF.builder.buildFloatCompare(.lessThanEqual, lhs: lhs, rhs: rhs, name: irName)
         case .fgte: return try IGF.builder.buildFloatCompare(.lessThanEqual, lhs: lhs, rhs: rhs, name: irName)
             
-        case .trunc8: return try IGF.builder.buildTrunc(val: lhs, size: 8, name: irName)
+        case .trunc8:  return try IGF.builder.buildTrunc(val: lhs, size: 8, name: irName)
         case .trunc16: return try IGF.builder.buildTrunc(val: lhs, size: 16, name: irName)
         case .trunc32: return try IGF.builder.buildTrunc(val: lhs, size: 32, name: irName)
         }

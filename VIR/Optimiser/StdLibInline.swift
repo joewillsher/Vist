@@ -90,6 +90,8 @@ enum StdLibInlinePass : OptimisationPass {
                     try replaceWithBuiltin(.idiv)
                 case "_V-C_tII": // l % r
                     try replaceWithBuiltin(.irem)
+                case "_V-R_tII": // l ^ r
+                    try replaceWithBuiltin(.ipow)
                 case "_V-T-R_tII": // l ~^ r
                     try replaceWithBuiltin(.ixor)
                 case "_V-L-L_tII": // l << r
@@ -117,9 +119,15 @@ enum StdLibInlinePass : OptimisationPass {
                     try replaceWithBuiltin(.ineq, returnType: StdLib.boolType)
                     
                 case "_V-N-N_tBB": // l && r
-                    try replaceWithBuiltin(.and, returnType: StdLib.boolType)
+                    try replaceWithBuiltin(.and)
                 case "_V-O-O_tBB": // l || r
-                    try replaceWithBuiltin(.or, returnType: StdLib.boolType)
+                    try replaceWithBuiltin(.or)
+                case "_Vnot_tB": // not l
+                    try replaceWithBuiltin(.not)
+                case "_V-E-E_tBB": // l == r
+                    try replaceWithBuiltin(.beq)
+                case "_V-B-E_tBB": // l != r
+                    try replaceWithBuiltin(.bneq)
                     
                 default:
                     break // not a stdlib function so we're done
