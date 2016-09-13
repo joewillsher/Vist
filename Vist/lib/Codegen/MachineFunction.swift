@@ -6,82 +6,136 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-enum MCInst {
-    case add(AIRRegister, AIRRegister), addImm(dest: AIRRegister, val: Int)
-    case mov(dest: AIRRegister, src: AIRRegister), movImm(dest: AIRRegister, val: Int)
-    case ret
-}
 
-extension MCInst : CustomStringConvertible, Hashable {
-    var description: String {
+enum MCInst {
+    case add(AIRRegister, MCInstAddressingMode)
+    case mov(dest: MCInstAddressingMode, src: MCInstAddressingMode)
+    case ret
+    
+    var asm: String {
         switch self {
-        case .add(let a, let b):        return "addq \(a.air), \(b.air)"
-        case .addImm(let a, let b):     return "addq \(a.air), $\(b)"
-        case .mov(let dest, let src):   return "movq \(dest.air), \(src.air)"
-        case .movImm(let dest, let v):  return "movq \(dest.air), $\(v)"
+        case .add(let a, let b):        return "addq \(a.name), \(b.asm)"
+        case .mov(let dest, let src):   return "movq \(dest.asm), \(src.asm)"
         case .ret:                      return "retq"
         }
     }
-    var hashValue: Int {
-        return description.hashValue
-    }
-    static func == (l: MCInst, r: MCInst) -> Bool {
-        return l.hashValue == r.hashValue
-    }
+}
+
+enum MCInstAddressingMode {
+    case reg(AIRRegister), imm(Int), mem(AIRRegister), offsetMem(AIRRegister, Int)
+}
+
+extension MCInst {
+    
     var isMove: Bool {
-        switch self {
-        case .mov, .movImm: return true
-        default: return false
-        }
+        guard case .mov = self else { return false }
+        return true
     }
     
-    mutating func updateRegisters(concreteRegisters: [AIRRegisterHash: TargetRegister]) {
-        switch self {
-        case .add(let a, let b):        self = .add(concreteRegisters[a.hash]!, concreteRegisters[b.hash]!)
-        case .addImm(let a, let val):   self = .addImm(dest: concreteRegisters[a.hash]!, val: val)
-        case .mov(let dest, let src):   self = .mov(dest: concreteRegisters[dest.hash]!, src: concreteRegisters[src.hash]!)
-        case .movImm(let dest, let v):  self = .movImm(dest: concreteRegisters[dest.hash]!, val: v)
-        default: break
-        }
-    }
-    
-    // used in live variable analysis
-    
-    /// regs with live values into this inst
+        /// regs with live values into this inst
     var used: Set<AIRRegisterHash> {
         switch self {
-        case .add(let l, let r): return [l.hash, r.hash]
-        case .addImm(let l, _): return [l.hash]
-        case .mov(_, let src): return [src.hash]
-        default: return []
+        case .add(let l, let r):
+            guard let r = r.reg else { return [l.hash] }
+            return [l.hash, r.hash]
+        case .mov(_, let src):
+            guard let src = src.reg else { return [] }
+            return [src.hash]
+        case .ret: return []
         }
     }
     /// reg vals defined in this inst
     var def: Set<AIRRegisterHash> {
         // workaround for swift bug, this can be comma seperated
         switch self {
-        case .add(let out, _): return [out.hash]
-        case .mov(let out, _): return [out.hash]
-        case .movImm(let out, _): return [out.hash]
-        case .addImm(let out, _): return [out.hash]
+        case .add(let out, _):
+            return [out.hash]
+        case .mov(let out, _):
+            guard let out = out.reg else { return [] }
+            return [out.hash]
         case .ret: return []
+        }
+    }
+    
+    mutating func rewriteRegisters(_ graph: InterferenceGraph, _ rewrite: @noescape (AIRRegister) -> AIRRegister) {
+        let hash = self
+        switch self {
+        case .add(let a, let b): self = .add(rewrite(a), b.rewriteRegisters(rewrite))
+        case .mov(let dest, let src): self = .mov(dest: dest.rewriteRegisters(rewrite), src: src.rewriteRegisters(rewrite))
+        case .ret: break
+        }
+        graph.replacedInsts[hash] = self
+    }
+}
+
+extension MCInstAddressingMode {
+    var asm: String {
+        switch self {
+        case .reg(let reg): return reg.name
+        case .imm(let val): return String(val)
+        case .mem(let mem): return "[\(mem.name)]"
+        case .offsetMem(let mem, let offs): return "[\(mem.name)\(offs>=0 ? "+" : "-")\(abs(offs))]"
+        }
+    }
+    
+    var reg: AIRRegister? {
+        switch self {
+        case .reg(let reg): return reg
+        case .mem(let reg): return reg
+        case .offsetMem(let reg, _): return reg
+        case .imm: return nil
+        }
+    }
+    func rewriteRegisters(_ rewrite: @noescape (AIRRegister) -> AIRRegister) -> MCInstAddressingMode {
+        switch self {
+        case .reg(let reg): return .reg(rewrite(reg))
+        case .mem(let reg): return .mem(rewrite(reg))
+        case .offsetMem(let reg, let offs): return .offsetMem(rewrite(reg), offs)
+        case .imm(let val): return .imm(val)
         }
     }
 }
 
-
-struct TargetMachine {
-    let nativeIntSize: Int
-    let register: TargetRegister.Type
-    init(reg: TargetRegister.Type) {
-        self.nativeIntSize = 64
-        self.register = reg
-    }
+extension MCInst : CustomStringConvertible, Hashable {
+    var description: String { return asm }
+    var hashValue: Int { return asm.hashValue }
+    static func == (l: MCInst, r: MCInst) -> Bool { return l.hashValue == r.hashValue }
 }
+
+
+protocol TargetMachine {
+    static var gpr: [X86Register] { get }
+    
+    static var returnRegister: X86Register { get }
+    static func paramRegister(at: Int) -> X86Register
+    
+    static var stackPtr: X86Register { get }
+    static var basePtr: X86Register { get }
+    static var wordSize: Int { get }
+}
+extension TargetMachine {
+    static var availiableRegisters: Int { return gpr.count }
+}
+struct X8664Machine : TargetMachine {
+    static let gpr: [X86Register] = [.rdi, .rsi, .r8]
+    
+    static var returnRegister: X86Register { return .rax }
+    static func paramRegister(at i: Int) -> X86Register { return [.rdi, .rsi, .rdx, .rcx][i] }
+    
+    static var stackPtr: X86Register { return .rsp }
+    static var basePtr: X86Register { return .rbp }
+    
+    static var wordSize: Int { return 64 }
+}
+
+
+
 
 final class MCFunction {
     var insts: [MCInst]
     var precoloured: [AIRRegisterHash: TargetRegister] = [:]
+    
+    var stackSize = 0
     
     init(dag: SelectionDAG) throws {
         self.insts = try dag.runInstructionSelection()
@@ -91,12 +145,6 @@ final class MCFunction {
 struct GPR : Reg {}
 
 protocol TargetRegister : AIRRegister {
-    static var gpr: [X86Register] { get }
-    static var returnRegister: X86Register { get }
-    static func paramRegister(at: Int) -> X86Register
-}
-extension TargetRegister {
-    static var availiableRegisters: Int { return gpr.count }
 }
 
 enum X86Register : String, TargetRegister {
@@ -115,17 +163,15 @@ enum X86Register : String, TargetRegister {
     case xmm8, xmm9, xmm10, xmm11, xmm12, xmm13, xmm14, xmm15
     
     var air: String { return "%\(rawValue)" }
+    var name: String { return rawValue }
     var hash: AIRRegisterHash { return AIRRegisterHash(hashValue: rawValue.hashValue) }
     
     /// General purpose registers
 //    static let gpr: [X86Register] = [.rax, .rbx, .rcx, .rdx, .rdi, .rbp, .rsp,
 //                                     .r8, .r9, .r10, .r11, .r12, .r13, .r14, .r15]
     // 4 regs availiable for testing
-    static let gpr: [X86Register] = [.r8, .r9]
-    
-    static var returnRegister: X86Register { return .rax }
-    static func paramRegister(at i: Int) -> X86Register { return [.rdi, .rsi, .rdx, .rcx][i] }
 }
+
 
 extension MCFunction : CustomStringConvertible {
     var description: String {

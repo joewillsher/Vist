@@ -9,8 +9,8 @@
 
 extension MCFunction {
     
-    func allocateRegisters() throws {
-        let allocator = ColouringRegisterAllocator(function: self, target: X86Register.self)
+    func allocateRegisters(builder: AIRBuilder) throws {
+        let allocator = ColouringRegisterAllocator(function: self, target: X8664Machine.self, builder: builder)
         try allocator.run()
     }
 }
@@ -21,49 +21,191 @@ extension MCFunction {
 final class ColouringRegisterAllocator {
     let function: MCFunction
     var interferenceGraph: InterferenceGraph
-    let target: TargetMachine
+    let target: TargetMachine.Type, builder: AIRBuilder
     
-    init<Target : TargetRegister>(function: MCFunction, target: Target.Type) {
+    init(function: MCFunction, target: TargetMachine.Type, builder: AIRBuilder) {
         self.function = function
         self.precoloured = function.precoloured
+        self.builder = builder
+        self.target = target
         self.interferenceGraph = InterferenceGraph(function: function)
-        self.target = TargetMachine(reg: target)
     }
     
     // TODO: set this up; params and return must be precoloured and we can't move them
     //       when coalescing
     fileprivate var precoloured: [AIRRegisterHash: TargetRegister] = [:]
     
-    fileprivate var worklist: [IGNode] = []
-    fileprivate var coalesceWorklist: Set<IGNode> = []
-    
     /// Maps a register to the reg it was mapped into
     fileprivate var coalescedMap: [AIRRegisterHash: AIRRegisterHash] = [:]
+    fileprivate var colouredNodes: [AIRRegisterHash: TargetRegister] = [:]
     
-    fileprivate var concreteRegisters: [AIRRegisterHash: TargetRegister] = [:]
+    var freezeWorklist: Set<IGNode> = []
+    var simplifyWorklist: Set<IGNode> = []
+    var spillWorklist: Set<IGNode> = []
+    /// moves able to be coalesced
+    var worklistMoves: Set<IGNode> = []
+    
+    var frozenMoves: Set<IGNode> = []
+    var selectStack: [IGNode] = []
+    fileprivate var spilled: Set<IGNode> = []
+    
+    private func recalculateInterference() {
+        interferenceGraph = InterferenceGraph(function: function)
+    }
     
     func run() throws {
+
+        for node in interferenceGraph.nodes {
+            if node.order >= k {
+                spillWorklist.insert(node)
+            } else if node.isMoveRelated {
+                freezeWorklist.insert(node)
+            } else {
+                simplifyWorklist.insert(node)
+            }
+            
+            if node.isMoveRelated {
+                worklistMoves.insert(node)
+            }
+        }
         
-        repeat {
-            aggressiveCoalesce()
-        } while removeCoalescedLoads()
-        
-        simplify()
+        while true {
+            if let simplifyWorkitem = simplifyWorklist.popFirst() {
+                simplify(simplifyWorkitem)
+            }
+            else if let move = worklistMoves.popFirst() {
+                if conservativeCoalesce(move) {
+                    removeCoalescedLoads()
+                }
+            }
+            else if let toFreeze = freezeWorklist.popFirst() {
+                freeze(toFreeze)
+            }
+            else if !spillWorklist.isEmpty {
+                selectSpill()
+            }
+            else {
+                break
+            }
+        }
+        //assert(interferenceGraph.nodes.isEmpty)
         
         select()
+        
+        if !spilled.isEmpty {
+            // rewrite program
+            _ = insertSpills()
+            // reset initial lists
+            precoloured = colouredNodes
+            colouredNodes.removeAll()
+            coalescedMap.removeAll()
+            frozenMoves.removeAll()
+            // try again
+            recalculateInterference()
+            try run()
+            return
+        }
+        
         updateRegUse()
+        print(function)
         
     }
 }
 
+extension ColouringRegisterAllocator {
+    
+    func insertSpills() -> Set<AIRRegisterHash> {
+        
+        var spilledLocs: Set<AIRRegisterHash> = []
+        
+        while let spill = spilled.popFirst() {
+            
+            let rbp = target.basePtr
+            let size = 8 // size of this register, should be calculated
+            function.stackSize += size
+            let offset = -function.stackSize
+            
+            let spillReg = builder.getRegister()
+            let stackMemory = MCInstAddressingMode.offsetMem(rbp, offset)
+            spilledLocs.insert(spillReg.hash)
+            
+            for use in interferenceGraph.uses[spill.reg]! {
+                let index = function.insts.index(of: interferenceGraph.getUpdatedInst(use))!
+                // write a load from stack before the use
+                
+                function.insts[index].rewriteRegisters(interferenceGraph) { reg in
+                    reg.hash == spill.reg ? spillReg : reg
+                }
+                
+                let fetch = MCInst.mov(dest: .reg(spillReg), src: stackMemory)
+                function.insts.insert(fetch, at: index)
+            }
+            
+            for def in interferenceGraph.defs[spill.reg]! {
+                let index = function.insts.index(of: interferenceGraph.getUpdatedInst(def))!
+                
+                function.insts[index].rewriteRegisters(interferenceGraph) { reg in
+                    reg.hash == spill.reg ? spillReg : reg
+                }
+                
+                // write back to stack after the def
+                let store = MCInst.mov(dest: stackMemory, src: .reg(spillReg))
+                function.insts.insert(store, at: index+1)
+            }
+            
+        }
+        
+        return spilledLocs
+    }
+    
+}
+
+
 private extension ColouringRegisterAllocator {
     
-    func removeCoalescedLoads() -> Bool {
+    func spillCost(of node: IGNode) -> Int {
+        let uses = 1 // TODO: this should depend on
+        var order = node.order
+        // TODO: if it is just loaded from it is cheaper to spill
+        let canBeRematerialised = false
+        if canBeRematerialised { order /= 2 }
+        // cost is inversely proportional to the number of uses
+        // and proportional to the order
+        return order / uses
+    }
+    
+    private func cost(of a: IGNode, isLessThan b: IGNode) -> Bool {
+        return spillCost(of: a) < spillCost(of: b)
+    }
+    
+    /// possible spill
+    func selectSpill() {
+        let spill = spillWorklist.min(by: cost(of:isLessThan:))!
+        spillWorklist.remove(spill)
+        
+        simplifyWorklist.insert(spill)
+        spill.freezeMoves()
+    }
+    
+    /// To freeze a node, we  
+    func freeze(_ frozen: IGNode) {
+        simplifyWorklist.insert(frozen)
+        frozenMoves.insert(frozen)
+        frozen.freezeMoves()
+    }
+    /// enable moves
+    func unfreeze(_ node: IGNode) {
+        worklistMoves.insert(node)
+        node.unfreezeMoves()
+    }
+
+    
+    func removeCoalescedLoads() {
         
         var removalSet: [Int] = []
         
         for (index, inst) in function.insts.enumerated() {
-            guard case .mov(let dest, let src) = inst else {
+            guard case .mov(.reg(let dest), .reg(let src)) = inst else {
                 continue
             }
             guard src.hash == coalescedMap[dest.hash] || dest.hash == coalescedMap[src.hash] else {
@@ -73,58 +215,39 @@ private extension ColouringRegisterAllocator {
             removalSet.append(index)
             // `coalesced` is the val, remove for the key
         }
-        guard !removalSet.isEmpty else { return false }
+        guard !removalSet.isEmpty else { return }
         // remove these insts working backwards
         for i in removalSet.reversed() {
             function.insts.remove(at: i)
         }
 //        coalescedMap.removeAll()
         interferenceGraph = InterferenceGraph(function: function)
-        return true
     }
     
     func updateRegUse() {
-        
         for i in 0..<function.insts.count {
-            function.insts[i].updateRegisters(concreteRegisters: concreteRegisters)
-        }
-        
-    }
-    
-    func coalesce() {
-        
-    }
-    func simplify() {
-        // Simplify: color the graph using a simple heuristic [Kempe 1879]. Suppose the graph G contains 
-        // a node m with fewer than K neighbors, where K is the number of registers on the machine. Let G′ be
-        // the graph G − {m} obtained by removing m. If G′ can be colored, then so can G, for when adding m to 
-        // the colored graph G′ the neighbors of m have at most K − 1 colors among them; so a free color can always
-        // be found for m. This leads naturally to a stack-based algorithm for coloring: repeatedly remove (and 
-        // push on a stack) nodes of degree less than K. Each such simplification will decrease the degrees of other
-        // nodes, leading to more opportunity for simplification.
-        
-        for node in interferenceGraph.nodes {
-            simplify(node: node)
+            function.insts[i].rewriteRegisters(interferenceGraph) { reg in
+                colouredNodes[reg.hash]!
+            }
         }
     }
     
-    var k: Int { return target.register.availiableRegisters }
+    var k: Int { return target.availiableRegisters }
     
-    func simplify(node: IGNode) {
-        guard (node.order < k && !worklist.contains(node)) || isPrecoloured(node) else { return }
-        
+    func simplify(_ node: IGNode) {
         if !isPrecoloured(node) {
-            worklist.append(node)
+            selectStack.append(node)
         }
-        interferenceGraph.remove(node)
+        remove(node)
         // simplfy nodes this is connected to
-        for edge in node.interferences {
-            simplify(node: edge)
+        for edge in node.interferences.subtracting(selectStack) where edge.order < k {
+            simplifyWorklist.insert(edge)
         }
     }
     
     /// Combine these nodes
-    func combine(_ u: IGNode, _ v: IGNode) {
+    /// - returns: the resulting node
+    func combine(_ u: IGNode, _ v: IGNode) -> IGNode? {
         var u = u, v = v
         // u is going to be removed; which we can't do if it is precoloured
         if isPrecoloured(u) {
@@ -132,54 +255,109 @@ private extension ColouringRegisterAllocator {
         }
         // if both nodes are precoloured, bail on combine
         if isPrecoloured(u) {
-            return
+            u.freezeMoves()
+            return nil
         }
+        freezeWorklist.remove(u)
+        spillWorklist.remove(u)
         
         // record the coalesce
         coalescedMap[u.reg] = v.reg
         // combine the nodes
-        interferenceGraph.combine(u, v)
+        let result = interferenceGraph.combine(u, v, allocator: self)
+        
+        if !isPrecoloured(result), result.order >= k, freezeWorklist.contains(result) {
+            spillWorklist.insert(freezeWorklist.remove(result)!)
+        }
+        if result.order < k, !result.isMoveRelated {
+            simplifyWorklist.insert(result)
+        }
+        return result
     }
     
-    /// Chaitin style aggressive coalescing pass
-    func aggressiveCoalesce() {
+    func conservativeCoalesce(_ node: IGNode) -> Bool {
+        var hadCoalesce = false
         
-        coalesceWorklist = interferenceGraph.nodes
-        
-        while let node = coalesceWorklist.popFirst() {
-            for nonInterferingMoveEdge in node.moves.subtracting(node.interferences).intersection(coalesceWorklist) {
-                combine(node, nonInterferingMoveEdge)
+        for moveEdge in node.moves.subtracting(node.interferences).intersection(worklistMoves) {
+            
+            let significantInterferences = node.interferences.union(moveEdge.interferences)
+                .filter { $0.interferences.count >= k }
+            guard significantInterferences.count < k else {
+                moveEdge.unfreezeMoves()
+                continue
             }
+            guard let combined = combine(node, moveEdge) else { continue }
+            hadCoalesce = true
+            // if the resulting node is no longer move related it will be available for the next round of simplification
+            if !combined.isMoveRelated { break }
         }
-        
+        return hadCoalesce
     }
     
     func isPrecoloured(_ node: IGNode) -> Bool {
-        return precoloured.keys.contains(getRepresentingReg(node))
+        return precoloured.keys.contains(getAlias(node))
     }
     /// - returns: the reg hash representing `node`, taking into account
     ///            coalesced moves
-    func getRepresentingReg(_ node: IGNode) -> AIRRegisterHash {
+    func getAlias(_ node: IGNode) -> AIRRegisterHash {
         return coalescedMap[node.reg] ?? node.reg
     }
     
     func select() {
         
-        concreteRegisters = precoloured
+        colouredNodes = precoloured
         
-        var regs = target.register.gpr
-        func getReg() -> TargetRegister { return regs.popLast()! }
-        
-        for workitem in worklist.reversed() {
-            concreteRegisters[workitem.reg] = precoloured[getRepresentingReg(workitem)] ?? getReg()
+        while let workitem = selectStack.popLast() {
             interferenceGraph.reinsert(workitem)
+            // if we can constrain it to a precoloured node
+            if let precoloured = precoloured[getAlias(workitem)] {
+                colouredNodes[workitem.reg] = precoloured
+            }
+            else {
+                // The colours we cannot assign to this node
+                let interferingColours = workitem.interferences.flatMap { colouredNodes[$0.reg]?.hash }
+                // get the first colour in the priority list that doesn't interfere
+                guard let colour = target.gpr.first(where: { !interferingColours.contains($0.hash) }) else {
+                    // spill if no colour availiable
+                    spilled.insert(workitem)
+                    continue
+                }
+                colouredNodes[workitem.reg] = colour
+            }
         }
         
         for coalesced in coalescedMap {
-            concreteRegisters[coalesced.key] = concreteRegisters[coalesced.value]
+            colouredNodes[coalesced.key] = colouredNodes[coalesced.value]
         }
         
+        // [.rdi, .rsi, .rdx, .rcx]
+        // 2. spill
+        // 3. conservative coalesce
+        // 4. freezing and full algorithm
+    }
+}
+
+extension ColouringRegisterAllocator {
+    /// Decrement degree
+    func remove(_ node: IGNode) {
+        
+        for edge in node.interferences {
+            if edge.order == k {
+                unfreeze(node)
+                spillWorklist.remove(edge)
+                
+                if edge.isMoveRelated {
+                    freezeWorklist.insert(edge)
+                } else {
+                    simplifyWorklist.insert(edge)
+                }
+            }
+        }
+        
+        interferenceGraph.remove(node)
     }
     
 }
+
+
 

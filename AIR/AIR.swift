@@ -70,7 +70,7 @@ final class AIRFunction : AIRImm {
     }
     
     var airType: AIRType? { return type }
-    var air: String { return "@\(name)" }
+    var valueAIR: String { return "@\(name)" }
     
     final class Param : AIRValue {
         let name: String, type: AIRType
@@ -88,6 +88,18 @@ final class AIRFunction : AIRImm {
             get { return register }
             set { register = newValue }
         }
+    }
+    
+    var air: String {
+        let insts = blocks.flatMap { $0.insts }
+        var str  = ""
+        for (index, inst) in insts.enumerated() {
+            str += "%\(index) = \(inst.air)\n"
+        }
+        return str
+    }
+    func valIndex(_ op: AIROp) -> Int {
+        return blocks.flatMap { $0.insts }.index { $0 === op }!
     }
 }
 
@@ -192,11 +204,13 @@ final class BuiltinOp : AIROp {
     let op: AIROpCode
     let arg1: AIRArg, arg2: AIRArg
     let returnType: AIRType
+    var parent: AIRFunction
     
-    init(op: AIROpCode, arg1: AIRArg, arg2: AIRArg, returnType: AIRType) {
+    init(op: AIROpCode, arg1: AIRArg, arg2: AIRArg, returnType: AIRType, parent: AIRFunction) {
         self.op = op
         self.arg1 = arg1; self.arg2 = arg2
         self.returnType = returnType
+        self.parent = parent
     }
     
     var airType: AIRType? { return returnType }
@@ -207,6 +221,9 @@ final class BuiltinOp : AIROp {
         case .add: return .add
         default: fatalError("TODO")
         }
+    }
+    var valueAIR: String {
+        return "%\(parent.valIndex(self))"
     }
 }
 
@@ -237,12 +254,14 @@ enum AIROpCode : String {
 
 protocol AIRRegister : AIRValue {
     var air: String { get }
+    var name: String { get }
     var hash: AIRRegisterHash { get }
 }
 
 struct VirtualRegister : AIRRegister {
     let id: Int
     var air: String { return "%vreg\(id)" }
+    var name: String { return "vreg\(id)" }
     var hash: AIRRegisterHash { return AIRRegisterHash(hashValue: id) }
 }
 
@@ -333,7 +352,7 @@ extension BuiltinInstCall : AIRLower {
             fatalError("TODO")
         }
         return try builder.build(BuiltinOp(op: op, arg1: args[0], arg2: args[1],
-                                           returnType: returnType.machineType()))
+                                           returnType: returnType.machineType(), parent: parentFunction!.airFunction!))
     }
 }
 

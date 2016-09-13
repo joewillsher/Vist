@@ -53,9 +53,11 @@ enum AggrFlattenPass : OptimisationPass {
         
         // First remove all variable insts
         for case let varInst as VariableInst in function.instructions {
+            varInst.value.value!.irName = varInst.irName
             try varInst.eraseFromParent(replacingAllUsesWith: varInst.value.value!)
         }
         for case let varInst as VariableAddrInst in function.instructions {
+            varInst.addr.value!.irName = varInst.irName
             try varInst.eraseFromParent(replacingAllUsesWith: varInst.addr.value!)
         }
         

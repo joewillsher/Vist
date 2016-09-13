@@ -30,17 +30,15 @@ extension Module {
                 // tests below
                 guard airBB.insts.count > 1 else { continue }
                 
-                for s in function.airFunction!.blocks[0].insts {
-                    print(s.air)
-                }
+                print(function.airFunction!.air)
                 
-                let dag = SelectionDAG(builder: builder, target: X86Register.self)
+                let dag = SelectionDAG(builder: builder, target: X8664Machine.self)
                 dag.build(block: airBB)
                 let fn = try MCFunction(dag: dag)
                 
                 print(fn)
                 
-                try fn.allocateRegisters()
+                try fn.allocateRegisters(builder: builder)
                 
                 print(fn)
 
@@ -65,20 +63,20 @@ extension AIRFunction.Param {
         // TODO: spill onto stack if too many params
         dag.precoloured[register.hash] = dag.target.paramRegister(at: index)
         return DAGNode(op: .load,
-                       args: [DAGNode(op: .reg(dag.builder.getRegister()), args: []), dag.buildDAGNode(for: register)],
+                       args: [dag.buildDAGNode(for: register)],
                        chainParent: dag.chainNode)
     }
 }
 extension AIRRegister {
     func dagNode(dag: SelectionDAG) -> DAGNode {
-        return DAGNode(op: .reg(self), args: [])
+        return DAGNode(op: .reg(self))
     }
 }
 
 extension IntImm {
     func dagNode(dag: SelectionDAG) -> DAGNode {
         return DAGNode(op: .load,
-                       args: [DAGNode(op: .reg(dag.builder.getRegister()), args: []), DAGNode(op: .int(value), args: [])],
+                       args: [DAGNode(op: .int(value))],
                        chainParent: dag.chainNode)
     }
 }
@@ -86,8 +84,8 @@ extension IntImm {
 extension RetOp {
     func dagNode(dag: SelectionDAG) -> DAGNode {
         dag.precoloured[result.hash] = dag.target.returnRegister
-        let out = DAGNode(op: .store, args: [dag.buildDAGNode(for: result), dag.buildDAGNode(for: val.val)], chainParent: dag.chainNode)
-        return DAGNode(op: .ret, args: [], chainParent: out)
+        let out = DAGNode(op: .store, args: [dag.buildDAGNode(for: result), dag.buildDAGNode(for: val.val)], chainParent: dag.chainNode).insert(into: dag)
+        return DAGNode(op: .ret, chainParent: out)
     }
 }
 extension BuiltinOp {
@@ -103,15 +101,15 @@ final class SelectionDAG {
     var allNodes: [DAGNode] = []
     let builder: AIRBuilder
     
-    let target: TargetRegister.Type
+    let target: TargetMachine.Type
     
     var precoloured: [AIRRegisterHash: TargetRegister] = [:]
     
     /// used in construction
     private var chainNode: DAGNode!
     
-    init(builder: AIRBuilder, target: TargetRegister.Type) {
-        self.entryNode = DAGNode(op: .entry, args: [])
+    init(builder: AIRBuilder, target: TargetMachine.Type) {
+        self.entryNode = DAGNode(op: .entry)
         self.builder = builder
         self.target = target
     }
@@ -168,7 +166,7 @@ enum SelectionDAGOp {
     // a reference to a register
     case reg(AIRRegister)
     case int(Int)
-    /// load dest src
+    /// load src
     case load
     /// store dest src
     case store
@@ -217,7 +215,7 @@ final class DAGNode {
     var args: [DAGNode]
     var children: [DAGNode] = []
     
-    init(op: SelectionDAGOp, args: [DAGNode], chainParent: DAGNode? = nil) {
+    init(op: SelectionDAGOp, args: [DAGNode] = [], chainParent: DAGNode? = nil) {
         self.op = op
         self.args = args
         for arg in args {
