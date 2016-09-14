@@ -32,15 +32,22 @@ extension MCInst {
         return true
     }
     
-        /// regs with live values into this inst
+    /// regs with live values into this inst
     var used: Set<AIRRegisterHash> {
         switch self {
         case .add(let l, let r):
             guard let r = r.reg else { return [l.hash] }
             return [l.hash, r.hash]
-        case .mov(_, let src):
-            guard let src = src.reg else { return [] }
-            return [src.hash]
+        case .mov(let dest, let src):
+            // a move uses the src, and uses the dest if its a stack addr
+            switch (dest, src) {
+            case (.mem, _), (.offsetMem, _):
+                guard let src = src.reg, let mem = dest.reg else { return [] }
+                return [mem.hash, src.hash]
+            case (_, _):
+                guard let src = src.reg else { return [] }
+                return [src.hash]
+            }
         case .ret: return []
         }
     }
@@ -51,8 +58,9 @@ extension MCInst {
         case .add(let out, _):
             return [out.hash]
         case .mov(let out, _):
-            guard let out = out.reg else { return [] }
-            return [out.hash]
+            // a move only is a def of the out register
+            guard case .reg(let reg) = out else { return [] }
+            return [reg.hash]
         case .ret: return []
         }
     }
@@ -64,7 +72,9 @@ extension MCInst {
         case .mov(let dest, let src): self = .mov(dest: dest.rewriteRegisters(rewrite), src: src.rewriteRegisters(rewrite))
         case .ret: break
         }
-        graph.replacedInsts[hash] = self
+        if hash != self {
+            graph.replacedInsts[hash] = self
+        }
     }
 }
 
@@ -117,8 +127,6 @@ extension TargetMachine {
     static var availiableRegisters: Int { return gpr.count }
 }
 struct X8664Machine : TargetMachine {
-    static let gpr: [X86Register] = [.rdi, .rsi, .r8]
-    
     static var returnRegister: X86Register { return .rax }
     static func paramRegister(at i: Int) -> X86Register { return [.rdi, .rsi, .rdx, .rcx][i] }
     
@@ -126,6 +134,12 @@ struct X8664Machine : TargetMachine {
     static var basePtr: X86Register { return .rbp }
     
     static var wordSize: Int { return 64 }
+    
+    /// General purpose registers
+//    static let gpr: [X86Register] = [.rax, .rbx, .rcx, .rdx, .rdi, .rbp, .rsp,
+//                                     .r8, .r9, .r10, .r11, .r12, .r13, .r14, .r15]
+// 4 regs availiable for testing
+    static let gpr: [X86Register] = [.rdi, .rsi, .r8]
 }
 
 
@@ -166,10 +180,6 @@ enum X86Register : String, TargetRegister {
     var name: String { return rawValue }
     var hash: AIRRegisterHash { return AIRRegisterHash(hashValue: rawValue.hashValue) }
     
-    /// General purpose registers
-//    static let gpr: [X86Register] = [.rax, .rbx, .rcx, .rdx, .rdi, .rbp, .rsp,
-//                                     .r8, .r9, .r10, .r11, .r12, .r13, .r14, .r15]
-    // 4 regs availiable for testing
 }
 
 
