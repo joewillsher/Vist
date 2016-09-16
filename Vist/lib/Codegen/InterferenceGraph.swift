@@ -10,61 +10,11 @@ final class IGNode {
     let reg: AIRRegisterHash
     /// Interference edges
     var interferences: Set<IGNode> = []
-    /// Move edges
-    var moves: Set<IGNode> = []
-    var inactiveMoves: Set<IGNode> = []
-    
-    /// - returns: whether this node is move related iff it is not frozen
-    var isMoveRelated: Bool { return !moves.isEmpty && allowsMoves }
-    
-    /// If true the node can be considered move related, if false
-    /// the node has been *frozen*
-    private var allowsMoves = true
-    
-    /// - precondition: There exists an edge to node
-    func edgeIsMoveRelated(_ node: IGNode) -> Bool {
-        return moves.contains(node)
-    }
     
     init(reg: AIRRegisterHash) { self.reg = reg }
     
     /// The order of this node: the number of interference edges
     var order: Int { return interferences.count }
-    
-    func freezeMoves() {
-        // this node no longer allows moves
-        allowsMoves = false
-        // for each move, tell moves edges to disable this move
-        while let move = moves.popFirst() {
-            inactiveMoves.insert(move)
-            if let activeSelf = move.moves.remove(self) {
-                // if its active, set inactive
-                move.inactiveMoves.insert(activeSelf)
-            }
-        }
-    }
-    func unfreezeMoves() {
-        allowsMoves = true
-        for inactive in inactiveMoves where inactive.allowsMoves {
-            // if the other edge allows moves, set it active
-            moves.insert(inactiveMoves.remove(inactive)!)
-            inactive.moves.insert(inactive.inactiveMoves.remove(self)!)
-        }
-    }
-    /// Remove this move edge from the graph
-    func removeMove(_ other: IGNode) {
-        if let _ = moves.remove(other) {
-            other.moves.remove(self)
-        } else if let _ = inactiveMoves.remove(other) {
-            other.inactiveMoves.remove(self)
-        }
-    }
-    /// Freeze the move to `other`
-    /// - precondition: there exists an active move edge `self -> other`
-    func freezeMove(_ other: IGNode) {
-        inactiveMoves.insert(moves.remove(other)!)
-        other.inactiveMoves.insert(other.moves.remove(self)!)
-    }
 }
 
 extension IGNode : Hashable {
@@ -72,6 +22,24 @@ extension IGNode : Hashable {
     static func == (l: IGNode, r: IGNode) -> Bool { return l.hashValue == r.hashValue }
 }
 
+/// A move
+struct IGMove : Hashable {
+    let src: IGNode, dest: IGNode
+    static func == (l: IGMove, r: IGMove) -> Bool {
+        return l.hashValue == r.hashValue
+    }
+    var hashValue: Int {
+        let ordered = [src.hashValue, dest.hashValue].sorted(by: <)
+        let mask = sizeof(Int.self)*4
+        return (ordered[0] << mask) + (ordered[1] & (Int.max >> mask))
+    }
+    func hasMember(_ node: IGNode) -> Bool {
+        return src == node || dest == node
+    }
+    func other(_ node: IGNode) -> IGNode {
+        return node == src ? dest : src
+    }
+}
 
 /// A graph representing interferences of register live ranges. Nodes in
 /// this graph are registers, and edges are interferences. An edge between
@@ -85,6 +53,7 @@ final class InterferenceGraph {
     /// the old inst hash (which is the value stored in the graph's `defs` and `uses` maps)
     /// to the new inst
     var replacedInsts: [MCInst: MCInst] = [:]
+    var allMoves: Set<IGMove> = []
     
     init(function: MCFunction) {
         // Step 1: compute live ranges
@@ -154,6 +123,11 @@ final class InterferenceGraph {
             liveOut[n] = nodeOut
         }
         
+        /// Utility calculates whether a reg isnt reserved
+        func isGeneralPurposeReg(_ reg: AIRRegisterHash) -> Bool {
+            return !function.target.reservedRegisters.map({$0.hash}).contains(reg)
+        }
+
         // construct the graph from the liveness info
         for (_, live) in liveIn {
             // all values which are alive into this node
@@ -161,20 +135,24 @@ final class InterferenceGraph {
             
             // for every element in the array
             while let reg = list.popLast() {
+                guard isGeneralPurposeReg(reg) else { continue }
                 // record it is live at the same time
                 // as all the ones before it
                 for other in list {
+                    guard isGeneralPurposeReg(other) else { continue }
                     recordInterference(reg, with: other)
                 }
             }
         }
         
         for (dest, src) in allMoveEdges {
-            recordMoveEdge(dest, src)
+            guard isGeneralPurposeReg(dest), isGeneralPurposeReg(src) else { continue }
+            let s = createNode(for: src), d = createNode(for: dest)
+            allMoves.insert(IGMove(src: s, dest: d))
         }
         
         // add all registers with no interferences
-        for unused in allUsed where !nodes.values.contains(where: {$0.reg == unused}) {
+        for unused in allUsed where !nodes.values.contains(where: {$0.reg == unused}) && isGeneralPurposeReg(unused) {
             nodes[unused] = IGNode(reg: unused)
         }
         
@@ -203,27 +181,15 @@ private extension InterferenceGraph {
     }
     
     func recordInterference(_ reg1: AIRRegisterHash, with reg2: AIRRegisterHash) {
+        // add to graph
         let node1 = createNode(for: reg1), node2 = createNode(for: reg2)
         addEdge(node1, node2)
-    }
-    func recordMoveEdge(_ reg1: AIRRegisterHash, _ reg2: AIRRegisterHash) {
-        let node1 = createNode(for: reg1), node2 = createNode(for: reg2)
-        addMoveEdge(node1, node2)
     }
     
     /// - precondition: The nodes are already in the graph
     func addEdge(_ node1: IGNode, _ node2: IGNode) {
         node1.interferences.insert(node2)
         node2.interferences.insert(node1)
-    }
-    /// - precondition: The nodes are already in the graph
-    func addMoveEdge(_ node1: IGNode, _ node2: IGNode) {
-        node1.moves.insert(node2)
-        node2.moves.insert(node1)
-    }
-    func addInactiveMoveEdge(_ node1: IGNode, _ node2: IGNode) {
-        node1.inactiveMoves.insert(node2)
-        node2.inactiveMoves.insert(node1)
     }
 }
 
@@ -236,28 +202,11 @@ extension InterferenceGraph {
         for edge in node.interferences {
             edge.interferences.remove(node)
         }
-        for edge in node.moves {
-            edge.moves.remove(node)
-        }
-        for edge in node.inactiveMoves {
-            edge.inactiveMoves.remove(node)
-        }
         nodes.removeValue(forKey: node.reg)
     }
     func reinsert(_ node: IGNode) {
         for edge in node.interferences {
             addEdge(node, edge)
-        }
-        for edge in node.moves {
-            addMoveEdge(node, edge)
-        }
-        for edge in node.inactiveMoves {
-            if node.allowsMoves, edge.allowsMoves {
-                addMoveEdge(node, edge)
-            }
-            else {
-                addInactiveMoveEdge(node, edge)
-            }
         }
         nodes[node.reg] = node
     }
@@ -269,12 +218,6 @@ extension InterferenceGraph {
         // rewire up the edges
         for interference in v.interferences {
             addEdge(u, interference)
-        }
-        for move in v.moves where move != u {
-            addMoveEdge(u, move)
-        }
-        for move in v.inactiveMoves where move != u {
-            addInactiveMoveEdge(u, move)
         }
         // unhook all uses of u
         allocator.remove(v)
@@ -291,11 +234,13 @@ extension InterferenceGraph : CustomStringConvertible {
 
 extension IGNode : CustomStringConvertible {
     var description: String {
-        let start = "\(reg.hashValue):" +
-            "\n  int: \(interferences.map { String($0.reg.hashValue) }.joined(separator: ","))" +
-            "\n  mov: \(moves.map { String($0.reg.hashValue) }.joined(separator: ","))"
-        return start + "\n  inact: \(inactiveMoves.map { String($0.reg.hashValue) }.joined(separator: ","))" +
-            "\n  allowsmove: \(allowsMoves)"
+        return "(\(reg.hashValue) \\== {\(interferences.map { String($0.reg.hashValue) }.joined(separator: ","))})"
+    }
+}
+extension IGMove : CustomStringConvertible {
+    var description: String {
+        let ordered = [src.hashValue, dest.hashValue].sorted(by: <)
+        return "{\(ordered[0]) : \(ordered[1])}"
     }
 }
 

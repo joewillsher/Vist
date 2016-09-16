@@ -34,7 +34,7 @@ extension Module {
                 
                 let dag = SelectionDAG(builder: builder, target: X8664Machine.self)
                 dag.build(block: airBB)
-                let fn = try MCFunction(dag: dag)
+                let fn = try MCFunction(name: function.airFunction!.name, dag: dag)
                 
                 print(fn)
                 

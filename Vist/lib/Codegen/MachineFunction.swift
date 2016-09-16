@@ -115,6 +115,7 @@ extension MCInst : CustomStringConvertible, Hashable {
 
 protocol TargetMachine {
     static var gpr: [X86Register] { get }
+    static var reservedRegisters: [X86Register] { get }
     
     static var returnRegister: X86Register { get }
     static func paramRegister(at: Int) -> X86Register
@@ -139,21 +140,26 @@ struct X8664Machine : TargetMachine {
 //    static let gpr: [X86Register] = [.rax, .rbx, .rcx, .rdx, .rdi, .rbp, .rsp,
 //                                     .r8, .r9, .r10, .r11, .r12, .r13, .r14, .r15]
 // 4 regs availiable for testing
-    static let gpr: [X86Register] = [.rdi, .rsi, .r8]
+    static let gpr: [X86Register] = [.rdi, .rsi, .rax]
+    static let reservedRegisters: [X86Register] = [.rsp, .rbp]
 }
 
 
 
 
 final class MCFunction {
+    var label: String
     var insts: [MCInst]
     var precoloured: [AIRRegisterHash: TargetRegister] = [:]
+    var target: TargetMachine.Type
     
     var stackSize = 0
     
-    init(dag: SelectionDAG) throws {
+    init(name: String, dag: SelectionDAG) throws {
         self.insts = try dag.runInstructionSelection()
         self.precoloured = dag.precoloured
+        self.target = dag.target
+        self.label = name
     }
 }
 struct GPR : Reg {}
@@ -179,13 +185,12 @@ enum X86Register : String, TargetRegister {
     var air: String { return "%\(rawValue)" }
     var name: String { return rawValue }
     var hash: AIRRegisterHash { return AIRRegisterHash(hashValue: rawValue.hashValue) }
-    
 }
 
 
 extension MCFunction : CustomStringConvertible {
     var description: String {
-        return insts.map { $0.description }.joined(separator: "\n")
+        return "\(label):\n" + insts.map { "  \($0.description)" }.joined(separator: "\n")
     }
 }
 

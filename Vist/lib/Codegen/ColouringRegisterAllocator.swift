@@ -10,7 +10,7 @@
 extension MCFunction {
     
     func allocateRegisters(builder: AIRBuilder) throws {
-        let allocator = ColouringRegisterAllocator(function: self, target: X8664Machine.self, builder: builder)
+        let allocator = ColouringRegisterAllocator(function: self, target: target, builder: builder)
         try allocator.run()
     }
 }
@@ -52,7 +52,10 @@ final class ColouringRegisterAllocator {
     fileprivate var spillWorklist: Set<IGNode> = []
     /// moves enabled for possible coalescing. Unlike the Lal George paper, we keep track
     /// of which moves are active in the nodes.
-    fileprivate var moveWorklist: Set<IGNode> = []
+    var worklistMoves: Set<IGMove> = []
+    var activeMoves: Set<IGMove> = []
+    var frozenMoves: Set<IGMove> = []
+    var constrainedMoves: Set<IGMove> = []
     
     /// stack containing temporaries removed from the graph
     fileprivate var selectStack: [IGNode] = []
@@ -66,17 +69,15 @@ final class ColouringRegisterAllocator {
     
     func run() throws {
         
+        // MkWorklist
+        worklistMoves = interferenceGraph.allMoves
         for node in interferenceGraph.nodes.values {
             if node.order >= k {
                 spillWorklist.insert(node)
-            } else if node.isMoveRelated {
+            } else if isMoveRelated(node) {
                 freezeWorklist.insert(node)
             } else {
                 simplifyWorklist.insert(node)
-            }
-            
-            if node.isMoveRelated {
-                moveWorklist.insert(node)
             }
         }
         
@@ -84,7 +85,7 @@ final class ColouringRegisterAllocator {
             if let simplifyWorkitem = simplifyWorklist.popFirst() {
                 simplify(simplifyWorkitem)
             }
-            else if let move = moveWorklist.popFirst() {
+            else if let move = worklistMoves.popFirst() {
                 if coalesce(move) {
                     removeCoalescedLoads()
                 }
@@ -105,13 +106,14 @@ final class ColouringRegisterAllocator {
         select()
         
         // if there were spills
-        if !spilled.isEmpty {
+        guard spilled.isEmpty else {
             // rewrite program
             insertSpills()
             // reset initial lists
-            precoloured = coloured
             coloured.removeAll()
-            coalescedMap.removeAll()
+            activeMoves.removeAll()
+            constrainedMoves.removeAll()
+            frozenMoves.removeAll()
             // try again
             recalculateInterference()
             try run()
@@ -121,6 +123,19 @@ final class ColouringRegisterAllocator {
         updateRegUse()
         
     }
+    
+    func isMoveRelated(_ node: IGNode) -> Bool {
+        return worklistMoves.union(activeMoves).contains { move in move.hasMember(node) }
+    }
+    
+    func moves(of node: IGNode) -> Set<IGMove> {
+        return Set(worklistMoves.union(activeMoves).filter { move in move.hasMember(node) })
+    }
+    /// All move edges
+    func allMoves(of node: IGNode) -> Set<IGMove> {
+        return Set(worklistMoves.union(activeMoves).union(frozenMoves).filter { move in move.hasMember(node) })
+    }
+    
 }
 
 extension ColouringRegisterAllocator {
@@ -132,7 +147,6 @@ extension ColouringRegisterAllocator {
         let size = target.wordSize/8 // size of this register == the stack space we need
         
         while let spill = spilled.popFirst() {
-            
             // alloc more stack space
             function.stackSize += size
             let offset = -function.stackSize
@@ -174,11 +188,13 @@ extension ColouringRegisterAllocator {
     /// A score of how desirable this reg is to spill. Higher means it 
     /// is a better candidate
     func spillScore(of node: IGNode) -> Double {
-        let uses = Double(interferenceGraph.uses[getAlias(node)]!.count) // TODO: this should depend on
+        // don't spill precoloured nodes
+        guard !isPrecoloured(node) else { return 0 }
+        let uses = Double(interferenceGraph.uses[getAlias(node)]!.count)
         var order = Double(node.order)
         // TODO: if it is just loaded from it is cheaper to spill
         let canBeRematerialised = false //interferenceGraph.defs[getAlias(node)]!.count == 1
-        if canBeRematerialised { order /= 2.0 }
+        if canBeRematerialised { order *= 2.0 }
         // score is inversely proportional to the number of uses
         // and proportional to the order
         return order / uses
@@ -191,9 +207,9 @@ extension ColouringRegisterAllocator {
     /// possible spill: we select a spill from the `spillWorklist` and freeze its moves
     func selectSpill() {
         let spill = spillWorklist.max(by: score(of:isLessThan:))!
+        // freeze this node
         spillWorklist.remove(spill)
-        spill.freezeMoves()
-        simplifyWorklist.insert(spill)
+        freeze(spill)
     }
     
     /// Select the registers, and producing actual spills if that fails
@@ -203,8 +219,7 @@ extension ColouringRegisterAllocator {
         
         // in reverse order we readd the selectStack nodes back to the graph. When we removed
         // them in the simplify phase we guaranteed the rest of the graph was colourable 
-        // with k-1 registers. 
-        // If this wasn't possible, we will
+        // with k-1 registers.
         while let workitem = selectStack.popLast() {
             interferenceGraph.reinsert(workitem)
             // if we can constrain it to a precoloured node
@@ -216,7 +231,6 @@ extension ColouringRegisterAllocator {
                 // = the set of nodes this node interferes with in the graph
                 let interferingColours = Set(workitem.interferences
                     .flatMap { coloured[getAlias($0)]?.hash })
-                    .intersection(precolouredRegister)
                 // get the first colour in the priority list that doesn't interfere
                 guard let colour = availiableRegisters.first(where: { !interferingColours.contains($0.hash) }) else {
                     // spill if no colour availiable
@@ -238,6 +252,7 @@ extension ColouringRegisterAllocator {
     private var precolouredRegister: Set<AIRRegisterHash> {
         return Set(precoloured.map { $0.value.hash })
     }
+    /// Registers provided by this target
     var availiableRegisters: [TargetRegister] {
         return (precoloured.map { $0.value }) + (target.gpr.map { $0 as TargetRegister })
     }
@@ -250,13 +265,34 @@ private extension ColouringRegisterAllocator {
     /// We set the node's moves as frozen and add it to the simplifyWorklist
     func freeze(_ frozen: IGNode) {
         simplifyWorklist.insert(frozen)
-        frozen.freezeMoves()
+        // freeze moves
+        for move in moves(of: frozen) {
+            freezeMove(move)
+            let edge = move.other(frozen)
+            if !isMoveRelated(edge), edge.order < k {
+                freezeWorklist.remove(edge)
+                simplifyWorklist.insert(edge)
+            }
+        }
     }
     
     /// enable moves for this node, adding it back to the moveWorklist
     func unfreeze(_ node: IGNode) {
-        moveWorklist.insert(node)
-        node.unfreezeMoves()
+        for move in moves(of: node).intersection(activeMoves) {
+            activeMoves.remove(move)
+            worklistMoves.insert(move)
+        }
+    }
+    
+    func freezeMove(_ move: IGMove) {
+        worklistMoves.remove(move)
+        activeMoves.remove(move)
+        frozenMoves.insert(move)
+    }
+    func setActiveMove(_ move: IGMove) {
+        worklistMoves.remove(move)
+        frozenMoves.remove(move)
+        activeMoves.insert(move)
     }
     
     /// The number of registers in the target machine; the number of
@@ -274,33 +310,30 @@ private extension ColouringRegisterAllocator {
         remove(node)
     }
     
-    func coalesce(_ node: IGNode) -> Bool {
-        var hadCoalesce = false
+    func coalesce(_ move: IGMove) -> Bool {
+        let node = move.src, moveEdge = move.dest
+        var u = getAliasNode(node), v = getAliasNode(moveEdge)
+        if isPrecoloured(v) { swap(&u, &v) }
         
-        for moveEdge in node.moves.intersection(moveWorklist) {
-            var u = getAliasNode(node), v = getAliasNode(moveEdge)
-            
-            if isPrecoloured(v) { swap(&u, &v) }
-            
-            if u == v {
-                let res = combineNonMove(u, v)
-                addWorkList(res)
-            }
-                // if theyre both precoloured or interfere
-            else if isPrecoloured(v) || u.interferences.contains(v) {
-                v.freezeMove(u)
-                addWorkList(u); addWorkList(v)
-            }
-            else if canBeSafelyCoalesced(u, v) {
-                let res = combine(u, v)
-                addWorkList(res)
-                hadCoalesce = true
-            }
-            return hadCoalesce
+        if u == v {
+            let res = combineNonMove(u, v)
+            addWorkList(res)
+        }
+            // if theyre both precoloured or interfere
+        else if isPrecoloured(v) || u.interferences.contains(v) {
+            constrainMove(IGMove(src: u, dest: v))
+            addWorkList(u); addWorkList(v)
+        }
+        else if canBeSafelyCoalesced(u, v) {
+            let res = combine(u, v)
+            addWorkList(res)
+            return true
+        }
+        else {
+            setActiveMove(IGMove(src: u, dest: v))
         }
         return false
     }
-    
     
     /// Combine the nodes, removing the move inst; both `u` and `v`
     /// get the identity of `u`.
@@ -312,17 +345,26 @@ private extension ColouringRegisterAllocator {
         freezeWorklist.remove(v)
         spillWorklist.remove(v)
         
+        // update move lists
+        for m in worklistMoves where m.hasMember(v) {
+            worklistMoves.insert(IGMove(src: worklistMoves.remove(m)!.other(v), dest: u))
+        }
+        for m in frozenMoves where m.hasMember(v) {
+            frozenMoves.insert(IGMove(src: frozenMoves.remove(m)!.other(v), dest: u))
+        }
+        for m in activeMoves where m.hasMember(v) {
+            activeMoves.insert(IGMove(src: activeMoves.remove(m)!.other(v), dest: u))
+        }
+        
         // record the coalesce
         // combine the nodes
         let result = interferenceGraph.combine(u, v, allocator: self)
-        coalescedNodes.insert(result)
+        coalescedNodes.insert(v)
         coalescedMap[v.reg] = result.reg
         
-        if !isPrecoloured(result), result.order >= k, freezeWorklist.contains(result) {
-            spillWorklist.insert(freezeWorklist.remove(result)!)
-        }
-        if result.order < k, !result.isMoveRelated {
-            simplifyWorklist.insert(result)
+        // if we increased the order of the node to >= k, we mark as spilled
+        if result.order >= k, let spill = freezeWorklist.remove(result) {
+            spillWorklist.insert(spill)
         }
         return result
     }
@@ -330,26 +372,20 @@ private extension ColouringRegisterAllocator {
     func combineNonMove(_ u: IGNode, _ v: IGNode) -> IGNode {
         freezeWorklist.remove(v)
         spillWorklist.remove(v)
-        u.freezeMove(v)
         return u
+    }
+    
+    /// Sets a move as constrained -- it cannot be removed
+    func constrainMove(_ move: IGMove) {
+        constrainedMoves.insert(move)
     }
     
     /// When a move is coalesced, it may no longer be move related and can be added
     /// to the simplify worklist by addWorkList
     func addWorkList(_ node: IGNode) {
-        // if a high degree move related node became low degree
-        if node.order < k, let spill = spillWorklist.remove(node) {
-            if node.isMoveRelated {
-                freezeWorklist.insert(spill)
-            } else {
-                simplifyWorklist.insert(spill)
-            }
-        } else if !node.isMoveRelated {
-            if node.order < k {
-                simplifyWorklist.insert(node)
-            }
+        if !isMoveRelated(node), /*!isPrecoloured(node),*/ node.order < k {
             freezeWorklist.remove(node)
-            moveWorklist.remove(node)
+            simplifyWorklist.insert(node)
         }
     }
     
@@ -411,7 +447,7 @@ private extension ColouringRegisterAllocator {
     func updateRegUse() {
         for i in 0..<function.insts.count {
             function.insts[i].rewriteRegisters(interferenceGraph) { reg in
-                coloured[reg.hash]!
+                coloured[reg.hash] ?? reg
             }
         }
     }
@@ -441,23 +477,27 @@ extension ColouringRegisterAllocator {
         assert(interferenceGraph.contains(node))
         
         // we haven't removed the node yet
-        for edge in adjacent(node) {
+        for edge in adjacent(node) where edge.order == k {
             // if the edge has k neighbours, it will have <k
             // when we remove it, update lists
-            if edge.order == k {
-                unfreeze(edge)
-                spillWorklist.remove(edge)
-                
-                if edge.isMoveRelated {
-                    freezeWorklist.insert(edge)
-                } else {
-                    simplifyWorklist.insert(edge)
-                }
+            unfreeze(edge)
+            for m in adjacent(edge) { unfreeze(m) }
+            spillWorklist.remove(edge)
+            
+            if isMoveRelated(edge) {
+                freezeWorklist.insert(edge)
+            } else {
+                simplifyWorklist.insert(edge)
             }
         }
         
         interferenceGraph.remove(node)
-        moveWorklist.remove(node)
+        
+        // update move sets
+        for m in worklistMoves where m.hasMember(node) { worklistMoves.remove(m) }
+        for m in frozenMoves where m.hasMember(node) { frozenMoves.remove(m) }
+        for m in activeMoves where m.hasMember(node) { activeMoves.remove(m) }
+        // update node sets
         simplifyWorklist.remove(node)
         freezeWorklist.remove(node)
     }

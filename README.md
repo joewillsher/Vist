@@ -40,9 +40,9 @@ Vist is a high level and strongly typed language aimed at being concise, flexibl
 
 The Vist compiler is mainly implemented in Swift but much of the functionality is written in Vist itself. All standard types—like ints, floats, and bools—are implemented in the standard library, as well as core language functionality like printing.
 
-The runtime allows for much of vist’s dynamic behaviour: types which conform to a concept have a ‘witness table’ which is read by the runtime to emit calls to the concept’s methods and to copy or delete complex objects. This type metadata can also be read by the user, using the `typeof` function, and the runtime can perform dynamic type casts to allow patterns like `if x the Int do print x`.
+The runtime allows for much of vist’s dynamic behaviour: types which conform to a concept have a *witness table* which is read by the runtime to emit calls to the concept’s methods and to copy or delete complex objects. This type metadata can also be read by the user, using the `typeof` function, and the runtime can perform dynamic type casts to allow patterns like `if x the Int do print x`.
 
-LLVM is used for code generation, but there is experimental work to replace it with vist’s own backend. Here, LLVM IR is replaced by an assembly intermediate language (AIR), which can be used for instruction selection.
+LLVM is used for code generation, but there is experimental work to replace it with vist’s own backend. Here, LLVM IR is replaced by an assembly intermediate language (AIR), which can be used for instruction selection (by DAG matching) and register allocation (using iterated register allocation).
 
 
 ##Design
