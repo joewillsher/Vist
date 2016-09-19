@@ -57,6 +57,14 @@ struct AIRArg {
     }
 }
 
+final class AIRModule {
+    let builder: AIRBuilder
+    var functions: [AIRFunction] = []
+    
+    init(builder: AIRBuilder) {
+        self.builder = builder
+    }
+}
 
 final class AIRFunction : AIRImm {
     var blocks: [AIRBlock] = []
@@ -356,5 +364,11 @@ extension BuiltinInstCall : AIRLower {
     }
 }
 
+
+extension AIRModule : CustomStringConvertible {
+    var description: String {
+        return functions.map { $0.air }.joined(separator: "\n\n")
+    }
+}
 
 

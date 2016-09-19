@@ -23,16 +23,8 @@ extension IGNode : Hashable {
 }
 
 /// A move
-struct IGMove : Hashable {
+struct IGMove {
     let src: IGNode, dest: IGNode
-    static func == (l: IGMove, r: IGMove) -> Bool {
-        return l.hashValue == r.hashValue
-    }
-    var hashValue: Int {
-        let ordered = [src.hashValue, dest.hashValue].sorted(by: <)
-        let mask = sizeof(Int.self)*4
-        return (ordered[0] << mask) + (ordered[1] & (Int.max >> mask))
-    }
     func hasMember(_ node: IGNode) -> Bool {
         return src == node || dest == node
     }
@@ -40,6 +32,19 @@ struct IGMove : Hashable {
         return node == src ? dest : src
     }
 }
+
+
+extension IGMove : Hashable {
+    static func == (l: IGMove, r: IGMove) -> Bool {
+        return (l.src == r.src && l.dest == r.dest) || (l.src == r.dest && l.dest == r.src)
+    }
+    var hashValue: Int {
+        let ordered = [src.hashValue, dest.hashValue].sorted(by: <)
+        let mask = sizeof(Int.self)*4
+        return (ordered[0] << mask) + (ordered[1] & (Int.max >> mask))
+    }
+}
+
 
 /// A graph representing interferences of register live ranges. Nodes in
 /// this graph are registers, and edges are interferences. An edge between

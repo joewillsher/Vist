@@ -15,6 +15,8 @@
 		D411C8961C8DB61D00478988 /* BreakInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D411C8941C8DB61D00478988 /* BreakInst.swift */; };
 		D411C8981C8DD00000478988 /* DCE.swift in Sources */ = {isa = PBXBuildFile; fileRef = D411C8971C8DD00000478988 /* DCE.swift */; };
 		D411C8991C8DD00000478988 /* DCE.swift in Sources */ = {isa = PBXBuildFile; fileRef = D411C8971C8DD00000478988 /* DCE.swift */; };
+		D41676101D93860F00AF1C92 /* Target.swift in Sources */ = {isa = PBXBuildFile; fileRef = D416760F1D93860F00AF1C92 /* Target.swift */; };
+		D41676111D93860F00AF1C92 /* Target.swift in Sources */ = {isa = PBXBuildFile; fileRef = D416760F1D93860F00AF1C92 /* Target.swift */; };
 		D41BF54D1C5CD797004A1962 /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41BF54C1C5CD797004A1962 /* Tests.swift */; };
 		D41BF5551C5CDC8C004A1962 /* TestCases in Resources */ = {isa = PBXBuildFile; fileRef = D41BF5541C5CDC8C004A1962 /* TestCases */; };
 		D41C732A1D5CEEC30047B373 /* Diagnose.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41C73291D5CEEC30047B373 /* Diagnose.swift */; };
@@ -159,6 +161,8 @@
 		D44B484B1D831B81006BB794 /* ColouringRegisterAllocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44B48491D831B81006BB794 /* ColouringRegisterAllocator.swift */; };
 		D44B484D1D8320F8006BB794 /* InterferenceGraph.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44B484C1D8320F8006BB794 /* InterferenceGraph.swift */; };
 		D44B484E1D8320F8006BB794 /* InterferenceGraph.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44B484C1D8320F8006BB794 /* InterferenceGraph.swift */; };
+		D44C1A931D8EE9CC0062FBDE /* Codegen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44C1A921D8EE9CC0062FBDE /* Codegen.swift */; };
+		D44C1A941D8EE9CC0062FBDE /* Codegen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44C1A921D8EE9CC0062FBDE /* Codegen.swift */; };
 		D454444C1D181AB900C7B02A /* Inline.swift in Sources */ = {isa = PBXBuildFile; fileRef = D454444B1D181AB900C7B02A /* Inline.swift */; };
 		D454444D1D181AB900C7B02A /* Inline.swift in Sources */ = {isa = PBXBuildFile; fileRef = D454444B1D181AB900C7B02A /* Inline.swift */; };
 		D4654F991D50F02A005B3637 /* VIRType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4654F981D50F02A005B3637 /* VIRType.swift */; };
@@ -276,6 +280,7 @@
 		D4060DB91D7CA008009F363A /* MachineFunction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MachineFunction.swift; path = lib/Codegen/MachineFunction.swift; sourceTree = "<group>"; };
 		D411C8941C8DB61D00478988 /* BreakInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BreakInst.swift; path = Instructions/BreakInst.swift; sourceTree = "<group>"; };
 		D411C8971C8DD00000478988 /* DCE.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DCE.swift; path = Optimiser/DCE.swift; sourceTree = "<group>"; };
+		D416760F1D93860F00AF1C92 /* Target.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Target.swift; path = lib/Codegen/Target.swift; sourceTree = "<group>"; };
 		D41BF54A1C5CD797004A1962 /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D41BF54C1C5CD797004A1962 /* Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests.swift; sourceTree = "<group>"; };
 		D41BF54E1C5CD797004A1962 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -362,6 +367,7 @@
 		D44529551CB00A6F00AFA099 /* RefCountInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RefCountInst.swift; path = Instructions/RefCountInst.swift; sourceTree = "<group>"; };
 		D44B48491D831B81006BB794 /* ColouringRegisterAllocator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ColouringRegisterAllocator.swift; path = lib/Codegen/ColouringRegisterAllocator.swift; sourceTree = "<group>"; };
 		D44B484C1D8320F8006BB794 /* InterferenceGraph.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InterferenceGraph.swift; path = lib/Codegen/InterferenceGraph.swift; sourceTree = "<group>"; };
+		D44C1A921D8EE9CC0062FBDE /* Codegen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Codegen.swift; path = lib/Codegen/Codegen.swift; sourceTree = "<group>"; };
 		D454444B1D181AB900C7B02A /* Inline.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Inline.swift; path = Optimiser/Inline.swift; sourceTree = "<group>"; };
 		D4654F981D50F02A005B3637 /* VIRType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VIRType.swift; path = VIR/Types/VIRType.swift; sourceTree = SOURCE_ROOT; };
 		D46A68DD1D5E288500FF9144 /* Closure.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Closure.swift; path = lib/VIRGen/Closure.swift; sourceTree = "<group>"; };
@@ -459,10 +465,12 @@
 			isa = PBXGroup;
 			children = (
 				D4060DB91D7CA008009F363A /* MachineFunction.swift */,
+				D416760F1D93860F00AF1C92 /* Target.swift */,
 				D42814041D7F5F0800B90A09 /* SelectionDAG.swift */,
 				D42814071D7F5F2100B90A09 /* DAGMatching.swift */,
 				D44B48491D831B81006BB794 /* ColouringRegisterAllocator.swift */,
 				D44B484C1D8320F8006BB794 /* InterferenceGraph.swift */,
+				D44C1A921D8EE9CC0062FBDE /* Codegen.swift */,
 			);
 			name = Codegen;
 			sourceTree = "<group>";
@@ -950,6 +958,7 @@
 				D41C732E1D5D02CA0047B373 /* ExistentialUnbox.swift in Sources */,
 				D49248551CF7788A009FD509 /* StdLibInline.swift in Sources */,
 				D43B39E31C8A0F3A0039FB2E /* VariableInst.swift in Sources */,
+				D41676111D93860F00AF1C92 /* Target.swift in Sources */,
 				D4D1346E1D862523005A7EBD /* StrengthReduction.swift in Sources */,
 				D43B3A0F1C8A104F0039FB2E /* Parser.swift in Sources */,
 				D411C8961C8DB61D00478988 /* BreakInst.swift in Sources */,
@@ -1044,6 +1053,7 @@
 				D4654F9A1D50F02A005B3637 /* VIRType.swift in Sources */,
 				D43B399E1C8A0EDF0039FB2E /* README.md in Sources */,
 				D47748361D4770680079B8C5 /* CFG.swift in Sources */,
+				D44C1A941D8EE9CC0062FBDE /* Codegen.swift in Sources */,
 				D43B3A201C8A105B0039FB2E /* Print.swift in Sources */,
 				D43B39BB1C8A0F140039FB2E /* TupleType.swift in Sources */,
 			);
@@ -1078,6 +1088,7 @@
 				D4326E3E1CA6F0140016E595 /* ExistentialInst.swift in Sources */,
 				D4A0001D1CC7C46500157D90 /* GlobalInst.swift in Sources */,
 				D4E225B61D6C7BCB0055A5CA /* Destructor.swift in Sources */,
+				D44C1A931D8EE9CC0062FBDE /* Codegen.swift in Sources */,
 				D41C73301D5D02D00047B373 /* AggregateFlatten.swift in Sources */,
 				D4CF76771C8CD4A70058A8EC /* TupleInst.swift in Sources */,
 				D41C732A1D5CEEC30047B373 /* Diagnose.swift in Sources */,
@@ -1101,6 +1112,7 @@
 				D4A000211CCA7E4D00157D90 /* LiteralLower.swift in Sources */,
 				D43B3A8A1C8A12090039FB2E /* Interpreter.swift in Sources */,
 				D4F3D8051CAC4243005A3B07 /* LowerError.swift in Sources */,
+				D41676101D93860F00AF1C92 /* Target.swift in Sources */,
 				D46D1F861D5CDD6C0001E327 /* Backend.cpp in Sources */,
 				D46A68E01D5E288500FF9144 /* Closure.swift in Sources */,
 				D43FE1D31D5F7354003494C9 /* NameLookup.swift in Sources */,

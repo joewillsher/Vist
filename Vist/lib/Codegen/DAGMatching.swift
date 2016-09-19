@@ -97,6 +97,8 @@ extension Reg {
     }
 }
 
+struct AnyRegPattern : Reg {}
+
 
 // MARK: Patterns
 
@@ -115,10 +117,15 @@ private class LoadPattern<SRC : OpPattern> : UnaryOpPattern {
     static var op: SelectionDAGOp { return .load }
 }
 
-private class RetPattern : SimpleOpPattern {
-    static var op: SelectionDAGOp { return .ret }
+/// Ret has chain parent (load VAL)
+private class RetPattern<VAL : OpPattern> : OpPattern {
+    private static func opMatches(node: DAGNode) -> Bool {
+        if case .ret = node.op { return true }
+        return false
+    }
+    typealias Store = StorePattern<AnyRegPattern, VAL>
     static func matches(subtree: DAGNode) -> Bool {
-        return opMatches(node: subtree)
+        return subtree.chainParent.map { Store.opMatches(node: $0) && Store.matches(subtree: $0) } ?? false
     }
 }
 private class IntImmPattern : OpPattern {
@@ -131,6 +138,28 @@ private class IntImmPattern : OpPattern {
         return opMatches(node: subtree)
     }
 }
+private class AggrCreatePattern : OpPattern {
+    static func opMatches(node: DAGNode) -> Bool {
+        if case .aggregate = node.op { return true }
+        return false
+    }
+    static func matches(subtree: DAGNode) -> Bool {
+        // registers must only compare this node
+        return opMatches(node: subtree)
+    }
+}
+private class VoidPattern : OpPattern {
+    static func opMatches(node: DAGNode) -> Bool {
+        if case .aggregate = node.op { return true }
+        return false
+    }
+    static func matches(subtree: DAGNode) -> Bool {
+        // registers must only compare this node
+        return subtree.args.isEmpty
+    }
+}
+
+
 
 /// Matches any DAG subtree without checking it
 struct AnyOpPattern : OpPattern {
@@ -170,7 +199,7 @@ extension ControlFlowRewritingPattern {
 //     load     ==>    load    +   "movq temp reg"
 //       |               |
 private class RegisterUseRewritingPattern :
-    LoadPattern<GPR>,
+    LoadPattern<AnyRegPattern>,
     DataFlowRewritingPattern
 {
     static func rewrite(_ load: DAGNode, dag: SelectionDAG, emission: MCEmission) throws -> AIRRegister {
@@ -268,7 +297,7 @@ private class IADD64ImmRewritingPattern :
 
 //     ret     ==>    ❌   +   "retq"
 private class RetRewritingPattern :
-    RetPattern,
+    RetPattern<AnyOpPattern>,
     ControlFlowRewritingPattern
 {
     static func rewrite(_ node: DAGNode, dag: SelectionDAG, emission: MCEmission) {
@@ -277,13 +306,32 @@ private class RetRewritingPattern :
     }
 }
 
+//     void
+//      ||
+//     ret     ==>    ❌   +   "retq"
+private class RetVoidRewritingPattern :
+    RetPattern<VoidPattern>,
+    ControlFlowRewritingPattern
+{
+    static func rewrite(_ node: DAGNode, dag: SelectionDAG, emission: MCEmission) {
+        // remove the void and the return
+        for arg in node.chainParent!.args {
+            arg.remove(dag: dag)
+        }
+        node.chainParent!.remove(dag: dag)
+        node.remove(dag: dag)
+        emission.emit(.ret)
+    }
+}
+
+
 //               |
 //     destreg  val
 //        \     /               |
 //         \   /        ==>    val   +   "movq destreg val"
 //         store
 private class StoreRewritingPattern :
-    StorePattern<GPR, AnyOpPattern>,
+    StorePattern<AnyRegPattern, AnyOpPattern>,
     ControlFlowRewritingPattern
 {
     static func rewrite(_ store: DAGNode, dag: SelectionDAG, emission: MCEmission) throws {
@@ -297,6 +345,15 @@ private class StoreRewritingPattern :
         store.remove(dag: dag)
     }
 }
+
+//private class VoidRewritingPattern :
+//    VoidPattern,
+//    ControlFlowRewritingPattern
+//{
+//    static func rewrite(_ void: DAGNode, dag: SelectionDAG, emission: MCEmission) throws {
+//        void.remove(dag: dag)
+//    }
+//}
 
 
 /// An object responsible for managing the emission of machine insts
@@ -359,8 +416,9 @@ extension SelectionDAG {
         // any node before a chain parent
         while let node = nodes.popLast() {
             
-            try (node.match(emission: emission) as? ControlFlowRewritingPattern.Type)?
-                .rewrite(node, dag: self, emission: emission)
+            if case let pattern as ControlFlowRewritingPattern.Type = try node.match(emission: emission) {
+                try pattern.rewrite(node, dag: self, emission: emission)
+            }
             
             if let r = node.chainParent {
                 nodes.append(r)
@@ -378,6 +436,7 @@ extension SelectionDAG {
         IADD64RewritingPattern.self,
         IADD64ImmRewritingPattern.self,
         RetRewritingPattern.self,
+        RetVoidRewritingPattern.self,
         StoreRewritingPattern.self,
     ]
 }

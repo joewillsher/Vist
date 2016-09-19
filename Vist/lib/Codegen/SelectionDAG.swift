@@ -6,53 +6,6 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-extension Module {
-    
-    func emitAIR(builder: AIRBuilder) throws {
-        
-        for function in functions {
-            let ps = try function.params?.map { try $0.lowerVIRToAIR(builder: builder) as! AIRFunction.Param } ?? []
-            let airFn = AIRFunction(name: function.name, type: function.type.machineType(), params: ps)
-            function.airFunction = airFn
-        }
-        
-        for function in functions where function.hasBody {
-            for bb in function.dominator.analysis {
-                let airBB = AIRBlock()
-                builder.insertPoint.block = airBB
-                function.airFunction!.blocks.append(airBB)
-                
-                for case let inst as AIRLower & Inst in bb.instructions {
-                    let air = try inst.lowerVIRToAIR(builder: builder)
-                    inst.updateUsesWithAIR(air)
-                }
-                
-                // tests below
-                guard airBB.insts.count > 1 else { continue }
-                
-                print(function.airFunction!.air)
-                
-                let dag = SelectionDAG(builder: builder, target: X8664Machine.self)
-                dag.build(block: airBB)
-                let fn = try MCFunction(name: function.airFunction!.name, dag: dag)
-                
-                print(fn)
-                
-                try fn.allocateRegisters(builder: builder)
-                
-                print(fn)
-
-            }
-            
-            
-        }
-        
-        
-    }
-    
-}
-
-
 extension AIRValue {
     func dagNode(dag: SelectionDAG) -> DAGNode {
         fatalError()
@@ -91,6 +44,16 @@ extension RetOp {
 extension BuiltinOp {
     func dagNode(dag: SelectionDAG) -> DAGNode {
         return DAGNode(op: .add, args: args.map { dag.buildDAGNode(for: $0.val) })
+    }
+}
+extension AggregateImm {
+    func dagNode(dag: SelectionDAG) -> DAGNode {
+        return DAGNode(op: .aggregate, args: elements.map { dag.buildDAGNode(for: $0) }, chainParent: dag.chainNode)
+    }
+}
+extension StructExtractOp {
+    func dagNode(dag: SelectionDAG) -> DAGNode {
+        return DAGNode(op: .aggregateExtract(index: index), args: [dag.buildDAGNode(for: self.aggr.val)], chainParent: dag.chainNode)
     }
 }
 
@@ -170,6 +133,9 @@ enum SelectionDAGOp {
     case load
     /// store dest src
     case store
+    
+    case aggregate, aggregateExtract(index: Int)
+    
     case ret
     
     var hasSideEffects: Bool {
@@ -190,6 +156,8 @@ extension SelectionDAGOp : Equatable {
         case (.store, .store): return true
         case (.ret, .ret): return true
         case (.call, .call): return true
+        case (.aggregate, .aggregate): return true
+        case (.aggregateExtract(let a), .aggregateExtract(let b)): return a == b
         default: return false
         }
     }
@@ -203,6 +171,8 @@ extension SelectionDAGOp : Equatable {
         case (.store, .store): return true
         case (.ret, .ret): return true
         case (.call, .call): return true
+        case (.aggregate, .aggregate): return true
+        case (.aggregateExtract, .aggregateExtract): return true
         default: return false
         }
     }
@@ -246,15 +216,17 @@ final class DAGNode {
 
 extension SelectionDAGOp : CustomStringConvertible {
     var description: String {
-        switch (self) {
-        case (.entry): return "entry"
-        case (.add): return "add"
-        case (.reg(let a)): return "reg \(a.air)"
-        case (.int(let a)): return "int \(a)"
-        case (.load): return "load"
-        case (.store): return "store"
-        case (.ret): return "ret"
-        case (.call): return "call"
+        switch self {
+        case .entry: return "entry"
+        case .add: return "add"
+        case .reg(let a): return "reg \(a.air)"
+        case .int(let a): return "int \(a)"
+        case .load: return "load"
+        case .store: return "store"
+        case .ret: return "ret"
+        case .call: return "call"
+        case .aggregate: return "aggregate"
+        case .aggregateExtract(let index): return "extract \(index)"
         }
     }
 }

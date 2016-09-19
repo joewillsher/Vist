@@ -6,16 +6,34 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-
 enum MCInst {
+    // arithmetic
     case add(AIRRegister, MCInstAddressingMode)
+    case sub(AIRRegister, MCInstAddressingMode)
+    // move
     case mov(dest: MCInstAddressingMode, src: MCInstAddressingMode)
-    case ret
+    // stack
+    case push(AIRRegister), pop(AIRRegister)
+    // proc
+    case ret//, call(String)
     
     var asm: String {
         switch self {
         case .add(let a, let b):        return "addq \(a.name), \(b.asm)"
+        case .sub(let a, let b):        return "subq \(a.name), \(b.asm)"
         case .mov(let dest, let src):   return "movq \(dest.asm), \(src.asm)"
+        case .push(let reg):            return "pushq \(reg.name)"
+        case .pop(let reg):             return "popq \(reg.name)"
+        case .ret:                      return "retq"
+        }
+    }
+    var _asm: String {
+        switch self {
+        case .add(let a, let b):        return "addq \(b._asm), %\(a.name)"
+        case .sub(let a, let b):        return "subq \(b._asm), %\(a.name)"
+        case .mov(let dest, let src):   return "movq \(src._asm), \(dest._asm)"
+        case .push(let reg):            return "pushq %\(reg.name)"
+        case .pop(let reg):             return "popq %\(reg.name)"
         case .ret:                      return "retq"
         }
     }
@@ -38,6 +56,9 @@ extension MCInst {
         case .add(let l, let r):
             guard let r = r.reg else { return [l.hash] }
             return [l.hash, r.hash]
+        case  .sub(let l, let r):
+            guard let r = r.reg else { return [l.hash] }
+            return [l.hash, r.hash]
         case .mov(let dest, let src):
             // a move uses the src, and uses the dest if its a stack addr
             switch (dest, src) {
@@ -48,6 +69,8 @@ extension MCInst {
                 guard let src = src.reg else { return [] }
                 return [src.hash]
             }
+        case .push(let reg), .pop(let reg):
+            return [reg.hash]
         case .ret: return []
         }
     }
@@ -57,11 +80,13 @@ extension MCInst {
         switch self {
         case .add(let out, _):
             return [out.hash]
+        case .sub(let out, _):
+            return [out.hash]
         case .mov(let out, _):
             // a move only is a def of the out register
             guard case .reg(let reg) = out else { return [] }
             return [reg.hash]
-        case .ret: return []
+        case .ret, .push, .pop: return []
         }
     }
     
@@ -69,7 +94,10 @@ extension MCInst {
         let hash = self
         switch self {
         case .add(let a, let b): self = .add(rewrite(a), b.rewriteRegisters(rewrite))
+        case .sub(let a, let b): self = .add(rewrite(a), b.rewriteRegisters(rewrite))
         case .mov(let dest, let src): self = .mov(dest: dest.rewriteRegisters(rewrite), src: src.rewriteRegisters(rewrite))
+        case .push(let reg): self = .push(rewrite(reg))
+        case .pop(let reg): self = .push(rewrite(reg))
         case .ret: break
         }
         if hash != self {
@@ -85,6 +113,14 @@ extension MCInstAddressingMode {
         case .imm(let val): return String(val)
         case .mem(let mem): return "[\(mem.name)]"
         case .offsetMem(let mem, let offs): return "[\(mem.name)\(offs>=0 ? "+" : "-")\(abs(offs))]"
+        }
+    }
+    var _asm: String {
+        switch self {
+        case .reg(let reg): return "%\(reg.name)"
+        case .imm(let val): return "$\(val)"
+        case .mem(let mem): return "(%\(mem.name))"
+        case .offsetMem(let mem, let offs): return "\(offs>=0 ? "+" : "-")\(abs(offs))(%\(mem.name))"
         }
     }
     
@@ -112,41 +148,6 @@ extension MCInst : CustomStringConvertible, Hashable {
     static func == (l: MCInst, r: MCInst) -> Bool { return l.hashValue == r.hashValue }
 }
 
-
-protocol TargetMachine {
-    static var gpr: [X86Register] { get }
-    static var reservedRegisters: [X86Register] { get }
-    
-    static var returnRegister: X86Register { get }
-    static func paramRegister(at: Int) -> X86Register
-    
-    static var stackPtr: X86Register { get }
-    static var basePtr: X86Register { get }
-    static var wordSize: Int { get }
-}
-extension TargetMachine {
-    static var availiableRegisters: Int { return gpr.count }
-}
-struct X8664Machine : TargetMachine {
-    static var returnRegister: X86Register { return .rax }
-    static func paramRegister(at i: Int) -> X86Register { return [.rdi, .rsi, .rdx, .rcx][i] }
-    
-    static var stackPtr: X86Register { return .rsp }
-    static var basePtr: X86Register { return .rbp }
-    
-    static var wordSize: Int { return 64 }
-    
-    /// General purpose registers
-//    static let gpr: [X86Register] = [.rax, .rbx, .rcx, .rdx, .rdi, .rbp, .rsp,
-//                                     .r8, .r9, .r10, .r11, .r12, .r13, .r14, .r15]
-// 4 regs availiable for testing
-    static let gpr: [X86Register] = [.rdi, .rsi, .rax]
-    static let reservedRegisters: [X86Register] = [.rsp, .rbp]
-}
-
-
-
-
 final class MCFunction {
     var label: String
     var insts: [MCInst]
@@ -162,35 +163,45 @@ final class MCFunction {
         self.label = name
     }
 }
-struct GPR : Reg {}
 
-protocol TargetRegister : AIRRegister {
+enum MCSection {
+    case data, text(functions: [MCFunction])
 }
 
-enum X86Register : String, TargetRegister {
-    // 64bit general purpose registers
-    case rax, rbx, rcx, rdx, rdi, rsi, rbp, rsp
-    case r8, r9, r10, r11, r12, r13, r14, r15
-    // 32bit general purpose registers
-    case eax, ebx, ecx, edx, edi, esi, ebp, esp
-    case r8d, r9d, r10d, r11d, r12d, r13d, r14d, r15d
-    // flag register
-    case eflags, rflags
-    // MMX
-    case mm0, mm1, mm2, mm3, mm4, mm5, mm6, mm7
-    // XMM
-    case xmm0, xmm1, xmm2, xmm3, xmm4, xmm5, xmm6, xmm7
-    case xmm8, xmm9, xmm10, xmm11, xmm12, xmm13, xmm14, xmm15
-    
-    var air: String { return "%\(rawValue)" }
-    var name: String { return rawValue }
-    var hash: AIRRegisterHash { return AIRRegisterHash(hashValue: rawValue.hashValue) }
+struct MCModule {
+    let sections: [MCSection]
 }
-
 
 extension MCFunction : CustomStringConvertible {
     var description: String {
-        return "\(label):\n" + insts.map { "  \($0.description)" }.joined(separator: "\n")
+        return "_\(label):\n" + insts.map { "  \($0.description)" }.joined(separator: "\n")
+    }
+    var _asm: String {
+        return "_\(label):\n" + insts.map { "  \($0._asm)" }.joined(separator: "\n")
     }
 }
+
+extension MCModule {
+    
+    /// The ASM the target wants -- doesn't use the Intel syntax, but
+    /// the one clang likes as input
+    var asm: String {
+        return "\t.section\t__TEXT,__text,regular,pure_instructions\n" +
+            sections.map { $0.asm }.joined(separator: "\n\n")
+    }
+}
+
+extension MCSection {
+    
+    var asm: String {
+        switch self {
+        case .data:
+            return "\t.section\t__TEXT,__const\n"
+        case .text(let functions):
+            return "\t.section\t__TEXT,__text,regular,pure_instructions\n" +
+                functions.map { ".globl\t_\($0.label)\n" + $0._asm }.joined(separator: "\n")
+        }
+    }
+}
+
 

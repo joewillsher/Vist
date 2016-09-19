@@ -132,7 +132,7 @@ private protocol Reg : OpPattern {
 extension Reg {
 }
 
-private struct GPR : Reg {
+private struct AnyRegPattern : Reg {
     static var matching: SelectionDAGOp { return .reg(AnyRegister()) }
 }
 
@@ -143,12 +143,12 @@ private struct Binary<R1: Reg, R2: Reg> : OpOrder {
 private struct Identity : OpOrder {}
 
 private struct IADD64 : MCInst {
-    typealias Ins = Binary<GPR, GPR>
+    typealias Ins = Binary<AnyRegPattern, AnyRegPattern>
     typealias Outs = Identity
 }
 private struct IADD64RR : MCInst {
-    typealias Ins = Binary<GPR, GPR>
-    typealias Outs = Unary<GPR>
+    typealias Ins = Binary<AnyRegPattern, AnyRegPattern>
+    typealias Outs = Unary<AnyRegPattern>
 }
 
 private struct RET : MCInst {
@@ -166,26 +166,4 @@ private struct StorePattern<DEST : Reg, VAL : OpPattern> : OpPattern {
     static var matching: SelectionDAGOp { return .store }
 }
 
-private typealias Match1 = StorePattern<GPR, MulPattern<GPR, GPR>>
-
-
-
-
-print(1)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+private typealias Match1 = StorePatte

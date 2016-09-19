@@ -440,7 +440,6 @@ private extension ColouringRegisterAllocator {
         for i in removalSet.reversed() {
             function.insts.remove(at: i)
         }
-        //interferenceGraph = InterferenceGraph(function: function)
     }
     
     /// Rewrite the function with the coloured registers

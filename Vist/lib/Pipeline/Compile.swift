@@ -238,7 +238,23 @@ func compileDocuments(
     // use experimental AIR backend
     guard !options.contains(.useAIRBackend) else {
         let airBuilder = AIRBuilder(module: virModule)
-        try virModule.emitAIR(builder: airBuilder)
+        let air = try virModule.emitAIR(builder: airBuilder)
+        if options.contains(.verbose) { print(air.description) }
+        let asm = "\(currentDirectory)/\(file).s"
+        let mc = try air.emitMachine(at: asm, target: X8664Machine.self)
+        if options.contains(.verbose) { print(mc.asm) }
+        
+        let libVistPath = "/usr/local/lib/libvist.dylib"
+        Task.execute(exec: .clang,
+                     files: [asm, libVistPath],
+                     outputName: file,
+                     cwd: currentDirectory)
+        
+        if options.contains(.buildAndRun) {
+            if options.contains(.verbose) { print("\n\n-----------------------------RUN-----------------------------\n") }
+            runExecutable(file: file, inDirectory: currentDirectory, output: output)
+        }
+        
         return
     }
     
