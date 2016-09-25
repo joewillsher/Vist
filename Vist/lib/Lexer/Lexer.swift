@@ -49,9 +49,6 @@ private extension Character {
 //    }
 
     
-    func isAlNumOr_() -> Bool {
-        return isalnum(value) != 0 || self == "_"
-    }
 
     func isNum() -> Bool {
         return isdigit(value) != 0
@@ -86,6 +83,11 @@ private extension Character {
     
     func isSingleCharSymbol() -> Bool {
         return (isblank(value) != 1) && [":"].contains(self)
+    }
+}
+extension Character {
+    func isAlNumOr_() -> Bool {
+        return isalnum(value) != 0 || self == "_"
     }
 }
 

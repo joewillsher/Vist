@@ -37,7 +37,9 @@ extension IntImm {
 extension RetOp {
     func dagNode(dag: SelectionDAG) -> DAGNode {
         dag.precoloured[result.hash] = dag.target.returnRegister
-        let out = DAGNode(op: .store, args: [dag.buildDAGNode(for: result), dag.buildDAGNode(for: val.val)], chainParent: dag.chainNode).insert(into: dag)
+        let out = DAGNode(op: .store,
+                          args: [dag.buildDAGNode(for: result), dag.buildDAGNode(for: val.val)],
+                          chainParent: dag.chainNode).insert(into: dag)
         return DAGNode(op: .ret, chainParent: out)
     }
 }
@@ -54,6 +56,18 @@ extension AggregateImm {
 extension StructExtractOp {
     func dagNode(dag: SelectionDAG) -> DAGNode {
         return DAGNode(op: .aggregateExtract(index: index), args: [dag.buildDAGNode(for: self.aggr.val)], chainParent: dag.chainNode)
+    }
+}
+extension CallOp {
+    func dagNode(dag: SelectionDAG) -> DAGNode {
+        
+        let applied = args.map { arg in dag.buildDAGNode(for: arg.val) }
+        let ret = DAGNode(op: .call("_\(function.name)"), args: applied, chainParent: dag.chainNode)
+
+        guard returnType != AIRType.void else {
+            return ret
+        }
+        return DAGNode(op: .load, args: [ret.insert(into: dag)], chainParent: dag.chainNode)
     }
 }
 
@@ -118,14 +132,13 @@ final class SelectionDAG {
             chainNode = node
         }
     }
-    
 }
 
 enum SelectionDAGOp {
     case entry // < entry token or root
     // %0 = add %1 %2
     case add
-    case call
+    case call(String)
     // a reference to a register
     case reg(AIRRegister)
     case int(Int)
@@ -155,7 +168,7 @@ extension SelectionDAGOp : Equatable {
         case (.load, .load): return true
         case (.store, .store): return true
         case (.ret, .ret): return true
-        case (.call, .call): return true
+        case (.call(let n0), .call(let n1)): return n0 == n1
         case (.aggregate, .aggregate): return true
         case (.aggregateExtract(let a), .aggregateExtract(let b)): return a == b
         default: return false
@@ -224,7 +237,7 @@ extension SelectionDAGOp : CustomStringConvertible {
         case .load: return "load"
         case .store: return "store"
         case .ret: return "ret"
-        case .call: return "call"
+        case .call(let name): return "call \(name)"
         case .aggregate: return "aggregate"
         case .aggregateExtract(let index): return "extract \(index)"
         }

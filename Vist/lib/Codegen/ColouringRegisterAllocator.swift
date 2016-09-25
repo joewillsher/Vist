@@ -154,7 +154,7 @@ extension ColouringRegisterAllocator {
             // this is the reg with the short lifes, we load/store when the spilled
             // register's value is needed
             let spillReg = builder.getRegister()
-            let stackMemory = MCInstAddressingMode.offsetMem(rbp, offset)
+            let stackMemory = MCInstAddressingMode.indexed(rbp, offset)
             
             for use in interferenceGraph.uses[getAlias(spill)]! {
                 let index = function.insts.index(of: interferenceGraph.getUpdatedInst(use))!
@@ -321,7 +321,7 @@ private extension ColouringRegisterAllocator {
         }
             // if theyre both precoloured or interfere
         else if isPrecoloured(v) || u.interferences.contains(v) {
-            constrainMove(IGMove(src: u, dest: v))
+            constrainMove(IGMove(u, v))
             addWorkList(u); addWorkList(v)
         }
         else if canBeSafelyCoalesced(u, v) {
@@ -330,7 +330,7 @@ private extension ColouringRegisterAllocator {
             return true
         }
         else {
-            setActiveMove(IGMove(src: u, dest: v))
+            setActiveMove(IGMove(u, v))
         }
         return false
     }
@@ -347,13 +347,13 @@ private extension ColouringRegisterAllocator {
         
         // update move lists
         for m in worklistMoves where m.hasMember(v) {
-            worklistMoves.insert(IGMove(src: worklistMoves.remove(m)!.other(v), dest: u))
+            worklistMoves.insert(IGMove(worklistMoves.remove(m)!.other(v), u))
         }
         for m in frozenMoves where m.hasMember(v) {
-            frozenMoves.insert(IGMove(src: frozenMoves.remove(m)!.other(v), dest: u))
+            frozenMoves.insert(IGMove(frozenMoves.remove(m)!.other(v), u))
         }
         for m in activeMoves where m.hasMember(v) {
-            activeMoves.insert(IGMove(src: activeMoves.remove(m)!.other(v), dest: u))
+            activeMoves.insert(IGMove(activeMoves.remove(m)!.other(v), u))
         }
         
         // record the coalesce

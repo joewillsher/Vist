@@ -125,7 +125,7 @@ private class RetPattern<VAL : OpPattern> : OpPattern {
     }
     typealias Store = StorePattern<AnyRegPattern, VAL>
     static func matches(subtree: DAGNode) -> Bool {
-        return subtree.chainParent.map { Store.opMatches(node: $0) && Store.matches(subtree: $0) } ?? false
+        return opMatches(node: subtree) && subtree.chainParent.map { Store.opMatches(node: $0) && Store.matches(subtree: $0) } ?? false
     }
 }
 private class IntImmPattern : OpPattern {
@@ -155,7 +155,16 @@ private class VoidPattern : OpPattern {
     }
     static func matches(subtree: DAGNode) -> Bool {
         // registers must only compare this node
-        return subtree.args.isEmpty
+        return opMatches(node: subtree) && subtree.args.isEmpty
+    }
+}
+private class CallPattern : OpPattern {
+    private static func opMatches(node: DAGNode) -> Bool {
+        if case .call = node.op { return true }
+        return false
+    }
+    private static func matches(subtree: DAGNode) -> Bool {
+        return opMatches(node: subtree)
     }
 }
 
@@ -205,6 +214,7 @@ private class RegisterUseRewritingPattern :
     static func rewrite(_ load: DAGNode, dag: SelectionDAG, emission: MCEmission) throws -> AIRRegister {
         guard case .reg(let src) = load.args[0].op else { fatalError() }
         let dest = dag.builder.getRegister()
+        // if the load pattern constrains the dest reg,
         emission.emit(.mov(dest: .reg(dest), src: .reg(src)))
         return dest
     }
@@ -231,7 +241,8 @@ private class IntImmUseRewritingPattern :
     DataFlowRewritingPattern
 {
     static func rewrite(_ load: DAGNode, dag: SelectionDAG, emission: MCEmission) throws -> AIRRegister {
-        guard case .reg(let dest) = load.args[0].op, case .int(let val) = load.args[1].op else { fatalError() }
+        guard case .int(let val) = load.args[0].op else { fatalError() }
+        let dest = dag.builder.getRegister()
         load.replace(with: load.args[0], dag: dag)
         emission.emit(.mov(dest: .reg(dest), src: .imm(val)))
         return dest
@@ -301,7 +312,10 @@ private class RetRewritingPattern :
     ControlFlowRewritingPattern
 {
     static func rewrite(_ node: DAGNode, dag: SelectionDAG, emission: MCEmission) {
+        // remove the ret and make its chain parent the load's parent
+        let p = node.chainParent!.chainParent!
         node.remove(dag: dag)
+        node.chainParent = p
         emission.emit(.ret)
     }
 }
@@ -318,8 +332,11 @@ private class RetVoidRewritingPattern :
         for arg in node.chainParent!.args {
             arg.remove(dag: dag)
         }
+        // remove the ret and make its chain parent the load's parent
+        let p = node.chainParent!.chainParent!
         node.chainParent!.remove(dag: dag)
         node.remove(dag: dag)
+        node.chainParent = p
         emission.emit(.ret)
     }
 }
@@ -346,14 +363,72 @@ private class StoreRewritingPattern :
     }
 }
 
-//private class VoidRewritingPattern :
-//    VoidPattern,
-//    ControlFlowRewritingPattern
-//{
-//    static func rewrite(_ void: DAGNode, dag: SelectionDAG, emission: MCEmission) throws {
-//        void.remove(dag: dag)
-//    }
-//}
+// TODO: void return types
+private class CallRewritingPattern :
+    LoadPattern<CallPattern>,
+    DataFlowRewritingPattern {
+    private static func rewrite(_ load: DAGNode, dag: SelectionDAG, emission: MCEmission) throws -> AIRRegister {
+        let call = load.args[0]
+        // create and constrain the return register
+        let ret = dag.builder.getRegister()
+        // emit the call
+        guard case .call(let name) = call.op else { fatalError() }
+        var addedList: [[MCInst]] = []
+        let argRegs = try call.args.map { arg -> AIRRegister in
+            // emit arg regs
+            let (reg, added) = try emission.pushEmitted(arg)
+            addedList.append(added)
+            return reg
+        }
+        // constrain them by calling conventions
+        emission.emit(.call(name))
+        for (index, reg) in argRegs.enumerated() {
+            let argReg = dag.builder.getRegister()
+            emission.emit(.mov(dest: .reg(argReg), src: .reg(reg)))
+            dag.precoloured[argReg.hash] = dag.target.paramRegister(at: index)
+        }
+        dag.precoloured[ret.hash] = dag.target.returnRegister
+        // pop the emissions
+        for added in addedList.reversed() {
+            emission.popEmitted(added: added)
+        }
+        // rewrite this node
+        let reg = DAGNode(op: .reg(ret)).insert(into: dag)
+        load.replace(with: DAGNode(op: .load, args: [reg], chainParent: call.chainParent).insert(into: dag), dag: dag)
+        return ret
+    }
+}
+
+
+private class UnusedCallRewritingPattern :
+    CallPattern,
+    ControlFlowRewritingPattern
+{
+    private static func rewrite(_ call: DAGNode, dag: SelectionDAG, emission: MCEmission) throws {
+        // emit the call
+        guard case .call(let name) = call.op else { fatalError() }
+        var addedList: [[MCInst]] = []
+        let argRegs = try call.args.map { arg -> AIRRegister in
+            // emit arg regs
+            let (reg, added) = try emission.pushEmitted(arg)
+            addedList.append(added)
+            return reg
+        }
+        // constrain them by calling conventions
+        emission.emit(.call(name))
+        for (index, reg) in argRegs.enumerated() {
+            let argReg = dag.builder.getRegister()
+            emission.emit(.mov(dest: .reg(argReg), src: .reg(reg)))
+            dag.precoloured[argReg.hash] = dag.target.paramRegister(at: index)
+        }
+        // pop the emissions
+        for added in addedList.reversed() {
+            emission.popEmitted(added: added)
+        }
+        // remove this node
+        call.remove(dag: dag)
+    }
+}
 
 
 /// An object responsible for managing the emission of machine insts
@@ -400,6 +475,22 @@ final class MCEmission {
         }
         return reg
     }
+    
+    func pushEmitted(_ node: DAGNode) throws -> (reg: AIRRegister, added: [MCInst]) {
+        guard case let pattern as DataFlowRewritingPattern.Type = try node.match(emission: self) else { fatalError() }
+        waitList.append([])
+        let reg = try pattern.rewrite(node, dag: dag, emission: self)
+        let added = waitList.removeLast()
+        return (reg, added)
+    }
+    
+    func popEmitted(added: [MCInst]) {
+        // add each value needed for that in reverse order
+        for added in added.reversed() {
+            emit(added)
+        }
+    }
+    
 }
 
 
@@ -416,11 +507,9 @@ extension SelectionDAG {
         // any node before a chain parent
         while let node = nodes.popLast() {
             
-            if case let pattern as ControlFlowRewritingPattern.Type = try node.match(emission: emission) {
-                try pattern.rewrite(node, dag: self, emission: emission)
-            }
+            try node.match(emission: emission).performRewrite(node, dag: self, emission: emission)
             
-            if let r = node.chainParent {
+            if let r = node.chainParent, r.op != .entry {
                 nodes.append(r)
             }
         }
@@ -438,6 +527,8 @@ extension SelectionDAG {
         RetRewritingPattern.self,
         RetVoidRewritingPattern.self,
         StoreRewritingPattern.self,
+        CallRewritingPattern.self,
+        UnusedCallRewritingPattern.self,
     ]
 }
 

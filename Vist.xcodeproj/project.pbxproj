@@ -225,6 +225,8 @@
 		D4CF767E1C8CF8490058A8EC /* Runtime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CF767C1C8CF8490058A8EC /* Runtime.swift */; };
 		D4D1346D1D862523005A7EBD /* StrengthReduction.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D1346C1D862523005A7EBD /* StrengthReduction.swift */; };
 		D4D1346E1D862523005A7EBD /* StrengthReduction.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D1346C1D862523005A7EBD /* StrengthReduction.swift */; };
+		D4D31E521D97FED4000832E4 /* PeepholeOpt.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D31E511D97FED4000832E4 /* PeepholeOpt.swift */; };
+		D4D31E531D97FED4000832E4 /* PeepholeOpt.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D31E511D97FED4000832E4 /* PeepholeOpt.swift */; };
 		D4D3868A1D39B62700820E43 /* Explosion.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D386891D39B62700820E43 /* Explosion.swift */; };
 		D4D3868B1D39B62700820E43 /* Explosion.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D386891D39B62700820E43 /* Explosion.swift */; };
 		D4D8B25D1D0301BC00D1F455 /* RuntimeObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D8B25C1D0301BC00D1F455 /* RuntimeObject.swift */; };
@@ -413,6 +415,7 @@
 		D4CF76761C8CD4A70058A8EC /* TupleInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TupleInst.swift; path = Instructions/TupleInst.swift; sourceTree = "<group>"; };
 		D4CF767C1C8CF8490058A8EC /* Runtime.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Runtime.swift; path = lib/Sema/Expose/Runtime.swift; sourceTree = "<group>"; };
 		D4D1346C1D862523005A7EBD /* StrengthReduction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StrengthReduction.swift; path = Optimiser/StrengthReduction.swift; sourceTree = "<group>"; };
+		D4D31E511D97FED4000832E4 /* PeepholeOpt.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeepholeOpt.swift; path = lib/Codegen/PeepholeOpt.swift; sourceTree = "<group>"; };
 		D4D369D91CFC6FFA007E802D /* vir.vim */ = {isa = PBXFileReference; lastKnownFileType = text; name = vir.vim; path = utils/vim/syntax/vir.vim; sourceTree = "<group>"; };
 		D4D369DA1CFC6FFA007E802D /* vist.vim */ = {isa = PBXFileReference; lastKnownFileType = text; name = vist.vim; path = utils/vim/syntax/vist.vim; sourceTree = "<group>"; };
 		D4D386891D39B62700820E43 /* Explosion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Explosion.swift; path = Optimiser/Explosion.swift; sourceTree = "<group>"; };
@@ -471,6 +474,7 @@
 				D44B48491D831B81006BB794 /* ColouringRegisterAllocator.swift */,
 				D44B484C1D8320F8006BB794 /* InterferenceGraph.swift */,
 				D44C1A921D8EE9CC0062FBDE /* Codegen.swift */,
+				D4D31E511D97FED4000832E4 /* PeepholeOpt.swift */,
 			);
 			name = Codegen;
 			sourceTree = "<group>";
@@ -994,6 +998,7 @@
 				D4D3868B1D39B62700820E43 /* Explosion.swift in Sources */,
 				D4A000371CCA7FFA00157D90 /* OperandLower.swift in Sources */,
 				D43B39961C8A0EDF0039FB2E /* Function.swift in Sources */,
+				D4D31E531D97FED4000832E4 /* PeepholeOpt.swift in Sources */,
 				D4E35B821C5E3ECE00683486 /* Expected.swift in Sources */,
 				D4B84E191D650B9B00B92CE5 /* CFGTest.swift in Sources */,
 				D46D1F871D5CDD6C0001E327 /* Backend.cpp in Sources */,
@@ -1148,6 +1153,7 @@
 				D4A000301CCA7F7000157D90 /* BuiltinLower.swift in Sources */,
 				D43B39E01C8A0F3A0039FB2E /* StructInst.swift in Sources */,
 				D4A0002D1CCA7F4F00157D90 /* RefCountingLower.swift in Sources */,
+				D4D31E521D97FED4000832E4 /* PeepholeOpt.swift in Sources */,
 				D4654F991D50F02A005B3637 /* VIRType.swift in Sources */,
 				D43B3A1D1C8A105B0039FB2E /* Expr.swift in Sources */,
 				D49248541CF77883009FD509 /* StdLibInline.swift in Sources */,

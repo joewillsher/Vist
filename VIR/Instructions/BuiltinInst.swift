@@ -108,11 +108,11 @@ enum BuiltinInst : String {
         switch  self {
         case .memcpy: return 3
         case .iadd, .isub, .imul, .idiv, .iaddunchecked, .imulunchecked, .irem, .ilte, .igte, .ilt, .igt,
-             .expect, .ieq, .ineq, .ishr, .ishl, .iand, .ior, .ixor, .fgt, .and, .or, .not,
+             .expect, .ieq, .ineq, .ishr, .ishl, .iand, .ior, .ixor, .fgt, .and, .or,
              .fgte, .flt, .flte, .fadd, .fsub, .fmul, .fdiv, .frem, .feq, .fneq, .beq, .bneq,
              .opaquestore, .advancepointer, .ipow:
             return 2
-        case .condfail, .allocstack, .allocheap, .heapfree, .opaqueload, .trunc8, .trunc16, .trunc32, .withptr:
+        case .condfail, .allocstack, .allocheap, .heapfree, .opaqueload, .trunc8, .trunc16, .trunc32, .withptr, .not:
             return 1
         case .trap:
             return 0

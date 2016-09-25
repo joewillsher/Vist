@@ -22,7 +22,18 @@ extension BuiltinInstCall: VIRLower {
         case .iadd: intrinsic = try IGF.module.getIntrinsic(.i_add_overflow, overload: lhs.type)
         case .imul: intrinsic = try IGF.module.getIntrinsic(.i_mul_overflow, overload: lhs.type)
         case .isub: intrinsic = try IGF.module.getIntrinsic(.i_sub_overflow, overload: lhs.type)
-        case .ipow: intrinsic = try IGF.module.getIntrinsic(.i_pow, overload: lhs.type)
+        case .ipow:
+            intrinsic = try IGF.module.getIntrinsic(.i_pow, overload: .double)
+            // make sure rhs is i32
+            switch rhs.type.size(unit: .bits, IGF: IGF) {
+            case 32: break
+            case 0..<32: args[1] = try IGF.builder.buildSext(val: args[1], size: 32)
+            case 33...64: args[1] = try IGF.builder.buildTrunc(val: args[1], size: 32)
+            default: fatalError("bad int type")
+            }
+            args[0] = try IGF.builder.buildIntToFloat(val: args[0], floatType: .double)
+            let call = try IGF.builder.buildCall(function: intrinsic, args: args, name: irName)
+            return try IGF.builder.buildFloatToInt(val: call, intType: lhs.type)
             
         // other intrinsics
         case .expect: intrinsic = try IGF.module.getIntrinsic(.expect, overload: lhs.type)
@@ -43,7 +54,7 @@ extension BuiltinInstCall: VIRLower {
             
         case .allocstack: return try IGF.builder.buildArrayAlloca(size: lhs, elementType: .intType(size: 8), name: irName)
         case .allocheap:  return try IGF.builder.buildArrayMalloc(size: lhs, elementType: .intType(size: 8), name: irName)
-        case .heapfree: return try IGF.builder.buildFree(ptr: lhs, name: irName)
+        case .heapfree:   return try IGF.builder.buildFree(ptr: lhs, name: irName)
             
         case .advancepointer: return try IGF.builder.buildGEP(ofAggregate: lhs, index: rhs, name: irName)
         case .opaqueload:     return try IGF.builder.buildLoad(from: lhs, name: irName)

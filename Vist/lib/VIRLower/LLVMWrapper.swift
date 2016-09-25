@@ -98,6 +98,15 @@ extension LLVMBuilder {
     func buildTrunc(val: LLVMValue, size: Int, name: String? = nil) throws -> LLVMValue {
         return try wrap(LLVMBuildTrunc(builder, val.val(), LLVMIntType(UInt32(size)), name ?? ""))
     }
+    func buildSext(val: LLVMValue, size: Int, name: String? = nil) throws -> LLVMValue {
+        return try wrap(LLVMBuildSExt(builder, val.val(), LLVMIntType(UInt32(size)), name ?? ""))
+    }
+    func buildFloatToInt(val: LLVMValue, intType: LLVMType, name: String? = nil) throws -> LLVMValue {
+        return try wrap(LLVMBuildFPToSI(builder, val.val(), intType.type!, name ?? ""))
+    }
+    func buildIntToFloat(val: LLVMValue, floatType: LLVMType, name: String? = nil) throws -> LLVMValue {
+        return try wrap(LLVMBuildSIToFP(builder, val.val(), floatType.type!, name ?? ""))
+    }
     @discardableResult
     func buildBr(to block: LLVMBasicBlock) throws -> LLVMValue {
         return try wrap(LLVMBuildBr(builder, block.block))
@@ -519,6 +528,14 @@ struct LLVMType : Dumpable {
     }
     static func intType(size: Int) -> LLVMType {
         return LLVMType(ref: LLVMIntType(UInt32(size)))
+    }
+    static func floatType(size: Int) -> LLVMType {
+        switch size {
+        case 16: return .half
+        case 32: return .single
+        case 64: return .double
+        default: fatalError("bad float type")
+        }
     }
     static func arrayType(element: LLVMType, size: Int) -> LLVMType {
         return LLVMType(ref: LLVMArrayType(element.type, UInt32(size)))

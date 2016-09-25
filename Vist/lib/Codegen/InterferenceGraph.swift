@@ -25,6 +25,10 @@ extension IGNode : Hashable {
 /// A move
 struct IGMove {
     let src: IGNode, dest: IGNode
+    init(_ src: IGNode, _ dest: IGNode) {
+        self.src = src
+        self.dest = dest
+    }
     func hasMember(_ node: IGNode) -> Bool {
         return src == node || dest == node
     }
@@ -153,7 +157,7 @@ final class InterferenceGraph {
         for (dest, src) in allMoveEdges {
             guard isGeneralPurposeReg(dest), isGeneralPurposeReg(src) else { continue }
             let s = createNode(for: src), d = createNode(for: dest)
-            allMoves.insert(IGMove(src: s, dest: d))
+            allMoves.insert(IGMove(s, d))
         }
         
         // add all registers with no interferences

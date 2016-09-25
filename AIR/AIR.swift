@@ -140,6 +140,19 @@ enum AIRType {
         }
     }
 }
+extension AIRType : Equatable {
+    static func == (l: AIRType, r: AIRType) -> Bool {
+        switch (l, r) {
+        case (.int(let l), .int(let r)): return l == r
+        case (.float(let l), .float(let r)): return l == r
+        case (.function, .function): return true
+        case (.named(let l), .named(let r)): return l == r
+        case (.void, .void): return true
+        case (.aggregate(let l), .aggregate(let r)): return l.elementsEqual(r)
+        default: return false
+        }
+    }
+}
 
 
 
@@ -172,23 +185,20 @@ struct AggregateImm : AIRImm {
 }
 
 // ops are calls to processor ops
-final class CallOp : AIRSideEffectingOp {
-    let function: AIRArg
+final class CallOp : AIROp {
+    let function: AIRFunction
     let args: [AIRArg]
-    var result: AIRRegister
     let returnType: AIRType
     
-    init(vir: Function, args: [AIRArg], result: AIRRegister) {
-        self.function = AIRArg(imm: vir.airFunction!)
+    init(vir: Function, args: [AIRArg]) {
+        self.function = vir.airFunction!
         self.returnType = vir.type.returns.machineType()
         self.args = args
-        self.result = result
     }
     
     var airType: AIRType? { return returnType }
-    var air: String { return "\(result.air) = call \(returnType.air) \(function.val.air) (\(args.map { $0.val.valueAIR }.joined(separator: ", ")))" }
-    var valueAIR: String { return result.air }
-    var dagOp: SelectionDAGOp? { return .call }
+    var air: String { return "call \(returnType.air) \(function.name) (\(args.map { $0.val.valueAIR }.joined(separator: ", ")))" }
+    var dagOp: SelectionDAGOp? { return .call(function.name) }
 }
 // ops are calls to processor ops
 final class RetOp : AIRSideEffectingOp {
@@ -320,9 +330,9 @@ extension IntLiteralInst : AIRLower {
 extension FunctionCallInst : AIRLower {
     func lowerVIRToAIR(builder: AIRBuilder) throws -> AIRValue {
         return try builder.build(CallOp(vir: function,
-                                        args: try functionArgs
-                                            .map { try AIRArg(value: $0.getAIR(builder: builder), type: $0.type!.machineType()) },
-                                        result: builder.getRegister())).result
+                                        args: try functionArgs.map {
+                                            try AIRArg(value: $0.getAIR(builder: builder), type: $0.type!.machineType())
+                                        }))
     }
 }
 extension ReturnInst : AIRLower {

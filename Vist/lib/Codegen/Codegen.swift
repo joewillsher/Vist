@@ -37,8 +37,6 @@ private extension MCFunction {
         emitPrologue()
     }
     
-    
-    
 }
 
 
@@ -56,6 +54,7 @@ extension AIRModule {
             let fn = try MCFunction(name: function.name, dag: dag)
             try fn.allocateRegisters(builder: builder)
             fn.emitStackManagement()
+            try PeepholePassManager(function: fn).runPasses()
             return fn
         }
         
@@ -93,7 +92,6 @@ extension Module {
                     let air = try inst.lowerVIRToAIR(builder: builder)
                     inst.updateUsesWithAIR(air)
                 }
-                
             }
             // add it to the module
             module.functions.append(function.airFunction!)

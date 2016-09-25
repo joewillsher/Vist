@@ -29,6 +29,7 @@ struct Builtin {
         ("Builtin.i_rem", FunctionType(params: [intType, intType], returns: intType)),
         ("Builtin.i_add_unchecked", FunctionType(params: [intType, intType], returns: intType)),
         ("Builtin.i_mul_overflow", FunctionType(params: [intType, intType], returns: intType)),
+        ("Builtin.i_pow", FunctionType(params: [intType, intType], returns: intType)),
         
         ("Builtin.i_shr", FunctionType(params: [intType, intType], returns: intType)),
         ("Builtin.i_shl", FunctionType(params: [intType, intType], returns: intType)),
@@ -49,7 +50,7 @@ struct Builtin {
         ("Builtin.b_eq", FunctionType(params: [boolType, boolType], returns: boolType)),
         ("Builtin.b_neq", FunctionType(params: [boolType, boolType], returns: boolType)),
         ("Builtin.b_not", FunctionType(params: [boolType], returns: boolType)),
-
+        
         // float fns
         ("Builtin.f_add", FunctionType(params: [doubleType, doubleType], returns: doubleType)),
         ("Builtin.f_sub", FunctionType(params: [doubleType, doubleType], returns: doubleType)),

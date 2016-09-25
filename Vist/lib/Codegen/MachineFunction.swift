@@ -15,7 +15,7 @@ enum MCInst {
     // stack
     case push(AIRRegister), pop(AIRRegister)
     // proc
-    case ret//, call(String)
+    case ret, call(String)
     
     var asm: String {
         switch self {
@@ -24,6 +24,7 @@ enum MCInst {
         case .mov(let dest, let src):   return "movq \(dest.asm), \(src.asm)"
         case .push(let reg):            return "pushq \(reg.name)"
         case .pop(let reg):             return "popq \(reg.name)"
+        case .call(let symbol):         return "call \(symbol.relocatable())"
         case .ret:                      return "retq"
         }
     }
@@ -34,13 +35,14 @@ enum MCInst {
         case .mov(let dest, let src):   return "movq \(src._asm), \(dest._asm)"
         case .push(let reg):            return "pushq %\(reg.name)"
         case .pop(let reg):             return "popq %\(reg.name)"
+        case .call(let symbol):         return "call \(symbol.relocatable())"
         case .ret:                      return "retq"
         }
     }
 }
 
 enum MCInstAddressingMode {
-    case reg(AIRRegister), imm(Int), mem(AIRRegister), offsetMem(AIRRegister, Int)
+    case reg(AIRRegister), imm(Int), mem(AIRRegister), indexed(AIRRegister, Int)
 }
 
 extension MCInst {
@@ -62,7 +64,7 @@ extension MCInst {
         case .mov(let dest, let src):
             // a move uses the src, and uses the dest if its a stack addr
             switch (dest, src) {
-            case (.mem, _), (.offsetMem, _):
+            case (.mem, _), (.indexed, _):
                 guard let src = src.reg, let mem = dest.reg else { return [] }
                 return [mem.hash, src.hash]
             case (_, _):
@@ -71,6 +73,8 @@ extension MCInst {
             }
         case .push(let reg), .pop(let reg):
             return [reg.hash]
+        case .call:
+            return [] // not sure here??
         case .ret: return []
         }
     }
@@ -86,6 +90,8 @@ extension MCInst {
             // a move only is a def of the out register
             guard case .reg(let reg) = out else { return [] }
             return [reg.hash]
+        case .call:
+            return [X86Register.rax.hash]
         case .ret, .push, .pop: return []
         }
     }
@@ -98,7 +104,7 @@ extension MCInst {
         case .mov(let dest, let src): self = .mov(dest: dest.rewriteRegisters(rewrite), src: src.rewriteRegisters(rewrite))
         case .push(let reg): self = .push(rewrite(reg))
         case .pop(let reg): self = .push(rewrite(reg))
-        case .ret: break
+        case .ret, .call: break
         }
         if hash != self {
             graph.replacedInsts[hash] = self
@@ -112,7 +118,7 @@ extension MCInstAddressingMode {
         case .reg(let reg): return reg.name
         case .imm(let val): return String(val)
         case .mem(let mem): return "[\(mem.name)]"
-        case .offsetMem(let mem, let offs): return "[\(mem.name)\(offs>=0 ? "+" : "-")\(abs(offs))]"
+        case .indexed(let mem, let offs): return "[\(mem.name)\(offs>=0 ? "+" : "-")\(abs(offs))]"
         }
     }
     var _asm: String {
@@ -120,7 +126,7 @@ extension MCInstAddressingMode {
         case .reg(let reg): return "%\(reg.name)"
         case .imm(let val): return "$\(val)"
         case .mem(let mem): return "(%\(mem.name))"
-        case .offsetMem(let mem, let offs): return "\(offs>=0 ? "+" : "-")\(abs(offs))(%\(mem.name))"
+        case .indexed(let mem, let offs): return "\(offs>=0 ? "+" : "-")\(abs(offs))(%\(mem.name))"
         }
     }
     
@@ -128,7 +134,7 @@ extension MCInstAddressingMode {
         switch self {
         case .reg(let reg): return reg
         case .mem(let reg): return reg
-        case .offsetMem(let reg, _): return reg
+        case .indexed(let reg, _): return reg
         case .imm: return nil
         }
     }
@@ -136,7 +142,7 @@ extension MCInstAddressingMode {
         switch self {
         case .reg(let reg): return .reg(rewrite(reg))
         case .mem(let reg): return .mem(rewrite(reg))
-        case .offsetMem(let reg, let offs): return .offsetMem(rewrite(reg), offs)
+        case .indexed(let reg, let offs): return .indexed(rewrite(reg), offs)
         case .imm(let val): return .imm(val)
         }
     }
@@ -146,6 +152,22 @@ extension MCInst : CustomStringConvertible, Hashable {
     var description: String { return asm }
     var hashValue: Int { return asm.hashValue }
     static func == (l: MCInst, r: MCInst) -> Bool { return l.hashValue == r.hashValue }
+}
+extension MCInstAddressingMode : Equatable {
+    static func == (l: MCInstAddressingMode, r: MCInstAddressingMode) -> Bool {
+        switch (l, r) {
+        case (.reg(let l), .reg(let r)):
+            return l.hash == r.hash
+        case (.imm(let l), .imm(let r)):
+            return l == r
+        case (.mem(let l), .mem(let r)):
+            return l.hash == r.hash
+        case (.indexed(let lreg, let loffs), .indexed(let rreg, let roffs)):
+            return lreg.hash == rreg.hash && loffs == roffs
+        default:
+            return false
+        }
+    }
 }
 
 final class MCFunction {
@@ -204,4 +226,14 @@ extension MCSection {
     }
 }
 
+
+private extension String {
+    
+    /// Escape the string in `""` if it has non asm chars
+    func relocatable() -> String {
+        guard !characters.contains(where: {!$0.isAlNumOr_()}) else { return "\"\(self)\"" }
+        return self
+    }
+    
+}
 

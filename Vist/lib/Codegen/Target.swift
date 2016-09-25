@@ -9,7 +9,10 @@
 
 protocol TargetMachine {
     static var gpr: [X86Register] { get }
+    
     static var reservedRegisters: [X86Register] { get }
+    static var callerSaveRegisters: [X86Register] { get }
+    static var calleeSaveRegisters: [X86Register] { get }
     
     static var returnRegister: X86Register { get }
     static func paramRegister(at: Int) -> X86Register
@@ -31,15 +34,26 @@ struct X8664Machine : TargetMachine {
     static var wordSize: Int { return 64 }
     
     /// General purpose registers
-    //    static let gpr: [X86Register] = [.rax, .rbx, .rcx, .rdx, .rdi,
-    //                                     .r8, .r9, .r10, .r11, .r12, .r13, .r14, .r15]
-    // 4 regs availiable for testing
-    static let gpr: [X86Register] = [.rdi, .rsi, .rax /*, .r8*/ ]
+        static let gpr: [X86Register] = [.rax, .rcx, .rdx, .rsi, .rdi, .r8, .r9, .r10, .r11,
+                                        .rbx, .r12, .r13, .r14, .r15]
+//     // 4 regs availiable for testing
+//    static let gpr: [X86Register] = [.rdi, .rsi, .rax /*, .r8*/ ]
     static let reservedRegisters: [X86Register] = [.rsp, .rbp]
+    static let callerSaveRegisters: [X86Register] = [.rax, .rcx, .rdx, .rsi, .rdi, .r8, .r9, .r10, .r11]
+    static let calleeSaveRegisters: [X86Register] = [.rbx, .r12, .r13, .r14, .r15]
+    
+    // return: rax
+    // parameters: rdi, rsi, rdx, rcx, r8d, r9d
+    // caller save: rax, rcx, rdx, rsi, rdi, r8-r11
+    // callee save: rbx, rbp, rsp, r12-r15
 }
 
 
 protocol TargetRegister : AIRRegister {
+    var size: Int { get }
+}
+extension TargetRegister {
+    var size: Int { return 8 }
 }
 
 enum X86Register : String, TargetRegister {
