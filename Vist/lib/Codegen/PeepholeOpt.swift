@@ -19,17 +19,12 @@ struct PeepholePassManager {
     let function: MCFunction
     
     func runPasses() throws {
-        
-        try run(pass: CallStackAlignmentPass(function: function))
         try run(pass: DeadMoveRemovalPass())
-        
+        try run(pass: CallStackAlignmentPass(function: function))
     }
     
     private func run<Pass : PeepholePass>(pass: Pass) throws {
-        guard function.insts.count >= pass.windowSize else { return }
-        
         var i = 0
-        
         while i < function.insts.count-pass.windowSize {
             let window = i ..< i+pass.windowSize
             guard let replace = try pass.run(on: function.insts[window]) else {
@@ -43,7 +38,11 @@ struct PeepholePassManager {
 }
 
 
-
+/// A pass which makes sure the stack is 16 byte aligned before call insts
+/// 
+/// TODO: A better implementation would be to push an arbitrary reg onto the stack then pop
+/// it later. The current impl adds sub/add around each call; this method would allow
+/// the register allocator to use the same reg and remove non interfering push/pops.
 struct CallStackAlignmentPass : PeepholePass {
     let function: MCFunction
     
@@ -81,9 +80,7 @@ struct DeadMoveRemovalPass : PeepholePass {
         assert(insts.count == windowSize)
         guard let mov = insts.first, case .mov(let src, let dest) = mov else { return nil }
         
-        if src == dest {
-            return []
-        }
+        if src == dest { return [] }
         return [mov]
     }
 }

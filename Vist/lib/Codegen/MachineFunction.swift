@@ -19,24 +19,13 @@ enum MCInst {
     
     var asm: String {
         switch self {
-        case .add(let a, let b):        return "addq \(a.name), \(b.asm)"
-        case .sub(let a, let b):        return "subq \(a.name), \(b.asm)"
-        case .mov(let dest, let src):   return "movq \(dest.asm), \(src.asm)"
-        case .push(let reg):            return "pushq \(reg.name)"
-        case .pop(let reg):             return "popq \(reg.name)"
+        case .add(let a, let b):        return "add \(a.name), \(b.asm)"
+        case .sub(let a, let b):        return "sub \(a.name), \(b.asm)"
+        case .mov(let dest, let src):   return "mov \(dest.asm), \(src.asm)"
+        case .push(let reg):            return "push \(reg.name)"
+        case .pop(let reg):             return "pop \(reg.name)"
         case .call(let symbol):         return "call \(symbol.relocatable())"
-        case .ret:                      return "retq"
-        }
-    }
-    var _asm: String {
-        switch self {
-        case .add(let a, let b):        return "addq \(b._asm), %\(a.name)"
-        case .sub(let a, let b):        return "subq \(b._asm), %\(a.name)"
-        case .mov(let dest, let src):   return "movq \(src._asm), \(dest._asm)"
-        case .push(let reg):            return "pushq %\(reg.name)"
-        case .pop(let reg):             return "popq %\(reg.name)"
-        case .call(let symbol):         return "call \(symbol.relocatable())"
-        case .ret:                      return "retq"
+        case .ret:                      return "ret"
         }
     }
 }
@@ -121,15 +110,6 @@ extension MCInstAddressingMode {
         case .indexed(let mem, let offs): return "[\(mem.name)\(offs>=0 ? "+" : "-")\(abs(offs))]"
         }
     }
-    var _asm: String {
-        switch self {
-        case .reg(let reg): return "%\(reg.name)"
-        case .imm(let val): return "$\(val)"
-        case .mem(let mem): return "(%\(mem.name))"
-        case .indexed(let mem, let offs): return "\(offs>=0 ? "+" : "-")\(abs(offs))(%\(mem.name))"
-        }
-    }
-    
     var reg: AIRRegister? {
         switch self {
         case .reg(let reg): return reg
@@ -195,12 +175,10 @@ struct MCModule {
 }
 
 extension MCFunction : CustomStringConvertible {
-    var description: String {
-        return "_\(label):\n" + insts.map { "  \($0.description)" }.joined(separator: "\n")
+    var asm: String {
+        return "_\(label):\n" + insts.map { "\t\($0.asm)" }.joined(separator: "\n")
     }
-    var _asm: String {
-        return "_\(label):\n" + insts.map { "  \($0._asm)" }.joined(separator: "\n")
-    }
+    var description: String { return asm }
 }
 
 extension MCModule {
@@ -208,7 +186,7 @@ extension MCModule {
     /// The ASM the target wants -- doesn't use the Intel syntax, but
     /// the one clang likes as input
     var asm: String {
-        return "\t.section\t__TEXT,__text,regular,pure_instructions\n" +
+        return "\t.intel_syntax noprefix\n" +
             sections.map { $0.asm }.joined(separator: "\n\n")
     }
 }
@@ -221,7 +199,7 @@ extension MCSection {
             return "\t.section\t__TEXT,__const\n"
         case .text(let functions):
             return "\t.section\t__TEXT,__text,regular,pure_instructions\n" +
-                functions.map { ".globl\t_\($0.label)\n" + $0._asm }.joined(separator: "\n")
+                functions.map { "\n\t.globl\t_\($0.label)\n" + $0.asm }.joined(separator: "\n")
         }
     }
 }
@@ -234,6 +212,5 @@ private extension String {
         guard !characters.contains(where: {!$0.isAlNumOr_()}) else { return "\"\(self)\"" }
         return self
     }
-    
 }
 

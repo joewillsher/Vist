@@ -254,7 +254,7 @@ extension ColouringRegisterAllocator {
     }
     /// Registers provided by this target
     var availiableRegisters: [TargetRegister] {
-        return (precoloured.map { $0.value }) + (target.gpr.map { $0 as TargetRegister })
+        return (precoloured.map { $0.value }) + (target.generalPurposeRegisters.map { $0 as TargetRegister })
     }
     
 }

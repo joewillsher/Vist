@@ -8,7 +8,7 @@
 
 
 protocol TargetMachine {
-    static var gpr: [X86Register] { get }
+    static var generalPurposeRegisters: [X86Register] { get }
     
     static var reservedRegisters: [X86Register] { get }
     static var callerSaveRegisters: [X86Register] { get }
@@ -22,7 +22,7 @@ protocol TargetMachine {
     static var wordSize: Int { get }
 }
 extension TargetMachine {
-    static var availiableRegisters: Int { return gpr.count }
+    static var availiableRegisters: Int { return generalPurposeRegisters.count }
 }
 struct X8664Machine : TargetMachine {
     static var returnRegister: X86Register { return .rax }
@@ -34,10 +34,10 @@ struct X8664Machine : TargetMachine {
     static var wordSize: Int { return 64 }
     
     /// General purpose registers
-        static let gpr: [X86Register] = [.rax, .rcx, .rdx, .rsi, .rdi, .r8, .r9, .r10, .r11,
-                                        .rbx, .r12, .r13, .r14, .r15]
+    static let generalPurposeRegisters: [X86Register] = [.rax, .rcx, .rdx, .rsi, .rdi, .r8, .r9, .r10, .r11,
+                                                        .rbx, .r12, .r13, .r14, .r15]
 //     // 4 regs availiable for testing
-//    static let gpr: [X86Register] = [.rdi, .rsi, .rax /*, .r8*/ ]
+//    static let generalPurposeRegisters: [X86Register] = [.rdi, .rsi, .rax /*, .r8*/ ]
     static let reservedRegisters: [X86Register] = [.rsp, .rbp]
     static let callerSaveRegisters: [X86Register] = [.rax, .rcx, .rdx, .rsi, .rdi, .r8, .r9, .r10, .r11]
     static let calleeSaveRegisters: [X86Register] = [.rbx, .r12, .r13, .r14, .r15]
