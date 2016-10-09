@@ -25,12 +25,12 @@ final class AllocObjectInst : Inst, LValue {
         self.irName = irName
     }
     
-    var refType: Type { return storedType.refCountedBox(module: module) }
+    var refType: TypeAlias { return storedType.refCountedBox(module: module) }
     var type: Type? { return memType.map { BuiltinType.pointer(to: $0) } }
     var memType: Type? { return refType }
     
     var vir: String {
-        return "\(name) = alloc_object \(refType.vir)\(useComment)"
+        return "\(name) = alloc_object \(storedType.prettyName)\(useComment)"
     }
     
     func copy() -> AllocObjectInst {

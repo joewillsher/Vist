@@ -62,6 +62,11 @@ extension ASTPrintable {
             if let impl = decl.impl { f.append(("impl", impl._astDescription(indentLevel: n+1))) }
             if let mangled = decl.mangledName { f.append(("mangledName", mangled._astDescription(indentLevel: n+1))) }
         }
+        else if case let decl as DeinitDecl = self {
+            // FIXME: Workaround for crashing runtime on reflection
+            if let impl = decl.impl { f.append(("impl", impl._astDescription(indentLevel: n+1))) }
+            if let mangled = decl.mangledName { f.append(("mangledName", mangled._astDescription(indentLevel: n+1))) }
+        }
         else if case let decl as VariableGroupDecl = self {
             // FIXME: Workaround for crashing runtime on reflection
             f.append(("declared", decl.declared._astDescription(indentLevel: n+1)))
@@ -133,6 +138,9 @@ extension VariableGroupDecl : ASTPrintable {
 }
 extension InitDecl : ASTPrintable {
     static var _astName: String { return "initialiser_decl" }
+}
+extension DeinitDecl : ASTPrintable {
+    static var _astName: String { return "deinitialiser_decl" }
 }
 extension TypeRepr : ASTPrintable {
     static var _astName: String { return "type_repr" }

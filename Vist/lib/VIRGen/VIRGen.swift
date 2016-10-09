@@ -188,7 +188,7 @@ extension VariableDecl : ValueEmitter {
         
         // gen the ManagedValue for the variable's value
         var managed = try value.emitRValue(module: module, gen: gen)
-        // coeerce to the correct type (as a pointer) and forward
+        // coerce to the correct type (as a pointer) and forward
         // the cleanup to the memory
         try managed.forwardCoerce(to: type.ptrType(), gen: gen)
         
@@ -786,6 +786,9 @@ extension TypeDecl : StmtEmitter {
         for i in initialisers {
             try i.emitStmt(module: module, gen: gen)
         }
+        for d in deinitialisers {
+            try d.emitStmt(module: module, gen: gen)
+        }
         
         for method in methods {
             guard let t = method.typeRepr.type, let mangledName = method.mangledName else { fatalError() }
@@ -843,24 +846,29 @@ extension InitDecl : StmtEmitter {
         let fnScope = VIRGenScope(parent: gen.scope, function: function)
         let fnVGF = VIRGenFunction(scope: fnScope, builder: gen.builder)
         
-        var selfVar: AnyManagedValue
-        
+        var selfVal: AnyManagedValue
+        var selfAccessor: AnyManagedValue
+
         if selfType.isHeapAllocated {
-            selfVar = try fnVGF.builder.buildManaged(AllocObjectInst(memType: selfType, irName: "storage"),
-                                                     hasCleanup: false,
-                                                     gen: fnVGF).erased
+            // no cleanup as it will escape the scope
+            selfVal = try fnVGF.builder.buildManaged(AllocObjectInst(memType: selfType, irName: "storage"),
+                                                     hasCleanup: false, gen: fnVGF).erased
+            let val = try fnVGF.builder.buildUnmanagedLValue(StructElementPtrInst(object: selfVal.lValue,
+                                                                                  property: "object"), gen: fnVGF)
+            selfAccessor = try fnVGF.builder.buildUnmanagedLValue(LoadInst(address: val.lValue, irName: "self.raw"),
+                                                                  gen: fnVGF).erased
         }
         else {
-            selfVar = try fnVGF.builder.buildManaged(AllocInst(memType: selfType.importedType(in: fnVGF.module)),
-                                                     hasCleanup: false,
-                                                     gen: fnVGF).erased
+            selfVal = try fnVGF.builder.buildManaged(AllocInst(memType: selfType.importedType(in: fnVGF.module)),
+                                                     hasCleanup: false, gen: fnVGF).erased
+            selfAccessor = selfVal
         }
         
-        fnVGF.addVariable(selfVar, name: "self")
-        
+        // add self
+        fnVGF.addVariable(selfVal, name: "self")
         // add self’s elements into the scope, whose accessors are elements of selfvar
         for member in selfType.members {
-            let structElement = try fnVGF.builder.buildUnmanagedLValue(StructElementPtrInst(object: selfVar.lValue,
+            let structElement = try fnVGF.builder.buildUnmanagedLValue(StructElementPtrInst(object: selfAccessor.lValue,
                                                                                             property: member.name,
                                                                                             irName: member.name), gen: fnVGF)
             fnVGF.addVariable(structElement, name: member.name)
@@ -875,11 +883,71 @@ extension InitDecl : StmtEmitter {
         try impl.body.emitStmt(module: module, gen: fnVGF)
         
         // forward the return val
-        try selfVar.forwardCoerceToValue(gen: fnVGF)
-        let val = selfVar.forward(gen)
+        try selfVal.forwardCoerceToValue(gen: fnVGF)
+        let val = selfVal.forward(gen)
         // cleanup the scope and return
         try fnVGF.cleanup()
         try fnVGF.builder.buildReturn(value: val)
+        
+        // move out of function
+        gen.builder.insertPoint = originalInsertPoint
+    }
+}
+
+extension DeinitDecl : StmtEmitter {
+    
+    func emitStmt(module: Module, gen: VIRGenFunction) throws {
+        
+        guard case let selfType as StructType = parent?.declaredType, let mangledName = self.mangledName, let deinitType = self.deinitType else {
+            throw VIRError.noType(#file)
+        }
+        // if has body
+        guard let impl = impl else {
+            try gen.builder.buildFunctionPrototype(name: mangledName, type: deinitType)
+            return
+        }
+        
+        let originalInsertPoint = gen.builder.insertPoint
+        
+        // make function and move into it
+        let function = try gen.builder.buildFunction(name: mangledName, type: deinitType, paramNames: ["self"])
+        gen.builder.insertPoint.function = function
+        
+        function.inlineRequirement = .always
+        // record deinit function
+        module.type(named: selfType.name)!.deinitialiser = function
+        
+        // make scope and occupy it with params
+        let fnScope = VIRGenScope(parent: gen.scope, function: function)
+        let fnVGF = VIRGenFunction(scope: fnScope, builder: gen.builder)
+        
+        let selfVal = try function.param(named: "self").managed(gen: fnVGF, hasCleanup: false)
+        // if self is heap allocated, member accesses must use the stored instance ptr
+        let selfAccessor: AnyManagedValue
+        if selfType.isHeapAllocated {
+            let val = try fnVGF.builder.buildUnmanagedLValue(StructElementPtrInst(object: selfVal.lValue,
+                                                                                  property: "object"), gen: fnVGF)
+            selfAccessor = try fnVGF.builder.buildUnmanagedLValue(LoadInst(address: val.lValue, irName: "self.raw"),
+                                                                  gen: fnVGF).erased
+        }
+        else { selfAccessor = selfVal }
+        
+        // add self
+        fnVGF.addVariable(selfVal, name: "self")
+        // add self’s elements into the scope, whose accessors are elements of selfvar
+        for member in selfType.members {
+            let structElement = try fnVGF.builder.buildUnmanagedLValue(StructElementPtrInst(object: selfAccessor.lValue,
+                                                                                            property: member.name,
+                                                                                            irName: member.name), gen: fnVGF)
+            fnVGF.addVariable(structElement, name: member.name)
+        }
+        
+        // vir gen for body
+        try impl.body.emitStmt(module: module, gen: fnVGF)
+        
+        // cleanup the scope and return
+        try fnVGF.cleanup()
+        try gen.builder.buildReturnVoid()
         
         // move out of function
         gen.builder.insertPoint = originalInsertPoint

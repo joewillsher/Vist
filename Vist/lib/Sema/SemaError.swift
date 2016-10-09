@@ -32,7 +32,8 @@ enum SemaError: VistError {
     
     // not user visible
     case noStdBoolType, noStdIntType, notTypeProvider, noTypeForStruct, noTypeForTuple, noTypeForFunction(name: String), notFunctionType(TypeRepr)
-    case structPropertyNotTyped(type: String, property: String), structMethodNotTyped(type: String, methodName: String), initialiserNotAssociatedWithType
+    case structPropertyNotTyped(type: String, property: String), structMethodNotTyped(type: String, methodName: String)
+    case initialiserNotAssociatedWithType, deinitialiserNotAssociatedWithType, noDeinitBody
     case typeNotFound, paramsNotTyped, integerNotTyped, boolNotTyped
     case noMemberwiseInit
     
@@ -43,6 +44,7 @@ enum SemaError: VistError {
     case cannotInferClosureParamListSize
     
     case genericSubstitutionInvalid, notValidLookup, unreachable(String), todo(String)
+    case deinitNonRefType(Type)
     
     var description: String {
         switch self {
@@ -120,6 +122,10 @@ enum SemaError: VistError {
             return "Function must have function type; '\(repr._astName_instance ?? "")' is not valid"
         case .conceptBody(let type, let decl):
             return "Concept method requirement '\(decl.name)' in '\(type.name)' cannot have a body"
+        case .deinitNonRefType(let type):
+            return "Cannot add a 'deinit' to a non 'ref type' '\(type.prettyName)'"
+        case .noDeinitBody:
+            return "'deinit' must have a body"
             
         case .cannotInferClosureParamListSize:
             return "Cannot infer the size of a closure parameter list; either specify the type or provide an explicit parameter list"
@@ -146,6 +152,7 @@ enum SemaError: VistError {
         case .structPropertyNotTyped(let type, let property): return "Property '\(property)' in '\(type)' was not typed"
         case .structMethodNotTyped(let type, let method): return "Method '\(method)' in '\(type)' was not typed"
         case .initialiserNotAssociatedWithType: return "Initialiser's parent type was unexpectedly nil"
+        case .deinitialiserNotAssociatedWithType: return "Deinitialiser's parent type was unexpectedly nil"
         case .typeNotFound: return "Type not found"
         case .paramsNotTyped: return "Params not typed"
         case .integerNotTyped: return "Integer literal not typed"

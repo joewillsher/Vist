@@ -145,22 +145,23 @@ private extension Token {
     static func fromIdentifier(_ alpha: String) -> Token {
         // Text tokens which are language keywords
         switch alpha {
-        case "let": return .`let`
-        case "var": return .`var`
-        case "func": return .`func`
-        case "return": return .`return`
-        case "if": return .`if`
-        case "else": return .`else`
+        case "let": return .let
+        case "var": return .var
+        case "func": return .func
+        case "return": return .return
+        case "if": return .if
+        case "else": return .else
         case "Void": return .void
         case "true": return .booleanLiteral(true)
         case "false": return .booleanLiteral(false)
-        case "for": return .`for`
-        case "in": return .`in`
-        case "do": return .`do`
-        case "while": return .`while`
+        case "for": return .for
+        case "in": return .in
+        case "do": return .do
+        case "while": return .while
         case "type": return .type
         case "concept": return .concept
-        case "init": return .`init`
+        case "init": return .init
+        case "deinit": return .deinit
         case "ref": return .ref
         case "yield": return .yield
         case "the": return .the

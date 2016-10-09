@@ -85,7 +85,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-use-air"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-disable-opt=inline"
@@ -125,7 +125,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-parse-stdlib"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-build-runtime"

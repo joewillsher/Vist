@@ -16,20 +16,28 @@ extension TypeDecl {
             return nil
         }
         
-        let startInsert = gen.builder.insertPoint
-        defer { gen.builder.insertPoint = startInsert }
+        let destroyVGF = VIRGenFunction(scope: VIRGenScope(module: module), builder: gen.builder)
+        
+        let startInsert = destroyVGF.builder.insertPoint
+        defer { destroyVGF.builder.insertPoint = startInsert }
         
         let fnType = FunctionType(params: [type.importedType(in: module).ptrType()],
                                   returns: BuiltinType.void,
                                   callingConvention: .runtime)
         let fnName = "destroy".mangle(type: fnType)
-        let fn = try gen.builder.buildFunctionPrototype(name: fnName, type: fnType)
+        let fn = try destroyVGF.builder.buildFunctionPrototype(name: fnName, type: fnType)
         try fn.defineBody(params: [(name: "self", convention: .inout)])
         
-        let managedSelf = try fn.param(named: "self").managed(gen: gen)
+        let managedSelf = try fn.param(named: "self").managed(gen: destroyVGF)
         
-        try managedSelf.emitDestruction(gen: gen)
-        try gen.builder.buildReturnVoid()
+        // create a call to the custom deinitialiser function, if there is one
+        if let deinitFn = module.type(named: type.name)?.deinitialiser {
+            try destroyVGF.builder.buildFunctionCall(function: deinitFn, args: [Operand(managedSelf.value)])
+        }
+        
+        // destroy the value
+        try managedSelf.emitDestruction(gen: destroyVGF)
+        try destroyVGF.builder.buildReturnVoid()
         
         return fn
     }
@@ -62,14 +70,10 @@ extension TypeDecl {
 }
 
 extension ConceptType {
-    func isTrivial() -> Bool {
-        return false
-    }
+    func isTrivial() -> Bool { return false }
 }
 extension TypeAlias {
-    func isTrivial() -> Bool {
-        return targetType.isTrivial()
-    }
+    func isTrivial() -> Bool { return targetType.isTrivial() }
 }
 extension NominalType {
     func isTrivial() -> Bool {
@@ -83,22 +87,20 @@ extension NominalType {
     }
 }
 extension Type {
-    func isTrivial() -> Bool {
-        return true
-    }
+    func isTrivial() -> Bool { return true }
 }
 
 
 private extension ManagedValue {
     
-    /// Emit VIR which ends this val's lifetime
+    /// Emit VIR which ends this val's lifetime -- it is responsible for destroying the members of the instance.
+    /// This destruction should be called by the runtime in a dealloc function
     func emitDestruction(gen: VIRGenFunction) throws {
         switch type {
         case let type as NominalType:
             for member in type.members {
                 
-                let ptr = try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: lValue,
-                                                                                    property: member.name,
+                let ptr = try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: lValue, property: member.name,
                                                                                     irName: member.name), gen: gen)
                 switch member.type {
                 case let type where type.isConceptType():
@@ -114,9 +116,9 @@ private extension ManagedValue {
                 }
             }
         case let type as TupleType:
-            for member in type.members {
-                
-            }
+//            for member in type.members {
+//                
+//            }
             // TODO: Important, emit destruction memberwise for tuples
             break
         default:

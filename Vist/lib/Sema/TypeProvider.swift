@@ -7,33 +7,33 @@
 //
 
 protocol ExprTypeProvider {
-    @discardableResult func typeForNode(scope: SemaScope) throws -> Type
+    @discardableResult func typeCheckNode(scope: SemaScope) throws -> Type
 }
 
 protocol StmtTypeProvider {
-    func typeForNode(scope: SemaScope) throws
+    func typeCheckNode(scope: SemaScope) throws
 }
 protocol DeclTypeProvider {
-    func typeForNode(scope: SemaScope) throws
+    func typeCheckNode(scope: SemaScope) throws
 }
 
 // TODO: make private
 extension ExprTypeProvider {
-    func typeForNode(scope: SemaScope) throws -> Type {
+    func typeCheckNode(scope: SemaScope) throws -> Type {
         return BuiltinType.null
     }
 }
 
 extension ASTNode {
-    func typeForNode(scope: SemaScope) throws {
+    func typeCheckNode(scope: SemaScope) throws {
         if case let expr as ExprTypeProvider = self {
-            try expr.typeForNode(scope: scope)
+            try expr.typeCheckNode(scope: scope)
         }
         else if case let stmt as StmtTypeProvider = self {
-            try stmt.typeForNode(scope: scope)
+            try stmt.typeCheckNode(scope: scope)
         }
         else if case let stmt as DeclTypeProvider = self {
-            try stmt.typeForNode(scope: scope)
+            try stmt.typeCheckNode(scope: scope)
         }
     }
 }
@@ -56,7 +56,7 @@ extension AST {
         
         let globalCollector = AsyncErrorCollector()
         try walkChildrenAsync(collector: globalCollector) { node in
-            try node.typeForNode(scope: globalScope)
+            try node.typeCheckNode(scope: globalScope)
         }
         globalCollector.group.wait()
         try globalCollector.throwIfErrors()

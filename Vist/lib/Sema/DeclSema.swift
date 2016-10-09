@@ -8,7 +8,7 @@
 
 extension TypeDecl : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Type {
+    func typeCheckNode(scope: SemaScope) throws -> Type {
         
         let errorCollector = ErrorCollector()
         let structScope = SemaScope.capturingScope(parent: scope, overrideReturnType: nil) // cannot return from Struct scope
@@ -28,7 +28,7 @@ extension TypeDecl : ExprTypeProvider {
             .flatMap { $0.declared }
             .flatMap { decl in
                 try errorCollector.run { _ -> StructMember in
-                    try decl.typeForNode(scope: structScope)
+                    try decl.typeCheckNode(scope: structScope)
                     guard let t = decl.type else {
                         throw semaError(.structPropertyNotTyped(type: name, property: decl.name), userVisible: false)
                     }
@@ -68,7 +68,7 @@ extension TypeDecl : ExprTypeProvider {
             try errorCollector.run {
                 let declScope = SemaScope(parent: scope)
                 declScope.genericParameters = method.genericParameters
-                try method.typeForNode(scope: declScope)
+                try method.typeCheckNode(scope: declScope)
             }
         }
         
@@ -91,7 +91,10 @@ extension TypeDecl : ExprTypeProvider {
         }
         // type check the initialisers
         try initialisers.walkChildren(collector: errorCollector) { node in
-            try node.typeForNode(scope: structScope)
+            try node.typeCheckNode(scope: structScope)
+        }
+        try deinitialisers.walkChildren(collector: errorCollector) { node in
+            try node.typeCheckNode(scope: structScope)
         }
         
         for i in initialisers {
@@ -119,7 +122,7 @@ extension TypeDecl : ExprTypeProvider {
 
 extension ConceptDecl : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Type {
+    func typeCheckNode(scope: SemaScope) throws -> Type {
         
         // inner concept scope
         let conceptScope = SemaScope.capturingScope(parent: scope, overrideReturnType: nil)
@@ -129,7 +132,7 @@ extension ConceptDecl : ExprTypeProvider {
         try requiredProperties
             .flatMap { $0.declared }
             .walkChildren(collector: errorCollector) { property in
-                try property.typeForNode(scope: conceptScope)
+                try property.typeCheckNode(scope: conceptScope)
         }
         // define a placeholder type, this is so inner contexts see theyre in a method
         let placeholder = ConceptType(name: name, requiredFunctions: [], requiredProperties: [])
@@ -169,7 +172,7 @@ extension ConceptDecl : ExprTypeProvider {
         
         // fix self references
         for method in requiredMethods {
-            try method.typeForNode(scope: scope)
+            try method.typeCheckNode(scope: scope)
         }
         
         try errorCollector.throwIfErrors()
@@ -184,7 +187,7 @@ extension ConceptDecl : ExprTypeProvider {
 
 extension InitDecl : DeclTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws {
+    func typeCheckNode(scope: SemaScope) throws {
         
         guard
             let parentType = parent?.declaredType,
@@ -217,17 +220,50 @@ extension InitDecl : DeclTypeProvider {
         }
         
         try impl.body.walkChildren { ex in
-            try ex.typeForNode(scope: initScope)
+            try ex.typeCheckNode(scope: initScope)
+        }
+        
+    }
+}
+
+extension DeinitDecl : DeclTypeProvider {
+    
+    func typeCheckNode(scope: SemaScope) throws {
+        
+        guard
+            let parentType = parent?.declaredType,
+            let parentProperties = parent?.declaredType?.members
+            else { throw semaError(.deinitialiserNotAssociatedWithType) }
+        
+        // must be a ref type
+        guard parentType.isHeapAllocated else {
+            throw semaError(.deinitNonRefType(parentType))
+        }
+        guard let impl = self.impl else {
+            throw semaError(.noDeinitBody)
+        }
+        
+        // Do sema on params, body, and expose self and its properties into the scope
+        let initScope = SemaScope(parent: scope)
+        self.mangledName = "deinit".mangle(type: deinitType!)
+        
+        initScope.addVariable(variable: (type: parentType, mutable: true, isImmutableCapture: false), name: "self")
+        // ad scope properties to initScope
+        for p in parentProperties {
+            initScope.addVariable(variable: (type: p.type, mutable: true, isImmutableCapture: false), name: p.name)
+        }
+        
+        try impl.body.walkChildren { ex in
+            try ex.typeCheckNode(scope: initScope)
         }
         
     }
 }
 
 
-
 extension VariableDecl : DeclTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws {
+    func typeCheckNode(scope: SemaScope) throws {
         // handle redeclaration
         if scope.thisScopeContainsVariable(named: name) {
             throw semaError(.invalidRedeclaration(name))
@@ -246,7 +282,7 @@ extension VariableDecl : DeclTypeProvider {
                                                  context: explicitType,
                                                  scopeName: contextName)
         
-        let objectType = try value?.typeForNode(scope: declScope)
+        let objectType = try value?.typeCheckNode(scope: declScope)
         
         // if the type is null and no explicit type is specified, diagnose
         if explicitType == nil, value == nil {
@@ -269,10 +305,10 @@ extension VariableDecl : DeclTypeProvider {
 
 extension VariableGroupDecl : DeclTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws {
+    func typeCheckNode(scope: SemaScope) throws {
         // simply type children
         for child in declared {
-            try child.typeForNode(scope: scope)
+            try child.typeCheckNode(scope: scope)
         }
     }
 }

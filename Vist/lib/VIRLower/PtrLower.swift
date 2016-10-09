@@ -40,6 +40,13 @@ extension DestroyAddrInst : VIRLower {
             let ref = module.getRuntimeFunction(.destroyExistentialBuffer, IGF: &IGF)
             return try IGF.builder.buildCall(function: ref, args: [addr.loweredValue!])
             
+        case let type as NominalType where type.isHeapAllocated:
+            let ref = module.getRuntimeFunction(.releaseObject,
+                                                IGF: &IGF)
+            return try IGF.builder.buildCall(function: ref,
+                                             args: [addr.bitcastToOpaqueRefCountedType()],
+                                             name: irName)
+            
         case let type as NominalType where type.isStructType():
             guard case let modType as TypeAlias = addr.memType, let destructor = modType.destructor else {
                 return LLVMValue.nullptr
@@ -62,6 +69,9 @@ extension DestroyValInst : VIRLower {
         case let type? where type.isConceptType():
             let ref = module.getRuntimeFunction(.destroyExistentialBuffer, IGF: &IGF)
             return try IGF.builder.buildCall(function: ref, args: [mem])
+            
+        case let type as StructType where type.isHeapAllocated:
+            fatalError("Should not be releasing a ref counted object by value")
             
         case let type as NominalType where type.isStructType():
             // if it requires a custom deallocator, call that
@@ -88,6 +98,15 @@ extension CopyAddrInst : VIRLower {
             let ref = module.getRuntimeFunction(.copyExistentialBuffer, IGF: &IGF)
             try IGF.builder.buildCall(function: ref, args: [addr.loweredValue!, outAddr.loweredValue!])
             return outAddr.loweredValue!
+            
+//        case let type as StructType where type.isHeapAllocated:
+//            // for a class, retain and return same pointer
+//            let ref = module.getRuntimeFunction(.retainObject,
+//                                                IGF: &IGF)
+//            try IGF.builder.buildCall(function: ref,
+//                                      args: [addr.bitcastToOpaqueRefCountedType()],
+//                                      name: irName)
+//            return addr.loweredValue!
             
         case let type as NominalType where type.isStructType():
             

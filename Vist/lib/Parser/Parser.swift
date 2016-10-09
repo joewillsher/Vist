@@ -1097,13 +1097,15 @@ extension Parser {
         }
         try consume(.openBrace)
         
-        var properties: [TypeMemberVariableDecl] = [], methods: [FuncDecl] = [], initialisers: [InitDecl] = []
+        var properties: [TypeMemberVariableDecl] = [], methods: [FuncDecl] = []
+        var initialisers: [InitDecl] = [], deinitialisers: [DeinitDecl] = []
         
         conceptScopeLoop: while true {
             switch currentToken {
             case .var, .let:        try properties.append(parseVariableDecl(declContext: .type))
             case .func:             try methods.append(parseFuncDeclaration(declContext: .type))
             case .init:             try initialisers.append(parseInitDecl())
+            case .deinit:           try deinitialisers.append(parseDeinitDecl())
             case .at:               try parseAttrExpr()
             case .comment(let c):   try parseCommentExpr(str: c)
             case .closeBrace:
@@ -1115,28 +1117,18 @@ extension Parser {
             
         }
         
-        let decl = TypeDecl(name: typeName,
-                            attrs: a,
-                            properties: properties,
-                            methods: methods,
-                            initialisers: initialisers,
-                            genericParameters: genericParameters,
-                            concepts: concepts,
-                            byRef: refType)
-        // associate functions with the struct
-        for member in decl.properties {
-            member.parent = decl
-        }
-        for method in decl.methods {
-            method.parent = decl
-        }
-        for initialiser in decl.initialisers {
-            initialiser.parent = decl
-        }
-        return decl
+        return TypeDecl(name: typeName,
+                        attrs: a,
+                        properties: properties,
+                        methods: methods,
+                        initialisers: initialisers,
+                        deinitialisers: deinitialisers,
+                        genericParameters: genericParameters,
+                        concepts: concepts,
+                        byRef: refType)
     }
     
-    /// Parse type's init function
+    /// Parse type's init decl
     private func parseInitDecl() throws -> InitDecl {
         
         try consume(.init)
@@ -1152,6 +1144,17 @@ extension Parser {
                         impl: try parseFunctionBodyExpr(type: repr),
                         parent: nil,
                         isImplicit: false)
+    }
+    /// Parse type's deinit decl
+    private func parseDeinitDecl() throws -> DeinitDecl {
+        
+        try consume(.deinit)
+        
+        guard consumeIf(.assign) else {
+            return DeinitDecl(impl: nil, parent: nil)
+        }
+        let body = try parseFunctionBodyExpr(type: FunctionTypeRepr(paramType: TypeRepr([]), returnType: .void))
+        return DeinitDecl(impl: body, parent: nil)
     }
     
     

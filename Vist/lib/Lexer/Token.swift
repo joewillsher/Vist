@@ -39,7 +39,7 @@ enum Token {
     case `let`, `var`, `func`, `return`, void
     case EOF
     case `if`, `else`, `for`, `in`, `while`, `do`, yield, the, `as`
-    case ref, type, `init`, `operator`, `concept`
+    case ref, type, `init`, `deinit`, `operator`, `concept`
     case assign, sqbrOpen, sqbrClose, comma, period, colon, semicolon, openParen, closeParen, returnArrow, bar, openBrace, closeBrace
     case infixOperator(String), prefixOperator(String), postfixOperator(String)
     case identifier(String), floatingPointLiteral(Double), integerLiteral(Int), booleanLiteral(Bool), nilLiteral
@@ -80,6 +80,7 @@ extension Token : Equatable {
         case (.ref, .ref): return true
         case (.type, .type): return true
         case (.init, .init): return true
+        case (.deinit, .deinit): return true
         case (.operator, .operator): return true
         case (.concept, .concept): return true
         case (.assign, .assign): return true

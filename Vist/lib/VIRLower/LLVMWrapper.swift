@@ -169,8 +169,7 @@ extension LLVMBuilder {
         // correct null value type (which we get from the struct
         return try LLVMValue(ref: LLVMConstInsertValue(aggr.val(),
                                                        value._value ?? LLVMConstNull(type),
-                                                       &v,
-                                                       1))
+                                                       &v, 1))
     }
     func buildExtractValue(from val: LLVMValue, index: Int, name: String? = nil) throws -> LLVMValue {
         return try wrap(LLVMBuildExtractValue(builder, val.val(), UInt32(index), name ?? ""))

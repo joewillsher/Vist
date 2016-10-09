@@ -9,14 +9,14 @@
 extension AllocObjectInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         
-        let metadata = try storedType.getLLVMTypeMetadata(IGF: &IGF, module: module)
+        let metadata = try refType.getLLVMTypeMetadata(IGF: &IGF, module: module)
         
         let ref = module.getRuntimeFunction(.allocObject, IGF: &IGF)
         let alloced = try IGF.builder.buildCall(function: ref,
                                                 args: [metadata],
                                                 name: irName)
         
-        return try IGF.builder.buildBitcast(value: alloced, to: storedType.lowered(module: module).getPointerType())
+        return try IGF.builder.buildBitcast(value: alloced, to: refType.ptrType().lowered(module: module))
     }
 }
 
@@ -51,9 +51,9 @@ extension DeallocObjectInst : VIRLower {
 }
 
 
-private extension PtrOperand {
+extension PtrOperand {
     func bitcastToOpaqueRefCountedType() throws -> LLVMValue {
-        let refcounted = Runtime.refcountedObjectPointerType.lowered(module: module) as LLVMType
+        let refcounted = Runtime.refcountedObjectPointerType.importedType(in: module).lowered(module: module) as LLVMType
         return try module.loweredBuilder.buildBitcast(value: loweredValue!, to: refcounted)
     }
 }

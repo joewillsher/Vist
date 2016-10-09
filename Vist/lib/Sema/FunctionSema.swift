@@ -44,7 +44,7 @@ extension FuncDecl : DeclTypeProvider {
         return ty
     }
     
-    func typeForNode(scope: SemaScope) throws {
+    func typeCheckNode(scope: SemaScope) throws {
         
         // if we have already gen'ed the interface for this function, fnType.type
         // won't be nil, if we haven't, gen it now
@@ -89,7 +89,7 @@ extension FuncDecl : DeclTypeProvider {
         
         // type gen for inner scope
         try impl.body.exprs.walkChildren { exp in
-            try exp.typeForNode(scope: fnScope)
+            try exp.typeCheckNode(scope: fnScope)
         }
         
         if isGeneratorFunction {
@@ -104,7 +104,7 @@ extension FuncDecl : DeclTypeProvider {
 
 extension BinaryExpr : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Type {
+    func typeCheckNode(scope: SemaScope) throws -> Type {
         return try semaFunctionCall(scope: scope).type.returns
     }
 }
@@ -112,7 +112,7 @@ extension BinaryExpr : ExprTypeProvider {
 
 extension FunctionCallExpr : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Type {
+    func typeCheckNode(scope: SemaScope) throws -> Type {
         let fnType = try semaFunctionCall(scope: scope).type
         
         // we need explicit self, VIRGen cant handle the implicit method call
@@ -139,7 +139,7 @@ extension FunctionCall {
         for (i, arg) in argArr.enumerated() {
             let name = (scope.name ?? "") + self.name + "@" + String(i)
             let argScope = SemaScope.capturingScope(parent: scope, scopeName: name)
-            try arg.typeForNode(scope: argScope)
+            try arg.typeCheckNode(scope: argScope)
         }
         
         // get from table
@@ -156,7 +156,7 @@ extension FunctionCall {
             // rewrite the closure arg types
             let name = (scope.name ?? "") + self.name + "@" + String(i)
             let argScope = SemaScope.capturingScope(parent: scope, context: argType, scopeName: name)
-            try arg.typeForNode(scope: argScope)
+            try arg.typeCheckNode(scope: argScope)
         }
         
         // assign type to self and return
@@ -168,9 +168,9 @@ extension FunctionCall {
 
 extension MethodCallExpr : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Type {
+    func typeCheckNode(scope: SemaScope) throws -> Type {
         
-        let ty = try object.typeForNode(scope: scope)
+        let ty = try object.typeCheckNode(scope: scope)
         guard case let parentType as NominalType = ty else { throw semaError(.notStructType(ty), userVisible: false) }
         self.structType = parentType
         

@@ -18,13 +18,14 @@ struct FunctionType : Type {
     }
     
     enum CallingConvention {
-        case thin, initialiser, runtime
+        case thin, initialiser, deinitialiser, runtime
         case method(selfType: Type, mutating: Bool)
         
         var name: String {
             switch self {
             case .thin: return "&thin"
             case .initialiser: return "&init"
+            case .deinitialiser: return "&deinit"
             case .runtime: return "&runtime"
             case .method: return "&method"
             }
@@ -138,6 +139,8 @@ extension FunctionType {
             conventionPrefix = "t"
         case .initialiser: // init
             conventionPrefix = "i"
+        case .deinitialiser: // deinit
+            conventionPrefix = "d"
         case .runtime: // deallocator/copy constructor
             conventionPrefix = "r"
         }

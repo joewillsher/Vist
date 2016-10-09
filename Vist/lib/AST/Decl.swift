@@ -26,7 +26,8 @@ protocol NominalTypeDecl : class, Decl {
 final class TypeDecl: ScopeNode, NominalTypeDecl, LibraryTopLevel {
     let name: String
     let properties: [TypeMemberVariableDecl]
-    var methods: [FuncDecl], initialisers: [InitDecl]
+    var methods: [FuncDecl]
+    var initialisers: [InitDecl], deinitialisers: [DeinitDecl]
     let attrs: [AttributeExpr]
     let byRef: Bool
     
@@ -38,6 +39,7 @@ final class TypeDecl: ScopeNode, NominalTypeDecl, LibraryTopLevel {
          properties: [TypeMemberVariableDecl],
          methods: [FuncDecl],
          initialisers: [InitDecl],
+         deinitialisers: [DeinitDecl],
          genericParameters: [ConstrainedType]?,
          concepts: [String],
          byRef: Bool) {
@@ -45,10 +47,25 @@ final class TypeDecl: ScopeNode, NominalTypeDecl, LibraryTopLevel {
         self.properties = properties
         self.methods = methods
         self.initialisers = initialisers
+        self.deinitialisers = deinitialisers
         self.attrs = attrs
         self.genericParameters = genericParameters
         self.byRef = byRef
         self.concepts = concepts
+        
+        // associate functions with the struct
+        for member in self.properties {
+            member.parent = self
+        }
+        for method in self.methods {
+            method.parent = self
+        }
+        for initialiser in self.initialisers {
+            initialiser.parent = self
+        }
+        for deinitialiser in self.deinitialisers {
+            deinitialiser.parent = self
+        }
     }
     
     var type: StructType? = nil
@@ -58,6 +75,7 @@ final class TypeDecl: ScopeNode, NominalTypeDecl, LibraryTopLevel {
         return properties.map { $0 as ASTNode }
             + methods as [ASTNode]
             + initialisers as [ASTNode]
+            + deinitialisers as [ASTNode]
     }
 }
 
@@ -184,6 +202,25 @@ final class InitDecl : Decl {
     }
     
     var mangledName: String?
+    
+    weak var parent: NominalTypeDecl? = nil
+}
+
+final class DeinitDecl : Decl {
+    let impl: FunctionBodyExpr?
+    
+    init(impl: FunctionBodyExpr?,
+         parent: NominalTypeDecl?) {
+        self.impl = impl
+        self.parent = parent
+    }
+    
+    var mangledName: String?
+    var deinitType: FunctionType? {
+        return parent?.declaredType.map { FunctionType(params: [$0.ptrType()],
+                                                       returns: BuiltinType.void,
+                                                       callingConvention: .deinitialiser) }
+    }
     
     weak var parent: NominalTypeDecl? = nil
 }

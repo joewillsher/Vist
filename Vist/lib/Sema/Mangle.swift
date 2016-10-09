@@ -13,9 +13,6 @@ extension String {
     func mangle(type: FunctionType) -> String {
         return "_V\(mappedChars())_\(type.mangledName)"
     }
-//    func mangle(params type: [Type]) -> String {
-//        return mangle(type: FunctionType(params: type, returns: BuiltinType.void/*Doesnt matter*/))
-//    }
     
     private static var mangleMap: [(Character, Character)] = [
         ("_", "U"),

@@ -13,7 +13,7 @@
 
 extension IntegerLiteral : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Type {
+    func typeCheckNode(scope: SemaScope) throws -> Type {
         let ty = StdLib.intType
         self.type = ty
         return ty
@@ -22,7 +22,7 @@ extension IntegerLiteral : ExprTypeProvider {
 
 extension FloatingPointLiteral : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Type {
+    func typeCheckNode(scope: SemaScope) throws -> Type {
         let ty = StdLib.doubleType
         self.type = ty
         return ty
@@ -31,7 +31,7 @@ extension FloatingPointLiteral : ExprTypeProvider {
 
 extension BooleanLiteral : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Type {
+    func typeCheckNode(scope: SemaScope) throws -> Type {
         let ty = StdLib.boolType
         self.type = ty
         return ty
@@ -40,7 +40,7 @@ extension BooleanLiteral : ExprTypeProvider {
 
 extension StringLiteral : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Type {
+    func typeCheckNode(scope: SemaScope) throws -> Type {
         let t = StdLib.stringType
         self.type = t
         return t
@@ -53,7 +53,7 @@ extension StringLiteral : ExprTypeProvider {
 
 extension VariableExpr : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Type {
+    func typeCheckNode(scope: SemaScope) throws -> Type {
         
         // lookup variable type in scope
         guard let v = scope.variable(named: name) else {
@@ -68,11 +68,11 @@ extension VariableExpr : ExprTypeProvider {
 
 extension MutationExpr : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Type {
+    func typeCheckNode(scope: SemaScope) throws -> Type {
         
         // gen types for variable and value
-        let old = try object.typeForNode(scope: scope)
-        let new = try value.typeForNode(scope: scope)
+        let old = try object.typeCheckNode(scope: scope)
+        let new = try value.typeCheckNode(scope: scope)
         
         // make sure consistent types
         guard new.canAddConstraint(old, solver: scope.constraintSolver) else {
@@ -99,7 +99,9 @@ extension MutationExpr : ExprTypeProvider {
         case let lookup as LookupExpr:
             // if its a lookup expression we can 
             
-            guard let type = lookup.object._type else { throw semaError(.notStructType(lookup._type)) }
+            guard let type = lookup.object._type else {
+                throw semaError(.notStructType(lookup._type))
+            }
             let (_, parentMutable, mutable) = try lookup.recursiveType(scope: scope)
             
             guard let p = parentMutable, p else {
@@ -127,9 +129,9 @@ extension MutationExpr : ExprTypeProvider {
 
 extension CoercionExpr : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Type {
+    func typeCheckNode(scope: SemaScope) throws -> Type {
         
-        let oldType = try base.typeForNode(scope: scope)
+        let oldType = try base.typeCheckNode(scope: scope)
         let newType = try type.typeIn(scope)
         
         do {
@@ -147,7 +149,7 @@ extension CoercionExpr : ExprTypeProvider {
 extension ImplicitCoercionExpr : ExprTypeProvider {
     
     /// the expr was given a type when it was type checked
-    func typeForNode(scope: SemaScope) throws -> Type {
+    func typeCheckNode(scope: SemaScope) throws -> Type {
         let exprType = expr._type!
         do {
             try exprType.addConstraint(type, solver: scope.constraintSolver)
@@ -212,7 +214,7 @@ extension ChainableExpr {
 
 extension VoidExpr : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Type {
+    func typeCheckNode(scope: SemaScope) throws -> Type {
         self.type = BuiltinType.void
         return BuiltinType.void
     }
@@ -226,7 +228,7 @@ extension VoidExpr : ExprTypeProvider {
 
 extension ClosureExpr : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Type {
+    func typeCheckNode(scope: SemaScope) throws -> Type {
         
         // If the AST context tells us the type, use that
         // otherwise create type variables for the unknown param & return types
@@ -275,7 +277,7 @@ extension ClosureExpr : ExprTypeProvider {
         
         // type check body
         for exp in exprs {
-            try exp.typeForNode(scope: innerScope)
+            try exp.typeCheckNode(scope: innerScope)
         }
         
         self.type = ty
@@ -299,11 +301,11 @@ extension ClosureExpr : ExprTypeProvider {
 
 extension ArrayExpr : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Type {
+    func typeCheckNode(scope: SemaScope) throws -> Type {
         
         // element types
         let types = try arr.map { el in
-            try el.typeForNode(scope: scope)
+            try el.typeCheckNode(scope: scope)
         }
         
         // make sure array is homogeneous
@@ -327,7 +329,7 @@ extension ArrayExpr : ExprTypeProvider {
 
 extension ArraySubscriptExpr : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Type {
+    func typeCheckNode(scope: SemaScope) throws -> Type {
         
         // make sure its an array
         guard case let v as VariableExpr = arr,
@@ -336,7 +338,7 @@ extension ArraySubscriptExpr : ExprTypeProvider {
         }
         
         // gen type for subscripting value
-        guard try index.typeForNode(scope: scope) == StdLib.intType else {
+        guard try index.typeCheckNode(scope: scope) == StdLib.intType else {
             throw semaError(.nonIntegerSubscript)
         }
         
@@ -353,7 +355,7 @@ extension ArraySubscriptExpr : ExprTypeProvider {
 
 extension TupleExpr : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Type {
+    func typeCheckNode(scope: SemaScope) throws -> Type {
         
         guard elements.count != 0 else {
             let t = BuiltinType.void
@@ -361,7 +363,7 @@ extension TupleExpr : ExprTypeProvider {
             return t
         }
         
-        let tys = try elements.map { try $0.typeForNode(scope: scope) }
+        let tys = try elements.map { try $0.typeCheckNode(scope: scope) }
         let t = TupleType(members: tys)
         _type = t
         return t
@@ -370,9 +372,9 @@ extension TupleExpr : ExprTypeProvider {
 
 extension TupleMemberLookupExpr : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Type {
+    func typeCheckNode(scope: SemaScope) throws -> Type {
         
-        guard case let objType as TupleType = try object.typeForNode(scope: scope) else {
+        guard case let objType as TupleType = try object.typeCheckNode(scope: scope) else {
             throw semaError(.noTypeForTuple, userVisible: false)
         }
         
@@ -391,9 +393,9 @@ extension TupleMemberLookupExpr : ExprTypeProvider {
 
 extension PropertyLookupExpr : ExprTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws -> Type {
+    func typeCheckNode(scope: SemaScope) throws -> Type {
         
-        guard case let objType as NominalType = try object.typeForNode(scope: scope) else { throw semaError(.noTypeForStruct, userVisible: false) }
+        guard case let objType as NominalType = try object.typeCheckNode(scope: scope) else { throw semaError(.noTypeForStruct, userVisible: false) }
         
         let propertyType = try objType.propertyType(name: propertyName)
         self._type = propertyType

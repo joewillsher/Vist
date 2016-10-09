@@ -56,6 +56,18 @@ extension Module {
         loweredModule = module
         var IGF = (builder, module) as IRGenFunction
         
+        // define function stubs
+        for fn in functions {
+            // create function proto
+            let function = getOrAddFunction(named: fn.name, type: fn.type, IGF: &IGF)
+            fn.loweredFunction = function
+            
+            // name the params
+            for (i, p) in (fn.params ?? []).enumerated() where p.irName != nil {
+                try function.param(at: i).name = p.irName
+            }
+        }
+        
         // first emit any type destructors, needed for the metadata
         for type in typeList.values {
             if let destructor = type.destructor {
@@ -74,16 +86,6 @@ extension Module {
             }
         }
         
-        for fn in functions {
-            // create function proto
-            let function = getOrAddFunction(named: fn.name, type: fn.type, IGF: &IGF)
-            fn.loweredFunction = function
-            
-            // name the params
-            for (i, p) in (fn.params ?? []).enumerated() where p.irName != nil {
-                try function.param(at: i).name = p.irName
-            }
-        }
         // emit concepts, needed for conformances
         for type in typeList.values where type.targetType is ConceptType {
             _ = try type.getLLVMTypeMetadata(IGF: &IGF, module: self)

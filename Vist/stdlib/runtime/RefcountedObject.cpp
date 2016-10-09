@@ -41,9 +41,10 @@ vist_allocObject(TypeMetadata *metadata) {
     
     // store the object and initial ref count in the box
     refCountedObject->object = object;
-    refCountedObject->refCount = 0;
+    refCountedObject->refCount = 1;
+    refCountedObject->metadata = metadata;
 #ifdef RUNTIME_DEBUG
-    printf(">alloc  \t%p, rc=%i\n", refCountedObject->object, refCountedObject->refCount);
+    printf("→alloc  \t%p, rc=%i\n", refCountedObject->object, refCountedObject->refCount);
 #endif
     // return heap pointer to ref counted box
     return refCountedObject;
@@ -53,10 +54,12 @@ vist_allocObject(TypeMetadata *metadata) {
 RUNTIME_COMPILER_INTERFACE
 void vist_deallocObject(RefcountedObject *_Nonnull object) {
 #ifdef RUNTIME_DEBUG
-    printf(">dealloc\t%p\n", object->object);
+    printf("→dealloc\t%p\n", object->object);
+    printf("   ↳destructor_fn=%p\n", object->metadata->destructor);
 #endif
+    // call the destructor fn, this will call any user-defined deinit fn
     if (auto destructor = object->metadata->destructor) {
-        destructor(object->object);
+        destructor(object);
     }
     free(object->object);
     // this is probably leaking -- `object` is on the heap and we can't dispose of it
@@ -66,7 +69,7 @@ void vist_deallocObject(RefcountedObject *_Nonnull object) {
 RUNTIME_COMPILER_INTERFACE
 void vist_releaseObject(RefcountedObject *_Nonnull object) {
 #ifdef RUNTIME_DEBUG
-    printf(">release\t%p, rc=%i\n", object->object, object->refCount-1);
+    printf("→release\t%p, rc=%i\n", object->object, object->refCount-1);
 #endif
     // if no more references, we dealloc it
     if (object->refCount == 1)
@@ -81,7 +84,7 @@ RUNTIME_COMPILER_INTERFACE
 void vist_retainObject(RefcountedObject *_Nonnull object) {
     incrementRefCount(object);
 #ifdef RUNTIME_DEBUG
-    printf(">retain \t%p, rc=%i\n", object->object, object->refCount);
+    printf("→retain \t%p, rc=%i\n", object->object, object->refCount);
 #endif
 };
 
@@ -90,7 +93,7 @@ RUNTIME_COMPILER_INTERFACE
 void vist_releaseUnownedObject(RefcountedObject *_Nonnull object) {
     decrementRefCount(object);
 #ifdef RUNTIME_DEBUG
-    printf(">release-unowned \t%p, rc=%i\n", object->object, object->refCount);
+    printf("→release-unowned \t%p, rc=%i\n", object->object, object->refCount);
 #endif
 };
 
@@ -98,7 +101,7 @@ void vist_releaseUnownedObject(RefcountedObject *_Nonnull object) {
 RUNTIME_COMPILER_INTERFACE
 void vist_deallocUnownedObject(RefcountedObject *_Nonnull object) {
 #ifdef RUNTIME_DEBUG
-    printf(">dealloc-unowned\t%p, rc=%i\n", object->object, object->refCount);
+    printf("→dealloc-unowned\t%p, rc=%i\n", object->object, object->refCount);
 #endif
     if (object->refCount == 0)
         vist_deallocObject(object);
@@ -106,8 +109,8 @@ void vist_deallocUnownedObject(RefcountedObject *_Nonnull object) {
 
 /// Get the ref count
 RUNTIME_COMPILER_INTERFACE
-uint32_t vist_getObjectRefcount(RefcountedObject *_Nonnull object) {
-    return object->refCount;
+uint64_t vist_getObjectRefcount(RefcountedObject *_Nonnull object) {
+    return (uint64_t)object->refCount;
 };
 
 /// Check if the object is singly referenced

@@ -29,7 +29,7 @@ syn match vistTypeConstraint /|/ nextgroup=vistTypeName skipwhite
 syn match vistReturnTypeDeclaration /->/ nextgroup=vistTypeName skipwhite
 
 syn keyword vistFuncKeyword func skipwhite nextgroup=vistFuncName
-syn keyword vistInitKeyword init skipwhite nextgroup=vistTypeInstanceName
+syn keyword vistInitKeyword init deinit skipwhite nextgroup=vistTypeInstanceName
 
 syn keyword typeCoerceKeyword as the skipwhite nextgroup=vistTypeInstanceName
 

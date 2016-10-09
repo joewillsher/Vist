@@ -41,6 +41,14 @@ extension StructType {
     }
     
     func importedType(in module: Module) -> Type {
+        let ty = importedMemberType(in: module)
+        // wrap in class box
+        return isHeapAllocated ? ty.refCountedBox(module: module) : ty
+    }
+    /// Import the members of the struct type. Used by `StructType.importedType(in:)` 
+    /// and `TypeAlias.refCountedBox(module:)` to import the members.
+    func importedMemberType(in module: Module) -> TypeAlias {
+        // import members
         let mappedEls = members.map { member in
             (member.name,
              member.type.isAddressOnly ?
@@ -51,7 +59,7 @@ extension StructType {
         let newTy = StructType(members: mappedEls, methods: methods, name: name, concepts: concepts, isHeapAllocated: isHeapAllocated)
         newTy.genericTypes = genericTypes
         newTy.concepts = concepts
-        
+        // add to the module cache
         return module.getOrInsert(type: TypeAlias(name: name, targetType: newTy))
     }
     

@@ -56,10 +56,10 @@ class Param : Value {
     
     /// Returns a managed value for this param, the clearup depends on the
     /// param convention
-    func managed(gen: VIRGenFunction) -> AnyManagedValue {
+    func managed(gen: VIRGenFunction, hasCleanup: Bool = true) -> AnyManagedValue {
         switch convention {
         case .in?, nil:
-            return Managed<Param>.forUnmanaged(self, gen: gen).erased
+            return Managed<Param>.forManaged(self, hasCleanup: hasCleanup, gen: gen).erased
         case .out?, .inout?:
             return Managed<RefParam>.forLValue(self as! RefParam, gen: gen).erased
         }

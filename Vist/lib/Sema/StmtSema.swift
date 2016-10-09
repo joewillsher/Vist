@@ -11,7 +11,7 @@ private extension ScopeEscapeStmt {
     func checkScopeEscapeStmt(scope: SemaScope) throws {
         // set the AST context to `scope.returnType`
         let retScope = SemaScope(parent: scope, semaContext: scope.returnType)
-        let returnType = try expr.typeForNode(scope: retScope)
+        let returnType = try expr.typeCheckNode(scope: retScope)
         
         guard let ret = scope.returnType, ret == returnType else {
             throw semaError(.wrongFunctionReturnType(applied: returnType, expected: scope.returnType ?? BuiltinType.null))
@@ -21,13 +21,13 @@ private extension ScopeEscapeStmt {
 
 extension ReturnStmt : StmtTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws {
+    func typeCheckNode(scope: SemaScope) throws {
         guard !scope.isYield, let returnType = scope.returnType else {
             throw semaError(.invalidReturn)
         }
         expectedReturnType = returnType
         
-        let exprType = try expr.typeForNode(scope: scope)
+        let exprType = try expr.typeCheckNode(scope: scope)
         
         do {
             try exprType.addConstraint(returnType,
@@ -44,7 +44,7 @@ extension ReturnStmt : StmtTypeProvider {
 
 extension YieldStmt : StmtTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws {
+    func typeCheckNode(scope: SemaScope) throws {
         guard scope.isYield else { throw semaError(.invalidYield) }
         try checkScopeEscapeStmt(scope: scope)
     }
@@ -57,12 +57,12 @@ extension YieldStmt : StmtTypeProvider {
 
 extension ConditionalStmt : StmtTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws {
+    func typeCheckNode(scope: SemaScope) throws {
         // call on child `ElseIfBlockExpressions`
         for statement in statements {
             // inner scopes
             let ifScope = SemaScope.capturingScope(parent: scope)
-            try statement.typeForNode(scope: ifScope)
+            try statement.typeCheckNode(scope: ifScope)
         }
     }
 }
@@ -70,7 +70,7 @@ extension ConditionalStmt : StmtTypeProvider {
 
 extension ElseIfBlockStmt : StmtTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws {
+    func typeCheckNode(scope: SemaScope) throws {
         
         // get condition type
         let blockScope = SemaScope.capturingScope(parent: scope)
@@ -78,7 +78,7 @@ extension ElseIfBlockStmt : StmtTypeProvider {
         
         // gen types for cond block
         try block.exprs.walkChildren { exp in
-            try exp.typeForNode(scope: blockScope)
+            try exp.typeCheckNode(scope: blockScope)
         }
     }
     
@@ -90,7 +90,7 @@ private extension ConditionalPattern {
         
         switch self {
         case .boolean(let cond):
-            let condType = try cond.typeForNode(scope: scope)
+            let condType = try cond.typeCheckNode(scope: scope)
             
             guard condType == StdLib.boolType else {
                 throw semaError(.nonBooleanCondition)
@@ -108,7 +108,7 @@ private extension ConditionalPattern {
                               name: match.variable)
             
             let bound = match.explicitBoundExpr ?? VariableExpr(name: match.variable)
-            let exprType = try bound.typeForNode(scope: scope)
+            let exprType = try bound.typeCheckNode(scope: scope)
             
             do {
                 try exprType.addConstraint(targetType, solver: scope.constraintSolver)
@@ -135,11 +135,11 @@ private extension ConditionalPattern {
 
 extension ForInLoopStmt: StmtTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws {
+    func typeCheckNode(scope: SemaScope) throws {
         
         // scopes for inner loop
         let loopScope = SemaScope.capturingScope(parent: scope)
-        let generator = try self.generator.typeForNode(scope: scope)
+        let generator = try self.generator.typeCheckNode(scope: scope)
         
         // check its a generator, and the return type is the loop variable type
         guard
@@ -157,7 +157,7 @@ extension ForInLoopStmt: StmtTypeProvider {
         
         // parse inside of loop in loop scope
         try block.exprs.walkChildren { exp in
-            try exp.typeForNode(scope: loopScope)
+            try exp.typeCheckNode(scope: loopScope)
         }
     }
     
@@ -166,17 +166,17 @@ extension ForInLoopStmt: StmtTypeProvider {
 
 extension WhileLoopStmt: StmtTypeProvider {
     
-    func typeForNode(scope: SemaScope) throws {
+    func typeCheckNode(scope: SemaScope) throws {
         
         // scopes for inner loop
         let loopScope = SemaScope.capturingScope(parent: scope)
         
         // gen types for iterator
-        guard try condition.typeForNode(scope: scope) == StdLib.boolType else { throw semaError(.nonBooleanCondition) }
+        guard try condition.typeCheckNode(scope: scope) == StdLib.boolType else { throw semaError(.nonBooleanCondition) }
         
         // parse inside of loop in loop scope
         try block.exprs.walkChildren { exp in
-            try exp.typeForNode(scope: loopScope)
+            try exp.typeCheckNode(scope: loopScope)
         }
     }
 }
