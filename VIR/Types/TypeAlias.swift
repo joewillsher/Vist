@@ -63,6 +63,7 @@ extension TypeAlias : NominalType {
     var explicitName: String { return targetType.explicitName }
     var mangledName: String { return targetType.mangledName }
     func machineType() -> AIRType { return targetType.machineType() }
+    func persistentType(module: Module) -> Type { return targetType.persistentType(module: module) }
 }
 
 extension TypeAlias {
@@ -86,39 +87,9 @@ extension TypeAlias : Hashable {
     }
 }
 
-
-final class RefCountedType : NominalType {
-    
-    let name: String, targetType: StructType
-    
-    init(targetType: StructType) {
-        self.targetType = targetType
-        self.name = targetType.name
-    }
-    
-    func lowered(module: Module) -> LLVMType {
-        // its a pointer to the target
-        return targetType.lowered(module: module).getPointerType()
-    }
-    
-    func importedType(in module: Module) -> Type {
-        return targetType.importedType(in: module)
-    }
-    
-    var members: [StructMember] { return targetType.members }
-    var methods: [StructMethod] { return targetType.methods }
-    var irName: String { return targetType.irName }
-    var isHeapAllocated: Bool { return true }
-    var concepts: [ConceptType] {
-        get { return targetType.concepts }
-        set { targetType.concepts = newValue }
-    }
-    var explicitName: String { return targetType.explicitName }
-    var mangledName: String { return targetType.mangledName }
-    func machineType() -> AIRType { return targetType.machineType() }
-}
-
-
+//class VIRType<Base : Type> : Type {
+//    
+//}
 
 
 

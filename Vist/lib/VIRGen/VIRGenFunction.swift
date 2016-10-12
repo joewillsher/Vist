@@ -42,6 +42,7 @@ final class VIRGenFunction {
 
 protocol ManagedValue {
     var value: Value { get }
+    var id: Int { get }
     var hasCleanup: Bool { get set }
     var isIndirect: Bool { get }
     var type: Type { get }
@@ -52,6 +53,7 @@ struct Managed<Val : Value> : ManagedValue {
     let managedValue: Val
     let isIndirect: Bool
     let type: Type
+    let id: Int
     
     var hasCleanup: Bool
     
@@ -62,6 +64,7 @@ struct Managed<Val : Value> : ManagedValue {
         self.isIndirect = value is LValue
         self.type = (value as? LValue)?.memType!.getConcreteNominalType() ?? value.type!.getCannonicalType()
         self.hasCleanup = hasCleanup
+        self.id = 0
     }
     
     var erased: AnyManagedValue { return AnyManagedValue(erasing: self) }
@@ -80,6 +83,10 @@ struct Managed<Val : Value> : ManagedValue {
     static func forManaged(_ value: Val, hasCleanup: Bool, gen: VIRGenFunction) -> Managed<Val> {
         return gen.createManaged(Managed(value, hasCleanup: hasCleanup))
     }
+    
+    func unique() -> AnyManagedValue {
+        return AnyManagedValue(managedValue: managedValue, isIndirect: isIndirect, type: type, id: id+1, hasCleanup: hasCleanup)
+    }
 }
 
 struct AnyManagedValue : ManagedValue {
@@ -88,6 +95,7 @@ struct AnyManagedValue : ManagedValue {
     let isIndirect: Bool
     let type: Type
     
+    let id: Int
     var hasCleanup: Bool
     
     var value: Value { return managedValue }
@@ -98,6 +106,7 @@ struct AnyManagedValue : ManagedValue {
         self.isIndirect = value is LValue
         self.type = (value as? LValue)?.memType!.getConcreteNominalType() ?? value.type!.getCannonicalType()
         self.hasCleanup = hasCleanup
+        self.id = 0
     }
     
     init<Val : Value>(erasing managed: Managed<Val>) {
@@ -105,6 +114,7 @@ struct AnyManagedValue : ManagedValue {
         self.isIndirect = managed.isIndirect
         self.type = managed.type
         self.hasCleanup = managed.hasCleanup
+        self.id = 0
     }
     var erased: AnyManagedValue { return self }
     
@@ -115,6 +125,13 @@ struct AnyManagedValue : ManagedValue {
     static func forLValue(_ value: LValue, gen: VIRGenFunction) -> AnyManagedValue {
         return gen.createManaged(AnyManagedValue(value, hasCleanup: false))
     }
+    fileprivate init(managedValue: Value, isIndirect: Bool, type: Type, id: Int, hasCleanup: Bool) {
+        self.managedValue = managedValue
+        self.isIndirect = isIndirect
+        self.type = type
+        self.id = id+1
+        self.hasCleanup = hasCleanup
+    }
 }
 
 extension ManagedValue {
@@ -123,27 +140,31 @@ extension ManagedValue {
     var rawType: Type {
         return value.type!
     }
-    
+    /// - returns: an erased version with a different id
+    func unique() -> AnyManagedValue {
+        return AnyManagedValue(managedValue: value, isIndirect: isIndirect, type: type, id: id+1, hasCleanup: hasCleanup)
+    }
     func getCleanup() -> Cleanup? {
         if !type.isTrivial() {
             if isIndirect {
                 return { vgf, val in
                     try vgf.builder.build(DestroyAddrInst(addr: val.lValue))
-                    try vgf.builder.build(DeallocStackInst(address: val.lValue))
                 }
             }
             return { vgf, val in
+                // no-op
                 try vgf.builder.build(DestroyValInst(val: val.value))
             }
         }
         else if isIndirect {
+            print(type.prettyName)
             if type.isHeapAllocated {
                 return { vgf, val in
                     try vgf.builder.build(ReleaseInst(val: val.lValue, unowned: false))
-                    try vgf.builder.build(DeallocStackInst(address: val.lValue))
                 }
             }
             return { vgf, val in
+                // no-op
                 try vgf.builder.build(DeallocStackInst(address: val.lValue))
             }
         }
@@ -175,7 +196,7 @@ extension ManagedValue {
         
         // update the VIRGenFunction
         for index in 0..<gen.managedValues.count
-            where gen.managedValues[index].value === self.value {
+            where gen.managedValues[index].value === self.value && gen.managedValues[index].id == self.id {
                 gen.managedValues[index] = self
         }
     }
@@ -199,8 +220,14 @@ extension ManagedValue {
     mutating func copy(gen: VIRGenFunction) throws -> AnyManagedValue {
         // if it isnt a ptr type
         guard isIndirect, let type = self.type.getPointeeType(), !type.isTrivial() else {
+            // return a copy if the type can be trivially copied
             if self.type.isTrivial() {
-                return self.erased // return a copy
+                return self.unique()
+            }
+            // retain and return the original, if we have a class
+            if isIndirect, self.type.isClassType() {
+                try gen.builder.build(RetainInst(val: lValue))
+                return self.unique()
             }
             // if its not trivial, the copy must be a ptr backed one so
             // we can copy_addr it
@@ -211,7 +238,8 @@ extension ManagedValue {
             try mem.copy(into: copiedMem, gen: gen)
             return copiedMem.erased
         }
-        if type.isAddressOnly {
+        // if it is a class, retain and return the original
+        if isIndirect, type.isClassType() {
             try gen.builder.build(RetainInst(val: lValue))
             return self.erased // return a retained copy
         }
@@ -223,14 +251,15 @@ extension ManagedValue {
         return mem.erased
     }
     func copy(into dest: ManagedValue, gen: VIRGenFunction) throws {
-        if type.isAddressOnly {
+        // retain any class instances
+        if isIndirect, type.isClassType() {
             try gen.builder.build(RetainInst(val: lValue))
         }
+        // copy/move it to the new mem
         if isIndirect {
             try gen.builder.build(CopyAddrInst(addr: lValue,
                                                out: dest.lValue))
-        }
-        else {
+        } else {
             try gen.builder.build(StoreInst(address: dest.lValue, value: value))
         }
     }
@@ -238,12 +267,11 @@ extension ManagedValue {
     /// Assigns this value to `dest`, removing this val's cleanup
     mutating func forward<Man : ManagedValue>(into dest: inout Man, gen: VIRGenFunction) throws {
         forwardCleanup(gen)
-        // if they are the same indirection level
+        // if they are the same indirection level, copy_addr
         if rawType == dest.rawType {
             try gen.builder.build(CopyAddrInst(addr: lValue,
                                                out: dest.lValue))
-        }
-        else {
+        } else {
             try gen.builder.build(StoreInst(address: dest.lValue,
                                             value: value))
         }

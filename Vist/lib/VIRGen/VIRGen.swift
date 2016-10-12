@@ -196,7 +196,7 @@ extension VariableDecl : ValueEmitter {
         let variable = try gen.builder.build(VariableAddrInst(addr: managed.lValue,
                                                               mutable: isMutable,
                                                               irName: name))
-        let m = Managed<VariableAddrInst>.forManaged(variable, hasCleanup: false, gen: gen)
+        let m = Managed<VariableAddrInst>.forManaged(variable, hasCleanup: managed.hasCleanup, gen: gen)
         gen.addVariable(m, name: name)
         return m
     }
@@ -214,7 +214,7 @@ extension VariableGroupDecl : StmtEmitter {
 extension FunctionCall/*: ValueEmitter*/ {
     
     func argOperands(module: Module, gen: VIRGenFunction) throws -> [Operand] {
-        guard case let fnType as FunctionType = fnType?.importedType(in: module) else {
+        guard let fnType = fnType?.cannonicalType(module: module) else {
             throw VIRError.paramsNotTyped
         }
         
@@ -461,6 +461,23 @@ extension PropertyLookupExpr : LValueEmitter {
         
         switch object._type {
         case let ty as StructType:
+            
+            // if the lowered type is a class type
+            if ty.isHeapAllocated {
+                guard case let lValEmitter as _LValueEmitter = object, try lValEmitter.canEmitLValue(module: module, gen: gen) else { fatalError() }
+                
+                // if self is backed by a ptr, do a GEP then load
+                var obj = try lValEmitter.emitLValue(module: module, gen: gen)
+                try obj.forwardCoerce(to: ty.ptrType(), gen: gen)
+                
+                let rawPtr = try gen.builder.buildUnmanagedLValue(ClassProjectInstanceInst(object: obj.lValue),
+                                                                  gen: gen)
+                var elPtr = try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: rawPtr.lValue,
+                                                                                      property: propertyName),
+                                                                 gen: gen)
+                return try gen.builder.buildManaged(LoadInst(address: elPtr.forwardLValue(gen)), gen: gen).erased
+            }
+            
             switch object {
             case let lValEmitter as _LValueEmitter
                 where try lValEmitter.canEmitLValue(module: module, gen: gen):
@@ -503,7 +520,21 @@ extension PropertyLookupExpr : LValueEmitter {
         try object.forwardCoerce(to: self.object._type!.ptrType(), gen: gen)
         
         switch self.object._type {
-        case is StructType:
+        case let ty as StructType:
+            // if the lowered type is a class type
+            if ty.isHeapAllocated {
+                // if self is backed by a ptr, do a GEP then load
+                var obj = try o.emitLValue(module: module, gen: gen)
+                try obj.forwardCoerce(to: ty.ptrType(), gen: gen)
+                
+                let rawPtr = try gen.builder.buildUnmanagedLValue(ClassProjectInstanceInst(object: obj.lValue),
+                                                                  gen: gen)
+                var elPtr = try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: rawPtr.lValue,
+                                                                                      property: propertyName),
+                                                                 gen: gen)
+                return try gen.builder.buildManaged(LoadInst(address: elPtr.forwardLValue(gen)), gen: gen).erased
+            }
+
             return try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: object.lValue,
                                                                              property: propertyName),
                                                         gen: gen).erased
@@ -822,7 +853,7 @@ extension ConceptDecl : StmtEmitter {
 extension InitDecl : StmtEmitter {
     
     func emitStmt(module: Module, gen: VIRGenFunction) throws {
-        guard let initialiserType = typeRepr.type,
+        guard let initialiserType = typeRepr.type?.cannonicalType(module: module),
             case let selfType as StructType = parent?.declaredType,
             let mangledName = self.mangledName else {
                 throw VIRError.noType(#file)
@@ -853,9 +884,7 @@ extension InitDecl : StmtEmitter {
             // no cleanup as it will escape the scope
             selfVal = try fnVGF.builder.buildManaged(AllocObjectInst(memType: selfType, irName: "storage"),
                                                      hasCleanup: false, gen: fnVGF).erased
-            let val = try fnVGF.builder.buildUnmanagedLValue(StructElementPtrInst(object: selfVal.lValue,
-                                                                                  property: "object"), gen: fnVGF)
-            selfAccessor = try fnVGF.builder.buildUnmanagedLValue(LoadInst(address: val.lValue, irName: "self.raw"),
+            selfAccessor = try fnVGF.builder.buildUnmanagedLValue(ClassProjectInstanceInst(object: selfVal.lValue, irName: "storage.raw"),
                                                                   gen: fnVGF).erased
         }
         else {
@@ -876,14 +905,15 @@ extension InitDecl : StmtEmitter {
         
         // add the initialiser’s params
         for param in impl.params {
-            try fnVGF.addVariable(function.param(named: param).managed(gen: fnVGF), name: param)
+            let p = try function.param(named: param).managed(gen: fnVGF)
+            fnVGF.addVariable(p, name: param)
         }
         
         // vir gen for body
         try impl.body.emitStmt(module: module, gen: fnVGF)
         
-        // forward the return val
-        try selfVal.forwardCoerceToValue(gen: fnVGF)
+        // forward the return val to the return type
+        try selfVal.forwardCoerce(to: initialiserType.returns, gen: gen)
         let val = selfVal.forward(gen)
         // cleanup the scope and return
         try fnVGF.cleanup()
@@ -898,7 +928,9 @@ extension DeinitDecl : StmtEmitter {
     
     func emitStmt(module: Module, gen: VIRGenFunction) throws {
         
-        guard case let selfType as StructType = parent?.declaredType, let mangledName = self.mangledName, let deinitType = self.deinitType else {
+        guard case let selfType as StructType = parent?.declaredType,
+            let mangledName = self.mangledName,
+            let deinitType = self.deinitType?.cannonicalType(module: module) else {
             throw VIRError.noType(#file)
         }
         // if has body
@@ -925,9 +957,7 @@ extension DeinitDecl : StmtEmitter {
         // if self is heap allocated, member accesses must use the stored instance ptr
         let selfAccessor: AnyManagedValue
         if selfType.isHeapAllocated {
-            let val = try fnVGF.builder.buildUnmanagedLValue(StructElementPtrInst(object: selfVal.lValue,
-                                                                                  property: "object"), gen: fnVGF)
-            selfAccessor = try fnVGF.builder.buildUnmanagedLValue(LoadInst(address: val.lValue, irName: "self.raw"),
+            selfAccessor = try fnVGF.builder.buildUnmanagedLValue(ClassProjectInstanceInst(object: selfVal.lValue, irName: "storage.raw"),
                                                                   gen: fnVGF).erased
         }
         else { selfAccessor = selfVal }
@@ -964,8 +994,8 @@ extension MutationExpr : StmtEmitter {
         // create a copy with its own clearup
         var rval = try value.emitRValue(module: module, gen: gen).erased
         // the lhs takes over the clearup of the temp
-        try rval.forwardCoerce(to: lval.rawType, gen: gen)
-        try rval.forward(into: &lval, gen: gen)
+        var temp = try rval.coerceCopy(to: lval.rawType, gen: gen)
+        try temp.forward(into: &lval, gen: gen)
     }
     
 }

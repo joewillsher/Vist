@@ -40,7 +40,7 @@ extension DestroyAddrInst : VIRLower {
             let ref = module.getRuntimeFunction(.destroyExistentialBuffer, IGF: &IGF)
             return try IGF.builder.buildCall(function: ref, args: [addr.loweredValue!])
             
-        case let type as NominalType where type.isHeapAllocated:
+        case let type as NominalType where type.isClassType():
             let ref = module.getRuntimeFunction(.releaseObject,
                                                 IGF: &IGF)
             return try IGF.builder.buildCall(function: ref,
@@ -52,7 +52,7 @@ extension DestroyAddrInst : VIRLower {
                 return LLVMValue.nullptr
             }
             
-            _ = try IGF.builder.buildApply(function: destructor.loweredFunction!.function, args: [addr.loweredValue!])
+            try IGF.builder.buildApply(function: destructor.loweredFunction!.function, args: [addr.loweredValue!])
             return LLVMValue.nullptr
             
         default:

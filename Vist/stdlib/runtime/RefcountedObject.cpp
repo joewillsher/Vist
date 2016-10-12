@@ -44,7 +44,7 @@ vist_allocObject(TypeMetadata *metadata) {
     refCountedObject->refCount = 1;
     refCountedObject->metadata = metadata;
 #ifdef RUNTIME_DEBUG
-    printf("→alloc  \t%p, rc=%i\n", refCountedObject->object, refCountedObject->refCount);
+    printf("→alloc  \t%p %p, rc=%i\n", refCountedObject->object, refCountedObject, refCountedObject->refCount);
 #endif
     // return heap pointer to ref counted box
     return refCountedObject;
@@ -69,7 +69,7 @@ void vist_deallocObject(RefcountedObject *_Nonnull object) {
 RUNTIME_COMPILER_INTERFACE
 void vist_releaseObject(RefcountedObject *_Nonnull object) {
 #ifdef RUNTIME_DEBUG
-    printf("→release\t%p, rc=%i\n", object->object, object->refCount-1);
+    printf("→release\t%p %p, rc=%i\n", object->object, object, object->refCount-1);
 #endif
     // if no more references, we dealloc it
     if (object->refCount == 1)
@@ -84,7 +84,7 @@ RUNTIME_COMPILER_INTERFACE
 void vist_retainObject(RefcountedObject *_Nonnull object) {
     incrementRefCount(object);
 #ifdef RUNTIME_DEBUG
-    printf("→retain \t%p, rc=%i\n", object->object, object->refCount);
+    printf("→retain \t%p %p, rc=%i\n", object->object, object, object->refCount);
 #endif
 };
 

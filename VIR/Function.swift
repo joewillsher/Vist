@@ -112,13 +112,9 @@ extension Function {
     func defineBody(params: [(name: String, convention: Param.Convention?)]) throws {
         guard !hasBody else { throw VIRError.hasBody }
         
-        let paramNames: [(name: String, convention: Param.Convention?)]
-        
+        var paramNames = params
         if case .method = type.callingConvention {
-            paramNames = [(name: "self", convention: .inout)] + params
-        }
-        else {
-            paramNames = params
+            paramNames.insert((name: "self", convention: .inout), at: 0)
         }
         
         // values for the explicit params

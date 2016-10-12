@@ -40,6 +40,10 @@ protocol Type : VIRElement, ASTPrintable {
     /// Can this type be trivially destructed or copied
     func isTrivial() -> Bool
     
+    /// - returns: the type which this cannonical type should be persistenty stored as
+    /// For example, functions and class instances must be stored indirectly
+    func persistentType(module: Module) -> Type
+    
     func machineType() -> AIRType
 }
 
@@ -52,15 +56,23 @@ extension Type {
     var isAddressOnly: Bool { return false }
     var isHeapAllocated: Bool { return false }
     
-    func isInModule() -> Bool {
-        return false
-    }
+    func isInModule() -> Bool { return false }
+    
+    func persistentType(module: Module) -> Type { return self }
     
     func getAsStructType() throws -> StructType {
         if case let s as TypeAlias = self { return try s.targetType.getAsStructType() }
         else if case let s as StructType = self { return s }
-        else { throw VIRError.notStructType(self) }
+        else {
+            throw VIRError.notStructType(self) }
     }
+    func getAsClassType() throws -> ClassType {
+        if case let s as TypeAlias = self { return try s.targetType.getAsClassType() }
+        else if case let s as ClassType = self { return s }
+        else {
+            throw VIRError.notStructType(self) }
+    }
+    
     func getAsTupleType() throws -> TupleType {
         if case let s as TypeAlias = self { return try s.targetType.getAsTupleType() }
         else if case let s as TupleType = self { return s }
@@ -75,6 +87,7 @@ extension Type {
     func getConcreteNominalType() -> NominalType? {
         if case let s as TypeAlias = self { return s.targetType.getConcreteNominalType() }
         else if case let s as StructType = self { return s }
+        else if case let s as ClassType = self { return s }
         else if case let c as ConceptType = self { return c }
         else { return nil }
     }
@@ -98,6 +111,11 @@ extension Type {
     func isStructType() -> Bool {
         if case let s as TypeAlias = self { return s.targetType.isStructType() }
         else if self is StructType { return true }
+        else { return false }
+    }
+    func isClassType() -> Bool {
+        if case let s as TypeAlias = self { return s.targetType.isClassType() }
+        else if self is ClassType { return true }
         else { return false }
     }
     func isTupleType() -> Bool {

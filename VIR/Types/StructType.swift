@@ -35,19 +35,14 @@ extension StructType {
         return LLVMType(ref: LLVMStructType(&arr, UInt32(members.count), false))
     }
     
-    func importedAggreagteType(in module: Module) -> Type {
-        let imported = importedType(in: module) as! NominalType
-        return isHeapAllocated ? imported.refCountedBox(module: module) : imported
-    }
-    
     func importedType(in module: Module) -> Type {
-        let ty = importedMemberType(in: module)
-        // wrap in class box
-        return isHeapAllocated ? ty.refCountedBox(module: module) : ty
+        if isHeapAllocated { return refCountedBox(module: module) }
+        // add to the module cache
+        return module.getOrInsert(type: TypeAlias(name: name, targetType: importedMemberType(in: module)))
     }
     /// Import the members of the struct type. Used by `StructType.importedType(in:)` 
     /// and `TypeAlias.refCountedBox(module:)` to import the members.
-    func importedMemberType(in module: Module) -> TypeAlias {
+    private func importedMemberType(in module: Module) -> StructType {
         // import members
         let mappedEls = members.map { member in
             (member.name,
@@ -59,8 +54,10 @@ extension StructType {
         let newTy = StructType(members: mappedEls, methods: methods, name: name, concepts: concepts, isHeapAllocated: isHeapAllocated)
         newTy.genericTypes = genericTypes
         newTy.concepts = concepts
-        // add to the module cache
-        return module.getOrInsert(type: TypeAlias(name: name, targetType: newTy))
+        return newTy
+    }
+    func refCountedBox(module: Module) -> TypeAlias {
+        return module.getOrInsert(type: ClassType(importedMemberType(in: module)))
     }
     
     static func named(_ n: String) -> StructType {
@@ -70,7 +67,7 @@ extension StructType {
     static func withTypes(_ tys: [Type], name: String = "") -> StructType {
         return StructType(members: tys.map { (name: name, type: $0, mutable: true) }, methods: [], name: name)
     }
-    
+        
     var irName: String {
         return name
     }

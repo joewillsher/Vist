@@ -155,6 +155,8 @@
 		D43FE1CE1D5E86EA003494C9 /* Metadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43FE1CC1D5E86E9003494C9 /* Metadata.swift */; };
 		D43FE1D31D5F7354003494C9 /* NameLookup.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43FE1D21D5F7354003494C9 /* NameLookup.swift */; };
 		D43FE1D41D5F7354003494C9 /* NameLookup.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43FE1D21D5F7354003494C9 /* NameLookup.swift */; };
+		D443EA461DABF0E600C3B6CA /* ClassType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D443EA451DABF0E600C3B6CA /* ClassType.swift */; };
+		D443EA471DABF0E700C3B6CA /* ClassType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D443EA451DABF0E600C3B6CA /* ClassType.swift */; };
 		D44529561CB00A6F00AFA099 /* RefCountInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44529551CB00A6F00AFA099 /* RefCountInst.swift */; };
 		D44529571CB00A6F00AFA099 /* RefCountInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44529551CB00A6F00AFA099 /* RefCountInst.swift */; };
 		D44B484A1D831B81006BB794 /* ColouringRegisterAllocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44B48491D831B81006BB794 /* ColouringRegisterAllocator.swift */; };
@@ -366,6 +368,7 @@
 		D43FE1C91D5E2EBF003494C9 /* WitnessTable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WitnessTable.swift; sourceTree = "<group>"; };
 		D43FE1CC1D5E86E9003494C9 /* Metadata.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Metadata.swift; path = lib/VIRLower/Metadata.swift; sourceTree = "<group>"; };
 		D43FE1D21D5F7354003494C9 /* NameLookup.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NameLookup.swift; path = lib/Sema/NameLookup.swift; sourceTree = "<group>"; };
+		D443EA451DABF0E600C3B6CA /* ClassType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ClassType.swift; path = VIR/Types/ClassType.swift; sourceTree = SOURCE_ROOT; };
 		D44529551CB00A6F00AFA099 /* RefCountInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RefCountInst.swift; path = Instructions/RefCountInst.swift; sourceTree = "<group>"; };
 		D44B48491D831B81006BB794 /* ColouringRegisterAllocator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ColouringRegisterAllocator.swift; path = lib/Codegen/ColouringRegisterAllocator.swift; sourceTree = "<group>"; };
 		D44B484C1D8320F8006BB794 /* InterferenceGraph.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InterferenceGraph.swift; path = lib/Codegen/InterferenceGraph.swift; sourceTree = "<group>"; };
@@ -722,6 +725,7 @@
 				D43B39A71C8A0F140039FB2E /* FunctionType.swift */,
 				D43B39A61C8A0F140039FB2E /* ConceptType.swift */,
 				D43B39AD1C8A0F140039FB2E /* TypeAlias.swift */,
+				D443EA451DABF0E600C3B6CA /* ClassType.swift */,
 				D4654F981D50F02A005B3637 /* VIRType.swift */,
 				D43B39A81C8A0F140039FB2E /* GenericType.swift */,
 				D4F3D7FC1CAC419E005A3B07 /* CreateType.cpp */,
@@ -974,6 +978,7 @@
 				D437F7FE1CA95E7F0089F5DE /* ArrayInst.swift in Sources */,
 				D4AE8D6C1D60F63000E2D480 /* DominatorTree.swift in Sources */,
 				D44529571CB00A6F00AFA099 /* RefCountInst.swift in Sources */,
+				D443EA471DABF0E700C3B6CA /* ClassType.swift in Sources */,
 				D4A000281CCA7EC200157D90 /* AggregateLower.swift in Sources */,
 				D43B3A2B1C8A10A50039FB2E /* FunctionContainer.swift in Sources */,
 				D43B39B71C8A0F140039FB2E /* NominalType.swift in Sources */,
@@ -1134,6 +1139,7 @@
 				D43B39DE1C8A0F3A0039FB2E /* ReturnInst.swift in Sources */,
 				D43B39FA1C8A100E0039FB2E /* Compile.swift in Sources */,
 				D43B39BA1C8A0F140039FB2E /* TupleType.swift in Sources */,
+				D443EA461DABF0E600C3B6CA /* ClassType.swift in Sources */,
 				D43B39DA1C8A0F3A0039FB2E /* FunctionInst.swift in Sources */,
 				D43B3A231C8A105B0039FB2E /* Stmt.swift in Sources */,
 				D4A000271CCA7EC200157D90 /* AggregateLower.swift in Sources */,

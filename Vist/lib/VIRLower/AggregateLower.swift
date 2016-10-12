@@ -50,4 +50,10 @@ extension StructElementPtrInst : VIRLower {
         return try IGF.builder.buildStructGEP(ofAggregate: object.loweredValue!, index: index, name: irName)
     }
 }
+extension ClassProjectInstanceInst : VIRLower {
+    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+        let member = try IGF.builder.buildStructGEP(ofAggregate: object.loweredValue!, index: 0)
+        return try IGF.builder.buildLoad(from: member, name: irName)
+    }
+}
 

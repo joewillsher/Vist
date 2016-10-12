@@ -143,3 +143,43 @@ final class StructElementPtrInst : Inst, LValue {
     var irName: String?
 }
 
+/// Project the instance ptr of a reference counted class box
+final class ClassProjectInstanceInst : Inst, LValue {
+    var object: PtrOperand
+    var classType: ClassType
+    
+    var uses: [Operand] = []
+    var args: [Operand]
+    
+    convenience init(object: LValue, irName: String? = nil) throws {
+        // get the underlying struct type
+        guard let classType = try object.memType?.getAsClassType() else {
+            throw VIRError.noType(#file)
+        }
+        self.init(object: PtrOperand(object), classType: classType, irName: irName)
+    }
+    private init(object: PtrOperand, classType: ClassType, irName: String?) {
+        self.object = object
+        self.classType = classType
+        self.args = [object]
+        initialiseArgs()
+        self.irName = irName
+    }
+    
+    var type: Type? { return BuiltinType.pointer(to: classType.storedType) }
+    var memType: Type? { return classType.storedType }
+    
+    var vir: String {
+        return "\(name) = class_project_instance \(object.vir)\(useComment)"
+    }
+    
+    func copy() -> ClassProjectInstanceInst {
+        return ClassProjectInstanceInst(object: object.formCopy(), classType: classType, irName: irName)
+    }
+    func setArgs(_ args: [Operand]) {
+        object = args[0] as! PtrOperand
+    }
+    var parentBlock: BasicBlock?
+    var irName: String?
+}
+

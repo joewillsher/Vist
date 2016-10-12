@@ -94,13 +94,16 @@ extension Type {
 private extension ManagedValue {
     
     /// Emit VIR which ends this val's lifetime -- it is responsible for destroying the members of the instance.
-    /// This destruction should be called by the runtime in a dealloc function
+    /// This destruction should be called by the runtime in a dealloc function 
     func emitDestruction(gen: VIRGenFunction) throws {
         switch type {
         case let type as NominalType:
+            let lval = try type.isClassType() ?
+                gen.builder.buildUnmanagedLValue(ClassProjectInstanceInst(object: lValue), gen: gen).lValue :
+                lValue
             for member in type.members {
                 
-                let ptr = try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: lValue, property: member.name,
+                let ptr = try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: lval, property: member.name,
                                                                                     irName: member.name), gen: gen)
                 switch member.type {
                 case let type where type.isConceptType():
@@ -131,11 +134,17 @@ private extension ManagedValue {
         
         switch type {
         case let type as NominalType where !type.isTrivial():
-            
+            let lval = try type.isClassType() ?
+                gen.builder.buildUnmanagedLValue(ClassProjectInstanceInst(object: lValue), gen: gen).lValue :
+                lValue
+            let outLval = try type.isClassType() ?
+                gen.builder.buildUnmanagedLValue(ClassProjectInstanceInst(object: outAccessor.lValue), gen: gen).lValue :
+            lValue
+
             for member in type.members {
-                let ptr = try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: lValue,
+                let ptr = try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: lval,
                                                                                     property: member.name), gen: gen)
-                let outPtr = try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: outAccessor.lValue,
+                let outPtr = try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: outLval,
                                                                                        property: member.name), gen: gen)
                 switch member.type {
                 case let type where type.isHeapAllocated:

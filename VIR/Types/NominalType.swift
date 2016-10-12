@@ -79,17 +79,6 @@ extension NominalType {
     func generatorFunction() -> FunctionType? {
         return methods.first { method in method.name.demangleName() == "generate" && method.type.isGeneratorFunction }?.type
     }
-    
-    func refCountedBox(module: Module) -> TypeAlias {
-        return StructType(members: [("object", ptrType(), true),
-                                    ("refCount", BuiltinType.int(size: 32), false),
-                                    ("metadata", Runtime.typeMetadataType.ptrType(), false)],
-                          methods: methods,
-                          name: "\(name).refcounted",
-                          concepts: concepts,
-                          isHeapAllocated: true)
-            .importedMemberType(in: module)
-    }
 }
 
 func == (lhs: StructMember, rhs: StructMember) -> Bool {

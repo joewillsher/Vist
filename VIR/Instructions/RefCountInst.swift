@@ -30,7 +30,7 @@ final class AllocObjectInst : Inst, LValue {
     var memType: Type? { return refType }
     
     var vir: String {
-        return "\(name) = alloc_object \(storedType.prettyName)\(useComment)"
+        return "\(name) = alloc_object #\(storedType.prettyName)\(useComment)"
     }
     
     func copy() -> AllocObjectInst {

@@ -17,17 +17,17 @@ enum Runtime {
     private static let voidType = BuiltinType.void
     private static let opaquePointerType = BuiltinType.opaquePointer
     
-    static let refcountedObjectType = StructType.withTypes([BuiltinType.opaquePointer, int32Type, BuiltinType.opaquePointer], name: "Refcounted")
+    static let refcountedObjectType = StructType.withTypes([BuiltinType.opaquePointer, int32Type, BuiltinType.opaquePointer], name: "vist.class_box")
     static let refcountedObjectPointerType = BuiltinType.pointer(to: refcountedObjectType)
 
-    private static let __typeMetadataType = StructType.withTypes([conceptConformanceType.ptrType().ptrType(), int32Type, int32Type, BuiltinType.opaquePointer, BuiltinType.opaquePointer, BuiltinType.opaquePointer], name: "TypeMetadata")
+    private static let __typeMetadataType = StructType.withTypes([conceptConformanceType.ptrType().ptrType(), int32Type, int32Type, BuiltinType.opaquePointer, BuiltinType.opaquePointer, BuiltinType.opaquePointer], name: "vist._metadata")
     
     
-    static let valueWitnessType = StructType.withTypes([BuiltinType.opaquePointer], name: "Witness")
-    static let conceptConformanceType = StructType.withTypes([BuiltinType.opaquePointer/*TypeMetadata *concept*/, int32Type.ptrType(), int32Type, witnessTableType.ptrType()], name: "Conformance")
-    static let witnessTableType = StructType.withTypes([valueWitnessType.ptrType(), int32Type], name: "WitnessTable")
-    static let typeMetadataType = StructType.withTypes([conceptConformanceType.ptrType().ptrType(), int32Type, int32Type, BuiltinType.opaquePointer, BuiltinType.opaquePointer, BuiltinType.opaquePointer], name: "Metadata")
-    static let existentialObjectType = StructType.withTypes([BuiltinType.wordType, int32Type, conceptConformanceType.ptrType().ptrType(), typeMetadataType], name: "Existential")
+    static let valueWitnessType = StructType.withTypes([BuiltinType.opaquePointer], name: "vist.witness")
+    static let conceptConformanceType = StructType.withTypes([BuiltinType.opaquePointer/*TypeMetadata *concept*/, int32Type.ptrType(), int32Type, witnessTableType.ptrType()], name: "vist.conformance")
+    static let witnessTableType = StructType.withTypes([valueWitnessType.ptrType(), int32Type], name: "vist.witness_table")
+    static let typeMetadataType = StructType.withTypes([conceptConformanceType.ptrType().ptrType(), int32Type, int32Type, BuiltinType.opaquePointer, BuiltinType.opaquePointer, BuiltinType.opaquePointer], name: "vist.metadata")
+    static let existentialObjectType = StructType.withTypes([BuiltinType.wordType, int32Type, conceptConformanceType.ptrType().ptrType(), typeMetadataType], name: "vist.existential")
     
     struct Function {
         let name: String, type: FunctionType

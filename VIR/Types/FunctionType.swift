@@ -94,18 +94,9 @@ extension FunctionType {
         
         if isCanonicalType { return self }
         
-        let ret: Type
-        if case let s as StructType = returns, s.isHeapAllocated { ret = s.refCountedBox(module: module) }
-        else { ret = returns }
+        let ret = returns.importedType(in: module).persistentType(module: module)
         
-        let pars: [Type] = params.map { param in
-            if case let s as StructType = param, s.isHeapAllocated {
-                return //BuiltinType.pointer(to:
-                    s.refCountedBox(module: module)//)
-            }
-            else { return param }
-        }
-        
+        let pars = params.map { param in param.importedType(in: module).persistentType(module: module) }
         var t = FunctionType(params: pars, returns: ret, callingConvention: callingConvention, yieldType: yieldType)
         
         if case .method(let selfType, _) = callingConvention {

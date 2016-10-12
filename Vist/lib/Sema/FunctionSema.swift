@@ -171,7 +171,9 @@ extension MethodCallExpr : ExprTypeProvider {
     func typeCheckNode(scope: SemaScope) throws -> Type {
         
         let ty = try object.typeCheckNode(scope: scope)
-        guard case let parentType as NominalType = ty else { throw semaError(.notStructType(ty), userVisible: false) }
+        guard case let parentType as NominalType = ty else {
+            throw semaError(.notStructType(ty), userVisible: false)
+        }
         self.structType = parentType
         
         // get the function type and sema the args
