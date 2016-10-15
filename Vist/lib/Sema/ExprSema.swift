@@ -282,15 +282,6 @@ extension ClosureExpr : ExprTypeProvider {
         
         self.type = ty
         return ty
-        
-        // TODO: 
-        // - split the closure type rewriting into a seperate method, call it after resolving the
-        //   overloaded func the closure is passed into; this will let that call add constraints
-        //   to the closure variables to help overloading
-        // - add type disjunctions -- currently when resolving an overload set we bail after finding
-        //   1 match (which could be incorrect for a type variable). Instead go through all and add
-        //   the matches to a disjoin set; the resolver can observe the relation between these to
-        //   calculate the final type
     }
 }
 

@@ -42,6 +42,7 @@ protocol Type : VIRElement, ASTPrintable {
     
     /// - returns: the type which this cannonical type should be persistenty stored as
     /// For example, functions and class instances must be stored indirectly
+    /// - note: also imports the returned, persistent type
     func persistentType(module: Module) -> Type
     
     func machineType() -> AIRType
@@ -58,7 +59,7 @@ extension Type {
     
     func isInModule() -> Bool { return false }
     
-    func persistentType(module: Module) -> Type { return self }
+    func persistentType(module: Module) -> Type { return importedType(in: module) }
     
     func getAsStructType() throws -> StructType {
         if case let s as TypeAlias = self { return try s.targetType.getAsStructType() }

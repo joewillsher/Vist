@@ -143,10 +143,22 @@ extension TupleType {
 }
 extension TypeAlias {
     var declVIR: String {
-        return "type #\(name) = \(targetType.vir)"
+        return "type #\(name) = \(label)\(targetType.vir)\(witnesses)"
     }
     var vir: String {
         return "#\(name)"
+    }
+    private var label: String {
+        switch targetType {
+        case is ConceptType: return "existential "
+        case is ClassType: return "refcounted "
+        default: return ""
+        }
+    }
+    private var witnesses: String {
+        let ws = [copyConstructor, deinitialiser, destructor].flatMap {$0}
+        if ws.isEmpty { return "" }
+        return " { \(ws.map { "\($0.name.demangleName()): @\($0.name)" }.joined(separator: ", ")) }"
     }
 }
 

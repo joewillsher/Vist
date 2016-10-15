@@ -117,6 +117,13 @@ final class ReleaseInst : Inst {
     
     var hasSideEffects: Bool { return true }
     
+    func copy() -> ReleaseInst {
+        return ReleaseInst(object: object.formCopy(), unowned: unowned, irName: irName)
+    }
+    func setArgs(_ args: [Operand]) {
+        object = args[0] as! PtrOperand
+    }
+    
     var vir: String {
         return "\(unowned ? "release_unowned_object" : "release_object") \(object.valueName) // id: \(name)"
     }
@@ -154,6 +161,12 @@ final class DeallocObjectInst : Inst {
     var type: Type? { return object.memType.map { BuiltinType.pointer(to: $0) } }
     var memType: Type? { return object.memType }
     
+    func copy() -> DeallocObjectInst {
+        return DeallocObjectInst(object: object.formCopy(), unowned: unowned, irName: irName)
+    }
+    func setArgs(_ args: [Operand]) {
+        object = args[0] as! PtrOperand
+    }
     var hasSideEffects: Bool { return true }
     
     var vir: String {

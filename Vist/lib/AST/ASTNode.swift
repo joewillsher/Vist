@@ -36,8 +36,6 @@ final class AST : ASTNode, ScopeNode {
 ///
 protocol _Typed : class {
     var _type: Type? { get set }
-    
-    //@discardableResult func rewriteType(to: Type, solver: ConstraintSolver) throws -> Type
 }
 
 extension _Typed {

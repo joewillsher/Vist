@@ -196,7 +196,7 @@ extension VariableDecl : ValueEmitter {
         let variable = try gen.builder.build(VariableAddrInst(addr: managed.lValue,
                                                               mutable: isMutable,
                                                               irName: name))
-        let m = Managed<VariableAddrInst>.forManaged(variable, hasCleanup: managed.hasCleanup, gen: gen)
+        let m = Managed<VariableAddrInst>.forManaged(variable, hasCleanup: false, gen: gen)
         gen.addVariable(m, name: name)
         return m
     }
@@ -464,7 +464,7 @@ extension PropertyLookupExpr : LValueEmitter {
             
             // if the lowered type is a class type
             if ty.isHeapAllocated {
-                guard case let lValEmitter as _LValueEmitter = object, try lValEmitter.canEmitLValue(module: module, gen: gen) else { fatalError() }
+                guard case let lValEmitter as _LValueEmitter = object else { fatalError() }
                 
                 // if self is backed by a ptr, do a GEP then load
                 var obj = try lValEmitter.emitLValue(module: module, gen: gen)
@@ -553,6 +553,7 @@ extension PropertyLookupExpr : LValueEmitter {
         switch object._type {
         case is StructType: return try o.canEmitLValue(module: module, gen: gen)
         case is ConceptType: return true
+        case let a? where a.getPointeeType()?.isClassType() ?? false: return true
         default: fatalError()
         }
     }

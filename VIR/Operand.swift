@@ -67,8 +67,6 @@ class Operand : VIRTyped {
 }
 
 extension Operand {
-    var module: Module! { return value?.module }
-    
     func dumpIR() { if let loweredValue = loweredValue { LLVMDumpValue(loweredValue._value!) } else { print("<NULL>") } }
     func dumpIRType() { if let loweredValue = loweredValue { LLVMDumpTypeOf(loweredValue._value!) } else { print("<NULL TYPE>") } }
     

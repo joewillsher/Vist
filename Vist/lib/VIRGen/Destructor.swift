@@ -12,7 +12,7 @@ extension TypeDecl {
     func emitImplicitDestructorDecl(module: Module, gen: VIRGenFunction) throws -> Function? {
         
         // if any of the members need deallocating
-        guard let type = self.type, !type.isTrivial() else {
+        guard case let type as NominalType = self.type?.importedType(in: module), !type.isTrivial() else {
             return nil
         }
         
@@ -45,7 +45,7 @@ extension TypeDecl {
     func emitImplicitCopyConstructorDecl(module: Module, gen: VIRGenFunction) throws -> Function? {
         
         // if any of the members need deallocating
-        guard let type = self.type, !type.isTrivial() else {
+        guard let type = self.type?.importedType(in: module), type.requiresCopyConstruction() else {
             return nil
         }
         
@@ -69,9 +69,6 @@ extension TypeDecl {
     }
 }
 
-extension ConceptType {
-    func isTrivial() -> Bool { return false }
-}
 extension TypeAlias {
     func isTrivial() -> Bool { return targetType.isTrivial() }
 }
@@ -86,8 +83,29 @@ extension NominalType {
         return true
     }
 }
+extension ConceptType {
+    func isTrivial() -> Bool { return false }
+}
+extension ClassType {
+    func isTrivial() -> Bool {
+        return false
+    }
+}
 extension Type {
-    func isTrivial() -> Bool { return true }
+    // FIXME: BuiltinType.isTrivial uses this method, not the specific one
+    func isTrivial() -> Bool {
+        if case let b as BuiltinType = self, case .pointer(let to) = b, !to.isTrivial() { return false }
+        return true
+    }
+    func requiresCopyConstruction() -> Bool {
+        return !isTrivial() && !getBasePointeeType().isClassType()
+    }
+}
+extension BuiltinType {
+    func isTrivial() -> Bool {
+        if case .pointer(let ref) = self, !ref.isTrivial() { return false }
+        return true
+    }
 }
 
 
@@ -96,7 +114,7 @@ private extension ManagedValue {
     /// Emit VIR which ends this val's lifetime -- it is responsible for destroying the members of the instance.
     /// This destruction should be called by the runtime in a dealloc function 
     func emitDestruction(gen: VIRGenFunction) throws {
-        switch type {
+        switch type.getBasePointeeType() {
         case let type as NominalType:
             let lval = try type.isClassType() ?
                 gen.builder.buildUnmanagedLValue(ClassProjectInstanceInst(object: lValue), gen: gen).lValue :
@@ -105,12 +123,14 @@ private extension ManagedValue {
                 
                 let ptr = try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: lval, property: member.name,
                                                                                     irName: member.name), gen: gen)
-                switch member.type {
+                switch member.type.getBasePointeeType() {
                 case let type where type.isConceptType():
                     try gen.builder.build(DestroyAddrInst(addr: ptr.managedValue))
-                case let type where type.isHeapAllocated:
-                    // release the box
-                    try gen.builder.build(ReleaseInst(val: ptr.managedValue, unowned: false))
+                case let type where type.isClassType():
+                    // this must be of type `**Member`, as the member must have `*Member` type
+                    assert(member.type == BuiltinType.pointer(to: type))
+                    let member = try gen.builder.buildUnmanagedLValue(LoadInst(address: ptr.managedValue), gen: gen)
+                    try gen.builder.build(ReleaseInst(val: member.lValue, unowned: false))
                 case let type where type.isStructType():
                     // destruct the struct elements
                     try ptr.emitDestruction(gen: gen)
@@ -131,25 +151,20 @@ private extension ManagedValue {
     
     /// Emit VIR which creates a deep copy of this val
     func emitCopyConstruction(into outAccessor: ManagedValue, gen: VIRGenFunction) throws {
+        assert(!type.getBasePointeeType().isClassType())
         
         switch type {
         case let type as NominalType where !type.isTrivial():
-            let lval = try type.isClassType() ?
-                gen.builder.buildUnmanagedLValue(ClassProjectInstanceInst(object: lValue), gen: gen).lValue :
-                lValue
-            let outLval = try type.isClassType() ?
-                gen.builder.buildUnmanagedLValue(ClassProjectInstanceInst(object: outAccessor.lValue), gen: gen).lValue :
-            lValue
-
             for member in type.members {
-                let ptr = try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: lval,
+                let ptr = try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: lValue,
                                                                                     property: member.name), gen: gen)
-                let outPtr = try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: outLval,
+                let outPtr = try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: outAccessor.lValue,
                                                                                        property: member.name), gen: gen)
-                switch member.type {
-                case let type where type.isHeapAllocated:
-                    // if we need to retaun it
-                    try gen.builder.build(RetainInst(val: ptr.managedValue))
+                switch member.type.getBasePointeeType() {
+                case let type where type.isClassType():
+                    // if we need to retain it
+                    let stored = try gen.builder.buildUnmanagedLValue(LoadInst(address: ptr.managedValue), gen: gen)
+                    try gen.builder.build(RetainInst(val: stored.lValue))
                     try gen.builder.build(CopyAddrInst(addr: ptr.managedValue, out: outPtr.managedValue))
                     
                 case let type where type.isStructType() && type.isTrivial():

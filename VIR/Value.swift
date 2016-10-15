@@ -112,6 +112,12 @@ extension Value {
     var unformattedName: String {
         return irName ?? getInstNumber() ?? "<null>"
     }
+    /// Does this value have a pointer type
+    var isIndirect: Bool {
+        if self is LValue { return true }
+        if case let b as BuiltinType = type, case .pointer = b { return true }
+        return false
+    }
 }
 
 /// A value known to be an LValue, under the hood is an 

@@ -14,7 +14,6 @@
 #include <stdlib.h>
 #include <stdlib.h>
 
-
 #ifdef __cplusplus
 
 #define SWIFT_NAME(X)

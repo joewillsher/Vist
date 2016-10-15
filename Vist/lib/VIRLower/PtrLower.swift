@@ -44,7 +44,7 @@ extension DestroyAddrInst : VIRLower {
             let ref = module.getRuntimeFunction(.releaseObject,
                                                 IGF: &IGF)
             return try IGF.builder.buildCall(function: ref,
-                                             args: [addr.bitcastToOpaqueRefCountedType()],
+                                             args: [addr.bitcastToOpaqueRefCountedType(module: module)],
                                              name: irName)
             
         case let type as NominalType where type.isStructType():
@@ -104,7 +104,7 @@ extension CopyAddrInst : VIRLower {
 //            let ref = module.getRuntimeFunction(.retainObject,
 //                                                IGF: &IGF)
 //            try IGF.builder.buildCall(function: ref,
-//                                      args: [addr.bitcastToOpaqueRefCountedType()],
+//                                      args: [addr.bitcastToOpaqueRefCountedType(module: module)],
 //                                      name: irName)
 //            return addr.loweredValue!
             

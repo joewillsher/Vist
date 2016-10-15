@@ -61,8 +61,8 @@ struct Managed<Val : Value> : ManagedValue {
     
     private init(_ value: Val, hasCleanup: Bool = true) {
         self.managedValue = value
-        self.isIndirect = value is LValue
-        self.type = (value as? LValue)?.memType!.getConcreteNominalType() ?? value.type!.getCannonicalType()
+        self.isIndirect = value.isIndirect
+        self.type = value.type!.getBasePointeeType().getConcreteNominalType() ?? value.type!.getCannonicalType()
         self.hasCleanup = hasCleanup
         self.id = 0
     }
@@ -103,8 +103,8 @@ struct AnyManagedValue : ManagedValue {
     /// init creates cleanup
     private init(_ value: Value, hasCleanup: Bool = true) {
         self.managedValue = value
-        self.isIndirect = value is LValue
-        self.type = (value as? LValue)?.memType!.getConcreteNominalType() ?? value.type!.getCannonicalType()
+        self.isIndirect = value.isIndirect
+        self.type = value.type!.getBasePointeeType().getConcreteNominalType() ?? value.type!.getCannonicalType()
         self.hasCleanup = hasCleanup
         self.id = 0
     }
@@ -146,6 +146,11 @@ extension ManagedValue {
     }
     func getCleanup() -> Cleanup? {
         if !type.isTrivial() {
+            if type.isClassType(), isIndirect {
+                return { vgf, val in
+                    try vgf.builder.build(ReleaseInst(val: val.lValue, unowned: false))
+                }
+            }
             if isIndirect {
                 return { vgf, val in
                     try vgf.builder.build(DestroyAddrInst(addr: val.lValue))
@@ -157,8 +162,7 @@ extension ManagedValue {
             }
         }
         else if isIndirect {
-            print(type.prettyName)
-            if type.isHeapAllocated {
+            if type.isClassType() {
                 return { vgf, val in
                     try vgf.builder.build(ReleaseInst(val: val.lValue, unowned: false))
                 }

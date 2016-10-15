@@ -24,7 +24,7 @@ extension RetainInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         let ref = module.getRuntimeFunction(.retainObject, IGF: &IGF)
         return try IGF.builder.buildCall(function: ref,
-                                         args: [object.bitcastToOpaqueRefCountedType()],
+                                         args: [object.bitcastToOpaqueRefCountedType(module: module)],
                                          name: irName)
     }
 }
@@ -34,7 +34,7 @@ extension ReleaseInst : VIRLower {
         let ref = module.getRuntimeFunction(unowned ? .releaseUnownedObject : .releaseObject,
                                             IGF: &IGF)
         return try IGF.builder.buildCall(function: ref,
-                                         args: [object.bitcastToOpaqueRefCountedType()],
+                                         args: [object.bitcastToOpaqueRefCountedType(module: module)],
                                          name: irName)
     }
 }
@@ -45,14 +45,14 @@ extension DeallocObjectInst : VIRLower {
         let ref = module.getRuntimeFunction(unowned ? .deallocUnownedObject : .deallocObject,
                                             IGF: &IGF)
         return try IGF.builder.buildCall(function: ref,
-                                         args: [object.bitcastToOpaqueRefCountedType()],
+                                         args: [object.bitcastToOpaqueRefCountedType(module: module)],
                                          name: irName)
     }
 }
 
 
 extension PtrOperand {
-    func bitcastToOpaqueRefCountedType() throws -> LLVMValue {
+    func bitcastToOpaqueRefCountedType(module: Module) throws -> LLVMValue {
         let refcounted = Runtime.refcountedObjectPointerType.importedType(in: module).lowered(module: module) as LLVMType
         return try module.loweredBuilder.buildBitcast(value: loweredValue!, to: refcounted)
     }

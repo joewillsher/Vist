@@ -46,9 +46,7 @@ extension StructType {
         // import members
         let mappedEls = members.map { member in
             (member.name,
-             member.type.isAddressOnly ?
-                BuiltinType.pointer(to: member.type.importedType(in: module)) :
-                member.type.importedType(in: module),
+             member.type.importedType(in: module).persistentType(module: module),
              member.isMutable) as StructMember
         }
         let newTy = StructType(members: mappedEls, methods: methods, name: name, concepts: concepts, isHeapAllocated: isHeapAllocated)

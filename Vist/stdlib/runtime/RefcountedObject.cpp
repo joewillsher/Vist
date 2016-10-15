@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <assert.h>
 
 struct RefcountedObject {
     void *object;
@@ -44,7 +45,7 @@ vist_allocObject(TypeMetadata *metadata) {
     refCountedObject->refCount = 1;
     refCountedObject->metadata = metadata;
 #ifdef RUNTIME_DEBUG
-    printf("→alloc  \t%p %p, rc=%i\n", refCountedObject->object, refCountedObject, refCountedObject->refCount);
+    printf("→alloc '%s'\t%p %p, rc=%i\n", metadata->name, refCountedObject->object, refCountedObject, refCountedObject->refCount);
 #endif
     // return heap pointer to ref counted box
     return refCountedObject;
@@ -70,6 +71,7 @@ RUNTIME_COMPILER_INTERFACE
 void vist_releaseObject(RefcountedObject *_Nonnull object) {
 #ifdef RUNTIME_DEBUG
     printf("→release\t%p %p, rc=%i\n", object->object, object, object->refCount-1);
+    assert(object->refCount >= 0 && "Ref count should never be less than 0");
 #endif
     // if no more references, we dealloc it
     if (object->refCount == 1)
