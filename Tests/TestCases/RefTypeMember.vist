@@ -1,0 +1,91 @@
+// RUN: -Ohigh -run -build-runtime -debug-runtime
+// CHECK: OUT
+
+
+ref type X {
+    var x: Int
+    deinit = do print x
+}
+type Box { 
+    var x: X
+    init X = {
+        x = $0
+        print $0.x
+        print x.x
+	print 10
+    }
+}
+func usex :: X = (a) { 
+    print 100
+    print a.x
+    print 200
+}
+func useb :: Box = (a) { 
+    print 100
+    print a.x.x
+    usex a.x
+    print 200
+}
+
+let x = X 1
+print 300
+let b = Box x
+usex x
+print b.x.x
+useb b
+
+let w = b.x
+usex w
+
+useb b
+print 400
+
+// OUT-CHECK:
+// OUT: →alloc 'X'	0x100202af0 0x100202b10, rc=1
+// OUT: 300
+// OUT: →retain 	0x100202af0 0x100202b10, rc=2
+// OUT: →retain 	0x100202af0 0x100202b10, rc=3
+// OUT: 1
+// OUT: 1
+// OUT: 10
+// OUT: →release	0x100202af0 0x100202b10, rc=2
+// OUT: →retain 	0x100202af0 0x100202b10, rc=3
+// OUT: 100
+// OUT: 1
+// OUT: 200
+// OUT: →release	0x100202af0 0x100202b10, rc=2
+// OUT: 1
+// OUT: →retain 	0x100202af0 0x100202b10, rc=3
+// OUT: 100
+// OUT: 1
+// OUT: →retain 	0x100202af0 0x100202b10, rc=4
+// OUT: 100
+// OUT: 1
+// OUT: 200
+// OUT: →release	0x100202af0 0x100202b10, rc=3
+// OUT: 200
+// OUT: →release	0x100202af0 0x100202b10, rc=2
+// OUT: →retain 	0x100202af0 0x100202b10, rc=3
+// OUT: 100
+// OUT: 1
+// OUT: 200
+// OUT: →release	0x100202af0 0x100202b10, rc=2
+// OUT: →retain 	0x100202af0 0x100202b10, rc=3
+// OUT: 100
+// OUT: 1
+// OUT: →retain 	0x100202af0 0x100202b10, rc=4
+// OUT: 100
+// OUT: 1
+// OUT: 200
+// OUT: →release	0x100202af0 0x100202b10, rc=3
+// OUT: 200
+// OUT: →release	0x100202af0 0x100202b10, rc=2
+// OUT: 400
+// OUT: →release	0x100202af0 0x100202b10, rc=1
+// OUT: →release	0x100202af0 0x100202b10, rc=0
+// OUT: →dealloc	0x100202af0
+// OUT:    ↳destructor_fn=0x100000e20
+// OUT: 1
+
+
+

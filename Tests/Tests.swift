@@ -226,6 +226,10 @@ extension OutputTests {
         }
     }
     
+    func testRefTypeMember() {
+        XCTAssertTrue(_testFile(name: "RefTypeMember"))
+    }
+    
 }
 
 extension RefCountingTests {

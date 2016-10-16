@@ -92,7 +92,7 @@ final class PtrOperand : Operand {
     }
     
     override func formCopy(nullValue: Bool = false) -> PtrOperand {
-        return PtrOperand(optionalValue: nullValue ? nil : (value as! LValue), memType: memType)
+        return PtrOperand(optionalValue: nullValue ? nil : ((value as? LValue) ?? value.map { try! OpaqueLValue(rvalue: $0) }), memType: memType)
     }
     
     var lvalue: LValue? {
