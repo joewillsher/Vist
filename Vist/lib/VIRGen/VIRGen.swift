@@ -108,7 +108,7 @@ extension AST {
     
     func emitVIR(module: Module, isLibrary: Bool) throws {
         
-        let builder = module.builder! as! VIRBuilder
+        let builder = module.builder!
         let gen = VIRGenFunction(scope: VIRGenScope(module: module),
                                  builder: builder)
         if isLibrary {
@@ -214,11 +214,13 @@ extension VariableGroupDecl : StmtEmitter {
 extension FunctionCall/*: ValueEmitter*/ {
     
     func argOperands(module: Module, gen: VIRGenFunction) throws -> [Operand] {
-        guard let fnType = fnType?.cannonicalType(module: module) else {
+        guard let fnType = fnType?.persistentFunctionType(module: module) else {
             throw VIRError.paramsNotTyped
         }
         
-        return try zip(argArr, fnType.cannonicalisedParamTypes()).map { rawArg, paramType in
+        let tys = fnType.cannonicalisedParamTypes()
+        assert(argArr.count == tys.count)
+        return try zip(argArr, tys).map { rawArg, paramType in
             var arg = try rawArg.emitRValue(module: module, gen: gen)
             var copy = try arg.coerceCopy(to: paramType, gen: gen)
             return Operand(copy.forward(gen))
@@ -341,12 +343,17 @@ extension FuncDecl : StmtEmitter {
             let selfVar = Managed<RefParam>.forLValue(selfParam, gen: vgf)
             vgf.addVariable(selfVar, name: "self")
             
-            guard case let type as NominalType = selfType else { fatalError() }
+            guard case let type as NominalType = selfType.importedType(in: module) else { fatalError() }
             
             // if it is a ref self the self accessors are lazily calculated struct GEP
             if selfVar.isIndirect {
+                // get the instance from self
+                let instance = try type.isClassType() ?
+                    vgf.builder.buildUnmanagedLValue(ClassProjectInstanceInst(object: selfVar.lValue), gen: vgf).erased :
+                    selfVar.erased
+                
                 for property in type.members {
-                    let pVar = try vgf.builder.buildUnmanaged(StructElementPtrInst(object: selfVar.lValue,
+                    let pVar = try vgf.builder.buildUnmanaged(StructElementPtrInst(object: instance.lValue,
                                                                                    property: property.name,
                                                                                    irName: property.name),
                                                               gen: vgf)
@@ -355,6 +362,7 @@ extension FuncDecl : StmtEmitter {
                 // If it is a value self then we do a struct extract to get self elements
                 // case is Accessor:
             } else {
+                assert(!type.isClassType())
                 for property in type.members {
                     let pVar = try vgf.builder.buildUnmanaged(StructExtractInst(object: selfVar.value,
                                                                                 property: property.name,
@@ -384,10 +392,10 @@ extension FuncDecl : StmtEmitter {
 extension VariableExpr : LValueEmitter {
     
     func emitRValue(module: Module, gen: VIRGenFunction) throws -> AnyManagedValue {
-        return try gen.variable(named: name)!.erased
+        return try gen.variable(named: name)!.unique()
     }
     func emitLValue(module: Module, gen: VIRGenFunction) throws -> AnyManagedValue {
-        return try gen.variable(named: name)!.erased
+        return try gen.variable(named: name)!.unique()
     }
     
     func canEmitLValue(module: Module, gen: VIRGenFunction) throws -> Bool {
@@ -623,8 +631,9 @@ extension ConditionalStmt : StmtEmitter {
                 try val.forwardCoerce(to: val.type.ptrType(), gen: gen)
                 
                 let targetType = match._type!.importedType(in: module)
-                var castParam = Managed<Param>.forUnmanaged(Param(paramName: match.variable, type: targetType),
-                                                            gen: ifVGF)
+                var castParam = Managed<RefParam>.forUnmanaged(RefParam(paramName: match.variable,
+                                                                        type: targetType),
+                                                               gen: ifVGF)
                 ifVGF.addVariable(castParam, name: match.variable)
                 
                 let bodyBlock = try gen.builder.appendBasicBlock(name: "\(base)cast\(index)", parameters: [castParam.managedValue])

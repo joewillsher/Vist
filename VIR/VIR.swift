@@ -132,8 +132,8 @@ extension NominalType {
 }
 extension ConceptType {
     var vir: String {
-        let a = requiredProperties.map { "\($0.type.vir)" }
-        return "existential < \(a.joined(separator: ", ")) >"
+        let l = members.map { $0.type }.virTypeStruct()
+        return l + " <\(requiredFunctions.map { "@\($0.name)::\($0.type.prettyName)" }.joined(separator: ", "))>"
     }
 }
 extension TupleType {

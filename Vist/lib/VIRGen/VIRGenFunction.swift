@@ -148,7 +148,7 @@ extension ManagedValue {
         if !type.isTrivial() {
             if type.isClassType(), isIndirect {
                 return { vgf, val in
-                    try vgf.builder.build(ReleaseInst(val: val.lValue, unowned: false))
+                    try vgf.builder.build(ReleaseInst(object: val.lValue))
                 }
             }
             if isIndirect {
@@ -164,7 +164,7 @@ extension ManagedValue {
         else if isIndirect {
             if type.isClassType() {
                 return { vgf, val in
-                    try vgf.builder.build(ReleaseInst(val: val.lValue, unowned: false))
+                    try vgf.builder.build(ReleaseInst(object: val.lValue))
                 }
             }
             return { vgf, val in
@@ -230,7 +230,7 @@ extension ManagedValue {
             }
             // retain and return the original, if we have a class
             if isIndirect, self.type.isClassType() {
-                try gen.builder.build(RetainInst(val: lValue))
+                try gen.builder.build(RetainInst(object: lValue))
                 return self.unique()
             }
             // if its not trivial, the copy must be a ptr backed one so
@@ -244,7 +244,7 @@ extension ManagedValue {
         }
         // if it is a class, retain and return the original
         if isIndirect, type.isClassType() {
-            try gen.builder.build(RetainInst(val: lValue))
+            try gen.builder.build(RetainInst(object: lValue))
             return self.erased // return a retained copy
         }
         
@@ -257,7 +257,7 @@ extension ManagedValue {
     func copy(into dest: ManagedValue, gen: VIRGenFunction) throws {
         // retain any class instances
         if isIndirect, type.isClassType() {
-            try gen.builder.build(RetainInst(val: lValue))
+            try gen.builder.build(RetainInst(object: lValue))
         }
         // copy/move it to the new mem
         if isIndirect {
@@ -342,11 +342,14 @@ extension AnyManagedValue {
         }
         
         if targetType.getBasePointeeType().isConceptType() {
+            // if it isnt a class type...
+            if !type.isClassType() {
+                // ...coerce self's managed val to a value type
+                try forwardCoerceToValue(gen: gen)
+                assert(rawType is NominalType)
+            }
             let conceptType = try targetType.getBasePointeeType().getAsConceptType()
-            // coerce self's managed val to a value type
-            try forwardCoerceToValue(gen: gen)
-            assert(rawType is NominalType)
-            assert((rawType as! NominalType).models(concept: conceptType))
+            assert((type as! NominalType).models(concept: conceptType))
             // form an existential by forwarding self's cleanup to it
             let ex = try gen.builder.buildManaged(ExistentialConstructInst(value: value,
                                                                            existentialType: conceptType,

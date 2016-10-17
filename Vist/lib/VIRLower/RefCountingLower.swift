@@ -31,7 +31,7 @@ extension RetainInst : VIRLower {
 
 extension ReleaseInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        let ref = module.getRuntimeFunction(unowned ? .releaseUnownedObject : .releaseObject,
+        let ref = module.getRuntimeFunction(.releaseObject,
                                             IGF: &IGF)
         return try IGF.builder.buildCall(function: ref,
                                          args: [object.bitcastToOpaqueRefCountedType(module: module)],
@@ -42,7 +42,7 @@ extension ReleaseInst : VIRLower {
 
 extension DeallocObjectInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        let ref = module.getRuntimeFunction(unowned ? .deallocUnownedObject : .deallocObject,
+        let ref = module.getRuntimeFunction(.deallocObject,
                                             IGF: &IGF)
         return try IGF.builder.buildCall(function: ref,
                                          args: [object.bitcastToOpaqueRefCountedType(module: module)],

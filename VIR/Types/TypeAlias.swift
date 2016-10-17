@@ -64,6 +64,7 @@ extension TypeAlias : NominalType {
     var mangledName: String { return targetType.mangledName }
     func machineType() -> AIRType { return targetType.machineType() }
     func persistentType(module: Module) -> Type { return targetType.persistentType(module: module) }
+    func instanceRawType(module: Module) -> LLVMType { return targetType.instanceRawType(module: module) }
 }
 
 extension TypeAlias {

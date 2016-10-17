@@ -67,6 +67,8 @@ extension TypeDecl {
         
         return fn
     }
+    
+
 }
 
 extension TypeAlias {
@@ -97,9 +99,7 @@ extension Type {
         if case let b as BuiltinType = self, case .pointer(let to) = b, !to.isTrivial() { return false }
         return true
     }
-    func requiresCopyConstruction() -> Bool {
-        return !isTrivial() && !getBasePointeeType().isClassType()
-    }
+    func requiresCopyConstruction() -> Bool { return !isTrivial() && !isClassType() }
 }
 extension BuiltinType {
     func isTrivial() -> Bool {
@@ -130,7 +130,7 @@ private extension ManagedValue {
                     // this must be of type `**Member`, as the member must have `*Member` type
                     assert(member.type == BuiltinType.pointer(to: type))
                     let member = try gen.builder.buildUnmanagedLValue(LoadInst(address: ptr.managedValue), gen: gen)
-                    try gen.builder.build(ReleaseInst(val: member.lValue, unowned: false))
+                    try gen.builder.build(ReleaseInst(object: member.lValue))
                 case let type where type.isStructType():
                     // destruct the struct elements
                     try ptr.emitDestruction(gen: gen)
@@ -151,7 +151,7 @@ private extension ManagedValue {
     
     /// Emit VIR which creates a deep copy of this val
     func emitCopyConstruction(into outAccessor: ManagedValue, gen: VIRGenFunction) throws {
-        assert(!type.getBasePointeeType().isClassType())
+        assert(!type.isClassType())
         
         switch type {
         case let type as NominalType where !type.isTrivial():
@@ -164,7 +164,7 @@ private extension ManagedValue {
                 case let type where type.isClassType():
                     // if we need to retain it
                     let stored = try gen.builder.buildUnmanagedLValue(LoadInst(address: ptr.managedValue), gen: gen)
-                    try gen.builder.build(RetainInst(val: stored.lValue))
+                    try gen.builder.build(RetainInst(object: stored.lValue))
                     try gen.builder.build(CopyAddrInst(addr: ptr.managedValue, out: outPtr.managedValue))
                     
                 case let type where type.isStructType() && type.isTrivial():

@@ -53,8 +53,8 @@ final class RetainInst : Inst {
     var uses: [Operand] = []
     var args: [Operand]
     
-    convenience init(val: LValue, irName: String? = nil) {
-        self.init(object: PtrOperand(val), irName: irName)
+    convenience init(object: LValue, irName: String? = nil) {
+        self.init(object: PtrOperand(object), irName: irName)
     }
     
     private init(object: PtrOperand, irName: String?) {
@@ -85,28 +85,25 @@ final class RetainInst : Inst {
 }
 
 /**
- Release a refcounted object - decrements the ref count and, if not
- unowned, it is dealloced if it falls to 0. Lowered to a call of
- `vist_releaseObject()` or `vist_releaseUnownedObject`
+ Release a refcounted object - decrements the ref count and it is dealloced
+ if it falls to 0. Lowered to a call of `vist_releaseObject()`
  
  ```
  release_object %0:%Foo.refcounted
- release_unowned_object %0:%Foo.refcounted
  ```
  */
 final class ReleaseInst : Inst {
-    var object: PtrOperand, unowned: Bool
+    var object: PtrOperand
     
     var uses: [Operand] = []
     var args: [Operand]
     
-    convenience init(val: LValue, unowned: Bool, irName: String? = nil) {
-        self.init(object: PtrOperand(val), unowned: unowned, irName: irName)
+    convenience init(object: LValue, irName: String? = nil) {
+        self.init(object: PtrOperand(object), irName: irName)
     }
     
-    private init(object: PtrOperand, unowned: Bool, irName: String?) {
+    private init(object: PtrOperand, irName: String?) {
         self.object = object
-        self.unowned = unowned
         self.args = [object]
         initialiseArgs()
         self.irName = irName
@@ -118,14 +115,14 @@ final class ReleaseInst : Inst {
     var hasSideEffects: Bool { return true }
     
     func copy() -> ReleaseInst {
-        return ReleaseInst(object: object.formCopy(), unowned: unowned, irName: irName)
+        return ReleaseInst(object: object.formCopy(), irName: irName)
     }
     func setArgs(_ args: [Operand]) {
         object = args[0] as! PtrOperand
     }
     
     var vir: String {
-        return "\(unowned ? "release_unowned_object" : "release_object") \(object.valueName) // id: \(name)"
+        return "release_object \(object.valueName) // id: \(name)"
     }
     weak var parentBlock: BasicBlock?
     var irName: String?
@@ -133,26 +130,24 @@ final class ReleaseInst : Inst {
 
 /**
  Dealloc a refcounted object - if unowned only deallocs if the refcount 
- is 0. Lowered to a call of `vist_deallocObject()` or `vist_deallocUnownedObject()`
+ is 0. Lowered to a call of `vist_deallocObject()`
  
  ```
  dealloc_object %0:%Foo.refcounted
- dealloc_unowned_object %0:%Foo.refcounted
  ```
  */
 final class DeallocObjectInst : Inst {
-    var object: PtrOperand, unowned: Bool
+    var object: PtrOperand
     
     var uses: [Operand] = []
     var args: [Operand]
 
-    convenience init(val: LValue, unowned: Bool, irName: String? = nil) {
-        self.init(object: PtrOperand(val), unowned: unowned, irName: irName)
+    convenience init(object: LValue, irName: String? = nil) {
+        self.init(object: PtrOperand(object), irName: irName)
     }
     
-    private init(object: PtrOperand, unowned: Bool, irName: String?) {
+    private init(object: PtrOperand, irName: String?) {
         self.object = object
-        self.unowned = unowned
         self.args = [object]
         initialiseArgs()
         self.irName = irName
@@ -162,7 +157,7 @@ final class DeallocObjectInst : Inst {
     var memType: Type? { return object.memType }
     
     func copy() -> DeallocObjectInst {
-        return DeallocObjectInst(object: object.formCopy(), unowned: unowned, irName: irName)
+        return DeallocObjectInst(object: object.formCopy(), irName: irName)
     }
     func setArgs(_ args: [Operand]) {
         object = args[0] as! PtrOperand
@@ -170,7 +165,7 @@ final class DeallocObjectInst : Inst {
     var hasSideEffects: Bool { return true }
     
     var vir: String {
-        return "\(unowned ? "dealloc_unowned_object" : "dealloc_object") \(object.valueName) // id: \(name)"
+        return "dealloc_object \(object.valueName) // id: \(name)"
     }
     weak var parentBlock: BasicBlock?
     var irName: String?

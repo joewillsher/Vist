@@ -24,6 +24,7 @@ protocol NominalType : class, Type {
     var concepts: [ConceptType] { get set }
     
     var isHeapAllocated: Bool { get }
+    func instanceRawType(module: Module) -> LLVMType
 }
 
 extension NominalType {
@@ -55,6 +56,10 @@ extension NominalType {
     func methodType(methodNamed name: String, argTypes types: [Type]) throws -> FunctionType {
         let t = try methods[index(ofMethodNamed: name, argTypes: types)]
         return t.type.asMethod(withSelf: self, mutating: t.mutating)
+    }
+    
+    func instanceRawType(module: Module) -> LLVMType {
+        return lowered(module: module)
     }
     
     /// Returns whether a type models a concept

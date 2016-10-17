@@ -230,6 +230,15 @@ extension Int32 : RuntimeObject {
     }
 }
 
+extension Bool : RuntimeObject {
+    func type(IGF: inout IRGenFunction, module: Module) -> LLVMType {
+        return LLVMType.bool
+    }
+    func lower(IGF: inout IRGenFunction, module: Module, baseName: String) throws -> LLVMValue {
+        return LLVMValue.constBool(value: self)
+    }
+}
+
 extension Optional {
     func getFnPtr() -> LLVMValue {
         if case let opt as UnsafeMutablePointer<Void>? = self, opt == nil {

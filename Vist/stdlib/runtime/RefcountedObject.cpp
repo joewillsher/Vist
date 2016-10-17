@@ -11,13 +11,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-struct RefcountedObject {
-    void *object;
-    uint32_t refCount;
-    TypeMetadata *metadata;
-};
-
-
 // Private
 INLINE
 void incrementRefCount(RefcountedObject *_Nonnull object) {
@@ -34,7 +27,7 @@ void decrementRefCount(RefcountedObject *_Nonnull object) {
 /// allocates a new heap object and returns the refcounted box
 RUNTIME_COMPILER_INTERFACE
 RefcountedObject *_Nonnull
-vist_allocObject(TypeMetadata *metadata) {
+vist_allocObject(TypeMetadata *_Nonnull metadata) {
     // malloc the object storage
     void *object = malloc(metadata->size);
     // calloc the box storage -- need calloc so it is initialised
@@ -71,7 +64,8 @@ RUNTIME_COMPILER_INTERFACE
 void vist_releaseObject(RefcountedObject *_Nonnull object) {
 #ifdef RUNTIME_DEBUG
     printf("→release\t%p %p, rc=%i\n", object->object, object, object->refCount-1);
-    assert(object->refCount >= 0 && "Ref count should never be less than 0");
+    assert(object->object && "Null ref counted object");
+    assert(object->refCount > 0 && "Ref count should never be less than 0");
 #endif
     // if no more references, we dealloc it
     if (object->refCount == 1)
@@ -88,25 +82,6 @@ void vist_retainObject(RefcountedObject *_Nonnull object) {
 #ifdef RUNTIME_DEBUG
     printf("→retain \t%p %p, rc=%i\n", object->object, object, object->refCount);
 #endif
-};
-
-/// Release an object without deallocating
-RUNTIME_COMPILER_INTERFACE
-void vist_releaseUnownedObject(RefcountedObject *_Nonnull object) {
-    decrementRefCount(object);
-#ifdef RUNTIME_DEBUG
-    printf("→release-unowned \t%p, rc=%i\n", object->object, object->refCount);
-#endif
-};
-
-/// Deallocate a -1 object if it is unowned
-RUNTIME_COMPILER_INTERFACE
-void vist_deallocUnownedObject(RefcountedObject *_Nonnull object) {
-#ifdef RUNTIME_DEBUG
-    printf("→dealloc-unowned\t%p, rc=%i\n", object->object, object->refCount);
-#endif
-    if (object->refCount == 0)
-        vist_deallocObject(object);
 };
 
 /// Get the ref count

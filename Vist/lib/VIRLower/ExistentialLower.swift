@@ -10,12 +10,17 @@ extension ExistentialConstructInst : VIRLower {
     
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         
-        guard let structType = try value.type?.getAsStructType() else { fatalError() }
+        guard let ty = value.type?.getBasePointeeType() else { fatalError() }
+        assert(!ty.isConceptType())
+        let structType: NominalType = try ty.isStructType() ? ty.getAsStructType() : ty.getAsClassType()
         
         let exMemory = try IGF.builder.buildAlloca(type: Runtime.existentialObjectType.importedType(in: module).lowered(module: module))
-        // in
-        let structMemory = try IGF.builder.buildAlloca(type: structType.importedType(in: module).lowered(module: module))
-        try IGF.builder.buildStore(value: value.loweredValue!, in: structMemory)
+        // in mem -- if a class, use the shared ptr, if a struct alloc stack space and store
+        let structMemory = try ty.isClassType() ? value.loweredValue! : {
+            let mem = try IGF.builder.buildAlloca(type: structType.importedType(in: module).lowered(module: module))
+            try IGF.builder.buildStore(value: value.loweredValue!, in: mem)
+            return mem
+        }()
         let mem = try IGF.builder.buildBitcast(value: structMemory, to: .opaquePointer)
         
         return try ExistentialConstructInst.gen(instance: mem,
@@ -29,7 +34,7 @@ extension ExistentialConstructInst : VIRLower {
     
     static func gen(instance mem: LLVMValue,
                     out exMemory: LLVMValue,
-                    structType: StructType,
+                    structType: NominalType,
                     existentialType: ConceptType,
                     isLocal: Bool,
                     module: Module,
@@ -127,7 +132,8 @@ extension NominalType {
         var conformances: [UnsafeMutablePointer<ConceptConformance>?] = []
         
         // if its a struct, we can emit the conformance tables
-        if case let s as StructType = getConcreteNominalType() {
+        
+        if let s = getConcreteNominalType(), !s.isConceptType() {
             conformances = try concepts
                 .map { concept in try s.generateConformanceMetadata(concept: concept, IGF: &IGF, module: module).conformance }
                 .map (UnsafeMutablePointer.allocInit(value:))
@@ -135,21 +141,24 @@ extension NominalType {
         
         let utf8 = UnsafePointer<Int8>(Array(name.nulTerminatedUTF8).copyBuffer())
         let c = conformances.copyBuffer()
-        let size = lowered(module: module).size(unit: .bytes, IGF: IGF)
+        let size = instanceRawType(module: module).size(unit: .bytes, IGF: IGF)
         
         let destructor = module.type(named: name)!.destructor?
             .buildFunctionPointer().loweredValue?
             ._value.map(UnsafeMutablePointer<Void>.init)
+        let deiniaialiser = module.type(named: name)!.deinitialiser?
+            .buildFunctionPointer().loweredValue?
+            ._value.map(UnsafeMutablePointer<Void>.init)
+        // releases a class instance
         let copyConstructor = module.type(named: name)!.copyConstructor?
             .buildFunctionPointer().loweredValue?
             ._value.map(UnsafeMutablePointer<Void>.init)
         
         let md = TypeMetadata(conceptConformanceArr: c,
                               conceptConformanceArrCount: Int32(conformances.count),
-                              size: Int32(size),
-                              name: utf8,
-                              destructor: destructor,
-                              copyConstructor: copyConstructor)
+                              size: Int32(size), name: utf8,
+                              isRefCounted: isHeapAllocated, destructor: destructor,
+                              deinitialiser: deiniaialiser, copyConstructor: copyConstructor)
         IGF.module.typeMetadata[name] = md
         
         return md
@@ -158,7 +167,6 @@ extension NominalType {
     func getLLVMTypeMetadata(IGF: inout IRGenFunction, module: Module) throws -> LLVMValue {
         
         let metadataName = "_g\(name)s"
-        
         if let g = IGF.module.global(named: metadataName) {
             return g.value
         }
@@ -169,7 +177,7 @@ extension NominalType {
 
 
 
-extension StructType {
+extension NominalType {
     
     func generateConformanceMetadata(concept: ConceptType, IGF: inout IRGenFunction, module: Module) throws -> (conformance: ConceptConformance, metadata: LLVMValue) {
         
@@ -232,7 +240,7 @@ extension Array {
 
 private extension ConceptType {
     
-    func existentialWitnessOffsets(structType: StructType, module: Module, IGF: inout IRGenFunction) throws -> [Int32] {
+    func existentialWitnessOffsets(structType: NominalType, module: Module, IGF: inout IRGenFunction) throws -> [Int32] {
         let conformingType = structType.lowered(module: module) as LLVMType
         
         // a table of offsets
@@ -241,7 +249,7 @@ private extension ConceptType {
             .map { index in Int32(conformingType.offsetOfElement(at: index, module: IGF.module)) } // make 'get offset' an extension on aggregate types
     }
     
-    func existentialValueWitnesses(structType: StructType, module: Module, IGF: inout IRGenFunction) throws -> [Witness] {
+    func existentialValueWitnesses(structType: NominalType, module: Module, IGF: inout IRGenFunction) throws -> [Witness] {
         
         guard let table = module.witnessTables.first(where: { $0.concept == self && $0.type == structType }) else { return [] }
         

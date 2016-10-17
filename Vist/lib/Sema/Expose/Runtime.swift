@@ -20,13 +20,17 @@ enum Runtime {
     static let refcountedObjectType = StructType.withTypes([BuiltinType.opaquePointer, int32Type, BuiltinType.opaquePointer], name: "vist.class_box")
     static let refcountedObjectPointerType = BuiltinType.pointer(to: refcountedObjectType)
 
-    private static let __typeMetadataType = StructType.withTypes([conceptConformanceType.ptrType().ptrType(), int32Type, int32Type, BuiltinType.opaquePointer, BuiltinType.opaquePointer, BuiltinType.opaquePointer], name: "vist._metadata")
+    private static let __typeMetadataType = StructType.withTypes([conceptConformanceType.ptrType().ptrType(), int32Type, int32Type, BuiltinType.opaquePointer, boolType, BuiltinType.opaquePointer, BuiltinType.opaquePointer, BuiltinType.opaquePointer], name: "vist._metadata")
     
     
     static let valueWitnessType = StructType.withTypes([BuiltinType.opaquePointer], name: "vist.witness")
     static let conceptConformanceType = StructType.withTypes([BuiltinType.opaquePointer/*TypeMetadata *concept*/, int32Type.ptrType(), int32Type, witnessTableType.ptrType()], name: "vist.conformance")
     static let witnessTableType = StructType.withTypes([valueWitnessType.ptrType(), int32Type], name: "vist.witness_table")
-    static let typeMetadataType = StructType.withTypes([conceptConformanceType.ptrType().ptrType(), int32Type, int32Type, BuiltinType.opaquePointer, BuiltinType.opaquePointer, BuiltinType.opaquePointer], name: "vist.metadata")
+    static let typeMetadataType = StructType.withTypes([
+        /*conformances=*/conceptConformanceType.ptrType().ptrType(), /*numconformances=*/int32Type, /*size=*/int32Type,
+        /*name=*/BuiltinType.opaquePointer, /*isreftype=*/boolType,
+        /*destructor=*/BuiltinType.opaquePointer, /*deinit=*/BuiltinType.opaquePointer, /*copyconstructor=*/BuiltinType.opaquePointer],
+                                                       name: "vist.metadata")
     static let existentialObjectType = StructType.withTypes([BuiltinType.wordType, int32Type, conceptConformanceType.ptrType().ptrType(), typeMetadataType], name: "vist.existential")
     
     struct Function {
@@ -37,14 +41,11 @@ enum Runtime {
         // will not emit a simple mapping from clang type -> IR type and our call will fail
         
         static let destroyExistentialBuffer = Function(name: "vist_deallocExistentialBuffer", type: FunctionType(params: [existentialObjectType.ptrType()], returns: BuiltinType.void))
-        static let destroyStructAddr = Function(name: "vist_destroyStructAddr", type: FunctionType(params: [BuiltinType.opaquePointer, typeMetadataType.ptrType()], returns: BuiltinType.void))
 
         static let allocObject = Function(name: "vist_allocObject", type: FunctionType(params: [typeMetadataType.ptrType()], returns: refcountedObjectPointerType))
         static let deallocObject = Function(name: "vist_deallocObject", type: FunctionType(params: [refcountedObjectPointerType], returns: voidType))
         static let retainObject  = Function(name: "vist_retainObject", type: FunctionType(params: [refcountedObjectPointerType], returns: voidType))
         static let releaseObject  = Function(name: "vist_releaseObject", type: FunctionType(params: [refcountedObjectPointerType], returns: voidType))
-        static let releaseUnownedObject = Function(name: "vist_releaseUnownedObject", type: FunctionType(params: [refcountedObjectPointerType], returns: voidType))
-        static let deallocUnownedObject = Function(name: "vist_deallocUnownedObject", type: FunctionType(params: [refcountedObjectPointerType], returns: voidType))
         
         static let setYieldTarget = Function(name: "vist_setYieldTarget", type: FunctionType(params: [], returns: boolType))
         static let yieldUnwind = Function(name: "vist_yieldUnwind", type: FunctionType(params: [], returns: voidType))

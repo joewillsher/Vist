@@ -69,8 +69,11 @@ final class ExistentialConstructInst : Inst, LValue {
     var args: [Operand]
     
     convenience init(value: Value, existentialType: ConceptType, module: Module, irName: String? = nil) throws {
-        guard case let nom as NominalType = value.type else {
-            fatalError()
+        guard case let nom as NominalType = value.type?.getBasePointeeType() else {
+            fatalError("Expected a nominal type")
+        }
+        if nom.isClassType(), !value.type!.isPointerType() {
+            fatalError("Class types should pass in the shared heap ptr")
         }
         self.init(value: Operand(value),
                   witnessTable: .create(module: module, type: nom, conforms: existentialType),

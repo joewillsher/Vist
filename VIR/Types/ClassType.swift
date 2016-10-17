@@ -44,4 +44,7 @@ final class ClassType : NominalType {
     var isAddressOnly: Bool {
         return true
     }
+    func instanceRawType(module: Module) -> LLVMType {
+        return storedType.lowered(module: module)
+    }
 }

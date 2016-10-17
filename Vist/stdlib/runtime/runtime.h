@@ -42,6 +42,7 @@ extern "C" {
     typedef struct TypeMetadata TypeMetadata;
     typedef struct ExistentialObject ExistentialObject;
     typedef struct WitnessTable WitnessTable;
+    typedef struct RefcountedObject RefcountedObject;
     
 #ifdef __cplusplus
     
@@ -73,11 +74,7 @@ extern "C" {
     RUNTIME_COMPILER_INTERFACE
     void vist_copyExistentialBuffer(ExistentialObject *_Nonnull,
                                     ExistentialObject *_Nullable);
-    
-    RUNTIME_COMPILER_INTERFACE
-    void vist_destroyStructAddr(void *_Nonnull,
-                                TypeMetadata *_Nullable);
-    
+        
     // Casting
     RUNTIME_COMPILER_INTERFACE
     bool vist_castExistentialToConcrete(ExistentialObject *_Nonnull,
@@ -99,6 +96,20 @@ extern "C" {
     RUNTIME_STDLIB_INTERFACE
     void *_Nonnull vist_runtime_metadataGetName(void *_Nonnull);
     
+    // ref counting
+    RUNTIME_COMPILER_INTERFACE
+    RefcountedObject *_Nonnull
+    vist_allocObject(TypeMetadata *_Nonnull metadata);
+    
+    RUNTIME_COMPILER_INTERFACE
+    void vist_deallocObject(RefcountedObject *_Nonnull object);
+    
+    RUNTIME_COMPILER_INTERFACE
+    void vist_releaseObject(RefcountedObject *_Nonnull object);
+    
+    RUNTIME_COMPILER_INTERFACE
+    void vist_retainObject(RefcountedObject *_Nonnull object);
+    
 #endif
     
     
@@ -119,6 +130,13 @@ extern "C" {
 #endif
     };
     
+    
+    struct RefcountedObject {
+        void *_Nonnull object;
+        uint32_t refCount;
+        TypeMetadata *_Nonnull metadata;
+    };
+    
     struct TypeMetadata {
         /// witness tables
         ConceptConformance *_Nullable *_Nonnull  SWIFT_NAME(conceptConformanceArr) conceptConformances;
@@ -126,12 +144,27 @@ extern "C" {
         
         int32_t size;
         const char *_Nonnull name;
-        // optional destructor function
+        bool isRefCounted;
+        
 #ifdef __cplusplus
+        /// Destroys the elements of this type
         void (*_Nullable destructor)(void *_Nullable);
+        /// A user defined function to be run before deallocation. Called by codegen
+        /// in the destructor
+        void (*_Nullable deinitialiser)(void *_Nullable);
+        /// Used to copy an instance of this object
         void (*_Nullable copyConstructor)(void *_Nullable, void *_Nullable);
+        
+        /// The size of runtime memory used to store an instance or reference to it
+        /// \returns `sizeof(RefcountedObject)` iff self `isRefCounted`
+        int32_t storageSize() {
+            if (isRefCounted)
+                return sizeof(RefcountedObject);
+            return size;
+        }
 #else
         void *_Nullable destructor;
+        void *_Nullable deinitialiser;
         void *_Nullable copyConstructor;
 #endif
     };

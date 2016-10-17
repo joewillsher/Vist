@@ -117,7 +117,7 @@ final class CheckedCastBreakInst : Inst, BreakInstruction {
     
     var type: Type? { return nil }
     
-    init(successCall: BlockCall, successVariable: Param, failCall: BlockCall, val: PtrOperand, targetType: Type) {
+    init(successCall: BlockCall, successVariable: RefParam, failCall: BlockCall, val: PtrOperand, targetType: Type) {
         self.val = val
         self.targetType = targetType
         self.successVariable = successVariable
@@ -196,13 +196,13 @@ extension VIRBuilder {
         return s
     }
     @discardableResult
-    func buildCastBreak(val: PtrOperand, successVariable: Param, targetType: Type, success: BlockCall, fail: BlockCall) throws -> CheckedCastBreakInst {
+    func buildCastBreak(val: PtrOperand, successVariable: RefParam, targetType: Type, success: BlockCall, fail: BlockCall) throws -> CheckedCastBreakInst {
         
         // HACK: we need to generate the witness tables if our target type is a concept
         if targetType.isConceptType() {
             let concept = try targetType.getAsConceptType()
             for type in module.typeList.values {
-                guard case let structType as StructType = type.getConcreteNominalType() else { continue }
+                guard let structType = type.getConcreteNominalType(), !structType.isConceptType() else { continue }
                 guard structType.models(concept: concept) else { continue }
                 _ = VIRWitnessTable.create(module: module, type: structType, conforms: concept)
                 type.concepts.append(concept)

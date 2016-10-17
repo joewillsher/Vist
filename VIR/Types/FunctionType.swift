@@ -91,19 +91,26 @@ extension FunctionType {
      type. Otherwise self is passed by value
      */
     func cannonicalType(module: Module) -> FunctionType {
-        
         if isCanonicalType { return self }
         
-        let ret = returns.importedType(in: module).persistentType(module: module)
-        
-        let pars = params.map { param in param.importedType(in: module).persistentType(module: module) }
-        var t = FunctionType(params: pars, returns: ret, callingConvention: callingConvention, yieldType: yieldType)
+        var t = persistentFunctionType(module: module)
         
         if case .method(let selfType, _) = callingConvention {
             t.params.insert(BuiltinType.pointer(to: selfType), at: 0)
         }
         t.isCanonicalType = true
         return t
+    }
+    
+    func persistentType(module: Module) -> Type {
+        return persistentFunctionType(module: module)
+    }
+    
+    func persistentFunctionType(module: Module) -> FunctionType {
+        let ret = returns.importedType(in: module).persistentType(module: module)
+        
+        let pars = params.map { param in param.importedType(in: module).persistentType(module: module) }
+        return FunctionType(params: pars, returns: ret, callingConvention: callingConvention, yieldType: yieldType)
     }
     
     func cannonicalisedParamTypes() -> [Type] {
