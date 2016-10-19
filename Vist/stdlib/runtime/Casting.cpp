@@ -40,22 +40,29 @@ bool vist_castExistentialToConcept(ExistentialObject *_Nonnull existential,
             // if the metadata is the same, we can construct a non local existential
             
             auto in = (void*)existential->projectBuffer();
-            auto mem = malloc(existential->metadata->storageSize());
-            if (auto copyConstructor = existential->metadata->copyConstructor) {
+            void *mem;
+            if (existential->metadata->isRefCounted) {
+#ifdef RUNTIME_DEBUG
+                printf("   ↳cast_existential_retain↘︎\n");
+#endif
+                vist_retainObject((RefcountedObject*)existential->projectBuffer());
+                mem = in;
+            } else if (auto copyConstructor = existential->metadata->copyConstructor) {
 #ifdef RUNTIME_DEBUG
                 printf("     ↳cast_deep_copy %s:\t%p to: %p\n", existential->metadata->name, in, mem);
                 printf("         ↳cast_deep_copy_fn=%p\n", copyConstructor);
 #endif
+                mem = malloc(existential->metadata->storageSize());
                 copyConstructor(in, mem);
-            }
-            else {
-                // if there is no copy constructor, we just have to do a shallow copy
-                memcpy(mem, in, existential->metadata->storageSize());
+            } else {
 #ifdef RUNTIME_DEBUG
                 printf("     ↳cast_copy %s:\t%p to: %p\n", conceptMetadata->name, in, mem);
 #endif
+                // if there is no copy constructor, we just have to do a shallow copy
+                mem = malloc(existential->metadata->storageSize());
+                memcpy(mem, in, existential->metadata->storageSize());
             }
-            *out = ExistentialObject((uintptr_t)mem, conceptMetadata, 1,
+            *out = ExistentialObject((uintptr_t)mem, existential->metadata, 1,
                                      (ConceptConformance **)conf);
             return true;
         }

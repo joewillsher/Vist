@@ -44,7 +44,7 @@ void vist_deallocExistentialBuffer(ExistentialObject *_Nonnull existential) {
 #ifdef RUNTIME_DEBUG
     printf("→dealloc %s:\t%p\n", existential->metadata->name, (void*)existential->projectBuffer());
 #endif
-    auto buff = (void *)existential->projectBuffer()
+    auto buff = (void *)existential->projectBuffer();
     if (!buff)
         return;
     // If we have to specially handle releasing ownership of the memory:
@@ -54,6 +54,7 @@ void vist_deallocExistentialBuffer(ExistentialObject *_Nonnull existential) {
         printf("   ↳existential_release↘︎\n");
 #endif
         vist_releaseObject((RefcountedObject*)buff);
+        return;
     } else if (auto destructor = existential->metadata->destructor) {
         // call any custom destructors -- the instance needs to release
         // ownership of any children
@@ -68,7 +69,7 @@ void vist_deallocExistentialBuffer(ExistentialObject *_Nonnull existential) {
         free(buff);
 #ifdef RUNTIME_DEBUG
     // DEBUGGING: set stack to 0, if not a shared heap ptr
-    else if (!existential->metadata->isRefCounted)
+    else
         memset(buff, 0, existential->metadata->storageSize());
 #endif
 }
@@ -97,7 +98,7 @@ void vist_copyExistentialBuffer(ExistentialObject *_Nonnull existential,
                                 ExistentialObject *_Nullable outExistential) {
     
     auto in = (void*)existential->projectBuffer();
-    auto mem = malloc(existential->metadata->storageSize());
+    void *mem;
     // we must copy different objects differently
     //  - trivial types can be shallow copied
     //  - call its copy constructor if defined -- this is needed to move over
@@ -108,17 +109,20 @@ void vist_copyExistentialBuffer(ExistentialObject *_Nonnull existential,
         printf("   ↳existential_retain↘︎\n");
 #endif
         vist_retainObject((RefcountedObject*)existential->projectBuffer());
+        mem = in;
     } else if (auto copyConstructor = existential->metadata->copyConstructor) {
 #ifdef RUNTIME_DEBUG
         printf("   ↳deep_copy %s:\t%p to: %p\n", existential->metadata->name, in, mem);
         printf("       ↳deep_copy_fn=%p\n", copyConstructor);
 #endif
+        mem = malloc(existential->metadata->storageSize());
         copyConstructor((void*)existential->projectBuffer(), mem);
     } else {
         // if there is no copy constructor, we just have to do a shallow copy
 #ifdef RUNTIME_DEBUG
         printf("   ↳copy %s:\t%p to: %p\n", existential->metadata->name, in, mem);
 #endif
+        mem = malloc(existential->metadata->storageSize());
         memcpy(mem, (void*)existential->projectBuffer(), existential->metadata->storageSize());
     }
     // construct the new existential
