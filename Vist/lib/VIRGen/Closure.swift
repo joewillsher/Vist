@@ -15,7 +15,7 @@
 protocol CaptureDelegate : class {
     var captured: [ManagedValue] { get }
     /// The delegate action to capture a vairable
-    func capture(variable: ManagedValue, scope: VIRGenScope, name: String) throws -> ManagedValue
+    func capture(variable: ManagedValue, gen: VIRGenFunction, name: String) throws -> ManagedValue
 }
 
 /// A thunk object -- wraps a function. Can be used for captruing scopes
@@ -73,43 +73,24 @@ final class Closure : ThunkFunction, VIRElement {
 
 extension Closure : CaptureDelegate {
     
-    func capture(variable: ManagedValue, scope: VIRGenScope, name: String) throws -> ManagedValue {
-//        // add to self capture list
-//        // update function
-//        
-//        let initialInsert = module.builder.insertPoint
-//        defer { module.builder.insertPoint = initialInsert }
-//        module.builder.insertPoint = scope.breakPoint!
-//
-//        let g: GlobalValue, accessor: IndirectAccessor
-//        
-//        if
-//            case let variableAccessor as IndirectAccessor = variable,
-//            case let decl as IndirectAccessor = try scope.parent?.variable(named: name),
-//            let type = variableAccessor.mem.type {
-//           
-//            g = GlobalValue(name: "\(name).globlstorage", type: type, module: module)
-//            try module.builder.build(StoreInst(address: g, value: decl.aggregateReference()))
-//            accessor = GlobalIndirectRefAccessor(memory: g, module: function.module)
-//        }
-//        else if
-//            let type = variable.storedType,
-//            let decl = try scope.parent?.variable(named: name) {
-//            
-//            g = GlobalValue(name: "\(name).globl", type: type, module: module)
-//            try module.builder.build(StoreInst(address: g, value: decl.aggregateGetValue()))
-//            accessor = GlobalRefAccessor(memory: g, module: function.module)
-//        }
-//        else {
-//            fatalError()
-//        }
-//        
-//        scope.insert(variable: accessor, name: name)
-//        captured.append(variable)
-//        capturedGlobals.append(g)
-//        module.globalValues.insert(g)
-//        return accessor
-        return variable
+    func capture(variable: ManagedValue, gen: VIRGenFunction, name: String) throws -> ManagedValue {
+        
+        let initialInsert = module.builder.insertPoint
+        module.builder.insertPoint = gen.scope.breakPoint!
+        
+        var decl = try gen.parent!.variable(named: name)!
+        let type = variable.type.importedType(in: module)
+        
+        let g = GlobalValue(name: "\(name).globlstorage", type: type, module: module)
+        // store val at call site
+        let val = try decl.coerceCopyToValue(gen: gen)
+        try module.builder.build(StoreInst(address: g, value: val.value))
+        // move back into closure
+        module.builder.insertPoint = initialInsert
+        let load = try gen.builder.buildManaged(LoadInst(address: g, irName: "\(name).local"), hasCleanup: false, gen: gen)
+        capturedGlobals.append(g)
+        module.globalValues.insert(g)
+        return load
     }
     
     

@@ -11,12 +11,19 @@ typealias Cleanup = (VIRGenFunction, ManagedValue) throws -> ()
 final class VIRGenFunction {
     var managedValues: [ManagedValue] = []
     let scope: VIRGenScope, builder: VIRBuilder
+    var parent: VIRGenFunction?
     
     var module: Module { return builder.module }
     
-    init(scope: VIRGenScope, builder: VIRBuilder) {
+    init(scope: VIRGenScope, builder: VIRBuilder, parent: VIRGenFunction?) {
         self.scope = scope
         self.builder = builder
+        self.parent = parent
+    }
+    init(parent: VIRGenFunction, scope: VIRGenScope) {
+        self.scope = scope
+        self.builder = parent.builder
+        self.parent = parent
     }
     
     /// Emits a tempory allocation as a managed value; its cleanup
@@ -38,6 +45,7 @@ final class VIRGenFunction {
         managedValues.append(managed)
         return managed
     }
+    
 }
 
 protocol ManagedValue {
@@ -223,7 +231,7 @@ extension ManagedValue {
     }
     mutating func copy(gen: VIRGenFunction) throws -> AnyManagedValue {
         // if it isnt a ptr type
-        guard isIndirect, let type = self.type.getPointeeType(), !type.isTrivial() else {
+        guard isIndirect, !type.isTrivial() else {
             // return a copy if the type can be trivially copied
             if self.type.isTrivial() {
                 return self.unique()
@@ -235,9 +243,12 @@ extension ManagedValue {
             }
             // if its not trivial, the copy must be a ptr backed one so
             // we can copy_addr it
-            var mem = try gen.emitTempAlloc(memType: self.type).erased
-            // - forward self into a temp alloc
-            try forward(into: &mem, gen: gen)
+            var mem = try gen.emitTempAlloc(memType: self.type)
+            // this mem is only ever a temp view into the val so it shouldnt have cleanup
+            mem.forwardCleanup(gen)
+            // - copy self into a temp alloc
+            try copy(into: mem, gen: gen)
+            // the copy has its own cleanup
             let copiedMem = try gen.emitTempAlloc(memType: self.type)
             try mem.copy(into: copiedMem, gen: gen)
             return copiedMem.erased

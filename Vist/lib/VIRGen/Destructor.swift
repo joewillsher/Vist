@@ -16,7 +16,7 @@ extension TypeDecl {
             return nil
         }
         
-        let destroyVGF = VIRGenFunction(scope: VIRGenScope(module: module), builder: gen.builder)
+        let destroyVGF = VIRGenFunction(parent: gen, scope: VIRGenScope(module: module))
         
         let startInsert = destroyVGF.builder.insertPoint
         defer { destroyVGF.builder.insertPoint = startInsert }

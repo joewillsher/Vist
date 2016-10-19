@@ -109,8 +109,7 @@ extension AST {
     func emitVIR(module: Module, isLibrary: Bool) throws {
         
         let builder = module.builder!
-        let gen = VIRGenFunction(scope: VIRGenScope(module: module),
-                                 builder: builder)
+        let gen = VIRGenFunction(scope: VIRGenScope(module: module), builder: builder, parent: nil)
         if isLibrary {
             // if its a library we dont emit a main, and just virgen on any decls/statements
             for case let g as LibraryTopLevel in exprs {
@@ -286,11 +285,11 @@ extension ClosureExpr : ValueEmitter {
                                                  function: closure.thunk,
                                                  captureDelegate: closure,
                                                  breakPoint: entry)
-        let closureVGF = VIRGenFunction(scope: closureScope, builder: gen.builder)
+        let closureVGF = VIRGenFunction(parent: gen, scope: closureScope)
         // add params
         for paramName in parameters! {
             let param = try closure.thunk.param(named: paramName).managed(gen: closureVGF)
-            gen.addVariable(param, name: paramName)
+            closureVGF.addVariable(param, name: paramName)
         }
         // emit body
         try exprs.emitBody(module: module, gen: closureVGF)
@@ -328,7 +327,7 @@ extension FuncDecl : StmtEmitter {
         
         // make scope and occupy it with params
         let fnScope = VIRGenScope(parent: gen.scope, function: function)
-        let vgf = VIRGenFunction(scope: fnScope, builder: gen.builder)
+        let vgf = VIRGenFunction(parent: gen, scope: fnScope)
         
         // add the explicit method parameters
         for paramName in impl.params {
@@ -409,9 +408,10 @@ extension ReturnStmt : StmtEmitter {
         var retVal = try expr.emitRValue(module: module, gen: gen)
         // coerce to expected return type, managing abstraction differences
         var boxed = try retVal.coerceCopy(to: expectedReturnType!, gen: gen)
+        let val = boxed.forward(gen)
         try gen.cleanup()
         // forward clearup to caller function
-        try gen.builder.buildReturn(value: boxed.forward(gen))
+        try gen.builder.buildReturn(value: val)
     }
 }
 
@@ -611,7 +611,7 @@ extension ConditionalStmt : StmtEmitter {
             // move into the if block, and evaluate its expressions
             // in a new scope
             let ifScope = VIRGenScope(parent: gen.scope, function: gen.scope.function)
-            let ifVGF = VIRGenFunction(scope: ifScope, builder: gen.builder)
+            let ifVGF = VIRGenFunction(parent: gen, scope: ifScope)
             
             switch branch.condition {
             case .boolean(let c):
@@ -726,7 +726,7 @@ extension ForInLoopStmt : StmtEmitter {
                                               function: loopClosure.thunk,
                                               captureDelegate: loopClosure,
                                               breakPoint: gen.builder.insertPoint)
-        let loopGen = VIRGenFunction(scope: loopScope, builder: gen.builder)
+        let loopGen = VIRGenFunction(parent: gen, scope: loopScope)
         let loopVar = try loopClosure.thunk.param(named: binded.name).managed(gen: gen)
         loopGen.addVariable(loopVar, name: binded.name)
         
@@ -806,7 +806,7 @@ extension WhileLoopStmt : StmtEmitter {
                                        elseTo: (block: exitBlock, args: nil))
         
         let loopScope = VIRGenScope(parent: gen.scope, function: gen.scope.function)
-        let loopVGF = VIRGenFunction(scope: loopScope, builder: gen.builder)
+        let loopVGF = VIRGenFunction(parent: gen, scope: loopScope)
         // build loop block
         gen.builder.insertPoint.block = loopBlock // move into
         try block.emitStmt(module: module, gen: loopVGF) // gen stmts
@@ -885,7 +885,7 @@ extension InitDecl : StmtEmitter {
         
         // make scope and occupy it with params
         let fnScope = VIRGenScope(parent: gen.scope, function: function)
-        let fnVGF = VIRGenFunction(scope: fnScope, builder: gen.builder)
+        let fnVGF = VIRGenFunction(parent: gen, scope: fnScope)
         
         var selfVal: AnyManagedValue
         var selfAccessor: AnyManagedValue
@@ -961,7 +961,7 @@ extension DeinitDecl : StmtEmitter {
         
         // make scope and occupy it with params
         let fnScope = VIRGenScope(parent: gen.scope, function: function)
-        let fnVGF = VIRGenFunction(scope: fnScope, builder: gen.builder)
+        let fnVGF = VIRGenFunction(parent: gen, scope: fnScope)
         
         let selfVal = try function.param(named: "self").managed(gen: fnVGF, hasCleanup: false)
         // if self is heap allocated, member accesses must use the stored instance ptr
@@ -1018,28 +1018,28 @@ extension MethodCallExpr : ValueEmitter {
         // build self and args' values
         let args = try argOperands(module: module, gen: gen)
         var selfRef = try object.emitRValue(module: module, gen: gen)
-        let selfVal = try selfRef.coerceCopy(to: object._type!.ptrType(), gen: gen)
-
+        var selfVal = try selfRef.coerceCopy(to: object._type!.ptrType(), gen: gen)
+        
         // construct function call
         switch object._type {
         case is StructType:
             guard case .method = fnType.callingConvention else { fatalError() }
             
             let function = try module.getOrInsertFunction(named: mangledName, type: fnType)
-            let call = try gen.builder.buildFunctionCall(function: function, args: [PtrOperand(selfVal.borrow().lValue)] + args)
+            let call = try gen.builder.buildFunctionCall(function: function, args: [PtrOperand(selfVal.forwardLValue(gen))] + args)
             return AnyManagedValue.forUnmanaged(call, gen: gen)
             
         case let existentialType as ConceptType:
             
             // get the witness from the existential
-            let fn = try gen.builder.build(ExistentialWitnessInst(existential: selfVal.borrow().lValue,
+            let fn = try gen.builder.build(ExistentialWitnessInst(existential: selfVal.forwardLValue(gen),
                                                                   methodName: mangledName,
                                                                   existentialType: existentialType,
                                                                   irName: "witness"))
             guard case let fnType as FunctionType = fn.memType?.importedType(in: module) else { fatalError() }
             
             // get the instance from the existential
-            let unboxedSelf = try gen.builder.build(ExistentialProjectInst(existential: selfVal.borrow().lValue, irName: "unboxed"))
+            let unboxedSelf = try gen.builder.build(ExistentialProjectInst(existential: selfVal.forwardLValue(gen), irName: "unboxed"))
             // call the method by applying the opaque ptr to self as the first param
             let call = try gen.builder.buildFunctionApply(function: PtrOperand(fn),
                                                           returnType: fnType.returns,

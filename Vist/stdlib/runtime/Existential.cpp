@@ -76,8 +76,8 @@ void vist_deallocExistentialBuffer(ExistentialObject *_Nonnull existential) {
 
 RUNTIME_COMPILER_INTERFACE
 void vist_exportExistentialBuffer(ExistentialObject *_Nonnull existential) {
-    auto in = existential->projectBuffer();
     // if it is already on the heap, we are done
+    auto in = existential->projectBuffer();
     if (existential->isNonLocal() || existential->metadata->isRefCounted) {
 #ifdef RUNTIME_DEBUG
         printf("     ↳dupe_export %s:\t%p\n", existential->metadata->name, (void*)in);
@@ -111,18 +111,18 @@ void vist_copyExistentialBuffer(ExistentialObject *_Nonnull existential,
         vist_retainObject((RefcountedObject*)existential->projectBuffer());
         mem = in;
     } else if (auto copyConstructor = existential->metadata->copyConstructor) {
+        mem = malloc(existential->metadata->storageSize());
 #ifdef RUNTIME_DEBUG
         printf("   ↳deep_copy %s:\t%p to: %p\n", existential->metadata->name, in, mem);
         printf("       ↳deep_copy_fn=%p\n", copyConstructor);
 #endif
-        mem = malloc(existential->metadata->storageSize());
         copyConstructor((void*)existential->projectBuffer(), mem);
     } else {
         // if there is no copy constructor, we just have to do a shallow copy
+        mem = malloc(existential->metadata->storageSize());
 #ifdef RUNTIME_DEBUG
         printf("   ↳copy %s:\t%p to: %p\n", existential->metadata->name, in, mem);
 #endif
-        mem = malloc(existential->metadata->storageSize());
         memcpy(mem, (void*)existential->projectBuffer(), existential->metadata->storageSize());
     }
     // construct the new existential

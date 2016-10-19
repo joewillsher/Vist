@@ -139,6 +139,7 @@ extension FunctionCall {
         for (i, arg) in argArr.enumerated() {
             let name = (scope.name ?? "") + self.name + "@" + String(i)
             let argScope = SemaScope.capturingScope(parent: scope, scopeName: name)
+            argScope.semaContext = nil
             try arg.typeCheckNode(scope: argScope)
         }
         

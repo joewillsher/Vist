@@ -44,32 +44,26 @@ final class VIRGenScope {
                      breakPoint: breakPoint)
     }
     
-    // TODO: move managed value scope info here
-    
+}
+
+extension VIRGenFunction {
     /// - Returns: The accessor of a variable named `name`
     /// - Note: Updates the capture handler if we read from a parent
-    fileprivate func variable(named name: String) throws -> ManagedValue? {
-        if let v = variables[name] { return v }
+    func variable(named name: String) throws -> ManagedValue? {
+        if let v = scope.variables[name] { return v }
         
         let foundInParent = try parent?.variable(named: name)
-        if let f = foundInParent, let handler = captureDelegate {
-            // if we have a capture handler, infor that it 
+        if let f = foundInParent, let handler = scope.captureDelegate {
+            // if we have a capture handler, infor that it
             // captures this accessor
-            let accessor = try handler.capture(variable: f, scope: self, name: name)
-            variables[name] = accessor
+            let accessor = try handler.capture(variable: f, gen: self, name: name)
+            scope.variables[name] = accessor
             return accessor
         }
         return foundInParent
     }
-}
-
-extension VIRGenFunction {
     func addVariable(_ variable: ManagedValue, name: String) {
         scope.variables[name] = variable
     }
-    func variable(named name: String) throws -> ManagedValue? {
-        return try scope.variable(named: name)
-    }
-    
 }
 

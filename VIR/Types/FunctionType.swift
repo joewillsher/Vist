@@ -102,8 +102,9 @@ extension FunctionType {
         return t
     }
     
+    /// the ptr type this fn is stored as
     func persistentType(module: Module) -> Type {
-        return persistentFunctionType(module: module)
+        return persistentFunctionType(module: module).ptrType()
     }
     
     func persistentFunctionType(module: Module) -> FunctionType {

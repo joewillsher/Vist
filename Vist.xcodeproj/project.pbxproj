@@ -139,8 +139,8 @@
 		D43B3A491C8A10C80039FB2E /* DeclSema.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A361C8A10C80039FB2E /* DeclSema.swift */; };
 		D43B3A4A1C8A10C80039FB2E /* TypeProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A371C8A10C80039FB2E /* TypeProvider.swift */; };
 		D43B3A4B1C8A10C80039FB2E /* TypeProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A371C8A10C80039FB2E /* TypeProvider.swift */; };
-		D43B3A4E1C8A11180039FB2E /* Scope.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A4C1C8A11180039FB2E /* Scope.swift */; };
-		D43B3A4F1C8A11180039FB2E /* Scope.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A4C1C8A11180039FB2E /* Scope.swift */; };
+		D43B3A4E1C8A11180039FB2E /* VIRGenScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A4C1C8A11180039FB2E /* VIRGenScope.swift */; };
+		D43B3A4F1C8A11180039FB2E /* VIRGenScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A4C1C8A11180039FB2E /* VIRGenScope.swift */; };
 		D43B3A501C8A11180039FB2E /* VIRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A4D1C8A11180039FB2E /* VIRGen.swift */; };
 		D43B3A511C8A11180039FB2E /* VIRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A4D1C8A11180039FB2E /* VIRGen.swift */; };
 		D43B3A531C8A11410039FB2E /* VIRLower.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B3A521C8A11410039FB2E /* VIRLower.swift */; };
@@ -191,8 +191,6 @@
 		D488C2461D40595B000735DA /* RegisterPromotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = D488C2441D40595B000735DA /* RegisterPromotion.swift */; };
 		D49248541CF77883009FD509 /* StdLibInline.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49248531CF77883009FD509 /* StdLibInline.swift */; };
 		D49248551CF7788A009FD509 /* StdLibInline.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49248531CF77883009FD509 /* StdLibInline.swift */; };
-		D4960F071D7211910058D9EF /* Accessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4960F061D7211910058D9EF /* Accessor.swift */; };
-		D4960F081D7211910058D9EF /* Accessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4960F061D7211910058D9EF /* Accessor.swift */; };
 		D4A0001D1CC7C46500157D90 /* GlobalInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A0001C1CC7C46500157D90 /* GlobalInst.swift */; };
 		D4A0001E1CC7C46500157D90 /* GlobalInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A0001C1CC7C46500157D90 /* GlobalInst.swift */; };
 		D4A000211CCA7E4D00157D90 /* LiteralLower.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A000201CCA7E4D00157D90 /* LiteralLower.swift */; };
@@ -354,7 +352,7 @@
 		D43B3A351C8A10C80039FB2E /* StmtSema.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StmtSema.swift; path = lib/Sema/StmtSema.swift; sourceTree = "<group>"; };
 		D43B3A361C8A10C80039FB2E /* DeclSema.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeclSema.swift; path = lib/Sema/DeclSema.swift; sourceTree = "<group>"; };
 		D43B3A371C8A10C80039FB2E /* TypeProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TypeProvider.swift; path = lib/Sema/TypeProvider.swift; sourceTree = "<group>"; };
-		D43B3A4C1C8A11180039FB2E /* Scope.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Scope.swift; path = lib/VIRGen/Scope.swift; sourceTree = "<group>"; };
+		D43B3A4C1C8A11180039FB2E /* VIRGenScope.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VIRGenScope.swift; path = lib/VIRGen/VIRGenScope.swift; sourceTree = "<group>"; };
 		D43B3A4D1C8A11180039FB2E /* VIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VIRGen.swift; path = lib/VIRGen/VIRGen.swift; sourceTree = "<group>"; };
 		D43B3A521C8A11410039FB2E /* VIRLower.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VIRLower.swift; path = lib/VIRLower/VIRLower.swift; sourceTree = "<group>"; };
 		D43B3A811C8A11F80039FB2E /* Optimiser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Optimiser.cpp; path = lib/LLVMOptimiser/Optimiser.cpp; sourceTree = "<group>"; };
@@ -395,7 +393,6 @@
 		D489F3BD1C1E392D00254FFC /* example.vist */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vist; path = RUN/example.vist; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		D489F3C01C1E396E00254FFC /* example */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = example; path = RUN/example; sourceTree = "<group>"; };
 		D49248531CF77883009FD509 /* StdLibInline.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StdLibInline.swift; path = Optimiser/StdLibInline.swift; sourceTree = "<group>"; };
-		D4960F061D7211910058D9EF /* Accessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Accessor.swift; path = lib/VIRGen/Accessor.swift; sourceTree = "<group>"; };
 		D49BC2971CE25B1C0071D3AD /* Existential.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Existential.cpp; path = stdlib/runtime/Existential.cpp; sourceTree = "<group>"; };
 		D49BC2981CE25B1C0071D3AD /* RefcountedObject.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = RefcountedObject.cpp; path = stdlib/runtime/RefcountedObject.cpp; sourceTree = "<group>"; };
 		D49BC29B1CE27F8C0071D3AD /* Casting.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Casting.cpp; path = stdlib/runtime/Casting.cpp; sourceTree = "<group>"; };
@@ -632,9 +629,8 @@
 				D43B3A4D1C8A11180039FB2E /* VIRGen.swift */,
 				D4E225B51D6C7BCB0055A5CA /* Destructor.swift */,
 				D4BE16451D70BE8B003F087D /* VIRGenFunction.swift */,
-				D43B3A4C1C8A11180039FB2E /* Scope.swift */,
+				D43B3A4C1C8A11180039FB2E /* VIRGenScope.swift */,
 				D46A68DD1D5E288500FF9144 /* Closure.swift */,
-				D4960F061D7211910058D9EF /* Accessor.swift */,
 			);
 			name = VIRGen;
 			sourceTree = "<group>";
@@ -1036,7 +1032,7 @@
 				D4A0002E1CCA7F4F00157D90 /* RefCountingLower.swift in Sources */,
 				D43B39B11C8A0F140039FB2E /* ConceptType.swift in Sources */,
 				D4A0003D1CCA9BC300157D90 /* LLVMWrapper.swift in Sources */,
-				D43B3A4F1C8A11180039FB2E /* Scope.swift in Sources */,
+				D43B3A4F1C8A11180039FB2E /* VIRGenScope.swift in Sources */,
 				D43B3A861C8A11F80039FB2E /* Optimiser.cpp in Sources */,
 				D4A000221CCA7E4D00157D90 /* LiteralLower.swift in Sources */,
 				D43B39A21C8A0EDF0039FB2E /* Value.swift in Sources */,
@@ -1049,7 +1045,6 @@
 				D42814061D7F5F0800B90A09 /* SelectionDAG.swift in Sources */,
 				D43B39FB1C8A100E0039FB2E /* Compile.swift in Sources */,
 				D43B39B31C8A0F140039FB2E /* FunctionType.swift in Sources */,
-				D4960F081D7211910058D9EF /* Accessor.swift in Sources */,
 				D43B39BF1C8A0F140039FB2E /* TypeAlias.swift in Sources */,
 				D41BF54D1C5CD797004A1962 /* Tests.swift in Sources */,
 				D43B3A8B1C8A12090039FB2E /* Interpreter.swift in Sources */,
@@ -1086,7 +1081,6 @@
 				D43FE1CA1D5E2EBF003494C9 /* WitnessTable.swift in Sources */,
 				D427DA9C1CA05976000708E2 /* Param.swift in Sources */,
 				D43B39B81C8A0F140039FB2E /* StructType.swift in Sources */,
-				D4960F071D7211910058D9EF /* Accessor.swift in Sources */,
 				D4728BE41C960D79003294B0 /* MemoryInst.swift in Sources */,
 				D43B39991C8A0EDF0039FB2E /* Module.swift in Sources */,
 				D43B39D81C8A0F3A0039FB2E /* BuiltinInst.swift in Sources */,
@@ -1165,7 +1159,7 @@
 				D49248541CF77883009FD509 /* StdLibInline.swift in Sources */,
 				D43B39A11C8A0EDF0039FB2E /* Value.swift in Sources */,
 				D43B3A171C8A105B0039FB2E /* ASTNode.swift in Sources */,
-				D43B3A4E1C8A11180039FB2E /* Scope.swift in Sources */,
+				D43B3A4E1C8A11180039FB2E /* VIRGenScope.swift in Sources */,
 				D43B3A211C8A105B0039FB2E /* ScopeNode.swift in Sources */,
 				D43B399B1C8A0EDF0039FB2E /* Operand.swift in Sources */,
 				D43B3A081C8A10390039FB2E /* Token.swift in Sources */,
