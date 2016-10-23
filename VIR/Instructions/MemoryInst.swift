@@ -135,17 +135,17 @@ final class BitcastInst : Inst, LValue {
     /// The operand of the cast
     private(set) var address: PtrOperand
     /// The new memory type of the cast
-    private(set) var newType: TypeAlias
+    private(set) var newType: ModuleType
     
     var uses: [Operand] = []
     var args: [Operand]
     
     /// - note: the ptr will have type newType*
-    convenience init(address: LValue, newType: TypeAlias, irName: String? = nil) {
+    convenience init(address: LValue, newType: ModuleType, irName: String? = nil) {
         self.init(address: PtrOperand(address), newType: newType, irName: irName)
     }
     
-    private init(address op: PtrOperand, newType: TypeAlias, irName: String?) {
+    private init(address op: PtrOperand, newType: ModuleType, irName: String?) {
         self.address = op
         self.newType = newType
         args = [op]

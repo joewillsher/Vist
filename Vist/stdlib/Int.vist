@@ -75,7 +75,8 @@ func dec :: Int -> Int = do return $0 - 1
 
 @public @noinline
 func print :: Int = (a) {
-    _print (a.description ())
-    _print "\n"
+//    _print (a.description ())
+    vist_cshim_print a.value // TEMP: FIX THIS
+//    _print "\n"
 }
 

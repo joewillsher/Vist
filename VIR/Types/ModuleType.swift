@@ -1,5 +1,5 @@
 //
-//  TypeAlias.swift
+//  ModuleType.swift
 //  Vist
 //
 //  Created by Josef Willsher on 29/02/2016.
@@ -10,24 +10,26 @@
 /// A defined abstract type. These sit in a type table in VIR and LLVM
 /// and allow the types to be named.
 ///
-/// `TypeAlias` simply wraps `targetType` and
-final class TypeAlias : Type {
+/// `ModuleType` simply wraps `targetType` and
+final class ModuleType : Type {
     let name: String, targetType: NominalType
     
     var witnessTables: [ConceptType: VIRWitnessTable] = [:]
     var destructor: Function? = nil
     var deinitialiser: Function? = nil
     var copyConstructor: Function? = nil
+    var isImported: Bool
     
     init(name: String, targetType: NominalType) {
         self.name = name
         self.targetType = targetType
+        self.isImported = StdLib.type(name: name) != nil
     }
     
     func lowered(module: Module) -> LLVMType {
         
         if targetType is ConceptType {
-            return TypeAlias(name: "", targetType: Runtime.existentialObjectType).lowered(module: module)
+            return ModuleType(name: "", targetType: Runtime.existentialObjectType).lowered(module: module)
         }
         
         if module.loweredModule == nil {
@@ -51,7 +53,7 @@ final class TypeAlias : Type {
     
 }
 
-extension TypeAlias : NominalType {
+extension ModuleType : NominalType {
     var members: [StructMember] { return targetType.members }
     var methods: [StructMethod] { return targetType.methods }
     var irName: String { return targetType.irName }
@@ -67,7 +69,7 @@ extension TypeAlias : NominalType {
     func instanceRawType(module: Module) -> LLVMType { return targetType.instanceRawType(module: module) }
 }
 
-extension TypeAlias {
+extension ModuleType {
     
     func importedType(in module: Module) -> Type {
         return self
@@ -79,11 +81,11 @@ extension TypeAlias {
 }
 
 // we need a hash for the type so it can sit in the the type table set
-extension TypeAlias : Hashable {
+extension ModuleType : Hashable {
     var hashValue: Int {
         return name.hashValue
     }
-    static func == (lhs: TypeAlias, rhs: TypeAlias) -> Bool {
+    static func == (lhs: ModuleType, rhs: ModuleType) -> Bool {
         return lhs.targetType == rhs.targetType
     }
 }

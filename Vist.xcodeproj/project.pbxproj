@@ -70,8 +70,8 @@
 		D43B39BB1C8A0F140039FB2E /* TupleType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39AB1C8A0F140039FB2E /* TupleType.swift */; };
 		D43B39BC1C8A0F140039FB2E /* Type.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39AC1C8A0F140039FB2E /* Type.swift */; };
 		D43B39BD1C8A0F140039FB2E /* Type.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39AC1C8A0F140039FB2E /* Type.swift */; };
-		D43B39BE1C8A0F140039FB2E /* TypeAlias.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39AD1C8A0F140039FB2E /* TypeAlias.swift */; };
-		D43B39BF1C8A0F140039FB2E /* TypeAlias.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39AD1C8A0F140039FB2E /* TypeAlias.swift */; };
+		D43B39BE1C8A0F140039FB2E /* ModuleType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39AD1C8A0F140039FB2E /* ModuleType.swift */; };
+		D43B39BF1C8A0F140039FB2E /* ModuleType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39AD1C8A0F140039FB2E /* ModuleType.swift */; };
 		D43B39D81C8A0F3A0039FB2E /* BuiltinInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39D21C8A0F3A0039FB2E /* BuiltinInst.swift */; };
 		D43B39D91C8A0F3A0039FB2E /* BuiltinInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39D21C8A0F3A0039FB2E /* BuiltinInst.swift */; };
 		D43B39DA1C8A0F3A0039FB2E /* FunctionInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43B39D31C8A0F3A0039FB2E /* FunctionInst.swift */; };
@@ -167,6 +167,8 @@
 		D44C1A941D8EE9CC0062FBDE /* Codegen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44C1A921D8EE9CC0062FBDE /* Codegen.swift */; };
 		D454444C1D181AB900C7B02A /* Inline.swift in Sources */ = {isa = PBXBuildFile; fileRef = D454444B1D181AB900C7B02A /* Inline.swift */; };
 		D454444D1D181AB900C7B02A /* Inline.swift in Sources */ = {isa = PBXBuildFile; fileRef = D454444B1D181AB900C7B02A /* Inline.swift */; };
+		D461FA501DBD20B700FE542B /* ARC.swift in Sources */ = {isa = PBXBuildFile; fileRef = D461FA4F1DBD20B700FE542B /* ARC.swift */; };
+		D461FA511DBD20B700FE542B /* ARC.swift in Sources */ = {isa = PBXBuildFile; fileRef = D461FA4F1DBD20B700FE542B /* ARC.swift */; };
 		D4654F991D50F02A005B3637 /* VIRType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4654F981D50F02A005B3637 /* VIRType.swift */; };
 		D4654F9A1D50F02A005B3637 /* VIRType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4654F981D50F02A005B3637 /* VIRType.swift */; };
 		D46A68E01D5E288500FF9144 /* Closure.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46A68DD1D5E288500FF9144 /* Closure.swift */; };
@@ -313,7 +315,7 @@
 		D43B39AA1C8A0F140039FB2E /* StructType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StructType.swift; path = VIR/Types/StructType.swift; sourceTree = SOURCE_ROOT; };
 		D43B39AB1C8A0F140039FB2E /* TupleType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TupleType.swift; path = VIR/Types/TupleType.swift; sourceTree = SOURCE_ROOT; };
 		D43B39AC1C8A0F140039FB2E /* Type.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Type.swift; path = VIR/Types/Type.swift; sourceTree = SOURCE_ROOT; };
-		D43B39AD1C8A0F140039FB2E /* TypeAlias.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TypeAlias.swift; path = VIR/Types/TypeAlias.swift; sourceTree = SOURCE_ROOT; };
+		D43B39AD1C8A0F140039FB2E /* ModuleType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ModuleType.swift; path = VIR/Types/ModuleType.swift; sourceTree = SOURCE_ROOT; };
 		D43B39D21C8A0F3A0039FB2E /* BuiltinInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BuiltinInst.swift; path = Instructions/BuiltinInst.swift; sourceTree = "<group>"; };
 		D43B39D31C8A0F3A0039FB2E /* FunctionInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FunctionInst.swift; path = Instructions/FunctionInst.swift; sourceTree = "<group>"; };
 		D43B39D41C8A0F3A0039FB2E /* LiteralInst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LiteralInst.swift; path = Instructions/LiteralInst.swift; sourceTree = "<group>"; };
@@ -372,6 +374,7 @@
 		D44B484C1D8320F8006BB794 /* InterferenceGraph.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InterferenceGraph.swift; path = lib/Codegen/InterferenceGraph.swift; sourceTree = "<group>"; };
 		D44C1A921D8EE9CC0062FBDE /* Codegen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Codegen.swift; path = lib/Codegen/Codegen.swift; sourceTree = "<group>"; };
 		D454444B1D181AB900C7B02A /* Inline.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Inline.swift; path = Optimiser/Inline.swift; sourceTree = "<group>"; };
+		D461FA4F1DBD20B700FE542B /* ARC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ARC.swift; path = Optimiser/ARC.swift; sourceTree = "<group>"; };
 		D4654F981D50F02A005B3637 /* VIRType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VIRType.swift; path = VIR/Types/VIRType.swift; sourceTree = SOURCE_ROOT; };
 		D46A68DD1D5E288500FF9144 /* Closure.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Closure.swift; path = lib/VIRGen/Closure.swift; sourceTree = "<group>"; };
 		D46D1F841D5CDD6B0001E327 /* Backend.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Backend.cpp; path = lib/Pipeline/Backend.cpp; sourceTree = "<group>"; };
@@ -720,7 +723,7 @@
 				D43B39AB1C8A0F140039FB2E /* TupleType.swift */,
 				D43B39A71C8A0F140039FB2E /* FunctionType.swift */,
 				D43B39A61C8A0F140039FB2E /* ConceptType.swift */,
-				D43B39AD1C8A0F140039FB2E /* TypeAlias.swift */,
+				D43B39AD1C8A0F140039FB2E /* ModuleType.swift */,
 				D443EA451DABF0E600C3B6CA /* ClassType.swift */,
 				D4654F981D50F02A005B3637 /* VIRType.swift */,
 				D43B39A81C8A0F140039FB2E /* GenericType.swift */,
@@ -803,6 +806,7 @@
 				D41C732F1D5D02D00047B373 /* AggregateFlatten.swift */,
 				D4728BE61C960E22003294B0 /* Folding.swift */,
 				D4D1346C1D862523005A7EBD /* StrengthReduction.swift */,
+				D461FA4F1DBD20B700FE542B /* ARC.swift */,
 				D47748341D4770680079B8C5 /* CFG.swift */,
 				D411C8971C8DD00000478988 /* DCE.swift */,
 				D41C732C1D5D02CA0047B373 /* ExistentialUnbox.swift */,
@@ -943,6 +947,7 @@
 			files = (
 				D4E225B71D6C7BCB0055A5CA /* Destructor.swift in Sources */,
 				D411C8991C8DD00000478988 /* DCE.swift in Sources */,
+				D461FA511DBD20B700FE542B /* ARC.swift in Sources */,
 				D41C73311D5D02D00047B373 /* AggregateFlatten.swift in Sources */,
 				D43B39E11C8A0F3A0039FB2E /* StructInst.swift in Sources */,
 				D4A0001E1CC7C46500157D90 /* GlobalInst.swift in Sources */,
@@ -1045,7 +1050,7 @@
 				D42814061D7F5F0800B90A09 /* SelectionDAG.swift in Sources */,
 				D43B39FB1C8A100E0039FB2E /* Compile.swift in Sources */,
 				D43B39B31C8A0F140039FB2E /* FunctionType.swift in Sources */,
-				D43B39BF1C8A0F140039FB2E /* TypeAlias.swift in Sources */,
+				D43B39BF1C8A0F140039FB2E /* ModuleType.swift in Sources */,
 				D41BF54D1C5CD797004A1962 /* Tests.swift in Sources */,
 				D43B3A8B1C8A12090039FB2E /* Interpreter.swift in Sources */,
 				D4E35B7F1C5D216600683486 /* Pipe.swift in Sources */,
@@ -1113,6 +1118,7 @@
 				D43B3A531C8A11410039FB2E /* VIRLower.swift in Sources */,
 				D43B3A461C8A10C80039FB2E /* StmtSema.swift in Sources */,
 				D4D1346D1D862523005A7EBD /* StrengthReduction.swift in Sources */,
+				D461FA501DBD20B700FE542B /* ARC.swift in Sources */,
 				D4A000211CCA7E4D00157D90 /* LiteralLower.swift in Sources */,
 				D43B3A8A1C8A12090039FB2E /* Interpreter.swift in Sources */,
 				D4F3D8051CAC4243005A3B07 /* LowerError.swift in Sources */,
@@ -1121,7 +1127,7 @@
 				D46A68E01D5E288500FF9144 /* Closure.swift in Sources */,
 				D43FE1D31D5F7354003494C9 /* NameLookup.swift in Sources */,
 				D43B3A381C8A10C80039FB2E /* ExprSema.swift in Sources */,
-				D43B39BE1C8A0F140039FB2E /* TypeAlias.swift in Sources */,
+				D43B39BE1C8A0F140039FB2E /* ModuleType.swift in Sources */,
 				D43B39E21C8A0F3A0039FB2E /* VariableInst.swift in Sources */,
 				D4060DB51D7C9A4E009F363A /* AIR.swift in Sources */,
 				D4A000361CCA7FFA00157D90 /* OperandLower.swift in Sources */,

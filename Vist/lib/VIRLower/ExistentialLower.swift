@@ -77,7 +77,7 @@ extension ExistentialProjectPropertyInst : VIRLower {
     func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
         
         guard
-            case let aliasType as TypeAlias = existential.memType,
+            case let aliasType as ModuleType = existential.memType,
             case let conceptType as ConceptType = aliasType.targetType,
             let propertyPtrType = type else { fatalError() }
         

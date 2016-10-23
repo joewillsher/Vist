@@ -19,7 +19,7 @@
  */
 final class Module : VIRElement {
     private(set) var functions: Set<Function> = []
-    var typeList: [String: TypeAlias] = [:]
+    var typeList: [String: ModuleType] = [:]
     var witnessTables: [VIRWitnessTable] = []
     var globalValues: Set<GlobalValue> = []
     var builder: VIRBuilder!
@@ -38,28 +38,28 @@ final class Module : VIRElement {
     
     /// Insert a type to the module
     func insert(targetType: NominalType, name: String) {
-        typeList[name] = TypeAlias(name: name, targetType: targetType)
+        typeList[name] = ModuleType(name: name, targetType: targetType)
     }
     
     /// Insert a defined typealias to the module
-    private func insert(alias: TypeAlias) {
+    private func insert(alias: ModuleType) {
         typeList[alias.name] = alias
     }
     
     /// Returns the module's definition of `type`
     @discardableResult
-    func getOrInsert(type: Type) -> TypeAlias {
+    func getOrInsert(type: Type) -> ModuleType {
         // if it exists, return it
         if case let t as NominalType = type, let found = typeList[t.name] {
             return found
         }
         
-        let t = type.importedType(in: module) as! TypeAlias
+        let t = type.importedType(in: module) as! ModuleType
         insert(alias: t)
         return t
     }
     
-    func type(named name: String) -> TypeAlias? {
+    func type(named name: String) -> ModuleType? {
         return typeList[name]
     }
     

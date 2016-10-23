@@ -209,6 +209,7 @@ extension InitDecl : DeclTypeProvider {
         
         // Do sema on params, body, and expose self and its properties into the scope
         let initScope = SemaScope(parent: scope)
+        initScope.addVariable(variable: (type: parentType, mutable: true, isImmutableCapture: false), name: "self")
         
         // ad scope properties to initScope
         for p in parentProperties {

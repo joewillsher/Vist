@@ -83,10 +83,10 @@ extension Function {
         let b = blocks?.map { $0.vir }
         let bString = b.map { " {\n\($0.joined(separator: "\n"))}" } ?? ""
         
-        let params = zip(type.params, self.params ?? []).map {
+        let params = self.params.map { zip(type.params, $0).map {
             ($1.convention?.name.appending(" ") ?? "") + $0.vir
-        }.joined(separator: ", ")
-        return "func @\(name) : \(type.callingConvention.name) (\(params)) -> \(type.returns.vir)\(bString)"
+            } } ?? type.params.map { "#\($0.prettyName)" }
+        return "func @\(name) : \(type.callingConvention.name) (\(params.joined(separator: ", "))) -> \(type.returns.vir)\(bString)"
     }
 }
 
@@ -141,7 +141,7 @@ extension TupleType {
         return members.virTypeTuple()
     }
 }
-extension TypeAlias {
+extension ModuleType {
     var declVIR: String {
         return "type #\(name) = \(label)\(targetType.vir)\(witnesses)"
     }

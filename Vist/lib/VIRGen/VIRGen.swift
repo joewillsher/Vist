@@ -25,12 +25,12 @@ protocol StmtEmitter {
 
 protocol LValueEmitter : ValueEmitter, _LValueEmitter {
     associatedtype ManagedEmittedType : ManagedValue
-    /// Emit the get/set-accessor for a VIR lvalue
+    /// Emit the get/set-accessor for a VIR lValue
     func emitLValue(module: Module, gen: VIRGenFunction) throws -> ManagedEmittedType
     func canEmitLValue(module: Module, gen: VIRGenFunction) throws -> Bool
 }
 protocol _LValueEmitter : _ValueEmitter {
-    /// Emit the get/set-accessor for a VIR lvalue
+    /// Emit the get/set-accessor for a VIR lValue
     func emitLValue(module: Module, gen: VIRGenFunction) throws -> AnyManagedValue
     func canEmitLValue(module: Module, gen: VIRGenFunction) throws -> Bool
 }
@@ -126,6 +126,15 @@ extension AST {
             try builder.buildReturnVoid()
         }
         
+        // make sure all imported types have destructors/copy constructors
+        for type in module.typeList.values where type.isImported && !type.isConceptType() {
+            if !type.isTrivial() {
+                type.destructor = try type.emitImplicitDestructorDef(module: module, gen: gen)
+            }
+            if type.requiresCopyConstruction() {
+                type.copyConstructor = try type.emitImplicitCopyConstructorDef(module: module, gen: gen)
+            }
+        }
     }
 }
 
@@ -339,7 +348,7 @@ extension FuncDecl : StmtEmitter {
         if case .method(let selfType, _) = type.callingConvention {
             // We need self to be passed by ref as a `RefParam`
             let selfParam = function.params![0] as! RefParam
-            let selfVar = Managed<RefParam>.forLValue(selfParam, gen: vgf)
+            let selfVar = Managed<RefParam>.forUnmanaged(selfParam, gen: vgf)
             vgf.addVariable(selfVar, name: "self")
             
             guard case let type as NominalType = selfType.importedType(in: module) else { fatalError() }
@@ -352,21 +361,20 @@ extension FuncDecl : StmtEmitter {
                     selfVar.erased
                 
                 for property in type.members {
-                    let pVar = try vgf.builder.buildUnmanaged(StructElementPtrInst(object: instance.lValue,
-                                                                                   property: property.name,
-                                                                                   irName: property.name),
-                                                              gen: vgf)
+                    let pVar = try vgf.builder.buildUnmanagedLValue(StructElementPtrInst(object: instance.lValue,
+                                                                                         property: property.name,
+                                                                                         irName: property.name),
+                                                                    gen: vgf)
                     vgf.addVariable(pVar, name: property.name)
                 }
                 // If it is a value self then we do a struct extract to get self elements
-                // case is Accessor:
             } else {
                 assert(!type.isClassType())
                 for property in type.members {
-                    let pVar = try vgf.builder.buildUnmanaged(StructExtractInst(object: selfVar.value,
-                                                                                property: property.name,
-                                                                                irName: property.name),
-                                                              gen: vgf)
+                    let pVar = try vgf.builder.buildUnmanagedLValue(StructExtractInst(object: selfVar.value,
+                                                                                      property: property.name,
+                                                                                      irName: property.name),
+                                                                    gen: vgf)
                     vgf.addVariable(pVar, name: property.name)
                 }
             }

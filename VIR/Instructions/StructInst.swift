@@ -58,7 +58,7 @@ final class StructExtractInst : Inst {
     var uses: [Operand] = []
     var args: [Operand]
     
-    /// - Precondition: `structType` is a `StructType` or `TypeAlias` storing a `StructType`
+    /// - Precondition: `structType` is a `StructType` or `ModuleType` storing a `StructType`
     /// - Precondition: `structType` has a member `property`
     /// - Note: The initialised StructExtractInst has the same type as the `property`
     ///         element of `structType`
@@ -175,6 +175,39 @@ final class ClassProjectInstanceInst : Inst, LValue {
     
     func copy() -> ClassProjectInstanceInst {
         return ClassProjectInstanceInst(object: object.formCopy(), classType: classType, irName: irName)
+    }
+    func setArgs(_ args: [Operand]) {
+        object = args[0] as! PtrOperand
+    }
+    var parentBlock: BasicBlock?
+    var irName: String?
+}
+
+/// Project the instance ptr of a reference counted class box
+final class ClassGetRefCountInst : Inst {
+    var object: PtrOperand
+    
+    var uses: [Operand] = []
+    var args: [Operand]
+    
+    convenience init(object: LValue, irName: String? = nil) throws {
+        self.init(object: PtrOperand(object), irName: irName)
+    }
+    private init(object: PtrOperand, irName: String?) {
+        self.object = object
+        self.args = [object]
+        initialiseArgs()
+        self.irName = irName
+    }
+    
+    var type: Type? { return BuiltinType.int(size: 32) }
+    
+    var vir: String {
+        return "\(name) = class_get_refcount \(object.vir)\(useComment)"
+    }
+    
+    func copy() -> ClassGetRefCountInst {
+        return ClassGetRefCountInst(object: object.formCopy(), irName: irName)
     }
     func setArgs(_ args: [Operand]) {
         object = args[0] as! PtrOperand

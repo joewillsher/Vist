@@ -129,7 +129,7 @@ struct AnyManagedValue : ManagedValue {
     static func forUnmanaged(_ value: Value, gen: VIRGenFunction) -> AnyManagedValue {
         return gen.createManaged(AnyManagedValue(value))
     }
-    /// Like lvalue params, not just any reference
+    /// Like lValue params, not just any reference
     static func forLValue(_ value: LValue, gen: VIRGenFunction) -> AnyManagedValue {
         return gen.createManaged(AnyManagedValue(value, hasCleanup: false))
     }
@@ -155,9 +155,7 @@ extension ManagedValue {
     func getCleanup() -> Cleanup? {
         if !type.isTrivial() {
             if type.isClassType(), isIndirect {
-                return { vgf, val in
-                    try vgf.builder.build(ReleaseInst(object: val.lValue))
-                }
+                return releaseCleanup
             }
             if isIndirect {
                 return { vgf, val in
@@ -171,9 +169,7 @@ extension ManagedValue {
         }
         else if isIndirect {
             if type.isClassType() {
-                return { vgf, val in
-                    try vgf.builder.build(ReleaseInst(object: val.lValue))
-                }
+                return releaseCleanup
             }
             return { vgf, val in
                 // no-op
@@ -181,6 +177,18 @@ extension ManagedValue {
             }
         }
         return nil
+    }
+    
+    /// The cleanup to release a class object. This loads the object to 
+    /// the correct indirection level to be released.
+    private var releaseCleanup: Cleanup {
+        return { vgf, val in
+            var projection = val.erased
+            while !projection.rawType.getPointeeType()!.isClassType() {
+                projection = try vgf.builder.buildUnmanagedLValue(LoadInst(address: projection.lValue), gen: vgf).erased
+            }
+            try vgf.builder.build(ReleaseInst(object: projection.lValue))
+        }
     }
     
     /// `managed` says `returnValue` will clear it up
@@ -234,12 +242,11 @@ extension ManagedValue {
         guard isIndirect, !type.isTrivial() else {
             // return a copy if the type can be trivially copied
             if self.type.isTrivial() {
-                return self.unique()
+                return unique()
             }
             // retain and return the original, if we have a class
             if isIndirect, self.type.isClassType() {
-                try gen.builder.build(RetainInst(object: lValue))
-                return self.unique()
+                return try copyByRetain(gen)
             }
             // if its not trivial, the copy must be a ptr backed one so
             // we can copy_addr it
@@ -255,8 +262,7 @@ extension ManagedValue {
         }
         // if it is a class, retain and return the original
         if isIndirect, type.isClassType() {
-            try gen.builder.build(RetainInst(object: lValue))
-            return self.erased // return a retained copy
+            return try copyByRetain(gen)
         }
         
         // this creates the new cleanup
@@ -265,10 +271,25 @@ extension ManagedValue {
                                            out: mem.lValue))
         return mem.erased
     }
+    
+    /// - precondition: `type` is a class type
+    private func copyByRetain(_ gen: VIRGenFunction) throws -> AnyManagedValue {
+        var managed = unique()
+        // load from lval until it is the *RefType type
+        while !managed.rawType.getPointeeType()!.isClassType() {
+            managed = try gen.builder.buildUnmanaged(LoadInst(address: managed.forwardLValue(gen)), gen: gen).erased
+        }
+        try gen.builder.build(RetainInst(object: managed.lValue))
+        return managed // return a retained copy
+    }
+    
     func copy(into dest: ManagedValue, gen: VIRGenFunction) throws {
         // retain any class instances
         if isIndirect, type.isClassType() {
-            try gen.builder.build(RetainInst(object: lValue))
+            var l = try copyByRetain(gen)
+            try gen.builder.build(CopyAddrInst(addr: l.forwardLValue(gen),
+                                               out: dest.lValue))
+            return
         }
         // copy/move it to the new mem
         if isIndirect {

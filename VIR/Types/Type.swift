@@ -62,31 +62,31 @@ extension Type {
     func persistentType(module: Module) -> Type { return importedType(in: module) }
     
     func getAsStructType() throws -> StructType {
-        if case let s as TypeAlias = self { return try s.targetType.getAsStructType() }
+        if case let s as ModuleType = self { return try s.targetType.getAsStructType() }
         else if case let s as StructType = self { return s }
         else {
             throw VIRError.notStructType(self) }
     }
     func getAsClassType() throws -> ClassType {
-        if case let s as TypeAlias = self { return try s.targetType.getAsClassType() }
+        if case let s as ModuleType = self { return try s.targetType.getAsClassType() }
         else if case let s as ClassType = self { return s }
         else {
             throw VIRError.notStructType(self) }
     }
     
     func getAsTupleType() throws -> TupleType {
-        if case let s as TypeAlias = self { return try s.targetType.getAsTupleType() }
+        if case let s as ModuleType = self { return try s.targetType.getAsTupleType() }
         else if case let s as TupleType = self { return s }
         if case let s as BuiltinType = self, case .void = s { return TupleType(members: []) }
         else { throw VIRError.notTupleType(self) }
     }
     func getAsConceptType() throws -> ConceptType {
-        if case let s as TypeAlias = self { return try s.targetType.getAsConceptType() }
+        if case let s as ModuleType = self { return try s.targetType.getAsConceptType() }
         else if case let s as ConceptType = self { return s }
         else { throw VIRError.notConceptType(self) }
     }
     func getConcreteNominalType() -> NominalType? {
-        if case let s as TypeAlias = self { return s.targetType.getConcreteNominalType() }
+        if case let s as ModuleType = self { return s.targetType.getConcreteNominalType() }
         else if case let s as StructType = self { return s }
         else if case let s as ClassType = self { return s }
         else if case let c as ConceptType = self { return c }
@@ -94,7 +94,7 @@ extension Type {
     }
     /// If the type is imported into a module, just get the cannonical type
     func getCannonicalType() -> Type {
-        if case let s as TypeAlias = self { return s.targetType }
+        if case let s as ModuleType = self { return s.targetType }
         else if case let s as TupleType = self { return TupleType(members: s.members.map { $0.getCannonicalType() }) }
         else if case let s as FunctionType = self {
             return FunctionType(params: s.params.map { $0.getCannonicalType() }, returns: s.returns.getCannonicalType(), callingConvention: s.callingConvention, yieldType: s.yieldType)
@@ -105,22 +105,22 @@ extension Type {
         return .pointer(to: self)
     }
     func isConceptType() -> Bool {
-        if case let s as TypeAlias = self { return s.targetType.isConceptType() }
+        if case let s as ModuleType = self { return s.targetType.isConceptType() }
         else if self is ConceptType { return true }
         else { return false }
     }
     func isStructType() -> Bool {
-        if case let s as TypeAlias = self { return s.targetType.isStructType() }
+        if case let s as ModuleType = self { return s.targetType.isStructType() }
         else if self is StructType { return true }
         else { return false }
     }
     func isClassType() -> Bool {
-        if case let s as TypeAlias = self { return s.targetType.isClassType() }
+        if case let s as ModuleType = self { return s.targetType.isClassType() }
         else if self is ClassType { return true }
         else { return false }
     }
     func isTupleType() -> Bool {
-        if case let s as TypeAlias = self { return s.targetType.isTupleType() }
+        if case let s as ModuleType = self { return s.targetType.isTupleType() }
         else if self is TupleType { return true }
         else { return false }
     }
@@ -172,7 +172,7 @@ func == (lhs: Type?, rhs: Type?) -> Bool {
         return l == r
     case let (l as TupleType, r as TupleType):
         return l == r
-    case let (l as TypeAlias, r as TypeAlias):
+    case let (l as ModuleType, r as ModuleType):
         return l == r
         // special case builtin void and empty tuple
     case (BuiltinType.void?, let r as TupleType) where r.members.isEmpty:

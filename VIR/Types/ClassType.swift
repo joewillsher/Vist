@@ -38,7 +38,7 @@ final class ClassType : NominalType {
     }
     
     func importedType(in module: Module) -> Type {
-        return module.getOrInsert(type: TypeAlias(name: name, targetType: self))
+        return module.getOrInsert(type: ModuleType(name: name, targetType: self))
     }
     
     var isAddressOnly: Bool {

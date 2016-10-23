@@ -114,7 +114,7 @@ extension Function {
         
         var paramNames = params
         if case .method = type.callingConvention {
-            paramNames.insert((name: "self", convention: .inout), at: 0)
+            paramNames.insert((name: "self", convention: .in), at: 0)
         }
         
         // values for the explicit params
@@ -223,7 +223,7 @@ extension Function {
 }
 
 
-/// A function ref lvalue, this allows functions to be treated as values
+/// A function ref lValue, this allows functions to be treated as values
 final class FunctionRef : LValue {
     
     let function: Function

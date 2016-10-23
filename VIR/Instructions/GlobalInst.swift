@@ -62,7 +62,7 @@ extension GlobalValue {
         get { return globalName }
         set { }
     }
-    var vir: String { return "\(name): \(globalType.vir)" }
+    var vir: String { return "\(name): \(globalType.prettyName)" }
     
     static func == (lhs: GlobalValue, rhs: GlobalValue) -> Bool {
         return lhs.globalName == rhs.globalName

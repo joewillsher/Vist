@@ -16,22 +16,45 @@ extension TypeDecl {
             return nil
         }
         
+        return try type.emitImplicitDestructorDecl(module: module, gen: gen)
+    }
+    
+    func emitImplicitCopyConstructorDecl(module: Module, gen: VIRGenFunction) throws -> Function? {
+        
+        // if any of the members need deallocating
+        guard case let type as NominalType = self.type?.importedType(in: module), type.requiresCopyConstruction() else {
+            return nil
+        }
+        
+        return try type.emitImplicitCopyConstructorDecl(module: module, gen: gen)
+    }
+    
+
+}
+
+extension NominalType {
+    
+    func emitImplicitDestructorDef(module: Module, gen: VIRGenFunction) throws -> Function {
+        let fnType = FunctionType(params: [importedType(in: module).ptrType()],
+                                  returns: BuiltinType.void,
+                                  callingConvention: .runtime)
+        let fnName = "destroy".mangle(type: fnType)
+        return try gen.builder.buildFunctionPrototype(name: fnName, type: fnType)
+    }
+    
+    func emitImplicitDestructorDecl(module: Module, gen: VIRGenFunction) throws -> Function {
+        
         let destroyVGF = VIRGenFunction(parent: gen, scope: VIRGenScope(module: module))
         
         let startInsert = destroyVGF.builder.insertPoint
         defer { destroyVGF.builder.insertPoint = startInsert }
         
-        let fnType = FunctionType(params: [type.importedType(in: module).ptrType()],
-                                  returns: BuiltinType.void,
-                                  callingConvention: .runtime)
-        let fnName = "destroy".mangle(type: fnType)
-        let fn = try destroyVGF.builder.buildFunctionPrototype(name: fnName, type: fnType)
+        let fn = try emitImplicitDestructorDef(module: module, gen: destroyVGF)
         try fn.defineBody(params: [(name: "self", convention: .inout)])
-        
         let managedSelf = try fn.param(named: "self").managed(gen: destroyVGF)
         
         // create a call to the custom deinitialiser function, if there is one
-        if let deinitFn = module.type(named: type.name)?.deinitialiser {
+        if let deinitFn = module.type(named: name)?.deinitialiser {
             try destroyVGF.builder.buildFunctionCall(function: deinitFn, args: [Operand(managedSelf.value)])
         }
         
@@ -42,36 +65,37 @@ extension TypeDecl {
         return fn
     }
     
-    func emitImplicitCopyConstructorDecl(module: Module, gen: VIRGenFunction) throws -> Function? {
-        
-        // if any of the members need deallocating
-        guard let type = self.type?.importedType(in: module), type.requiresCopyConstruction() else {
-            return nil
-        }
-        
-        let startInsert = gen.builder.insertPoint
-        defer { gen.builder.insertPoint = startInsert }
-        
-        let fnType = FunctionType(params: [type.importedType(in: module).ptrType(), type.importedType(in: module).ptrType()],
+    func emitImplicitCopyConstructorDef(module: Module, gen: VIRGenFunction) throws -> Function {
+        let fnType = FunctionType(params: [importedType(in: module).ptrType(), importedType(in: module).ptrType()],
                                   returns: BuiltinType.void,
                                   callingConvention: .runtime)
         let fnName = "deepCopy".mangle(type: fnType)
-        let fn = try gen.builder.buildFunctionPrototype(name: fnName, type: fnType)
+        return try gen.builder.buildFunctionPrototype(name: fnName, type: fnType)
+    }
+    func emitImplicitCopyConstructorDecl(module: Module, gen: VIRGenFunction) throws -> Function? {
+        
+        let copyVGF = VIRGenFunction(parent: gen, scope: VIRGenScope(module: module))
+
+        let startInsert = copyVGF.builder.insertPoint
+        defer { copyVGF.builder.insertPoint = startInsert }
+        
+        let fn = try emitImplicitCopyConstructorDef(module: module, gen: copyVGF)
         try fn.defineBody(params: [(name: "self", convention: .inout), (name: "out", convention: .inout)])
         
-        let managedSelf = try fn.param(named: "self").managed(gen: gen)
-        let managedOut = try fn.param(named: "out").managed(gen: gen)
+        let managedSelf = try fn.param(named: "self").managed(gen: copyVGF)
+        let managedOut = try fn.param(named: "out").managed(gen: copyVGF)
         
-        try managedSelf.emitCopyConstruction(into: managedOut, gen: gen)
-        try gen.builder.buildReturnVoid()
+        try managedSelf.emitCopyConstruction(into: managedOut, gen: copyVGF)
+        try copyVGF.builder.buildReturnVoid()
         
         return fn
     }
     
-
+    
 }
 
-extension TypeAlias {
+
+extension ModuleType {
     func isTrivial() -> Bool { return targetType.isTrivial() }
 }
 extension NominalType {

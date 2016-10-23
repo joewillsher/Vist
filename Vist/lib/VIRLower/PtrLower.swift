@@ -48,7 +48,7 @@ extension DestroyAddrInst : VIRLower {
                                              name: irName)
             
         case let type as NominalType where type.isStructType():
-            guard case let modType as TypeAlias = addr.memType, let destructor = modType.destructor else {
+            guard case let modType as ModuleType = addr.memType, let destructor = modType.destructor else {
                 return LLVMValue.nullptr
             }
             
@@ -75,7 +75,7 @@ extension DestroyValInst : VIRLower {
             
         case let type as NominalType where type.isStructType():
             // if it requires a custom deallocator, call that
-            guard case let modType as TypeAlias = val.type, let destructor = modType.destructor else {
+            guard case let modType as ModuleType = val.type, let destructor = modType.destructor else {
                 return LLVMValue.nullptr // if not, we dont emit any destruction IR
             }
             
@@ -111,7 +111,7 @@ extension CopyAddrInst : VIRLower {
         case let type as NominalType where type.isStructType():
             
             // if there is a copy constructor, call into that to init the new mem
-            guard case let modType as TypeAlias = addr.memType, let copyConstructor = modType.copyConstructor else {
+            guard case let modType as ModuleType = addr.memType, let copyConstructor = modType.copyConstructor else {
                 // otheriwse we just do a shallow copy
                 let val = try IGF.builder.buildLoad(from: addr.loweredValue!)
                 try IGF.builder.buildStore(value: val, in: outAddr.loweredValue!)

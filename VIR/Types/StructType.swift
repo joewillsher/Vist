@@ -38,10 +38,10 @@ extension StructType {
     func importedType(in module: Module) -> Type {
         if isHeapAllocated { return refCountedBox(module: module) }
         // add to the module cache
-        return module.getOrInsert(type: TypeAlias(name: name, targetType: importedMemberType(in: module)))
+        return module.getOrInsert(type: ModuleType(name: name, targetType: importedMemberType(in: module)))
     }
     /// Import the members of the struct type. Used by `StructType.importedType(in:)` 
-    /// and `TypeAlias.refCountedBox(module:)` to import the members.
+    /// and `ModuleType.refCountedBox(module:)` to import the members.
     private func importedMemberType(in module: Module) -> StructType {
         // import members
         let mappedEls = members.map { member in
@@ -54,7 +54,7 @@ extension StructType {
         newTy.concepts = concepts
         return newTy
     }
-    func refCountedBox(module: Module) -> TypeAlias {
+    func refCountedBox(module: Module) -> ModuleType {
         return module.getOrInsert(type: ClassType(importedMemberType(in: module)))
     }
     

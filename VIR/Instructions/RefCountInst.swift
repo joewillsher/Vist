@@ -25,7 +25,7 @@ final class AllocObjectInst : Inst, LValue {
         self.irName = irName
     }
     
-    var refType: TypeAlias { return storedType.refCountedBox(module: module) }
+    var refType: ModuleType { return storedType.refCountedBox(module: module) }
     var type: Type? { return memType.map { BuiltinType.pointer(to: $0) } }
     var memType: Type? { return refType }
     

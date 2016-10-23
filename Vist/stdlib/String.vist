@@ -4,52 +4,52 @@
 type UTF8CodeUnit {
     let unit: Builtin.Int8
     
-    init Int = (u) {
+    init Int = (u) do
         unit = Builtin.trunc_int_8 u.value
-    }
 }
 
 type UTF16CodeUnit {
     let unit: Builtin.Int16
     
-    init Int = (u) {
+    init Int = (u) do
         unit = Builtin.trunc_int_16 u.value
-    }
 }
 
 ref type _StringCore {
-    var base: Builtin.OpaquePointer, _capacityAndEncoding: Int
+    var base: Builtin.OpaquePointer, capacityAndEncoding: Int
 
     /// Whether the string has UTF-8 encoding. if true it is a contiguous block of char*
     func isUTF8Encoded:: -> Bool = do
-        return _capacityAndEncoding ~& 1 == 1
+        return capacityAndEncoding ~& 1 == 1
     
     /// The size of the allocated string buffer
     func bufferCapacity:: -> Int = do
-        return _capacityAndEncoding >> 1
+        return capacityAndEncoding >> 1
 
     init Builtin.OpaquePointer Builtin.Int Builtin.Bool = (ptr count isUTF8) {
         base = Builtin.heap_alloc count
         Builtin.mem_copy base ptr count
 
         let c = Int count
-        // store the capacity in the most significant 63 bits of _capacityAndEncoding
+        // store the capacity in the most significant 63 bits of capacityAndEncoding
         let masked = c << 1
         
-        // if it is UTF-8 we store true in the least significant bit of _capacityAndEncoding
-        if Bool isUTF8Encoded do
-             _capacityAndEncoding = masked ~| 1
+        // if it is UTF-8 we store true in the least significant bit of capacityAndEncoding
+        if self.isUTF8Encoded () do
+             capacityAndEncoding = masked ~| 1
         else do
-            _capacityAndEncoding = masked
+            capacityAndEncoding = masked
     }
 
     init _StringCore = {
         base = $0.base
-        _capacityAndEncoding = $0._capacityAndEncoding
+        capacityAndEncoding = $0.capacityAndEncoding
     }
 
-    deinit = do
-        Builtin.free base
+    deinit = {
+        Builtin.heap_free base
+        vist_cshim_print capacityAndEncoding.value
+    }
 }
 
 type String {
@@ -70,7 +70,7 @@ type String {
         // FIXME: we go to the end of the buffer, even if it's not full
         let bufferSize = (_core.bufferCapacity ()) - 1
         while i < bufferSize {
-            yield UTF8CodeUnit (Builtin.opaque_load (_core.codeUnitAtIndex i))
+            yield UTF8CodeUnit (Builtin.opaque_load (self.codeUnitAtIndex i))
             i = i + 1
         }
     }
@@ -81,15 +81,17 @@ type String {
 
 
 @inline func _print :: String = (str) {
-    if str.isUTF8Encoded () {
+    if str._core.isUTF8Encoded () {
         // if its all UTF-8 we can just fwrite the buffer
-        vist_cshim_write str._core.base (str.length ()).value
-        return ()
+        let len = str.length ()
+        vist_cshim_write str._core.base len.value
+	return ()
     } else {
+        vist_cshim_print str._core.capacityAndEncoding.value
         // otherwise we step through, char by char, and putchar it
         for c in str do
             vist_cshim_putchar c.unit
-        return ()
+	return ()
     }
 }
 

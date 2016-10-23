@@ -22,14 +22,14 @@ enum StdLib {
     
     static let utf8CodeUnitType = StructType(members:    [("unit", BuiltinType.int(size: 8), true)],     methods: [], name: "UTF8CodeUnit")
     static let utf16CodeUnitType = StructType(members:   [("unit", BuiltinType.int(size: 8), true)],     methods: [], name: "UTF16CodeUnit")
-    static let stringType = StructType(
+    static let stringCoreType = StructType(
         members:   [
             ("base", BuiltinType.opaquePointer, true),
-            ("length", intType, true),
-            ("_capacityAndEncoding", intType, true)],
+            ("capacityAndEncoding", intType, true)], methods: [], name: "_StringCore", isHeapAllocated: true)
+    static let stringType = StructType(
+        members:   [("_core", stringCoreType, false)],
         methods: [
-            (name: "isUTF8Encoded", type: FunctionType(params: [], returns: boolType), mutating: false),
-            (name: "bufferCapacity", type: FunctionType(params: [], returns: intType), mutating: false),
+            (name: "length", type: FunctionType(params: [], returns: intType), mutating: false),
             (name: "codeUnitAtIndex", type: FunctionType(params: [StdLib.intType], returns: BuiltinType.opaquePointer), mutating: false),
             (name: "generate", type: FunctionType(params: [], returns: BuiltinType.void, yieldType: utf8CodeUnitType), mutating: false),
         ], name: "String")

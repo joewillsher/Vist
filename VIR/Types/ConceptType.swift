@@ -49,7 +49,7 @@ extension ConceptType {
             (memb.name, memb.type.importedType(in: module), memb.isMutable) as StructMember
         }
         let c = ConceptType(name: name, requiredFunctions: fns, requiredProperties: mems)
-        return module.getOrInsert(type: TypeAlias(name: name, targetType: c))
+        return module.getOrInsert(type: ModuleType(name: name, targetType: c))
     }
 
     func machineType() -> AIRType {

@@ -67,6 +67,10 @@ extension BasicBlock {
         instructions.insert(inst, at: instructions.index(after: i))
         inst.parentBlock = self
     }
+    func insert(inst: Inst, at: Inst) throws {
+        instructions.insert(inst, at: try index(of: at))
+        inst.parentBlock = self
+    }
     func append(_ inst: Inst) {
         instructions.append(inst)
         inst.parentBlock = self
@@ -144,7 +148,9 @@ extension BasicBlock {
     
     /// Helper, the index of `inst` in self or throw
     func index(of inst: Inst) throws -> Int {
-        guard let i = instructions.index(where: { $0 === inst }) else { throw VIRError.instNotInBB }
+        guard let i = instructions.index(where: { $0 === inst }) else {
+            throw VIRError.instNotInBB
+        }
         return i
     }
     
@@ -238,7 +244,7 @@ extension Inst {
     /// The predecessor of `self`
     func predecessorOrSelf() -> Inst {
         let v: Inst? = parentBlock.map { parent in
-            guard let x = try? parent.index(of: self) else { return self }
+            guard let x = try? parent.index(of: self), x != parent.instructions.startIndex else { return self }
             return parent.instructions[parent.instructions.index(before: x)]
         }
         return v ?? self

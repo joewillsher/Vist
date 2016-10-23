@@ -77,10 +77,10 @@ extension Operand {
 }
 
 
-/// An operand which stores a reference-backed lvalue
+/// An operand which stores a reference-backed lValue
 final class PtrOperand : Operand {
     
-    /// The stored lvalue
+    /// The stored lValue
     var memType: Type?
     
     convenience init(_ value: LValue) {
@@ -92,11 +92,11 @@ final class PtrOperand : Operand {
     }
     
     override func formCopy(nullValue: Bool = false) -> PtrOperand {
-        return PtrOperand(optionalValue: nullValue ? nil : ((value as? LValue) ?? value.map { try! OpaqueLValue(rvalue: $0) }), memType: memType)
+        return PtrOperand(optionalValue: nullValue ? nil : lValue, memType: memType)
     }
     
-    var lvalue: LValue? {
-        return value as? LValue
+    var lValue: LValue? {
+        return (value as? LValue) ?? value.map { try! OpaqueLValue(rvalue: $0) }
     }
 }
 

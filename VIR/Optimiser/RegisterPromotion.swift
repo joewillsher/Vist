@@ -101,7 +101,7 @@ enum RegisterPromotionPass : OptimisationPass {
             self.alloc = alloc
         }
         
-        var lastStoreInBlock: [BasicBlock: StoreInst] = [:]
+        var lastStoredValueInBlock: [BasicBlock: Value] = [:]
         /// The φ nodes we have placed in blocks
         var placedPhiNodes: [BasicBlock: Param] = [:]
         
@@ -138,11 +138,11 @@ extension RegisterPromotionPass.AllocStackPromoter {
     }
     
     /// - returns: the last stores in each block
-    /// - postcondition: self's `lastStoreInBlock` dictionary is an updated
+    /// - postcondition: self's `lastStoredValueInBlock` dictionary is an updated
     ///                  list of all live uses of `alloc`
     private mutating func pruneAllocUsage() throws {
         for block in alloc.useBlocks {
-            lastStoreInBlock[block] = try promoteAllocation(in: block)
+            lastStoredValueInBlock[block] = try promoteAllocation(in: block)
         }
     }
     
@@ -152,10 +152,10 @@ extension RegisterPromotionPass.AllocStackPromoter {
     /// - returns: the last store inst, which provides the value to
     ///            dominated nodes
     /// - postcondition: there is at most 1 load and store in `block`
-    private func promoteAllocation(in block: BasicBlock) throws -> StoreInst? {
+    private func promoteAllocation(in block: BasicBlock) throws -> Value? {
         
         var runningValue: Value? = nil
-        var lastStore: StoreInst? = nil
+        var lastStore: Inst? = nil
         
         for inst in block.instructions {
             switch inst {
@@ -165,7 +165,7 @@ extension RegisterPromotionPass.AllocStackPromoter {
                     try replaceLoad(loadInst, with: val)
                 }
                 
-            case let storeInst as StoreInst where storeInst.address.value === alloc:
+            case let storeInst as StoreInst where storeInst.address.lValue!.isLValueOrProjection(of: alloc):
                 // this becomes the running val
                 runningValue = storeInst.value.value
                 
@@ -177,12 +177,26 @@ extension RegisterPromotionPass.AllocStackPromoter {
                 // and update it
                 lastStore = storeInst
                 
+            case let copyInst as CopyAddrInst where copyInst.outAddr.lValue!.isLValueOrProjection(of: alloc):
+                // this becomes the running val
+                let load = LoadInst(address: copyInst.addr.lValue!)
+                try copyInst.parentBlock!.insert(inst: load, after: copyInst)
+                runningValue = load
+                
+                // remove the last store
+                if let last = lastStore {
+                    try last.eraseFromParent()
+                    OptStatistics.storesPromotedToPhiUse += 1
+                }
+                // and update it
+                lastStore = copyInst
+                
             default:
                 break
             }
         }
         
-        return lastStore
+        return runningValue
     }
     
     
@@ -204,9 +218,16 @@ extension RegisterPromotionPass.AllocStackPromoter {
         
         // the stores can be removed; their value is being sent to the dominator
         // frontier nodes through the phis already
-        for store in stores() {
-            try store.eraseFromParent()
-            OptStatistics.storesPromotedToPhiUse += 1
+        for mutation in alloc.mutations() {
+            try removeMutation(mutation)
+        }
+        // replace copy_addr use insts (which dont mutate the alloc) with a store of the value
+        // use the live out value of the block, as the copy_addr is the only mutation in
+        // this block
+        for copy in alloc.copyAddrInsts() {
+            let store = try StoreInst(address: copy.outAddr.lValue!, value: getLiveOutValue(of: copy.parentBlock!)!)
+            try copy.parentBlock!.insert(inst: store, after: copy)
+            try copy.eraseFromParent()
         }
         
         // we can erase the alloc inst
@@ -243,21 +264,25 @@ extension RegisterPromotionPass.AllocStackPromoter {
         guard op === alloc else { return }
         
         var v = try value()
+        var p = load.predecessorOrSelf()
         
         for proj in projection {
             switch proj {
             case let gep as StructElementPtrInst:
                 let el = try StructExtractInst(object: v, property: gep.propertyName)
-                try gep.parentBlock!.insert(inst: el, after: gep)
+                try p.parentBlock!.insert(inst: el, at: p)
                 v = el
+                p = el
             case let gep as TupleElementPtrInst:
                 let el = try TupleExtractInst(tuple: v, index: gep.elementIndex)
-                try gep.parentBlock!.insert(inst: el, after: gep)
+                try p.parentBlock!.insert(inst: el, after: p)
                 v = el
+                p = el
             case let addr as VariableAddrInst:
                 let variable = VariableInst(value: v, irName: addr.irName)
-                try addr.parentBlock!.insert(inst: variable, after: addr)
+                try p.parentBlock!.insert(inst: variable, after: p)
                 v = variable
+                p = variable
             default: fatalError()
             }
             if proj.uses.isEmpty { try proj.eraseFromParent() }
@@ -266,6 +291,46 @@ extension RegisterPromotionPass.AllocStackPromoter {
         try load.eraseFromParent(replacingAllUsesWith: v)
         OptStatistics.loadsPromotedToPhiUse += 1
     }
+    
+    /// This removes any mutation of `alloc`, or a projection thereof
+    func removeMutation(_ mutation: Inst) throws {
+        var op: Value
+        switch mutation {
+        case let store as StoreInst: op = store.address.value!
+        case let copy as CopyAddrInst: op = copy.outAddr.value!
+        default: return
+        }
+        var projection: [Inst] = []
+        
+        allocLoop: while !(op is AllocInst) {
+            switch op {
+            case let structElement as StructElementPtrInst:
+                projection.append(structElement)
+                op = structElement.object.value!
+            case let tupleElement as TupleElementPtrInst:
+                projection.append(tupleElement)
+                op = tupleElement.tuple.value!
+            case let addr as VariableAddrInst:
+                projection.append(addr)
+                op = addr.addr.value!
+            default:
+                break allocLoop
+            }
+        }
+        
+        // must be the same memory
+        guard op === alloc else { return }
+        
+        try mutation.eraseFromParent()
+        
+        // walk back through projection, removing it if it is now unused
+        for proj in projection.reversed() {
+            if proj.uses.isEmpty { try proj.eraseFromParent() }
+        }
+        
+        OptStatistics.storesPromotedToPhiUse += 1
+    }
+    
     
     /// Replaces every use of the alloc memory in the iterated join set of the tree with
     /// a phi node variable passed as a block param
@@ -392,8 +457,8 @@ fileprivate extension RegisterPromotionPass.AllocStackPromoter {
             defer { node = currentNode.iDom }
             
             // stores must come after the phi, use that if found
-            if let store = lastStoreInBlock[currentNode.block] {
-                return store.value.value
+            if let value = lastStoredValueInBlock[currentNode.block] {
+                return value
             }
             
             // else if we have a phi node, use that
@@ -412,7 +477,7 @@ fileprivate extension RegisterPromotionPass.AllocStackPromoter {
     /// - note: Each node containing a store (apart from the node with 
     ///         the allocation) is an element N_α
     func sparseNodes() -> Set<DominatorTree.Node> {
-        return Set(stores()
+        return Set(alloc.mutations()
             .map { store in dominatorTree.getNode(for: store.parentBlock!) }
             .filter { node in node.block !== alloc.parentBlock! })
     }
@@ -429,12 +494,14 @@ fileprivate extension RegisterPromotionPass.AllocStackPromoter {
         return alloc.isRegisterPromotable
     }
 }
-private extension Inst {
+private extension Inst where Self : LValue {
     var isRegisterPromotable: Bool {
         for use in uses {
             switch use.user {
             case is LoadInst, is StoreInst, is DeallocStackInst:
                 continue
+            case is CopyAddrInst:
+                guard memType?.isTrivial() ?? false else { return false }
             case is StructElementPtrInst, is TupleElementPtrInst:
                 for use in use.user!.uses {
                     guard use.user is LoadInst else { return false }
@@ -452,11 +519,36 @@ private extension Inst {
             let user = use.user!
             switch user {
             case is VariableAddrInst, is StructElementPtrInst, is TupleElementPtrInst:
-                return [user.parentBlock!] + user.useBlocks
+                let l = user as! LValue & Inst
+                return [l.parentBlock!] + l.useBlocks
             default:
                 return [user.parentBlock!]
             }
             })
+    }
+    /// the values modified by this inst
+    func mutations() -> [Inst] {
+        return uses.map { use -> [Inst] in
+            if case let proj as VariableAddrInst = use.user { return proj.mutations() }
+            if case let s as StoreInst = use.user, s.address.value === self { return [s] }
+            if case let s as CopyAddrInst = use.user, s.outAddr.value === self { return [s] }
+            return []
+        }.flatMap { $0 }
+    }
+    func copyAddrInsts() -> [CopyAddrInst] {
+        return uses.map { use -> [CopyAddrInst] in
+            if case let proj as VariableAddrInst = use.user { return proj.copyAddrInsts() }
+            if case let s as CopyAddrInst = use.user { return [s] }
+            return []
+        }.flatMap { $0 }
+    }
+}
+extension LValue {
+    func isLValueOrProjection(of lval: LValue) -> Bool {
+        if case let v as VariableAddrInst = self {
+            return v.addr.lValue!.isLValueOrProjection(of: lval)
+        }
+        return lval === self
     }
 }
 private extension AllocInst {
