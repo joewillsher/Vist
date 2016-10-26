@@ -70,7 +70,7 @@ extension DestroyValInst : VIRLower {
             let ref = module.getRuntimeFunction(.destroyExistentialBuffer, IGF: &IGF)
             return try IGF.builder.buildCall(function: ref, args: [mem])
             
-        case let type as StructType where type.isHeapAllocated:
+        case let type as StructType where type.isClassType():
             fatalError("Should not be releasing a ref counted object by value")
             
         case let type as NominalType where type.isStructType():

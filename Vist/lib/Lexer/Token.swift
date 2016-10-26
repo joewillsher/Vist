@@ -38,7 +38,7 @@ struct SourceLoc {
 enum Token {
     case `let`, `var`, `func`, `return`, void
     case EOF
-    case `if`, `else`, `for`, `in`, `while`, `do`, yield, the, `as`
+    case `if`, `else`, `for`, `in`, `while`, `do`, yield, the, `as`, `self`
     case ref, type, `init`, `deinit`, `operator`, `concept`
     case assign, sqbrOpen, sqbrClose, comma, period, colon, semicolon, openParen, closeParen, returnArrow, bar, openBrace, closeBrace
     case infixOperator(String), prefixOperator(String), postfixOperator(String)
@@ -49,7 +49,7 @@ enum Token {
     
     var isValidParamToken: Bool {
         switch self {
-        case .identifier, .sqbrOpen, .openParen, .openBrace, .floatingPointLiteral, .integerLiteral, .booleanLiteral, .stringLiteral, .do: return true
+        case .identifier, .sqbrOpen, .openParen, .openBrace, .floatingPointLiteral, .integerLiteral, .booleanLiteral, .stringLiteral, .do, .self: return true
         default: return false
         }
     }
@@ -74,6 +74,7 @@ extension Token : Equatable {
         case (.in, .in): return true
         case (.while, .while): return true
         case (.do, .do): return true
+        case (.self, .self): return true
         case (.yield, .yield): return true
         case (.the, .the): return true
         case (.as, .as): return true

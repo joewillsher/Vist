@@ -186,6 +186,9 @@ extension StringLiteral : ASTPrintable {
 extension FloatingPointLiteral : ASTPrintable {
     static var _astName: String { return "float_literal" }
 }
+extension SelfExpr : ASTPrintable {
+    static var _astName: String { return "self_expr" }
+}
 extension Int : ASTPrintable {
     var _astName_instance: String? { return "\(self)" }
     static var _astName: String { return " " }

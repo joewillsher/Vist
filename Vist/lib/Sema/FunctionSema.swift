@@ -66,7 +66,7 @@ extension FuncDecl : DeclTypeProvider {
         
         // scope return type hint applies to yield and return so use `returnType`
         let scopeName = (scope.name ?? "") + "." + (self.mangledName ?? self.name)
-        let fnScope = SemaScope(parent: scope, returnType: scopeRetType, isYield: isGeneratorFunction, name: scopeName)
+        let fnScope = SemaScope.capturing(scope, overrideReturnType: scopeRetType, isYield: isGeneratorFunction, scopeName: scopeName)
         
         // make surebound list is same length
         guard impl.params.count == ty.params.count || isGeneratorFunction else {
@@ -115,10 +115,18 @@ extension FunctionCallExpr : ExprTypeProvider {
     func typeCheckNode(scope: SemaScope) throws -> Type {
         let fnType = try semaFunctionCall(scope: scope).type
         
-        // we need explicit self, VIRGen cant handle the implicit method call
-        // case just yet
+        // if this fn is an implicit method call on 'self', we form then type check
+        // that subtree, and save it as a member of self. VIRGen must then check
+        // to see if this exists, and emit VIR for it
         if case .method = fnType.callingConvention {
-            throw semaError(.useExplicitSelf(methodName: name))
+            // TODO: would this be better if we could rewrite 'self'?
+            let selfObject = SelfExpr()
+            _ = try selfObject.typeCheckNode(scope: scope)
+            // create a call to the type checked self object
+            let call = MethodCallExpr(name: name, args: args, object: selfObject)
+            let fnType = try call.semaFunctionCall(scope: scope)
+            self.implicitMethodExpr = call
+            return fnType.type.returns
         }
         
         return fnType.returns
@@ -138,7 +146,7 @@ extension FunctionCall {
         // gen types for objects in call
         for (i, arg) in argArr.enumerated() {
             let name = (scope.name ?? "") + self.name + "@" + String(i)
-            let argScope = SemaScope.capturingScope(parent: scope, scopeName: name)
+            let argScope = SemaScope.capturing(scope, scopeName: name)
             argScope.semaContext = nil
             try arg.typeCheckNode(scope: argScope)
         }
@@ -156,7 +164,7 @@ extension FunctionCall {
             where arg is ClosureExpr {
             // rewrite the closure arg types
             let name = (scope.name ?? "") + self.name + "@" + String(i)
-            let argScope = SemaScope.capturingScope(parent: scope, context: argType, scopeName: name)
+            let argScope = SemaScope.capturing(scope, context: argType, scopeName: name)
             try arg.typeCheckNode(scope: argScope)
         }
         
@@ -183,7 +191,7 @@ extension MethodCallExpr : ExprTypeProvider {
         guard case .method(_, let mutatingMethod) = fnType.callingConvention else { throw semaError(.functionNotMethod, userVisible: false) }
         let (baseType, _, allowsMutation) = try object.recursiveType(scope: scope)
         
-        if mutatingMethod, !allowsMutation {
+        if mutatingMethod && !allowsMutation {
             throw semaError(.mutatingMethodOnImmutable(method: name, baseType: baseType.explicitName))
         }
         

@@ -27,6 +27,7 @@ enum SemaError: VistError {
     case functionNotMethod, mutatingMethodOnImmutable(method: String, baseType: String), closureNotFunctionType, noMangledName(unmangled: String)
     case conceptBody(concept: NominalType, function: FuncDecl)
     
+    case selfNonTypeContext
     case unsatisfiableConstraints(constraints: [TypeConstraint]), noConstraints
     case couldNotAddConstraint(constraint: Type, to: Type)
     
@@ -37,7 +38,6 @@ enum SemaError: VistError {
     case typeNotFound, paramsNotTyped, integerNotTyped, boolNotTyped
     case noMemberwiseInit
     
-    case useExplicitSelf(methodName: String)
     case cannotCoerce(from: Type, to: Type), dynamicCastFail(label: String, from: Type, to: Type)
     
     case invalidYield, invalidReturn, notGenerator(Type?)
@@ -126,14 +126,14 @@ enum SemaError: VistError {
             return "Cannot add a 'deinit' to a non 'ref type' '\(type.prettyName)'"
         case .noDeinitBody:
             return "'deinit' must have a body"
+        case .selfNonTypeContext:
+            return "'self' expression is only valid in a type context"
             
         case .cannotInferClosureParamListSize:
             return "Cannot infer the size of a closure parameter list; either specify the type or provide an explicit parameter list"
         case .closureNotFunctionType:
             return "Closure must have a function type"
             
-        case .useExplicitSelf(let name):
-            return "Use explicit self when calling method '\(name)' -- this is a bug"
         case .mutatingMethodOnImmutable(let method, let baseType):
             return "Cannot call mutating method '\(method)' on immutable object of type '\(baseType)'"
         case .noMangledName(let name):

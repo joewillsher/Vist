@@ -19,6 +19,8 @@ final class SemaScope {
     var returnType: Type?, isYield: Bool
     let parent: SemaScope?
     let constraintSolver: ConstraintSolver
+    /// The type of the type decl this lives in
+    var declContext: Type?
     
     var genericParameters: [ConstrainedType]? = nil
     
@@ -111,7 +113,7 @@ final class SemaScope {
         concepts[name] = concept
     }
     
-    init(parent: SemaScope, returnType: Type? = BuiltinType.void, isYield: Bool = false, semaContext: Type? = nil, name: String? = nil) {
+    init(parent: SemaScope, returnType: Type? = BuiltinType.void, isYield: Bool = false, semaContext: Type? = nil, declContext: Type? = nil, name: String? = nil) {
         self.parent = parent
         self.returnType = returnType
         self.semaContext = semaContext
@@ -123,6 +125,7 @@ final class SemaScope {
         self.concepts = [:]
         self.isStdLib = parent.isStdLib
         self.constraintSolver = parent.constraintSolver
+        self.declContext = declContext
     }
     
     // used by the global scope & non capturing static function
@@ -130,6 +133,7 @@ final class SemaScope {
     private init(returnType: Type? = BuiltinType.void,
                  isStdLib: Bool,
                  context: Type? = nil,
+                 declContext: Type? = nil,
                  name: String? = nil,
                  constraintSolver: ConstraintSolver = ConstraintSolver()) {
         self.parent = nil
@@ -143,6 +147,7 @@ final class SemaScope {
         self.concepts = [:]
         self.isStdLib = isStdLib
         self.constraintSolver = constraintSolver
+        self.declContext = declContext
     }
     
     /// Constructs the global SemaScope for a module
@@ -150,25 +155,17 @@ final class SemaScope {
         return SemaScope(isStdLib: isStdLib)
     }
     
-    /// Creates a scope associated with its parent which cannot read from its func, var, & type tables
-    static func nonCapturingScope(parent: SemaScope,
-                                  returnType: Type? = BuiltinType.void,
-                                  isYield: Bool = false,
-                                  context: (context: Type, name: String)? = nil) -> SemaScope {
-        return SemaScope(returnType: returnType,
-                         isStdLib: parent.isStdLib,
-                         context: context?.context,
-                         name: context?.name)
-    }
-    
-    static func capturingScope(parent: SemaScope,
-                               overrideReturnType: Optional<Type?> = nil,
-                               context: Type? = nil,
-                               scopeName: String? = nil) -> SemaScope {
+    static func capturing(_ parent: SemaScope,
+                          overrideReturnType: Optional<Type?> = nil,
+                          context: Type? = nil,
+                          declContext: Type? = nil,
+                          isYield: Bool? = nil,
+                          scopeName: String? = nil) -> SemaScope {
         return SemaScope(parent: parent,
                          returnType: overrideReturnType ?? parent.returnType,
-                         isYield: parent.isYield,
+                         isYield: isYield ?? parent.isYield,
                          semaContext: context ?? parent.semaContext,
+                         declContext: declContext ?? parent.declContext,
                          name: scopeName ?? parent.name)
     }
 }

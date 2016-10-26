@@ -406,9 +406,10 @@ extension RegisterPromotionPass.AllocStackPromoter {
         // - These are the closest nodes which are successors of `node` in the CFG which
         //   are not dominated by node, so they require a parameterised entry
         for phiNode in phis {
-            // construct the φ param
+            // rename
             let name = alloc.unformattedName + ".reg.\(RegisterPromotionPass.AllocStackPromoter.count)"
             RegisterPromotionPass.AllocStackPromoter.count += 1 // FIXME: Hack
+            // construct the φ param
             let phi = Param(paramName: name, type: alloc.memType!)
             phiNode.block.addParam(phi)
             placedPhiNodes[phiNode.block] = phi
@@ -419,8 +420,7 @@ extension RegisterPromotionPass.AllocStackPromoter {
             for application in phi.parentBlock!.applications where !application.breakInst!.hasPhiArg(phi) {
                 let fromBlock = application.breakInst!.parentBlock!
                 try application.breakInst!.addPhi(outgoingVal: getLiveOutValue(of: fromBlock)!,
-                                                  phi: phi,
-                                                  from: fromBlock)
+                                                  phi: phi, from: fromBlock)
             }
         }
     }

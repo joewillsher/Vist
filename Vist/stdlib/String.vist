@@ -21,7 +21,10 @@ ref type _StringCore {
     /// Whether the string has UTF-8 encoding. if true it is a contiguous block of char*
     func isUTF8Encoded:: -> Bool = do
         return capacityAndEncoding ~& 1 == 1
-    
+
+    func elementWidth:: -> Int = do 
+        if isUTF8Encoded () do return 8 else do return 16    
+
     /// The size of the allocated string buffer
     func bufferCapacity:: -> Int = do
         return capacityAndEncoding >> 1
@@ -35,7 +38,7 @@ ref type _StringCore {
         let masked = c << 1
         
         // if it is UTF-8 we store true in the least significant bit of capacityAndEncoding
-        if self.isUTF8Encoded () do
+        if isUTF8Encoded () do
              capacityAndEncoding = masked ~| 1
         else do
             capacityAndEncoding = masked
@@ -46,9 +49,22 @@ ref type _StringCore {
         capacityAndEncoding = $0.capacityAndEncoding
     }
 
-    deinit = {
+    deinit = do
         Builtin.heap_free base
-        vist_cshim_print capacityAndEncoding.value
+    
+    @mutating func setBufferCapacity :: Int = do 
+        capacityAndEncoding = ($0 << 1) ~| (capacityAndEncoding ~& 1)
+
+    @mutating func growBuffer :: Int -> Builtin.OpaquePointer = (size) {
+        let capacity = bufferCapacity ()
+        if capacity < size {
+            let new = Builtin.heap_alloc size.value
+            Builtin.mem_copy base new capacity.value
+            Builtin.heap_free base
+            base = new
+            setBufferCapacity size
+        }
+        return base
     }
 }
 
@@ -70,13 +86,18 @@ type String {
         // FIXME: we go to the end of the buffer, even if it's not full
         let bufferSize = (_core.bufferCapacity ()) - 1
         while i < bufferSize {
-            yield UTF8CodeUnit (Builtin.opaque_load (self.codeUnitAtIndex i))
+            yield UTF8CodeUnit (Builtin.opaque_load (codeUnitAtIndex i))
             i = i + 1
         }
     }
 
     func length :: -> Int = do
         return _core.bufferCapacity ()
+
+    @mutating func append :: String -> String = (other) {
+        // check if the core is singly referenced before mutating
+        
+    }
 }
 
 
@@ -87,7 +108,6 @@ type String {
         vist_cshim_write str._core.base len.value
 	return ()
     } else {
-        vist_cshim_print str._core.capacityAndEncoding.value
         // otherwise we step through, char by char, and putchar it
         for c in str do
             vist_cshim_putchar c.unit

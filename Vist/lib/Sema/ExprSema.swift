@@ -65,6 +65,17 @@ extension VariableExpr : ExprTypeProvider {
     }
 }
 
+extension SelfExpr : ExprTypeProvider {
+    
+    func typeCheckNode(scope: SemaScope) throws -> Type {
+        guard let type = scope.declContext else {
+            throw semaError(.selfNonTypeContext)
+        }
+        self._type = type
+        return type
+    }
+}
+
 
 extension MutationExpr : ExprTypeProvider {
     
@@ -259,7 +270,7 @@ extension ClosureExpr : ExprTypeProvider {
         self.type = ty
         
         // we dont want implicit captutring
-        let innerScope = SemaScope.capturingScope(parent: scope,
+        let innerScope = SemaScope.capturing(scope,
                                                   overrideReturnType: ty.returns)
         innerScope.returnType = ty.returns
         

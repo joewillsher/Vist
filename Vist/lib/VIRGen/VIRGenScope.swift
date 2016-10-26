@@ -9,7 +9,7 @@
 /// A semantic scope, containing the declared vars for
 /// the VIRGen phase.
 final class VIRGenScope {
-    fileprivate(set) var variables: [String: ManagedValue]
+    fileprivate(set) var variables: [VariableKey: ManagedValue]
     private(set) weak var parent: VIRGenScope?
     private unowned var module: Module
     private(set) var function: Function?
@@ -34,7 +34,7 @@ final class VIRGenScope {
         self.breakPoint = breakPoint ?? parent.breakPoint
     }
     /// Create a scope which captures from `parent`
-    static func capturing(parent: VIRGenScope,
+    static func capturing(_ parent: VIRGenScope,
                           function: Function,
                           captureDelegate: CaptureDelegate,
                           breakPoint: VIRBuilder.InsertPoint) -> VIRGenScope {
@@ -44,26 +44,57 @@ final class VIRGenScope {
                      breakPoint: breakPoint)
     }
     
+    enum VariableKey : Hashable {
+        case identifier(String), `self`
+        
+        var hashValue: Int {
+            switch self {
+            case .identifier(let s): return s.hashValue
+            case .self: return 0
+            }
+        }
+        static func == (l: VariableKey, r: VariableKey) -> Bool {
+            switch (l, r) {
+            case (.identifier(let li), .identifier(let ri)): return li == ri
+            case (.self, .self): return true
+            default: return false
+            }
+        }
+        var name: String {
+            switch self {
+            case .identifier(let s): return s
+            case .self: return "self"
+            }
+        }
+    }
+    
 }
 
 extension VIRGenFunction {
-    /// - Returns: The accessor of a variable named `name`
     /// - Note: Updates the capture handler if we read from a parent
     func variable(named name: String) throws -> ManagedValue? {
-        if let v = scope.variables[name] { return v }
+        return try variable(.identifier(name))
+    }
+    /// - Returns: The accessor of a variable named `name`
+    /// - Note: Updates the capture handler if we read from a parent
+    func variable(_ v: VIRGenScope.VariableKey) throws -> ManagedValue? {
+        if let v = scope.variables[v] { return v }
         
-        let foundInParent = try parent?.variable(named: name)
+        let foundInParent = try parent?.variable(v)
         if let f = foundInParent, let handler = scope.captureDelegate {
             // if we have a capture handler, infor that it
             // captures this accessor
-            let accessor = try handler.capture(variable: f, gen: self, name: name)
-            scope.variables[name] = accessor
+            let accessor = try handler.capture(variable: f, identifier: v, gen: self)
+            scope.variables[v] = accessor
             return accessor
         }
         return foundInParent
     }
     func addVariable(_ variable: ManagedValue, name: String) {
-        scope.variables[name] = variable
+        scope.variables[.identifier(name)] = variable
+    }
+    func addVariable(_ variable: ManagedValue, identifier: VIRGenScope.VariableKey) {
+        scope.variables[identifier] = variable
     }
 }
 

@@ -47,7 +47,7 @@ extension TypeDecl {
         guard !types.contains(where: {type in (type is TupleType)}) else {
             return nil
         }
-                
+        
         var initialisations: [ASTNode] = []
         for (i, name) in names.enumerated() {
             let object = VariableExpr(name: name)

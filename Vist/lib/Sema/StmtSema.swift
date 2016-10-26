@@ -10,7 +10,7 @@
 private extension ScopeEscapeStmt {
     func checkScopeEscapeStmt(scope: SemaScope) throws {
         // set the AST context to `scope.returnType`
-        let retScope = SemaScope(parent: scope, semaContext: scope.returnType)
+        let retScope = SemaScope.capturing(scope, overrideReturnType: .some(nil), context: scope.returnType)
         let returnType = try expr.typeCheckNode(scope: retScope)
         
         guard let ret = scope.returnType, ret == returnType else {
@@ -61,7 +61,7 @@ extension ConditionalStmt : StmtTypeProvider {
         // call on child `ElseIfBlockExpressions`
         for statement in statements {
             // inner scopes
-            let ifScope = SemaScope.capturingScope(parent: scope)
+            let ifScope = SemaScope.capturing(scope)
             try statement.typeCheckNode(scope: ifScope)
         }
     }
@@ -73,7 +73,7 @@ extension ElseIfBlockStmt : StmtTypeProvider {
     func typeCheckNode(scope: SemaScope) throws {
         
         // get condition type
-        let blockScope = SemaScope.capturingScope(parent: scope)
+        let blockScope = SemaScope.capturing(scope)
         _ = try condition.typeForPattern(scope: blockScope)
         
         // gen types for cond block
@@ -138,7 +138,7 @@ extension ForInLoopStmt: StmtTypeProvider {
     func typeCheckNode(scope: SemaScope) throws {
         
         // scopes for inner loop
-        let loopScope = SemaScope.capturingScope(parent: scope)
+        let loopScope = SemaScope.capturing(scope)
         let generator = try self.generator.typeCheckNode(scope: scope)
         
         // check its a generator, and the return type is the loop variable type
@@ -169,7 +169,7 @@ extension WhileLoopStmt: StmtTypeProvider {
     func typeCheckNode(scope: SemaScope) throws {
         
         // scopes for inner loop
-        let loopScope = SemaScope.capturingScope(parent: scope)
+        let loopScope = SemaScope.capturing(scope)
         
         // gen types for iterator
         guard try condition.typeCheckNode(scope: scope) == StdLib.boolType else { throw semaError(.nonBooleanCondition) }

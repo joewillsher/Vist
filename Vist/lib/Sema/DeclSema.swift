@@ -11,7 +11,7 @@ extension TypeDecl : ExprTypeProvider {
     func typeCheckNode(scope: SemaScope) throws -> Type {
         
         let errorCollector = ErrorCollector()
-        let structScope = SemaScope.capturingScope(parent: scope, overrideReturnType: nil) // cannot return from Struct scope
+        let structScope = SemaScope.capturing(scope, overrideReturnType: nil) // cannot return from Struct scope
         
         try errorCollector.run {
             // if its a redeclaration, throw (unless we're in the tdlib)
@@ -62,11 +62,12 @@ extension TypeDecl : ExprTypeProvider {
         // Record the (now finalised) type
         scope.addType(ty, name: name)
         self.type = ty
+        structScope.declContext = ty
 
         for method in methods {
             // type check the method bodies
             try errorCollector.run {
-                let declScope = SemaScope(parent: scope)
+                let declScope = SemaScope.capturing(structScope)
                 declScope.genericParameters = method.genericParameters
                 try method.typeCheckNode(scope: declScope)
             }
@@ -125,7 +126,7 @@ extension ConceptDecl : ExprTypeProvider {
     func typeCheckNode(scope: SemaScope) throws -> Type {
         
         // inner concept scope
-        let conceptScope = SemaScope.capturingScope(parent: scope, overrideReturnType: nil)
+        let conceptScope = SemaScope.capturing(scope, overrideReturnType: nil)
         let errorCollector = ErrorCollector()
         
         // type check properties briefly
@@ -169,6 +170,7 @@ extension ConceptDecl : ExprTypeProvider {
         // define the concept
         let ty = ConceptType(name: name, requiredFunctions: methodTypes, requiredProperties: propertyTypes)
         scope.addConcept(ty, name: name)
+        conceptScope.declContext = ty
         
         // fix self references
         for method in requiredMethods {
@@ -208,8 +210,8 @@ extension InitDecl : DeclTypeProvider {
         }
         
         // Do sema on params, body, and expose self and its properties into the scope
-        let initScope = SemaScope(parent: scope)
-        initScope.addVariable(variable: (type: parentType, mutable: true, isImmutableCapture: false), name: "self")
+        let initScope = SemaScope.capturing(scope)
+        initScope.declContext = parentType
         
         // ad scope properties to initScope
         for p in parentProperties {
@@ -245,17 +247,17 @@ extension DeinitDecl : DeclTypeProvider {
         }
         
         // Do sema on params, body, and expose self and its properties into the scope
-        let initScope = SemaScope(parent: scope)
+        let deinitScope = SemaScope.capturing(scope)
         self.mangledName = "deinit".mangle(type: deinitType!)
+        deinitScope.declContext = parentType
         
-        initScope.addVariable(variable: (type: parentType, mutable: true, isImmutableCapture: false), name: "self")
-        // ad scope properties to initScope
+        // ad scope properties to deinitScope
         for p in parentProperties {
-            initScope.addVariable(variable: (type: p.type, mutable: true, isImmutableCapture: false), name: p.name)
+            deinitScope.addVariable(variable: (type: p.type, mutable: true, isImmutableCapture: false), name: p.name)
         }
         
         try impl.body.walkChildren { ex in
-            try ex.typeCheckNode(scope: initScope)
+            try ex.typeCheckNode(scope: deinitScope)
         }
         
     }
@@ -278,7 +280,7 @@ extension VariableDecl : DeclTypeProvider {
         let contextName = (explicitType as? FunctionType).map {
             scopeName.mangle(type: $0) + "." + self.name
         } ?? (scopeName + "." + self.name) // default to the unmangled
-        let declScope = SemaScope.capturingScope(parent: scope,
+        let declScope = SemaScope.capturing(scope,
                                                  overrideReturnType: nil,
                                                  context: explicitType,
                                                  scopeName: contextName)

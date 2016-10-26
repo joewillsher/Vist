@@ -239,6 +239,11 @@ extension FunctionCall/*: ValueEmitter*/ {
         
         let args = try argOperands(module: module, gen: gen)
         
+        // if there is an implicit method call, we emit the VIR for it
+        if case let call as FunctionCallExpr = self, let implicitMethodCall = call.implicitMethodExpr {
+            return try implicitMethodCall.emitRValue(module: module, gen: gen)
+        }
+        
         if let stdlib = try module.getOrInsertStdLibFunction(mangledName: mangledName) {
             return try AnyManagedValue.forUnmanaged(gen.builder.buildFunctionCall(function: stdlib, args: args), gen: gen)
         }
@@ -290,7 +295,7 @@ extension ClosureExpr : ValueEmitter {
         
         // Create the closure to delegate captures
         let closure = Closure.wrapping(function: thunk)
-        let closureScope = VIRGenScope.capturing(parent: gen.scope,
+        let closureScope = VIRGenScope.capturing(gen.scope,
                                                  function: closure.thunk,
                                                  captureDelegate: closure,
                                                  breakPoint: entry)
@@ -349,7 +354,7 @@ extension FuncDecl : StmtEmitter {
             // We need self to be passed by ref as a `RefParam`
             let selfParam = function.params![0] as! RefParam
             let selfVar = Managed<RefParam>.forUnmanaged(selfParam, gen: vgf)
-            vgf.addVariable(selfVar, name: "self")
+            vgf.addVariable(selfVar, identifier: .self)
             
             guard case let type as NominalType = selfType.importedType(in: module) else { fatalError() }
             
@@ -397,16 +402,26 @@ extension FuncDecl : StmtEmitter {
 
 
 extension VariableExpr : LValueEmitter {
-    
     func emitRValue(module: Module, gen: VIRGenFunction) throws -> AnyManagedValue {
         return try gen.variable(named: name)!.unique()
     }
     func emitLValue(module: Module, gen: VIRGenFunction) throws -> AnyManagedValue {
         return try gen.variable(named: name)!.unique()
     }
-    
     func canEmitLValue(module: Module, gen: VIRGenFunction) throws -> Bool {
-        return try gen.variable(named: name)?.isIndirect ?? false
+        return try gen.variable(named: name)!.isIndirect
+    }
+}
+
+extension SelfExpr : LValueEmitter {
+    func emitRValue(module: Module, gen: VIRGenFunction) throws -> AnyManagedValue {
+        return try gen.variable(.self)!.unique()
+    }
+    func emitLValue(module: Module, gen: VIRGenFunction) throws -> AnyManagedValue {
+        return try gen.variable(.self)!.unique()
+    }
+    func canEmitLValue(module: Module, gen: VIRGenFunction) throws -> Bool {
+        return try gen.variable(.self)!.isIndirect
     }
 }
 
@@ -609,12 +624,9 @@ extension ConditionalStmt : StmtEmitter {
             
             let isLast = branch === statements.last
             
-            let backedgeBlock = isLast ?
-                exitBlock :
+            let backedgeBlock = isLast ? exitBlock :
                 try gen.builder.appendBasicBlock(name: "\(base)false\(index)")
-            if !isLast {
-                try exitBlock.move(after: backedgeBlock)
-            }
+            if !isLast { try exitBlock.move(after: backedgeBlock) }
             
             // move into the if block, and evaluate its expressions
             // in a new scope
@@ -654,7 +666,7 @@ extension ConditionalStmt : StmtEmitter {
                                                fail: (block: backedgeBlock, args: nil))
                 gen.builder.insertPoint.block = bodyBlock
                 
-            default:
+            case .none: // an else block
                 break
             }
             
@@ -730,7 +742,7 @@ extension ForInLoopStmt : StmtEmitter {
         // make the semantic scope for the loop
         // if the scope captures from the parent, it goes through a global variable
         let loopClosure = Closure.wrapping(function: loopThunk), generatorClosure = Closure.wrapping(function: generatorFunction)
-        let loopScope = VIRGenScope.capturing(parent: gen.scope,
+        let loopScope = VIRGenScope.capturing(gen.scope,
                                               function: loopClosure.thunk,
                                               captureDelegate: loopClosure,
                                               breakPoint: gen.builder.insertPoint)
@@ -895,9 +907,8 @@ extension InitDecl : StmtEmitter {
         let fnScope = VIRGenScope(parent: gen.scope, function: function)
         let fnVGF = VIRGenFunction(parent: gen, scope: fnScope)
         
-        var selfVal: AnyManagedValue
-        var selfAccessor: AnyManagedValue
-
+        var selfVal: AnyManagedValue, selfAccessor: AnyManagedValue
+        
         if selfType.isHeapAllocated {
             // no cleanup as it will escape the scope
             selfVal = try fnVGF.builder.buildManaged(AllocObjectInst(memType: selfType, irName: "storage"),
@@ -912,7 +923,7 @@ extension InitDecl : StmtEmitter {
         }
         
         // add self
-        fnVGF.addVariable(selfVal, name: "self")
+        fnVGF.addVariable(selfVal, identifier: .self)
         // add self’s elements into the scope, whose accessors are elements of selfvar
         for member in selfType.members {
             let structElement = try fnVGF.builder.buildUnmanagedLValue(StructElementPtrInst(object: selfAccessor.lValue,
@@ -973,15 +984,13 @@ extension DeinitDecl : StmtEmitter {
         
         let selfVal = try function.param(named: "self").managed(gen: fnVGF, hasCleanup: false)
         // if self is heap allocated, member accesses must use the stored instance ptr
-        let selfAccessor: AnyManagedValue
-        if selfType.isHeapAllocated {
-            selfAccessor = try fnVGF.builder.buildUnmanagedLValue(ClassProjectInstanceInst(object: selfVal.lValue, irName: "storage.raw"),
-                                                                  gen: fnVGF).erased
-        }
-        else { selfAccessor = selfVal }
+        let selfAccessor = selfType.isHeapAllocated ?
+            try fnVGF.builder.buildUnmanagedLValue(ClassProjectInstanceInst(object: selfVal.lValue, irName: "storage.raw"),
+                                                   gen: fnVGF).erased :
+            selfVal.erased
         
         // add self
-        fnVGF.addVariable(selfVal, name: "self")
+        fnVGF.addVariable(selfVal, identifier: .self)
         // add self’s elements into the scope, whose accessors are elements of selfvar
         for member in selfType.members {
             let structElement = try fnVGF.builder.buildUnmanagedLValue(StructElementPtrInst(object: selfAccessor.lValue,

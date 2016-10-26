@@ -481,6 +481,10 @@ extension Parser {
         return try parseChainableExpr(base: VariableExpr(name: name))
     }
 
+    fileprivate func parseSelf() throws -> Expr {
+        try consume(.self)
+        return try parseChainableExpr(base: SelfExpr())
+    }
     
     private func parseChainableExpr<Chainable : ChainableExpr>(base: Chainable) throws -> Expr {
         
@@ -566,6 +570,9 @@ extension Parser {
         switch currentToken {
         case .identifier:
             return try parseIdentifier()
+            
+        case .self:
+            return try parseSelf()
             
         case .prefixOperator(let op):
             consumeToken()
@@ -1274,6 +1281,7 @@ extension Parser {
         case .identifier:         return try parseIdentifier()
         case .comment(let str):   return try parseCommentExpr(str: str)
         case .if:                 return try parseIfStmt()
+        case .self:               return try parseSelf()
         case .for:                return try parseForInLoopStmt()
         case .do:                 return try parseBracelessDoExpr()
         case .while:              return try parseWhileLoopStmt()

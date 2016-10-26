@@ -155,6 +155,10 @@ final class VariableExpr : ChainableExpr {
     var _type: Type? = nil
 }
 
+final class SelfExpr : ChainableExpr {
+    var _type: Type? = nil
+}
+
 /// An expression which can be chained with other ChainableExprs
 /// for example:
 /// `let val = foo.0.bar[1] = baz.val 12`
@@ -275,6 +279,8 @@ final class FunctionCallExpr : Expr, FunctionCall {
         self.args = args
         self.mangledName = name
     }
+    
+    var implicitMethodExpr: MethodCallExpr? = nil
     
     var mangledName: String
     var argArr: [Expr] { return args.elements }
