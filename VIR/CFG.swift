@@ -21,31 +21,113 @@ enum CFGFoldPass : OptimisationPass {
         // the CFG below, we invalidate this tree and start again
         for block in function.dominator.analysis.reversed() {
             // First we remove any unconditional, conditional breaks
-            for case let condBreakInst as CondBreakInst in block.instructions {
+            instLoop: for case let inst as BreakInstruction in block.instructions {
                 
-                guard case let literal as BoolLiteralInst = condBreakInst.condition.value else { continue }
+                let cond: Bool
                 
-                let toBlock = literal.value ?
-                    condBreakInst.thenCall.block : condBreakInst.elseCall.block
-                let unreachableBlock = literal.value ?
-                    condBreakInst.elseCall.block : condBreakInst.thenCall.block
-                let args = literal.value ?
-                    condBreakInst.thenCall.args : condBreakInst.elseCall.args
+                let toBlock: BasicBlock
+                let unreachableBlock: BasicBlock
+                let args: [BlockOperand]?
                 
-                let sourceBlock = condBreakInst.parentBlock!
+                let sourceBlock = inst.parentBlock!
+
+                switch inst {
+                case let condBreakInst as CondBreakInst:
+                    guard case let literal as BoolLiteralInst = condBreakInst.condition.value else { continue }
+                    
+                    cond = literal.value
+                    toBlock = cond ?
+                        condBreakInst.thenCall.block : condBreakInst.elseCall.block
+                    unreachableBlock = cond ?
+                        condBreakInst.elseCall.block : condBreakInst.thenCall.block
+                    args = literal.value ?
+                        condBreakInst.thenCall.args : condBreakInst.elseCall.args
+                    
+                    try literal.eraseFromParent()
+                    
+                    let br = BreakInst(call: (block: toBlock, args: args))
+                    try sourceBlock.insert(inst: br, after: inst)
+                    
+                    try toBlock.removeApplication(break: inst)
+                    try unreachableBlock.removeApplication(break: inst)
+                    try toBlock.addApplication(from: sourceBlock, args: args, breakInst: br)
+                    
+                    try inst.eraseFromParent(replacingAllUsesWith: br)
+                    
+                    function.dominator.invalidate()
+                    OptStatistics.condBreakChecksRemoved += 1
+                    
+                case let castBreakInst as CheckedCastBreakInst:
+                    
+                    let val: Value?
+                    
+                    switch (castBreakInst.val.memType?.getConcreteNominalType(), castBreakInst.targetType.getConcreteNominalType()) {
+                    case (let structType as StructType, let targetStructType as StructType):
+                        cond = structType == targetStructType
+                        val = castBreakInst.val.value
+                        
+                    case (let structType as StructType, let concept as ConceptType):
+                        cond = structType.models(concept: concept)
+                        val = castBreakInst.val.value
+                        
+                    case (is ConceptType, let structType as StructType):
+                        guard case let const as ExistentialConstructInst = castBreakInst.val.value else {
+                            continue instLoop
+                        }
+                        
+                        cond = const.value.value?.type?.getBasePointeeType() == structType
+                        val = cond ? const.value.value : nil
+                        
+                    case (is ConceptType, let targetConceptType as ConceptType):
+                        continue instLoop // TODO
+                    default:
+                        fatalError()
+                    }
+                    
+                    toBlock = cond ?
+                        castBreakInst.successCall.block : castBreakInst.failCall.block
+                    unreachableBlock = cond ?
+                        castBreakInst.failCall.block : castBreakInst.successCall.block
+                    args = cond ?
+                        castBreakInst.successCall.args : castBreakInst.failCall.args
+                    
+                    if cond {
+                        let mem: LValue
+                        if val!.type!.isPointerType() {
+                            mem = val as! LValue
+                        } else {
+                            let alloc = AllocInst(memType: castBreakInst.successVariable.type!.getBasePointeeType())
+                            let st = StoreInst(address: alloc, value: val!)
+                            try sourceBlock.insert(inst: st, at: castBreakInst)
+                            try sourceBlock.insert(inst: alloc, at: st)
+                            mem = alloc
+                        }
+                        castBreakInst.successVariable.replaceAllUses(with: mem)
+                        // remove success block params
+                        toBlock.parameters?.removeFirst()
+                        if toBlock.parameters?.isEmpty ?? false {
+                            toBlock.parameters = nil
+                        }
+                    }
+                    
+                    let br = BreakInst(call: (block: toBlock, args: args))
+                    try sourceBlock.insert(inst: br, after: inst)
+                    
+                    try toBlock.removeApplication(break: inst)
+                    try unreachableBlock.removeApplication(break: inst)
+                    // create normal application to target block
+                    try toBlock.addApplication(from: sourceBlock, args: args, breakInst: br)
+                    
+                    try inst.eraseFromParent(replacingAllUsesWith: br)
+                    
+                    function.dominator.invalidate()
+                    OptStatistics.condBreakChecksRemoved += 1
+                    
+                default:
+                    continue instLoop
+                }
                 
-                let br = BreakInst(call: (block: toBlock, args: args))
-                try sourceBlock.insert(inst: br, after: condBreakInst)
                 
-                try toBlock.removeApplication(break: condBreakInst)
-                try unreachableBlock.removeApplication(break: condBreakInst)
-                try toBlock.addApplication(from: sourceBlock, args: args, breakInst: br)
-                
-                try literal.eraseFromParent()
-                try condBreakInst.eraseFromParent(replacingAllUsesWith: br)
-                
-                function.dominator.invalidate()
-                OptStatistics.condBreakChecksRemoved += 1
             }
         }
         

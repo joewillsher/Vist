@@ -19,12 +19,26 @@ enum DCEPass : OptimisationPass {
         try function.blocks?.forEach(UnreachableRemovePass.run(on:))
 
         for block in function.dominator.analysis.reversed() {
-            for inst in block.instructions.reversed() where
-                inst.uses.isEmpty && !inst.hasSideEffects {
+            for inst in block.instructions.reversed() where inst.canBeRemoved() {
                     try inst.eraseFromParent()
                     OptStatistics.deadInstructionsRemoved += 1
+                for use in inst.uses {
+                    try use.user?.eraseFromParent()
+                }
             }
         }
+    }
+}
+
+private extension Inst {
+    func canBeRemoved() -> Bool {
+        if hasSideEffects {
+            return false
+        }
+        for use in uses {
+            guard use.user is DeallocStackInst || use.user is DestroyAddrInst else { return false }
+        }
+        return true
     }
 }
 

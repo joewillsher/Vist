@@ -52,7 +52,7 @@ final class ExistentialProjectPropertyInst : Inst, LValue {
     var irName: String?
 }
 
-/// Constructing an existential box from a struct.
+/// Constructing an existential box from a conforming instance.
 ///
 /// When lowered it calculates the metadata for offsets and constructs
 /// the struct's witness table

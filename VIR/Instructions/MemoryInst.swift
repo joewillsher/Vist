@@ -154,7 +154,7 @@ final class BitcastInst : Inst, LValue {
     }
     
     var vir: String {
-        return "\(name) = bitcast \(address.valueName) to \(pointerType.explicitName)\(useComment)"
+        return "\(name) = bitcast \(address.valueName) to #\(pointerType.explicitName)\(useComment)"
     }
     
     func copy() -> BitcastInst {
