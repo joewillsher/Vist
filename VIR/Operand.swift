@@ -36,7 +36,7 @@ class Operand : VIRTyped {
         value?.removeUse(self)
     }
     
-    final private(set) var loweredValue: LLVMValue? = nil
+    final fileprivate(set) var loweredValue: LLVMValue? = nil
     /// Set the LLVM value for uses of this operand
     func setLoweredValue(_ val: LLVMValue) {
         loweredValue = val

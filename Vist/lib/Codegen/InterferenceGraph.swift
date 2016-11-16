@@ -44,7 +44,7 @@ extension IGMove : Hashable {
     }
     var hashValue: Int {
         let ordered = [src.hashValue, dest.hashValue].sorted(by: <)
-        let mask = sizeof(Int.self)*4
+        let mask = MemoryLayout<Int>.size*4
         return (ordered[0] << mask) + (ordered[1] & (Int.max >> mask))
     }
 }

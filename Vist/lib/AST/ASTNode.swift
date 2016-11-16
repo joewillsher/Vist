@@ -67,7 +67,7 @@ extension Typed {
             }
             else {
                 if newValue == nil { fatalError("new value nil") }
-                fatalError("associated type requirement specifies `\(Type.self)` type. provided value was `\(newValue.dynamicType)`")
+                fatalError("associated type requirement specifies `\(Type.self)` type. provided value was `\(type(of: newValue))`")
             }
         }
     }

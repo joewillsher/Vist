@@ -83,7 +83,7 @@ extension Param {
     // param has no params so a copy is clean
     func copy() -> Self {
         assert(phi == nil) // cannot copy if we are in VIRLower
-        return self.dynamicType.init(paramName: paramName, type: type!, convention: convention)
+        return type(of: self).init(paramName: paramName, type: type!, convention: convention)
     }
 }
 

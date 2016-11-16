@@ -139,20 +139,20 @@ extension NominalType {
                 .map (UnsafeMutablePointer.allocInit(value:))
         }
         
-        let utf8 = UnsafePointer<Int8>(Array(name.nulTerminatedUTF8).copyBuffer())
+        let utf8 = UnsafePointer<Int8>(name.cString(using: .utf8)!.copyBuffer())
         let c = conformances.copyBuffer()
         let size = instanceRawType(module: module).size(unit: .bytes, IGF: IGF)
         
         let destructor = module.type(named: name)!.destructor?
             .buildFunctionPointer().loweredValue?
-            ._value.map(UnsafeMutablePointer<Void>.init)
+            ._value.map(UnsafeMutableRawPointer.init)
         let deiniaialiser = module.type(named: name)!.deinitialiser?
             .buildFunctionPointer().loweredValue?
-            ._value.map(UnsafeMutablePointer<Void>.init)
+            ._value.map(UnsafeMutableRawPointer.init)
         // releases a class instance
         let copyConstructor = module.type(named: name)!.copyConstructor?
             .buildFunctionPointer().loweredValue?
-            ._value.map(UnsafeMutablePointer<Void>.init)
+            ._value.map(UnsafeMutableRawPointer.init)
         
         let md = TypeMetadata(conceptConformanceArr: c,
                               conceptConformanceArrCount: Int32(conformances.count),
@@ -231,7 +231,7 @@ extension Array {
     func copyBuffer() -> UnsafeMutablePointer<Element> {
         return withUnsafeBufferPointer { buffer in
             let b = UnsafeMutablePointer<Element>.allocate(capacity: count)
-            b.assign(from: UnsafeMutablePointer(buffer.baseAddress!), count: count)
+            b.assign(from: UnsafeMutablePointer(mutating: buffer.baseAddress!), count: count)
             return b
         }
     }
@@ -256,7 +256,7 @@ private extension ConceptType {
         return try requiredFunctions
             .map { methodName, _, _ in
                 let val = try table.getWitness(name: methodName, module: module).loweredValue!._value!
-                return Witness(witness: UnsafeMutablePointer<Void>(val))
+                return Witness(witness: UnsafeMutableRawPointer(val))
             }
     }
     

@@ -183,8 +183,6 @@
 		D4728BE81C960E22003294B0 /* Folding.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4728BE61C960E22003294B0 /* Folding.swift */; };
 		D47748351D4770680079B8C5 /* CFG.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47748341D4770680079B8C5 /* CFG.swift */; };
 		D47748361D4770680079B8C5 /* CFG.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47748341D4770680079B8C5 /* CFG.swift */; };
-		D48837D11D758EE200E50B18 /* Demangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D48837D01D758EE200E50B18 /* Demangle.cpp */; };
-		D48837D21D758EE300E50B18 /* Demangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D48837D01D758EE200E50B18 /* Demangle.cpp */; };
 		D48837D71D771BB400E50B18 /* CopyElision.swift in Sources */ = {isa = PBXBuildFile; fileRef = D48837D61D771BB400E50B18 /* CopyElision.swift */; };
 		D48837D81D771BB400E50B18 /* CopyElision.swift in Sources */ = {isa = PBXBuildFile; fileRef = D48837D61D771BB400E50B18 /* CopyElision.swift */; };
 		D488C2421D405942000735DA /* Verify.swift in Sources */ = {isa = PBXBuildFile; fileRef = D488C2411D405942000735DA /* Verify.swift */; };
@@ -898,7 +896,7 @@
 			attributes = {
 				LastSwiftMigration = 0730;
 				LastSwiftUpdateCheck = 0730;
-				LastUpgradeCheck = 0800;
+				LastUpgradeCheck = 0810;
 				ORGANIZATIONNAME = vistlang;
 				TargetAttributes = {
 					D41BF5491C5CD797004A1962 = {
@@ -987,7 +985,6 @@
 				D43B3A3F1C8A10C80039FB2E /* Mangle.swift in Sources */,
 				D4A0002B1CCA7EFA00157D90 /* ExistentialLower.swift in Sources */,
 				D43B3A291C8A10A50039FB2E /* Builtin.swift in Sources */,
-				D48837D21D758EE300E50B18 /* Demangle.cpp in Sources */,
 				D43B3A0D1C8A104F0039FB2E /* ParseError.swift in Sources */,
 				D4326E3F1CA6F0140016E595 /* ExistentialInst.swift in Sources */,
 				D43B39DF1C8A0F3A0039FB2E /* ReturnInst.swift in Sources */,
@@ -1090,7 +1087,6 @@
 				D43B39991C8A0EDF0039FB2E /* Module.swift in Sources */,
 				D43B39D81C8A0F3A0039FB2E /* BuiltinInst.swift in Sources */,
 				D43B39B21C8A0F140039FB2E /* FunctionType.swift in Sources */,
-				D48837D11D758EE200E50B18 /* Demangle.cpp in Sources */,
 				D43B39BC1C8A0F140039FB2E /* Type.swift in Sources */,
 				D4AE8D671D609CAA00E2D480 /* Analysis.swift in Sources */,
 				D48837D71D771BB400E50B18 /* CopyElision.swift in Sources */,
@@ -1207,6 +1203,9 @@
 		D41BF5501C5CD797004A1962 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
+				CLANG_ENABLE_MODULES = NO;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -1215,10 +1214,13 @@
 					__STDC_LIMIT_MACROS,
 					__STDC_FORMAT_MACROS,
 				);
-				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
+				HEADER_SEARCH_PATHS = (
+					"$(SOURCE_ROOT)/llvm/llvm/include",
+					"$(SOURCE_ROOT)/llvm/build/include",
+				);
 				INFOPLIST_FILE = Tests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				LIBRARY_SEARCH_PATHS = /usr/local/opt/llvm/lib;
+				LIBRARY_SEARCH_PATHS = "$(SOURCE_ROOT)/llvm/build/lib";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-Wall",
@@ -1248,7 +1250,139 @@
 					"-UNDEBUG",
 				);
 				OTHER_LDFLAGS = (
-					"-std=c++11\n-lcurses\n-lLLVMLTO\n-lLLVMObjCARCOpts\n-lLLVMLinker\n-lLLVMBitWriter\n-lLLVMIRReader\n-lLLVMAsmParser\n-lLLVMXCoreDisassembler\n-lLLVMXCoreCodeGen\n-lLLVMXCoreDesc\n-lLLVMXCoreInfo\n-lLLVMXCoreAsmPrinter\n-lLLVMSystemZDisassembler\n-lLLVMSystemZCodeGen\n-lLLVMSystemZAsmParser\n-lLLVMSystemZDesc\n-lLLVMSystemZInfo\n-lLLVMSystemZAsmPrinter\n-lLLVMSparcDisassembler\n-lLLVMSparcCodeGen\n-lLLVMSparcAsmParser\n-lLLVMSparcDesc\n-lLLVMSparcInfo\n-lLLVMSparcAsmPrinter\n-lLLVMR600CodeGen\n-lLLVMipo\n-lLLVMVectorize\n-lLLVMR600AsmParser\n-lLLVMR600Desc\n-lLLVMR600Info\n-lLLVMR600AsmPrinter\n-lLLVMPowerPCDisassembler\n-lLLVMPowerPCCodeGen\n-lLLVMPowerPCAsmParser\n-lLLVMPowerPCDesc\n-lLLVMPowerPCInfo\n-lLLVMPowerPCAsmPrinter\n-lLLVMNVPTXCodeGen\n-lLLVMNVPTXDesc\n-lLLVMNVPTXInfo\n-lLLVMNVPTXAsmPrinter\n-lLLVMMSP430CodeGen\n-lLLVMMSP430Desc\n-lLLVMMSP430Info\n-lLLVMMSP430AsmPrinter\n-lLLVMMipsDisassembler\n-lLLVMMipsCodeGen\n-lLLVMMipsAsmParser\n-lLLVMMipsDesc\n-lLLVMMipsInfo\n-lLLVMMipsAsmPrinter\n-lLLVMHexagonDisassembler\n-lLLVMHexagonCodeGen\n-lLLVMHexagonDesc\n-lLLVMHexagonInfo\n-lLLVMCppBackendCodeGen\n-lLLVMCppBackendInfo\n-lLLVMARMDisassembler\n-lLLVMARMCodeGen\n-lLLVMARMAsmParser\n-lLLVMARMDesc\n-lLLVMARMInfo\n-lLLVMARMAsmPrinter\n-lLLVMAArch64Disassembler\n-lLLVMAArch64CodeGen\n-lLLVMAArch64AsmParser\n-lLLVMAArch64Desc\n-lLLVMAArch64Info\n-lLLVMAArch64AsmPrinter\n-lLLVMAArch64Utils\n-lLLVMTableGen\n-lLLVMDebugInfo\n-lLLVMOption\n-lLLVMX86Disassembler\n-lLLVMX86AsmParser\n-lLLVMX86CodeGen\n-lLLVMSelectionDAG\n-lLLVMAsmPrinter\n-lLLVMX86Desc\n-lLLVMMCDisassembler\n-lLLVMX86Info\n-lLLVMX86AsmPrinter\n-lLLVMX86Utils\n-lLLVMMCJIT\n-lLLVMLineEditor\n-lLLVMInstrumentation\n-lLLVMInterpreter\n-lLLVMExecutionEngine\n-lLLVMRuntimeDyld\n-lLLVMCodeGen\n-lLLVMScalarOpts\n-lLLVMProfileData\n-lLLVMObject\n-lLLVMMCParser\n-lLLVMBitReader\n-lLLVMInstCombine\n-lLLVMTransformUtils\n-lLLVMipa\n-lLLVMAnalysis\n-lLLVMTarget\n-lLLVMMC\n-lLLVMCore\n-lLLVMSupport\n-fPIC\n-fvisibility-inlines-hidden\n-Wl,-search_paths_first\n-Wl,-headerpad_max_install_names\n-lclangAnalysis\n-lclangARCMigrate\n-lclangAST\n-lclangASTMatchers\n-lclangBasic\n-lclangCodeGen\n-lclangDriver\n-lclangDynamicASTMatchers\n-lclangEdit\n-lclangFormat\n-lclangFrontend\n-lclangFrontendTool\n-lclangIndex\n-lclangLex\n-lclangParse\n-lclangRewrite\n-lclangRewriteFrontend\n-lclangSema\n-lclangSerialization\n-lclangStaticAnalyzerCheckers\n-lclangStaticAnalyzerCore\n-lclangStaticAnalyzerFrontend\n-lclangTooling\n-lclangToolingCore",
+					"-std=c++11",
+					"-lcurses",
+					"-lLLVMLTO",
+					"-lLLVMObjCARCOpts",
+					"-lLLVMLinker",
+					"-lLLVMBitWriter",
+					"-lLLVMIRReader",
+					"-lLLVMAsmParser",
+					"-lLLVMXCoreDisassembler",
+					"-lLLVMXCoreCodeGen",
+					"-lLLVMXCoreDesc",
+					"-lLLVMXCoreInfo",
+					"-lLLVMXCoreAsmPrinter",
+					"-lLLVMSystemZDisassembler",
+					"-lLLVMSystemZCodeGen",
+					"-lLLVMSystemZAsmParser",
+					"-lLLVMSystemZDesc",
+					"-lLLVMSystemZInfo",
+					"-lLLVMSystemZAsmPrinter",
+					"-lLLVMSparcDisassembler",
+					"-lLLVMSparcCodeGen",
+					"-lLLVMSparcAsmParser",
+					"-lLLVMSparcDesc",
+					"-lLLVMSparcInfo",
+					"-lLLVMSparcAsmPrinter",
+					"-lLLVMR600CodeGen",
+					"-lLLVMipo",
+					"-lLLVMVectorize",
+					"-lLLVMR600AsmParser",
+					"-lLLVMR600Desc",
+					"-lLLVMR600Info",
+					"-lLLVMR600AsmPrinter",
+					"-lLLVMPowerPCDisassembler",
+					"-lLLVMPowerPCCodeGen",
+					"-lLLVMPowerPCAsmParser",
+					"-lLLVMPowerPCDesc",
+					"-lLLVMPowerPCInfo",
+					"-lLLVMPowerPCAsmPrinter",
+					"-lLLVMNVPTXCodeGen",
+					"-lLLVMNVPTXDesc",
+					"-lLLVMNVPTXInfo",
+					"-lLLVMNVPTXAsmPrinter",
+					"-lLLVMMSP430CodeGen",
+					"-lLLVMMSP430Desc",
+					"-lLLVMMSP430Info",
+					"-lLLVMMSP430AsmPrinter",
+					"-lLLVMMipsDisassembler",
+					"-lLLVMMipsCodeGen",
+					"-lLLVMMipsAsmParser",
+					"-lLLVMMipsDesc",
+					"-lLLVMMipsInfo",
+					"-lLLVMMipsAsmPrinter",
+					"-lLLVMHexagonDisassembler",
+					"-lLLVMHexagonCodeGen",
+					"-lLLVMHexagonDesc",
+					"-lLLVMHexagonInfo",
+					"-lLLVMCppBackendCodeGen",
+					"-lLLVMCppBackendInfo",
+					"-lLLVMARMDisassembler",
+					"-lLLVMARMCodeGen",
+					"-lLLVMARMAsmParser",
+					"-lLLVMARMDesc",
+					"-lLLVMARMInfo",
+					"-lLLVMARMAsmPrinter",
+					"-lLLVMAArch64Disassembler",
+					"-lLLVMAArch64CodeGen",
+					"-lLLVMAArch64AsmParser",
+					"-lLLVMAArch64Desc",
+					"-lLLVMAArch64Info",
+					"-lLLVMAArch64AsmPrinter",
+					"-lLLVMAArch64Utils",
+					"-lLLVMTableGen",
+					"-lLLVMDebugInfo",
+					"-lLLVMOption",
+					"-lLLVMX86Disassembler",
+					"-lLLVMX86AsmParser",
+					"-lLLVMX86CodeGen",
+					"-lLLVMSelectionDAG",
+					"-lLLVMAsmPrinter",
+					"-lLLVMX86Desc",
+					"-lLLVMMCDisassembler",
+					"-lLLVMX86Info",
+					"-lLLVMX86AsmPrinter",
+					"-lLLVMX86Utils",
+					"-lLLVMMCJIT",
+					"-lLLVMLineEditor",
+					"-lLLVMInstrumentation",
+					"-lLLVMInterpreter",
+					"-lLLVMExecutionEngine",
+					"-lLLVMRuntimeDyld",
+					"-lLLVMCodeGen",
+					"-lLLVMScalarOpts",
+					"-lLLVMProfileData",
+					"-lLLVMObject",
+					"-lLLVMMCParser",
+					"-lLLVMBitReader",
+					"-lLLVMInstCombine",
+					"-lLLVMTransformUtils",
+					"-lLLVMipa",
+					"-lLLVMAnalysis",
+					"-lLLVMTarget",
+					"-lLLVMMC",
+					"-lLLVMCore",
+					"-lLLVMSupport",
+					"-fPIC",
+					"-fvisibility-inlines-hidden",
+					"-Wl,-search_paths_first",
+					"-Wl,-headerpad_max_install_names",
+					"-lclangAnalysis",
+					"-lclangARCMigrate",
+					"-lclangAST",
+					"-lclangASTMatchers",
+					"-lclangBasic",
+					"-lclangCodeGen",
+					"-lclangDriver",
+					"-lclangDynamicASTMatchers",
+					"-lclangEdit",
+					"-lclangFormat",
+					"-lclangFrontend",
+					"-lclangFrontendTool",
+					"-lclangIndex",
+					"-lclangLex",
+					"-lclangParse",
+					"-lclangRewrite",
+					"-lclangRewriteFrontend",
+					"-lclangSema",
+					"-lclangSerialization",
+					"-lclangStaticAnalyzerCheckers",
+					"-lclangStaticAnalyzerCore",
+					"-lclangStaticAnalyzerFrontend",
+					"-lclangTooling",
+					"-lclangToolingCore",
+					"-lm",
 				);
 				OTHER_SWIFT_FLAGS = "-DDEBUG -DTEST";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.vist-lang.Tests";
@@ -1261,6 +1395,9 @@
 		D41BF5511C5CD797004A1962 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
+				CLANG_ENABLE_MODULES = NO;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -1269,10 +1406,13 @@
 					__STDC_LIMIT_MACROS,
 					__STDC_FORMAT_MACROS,
 				);
-				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
+				HEADER_SEARCH_PATHS = (
+					"$(SOURCE_ROOT)/llvm/llvm/include",
+					"$(SOURCE_ROOT)/llvm/build/include",
+				);
 				INFOPLIST_FILE = Tests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				LIBRARY_SEARCH_PATHS = /usr/local/opt/llvm/lib;
+				LIBRARY_SEARCH_PATHS = "$(SOURCE_ROOT)/llvm/build/lib";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-Wall",
@@ -1302,7 +1442,139 @@
 					"-UNDEBUG",
 				);
 				OTHER_LDFLAGS = (
-					"-std=c++11\n-lcurses\n-lLLVMLTO\n-lLLVMObjCARCOpts\n-lLLVMLinker\n-lLLVMBitWriter\n-lLLVMIRReader\n-lLLVMAsmParser\n-lLLVMXCoreDisassembler\n-lLLVMXCoreCodeGen\n-lLLVMXCoreDesc\n-lLLVMXCoreInfo\n-lLLVMXCoreAsmPrinter\n-lLLVMSystemZDisassembler\n-lLLVMSystemZCodeGen\n-lLLVMSystemZAsmParser\n-lLLVMSystemZDesc\n-lLLVMSystemZInfo\n-lLLVMSystemZAsmPrinter\n-lLLVMSparcDisassembler\n-lLLVMSparcCodeGen\n-lLLVMSparcAsmParser\n-lLLVMSparcDesc\n-lLLVMSparcInfo\n-lLLVMSparcAsmPrinter\n-lLLVMR600CodeGen\n-lLLVMipo\n-lLLVMVectorize\n-lLLVMR600AsmParser\n-lLLVMR600Desc\n-lLLVMR600Info\n-lLLVMR600AsmPrinter\n-lLLVMPowerPCDisassembler\n-lLLVMPowerPCCodeGen\n-lLLVMPowerPCAsmParser\n-lLLVMPowerPCDesc\n-lLLVMPowerPCInfo\n-lLLVMPowerPCAsmPrinter\n-lLLVMNVPTXCodeGen\n-lLLVMNVPTXDesc\n-lLLVMNVPTXInfo\n-lLLVMNVPTXAsmPrinter\n-lLLVMMSP430CodeGen\n-lLLVMMSP430Desc\n-lLLVMMSP430Info\n-lLLVMMSP430AsmPrinter\n-lLLVMMipsDisassembler\n-lLLVMMipsCodeGen\n-lLLVMMipsAsmParser\n-lLLVMMipsDesc\n-lLLVMMipsInfo\n-lLLVMMipsAsmPrinter\n-lLLVMHexagonDisassembler\n-lLLVMHexagonCodeGen\n-lLLVMHexagonDesc\n-lLLVMHexagonInfo\n-lLLVMCppBackendCodeGen\n-lLLVMCppBackendInfo\n-lLLVMARMDisassembler\n-lLLVMARMCodeGen\n-lLLVMARMAsmParser\n-lLLVMARMDesc\n-lLLVMARMInfo\n-lLLVMARMAsmPrinter\n-lLLVMAArch64Disassembler\n-lLLVMAArch64CodeGen\n-lLLVMAArch64AsmParser\n-lLLVMAArch64Desc\n-lLLVMAArch64Info\n-lLLVMAArch64AsmPrinter\n-lLLVMAArch64Utils\n-lLLVMTableGen\n-lLLVMDebugInfo\n-lLLVMOption\n-lLLVMX86Disassembler\n-lLLVMX86AsmParser\n-lLLVMX86CodeGen\n-lLLVMSelectionDAG\n-lLLVMAsmPrinter\n-lLLVMX86Desc\n-lLLVMMCDisassembler\n-lLLVMX86Info\n-lLLVMX86AsmPrinter\n-lLLVMX86Utils\n-lLLVMMCJIT\n-lLLVMLineEditor\n-lLLVMInstrumentation\n-lLLVMInterpreter\n-lLLVMExecutionEngine\n-lLLVMRuntimeDyld\n-lLLVMCodeGen\n-lLLVMScalarOpts\n-lLLVMProfileData\n-lLLVMObject\n-lLLVMMCParser\n-lLLVMBitReader\n-lLLVMInstCombine\n-lLLVMTransformUtils\n-lLLVMipa\n-lLLVMAnalysis\n-lLLVMTarget\n-lLLVMMC\n-lLLVMCore\n-lLLVMSupport\n-fPIC\n-fvisibility-inlines-hidden\n-Wl,-search_paths_first\n-Wl,-headerpad_max_install_names\n-lclangAnalysis\n-lclangARCMigrate\n-lclangAST\n-lclangASTMatchers\n-lclangBasic\n-lclangCodeGen\n-lclangDriver\n-lclangDynamicASTMatchers\n-lclangEdit\n-lclangFormat\n-lclangFrontend\n-lclangFrontendTool\n-lclangIndex\n-lclangLex\n-lclangParse\n-lclangRewrite\n-lclangRewriteFrontend\n-lclangSema\n-lclangSerialization\n-lclangStaticAnalyzerCheckers\n-lclangStaticAnalyzerCore\n-lclangStaticAnalyzerFrontend\n-lclangTooling\n-lclangToolingCore",
+					"-std=c++11",
+					"-lcurses",
+					"-lLLVMLTO",
+					"-lLLVMObjCARCOpts",
+					"-lLLVMLinker",
+					"-lLLVMBitWriter",
+					"-lLLVMIRReader",
+					"-lLLVMAsmParser",
+					"-lLLVMXCoreDisassembler",
+					"-lLLVMXCoreCodeGen",
+					"-lLLVMXCoreDesc",
+					"-lLLVMXCoreInfo",
+					"-lLLVMXCoreAsmPrinter",
+					"-lLLVMSystemZDisassembler",
+					"-lLLVMSystemZCodeGen",
+					"-lLLVMSystemZAsmParser",
+					"-lLLVMSystemZDesc",
+					"-lLLVMSystemZInfo",
+					"-lLLVMSystemZAsmPrinter",
+					"-lLLVMSparcDisassembler",
+					"-lLLVMSparcCodeGen",
+					"-lLLVMSparcAsmParser",
+					"-lLLVMSparcDesc",
+					"-lLLVMSparcInfo",
+					"-lLLVMSparcAsmPrinter",
+					"-lLLVMR600CodeGen",
+					"-lLLVMipo",
+					"-lLLVMVectorize",
+					"-lLLVMR600AsmParser",
+					"-lLLVMR600Desc",
+					"-lLLVMR600Info",
+					"-lLLVMR600AsmPrinter",
+					"-lLLVMPowerPCDisassembler",
+					"-lLLVMPowerPCCodeGen",
+					"-lLLVMPowerPCAsmParser",
+					"-lLLVMPowerPCDesc",
+					"-lLLVMPowerPCInfo",
+					"-lLLVMPowerPCAsmPrinter",
+					"-lLLVMNVPTXCodeGen",
+					"-lLLVMNVPTXDesc",
+					"-lLLVMNVPTXInfo",
+					"-lLLVMNVPTXAsmPrinter",
+					"-lLLVMMSP430CodeGen",
+					"-lLLVMMSP430Desc",
+					"-lLLVMMSP430Info",
+					"-lLLVMMSP430AsmPrinter",
+					"-lLLVMMipsDisassembler",
+					"-lLLVMMipsCodeGen",
+					"-lLLVMMipsAsmParser",
+					"-lLLVMMipsDesc",
+					"-lLLVMMipsInfo",
+					"-lLLVMMipsAsmPrinter",
+					"-lLLVMHexagonDisassembler",
+					"-lLLVMHexagonCodeGen",
+					"-lLLVMHexagonDesc",
+					"-lLLVMHexagonInfo",
+					"-lLLVMCppBackendCodeGen",
+					"-lLLVMCppBackendInfo",
+					"-lLLVMARMDisassembler",
+					"-lLLVMARMCodeGen",
+					"-lLLVMARMAsmParser",
+					"-lLLVMARMDesc",
+					"-lLLVMARMInfo",
+					"-lLLVMARMAsmPrinter",
+					"-lLLVMAArch64Disassembler",
+					"-lLLVMAArch64CodeGen",
+					"-lLLVMAArch64AsmParser",
+					"-lLLVMAArch64Desc",
+					"-lLLVMAArch64Info",
+					"-lLLVMAArch64AsmPrinter",
+					"-lLLVMAArch64Utils",
+					"-lLLVMTableGen",
+					"-lLLVMDebugInfo",
+					"-lLLVMOption",
+					"-lLLVMX86Disassembler",
+					"-lLLVMX86AsmParser",
+					"-lLLVMX86CodeGen",
+					"-lLLVMSelectionDAG",
+					"-lLLVMAsmPrinter",
+					"-lLLVMX86Desc",
+					"-lLLVMMCDisassembler",
+					"-lLLVMX86Info",
+					"-lLLVMX86AsmPrinter",
+					"-lLLVMX86Utils",
+					"-lLLVMMCJIT",
+					"-lLLVMLineEditor",
+					"-lLLVMInstrumentation",
+					"-lLLVMInterpreter",
+					"-lLLVMExecutionEngine",
+					"-lLLVMRuntimeDyld",
+					"-lLLVMCodeGen",
+					"-lLLVMScalarOpts",
+					"-lLLVMProfileData",
+					"-lLLVMObject",
+					"-lLLVMMCParser",
+					"-lLLVMBitReader",
+					"-lLLVMInstCombine",
+					"-lLLVMTransformUtils",
+					"-lLLVMipa",
+					"-lLLVMAnalysis",
+					"-lLLVMTarget",
+					"-lLLVMMC",
+					"-lLLVMCore",
+					"-lLLVMSupport",
+					"-fPIC",
+					"-fvisibility-inlines-hidden",
+					"-Wl,-search_paths_first",
+					"-Wl,-headerpad_max_install_names",
+					"-lclangAnalysis",
+					"-lclangARCMigrate",
+					"-lclangAST",
+					"-lclangASTMatchers",
+					"-lclangBasic",
+					"-lclangCodeGen",
+					"-lclangDriver",
+					"-lclangDynamicASTMatchers",
+					"-lclangEdit",
+					"-lclangFormat",
+					"-lclangFrontend",
+					"-lclangFrontendTool",
+					"-lclangIndex",
+					"-lclangLex",
+					"-lclangParse",
+					"-lclangRewrite",
+					"-lclangRewriteFrontend",
+					"-lclangSema",
+					"-lclangSerialization",
+					"-lclangStaticAnalyzerCheckers",
+					"-lclangStaticAnalyzerCore",
+					"-lclangStaticAnalyzerFrontend",
+					"-lclangTooling",
+					"-lclangToolingCore",
+					"-lm",
 				);
 				OTHER_SWIFT_FLAGS = "-DRELEASE -DTEST";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.vist-lang.Tests";
@@ -1326,8 +1598,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
@@ -1369,8 +1643,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
@@ -1396,9 +1672,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
-				CLANG_ENABLE_MODULES = YES;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = NO;
 				DEFINES_MODULE = YES;
 				ENABLE_TESTABILITY = YES;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					__STDC_CONSTANT_MACROS,
 					__STDC_LIMIT_MACROS,
@@ -1417,14 +1697,14 @@
 					"-fno-exceptions",
 					"-fno-rtti",
 					"-target",
-					"x86_64-apple-macosx10.9",
+					"x86_64-apple-macosx10.12",
 					"-isysroot",
-					/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk,
+					/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk,
 					"-arch",
 					x86_64,
 					"-F",
-					/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/../../../Developer/Library/Frameworks,
-					"-mmacosx-version-min=10.9",
+					/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/../../../Developer/Library/Frameworks,
+					"-mmacosx-version-min=10.12",
 					"-UNDEBUG",
 					"-DSOURCE_ROOT=\\\"$SRCROOT\\\"",
 				);
@@ -1482,7 +1762,7 @@
 				STRIP_INSTALLED_PRODUCT = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/Vist/lib/Include/Vist-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 3.0.1;
 				SYMROOT = build;
 				USER_HEADER_SEARCH_PATHS = "";
 				VALID_ARCHS = x86_64;
@@ -1493,9 +1773,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
-				CLANG_ENABLE_MODULES = YES;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = NO;
 				DEFINES_MODULE = YES;
 				ENABLE_TESTABILITY = YES;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					__STDC_CONSTANT_MACROS,
 					__STDC_LIMIT_MACROS,
@@ -1514,14 +1798,14 @@
 					"-fno-exceptions",
 					"-fno-rtti",
 					"-target",
-					"x86_64-apple-macosx10.9",
+					"x86_64-apple-macosx10.12",
 					"-isysroot",
-					/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk,
+					/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk,
 					"-arch",
 					x86_64,
 					"-F",
-					/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/../../../Developer/Library/Frameworks,
-					"-mmacosx-version-min=10.9",
+					/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/../../../Developer/Library/Frameworks,
+					"-mmacosx-version-min=10.12",
 					"-UNDEBUG",
 					"-DSOURCE_ROOT=\\\"$SRCROOT\\\"",
 				);
@@ -1579,7 +1863,7 @@
 				STRIP_INSTALLED_PRODUCT = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/Vist/lib/Include/Vist-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 3.0.1;
 				SYMROOT = build;
 				USER_HEADER_SEARCH_PATHS = "";
 				VALID_ARCHS = x86_64;

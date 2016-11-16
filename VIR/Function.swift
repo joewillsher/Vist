@@ -14,9 +14,9 @@ final class Function : VIRElement {
     /// The cannonical type
     var type: FunctionType
     /// A function body. If nil this function is a prototype
-    private var body: FunctionBody?
+    fileprivate var body: FunctionBody?
     
-    private unowned var parentModule: Module
+    fileprivate unowned var parentModule: Module
     var uses: [Operand] = []
     
     // Attrs
@@ -24,7 +24,7 @@ final class Function : VIRElement {
     var inlineRequirement: InlineRequirement = .default
     var attributes: Attributes = []
     
-    private(set) var globalLifetimes: [GlobalValue.Lifetime] = []
+    fileprivate(set) var globalLifetimes: [GlobalValue.Lifetime] = []
     
     /// Dominator analysis
     lazy var dominator: Analysis<DominatorTree> = { [unowned self] in Analysis<DominatorTree>(self) }()
@@ -45,7 +45,7 @@ final class Function : VIRElement {
     
     var hasHadInline : Bool = false
     
-    private init(name: String, type: FunctionType, module: Module) {
+    fileprivate init(name: String, type: FunctionType, module: Module) {
         self.name = name
         self.parentModule = module
         self.type = type
@@ -57,14 +57,14 @@ final class Function : VIRElement {
         /// The block self is a member of
         unowned let parentFunction: Function
         
-        private init(params: [Param], parentFunction: Function, blocks: [BasicBlock]) {
+        fileprivate init(params: [Param], parentFunction: Function, blocks: [BasicBlock]) {
             self.params = params
             self.parentFunction = parentFunction
             self.blocks = blocks
         }
         
         /// The index of `block` in `self`’s block list
-        private func index(of block: BasicBlock) throws -> Int {
+        fileprivate func index(of block: BasicBlock) throws -> Int {
             if let index = blocks.index(where: {$0 === block}) { return index } else { throw VIRError.bbNotInFn }
         }
     }
@@ -143,7 +143,7 @@ extension Function {
     var lastBlock: BasicBlock? { return body?.blocks.last }
     
     /// The index of `block` in `self`’s block list
-    private func index(of block: BasicBlock) throws -> Int {
+    fileprivate func index(of block: BasicBlock) throws -> Int {
         if let body = body { return try body.index(of: block) } else { throw VIRError.bbNotInFn }
     }
     
@@ -161,7 +161,7 @@ extension Function {
     }
     
     /// Apply AST attributes to set linkage, inline status, and attrs
-    private func applyAttributes(attrs: [FunctionAttributeExpr]) {
+    fileprivate func applyAttributes(attrs: [FunctionAttributeExpr]) {
         // linkage
         if attrs.contains(.private) { visibility = .private }
         else if attrs.contains(.public) { visibility = .public }
@@ -228,7 +228,7 @@ final class FunctionRef : LValue {
     
     let function: Function
     
-    private init(toFunction function: Function, parentBlock: BasicBlock? = nil) {
+    fileprivate init(toFunction function: Function, parentBlock: BasicBlock? = nil) {
         self.function = function
         self.parentBlock = parentBlock
         self.irName = function.name

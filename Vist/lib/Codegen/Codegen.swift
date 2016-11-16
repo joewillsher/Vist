@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-import class Foundation.Task
+import class Foundation.Process
 
 private extension MCFunction {
     

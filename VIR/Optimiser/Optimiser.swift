@@ -31,6 +31,7 @@ struct PassManager {
             try create(pass: StrengthReductionPass.self, runOn: function)
             try create(pass: CFGFoldPass.self, runOn: function)
             try create(pass: DCEPass.self, runOn: function)
+            try create(pass: ARCSimplifyPass.self, runOn: function)
             try create(pass: RegisterPromotionPass.self, runOn: function)
         }
         

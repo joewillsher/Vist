@@ -83,7 +83,7 @@ final class SelectionDAG {
     var precoloured: [AIRRegisterHash: TargetRegister] = [:]
     
     /// used in construction
-    private var chainNode: DAGNode!
+    fileprivate var chainNode: DAGNode!
     
     init(builder: AIRBuilder, target: TargetMachine.Type) {
         self.entryNode = DAGNode(op: .entry)

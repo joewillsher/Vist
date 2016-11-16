@@ -50,9 +50,9 @@ extension Function {
                         throw VIRVerifierError.crossFunctionArg(inst: user, arg: inst, otherFn: inst.parentFunction)
                     }
                     assert(use.user != nil,
-                           "\(inst.valueName) : \(inst.dynamicType) has a null user")
+                           "\(inst.valueName) : \(type(of: inst)) has a null user")
                     assert(use.user?.parentFunction == self,
-                           "\(inst.valueName) : \(inst.dynamicType) is referenced from another function ('\(use.user?.parentFunction?.name ?? "nil")')")
+                           "\(inst.valueName) : \(type(of: inst)) is referenced from another function ('\(use.user?.parentFunction?.name ?? "nil")')")
                 }
             }
             

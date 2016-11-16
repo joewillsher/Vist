@@ -225,8 +225,10 @@ inst ::= builtin-inst
 builtin-inst ::= 'builtin' builtin-name operand-list
 builtin-inst ::= 'cond_fail' operand
 
-builtin-name ::= 'i_add' | 'i_sub' | 'i_mul' | 'i_div' | 'i_rem' | 'i_eq' | 'i_neq' | 'b_eq' | 'b_neq' | 'i_add_unchecked' | 'i_mul_unchecked' | 'i_pow' | 'i_cmp_lte' | 'i_cmp_gte' | 'i_cmp_lt' | 'i_cmp_gt' | 'i_shl' | 'i_shr' | 'i_and' | 'i_or' | 'i_xor' | 'b_and' | 'b_or' | 'b_not' | 'expect' | 'trap' | 'stack_alloc' | 'heap_alloc' | 'heap_free' | 'mem_copy' | 'opaque_store' | 'advance_pointer' | 'opaque_load' | 'f_add' | 'f_sub' | 'f_mul' | 'f_div' | 'f_rem' | 'f_eq' | 'f_neq' | 'f_cmp_lte' | 'f_cmp_gte' | 'f_cmp_lt' | 'f_cmp_gt' | 'trunc_int_8' | 'trunc_int_16' | 'trunc_int_32' | 'with_ptr'
+builtin-name ::= 'i_add' | 'i_sub' | 'i_mul' | 'i_div' | 'i_rem' | 'i_eq' | 'i_neq' | 'b_eq' | 'b_neq' | 'i_add_unchecked' | 'i_mul_unchecked' | 'i_pow' | 'i_cmp_lte' | 'i_cmp_gte' | 'i_cmp_lt' | 'i_cmp_gt' | 'i_shl' | 'i_shr' | 'i_and' | 'i_or' | 'i_xor' | 'b_and' | 'b_or' | 'b_not' | 'expect' | 'trap' | 'stack_alloc' | 'heap_alloc' | 'heap_free' | 'mem_copy' | 'opaque_store' | 'advance_pointer' | 'opaque_load' | 'f_add' | 'f_sub' | 'f_mul' | 'f_div' | 'f_rem' | 'f_eq' | 'f_neq' | 'f_cmp_lte' | 'f_cmp_gte' | 'f_cmp_lt' | 'f_cmp_gt' | 'trunc_int_8' | 'trunc_int_16' | 'trunc_int_32' | 'with_ptr' | 'is_uniquely_referenced'
 ```
+
+The `cond_fail` inst traps if the bool value is true.
 
 #### AllocObjectInst
 

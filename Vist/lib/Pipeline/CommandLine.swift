@@ -11,6 +11,7 @@ import class Foundation.NumberFormatter
 import CoreFoundation.CFDate
 import class Foundation.NSString
 import struct Foundation.URL
+import class Foundation.NSNumber
 
 public func compile(withFlags flags: [String], inDirectory dir: String, out: URL? = nil) throws {
     
@@ -103,7 +104,7 @@ public func compile(withFlags flags: [String], inDirectory dir: String, out: URL
             let f = NumberFormatter()
             f.maximumFractionDigits = 2
             f.minimumFractionDigits = 2
-            print("\nCompile took: \(f.string(from: CFAbsoluteTimeGetCurrent() - s)!)s")
+            print("\nCompile took: \(f.string(from: CFAbsoluteTimeGetCurrent() - s as NSNumber)!)s")
         #endif
     }
     

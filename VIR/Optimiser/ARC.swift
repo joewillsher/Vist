@@ -15,5 +15,8 @@ enum ARCSimplifyPass : OptimisationPass {
     
     static func run(on: Function) throws {
         
+        // create graph of uses of the ref type, look for interferences and 
+        // annotate only the needed retain/releases, then try to pair up the rest
+        
     }
 }

@@ -8,26 +8,18 @@
 
 #include "CreateType.hpp"
 
-#include "LLVM.h"
-
-#include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/Value.h"
 #include "llvm/IR/Module.h"
-#include "llvm/IR/Intrinsics.h"
-#include "llvm/Target/TargetIntrinsicInfo.h"
-#include "llvm/Target/TargetMachine.h"
-#include "llvm/Target/TargetOptions.h"
 #include "llvm/ADT/ArrayRef.h"
-#include "llvm/IR/LLVMContext.h"
 
 using namespace llvm;
 
 
-Type *getNamedType(StringRef name, Module *module) {
+Type * _Nullable getNamedType(StringRef name, Module *module) {
     return module->getTypeByName(name);
 }
 
-Type *createNamedType(Type *type, StringRef name) {
+Type * _Nullable createNamedType(Type *type, StringRef name) {
     
     std::vector<Type *> els;
     for (unsigned i = 0; i < type->getStructNumElements(); ++i) {
@@ -41,7 +33,7 @@ _Nullable LLVMTypeRef getNamedType(const char * _Nonnull name, LLVMModuleRef _No
     return wrap(getNamedType(StringRef(name), unwrap(module)));
 }
 
-LLVMTypeRef createNamedType(LLVMTypeRef _Nonnull type, const char * _Nonnull name) {
+_Nullable LLVMTypeRef createNamedType(LLVMTypeRef _Nonnull type, const char * _Nonnull name) {
     return wrap(createNamedType(unwrap(type), name));
 }
 

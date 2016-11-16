@@ -79,6 +79,7 @@ struct Builtin {
         ("Builtin.heap_free", FunctionType(params: [opaquePointerType], returns: voidType)),
         
         ("Builtin.with_ptr", FunctionType(params: [StdLib.anyConcept], returns: opaquePointerType)),
+        ("Builtin.is_uniquely_referenced", FunctionType(params: [StdLib.anyConcept], returns: boolType)),
         
         ("Builtin.trunc_int_8", FunctionType(params: [intType], returns: int8Type)),
         ("Builtin.trunc_int_8", FunctionType(params: [int32Type], returns: int8Type)),

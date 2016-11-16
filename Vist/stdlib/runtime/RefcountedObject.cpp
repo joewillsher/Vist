@@ -84,16 +84,19 @@ void vist_retainObject(RefcountedObject *_Nonnull object) {
 #endif
 };
 
+// note: fns below operate on the ref count - 1, because the object is retained
+//       when passing into these functions
+
 /// Get the ref count
 RUNTIME_COMPILER_INTERFACE
 uint64_t vist_getObjectRefcount(RefcountedObject *_Nonnull object) {
-    return (uint64_t)object->refCount;
+    return (uint64_t)object->refCount - 1;
 };
 
 /// Check if the object is singly referenced
 RUNTIME_COMPILER_INTERFACE
 bool vist_objectHasUniqueReference(RefcountedObject *_Nonnull object) {
-    return object->refCount == 1;
+    return object->refCount == 2;
 };
 
 

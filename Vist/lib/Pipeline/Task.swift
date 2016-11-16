@@ -6,7 +6,8 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-import class Foundation.Task
+import class Foundation.Process
+
 
 enum Exec: String {
     /// Clang: llvm frontend for c, c++, ir
@@ -21,14 +22,14 @@ enum Exec: String {
     case llc = "/usr/local/Cellar/llvm/3.8.1/bin/llc"
 }
 
-extension Task {
-    class func execute(execName exec: String, files: [String], outputName: String? = nil, cwd: String, args: [String]) {
+extension Process {
+    static func execute(execName exec: String, files: [String], outputName: String? = nil, cwd: String, args: [String]) {
         
         var a = args
         if let n = outputName { a.append(contentsOf: ["-o", n]) }
         a.append(contentsOf: files)
         
-        let task = Task()
+        let task = Process()
         task.currentDirectoryPath = cwd
         task.launchPath = exec
         task.arguments = a
@@ -36,8 +37,8 @@ extension Task {
         task.launch()
         task.waitUntilExit()
     }
-    class func execute(exec: Exec, files: [String], outputName: String? = nil, cwd: String, args: String...) {
-        Task.execute(execName: exec.rawValue, files: files, outputName: outputName, cwd: cwd, args: args)
+    static func execute(exec: Exec, files: [String], outputName: String? = nil, cwd: String, args: String...) {
+        Process.execute(execName: exec.rawValue, files: files, outputName: outputName, cwd: cwd, args: args)
     }
 }
 

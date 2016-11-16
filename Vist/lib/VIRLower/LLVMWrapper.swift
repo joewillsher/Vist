@@ -6,7 +6,7 @@
 //  Copyright © 2016 vistlang. All rights reserved.
 //
 
-import class Foundation.Task
+import class Foundation.Process
 
 private protocol Dumpable {
     func dump()
@@ -35,11 +35,11 @@ enum LLVMError : VistError {
 
 
 struct LLVMBuilder {
-    private var builder: LLVMBuilderRef? = nil
+    fileprivate var builder: LLVMBuilderRef? = nil
 //    var metadata: Set<RuntimeObject> = []
     
     init() { builder = LLVMCreateBuilder() }
-    private init(ref: LLVMBuilderRef) { builder = ref }
+    fileprivate init(ref: LLVMBuilderRef) { builder = ref }
 }
 extension LLVMBuilder {
     
@@ -69,7 +69,7 @@ extension LLVMBuilder {
 extension LLVMBuilder {
     
     /// Wraps a LLVM function and checks the builder
-    private func wrap(_ val: @autoclosure () throws -> LLVMValueRef) throws -> LLVMValue {
+    fileprivate func wrap(_ val: @autoclosure () throws -> LLVMValueRef) throws -> LLVMValue {
         #if DEBUG
             guard builder != nil else { throw error(NullLLVMRef()) }
         #endif
@@ -340,7 +340,7 @@ struct LLVMBasicBlock : Dumpable, Hashable {
         LLVMMoveBasicBlockBefore(block, other.block)
     }
     
-    private func dump() { LLVMDumpValue(block) }
+    func dump() { LLVMDumpValue(block) }
     
     var hashValue: Int { return block.hashValue }
     static func == (l: LLVMBasicBlock, r: LLVMBasicBlock) -> Bool {
@@ -357,7 +357,7 @@ struct LLVMBasicBlock : Dumpable, Hashable {
 /// Any indirectly stored `RuntimeVariable`s are lowered to a global LLVMValue.
 /// `GlobalMetadataCache` stores the globals which have been generated
 struct GlobalMetadataCache {
-    private var cachedGlobals: [UnsafeMutablePointer<Void>: LLVMGlobalValue] = [:]
+    fileprivate var cachedGlobals: [UnsafeMutableRawPointer: LLVMGlobalValue] = [:]
 }
 
 /// A collection which iterates over a module's linked list of functions
@@ -366,7 +366,7 @@ final class FunctionsSequence : Sequence {
     
     private var function: LLVMValueRef?
     
-    private init(function: LLVMValueRef) { self.function = function }
+    fileprivate init(function: LLVMValueRef) { self.function = function }
     
     typealias Iterator = AnyIterator<LLVMFunction>
     
@@ -449,7 +449,7 @@ struct LLVMModule : Dumpable {
         nonmutating set { LLVMSetTarget(module, newValue) }
     }
     
-    mutating func createLLVMGlobal<T>(forPointer value: UnsafeMutablePointer<T>, baseName: String, IGF: inout IRGenFunction, module: Module) throws -> LLVMGlobalValue {
+    mutating func createLLVMGlobal(forPointer value: UnsafeMutableRawPointer, baseName: String, IGF: inout IRGenFunction, module: Module) throws -> LLVMGlobalValue {
         if let global = globals.cachedGlobals[value] {
             return global
         }
@@ -460,7 +460,7 @@ struct LLVMModule : Dumpable {
     }
     
     /// Add a LLVM global value to the module
-    mutating func createGlobal(value: LLVMValue, forPtr: UnsafeMutablePointer<Void>?, baseName: String, IGF: inout IRGenFunction) -> LLVMGlobalValue {
+    mutating func createGlobal(value: LLVMValue, forPtr: UnsafeMutableRawPointer?, baseName: String, IGF: inout IRGenFunction) -> LLVMGlobalValue {
         let global = LLVMGlobalValue(module: IGF.module, type: value.type, name: baseName)
         global.initialiser = value
         global.isConstant = true
@@ -568,7 +568,7 @@ struct LLVMValue : Dumpable, Hashable {
         return LLVMBasicBlock(ref: LLVMGetInstructionParent(_value))
     }
     
-    private func val() throws -> LLVMValueRef? {
+    fileprivate func val() throws -> LLVMValueRef? {
         guard let v = _value else { throw NullLLVMRef() }
         return v
     }
@@ -681,7 +681,7 @@ struct LLVMGlobalValue : Dumpable {
         return value.type
     }
     
-    private func dump() { value.dump() }
+    func dump() { value.dump() }
 }
 
 
@@ -717,8 +717,8 @@ struct LLVMFunction : Dumpable {
         )
     }
     
-    var unsafePointer: UnsafeMutablePointer<Void>? {
-        return UnsafeMutablePointer(function._value)
+    var unsafePointer: UnsafeMutableRawPointer? {
+        return UnsafeMutableRawPointer(UnsafeMutablePointer(function._value))
     }
     
     var paramCount: Int { return try! Int(LLVMCountParams(function.val())) }

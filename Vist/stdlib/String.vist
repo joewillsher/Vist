@@ -92,11 +92,28 @@ type String {
     }
 
     func length :: -> Int = do
-        return _core.bufferCapacity ()
+        return Int (vist_cshim_strlen _core.base)
 
-    @mutating func append :: String -> String = (other) {
+    @mutating func append :: String = (other) {
         // check if the core is singly referenced before mutating
-        
+        let l1 = length ()
+        let l2 = other.length ()
+        if Bool (Builtin.is_uniquely_referenced _core) {
+            // mutate the core in place, after resizing it
+            _core.growBuffer l1 + l2
+            if (_core.isUTF8Encoded ()) && (other._core.isUTF8Encoded ()) {
+		Builtin.mem_copy other._core.base (_core.base + l1) l2.value
+            } else { fatalError "TODO tbh" }            
+        } else {
+            // copy out
+            let newCapacity = (_core.bufferCapacity ()) + (other._core.bufferCapacity ())
+            let newBase = Builtin.heap_alloc newCapacity.value
+            if (_core.isUTF8Encoded ()) && (other._core.isUTF8Encoded ()) {
+                Builtin.mem_copy _core.base newBase l1.value
+		Builtin.mem_copy other._core.base (newBase + l1) l2.value
+            } else { fatalError "TODO tbh" }
+            _core = _StringCore newBase newCapacity
+        }
     }
 }
 

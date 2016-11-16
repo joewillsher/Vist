@@ -132,10 +132,10 @@ extension WitnessTable : RuntimeObject {
 extension UnsafePointer : RuntimeObject {
     
     func type(IGF: inout IRGenFunction, module: Module) -> LLVMType {
-        return UnsafeMutablePointer<Pointee>(self).type(IGF: &IGF, module: module)
+        return UnsafeMutablePointer<Pointee>(mutating: self).type(IGF: &IGF, module: module)
     }
     func lower(IGF: inout IRGenFunction, module: Module, baseName: String) throws -> LLVMValue {
-        return try UnsafeMutablePointer<Pointee>(self).lowerPointer(IGF: &IGF, module: module, baseName: baseName, arrayCount: nil)
+        return try UnsafeMutablePointer<Pointee>(mutating: self).lowerPointer(IGF: &IGF, module: module, baseName: baseName, arrayCount: nil)
     }
 }
 extension ImplicitlyUnwrappedOptional : RuntimeObject {
@@ -144,7 +144,7 @@ extension ImplicitlyUnwrappedOptional : RuntimeObject {
         return x.type(IGF: &IGF, module: module)
     }
     func lower(IGF: inout IRGenFunction, module: Module, baseName: String) throws -> LLVMValue {
-        guard case let x as RuntimeObject = self else { fatalError("\(self.dynamicType)") }
+        guard case let x as RuntimeObject = self else { fatalError("\(type(of: self))") }
         return try x.lower(IGF: &IGF, module: module, baseName: baseName)
     }
 }
@@ -172,11 +172,11 @@ extension UnsafeMutablePointer : RuntimeObject, ArrayGenerator {
     func lower(IGF: inout IRGenFunction, module: Module, baseName: String) throws -> LLVMValue {
         return try lowerPointer(IGF: &IGF, module: module, baseName: baseName, arrayCount: nil)
     }
-    private func lowerArray(IGF: inout IRGenFunction, module: Module, baseName: String, arrayCount: Int) throws -> LLVMValue {
+    fileprivate func lowerArray(IGF: inout IRGenFunction, module: Module, baseName: String, arrayCount: Int) throws -> LLVMValue {
         return try lowerPointer(IGF: &IGF, module: module, baseName: baseName, arrayCount: arrayCount)
     }
     // pointer runtime vals allocate their pointee as a new LLVM global, then return the ptr
-    private func lowerPointer(IGF: inout IRGenFunction, module: Module, baseName: String, arrayCount: Int?) throws -> LLVMValue {
+    fileprivate func lowerPointer(IGF: inout IRGenFunction, module: Module, baseName: String, arrayCount: Int?) throws -> LLVMValue {
         return try getGlobal(IGF: &IGF, module: module, baseName: baseName, arrayCount: arrayCount).value
     }
     
@@ -184,7 +184,7 @@ extension UnsafeMutablePointer : RuntimeObject, ArrayGenerator {
         
         switch pointee {
         case is Int8: // int8* is a string
-            return LLVMValue.constString(value: String(cString: UnsafePointer<CChar>(self)))
+            return withMemoryRebound(to: CChar.self, capacity: 1) { LLVMValue.constString(value: String(cString: $0)) }
             
         case let r as RuntimeObject:
             return try r.lower(IGF: &IGF, module: module, baseName: baseName)
@@ -217,6 +217,48 @@ extension UnsafeMutablePointer : RuntimeObject, ArrayGenerator {
     }
 }
 
+extension UnsafeMutableRawPointer : RuntimeObject, ArrayGenerator {
+    
+    func type(IGF: inout IRGenFunction, module: Module) -> LLVMType {
+        return LLVMType.opaquePointer
+    }
+    
+    func lower(IGF: inout IRGenFunction, module: Module, baseName: String) throws -> LLVMValue {
+        return try lowerPointer(IGF: &IGF, module: module, baseName: baseName, arrayCount: nil)
+    }
+    fileprivate func lowerArray(IGF: inout IRGenFunction, module: Module, baseName: String, arrayCount: Int) throws -> LLVMValue {
+        return try lowerPointer(IGF: &IGF, module: module, baseName: baseName, arrayCount: arrayCount)
+    }
+    // pointer runtime vals allocate their pointee as a new LLVM global, then return the ptr
+    private func lowerPointer(IGF: inout IRGenFunction, module: Module, baseName: String, arrayCount: Int?) throws -> LLVMValue {
+        return try getGlobal(IGF: &IGF, module: module, baseName: baseName, arrayCount: arrayCount).value
+    }
+    
+    func lowerMemory(IGF: inout IRGenFunction, module: Module, baseName: String) throws -> LLVMValue {
+        return LLVMValue(ref: OpaquePointer(self))
+    }
+    
+    /// Get or create a LLVM global from a pointer
+    private func getGlobal(IGF: inout IRGenFunction, module: Module, baseName: String, arrayCount: Int?) throws -> LLVMGlobalValue {
+        
+        // if its an array, gen the elements and add their pointers to a global array
+        if let c = arrayCount {
+            
+            let children = try Swift.stride(from: self, to: advanced(by: c), by: 1).enumerated().map { index, element in
+                try IGF.module.createLLVMGlobal(forPointer: element, baseName: "\(baseName)\(index)", IGF: &IGF, module: module).value
+            }
+            
+            let v = LLVMValue.constArray(of: type(IGF: &IGF, module: module), vals: children)
+            return IGF.module.createGlobal(value: v, forPtr: self, baseName: baseName, IGF: &IGF)
+        }
+            // otherwise just gen the element
+        else {
+            return try IGF.module.createLLVMGlobal(forPointer: self, baseName: baseName, IGF: &IGF, module: module)
+        }
+    }
+}
+
+
 extension Int32 : RuntimeObject {
     func type(IGF: inout IRGenFunction, module: Module) -> LLVMType {
         return LLVMType.intType(size: 32)
@@ -241,11 +283,10 @@ extension Bool : RuntimeObject {
 
 extension Optional {
     func getFnPtr() -> LLVMValue {
-        if case let opt as UnsafeMutablePointer<Void>? = self, opt == nil {
-            return LLVMValue(ref: LLVMValueRef(nil as UnsafeMutablePointer<Void>?))
+        if case let opt as UnsafeMutableRawPointer? = self, opt == nil {
+            return LLVMValue(ref: LLVMValueRef(nil as UnsafeMutableRawPointer?))
         }
-        let t = unsafeBitCast(self, to: UnsafeMutablePointer<Void>.self)
-        return LLVMValue(ref: LLVMValueRef(t))
+        return LLVMValue(ref: LLVMValueRef(unsafeBitCast(self, to: UnsafeMutableRawPointer.self)))
     }
 }
 

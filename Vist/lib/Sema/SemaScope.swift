@@ -91,7 +91,7 @@ final class SemaScope {
             return v
         }
         else if let g = genericParameters, let i = genericParameters?.index(where: {$0.name == name}) {
-            return try? GenericType.fromConstraint(inScope: self)(constraint: g[i])
+            return try? GenericType.fromConstraint(inScope: self)(g[i])
         }
         else if let existential = concepts[name] {
             return existential

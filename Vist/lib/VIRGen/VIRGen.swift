@@ -51,7 +51,7 @@ protocol LibraryTopLevel: ASTNode {}
 
 extension ASTNode {
     func emit(module: Module, gen: VIRGenFunction) throws {
-        throw VIRError.notGenerator(self.dynamicType)
+        throw VIRError.notGenerator(type(of: self))
     }
 }
 extension ASTNode where Self : StmtEmitter {
@@ -68,10 +68,10 @@ extension ASTNode where Self : ValueEmitter {
 
 extension Expr {
     func emitRValue(module: Module, gen: VIRGenFunction) throws -> AnyManagedValue {
-        throw VIRError.notGenerator(self.dynamicType)
+        throw VIRError.notGenerator(type(of: self))
     }
     func emitLValue(module: Module, gen: VIRGenFunction) throws -> AnyManagedValue {
-        throw VIRError.notGenerator(self.dynamicType)
+        throw VIRError.notGenerator(type(of: self))
     }
 }
 extension Expr where Self : ValueEmitter {
@@ -96,7 +96,7 @@ extension Collection where Iterator.Element == ASTNode {
     
 }
 
-infix operator .+ {}
+infix operator .+
 /// Used for constructing string descriptions
 /// eg `irName: irName .+ "subexpr"`
 func .+ (lhs: String?, rhs: String) -> String? {
@@ -284,7 +284,7 @@ extension ClosureExpr : ValueEmitter {
         guard let mangledName = self.mangledName, let type = self.type else {
             fatalError()
         }
-        // We cannot perform VIRGen
+        // We cannot perform VIRGen if we have type variables
         precondition(hasConcreteType)
         
         // record position and create the closure body

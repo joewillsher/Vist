@@ -18,10 +18,10 @@ protocol ScopeNode {
 
 extension ScopeNode {
     
-    func walkChildren<Ret>(inCollector collector: ErrorCollector? = nil, fn: @noescape (ASTNode) throws -> Ret) throws {
+    func walkChildren<Ret>(inCollector collector: ErrorCollector? = nil, fn: (ASTNode) throws -> Ret) throws {
         try childNodes.walkChildren(collector: collector, fn)
     }
-    func walkChildrenAsync(collector: AsyncErrorCollector, fn: (ASTNode) throws -> ()) throws {
+    func walkChildrenAsync(collector: AsyncErrorCollector, fn: @escaping (ASTNode) throws -> ()) throws {
         try childNodes.walkChildrenAsync(collector: collector, fn)
     }
 
@@ -40,7 +40,7 @@ extension Collection where Iterator.Element : ASTNode {
     /// }
     /// ```
     @discardableResult
-    func walkChildren<Ret>(collector: ErrorCollector? = nil, _ fn: @noescape (Iterator.Element) throws -> Ret) throws -> [Ret] {
+    func walkChildren<Ret>(collector: ErrorCollector? = nil, _ fn: (Iterator.Element) throws -> Ret) throws -> [Ret] {
 
         collector?.caught = false
         let errorCollector = collector ?? ErrorCollector()
@@ -75,7 +75,7 @@ extension Collection where Iterator.Element == ASTNode {
     /// }
     /// ```
     @discardableResult
-    func walkChildren<Ret>(collector: ErrorCollector? = nil, _ fn: @noescape (ASTNode) throws -> Ret) throws -> [Ret] {
+    func walkChildren<Ret>(collector: ErrorCollector? = nil, _ fn: (ASTNode) throws -> Ret) throws -> [Ret] {
         
         collector?.caught = false
         let errorCollector = collector ?? ErrorCollector()
@@ -99,7 +99,7 @@ extension Collection where Iterator.Element == ASTNode {
     
     /// Walks the function over the child decls asynchronoustly
     @discardableResult
-    func walkChildrenAsync(collector: AsyncErrorCollector, _ fn: (ASTNode) throws -> ()) throws {
+    func walkChildrenAsync(collector: AsyncErrorCollector, _ fn: @escaping (ASTNode) throws -> ()) throws {
         
         // FIXME: All operations added to the same queue
         //        - we want all on a different queue, but we first need 
@@ -129,10 +129,10 @@ extension Collection where Iterator.Element : ASTNode {
 ///
 class ErrorCollector {
     
-    private final var errors: [VistError] = []
-    private final var caught = false
+    fileprivate final var errors: [VistError] = []
+    fileprivate final var caught = false
     private final var file: StaticString, line: UInt, function: String
-    private final var uncaughtError: Error? = nil
+    fileprivate final var uncaughtError: Error? = nil
     
     // on init, captures scope
     // so if not thrown fatal error has helpful info
@@ -144,7 +144,7 @@ class ErrorCollector {
     
     /// Runs a code block and catches any errors
     @discardableResult
-    final func run<T>(block: @noescape () throws -> T) throws -> T? {
+    final func run<T>(block: () throws -> T) throws -> T? {
         caught = false
 
         do {

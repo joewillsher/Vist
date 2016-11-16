@@ -92,7 +92,7 @@ enum RegisterPromotionPass : OptimisationPass {
     /// https://www.researchgate.net/profile/Jeanne_Ferrante/publication/225508360_Efficiently_computing_ph-nodes_on-the-fly/links/549458fd0cf22af911222521.pdf?origin=publication_detail
     /// http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.8.1979&rep=rep1&type=pdf
     /// https://github.com/apple/swift/blob/279726fe184400129664c3089160e00230cb485c/lib/SILOptimizer/Transforms/SILMem2Reg.cpp
-    private struct AllocStackPromoter {
+    fileprivate struct AllocStackPromoter {
         let function: Function
         let alloc: AllocInst
         

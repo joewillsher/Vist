@@ -23,7 +23,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 
-#include "llvm/IR/Value.h"
 #include "llvm/IR/Module.h"
 using namespace llvm;
 

@@ -35,11 +35,11 @@ extension CheckedCastBreakInst : VIRLower {
     
     /// In the successor block, constructs the value by calling `fn`. This erases the 
     /// phony phi node and replaces its users
-    private func constructInSuccessorBlock(IGF: inout IRGenFunction, with: @noescape (IGF: inout IRGenFunction) throws -> LLVMValue) rethrows {
+    private func constructInSuccessorBlock(IGF: inout IRGenFunction, with: (inout IRGenFunction) throws -> LLVMValue) rethrows {
         let ins = IGF.builder.getInsertBlock()!
         IGF.builder.position(before: successVariable.phi!)
         
-        let val = try with(IGF: &IGF)
+        let val = try with(&IGF)
         successVariable.phi!.eraseFromParent(replacingAllUsesWith: val)
         for use in successVariable.uses {
             use.setLoweredValue(val)

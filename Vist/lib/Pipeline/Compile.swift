@@ -6,7 +6,7 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-import class Foundation.Task
+import class Foundation.Process
 import class Foundation.Pipe
 import class Foundation.FileManager
 import class Foundation.FileHandle
@@ -29,7 +29,7 @@ struct CompileOptions : OptionSet {
     static let buildAndRun = CompileOptions(rawValue: 1 << 5)
     static let verbose = CompileOptions(rawValue: 1 << 6)
     static let preserveTempFiles = CompileOptions(rawValue: 1 << 7)
-
+    
     /// No optimisations
     static let O0: CompileOptions = CompileOptions(rawValue: 1 << 8)
     /// Low opt level
@@ -39,9 +39,9 @@ struct CompileOptions : OptionSet {
     
     static let produceLib = CompileOptions(rawValue: 1 << 11)
     /// Compiles stdlib.vist
-    private static let compileStdLib = CompileOptions(rawValue: 1 << 12)
+    fileprivate static let compileStdLib = CompileOptions(rawValue: 1 << 12)
     /// Parses the document as if it were the stdlib, exposing Builtin types and functions
-    private static let parseStdLib = CompileOptions(rawValue: 1 << 13)
+    fileprivate static let parseStdLib = CompileOptions(rawValue: 1 << 13)
     /// Compiles the standard libary before the input files
     static let buildStdLib: CompileOptions = [compileStdLib, parseStdLib, produceLib, buildRuntime, linkWithRuntime, Ohigh, preserveTempFiles]
     
@@ -49,7 +49,7 @@ struct CompileOptions : OptionSet {
     static let buildRuntime = CompileOptions(rawValue: 1 << 14)
     static let debugRuntime = CompileOptions(rawValue: 1 << 15)
     /// Links the input files with the runtime
-    private static let linkWithRuntime = CompileOptions(rawValue: 1 << 16)
+    fileprivate static let linkWithRuntime = CompileOptions(rawValue: 1 << 16)
     /// Parse this file as stdlib code and link manually with runtime
     static let doNotLinkStdLib: CompileOptions = [buildRuntime, linkWithRuntime, parseStdLib]
     
@@ -125,7 +125,7 @@ private func parseFiles(_ names: [String],
             }
         }
     }
-
+    
     // wait for parsing to finish
     parseGroup.wait()
     
@@ -141,7 +141,7 @@ private func parseFiles(_ names: [String],
 /// Compiles series of files
 /// - parameter fileNames: The file paths to compile
 /// - parameter inDirectory: The current working directory
-/// - parameter out: Override stdout 
+/// - parameter out: Override stdout
 /// - parameter options: An option set of compilation flags
 func compileDocuments(
     fileNames: [String],
@@ -211,7 +211,7 @@ func compileDocuments(
     if options.contains(.verbose) {
         print("\n----------------------------VIR OPT-------------------------------\n")
     }
-
+    
     // run optimiser
     try PassManager(module: virModule, optLevel: options.optLevel(), opts: options)
         .runPasses()
@@ -245,10 +245,10 @@ func compileDocuments(
         if options.contains(.verbose) { print(mc.asm) }
         
         let libVistPath = "/usr/local/lib/libvist.dylib"
-        Task.execute(exec: .clang,
-                     files: [asm, libVistPath],
-                     outputName: file,
-                     cwd: currentDirectory)
+        Process.execute(exec: .clang,
+                        files: [asm, libVistPath],
+                        outputName: file,
+                        cwd: currentDirectory)
         
         if options.contains(.buildAndRun) {
             if options.contains(.verbose) { print("\n\n-----------------------------RUN-----------------------------\n") }
@@ -326,11 +326,11 @@ func compileDocuments(
         
         // .ll -> .dylib
         // to link against program
-        Task.execute(exec: .clang,
-                       files: [libVistRuntimePath, "\(file).ll"],
-                       outputName: libVistPath,
-                       cwd: currentDirectory,
-                       args: "-dynamiclib")
+        Process.execute(exec: .clang,
+                        files: [libVistRuntimePath, "\(file).ll"],
+                        outputName: libVistPath,
+                        cwd: currentDirectory,
+                        args: "-dynamiclib")
     }
     else {
         
@@ -340,10 +340,10 @@ func compileDocuments(
         if wantsDumpASM || verboseOutput {
             // .ll -> .s
             // for printing/saving
-            Task.execute(exec: .clang,
-                         files: ["\(file).ll"],
-                         cwd: currentDirectory,
-                         args: "-S")
+            Process.execute(exec: .clang,
+                            files: ["\(file).ll"],
+                            cwd: currentDirectory,
+                            args: "-S")
             let asmPath = "\(currentDirectory)/\(file).s"
             let asm = try String(contentsOfFile: asmPath, encoding: .utf8)
             defer {
@@ -356,13 +356,13 @@ func compileDocuments(
         
         // get the input for the clang binary
         let inputFiles = options.contains(.doNotLinkStdLib) ?
-            ["\(file).ll"] :
+            [libVistRuntimePath, "\(file).ll"] :
             [libVistRuntimePath, libVistPath, "\(file).ll"]
         // .ll -> exec
-        Task.execute(exec: .clang,
-                     files: inputFiles,
-                     outputName: file,
-                     cwd: currentDirectory)
+        Process.execute(exec: .clang,
+                        files: inputFiles,
+                        outputName: file,
+                        cwd: currentDirectory)
         
         if options.contains(.buildAndRun) {
             if options.contains(.verbose) { print("\n\n-----------------------------RUN-----------------------------\n") }
@@ -381,7 +381,7 @@ func runExecutable(
     ) {
     
     /// Run the program
-    let runTask = Task()
+    let runTask = Process()
     runTask.currentDirectoryPath = inDirectory
     runTask.launchPath = "\(inDirectory)/\(file)"
     
@@ -411,18 +411,18 @@ func buildRuntime(debugRuntime debug: Bool) {
     
     // .cpp -> .dylib
     // to link against program
-    Task.execute(exec: .clang,
-                 files: ["Existential.cpp", "RefcountedObject.cpp", "Casting.cpp", "Demangle.cpp", "Introspection.cpp"],
-                 outputName: libVistRuntimePath,
-                 cwd: runtimeDirectory,
-                 args: "-dynamiclib", "-std=c++14", "-O3", "-lstdc++", "-includeruntime.h", debug ? "-DRUNTIME_DEBUG" : "")
+    Process.execute(exec: .clang,
+                    files: ["Existential.cpp", "RefcountedObject.cpp", "Casting.cpp", "Demangle.cpp", "Introspection.cpp"],
+                    outputName: libVistRuntimePath,
+                    cwd: runtimeDirectory,
+                    args: "-dynamiclib", "-std=c++14", "-O3", "-lstdc++", "-includeruntime.h", debug ? "-DRUNTIME_DEBUG" : "")
 }
 
 func runPreprocessor(file: inout String, cwd: String) {
     
     let preprocessor = "\(SOURCE_ROOT)/Vist/lib/Pipeline/Preprocessor.sh"
     
-    Task.execute(execName: preprocessor, files: [file], cwd: cwd, args: [])
+    Process.execute(execName: preprocessor, files: [file], cwd: cwd, args: [])
     
     file = "\(file).previst"
 }

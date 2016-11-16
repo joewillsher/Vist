@@ -67,7 +67,7 @@ struct Managed<Val : Value> : ManagedValue {
     
     var value: Value { return managedValue }
     
-    private init(_ value: Val, hasCleanup: Bool = true) {
+    fileprivate init(_ value: Val, hasCleanup: Bool = true) {
         self.managedValue = value
         self.isIndirect = value.isIndirect
         self.type = value.type!.getBasePointeeType().getConcreteNominalType() ?? value.type!.getCannonicalType()
@@ -109,7 +109,7 @@ struct AnyManagedValue : ManagedValue {
     var value: Value { return managedValue }
     
     /// init creates cleanup
-    private init(_ value: Value, hasCleanup: Bool = true) {
+    fileprivate init(_ value: Value, hasCleanup: Bool = true) {
         self.managedValue = value
         self.isIndirect = value.isIndirect
         self.type = value.type!.getBasePointeeType().getConcreteNominalType() ?? value.type!.getCannonicalType()

@@ -404,8 +404,8 @@ extension DominatorTree : CustomStringConvertible {
         return root.describe(indent: 0)
     }
 }
-extension DominatorTree.Node {
-    private func describe(indent: Int) -> String {
+private extension DominatorTree.Node {
+    func describe(indent: Int) -> String {
         return "\(indent*"  ")-\(block.name)\n" +
             children.map { $0.describe(indent: indent+1) }.joined(separator: "")
     }

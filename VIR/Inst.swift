@@ -73,7 +73,7 @@ extension Inst {
     var isTerminator: Bool { return false }
     
     
-    func replace(with explode: @noescape (inout Explosion) throws -> Void) throws {
+    func replace(with explode: (inout Explosion) throws -> Void) throws {
         var e = Explosion(replacing: self)
         try explode(&e)
         try e.replaceInst()

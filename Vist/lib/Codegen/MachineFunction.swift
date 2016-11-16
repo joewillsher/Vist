@@ -85,7 +85,7 @@ extension MCInst {
         }
     }
     
-    mutating func rewriteRegisters(_ graph: InterferenceGraph, _ rewrite: @noescape (AIRRegister) -> AIRRegister) {
+    mutating func rewriteRegisters(_ graph: InterferenceGraph, _ rewrite: (AIRRegister) -> AIRRegister) {
         let hash = self
         switch self {
         case .add(let a, let b): self = .add(rewrite(a), b.rewriteRegisters(rewrite))
@@ -118,7 +118,7 @@ extension MCInstAddressingMode {
         case .imm: return nil
         }
     }
-    func rewriteRegisters(_ rewrite: @noescape (AIRRegister) -> AIRRegister) -> MCInstAddressingMode {
+    func rewriteRegisters(_ rewrite: (AIRRegister) -> AIRRegister) -> MCInstAddressingMode {
         switch self {
         case .reg(let reg): return .reg(rewrite(reg))
         case .mem(let reg): return .mem(rewrite(reg))

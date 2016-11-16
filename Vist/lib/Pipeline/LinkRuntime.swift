@@ -6,11 +6,11 @@
 //  Copyright © 2015 vistlang. All rights reserved.
 //
 
-import class Foundation.Task
+import class Foundation.Process
 import class Foundation.FileManager
 
 extension LLVMModule {
-        
+    
     /// Links modules, importing from `otherModule`
     func `import`(from otherModule: LLVMModule) {
         LLVMLinkModules2(module, otherModule.module)
@@ -28,18 +28,18 @@ extension LLVMModule {
             break
         case _ where !file.hasSuffix(".ll"):
             // .cpp -> .ll
-            Task.execute(exec: .clang,
-                         files: [file],
-                         outputName: "\(file).bc",
-                         cwd: directory,
-                         args: "-O3", "-S", "-emit-llvm")
+            Process.execute(exec: .clang,
+                            files: [file],
+                            outputName: "\(file).bc",
+                cwd: directory,
+                args: "-O3", "-S", "-emit-llvm")
             fallthrough
         default:
             // .ll -> .bc
-            Task.execute(exec: .assemble,
-                         files: ["\(file).bc"],
-                         outputName: "\(file).bc",
-                         cwd: directory)
+            Process.execute(exec: .assemble,
+                            files: ["\(file).bc"],
+                            outputName: "\(file).bc",
+                cwd: directory)
             path = "\(directory)/\(file).bc"
         }
         

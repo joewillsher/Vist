@@ -32,7 +32,9 @@ enum StdLib {
             (name: "length", type: FunctionType(params: [], returns: intType), mutating: false),
             (name: "codeUnitAtIndex", type: FunctionType(params: [StdLib.intType], returns: BuiltinType.opaquePointer), mutating: false),
             (name: "generate", type: FunctionType(params: [], returns: BuiltinType.void, yieldType: utf8CodeUnitType), mutating: false),
+            (name: "append", type: FunctionType(params: [_stringType], returns: BuiltinType.void), mutating: true),
         ], name: "String")
+    private static let _stringType = StructType(members: [("_core", stringCoreType, false)], methods: [], name: "String")
     private static let voidType = BuiltinType.void
     
     static let metatypeType = StructType(members: [("_metadata", BuiltinType.opaquePointer, true)], methods: [(name: "size", type: FunctionType(params: [], returns: intType), mutating: false), (name: "name", type: FunctionType(params: [], returns: stringType), mutating: false)], name: "Metatype")

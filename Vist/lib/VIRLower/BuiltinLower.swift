@@ -44,13 +44,29 @@ extension BuiltinInstCall: VIRLower {
             intrinsic = try IGF.module.getIntrinsic(.memcopy,
                                                     overload: lhs.type, rhs.type, .intType(size: 64))
             // add extra memcpy args
-            args.append(LLVMValue.constInt(value: 1, size: 32)) // i32 align -- align 1
-            args.append(LLVMValue.constBool(value: false)) // i1 isVolatile -- false
+            args.append(.constInt(value: 1, size: 32)) // i32 align -- align 1
+            args.append(.constBool(value: false)) // i1 isVolatile -- false
             
         case .withptr:
             let alloc = try IGF.builder.buildAlloca(type: lhs.type)
             try IGF.builder.buildStore(value: lhs, in: alloc)
             return try IGF.builder.buildBitcast(value: alloc, to: LLVMType.opaquePointer)
+            
+        case .isuniquelyreferenced:
+            let alloc = try IGF.builder.buildAlloca(type: lhs.type)
+            try IGF.builder.buildStore(value: lhs, in: alloc)
+            
+            let exType = Runtime.existentialObjectType.importedType(in: module).lowered(module: module).getPointerType()
+            let ex = try IGF.builder.buildBitcast(value: alloc, to: exType)
+            
+            let project = module.getRuntimeFunction(.getBufferProjection, IGF: &IGF)
+            let projection = try IGF.builder.buildCall(function: project, args: [ex])
+            
+            let isUnique = module.getRuntimeFunction(.isUniquelyReferenced, IGF: &IGF)
+            let boxType = Runtime.refcountedObjectPointerType.importedType(in: module).lowered(module: module)
+            let box = try IGF.builder.buildBitcast(value: projection, to: boxType)
+            
+            return try IGF.builder.buildCall(function: isUnique, args: [box])
             
         case .allocstack: return try IGF.builder.buildArrayAlloca(size: lhs, elementType: .intType(size: 8), name: irName)
         case .allocheap:  return try IGF.builder.buildArrayMalloc(size: lhs, elementType: .intType(size: 8), name: irName)

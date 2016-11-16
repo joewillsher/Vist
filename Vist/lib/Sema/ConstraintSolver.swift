@@ -10,10 +10,10 @@
 ///
 /// https://en.wikipedia.org/wiki/Type_variable
 final class TypeVariable : Type {
-    private let id: Int
+    fileprivate let id: Int
     private(set) var constraints: [TypeConstraint] = []
     
-    private init(_ id: Int) { self.id = id }
+    fileprivate init(_ id: Int) { self.id = id }
     
     var mangledName: String { return "tv\(id)" }
     var prettyName: String { return "$\(id)" }
@@ -54,7 +54,7 @@ final class TypeVariable : Type {
         else {
             // update constraints
             constraints = constraints.map { constraint in
-                let candidates = constraint.candidates() ?? []
+                let candidates = constraint.candidates()
                 let newConstraint = TypeConstraint(type: typeConstraint)
                 if candidates.isEmpty {
                     return newConstraint

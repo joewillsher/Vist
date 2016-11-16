@@ -46,6 +46,7 @@ enum Runtime {
         static let deallocObject = Function(name: "vist_deallocObject", type: FunctionType(params: [refcountedObjectPointerType], returns: voidType))
         static let retainObject  = Function(name: "vist_retainObject", type: FunctionType(params: [refcountedObjectPointerType], returns: voidType))
         static let releaseObject  = Function(name: "vist_releaseObject", type: FunctionType(params: [refcountedObjectPointerType], returns: voidType))
+        static let isUniquelyReferenced  = Function(name: "vist_objectHasUniqueReference", type: FunctionType(params: [refcountedObjectPointerType], returns: boolType))
         
         static let setYieldTarget = Function(name: "vist_setYieldTarget", type: FunctionType(params: [], returns: boolType))
         static let yieldUnwind = Function(name: "vist_yieldUnwind", type: FunctionType(params: [], returns: voidType))

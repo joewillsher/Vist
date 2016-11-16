@@ -102,7 +102,7 @@ enum BuiltinInst : String {
     
     case trunc8 = "trunc_int_8", trunc16 = "trunc_int_16", trunc32 = "trunc_int_32"
     
-    case withptr = "with_ptr"
+    case withptr = "with_ptr", isuniquelyreferenced = "is_uniquely_referenced"
     
     var expectedNumOperands: Int {
         switch  self {
@@ -112,7 +112,8 @@ enum BuiltinInst : String {
              .fgte, .flt, .flte, .fadd, .fsub, .fmul, .fdiv, .frem, .feq, .fneq, .beq, .bneq,
              .opaquestore, .advancepointer, .ipow:
             return 2
-        case .condfail, .allocstack, .allocheap, .heapfree, .opaqueload, .trunc8, .trunc16, .trunc32, .withptr, .not:
+        case .condfail, .allocstack, .allocheap, .heapfree, .isuniquelyreferenced,
+             .opaqueload, .trunc8, .trunc16, .trunc32, .withptr, .not:
             return 1
         case .trap:
             return 0
@@ -127,7 +128,7 @@ enum BuiltinInst : String {
              .iand, .ior, .ixor, .fadd, .fsub, .fmul, .fdiv, .frem, .ipow:
             return params.first // normal arithmetic
             
-        case .ilte, .igte, .ilt, .igt, .flte, .fgte, .flt, .fgt,
+        case .ilte, .igte, .ilt, .igt, .flte, .fgte, .flt, .fgt, .isuniquelyreferenced,
              .expect, .ieq, .ineq, .and, .or, .not, .beq, .bneq, .feq, .fneq:
             return Builtin.boolType // bool ops
            

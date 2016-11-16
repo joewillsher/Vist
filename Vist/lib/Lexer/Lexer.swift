@@ -98,9 +98,9 @@ private enum LexerContext {
 private func == (lhs: Character, rhs: String) -> Bool { return lhs == Character(rhs) }
 private func != (lhs: Character, rhs: String) -> Bool { return !(lhs == rhs) }
 
-extension String {
+private extension String {
     
-    private init(escaping: String) {
+    init(escaping: String) {
         
         var chars: [Character] = []
         let count = escaping.characters.count
@@ -200,7 +200,7 @@ private extension Token {
     }
     
     static func fromSymbol(_ symbol: String) -> Token {
-        return (operators[symbol] ?? .infixOperator(symbol)) ?? .infixOperator(symbol)
+        return operators[symbol] ?? .infixOperator(symbol)
     }
 }
 
@@ -229,19 +229,19 @@ private struct Lexer {
     }
     
     private var contextStart = 0
-    private var index = 0
+    fileprivate var index = 0
     
-    private var charsInContext: [Character] = []
+    fileprivate var charsInContext: [Character] = []
     
-    private var tokens: [(Token, SourceLoc)] = []
-    private var context: LexerContext? = nil {
+    fileprivate var tokens: [(Token, SourceLoc)] = []
+    fileprivate var context: LexerContext? = nil {
         didSet {
             if let _ = context { contextStartPos = pos }
         }
     }
     
     private var contextStartPos: Pos = (0,0)
-    private var pos: Pos = (0,0)
+    fileprivate var pos: Pos = (0,0)
     
     var currentChar: Character {
         return chars[index]
@@ -261,25 +261,25 @@ private struct Lexer {
         }
     }
     
-    private mutating func resetContext() throws {
+    fileprivate mutating func resetContext() throws {
         try addContext()
         
         context = nil
         charsInContext = []
     }
     
-    private mutating func consumeChar(_ n: Int = 1) throws {
+    fileprivate mutating func consumeChar(_ n: Int = 1) throws {
         index += n
         try updatePos()
         guard index < chars.count else { throw LexerError.outOfRange }
     }
     
-    private mutating func addChar() {
+    fileprivate mutating func addChar() {
         charsInContext.append(currentChar)
     }
     
     
-    private mutating func addContext() throws {
+    fileprivate mutating func addContext() throws {
 
         let str = String(charsInContext)
         let tok = try formToken(str)
@@ -288,7 +288,7 @@ private struct Lexer {
         tokens.append((tok, loc))
     }
     
-    private mutating func formToken(_ str: String) throws -> Token {
+    fileprivate mutating func formToken(_ str: String) throws -> Token {
         switch context {
         case .alpha?:           return Token.fromIdentifier(str)
         case .numeric?:         return Token.fromNumberLiteral(str)
@@ -309,13 +309,13 @@ private struct Lexer {
 //-------------------------------------------------------------------------------------------------------------------------
 
 
-extension Lexer {
-    mutating private func lexString() throws {
+private extension Lexer {
+    mutating func lexString() throws {
         try lexWhilePredicate { $0.isAlNumOr_() }
         try resetContext()
     }
     
-    mutating private func lexWhiteSpace() throws {
+    mutating func lexWhiteSpace() throws {
         try lexWhilePredicate { $0.isWhiteSpace() }
         if charsInContext.contains(where: ({ $0.isNewLine()})) {
             try resetContext()
@@ -325,7 +325,7 @@ extension Lexer {
         }
     }
     
-    mutating private func lexNumber() throws {
+    mutating func lexNumber() throws {
         addChar()
         let initial = currentChar
         try consumeChar()
@@ -355,17 +355,17 @@ extension Lexer {
         // TODO: lookahead for . in number -- if not a number then return
     }
     
-    mutating private func lexInteger() throws {
+    mutating func lexInteger() throws {
         try lexWhilePredicate { $0.isNum() }
         try resetContext()
     }
     
-    mutating private func lexOperatorDecl() throws {
+    mutating func lexOperatorDecl() throws {
         try lexWhilePredicate { $0.isSymbol() && $0 != ":" }
         try resetContext()
     }
     
-    mutating private func lexSymbol() throws {
+    mutating func lexSymbol() throws {
         
         let start = index
         
@@ -395,7 +395,7 @@ extension Lexer {
 //        try lexWhilePredicate({$0 != "\""})
 //    }
 //    
-    mutating private func lexWhilePredicate(p: @noescape (Character) throws -> Bool) throws {
+    mutating private func lexWhilePredicate(p: (Character) throws -> Bool) throws {
         while try p(currentChar) {
             addChar()
             guard let _ = try? consumeChar() else { return }

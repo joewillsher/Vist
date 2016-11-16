@@ -21,7 +21,7 @@ final class GenericType : NominalType {
         self.parentName = parentName
     }
     
-    static func fromConstraint(inScope scope: SemaScope) -> (constraint: ConstrainedType) throws -> GenericType {
+    static func fromConstraint(inScope scope: SemaScope) -> (ConstrainedType) throws -> GenericType {
         return { ty in
             if let c = ty.constraints.optionalMap({ scope.concept(named: $0) }) {
                 return GenericType(name: ty.name, concepts: c, parentName: ty.parentName)

@@ -119,7 +119,7 @@ private class LoadPattern<SRC : OpPattern> : UnaryOpPattern {
 
 /// Ret has chain parent (load VAL)
 private class RetPattern<VAL : OpPattern> : OpPattern {
-    private static func opMatches(node: DAGNode) -> Bool {
+    fileprivate static func opMatches(node: DAGNode) -> Bool {
         if case .ret = node.op { return true }
         return false
     }
@@ -159,11 +159,11 @@ private class VoidPattern : OpPattern {
     }
 }
 private class CallPattern : OpPattern {
-    private static func opMatches(node: DAGNode) -> Bool {
+    fileprivate static func opMatches(node: DAGNode) -> Bool {
         if case .call = node.op { return true }
         return false
     }
-    private static func matches(subtree: DAGNode) -> Bool {
+    fileprivate static func matches(subtree: DAGNode) -> Bool {
         return opMatches(node: subtree)
     }
 }
@@ -367,7 +367,7 @@ private class StoreRewritingPattern :
 private class CallRewritingPattern :
     LoadPattern<CallPattern>,
     DataFlowRewritingPattern {
-    private static func rewrite(_ load: DAGNode, dag: SelectionDAG, emission: MCEmission) throws -> AIRRegister {
+    fileprivate static func rewrite(_ load: DAGNode, dag: SelectionDAG, emission: MCEmission) throws -> AIRRegister {
         let call = load.args[0]
         // create and constrain the return register
         let ret = dag.builder.getRegister()
@@ -404,7 +404,7 @@ private class UnusedCallRewritingPattern :
     CallPattern,
     ControlFlowRewritingPattern
 {
-    private static func rewrite(_ call: DAGNode, dag: SelectionDAG, emission: MCEmission) throws {
+    fileprivate static func rewrite(_ call: DAGNode, dag: SelectionDAG, emission: MCEmission) throws {
         // emit the call
         guard case .call(let name) = call.op else { fatalError() }
         var addedList: [[MCInst]] = []
@@ -434,7 +434,7 @@ private class UnusedCallRewritingPattern :
 /// An object responsible for managing the emission of machine insts
 final class MCEmission {
     
-    private var mcInsts: [MCInst] = []
+    fileprivate var mcInsts: [MCInst] = []
     var dag: SelectionDAG
     let target: TargetMachine.Type
     var precoloured: [AIRRegisterHash: TargetRegister] = [:]

@@ -16,7 +16,7 @@ final class ArrayInst : Inst {
     var uses: [Operand] = []
     var args: [Operand]
     
-    private init(values: [Operand], memType: Type, irName: String?) {
+    fileprivate init(values: [Operand], memType: Type, irName: String?) {
         self.values = values
         self.arrayType = (mem: memType, size: values.count)
         self.args = values
