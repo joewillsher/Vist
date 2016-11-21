@@ -237,12 +237,12 @@ extension FunctionCall/*: ValueEmitter*/ {
     
     func emitRValue(module: Module, gen: VIRGenFunction) throws -> AnyManagedValue {
         
-        let args = try argOperands(module: module, gen: gen)
-        
         // if there is an implicit method call, we emit the VIR for it
         if case let call as FunctionCallExpr = self, let implicitMethodCall = call.implicitMethodExpr {
             return try implicitMethodCall.emitRValue(module: module, gen: gen)
         }
+        
+        let args = try argOperands(module: module, gen: gen)
         
         if let stdlib = try module.getOrInsertStdLibFunction(mangledName: mangledName) {
             return try AnyManagedValue.forUnmanaged(gen.builder.buildFunctionCall(function: stdlib, args: args), gen: gen)

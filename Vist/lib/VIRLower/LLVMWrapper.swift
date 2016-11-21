@@ -449,13 +449,13 @@ struct LLVMModule : Dumpable {
         nonmutating set { LLVMSetTarget(module, newValue) }
     }
     
-    mutating func createLLVMGlobal(forPointer value: UnsafeMutableRawPointer, baseName: String, IGF: inout IRGenFunction, module: Module) throws -> LLVMGlobalValue {
-        if let global = globals.cachedGlobals[value] {
+    mutating func createLLVMGlobal<Ptr : RuntimeHashable>(forPointer value: Ptr, baseName: String, IGF: inout IRGenFunction, module: Module) throws -> LLVMGlobalValue {
+        if let global = globals.cachedGlobals[value.hashPointer] {
             return global
         }
         let v = try value.lowerMemory(IGF: &IGF, module: module, baseName: baseName)
-        let glob = createGlobal(value: v, forPtr: value, baseName: baseName, IGF: &IGF)
-        globals.cachedGlobals[value] = glob
+        let glob = createGlobal(value: v, forPtr: value.hashPointer, baseName: baseName, IGF: &IGF)
+        globals.cachedGlobals[value.hashPointer] = glob
         return glob
     }
     

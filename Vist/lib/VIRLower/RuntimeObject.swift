@@ -36,6 +36,16 @@ private protocol ArrayGenerator : RuntimeObject {
     func lowerArray(IGF: inout IRGenFunction, module: Module, baseName: String, arrayCount: Int) throws -> LLVMValue
 }
 
+protocol RuntimeHashable : Hashable {
+    var hashPointer: UnsafeMutableRawPointer { get }
+    func lowerMemory(IGF: inout IRGenFunction, module: Module, baseName: String) throws -> LLVMValue
+}
+extension RuntimeHashable {
+    var hashValue: Int {
+        return hashPointer.hashValue
+    }
+}
+
 extension RuntimeObject {
     
     func lower(IGF: inout IRGenFunction, module: Module, baseName: String) throws -> LLVMValue {
@@ -129,13 +139,20 @@ extension WitnessTable : RuntimeObject {
 
 
 // forward 'const x*' to UnsafeMutablePointer implementation
-extension UnsafePointer : RuntimeObject {
+extension UnsafePointer : RuntimeObject, RuntimeHashable {
     
     func type(IGF: inout IRGenFunction, module: Module) -> LLVMType {
         return UnsafeMutablePointer<Pointee>(mutating: self).type(IGF: &IGF, module: module)
     }
     func lower(IGF: inout IRGenFunction, module: Module, baseName: String) throws -> LLVMValue {
         return try UnsafeMutablePointer<Pointee>(mutating: self).lowerPointer(IGF: &IGF, module: module, baseName: baseName, arrayCount: nil)
+    }
+    
+    var hashPointer: UnsafeMutableRawPointer {
+        return UnsafeMutableRawPointer(mutating: self)
+    }
+    func lowerMemory(IGF: inout IRGenFunction, module: Module, baseName: String) throws -> LLVMValue {
+        return try UnsafeMutablePointer<Pointee>(mutating: self).lowerMemory(IGF: &IGF, module: module, baseName: baseName)
     }
 }
 extension ImplicitlyUnwrappedOptional : RuntimeObject {
@@ -163,7 +180,7 @@ extension Optional : RuntimeObject {
     }
 }
 
-extension UnsafeMutablePointer : RuntimeObject, ArrayGenerator {
+extension UnsafeMutablePointer : RuntimeObject, ArrayGenerator, RuntimeHashable {
     
     func type(IGF: inout IRGenFunction, module: Module) -> LLVMType {
         return (pointee as? RuntimeObject)?.type(IGF: &IGF, module: module).getPointerType() ?? LLVMType.opaquePointer
@@ -178,6 +195,9 @@ extension UnsafeMutablePointer : RuntimeObject, ArrayGenerator {
     // pointer runtime vals allocate their pointee as a new LLVM global, then return the ptr
     fileprivate func lowerPointer(IGF: inout IRGenFunction, module: Module, baseName: String, arrayCount: Int?) throws -> LLVMValue {
         return try getGlobal(IGF: &IGF, module: module, baseName: baseName, arrayCount: arrayCount).value
+    }
+    var hashPointer: UnsafeMutableRawPointer {
+        return UnsafeMutableRawPointer(self)
     }
     
     func lowerMemory(IGF: inout IRGenFunction, module: Module, baseName: String) throws -> LLVMValue {
@@ -217,10 +237,14 @@ extension UnsafeMutablePointer : RuntimeObject, ArrayGenerator {
     }
 }
 
-extension UnsafeMutableRawPointer : RuntimeObject, ArrayGenerator {
+extension UnsafeMutableRawPointer : RuntimeObject, ArrayGenerator, RuntimeHashable {
     
     func type(IGF: inout IRGenFunction, module: Module) -> LLVMType {
         return LLVMType.opaquePointer
+    }
+    
+    var hashPointer: UnsafeMutableRawPointer {
+        return self
     }
     
     func lower(IGF: inout IRGenFunction, module: Module, baseName: String) throws -> LLVMValue {
