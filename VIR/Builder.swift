@@ -101,7 +101,7 @@ extension AIRBuilder {
         guard let block = insertPoint.block else { throw VIRError.noParentBlock }
         block.insts.append(op)
     }
-
+    
     /// Handles adding the instruction to the block -- then returns it
     func _add<Op: AIROp>(_ op: Op) throws -> Op {
         try addToCurrentBlock(op: op)

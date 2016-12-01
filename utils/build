@@ -11,7 +11,7 @@ fi
 
 printf 'Download LLVM & Clang\n'
 
-if [ ! -d /usr/local/cellar/llvm/3.6.2 ]
+if [ ! -d /usr/local/cellar/llvm/3.9.0/ ]
     then
         brew install homebrew/versions/llvm --with-clang #--with-lldb
 fi

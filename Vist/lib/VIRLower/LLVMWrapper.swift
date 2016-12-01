@@ -101,6 +101,9 @@ extension LLVMBuilder {
     func buildSext(val: LLVMValue, size: Int, name: String? = nil) throws -> LLVMValue {
         return try wrap(LLVMBuildSExt(builder, val.val(), LLVMIntType(UInt32(size)), name ?? ""))
     }
+    func buildZext(val: LLVMValue, size: Int, name: String? = nil) throws -> LLVMValue {
+        return try wrap(LLVMBuildZExt(builder, val.val(), LLVMIntType(UInt32(size)), name ?? ""))
+    }
     func buildFloatToInt(val: LLVMValue, intType: LLVMType, name: String? = nil) throws -> LLVMValue {
         return try wrap(LLVMBuildFPToSI(builder, val.val(), intType.type!, name ?? ""))
     }

@@ -29,6 +29,11 @@ _Vvist$Ucshim$Uputchar_ti8(char c) {
     putchar_unlocked(c);
 };
 
+NOINLINE
+int64_t
+_Vvist$Ucshim$Ustrlen_top(void *c) {
+    return strlen(c);
+};
 
 // Legacy shims:
 
@@ -64,8 +69,10 @@ _Vvist$Ucshim$Uprint_tb(bool b) {
 };
 
 NOINLINE
-int64_t
-_Vvist$Ucshim$Ustrlen_top(void *c) {
-    return strlen(c);
+void
+_Vvist$Ucshim$Ulog_t() {
+    static int i = 0;
+    printf(">LOG=%i\n", i);
+    i += 1;
 };
 

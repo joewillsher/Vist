@@ -26,7 +26,7 @@ Type * _Nullable createNamedType(Type *type, StringRef name) {
         els.push_back(type->getStructElementType(i));
     }
     auto elements = ArrayRef<Type *>(els);
-    return StructType::create(getGlobalContext(), elements, name);
+    return StructType::create(type->getContext(), elements, name);
 }
 
 _Nullable LLVMTypeRef getNamedType(const char * _Nonnull name, LLVMModuleRef _Nonnull module) {

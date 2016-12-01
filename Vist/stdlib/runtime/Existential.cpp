@@ -156,9 +156,9 @@ vist_getWitnessMethod(ExistentialObject *_Nonnull existential,
                       int32_t conformanceIndex,
                       int32_t methodIndex) {
     return existential
-    ->getConformance(conformanceIndex)
-    ->witnessTable
-    ->getWitness(methodIndex);
+        ->getConformance(conformanceIndex)
+        ->witnessTable
+        ->getWitness(methodIndex);
 }
 /// EXAMPLE DATA SECTION FOR WITNESS LOOKUP:
 //    @_gYconfXwitnessTablewitnessArr0 = constant { i8* } { i8* bitcast (void (%Y*)* @foo_mY to i8*) }
@@ -172,8 +172,8 @@ vist_getPropertyProjection(ExistentialObject *_Nonnull existential,
                            int32_t conformanceIndex,
                            int32_t propertyIndex) {
     auto index = existential
-    ->getConformance(conformanceIndex)
-    ->getOffset(propertyIndex);
+        ->getConformance(conformanceIndex)
+        ->getOffset(propertyIndex);
     return (void*)(existential->projectBuffer() + index);
 }
 /// EXAMPLE DATA SECTION FOR OFFSET LOOKUP:

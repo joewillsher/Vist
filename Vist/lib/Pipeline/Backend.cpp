@@ -48,9 +48,11 @@
 #include "llvm/Analysis/TargetTransformInfo.h"
 #include <memory>
 
+
+ 
 using namespace llvm;
 
-
+/*
 static void compile(Module *_Nonnull module, TargetMachine::CodeGenFileType type) {
     
     PassRegistry *Registry = PassRegistry::getPassRegistry();
@@ -89,7 +91,8 @@ void compileModule(LLVMModuleRef _Nonnull module) {
     compile(unwrap(module),
             TargetMachine::CodeGenFileType::CGFT_ObjectFile);
 }
-
+*/
+ 
 const char * _Nonnull getHostTriple() {
     return sys::getProcessTriple().data();
 }

@@ -210,6 +210,10 @@ extension ChainableExpr {
 //        case let tuple as TupleExpr:
 //            return (type: _type, )
             
+        case let selfExpr as SelfExpr:
+//            return (type: selfExpr._type!, parentMutable: nil, mutable: true)
+            throw semaError(.notValidLookup, userVisible: false)
+            
         default:
             throw semaError(.notValidLookup, userVisible: false)
         }

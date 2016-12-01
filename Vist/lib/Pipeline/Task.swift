@@ -11,15 +11,15 @@ import class Foundation.Process
 
 enum Exec: String {
     /// Clang: llvm frontend for c, c++, ir
-    case clang = "/usr/local/Cellar/llvm/3.8.1/bin/clang"
+    case clang = "/usr/local/Cellar/llvm/3.9.0/bin/clang"
     /// System version of `clang`
     case sysclang = "/usr/bin/clang"
     /// LLVM optimiser
-    case opt = "/usr/local/Cellar/llvm/3.8.1/bin/opt"
+    case opt = "/usr/local/Cellar/llvm/3.9.0/bin/opt"
     /// LLVM assembler
-    case assemble = "/usr/local/Cellar/llvm/3.8.1/bin/llvm-as"
+    case assemble = "/usr/local/Cellar/llvm/3.9.0/bin/llvm-as"
     /// LLVM backend
-    case llc = "/usr/local/Cellar/llvm/3.8.1/bin/llc"
+    case llc = "/usr/local/Cellar/llvm/3.9.0/bin/llc"
 }
 
 extension Process {

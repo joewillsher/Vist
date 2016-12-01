@@ -73,5 +73,6 @@ bool vist_castExistentialToConcept(ExistentialObject *_Nonnull existential,
     return false;
 }
 
-
+// cache metadata referenced and check here first
+// static metadataCache
 

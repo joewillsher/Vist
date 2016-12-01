@@ -308,6 +308,7 @@ enum AggrFlattenPass : OptimisationPass {
                 try allocInst.eraseFromParent()
                 OptStatistics.aggrMemoryFlattened += 1
                 
+                
             default:
                 continue
             }

@@ -87,6 +87,8 @@ struct Builtin {
         ("Builtin.trunc_int_16", FunctionType(params: [intType], returns: int16Type)),
         ("Builtin.trunc_int_16", FunctionType(params: [int32Type], returns: int16Type)),
         ("Builtin.trunc_int_32", FunctionType(params: [intType], returns: int32Type)),
+        ("Builtin.sext_int_64", FunctionType(params: [boolType], returns: intType)),
+        ("Builtin.zext_int_64", FunctionType(params: [boolType], returns: intType)),
     ]
     
     private static let functionContainer = FunctionContainer(functions: functions, types: [])

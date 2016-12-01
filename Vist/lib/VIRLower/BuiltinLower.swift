@@ -120,6 +120,8 @@ extension BuiltinInstCall: VIRLower {
         case .trunc8:  return try IGF.builder.buildTrunc(val: lhs, size: 8, name: irName)
         case .trunc16: return try IGF.builder.buildTrunc(val: lhs, size: 16, name: irName)
         case .trunc32: return try IGF.builder.buildTrunc(val: lhs, size: 32, name: irName)
+        case .sext64: return try IGF.builder.buildSext(val: lhs, size: 64, name: irName)
+        case .zext64: return try IGF.builder.buildZext(val: lhs, size: 64, name: irName)
         }
         
         // call the intrinsic

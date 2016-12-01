@@ -58,6 +58,7 @@ enum StdLib {
         ("<<", FunctionType(params: [intType, intType], returns: intType)),
         ("~&", FunctionType(params: [intType, intType], returns: intType)),
         ("~|", FunctionType(params: [intType, intType], returns: intType)),
+        ("~|", FunctionType(params: [intType, boolType], returns: intType)),
         ("~^", FunctionType(params: [intType, intType], returns: intType)),
         
         (">",  FunctionType(params: [intType, intType], returns: boolType)),
@@ -138,6 +139,7 @@ enum StdLib {
         ("vist_cshim_putchar", FunctionType(params: [BuiltinType.int(size: 8)], returns: voidType)),
         ("vist_cshim_write", FunctionType(params: [BuiltinType.opaquePointer, BuiltinType.int(size: 64)], returns: voidType)),
         ("vist_cshim_strlen", FunctionType(params: [BuiltinType.opaquePointer], returns: BuiltinType.int(size: 64))),
+        ("vist_cshim_log", FunctionType(params: [], returns: voidType)),
     ]
     
     /// Container initialised with functions, provides subscript to look up functions by name and type

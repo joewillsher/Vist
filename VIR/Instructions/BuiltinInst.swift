@@ -101,6 +101,7 @@ enum BuiltinInst : String {
     case flte = "f_cmp_lte", fgte = "f_cmp_gte", flt = "f_cmp_lt", fgt = "f_cmp_gt"
     
     case trunc8 = "trunc_int_8", trunc16 = "trunc_int_16", trunc32 = "trunc_int_32"
+    case sext64 = "sext_int_64", zext64 = "zext_int_64"
     
     case withptr = "with_ptr", isuniquelyreferenced = "is_uniquely_referenced"
     
@@ -113,7 +114,7 @@ enum BuiltinInst : String {
              .opaquestore, .advancepointer, .ipow:
             return 2
         case .condfail, .allocstack, .allocheap, .heapfree, .isuniquelyreferenced,
-             .opaqueload, .trunc8, .trunc16, .trunc32, .withptr, .not:
+             .opaqueload, .trunc8, .trunc16, .trunc32, .withptr, .not, .sext64, .zext64:
             return 1
         case .trap:
             return 0
@@ -141,6 +142,8 @@ enum BuiltinInst : String {
             return BuiltinType.int(size: 16)
         case .trunc32:
             return BuiltinType.int(size: 32)
+        case .sext64, .zext64:
+            return BuiltinType.int(size: 64)
             
         case .condfail, .trap, .memcpy, .heapfree, .opaquestore:
             return Builtin.voidType // void return

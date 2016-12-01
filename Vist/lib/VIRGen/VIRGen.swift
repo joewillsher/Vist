@@ -353,7 +353,7 @@ extension FuncDecl : StmtEmitter {
         if case .method(let selfType, _) = type.callingConvention {
             // We need self to be passed by ref as a `RefParam`
             let selfParam = function.params![0] as! RefParam
-            let selfVar = Managed<RefParam>.forUnmanaged(selfParam, gen: vgf)
+            let selfVar = Managed<RefParam>.forLValue(selfParam, gen: vgf)
             vgf.addVariable(selfVar, identifier: .self)
             
             guard case let type as NominalType = selfType.importedType(in: module) else { fatalError() }
@@ -560,12 +560,11 @@ extension PropertyLookupExpr : LValueEmitter {
                 
                 let rawPtr = try gen.builder.buildUnmanagedLValue(ClassProjectInstanceInst(object: obj.lValue),
                                                                   gen: gen)
-                var elPtr = try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: rawPtr.lValue,
-                                                                                      property: propertyName),
-                                                                 gen: gen)
-                return try gen.builder.buildManaged(LoadInst(address: elPtr.forwardLValue(gen)), gen: gen).erased
+                return try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: rawPtr.lValue,
+                                                                                 property: propertyName),
+                                                            gen: gen).erased
             }
-
+            
             return try gen.builder.buildUnmanagedLValue(StructElementPtrInst(object: object.lValue,
                                                                              property: propertyName),
                                                         gen: gen).erased
@@ -1023,6 +1022,8 @@ extension MutationExpr : StmtEmitter {
         // the lhs takes over the clearup of the temp
         var temp = try rval.coerceCopy(to: lval.rawType, gen: gen)
         try temp.forward(into: &lval, gen: gen)
+        
+        // TODO: clearup of old value?
     }
     
 }
@@ -1035,28 +1036,55 @@ extension MethodCallExpr : ValueEmitter {
         // build self and args' values
         let args = try argOperands(module: module, gen: gen)
         var selfRef = try object.emitRValue(module: module, gen: gen)
-        var selfVal = try selfRef.coerceCopy(to: object._type!.ptrType(), gen: gen)
         
         // construct function call
         switch object._type {
         case is StructType:
             guard case .method = fnType.callingConvention else { fatalError() }
+            let selfVal: AnyManagedValue
+            
+            // Different types are cleaned up differently 
+            // - classes are retained before, released after
+            // - val backed structs & existentials are shadow-copied into a ref, passed by
+            //   ref, then the temp is destroyed
+            // - ref backed structs & existentials are passed as-is, mutations of inside
+            //   the method affect thiss scope
+            let needsCleanupInThisScope: Bool
+            // if we are dealing with a self ptr of correct order
+            if selfRef.isIndirect, let pointee = selfRef.rawType.getPointeeType(), pointee == selfRef.type {
+                selfVal = try selfRef.borrow()
+                needsCleanupInThisScope = false
+            } else {
+                // otherwise coerce a copy
+                var v = try selfRef.coerceCopy(to: object._type!.ptrType(), gen: gen)
+                v.forwardCleanup(gen)
+                selfVal = v
+                needsCleanupInThisScope = true
+            }
             
             let function = try module.getOrInsertFunction(named: mangledName, type: fnType)
-            let call = try gen.builder.buildFunctionCall(function: function, args: [PtrOperand(selfVal.forwardLValue(gen))] + args)
+            let call = try gen.builder.buildFunctionCall(function: function, args: [PtrOperand(selfVal.lValue)] + args)
+            if needsCleanupInThisScope, let cleanup = selfVal.getCleanup() {
+                // run the temp cleanup now
+                try cleanup(gen, selfVal)
+            }
             return AnyManagedValue.forUnmanaged(call, gen: gen)
             
         case let existentialType as ConceptType:
+            try selfRef.forwardCoerce(to: object._type!.ptrType(), gen: gen)
+            let selfVal = try selfRef.borrow().lValue
             
             // get the witness from the existential
-            let fn = try gen.builder.build(ExistentialWitnessInst(existential: selfVal.forwardLValue(gen),
+            let fn = try gen.builder.build(ExistentialWitnessInst(existential: selfVal,
                                                                   methodName: mangledName,
                                                                   existentialType: existentialType,
                                                                   irName: "witness"))
             guard case let fnType as FunctionType = fn.memType?.importedType(in: module) else { fatalError() }
             
+            // export the buffer as it could escape
+            try gen.builder.build(ExistentialExportBufferInst(existential: selfVal))
             // get the instance from the existential
-            let unboxedSelf = try gen.builder.build(ExistentialProjectInst(existential: selfVal.forwardLValue(gen), irName: "unboxed"))
+            let unboxedSelf = try gen.builder.build(ExistentialProjectInst(existential: selfVal, irName: "unboxed"))
             // call the method by applying the opaque ptr to self as the first param
             let call = try gen.builder.buildFunctionApply(function: PtrOperand(fn),
                                                           returnType: fnType.returns,

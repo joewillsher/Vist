@@ -114,7 +114,7 @@ extension Function {
         
         var paramNames = params
         if case .method = type.callingConvention {
-            paramNames.insert((name: "self", convention: .in), at: 0)
+            paramNames.insert((name: "self", convention: .inout), at: 0)
         }
         
         // values for the explicit params

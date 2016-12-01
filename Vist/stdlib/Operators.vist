@@ -93,6 +93,11 @@ func ~| :: Int Int -> Int = (a b) do
     return Int (Builtin.i_or a.value b.value)
 
 @public @inline @operator(90)
+func ~| :: Int Bool -> Int = (a b) do
+    return Int (Builtin.i_or a.value (Builtin.zext_int_64 b.value))
+
+
+@public @inline @operator(90)
 func ~^ :: Int Int -> Int = (a b) do
     return Int (Builtin.i_xor a.value b.value)
 

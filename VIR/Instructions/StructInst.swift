@@ -215,4 +215,3 @@ final class ClassGetRefCountInst : Inst {
     var parentBlock: BasicBlock?
     var irName: String?
 }
-

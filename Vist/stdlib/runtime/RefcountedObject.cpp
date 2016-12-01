@@ -90,13 +90,20 @@ void vist_retainObject(RefcountedObject *_Nonnull object) {
 /// Get the ref count
 RUNTIME_COMPILER_INTERFACE
 uint64_t vist_getObjectRefcount(RefcountedObject *_Nonnull object) {
-    return (uint64_t)object->refCount - 1;
+    // Vist CC expects object to be released before returning
+    vist_releaseObject(object);
+    return (uint64_t)object->refCount;
 };
 
 /// Check if the object is singly referenced
 RUNTIME_COMPILER_INTERFACE
 bool vist_objectHasUniqueReference(RefcountedObject *_Nonnull object) {
-    return object->refCount == 2;
+    // Vist CC expects object to be released before returning
+    vist_releaseObject(object);
+#ifdef RUNTIME_DEBUG
+    printf("→REF:%s %p, %p\n", object->refCount == 1 ? "unique" : "non_unique", object->object, object);
+#endif
+    return object->refCount == 1;
 };
 
 
