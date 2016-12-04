@@ -198,10 +198,10 @@ extension VariableDecl : ValueEmitter {
         var managed = try value.emitRValue(module: module, gen: gen)
         // coerce to the correct type (as a pointer) and forward
         // the cleanup to the memory
-        try managed.forwardCoerce(to: type.ptrType(), gen: gen)
+        let newLVal = try managed.coerceCopy(to: type.ptrType(), gen: gen)
         
         // create a variableaddr inst and forward the memory's cleanup onto it
-        let variable = try gen.builder.build(VariableAddrInst(addr: managed.lValue,
+        let variable = try gen.builder.build(VariableAddrInst(addr: newLVal.lValue,
                                                               mutable: isMutable,
                                                               irName: name))
         let m = Managed<VariableAddrInst>.forManaged(variable, hasCleanup: false, gen: gen)

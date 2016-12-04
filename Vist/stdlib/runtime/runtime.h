@@ -156,7 +156,7 @@ extern "C" {
         void (*_Nullable copyConstructor)(void *_Nullable, void *_Nullable);
         
         /// The size of runtime memory used to store an instance or reference to it
-        /// \returns `sizeof(RefcountedObject)` iff self `isRefCounted`
+        /// \returns `sizeof(RefcountedObject)` iff self `isRefCounted`, otherwise `sizeof(self)`
         int32_t storageSize() {
             if (isRefCounted)
                 return sizeof(RefcountedObject);

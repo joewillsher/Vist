@@ -32,9 +32,7 @@ ref type _StringCore {
     init Builtin.OpaquePointer Builtin.Int Builtin.Bool = (ptr count isUTF8) {
         base = Builtin.heap_alloc count
         Builtin.mem_copy base ptr count
-	vist_cshim_log ()
-	vist_cshim_write base count
-	
+
         // store the capacity in the most significant 63 bits of capacityAndEncoding
         // if it is UTF-8 we store true in the least significant bit of capacityAndEncoding
         capacityAndEncoding = ((Int count) << 1) ~| (Bool isUTF8)
@@ -50,12 +48,8 @@ ref type _StringCore {
     }
 
     deinit = do
-        if Bool (Builtin.is_uniquely_referenced self) {
-            vist_cshim_log ()  
-	    let c = bufferCapacity ()
-            vist_cshim_write base c.value
+        if Bool (Builtin.is_uniquely_referenced self) do
             Builtin.heap_free base
-	}
     
     @mutating func setBufferCapacity :: Int = do 
         capacityAndEncoding = ($0 << 1) ~| (capacityAndEncoding ~& 1)
@@ -64,8 +58,7 @@ ref type _StringCore {
         let capacity = bufferCapacity ()
         if capacity < size {
             let new = Builtin.heap_alloc size.value
-            vist_cshim_log ()
-            Builtin.mem_copy base new capacity.value
+            Builtin.mem_copy new base capacity.value
             Builtin.heap_free base
             base = new
             setBufferCapacity size
@@ -102,34 +95,40 @@ type String {
 
     @mutating func append :: String = (other) {
         // check if the core is singly referenced before mutating
-        let l1 = length ()
-        let l2 = other.length ()
+		let otherCore = other._core
         if Bool (Builtin.is_uniquely_referenced _core) {
-            // mutate the core in place, after resizing it
-            _core.growBuffer l1 + l2
-            if (_core.isUTF8Encoded ()) && (other._core.isUTF8Encoded ()) {
-		Builtin.mem_copy other._core.base (_core.base + l1) l2.value
-            } else { fatalError "TODO tbh 1111" }            
-        } else {
-            // copy out
+
+            let l1 = length ()
             let c1 = _core.bufferCapacity ()
-            let newCapacity = c1 + (other._core.bufferCapacity ()) - 1
+            let c2 = otherCore.bufferCapacity ()
+            // mutate the core in place, after resizing it
+            _core.growBuffer c1 + c2 - 1
+            if (_core.isUTF8Encoded ()) && (otherCore.isUTF8Encoded ()) {
+                Builtin.mem_copy (_core.base + l1) otherCore.base c2.value
+            } else {
+                fatalError "TODO tbh 1111"
+            }
+            let l = length ()
+
+        } else {
+
+            // copy out
+            let l1 = length ()
+            let l2 = other.length ()
+            let c1 = _core.bufferCapacity ()
+            let newCapacity = c1 + (otherCore.bufferCapacity ()) - 1
             let newBase = Builtin.heap_alloc newCapacity.value
-
-            if (_core.isUTF8Encoded ()) && (other._core.isUTF8Encoded ()) {
+			
+            if (_core.isUTF8Encoded ()) && (otherCore.isUTF8Encoded ()) {
                 Builtin.mem_copy newBase _core.base l1.value
-		Builtin.mem_copy (newBase + l1) other._core.base l2.value
-            } else { 
-		fatalError "TODO mixed utf8/16 appending" 
-	    }
-
+                Builtin.mem_copy (newBase + l1) otherCore.base l2.value
+            } else {
+                fatalError "TODO mixed utf8/16 appending"
+            }
+			
             _core = _StringCore _core newBase newCapacity
-
-            vist_cshim_log ()
-	    vist_cshim_print newCapacity.value
+			
             let l = length()
-            vist_cshim_print l.value
-	    vist_cshim_write _core.base l.value
         }
     }
 }

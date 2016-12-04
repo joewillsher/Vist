@@ -55,6 +55,10 @@ enum CopyElisionPass : OptimisationPass {
                     guard case let alloc as AllocInst = copyAddr.outAddr.value else {
                         continue instPass
                     }
+                    // cannot elide copy_addr insts on ref counting insts, as this changes the semantics
+                    guard !copyAddr.outAddr.memType!.isClassType() else {
+                        continue instPass
+                    }
                     for use in alloc.uses {
                         switch use.user {
                         case is CopyAddrInst, is DestroyAddrInst, is DeallocStackInst:
