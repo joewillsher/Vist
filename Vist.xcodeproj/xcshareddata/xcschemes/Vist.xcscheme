@@ -77,11 +77,11 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "-Ohigh"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-O0"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-use-air"
@@ -133,7 +133,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-debug-runtime"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-run"
