@@ -10,6 +10,7 @@ import XCTest
 //import class Foundation.Pipe
 import class Foundation.FileManager
 import struct Foundation.URL
+import class Foundation.Process
 
 // tests can define comments which define the expected output of the program
 // `// OUT: 1 2` will add "1\n2\n" to the expected result of the program
@@ -230,6 +231,13 @@ extension OutputTests {
         XCTAssertTrue(_testFile(name: "RefTypeMember"))
     }
     
+    
+    func testMutateLifetime() {
+        XCTAssertTrue(_testFile(name: "MutateLifetime"))
+    }
+    func testCOWString() {
+        XCTAssertTrue(_testFile(name: "COWString"))
+    }
 }
 
 extension RefCountingTests {
@@ -250,7 +258,7 @@ extension RuntimePerformanceTests {
             
             measureMetrics(RuntimePerformanceTests.defaultPerformanceMetrics(), automaticallyStartMeasuring: false) {
                 
-                let runTask = Task()
+                let runTask = Process()
                 runTask.currentDirectoryPath = RuntimePerformanceTests.testDir
                 runTask.launchPath = "\(RuntimePerformanceTests.testDir)/\(fileName)"
                 runTask.standardOutput = FileHandle.nullDevice
@@ -279,7 +287,7 @@ extension RuntimePerformanceTests {
             
             measureMetrics(RuntimePerformanceTests.defaultPerformanceMetrics(), automaticallyStartMeasuring: false) {
                 
-                let runTask = Task()
+                let runTask = Process()
                 runTask.currentDirectoryPath = RuntimePerformanceTests.testDir
                 runTask.launchPath = "\(RuntimePerformanceTests.testDir)/\(fileName)"
                 runTask.standardOutput = FileHandle.nullDevice
@@ -308,7 +316,7 @@ extension RuntimePerformanceTests {
             
             measureMetrics(RuntimePerformanceTests.defaultPerformanceMetrics(), automaticallyStartMeasuring: false) {
                 
-                let runTask = Task()
+                let runTask = Process()
                 runTask.currentDirectoryPath = RuntimePerformanceTests.testDir
                 runTask.launchPath = "\(RuntimePerformanceTests.testDir)/\(fileName)"
                 runTask.standardOutput = FileHandle.nullDevice

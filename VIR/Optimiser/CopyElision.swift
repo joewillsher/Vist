@@ -18,6 +18,15 @@ enum CopyElisionPass : OptimisationPass {
     
     static func run(on function: Function) throws {
         
+        for case let varInst as VariableInst in function.instructions {
+            varInst.value.value!.irName = varInst.irName
+            try varInst.eraseFromParent(replacingAllUsesWith: varInst.value.value!)
+        }
+        for case let varInst as VariableAddrInst in function.instructions {
+            varInst.addr.value!.irName = varInst.irName
+            try varInst.eraseFromParent(replacingAllUsesWith: varInst.addr.value!)
+        }
+
         for block in function.dominator.analysis {
             
             instPass: for inst in block.instructions {
@@ -55,14 +64,20 @@ enum CopyElisionPass : OptimisationPass {
                     guard case let alloc as AllocInst = copyAddr.outAddr.value else {
                         continue instPass
                     }
-                    // cannot elide copy_addr insts on ref counting insts, as this changes the semantics
-                    guard !copyAddr.outAddr.memType!.isClassType() else {
-                        continue instPass
-                    }
+//                    // cannot elide copy_addr insts on ref counting insts, as this changes the semantics (what about nested classes)
+//                    guard !copyAddr.outAddr.memType!.isClassType() else {
+//                        continue instPass
+//                    }
+                    
                     for use in alloc.uses {
                         switch use.user {
-                        case is CopyAddrInst, is DestroyAddrInst, is DeallocStackInst:
+                        case is DestroyAddrInst, is DeallocStackInst:
                             break // okay
+                        case let copy as CopyAddrInst:
+                            // we can only store to the allocation once
+                            if copy !== copyAddr, case let val as AllocInst = copy.outAddr.value, val === alloc {
+                                continue instPass
+                            }
                         default:
                             continue instPass
                         }

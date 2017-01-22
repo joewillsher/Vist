@@ -76,7 +76,7 @@ func testExampleCFGOpt() throws -> Bool {
         module.builder.insertPoint.block = b6
         let val = try module.builder.build(LoadInst(address: nmem))
         let three = try module.builder.build(IntLiteralInst(val: 3, size: 64))
-        let mul = try module.builder.build(BuiltinInstCall(inst: .imuloverflow, args: [val, three]))
+        let mul = try module.builder.build(BuiltinInstCall(inst: .imul, args: [val, three]))
         let one = try module.builder.build(IntLiteralInst(val: 1, size: 64))
         let add = try module.builder.build(BuiltinInstCall(inst: .iaddunchecked, args: [mul, one]))
         try module.builder.build(StoreInst(address: nmem, value: add))

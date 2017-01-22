@@ -157,7 +157,7 @@ func multiLineOutput(_ output: String, matches expected: [String]) throws -> Boo
         }
         
         // diagnose a faliaure to find it
-        throw OutputError(reason: "Did not find matching IR: \(expectedLines.first)")
+        throw OutputError(reason: "Did not find matching IR: \(expectedLines.first!)")
     }
     
     return true

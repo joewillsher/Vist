@@ -23,6 +23,7 @@ struct PassManager {
         
         // run post inline opts
         for function in module.functions where function.hasBody {
+            try create(pass: DCEPass.self, runOn: function)
             try create(pass: CopyElisionPass.self, runOn: function)
             try create(pass: RegisterPromotionPass.self, runOn: function)
             try create(pass: ExistentialUnboxPass.self, runOn: function)

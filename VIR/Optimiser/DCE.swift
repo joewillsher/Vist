@@ -17,11 +17,11 @@ enum DCEPass : OptimisationPass {
     static func run(on function: Function) throws {
         
         try function.blocks?.forEach(UnreachableRemovePass.run(on:))
-
+        
         for block in function.dominator.analysis.reversed() {
             for inst in block.instructions.reversed() where inst.canBeRemoved() {
-                    try inst.eraseFromParent()
-                    OptStatistics.deadInstructionsRemoved += 1
+                try inst.eraseFromParent()
+                OptStatistics.deadInstructionsRemoved += 1
                 for use in inst.uses {
                     try use.user?.eraseFromParent()
                 }

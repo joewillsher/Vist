@@ -55,6 +55,7 @@ protocol ManagedValue {
     var isIndirect: Bool { get }
     var type: Type { get }
     var erased: AnyManagedValue { get }
+    var isUninitialised: Bool { get }
 }
 struct Managed<Val : Value> : ManagedValue {
     
@@ -62,17 +63,19 @@ struct Managed<Val : Value> : ManagedValue {
     let isIndirect: Bool
     let type: Type
     let id: Int
+    var isUninitialised: Bool
     
     var hasCleanup: Bool
     
     var value: Value { return managedValue }
     
-    fileprivate init(_ value: Val, hasCleanup: Bool = true) {
+    fileprivate init(_ value: Val, hasCleanup: Bool = true, isUninitialised: Bool = false) {
         self.managedValue = value
         self.isIndirect = value.isIndirect
         self.type = value.type!.getBasePointeeType().getConcreteNominalType() ?? value.type!.getCannonicalType()
         self.hasCleanup = hasCleanup
         self.id = 0
+        self.isUninitialised = isUninitialised
     }
     
     var erased: AnyManagedValue { return AnyManagedValue(erasing: self) }
@@ -82,18 +85,21 @@ struct Managed<Val : Value> : ManagedValue {
         return managedValue
     }
     
-    static func forUnmanaged(_ value: Val, gen: VIRGenFunction) -> Managed<Val> {
-        return gen.createManaged(Managed(value))
+    /// Create a managed value from `value` in the block
+    static func forUnmanaged(_ value: Val, isUninitialised: Bool = false, gen: VIRGenFunction) -> Managed<Val> {
+        return gen.createManaged(Managed(value, isUninitialised: isUninitialised))
     }
-    static func forLValue(_ value: Val, gen: VIRGenFunction) -> Managed<Val> {
-        return gen.createManaged(Managed(value, hasCleanup: false))
+    /// Create a managed lvalue with no cleanup from `value` in the block
+    static func forLValue(_ value: Val, isUninitialised: Bool = false, gen: VIRGenFunction) -> Managed<Val> {
+        return gen.createManaged(Managed(value, hasCleanup: false, isUninitialised: isUninitialised))
     }
-    static func forManaged(_ value: Val, hasCleanup: Bool, gen: VIRGenFunction) -> Managed<Val> {
-        return gen.createManaged(Managed(value, hasCleanup: hasCleanup))
+    /// Create a managed value with optional cleanup from `value` in the block
+    static func forManaged(_ value: Val, hasCleanup: Bool, isUninitialised: Bool = false, gen: VIRGenFunction) -> Managed<Val> {
+        return gen.createManaged(Managed(value, hasCleanup: hasCleanup, isUninitialised: isUninitialised))
     }
     
     func unique() -> AnyManagedValue {
-        return AnyManagedValue(managedValue: managedValue, isIndirect: isIndirect, type: type, id: id+1, hasCleanup: hasCleanup)
+        return AnyManagedValue(managedValue: managedValue, isIndirect: isIndirect, type: type, id: id+1, hasCleanup: hasCleanup, isUninitialised: isUninitialised)
     }
 }
 
@@ -102,6 +108,7 @@ struct AnyManagedValue : ManagedValue {
     let managedValue: Value
     let isIndirect: Bool
     let type: Type
+    var isUninitialised: Bool
     
     let id: Int
     var hasCleanup: Bool
@@ -109,12 +116,13 @@ struct AnyManagedValue : ManagedValue {
     var value: Value { return managedValue }
     
     /// init creates cleanup
-    fileprivate init(_ value: Value, hasCleanup: Bool = true) {
+    fileprivate init(_ value: Value, hasCleanup: Bool = true, isUninitialised: Bool = false) {
         self.managedValue = value
         self.isIndirect = value.isIndirect
         self.type = value.type!.getBasePointeeType().getConcreteNominalType() ?? value.type!.getCannonicalType()
         self.hasCleanup = hasCleanup
         self.id = 0
+        self.isUninitialised = isUninitialised
     }
     
     init<Val : Value>(erasing managed: Managed<Val>) {
@@ -123,6 +131,7 @@ struct AnyManagedValue : ManagedValue {
         self.type = managed.type
         self.hasCleanup = managed.hasCleanup
         self.id = 0
+        self.isUninitialised = managed.isUninitialised
     }
     var erased: AnyManagedValue { return self }
     
@@ -133,12 +142,13 @@ struct AnyManagedValue : ManagedValue {
     static func forLValue(_ value: LValue, gen: VIRGenFunction) -> AnyManagedValue {
         return gen.createManaged(AnyManagedValue(value, hasCleanup: false))
     }
-    fileprivate init(managedValue: Value, isIndirect: Bool, type: Type, id: Int, hasCleanup: Bool) {
+    fileprivate init(managedValue: Value, isIndirect: Bool, type: Type, id: Int, hasCleanup: Bool, isUninitialised: Bool) {
         self.managedValue = managedValue
         self.isIndirect = isIndirect
         self.type = type
         self.id = id+1
         self.hasCleanup = hasCleanup
+        self.isUninitialised = isUninitialised
     }
 }
 
@@ -150,7 +160,7 @@ extension ManagedValue {
     }
     /// - returns: an erased version with a different id
     func unique() -> AnyManagedValue {
-        return AnyManagedValue(managedValue: value, isIndirect: isIndirect, type: type, id: id+1, hasCleanup: hasCleanup)
+        return AnyManagedValue(managedValue: value, isIndirect: isIndirect, type: type, id: id+1, hasCleanup: hasCleanup, isUninitialised: isUninitialised)
     }
     func getCleanup() -> Cleanup? {
         if !type.isTrivial() {
@@ -267,8 +277,13 @@ extension ManagedValue {
         
         // this creates the new cleanup
         let mem = try gen.emitTempAlloc(memType: type)
-        try gen.builder.build(CopyAddrInst(addr: lValue,
-                                           out: mem.lValue))
+        if type.isTrivial() {
+            let val = try gen.builder.build(LoadInst(address: lValue))
+            try gen.builder.build(StoreInst(address: mem.lValue, value: val))
+        } else {
+            try gen.builder.build(CopyAddrInst(addr: lValue,
+                                               out: mem.lValue))
+        }
         return mem.erased
     }
     
@@ -293,8 +308,13 @@ extension ManagedValue {
         }
         // copy/move it to the new mem
         if isIndirect {
-            try gen.builder.build(CopyAddrInst(addr: lValue,
-                                               out: dest.lValue))
+            if type.isTrivial() {
+                let val = try gen.builder.build(LoadInst(address: lValue))
+                try gen.builder.build(StoreInst(address: dest.lValue, value: val))
+            } else {
+                try gen.builder.build(CopyAddrInst(addr: lValue,
+                                                   out: dest.lValue))
+            }
         } else {
             try gen.builder.build(StoreInst(address: dest.lValue, value: value))
         }
@@ -305,8 +325,13 @@ extension ManagedValue {
         forwardCleanup(gen)
         // if they are the same indirection level, copy_addr
         if rawType == dest.rawType {
-            try gen.builder.build(CopyAddrInst(addr: lValue,
-                                               out: dest.lValue))
+            if type.isTrivial() {
+                let val = try gen.builder.build(LoadInst(address: lValue))
+                try gen.builder.build(StoreInst(address: dest.lValue, value: val))
+            } else {
+                try gen.builder.build(CopyAddrInst(addr: lValue,
+                                                   out: dest.lValue))
+            }
         } else {
             try gen.builder.build(StoreInst(address: dest.lValue,
                                             value: value))
@@ -402,16 +427,16 @@ extension AnyManagedValue {
 }
 
 extension VIRBuilder {
-    func buildUnmanaged<I : Inst>(_ inst: I, gen: VIRGenFunction) throws -> Managed<I> {
+    func buildUnmanaged<I : Inst>(_ inst: I, isUninitialised: Bool = false, gen: VIRGenFunction) throws -> Managed<I> {
         try addToCurrentBlock(inst: inst)
-        return Managed<I>.forUnmanaged(inst, gen: gen)
+        return Managed<I>.forUnmanaged(inst, isUninitialised: isUninitialised, gen: gen)
     }
-    func buildManaged<I : Inst>(_ inst: I, hasCleanup: Bool = false, gen: VIRGenFunction) throws -> Managed<I> {
+    func buildManaged<I : Inst>(_ inst: I, hasCleanup: Bool = false, isUninitialised: Bool = false, gen: VIRGenFunction) throws -> Managed<I> {
         try addToCurrentBlock(inst: inst)
-        return Managed<I>.forManaged(inst, hasCleanup: hasCleanup, gen: gen)
+        return Managed<I>.forManaged(inst, hasCleanup: hasCleanup, isUninitialised: isUninitialised, gen: gen)
     }
-    func buildUnmanagedLValue<I : Inst>(_ inst: I, gen: VIRGenFunction) throws -> Managed<I> {
+    func buildUnmanagedLValue<I : Inst>(_ inst: I, isUninitialised: Bool = false, gen: VIRGenFunction) throws -> Managed<I> {
         try addToCurrentBlock(inst: inst)
-        return Managed<I>.forLValue(inst, gen: gen)
+        return Managed<I>.forLValue(inst, isUninitialised: isUninitialised, gen: gen)
     }
 }

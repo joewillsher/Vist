@@ -78,7 +78,7 @@ enum CFGFoldPass : OptimisationPass {
                         cond = const.value.value?.type?.getBasePointeeType() == structType
                         val = cond ? const.value.value : nil
                         
-                    case (is ConceptType, let targetConceptType as ConceptType):
+                    case (is ConceptType, let _ as ConceptType):
                         continue instLoop // TODO
                     default:
                         fatalError()

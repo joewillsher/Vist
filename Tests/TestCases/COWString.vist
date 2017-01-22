@@ -1,0 +1,25 @@
+// RUN: -Ohigh -disable-opt=inline -r -build-runtime
+// CHECK: OUT
+
+var a = "aaa\n"
+
+func def :: String = (a) {
+	var c = a
+	_print a
+	_print c
+	c.append "bbb\n"
+	_print a
+	_print c
+}
+
+def a
+
+// OUT-CHECK:
+// OUT: aaa
+// OUT: aaa
+// OUT: aaa
+// OUT: aaa
+// OUT: bbb
+
+
+

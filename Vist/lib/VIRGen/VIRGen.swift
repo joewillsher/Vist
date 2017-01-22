@@ -200,9 +200,9 @@ extension VariableDecl : ValueEmitter {
         var newLVal = try managed.coerceCopy(to: type.ptrType(), gen: gen)
         
         // create a variableaddr inst and forward the memory's cleanup onto it
-        let m = Managed<VariableAddrInst>.forUnmanaged(VariableAddrInst(addr: newLVal.forwardLValue(gen),
-                                                                        mutable: isMutable,
-                                                                        irName: name), gen: gen)
+        let m = try gen.builder.buildUnmanaged(VariableAddrInst(addr: newLVal.forwardLValue(gen),
+                                                                mutable: isMutable,
+                                                                irName: name), gen: gen)
         gen.addVariable(m, name: name)
         return m
     }
@@ -909,15 +909,16 @@ extension InitDecl : StmtEmitter {
         if selfType.isHeapAllocated {
             // no cleanup as it will escape the scope
             selfVal = try fnVGF.builder.buildManaged(AllocObjectInst(memType: selfType, irName: "storage"),
-                                                     hasCleanup: false, gen: fnVGF).erased
+                                                     hasCleanup: false, isUninitialised: true, gen: fnVGF).erased
             selfAccessor = try fnVGF.builder.buildUnmanagedLValue(ClassProjectInstanceInst(object: selfVal.lValue, irName: "storage.raw"),
-                                                                  gen: fnVGF).erased
+                                                                  isUninitialised: true, gen: fnVGF).erased
         }
         else {
             selfVal = try fnVGF.builder.buildManaged(AllocInst(memType: selfType.importedType(in: fnVGF.module)),
-                                                     hasCleanup: false, gen: fnVGF).erased
+                                                     hasCleanup: false, isUninitialised: true, gen: fnVGF).erased
             selfAccessor = selfVal
         }
+        // this stops mutation expressions from releasing unallocated memory
         
         // add self
         fnVGF.addVariable(selfVal, identifier: .self)
@@ -925,7 +926,8 @@ extension InitDecl : StmtEmitter {
         for member in selfType.members {
             let structElement = try fnVGF.builder.buildUnmanagedLValue(StructElementPtrInst(object: selfAccessor.lValue,
                                                                                             property: member.name,
-                                                                                            irName: member.name), gen: fnVGF)
+                                                                                            irName: member.name),
+                                                                       isUninitialised: true, gen: fnVGF)
             fnVGF.addVariable(structElement, name: member.name)
         }
         
@@ -1015,13 +1017,15 @@ extension MutationExpr : StmtEmitter {
         guard case let lhs as _LValueEmitter = object else { fatalError() }
         var lval = try lhs.emitLValue(module: module, gen: gen)
         
+        // clearup of old value
+        if !lval.isUninitialised {
+            try lval.getCleanup()?(gen, lval)
+        }
         // create a copy with its own clearup
         var rval = try value.emitRValue(module: module, gen: gen).erased
         // the lhs takes over the clearup of the temp
         var temp = try rval.coerceCopy(to: lval.rawType, gen: gen)
         try temp.forward(into: &lval, gen: gen)
-        
-        // TODO: clearup of old value?
     }
     
 }

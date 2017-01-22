@@ -1,0 +1,35 @@
+// RUN: -Ohigh -r -build-runtime -debug-runtime
+// CHECK: OUT
+
+ref type Core { }
+type X {
+	var a: Core
+
+	@mutating func change :: () = {
+		a = Core()
+	}
+}
+
+var x = X (Core ())
+x.change()
+
+// OUT-CHECK:
+// OUT: →alloc 'Core'	0x100100350 0x1001029a0, rc=1
+// OUT: →retain 	0x100100350 0x1001029a0, rc=2
+// OUT: →retain 	0x100100350 0x1001029a0, rc=3
+// OUT: →release	0x100100350 0x1001029a0, rc=2
+// OUT: →retain 	0x100100350 0x1001029a0, rc=3
+// OUT: →release	0x100100350 0x1001029a0, rc=2
+// OUT: →alloc 'Core'	0x1001029c0 0x1001029d0, rc=1
+// OUT: →retain 	0x1001029c0 0x1001029d0, rc=2
+// OUT: →release	0x1001029c0 0x1001029d0, rc=1
+// OUT: →release	0x1001029c0 0x1001029d0, rc=0
+// OUT: →dealloc	0x1001029c0
+// OUT:    ↳destructor_fn=0x100000de0
+// OUT: →release	0x100100350 0x1001029a0, rc=1
+// OUT: →release	0x100100350 0x1001029a0, rc=0
+// OUT: →dealloc	0x100100350
+// OUT:    ↳destructor_fn=0x100000de0
+
+
+
