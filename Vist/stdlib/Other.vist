@@ -90,7 +90,12 @@ func typeof :: Any -> Metatype = do
 }
 
 
-
+@public func measureBlock :: (() -> ()) -> Double = (closure) {
+    let t0 = vist_cshim_time()
+    closure()
+    let t1 = vist_cshim_time()
+    return Double (Builtin.f_sub t1 t0)
+}
 
 
 // ranges
@@ -110,6 +115,10 @@ func ..< :: Int Int -> Range = (a b) do
     _print (b.description ())
     _print "\n"
 }
+
+@public @noinline
+@inline func print :: Double = (b) do
+    vist_cshim_print b.value
 
 
 

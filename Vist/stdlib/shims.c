@@ -12,6 +12,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+#include <time.h>
+#include <sys/types.h>
 
 #define NORETURN __attribute__((noreturn))
 #define NOINLINE __attribute__((noinline))
@@ -35,6 +37,19 @@ _Vvist$Ucshim$Ustrlen_top(void *c) {
     return strlen(c);
 };
 
+struct timeval {
+    time_t      tv_sec;     /* seconds */
+    suseconds_t tv_usec;    /* microseconds */
+};
+
+NOINLINE
+double
+_Vvist$Ucshim$Utime_t() {
+    struct timeval time;
+    gettimeofday(&time, NULL);
+    return (double)time.tv_sec + (double)time.tv_usec*1e-6;
+};
+
 // Legacy shims:
 
 NOINLINE
@@ -53,7 +68,7 @@ NOINLINE
 void
 _Vvist$Ucshim$Uprint_tf64(double d)
 {
-    printf("%f\n", d);
+    printf("%lf\n", d);
 };
 
 NOINLINE

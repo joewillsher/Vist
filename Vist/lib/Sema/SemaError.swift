@@ -93,7 +93,7 @@ enum SemaError: VistError {
         case .noFunction(let f, let ts):
             return "Could not find function '\(f)' which accepts parameters of type '\(ts.asTupleDescription())'"
         case .wrongFuncParamList(let applied, let forType):
-            return "Could not bind parameter list '(\(applied.joined(separator: " ")))' to param types '\(forType.asTupleDescription())'"
+            return "Could not bind parameter list (\(applied.joined(separator: " "))) to param types '\(forType.asTupleDescription())'"
         case .wrongFunctionApplications(let name, let applied, let expected):
             return "Incorrect application of function '\(name)'. '\(applied.asTupleDescription())' is not convertible to '\(expected.asTupleDescription())'"
         case .noTypeNamed(let name):

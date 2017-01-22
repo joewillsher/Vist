@@ -112,6 +112,7 @@ enum StdLib {
         ("fatalError", FunctionType(params: [stringType], returns: voidType)),
         
         ("typeof",     FunctionType(params: [anyConcept],   returns: metatypeType)),
+        ("measureBlock",FunctionType(params: [FunctionType(params: [])],    returns: doubleType)),
         
         // TODO: when we can link parallel compiled files' AST we 
         //       won't need to expose private stdlib function
@@ -140,6 +141,7 @@ enum StdLib {
         ("vist_cshim_write", FunctionType(params: [BuiltinType.opaquePointer, BuiltinType.int(size: 64)], returns: voidType)),
         ("vist_cshim_strlen", FunctionType(params: [BuiltinType.opaquePointer], returns: BuiltinType.int(size: 64))),
         ("vist_cshim_log", FunctionType(params: [], returns: voidType)),
+        ("vist_cshim_time", FunctionType(params: [], returns: BuiltinType.float(size: 64))),
     ]
     
     /// Container initialised with functions, provides subscript to look up functions by name and type

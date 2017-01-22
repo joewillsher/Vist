@@ -247,9 +247,7 @@ extension ClosureExpr : ExprTypeProvider {
         
         // If the AST context tells us the type, use that
         // otherwise create type variables for the unknown param & return types
-        guard let size = parameters?.count ?? (scope.semaContext as? FunctionType)?.params.count else {
-            throw semaError(.cannotInferClosureParamListSize)
-        }
+        let size = parameters?.count ?? (scope.semaContext as? FunctionType)?.params.count ?? 0
         
         let ty: FunctionType
         if case let context as FunctionType = scope.semaContext {
@@ -274,8 +272,7 @@ extension ClosureExpr : ExprTypeProvider {
         self.type = ty
         
         // we dont want implicit captutring
-        let innerScope = SemaScope.capturing(scope,
-                                                  overrideReturnType: ty.returns)
+        let innerScope = SemaScope.capturing(scope, overrideReturnType: ty.returns)
         innerScope.returnType = ty.returns
         
         // add implicit params
