@@ -7,33 +7,33 @@
 //
 
 extension AllocObjectInst : VIRLower {
-    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+    func virLower(igf: inout IRGenFunction) throws -> LLVMValue {
         
-        let metadata = try refType.getLLVMTypeMetadata(IGF: &IGF, module: module)
+        let metadata = try refType.getLLVMTypeMetadata(igf: &igf, module: module)
         
-        let ref = module.getRuntimeFunction(.allocObject, IGF: &IGF)
-        let alloced = try IGF.builder.buildCall(function: ref,
+        let ref = module.getRuntimeFunction(.allocObject, igf: &igf)
+        let alloced = try igf.builder.buildCall(function: ref,
                                                 args: [metadata],
                                                 name: irName)
         
-        return try IGF.builder.buildBitcast(value: alloced, to: refType.ptrType().lowered(module: module))
+        return try igf.builder.buildBitcast(value: alloced, to: refType.ptrType().lowered(module: module))
     }
 }
 
 extension RetainInst : VIRLower {
-    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        let ref = module.getRuntimeFunction(.retainObject, IGF: &IGF)
-        return try IGF.builder.buildCall(function: ref,
+    func virLower(igf: inout IRGenFunction) throws -> LLVMValue {
+        let ref = module.getRuntimeFunction(.retainObject, igf: &igf)
+        return try igf.builder.buildCall(function: ref,
                                          args: [object.bitcastToOpaqueRefCountedType(module: module)],
                                          name: irName)
     }
 }
 
 extension ReleaseInst : VIRLower {
-    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+    func virLower(igf: inout IRGenFunction) throws -> LLVMValue {
         let ref = module.getRuntimeFunction(.releaseObject,
-                                            IGF: &IGF)
-        return try IGF.builder.buildCall(function: ref,
+                                            igf: &igf)
+        return try igf.builder.buildCall(function: ref,
                                          args: [object.bitcastToOpaqueRefCountedType(module: module)],
                                          name: irName)
     }
@@ -41,10 +41,10 @@ extension ReleaseInst : VIRLower {
 
 
 extension DeallocObjectInst : VIRLower {
-    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+    func virLower(igf: inout IRGenFunction) throws -> LLVMValue {
         let ref = module.getRuntimeFunction(.deallocObject,
-                                            IGF: &IGF)
-        return try IGF.builder.buildCall(function: ref,
+                                            igf: &igf)
+        return try igf.builder.buildCall(function: ref,
                                          args: [object.bitcastToOpaqueRefCountedType(module: module)],
                                          name: irName)
     }
@@ -53,7 +53,7 @@ extension DeallocObjectInst : VIRLower {
 
 extension PtrOperand {
     func bitcastToOpaqueRefCountedType(module: Module) throws -> LLVMValue {
-        let refcounted = Runtime.refcountedObjectPointerType.importedType(in: module).lowered(module: module) as LLVMType
+        let refcounted = Runtime.refcountedObjectPointerType.importedCanType(in: module) as LLVMType
         return try module.loweredBuilder.buildBitcast(value: loweredValue!, to: refcounted)
     }
 }

@@ -59,6 +59,11 @@ extension Type {
     
     func isInModule() -> Bool { return false }
     
+    /// Import this type into `module` and lower it
+    func importedCanType(in module: Module) -> LLVMType {
+        return importedType(in: module).lowered(module: module)
+    }
+    
     func persistentType(module: Module) -> Type { return importedType(in: module) }
     
     func getAsStructType() throws -> StructType {

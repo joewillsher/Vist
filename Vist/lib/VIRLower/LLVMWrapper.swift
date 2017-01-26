@@ -146,32 +146,15 @@ extension LLVMBuilder {
         return try wrap(LLVMBuildInsertValue(builder, aggr.val(), val.val(), UInt32(index), name ?? ""))
     }
     @discardableResult
-    static func constInsert(value val: LLVMValue, in aggr: LLVMValue, index: Int, name: String? = nil) throws -> LLVMValue {
+    static func constInsert(value: LLVMValue, in aggr: LLVMValue, index: Int, name: String? = nil) throws -> LLVMValue {
         var v = [UInt32(index)]
-        var value = val
         
         var types = [LLVMTypeRef?](repeating: nil, count: Int(LLVMCountStructElementTypes(aggr.type.type)))
         LLVMGetStructElementTypes(aggr.type.type, &types)
-        let type = types[index]
-        
-        // cast the pointer if its the wrong target
-        let kind = LLVMGetTypeKind(type)
-        if kind == LLVMPointerTypeKind || kind == LLVMArrayTypeKind {
-            if LLVMGetElementType(type) != nil {
-                if let hasType = val._value.map(LLVMTypeOf), hasType != type {
-                    if kind == LLVMPointerTypeKind {
-                        value = try constBitcast(value: value, to: LLVMType(ref: type))
-                    }
-                    else if kind == LLVMArrayTypeKind {
-                        value = try constGEP(ofAggregate: value, index: LLVMValue.constInt(value: 0, size: 32))
-                    }
-                }
-            }
-        }
         
         // correct null value type (which we get from the struct
         return try LLVMValue(ref: LLVMConstInsertValue(aggr.val(),
-                                                       value._value ?? LLVMConstNull(type),
+                                                       value._value ?? LLVMConstNull(types[index]),
                                                        &v, 1))
     }
     func buildExtractValue(from val: LLVMValue, index: Int, name: String? = nil) throws -> LLVMValue {
@@ -186,7 +169,7 @@ extension LLVMBuilder {
     }
     static func constGEP(ofAggregate aggr: LLVMValue, index: LLVMValue) throws -> LLVMValue {
         var v = try [index.val()]
-        return try LLVMValue(ref:LLVMConstInBoundsGEP(aggr.val(), &v, 1))
+        return try LLVMValue(ref: LLVMConstInBoundsGEP(aggr.val(), &v, 1))
     }
     func buildGlobalString(value str: String, name: String? = nil) throws -> LLVMValue {
         return try wrap(LLVMBuildGlobalString(builder, str, name ?? ""))
@@ -194,6 +177,7 @@ extension LLVMBuilder {
     func buildGlobalString(value str: UnsafeMutablePointer<CChar>, name: String? = nil) throws -> LLVMValue {
         return try wrap(LLVMBuildGlobalString(builder, str, name ?? ""))
     }
+    
     static func constAggregate(type: LLVMType, elements: [LLVMValue]) throws -> LLVMValue {
         // creates an undef, then for each element in type, inserts the next element into it
         return try elements
@@ -384,7 +368,7 @@ final class FunctionsSequence : Sequence {
 
 struct LLVMModule : Dumpable {
     private(set) var module: LLVMModuleRef?
-    var typeMetadata: [String: TypeMetadata] = [:]
+//    var typeMetadata: [String: TypeMetadata] = [:]
     
     private(set) var globals = GlobalMetadataCache()
     
@@ -414,6 +398,20 @@ struct LLVMModule : Dumpable {
             let message = errorMessage.map { String(cString: $0) }
             throw irGenError(.invalidModule(module, message), userVisible: true)
         }
+    }
+    
+    var globalStringMap: [String: LLVMValue] = [:]
+    var globalMetadataMap: [String: LLVMGlobalValue] = [:]
+    
+    /// create a global string, cached by its value
+    mutating func getCachedGlobalString(_ str: String, name: String, igf: inout IRGenFunction) throws -> LLVMValue {
+        if let g = globalStringMap[str] {
+            return try LLVMBuilder.constBitcast(value: g, to: LLVMType.opaquePointer)
+        }
+        let s = LLVMValue.constString(value: str)
+        let g = createCachedGlobal(value: s, name: name, igf: &igf).value
+        globalStringMap[str] = g
+        return try LLVMBuilder.constBitcast(value: g, to: LLVMType.opaquePointer)
     }
 
     /// Returns a function from the module named `name`
@@ -451,23 +449,21 @@ struct LLVMModule : Dumpable {
         get { return String(cString: LLVMGetTarget(module)) }
         nonmutating set { LLVMSetTarget(module, newValue) }
     }
-    
-    mutating func createLLVMGlobal<Ptr : RuntimeHashable>(forPointer value: Ptr, baseName: String, IGF: inout IRGenFunction, module: Module) throws -> LLVMGlobalValue {
-        if let global = globals.cachedGlobals[value.hashPointer] {
-            return global
-        }
-        let v = try value.lowerMemory(IGF: &IGF, module: module, baseName: baseName)
-        let glob = createGlobal(value: v, forPtr: value.hashPointer, baseName: baseName, IGF: &IGF)
-        globals.cachedGlobals[value.hashPointer] = glob
-        return glob
-    }
-    
+        
     /// Add a LLVM global value to the module
-    mutating func createGlobal(value: LLVMValue, forPtr: UnsafeMutableRawPointer?, baseName: String, IGF: inout IRGenFunction) -> LLVMGlobalValue {
-        let global = LLVMGlobalValue(module: IGF.module, type: value.type, name: baseName)
+    mutating func createGlobal(value: LLVMValue, name: String, igf: inout IRGenFunction) -> LLVMGlobalValue {
+        let global = LLVMGlobalValue(module: igf.module, type: value.type, name: name)
         global.initialiser = value
         global.isConstant = true
-        if let p = forPtr { globals.cachedGlobals[p] = global }
+        return global
+    }
+    
+    mutating func createCachedGlobal(value: LLVMValue, name: String, igf: inout IRGenFunction) -> LLVMGlobalValue {
+        if let g = globalMetadataMap[name] { return g }
+        let global = LLVMGlobalValue(module: igf.module, type: value.type, name: name)
+        global.initialiser = value
+        global.isConstant = true
+        globalMetadataMap[name] = global
         return global
     }
     
@@ -512,8 +508,8 @@ struct LLVMType : Dumpable {
         return LLVMValue(ref: LLVMSizeOf(type))
     }
     /// the size in `unit` of this lowered type
-    func size(unit: _WidthUnit, IGF: IRGenFunction) -> Int {
-        let dataLayout = LLVMCreateTargetData(IGF.module.dataLayout)
+    func size(unit: _WidthUnit, igf: IRGenFunction) -> Int {
+        let dataLayout = LLVMCreateTargetData(igf.module.dataLayout)
         let s = Int(LLVMSizeOfTypeInBits(dataLayout, type!))
         switch unit {
         case .bits: return s
@@ -598,11 +594,24 @@ struct LLVMValue : Dumpable, Hashable {
     static func undef(type: LLVMType) -> LLVMValue {
         return LLVMValue(ref: LLVMGetUndef(type.type!))
     }
-    static func constArray(of type: LLVMType, vals: [LLVMValue]) -> LLVMValue {
+    static func constArray(of elementType: LLVMType, vals: [LLVMValue]) -> LLVMValue {
         var els = vals.map { $0._value }
         let s = UInt32(els.count)
-        return LLVMValue(ref: LLVMConstArray(type.type!, &els, s))
+        return LLVMValue(ref: LLVMConstArray(elementType.type!, &els, s))
     }
+    /// Create a constant array and gep onto the head
+    static func constGlobalArray(of elementType: LLVMType, vals: [LLVMValue], name: String, igf: IRGenFunction) throws -> LLVMValue {
+        // return null if empty
+        if vals.isEmpty {
+            return LLVMValue.constNull(type: elementType.getPointerType())
+        }
+        // otherwise create a struct and cast
+        let arr = constArray(of: elementType, vals: vals)
+        let global = LLVMGlobalValue(module: igf.module, type: arr.type, name: name)
+        global.initialiser = arr
+        return try LLVMBuilder.constBitcast(value: LLVMBuilder.constGEP(ofAggregate: global.value, index: LLVMValue.constInt(value: 0, size: 32)), to: elementType.getPointerType())
+    }
+    
     static var nullptr: LLVMValue { return LLVMValue(ref: nil) }
     
     func dump() { try! LLVMDumpValue(val()) }

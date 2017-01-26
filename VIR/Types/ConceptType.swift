@@ -22,7 +22,7 @@ final class ConceptType : NominalType {
 extension ConceptType {
     
     func lowered(module: Module) -> LLVMType {
-        return Runtime.existentialObjectType.lowered(module: module)
+        return Runtime.existentialObjectType.importedCanType(in: module)
     }
     
     var irName: String {

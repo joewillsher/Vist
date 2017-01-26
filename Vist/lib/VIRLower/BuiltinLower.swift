@@ -9,7 +9,7 @@
 
 extension BuiltinInstCall: VIRLower {
     
-    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+    func virLower(igf: inout IRGenFunction) throws -> LLVMValue {
         
         // applied args
         // self provides `lhs` and `rhs` which are lazily computed args[0] and args[1]
@@ -19,114 +19,114 @@ extension BuiltinInstCall: VIRLower {
         
         switch inst {
         // overflowing arithmetic
-        case .iadd: intrinsic = try IGF.module.getIntrinsic(.i_add_overflow, overload: lhs.type)
-        case .imul: intrinsic = try IGF.module.getIntrinsic(.i_mul_overflow, overload: lhs.type)
-        case .isub: intrinsic = try IGF.module.getIntrinsic(.i_sub_overflow, overload: lhs.type)
+        case .iadd: intrinsic = try igf.module.getIntrinsic(.i_add_overflow, overload: lhs.type)
+        case .imul: intrinsic = try igf.module.getIntrinsic(.i_mul_overflow, overload: lhs.type)
+        case .isub: intrinsic = try igf.module.getIntrinsic(.i_sub_overflow, overload: lhs.type)
         case .ipow:
-            intrinsic = try IGF.module.getIntrinsic(.i_pow, overload: .double)
+            intrinsic = try igf.module.getIntrinsic(.i_pow, overload: .double)
             // make sure rhs is i32
-            switch rhs.type.size(unit: .bits, IGF: IGF) {
+            switch rhs.type.size(unit: .bits, igf: igf) {
             case 32: break
-            case 0..<32: args[1] = try IGF.builder.buildSext(val: args[1], size: 32)
-            case 33...64: args[1] = try IGF.builder.buildTrunc(val: args[1], size: 32)
+            case 0..<32: args[1] = try igf.builder.buildSext(val: args[1], size: 32)
+            case 33...64: args[1] = try igf.builder.buildTrunc(val: args[1], size: 32)
             default: fatalError("bad int type")
             }
-            args[0] = try IGF.builder.buildIntToFloat(val: args[0], floatType: .double)
-            let call = try IGF.builder.buildCall(function: intrinsic, args: args, name: irName)
-            return try IGF.builder.buildFloatToInt(val: call, intType: lhs.type)
+            args[0] = try igf.builder.buildIntToFloat(val: args[0], floatType: .double)
+            let call = try igf.builder.buildCall(function: intrinsic, args: args, name: irName)
+            return try igf.builder.buildFloatToInt(val: call, intType: lhs.type)
             
         // other intrinsics
-        case .expect: intrinsic = try IGF.module.getIntrinsic(.expect, overload: lhs.type)
-        case .trap:   intrinsic = try IGF.module.getIntrinsic(.trap)
+        case .expect: intrinsic = try igf.module.getIntrinsic(.expect, overload: lhs.type)
+        case .trap:   intrinsic = try igf.module.getIntrinsic(.trap)
         case .memcpy:
             // overload types -- we want `@llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1)`
             // construct intrinsic
-            intrinsic = try IGF.module.getIntrinsic(.memcopy,
+            intrinsic = try igf.module.getIntrinsic(.memcopy,
                                                     overload: lhs.type, rhs.type, .intType(size: 64))
             // add extra memcpy args
             args.append(.constInt(value: 1, size: 32)) // i32 align -- align 1
             args.append(.constBool(value: false)) // i1 isVolatile -- false
             
         case .withptr:
-            let alloc = try IGF.builder.buildAlloca(type: lhs.type)
-            try IGF.builder.buildStore(value: lhs, in: alloc)
-            return try IGF.builder.buildBitcast(value: alloc, to: LLVMType.opaquePointer)
+            let alloc = try igf.builder.buildAlloca(type: lhs.type)
+            try igf.builder.buildStore(value: lhs, in: alloc)
+            return try igf.builder.buildBitcast(value: alloc, to: LLVMType.opaquePointer)
             
         case .isuniquelyreferenced:
-            let alloc = try IGF.builder.buildAlloca(type: lhs.type)
-            try IGF.builder.buildStore(value: lhs, in: alloc)
+            let alloc = try igf.builder.buildAlloca(type: lhs.type)
+            try igf.builder.buildStore(value: lhs, in: alloc)
             
-            let exType = Runtime.existentialObjectType.importedType(in: module).lowered(module: module).getPointerType()
-            let ex = try IGF.builder.buildBitcast(value: alloc, to: exType)
+            let exType = Runtime.existentialObjectType.importedCanType(in: module).getPointerType()
+            let ex = try igf.builder.buildBitcast(value: alloc, to: exType)
             
-            let project = module.getRuntimeFunction(.getBufferProjection, IGF: &IGF)
-            let projection = try IGF.builder.buildCall(function: project, args: [ex])
+            let project = module.getRuntimeFunction(.getBufferProjection, igf: &igf)
+            let projection = try igf.builder.buildCall(function: project, args: [ex])
             
-            let isUnique = module.getRuntimeFunction(.isUniquelyReferenced, IGF: &IGF)
-            let boxType = Runtime.refcountedObjectPointerType.importedType(in: module).lowered(module: module)
-            let box = try IGF.builder.buildBitcast(value: projection, to: boxType)
+            let isUnique = module.getRuntimeFunction(.isUniquelyReferenced, igf: &igf)
+            let boxType = Runtime.refcountedObjectPointerType.importedCanType(in: module)
+            let box = try igf.builder.buildBitcast(value: projection, to: boxType)
             
-            return try IGF.builder.buildCall(function: isUnique, args: [box])
+            return try igf.builder.buildCall(function: isUnique, args: [box])
             
-        case .allocstack: return try IGF.builder.buildArrayAlloca(size: lhs, elementType: .intType(size: 8), name: irName)
-        case .allocheap:  return try IGF.builder.buildArrayMalloc(size: lhs, elementType: .intType(size: 8), name: irName)
-        case .heapfree:   return try IGF.builder.buildFree(ptr: lhs, name: irName)
+        case .allocstack: return try igf.builder.buildArrayAlloca(size: lhs, elementType: .intType(size: 8), name: irName)
+        case .allocheap:  return try igf.builder.buildArrayMalloc(size: lhs, elementType: .intType(size: 8), name: irName)
+        case .heapfree:   return try igf.builder.buildFree(ptr: lhs, name: irName)
             
-        case .advancepointer: return try IGF.builder.buildGEP(ofAggregate: lhs, index: rhs, name: irName)
-        case .opaqueload:     return try IGF.builder.buildLoad(from: lhs, name: irName)
-        case .opaquestore:    return try IGF.builder.buildStore(value: rhs, in: lhs)
+        case .advancepointer: return try igf.builder.buildGEP(ofAggregate: lhs, index: rhs, name: irName)
+        case .opaqueload:     return try igf.builder.buildLoad(from: lhs, name: irName)
+        case .opaquestore:    return try igf.builder.buildStore(value: rhs, in: lhs)
             
         case .condfail:
             guard let fn = parentFunction, let current = parentBlock else { fatalError() }
-            var success = try fn.loweredFunction!.appendBasicBlock(named: "\(current.name).cont"), fail = try fn.buildCondFailBlock(IGF: &IGF)
+            var success = try fn.loweredFunction!.appendBasicBlock(named: "\(current.name).cont"), fail = try fn.buildCondFailBlock(igf: &igf)
             
             success.move(after: current.loweredBlock!)
             try module.loweredBuilder.buildCondBr(if: lhs, to: fail, elseTo: success)
-            try parentBlock!.splitBlock(backEdge: &success, IGF: &IGF)
+            try parentBlock!.splitBlock(backEdge: &success, igf: &igf)
             module.loweredBuilder.position(atEndOf: success)
             return .nullptr
             
         // handle calls which arent intrinsics, but builtin
         // instructions. We can just call them directly, and return
-        case .iaddunchecked: return try IGF.builder.buildIAdd(lhs: lhs, rhs: rhs, name: irName)
-        case .imulunchecked: return try IGF.builder.buildIMul(lhs: lhs, rhs: rhs, name: irName)
-        case .idiv: return try IGF.builder.buildIDiv(lhs: lhs, rhs: rhs, name: irName)
-        case .irem: return try IGF.builder.buildIRem(lhs: lhs, rhs: rhs, name: irName)
-        case .ieq, .beq:   return try IGF.builder.buildIntCompare(.equal, lhs: lhs, rhs: rhs, name: irName)
-        case .ineq, .bneq: return try IGF.builder.buildIntCompare(.notEqual, lhs: lhs, rhs: rhs)
-        case .ilt:  return try IGF.builder.buildIntCompare(.lessThan, lhs: lhs, rhs: rhs, name: irName)
-        case .igt:  return try IGF.builder.buildIntCompare(.greaterThan, lhs: lhs, rhs: rhs, name: irName)
-        case .ilte: return try IGF.builder.buildIntCompare(.lessThanEqual, lhs: lhs, rhs: rhs, name: irName)
-        case .igte: return try IGF.builder.buildIntCompare(.greaterThanEqual, lhs: lhs, rhs: rhs, name: irName)
-        case .ishl: return try IGF.builder.buildIShiftL(lhs: lhs, rhs: rhs, name: irName)
-        case .ishr: return try IGF.builder.buildIShiftR(lhs: lhs, rhs: rhs, name: irName)
-        case .iand, .and: return try IGF.builder.buildAnd(lhs: lhs, rhs: rhs, name: irName)
-        case .not:        return try IGF.builder.buildNot(val: lhs, name: irName)
-        case .ior, .or:   return try IGF.builder.buildOr(lhs: lhs, rhs: rhs, name: irName)
-        case .ixor:       return try IGF.builder.buildXor(lhs: lhs, rhs: rhs, name: irName)
+        case .iaddunchecked: return try igf.builder.buildIAdd(lhs: lhs, rhs: rhs, name: irName)
+        case .imulunchecked: return try igf.builder.buildIMul(lhs: lhs, rhs: rhs, name: irName)
+        case .idiv: return try igf.builder.buildIDiv(lhs: lhs, rhs: rhs, name: irName)
+        case .irem: return try igf.builder.buildIRem(lhs: lhs, rhs: rhs, name: irName)
+        case .ieq, .beq:   return try igf.builder.buildIntCompare(.equal, lhs: lhs, rhs: rhs, name: irName)
+        case .ineq, .bneq: return try igf.builder.buildIntCompare(.notEqual, lhs: lhs, rhs: rhs)
+        case .ilt:  return try igf.builder.buildIntCompare(.lessThan, lhs: lhs, rhs: rhs, name: irName)
+        case .igt:  return try igf.builder.buildIntCompare(.greaterThan, lhs: lhs, rhs: rhs, name: irName)
+        case .ilte: return try igf.builder.buildIntCompare(.lessThanEqual, lhs: lhs, rhs: rhs, name: irName)
+        case .igte: return try igf.builder.buildIntCompare(.greaterThanEqual, lhs: lhs, rhs: rhs, name: irName)
+        case .ishl: return try igf.builder.buildIShiftL(lhs: lhs, rhs: rhs, name: irName)
+        case .ishr: return try igf.builder.buildIShiftR(lhs: lhs, rhs: rhs, name: irName)
+        case .iand, .and: return try igf.builder.buildAnd(lhs: lhs, rhs: rhs, name: irName)
+        case .not:        return try igf.builder.buildNot(val: lhs, name: irName)
+        case .ior, .or:   return try igf.builder.buildOr(lhs: lhs, rhs: rhs, name: irName)
+        case .ixor:       return try igf.builder.buildXor(lhs: lhs, rhs: rhs, name: irName)
         
-        case .fadd: return try IGF.builder.buildFAdd(lhs: lhs, rhs: rhs, name: irName)
-        case .fsub: return try IGF.builder.buildFSub(lhs: lhs, rhs: rhs, name: irName)
-        case .fmul: return try IGF.builder.buildFMul(lhs: lhs, rhs: rhs, name: irName)
-        case .fdiv: return try IGF.builder.buildFDiv(lhs: lhs, rhs: rhs, name: irName)
-        case .frem: return try IGF.builder.buildFRem(lhs: lhs, rhs: rhs, name: irName)
-        case .feq:  return try IGF.builder.buildFloatCompare(.equal, lhs: lhs, rhs: rhs, name: irName)
-        case .fneq: return try IGF.builder.buildFloatCompare(.notEqual, lhs: lhs, rhs: rhs, name: irName)
-        case .flt:  return try IGF.builder.buildFloatCompare(.lessThan, lhs: lhs, rhs: rhs, name: irName)
-        case .fgt:  return try IGF.builder.buildFloatCompare(.greaterThan, lhs: lhs, rhs: rhs, name: irName)
-        case .flte: return try IGF.builder.buildFloatCompare(.lessThanEqual, lhs: lhs, rhs: rhs, name: irName)
-        case .fgte: return try IGF.builder.buildFloatCompare(.lessThanEqual, lhs: lhs, rhs: rhs, name: irName)
+        case .fadd: return try igf.builder.buildFAdd(lhs: lhs, rhs: rhs, name: irName)
+        case .fsub: return try igf.builder.buildFSub(lhs: lhs, rhs: rhs, name: irName)
+        case .fmul: return try igf.builder.buildFMul(lhs: lhs, rhs: rhs, name: irName)
+        case .fdiv: return try igf.builder.buildFDiv(lhs: lhs, rhs: rhs, name: irName)
+        case .frem: return try igf.builder.buildFRem(lhs: lhs, rhs: rhs, name: irName)
+        case .feq:  return try igf.builder.buildFloatCompare(.equal, lhs: lhs, rhs: rhs, name: irName)
+        case .fneq: return try igf.builder.buildFloatCompare(.notEqual, lhs: lhs, rhs: rhs, name: irName)
+        case .flt:  return try igf.builder.buildFloatCompare(.lessThan, lhs: lhs, rhs: rhs, name: irName)
+        case .fgt:  return try igf.builder.buildFloatCompare(.greaterThan, lhs: lhs, rhs: rhs, name: irName)
+        case .flte: return try igf.builder.buildFloatCompare(.lessThanEqual, lhs: lhs, rhs: rhs, name: irName)
+        case .fgte: return try igf.builder.buildFloatCompare(.lessThanEqual, lhs: lhs, rhs: rhs, name: irName)
             
-        case .trunc8:  return try IGF.builder.buildTrunc(val: lhs, size: 8, name: irName)
-        case .trunc16: return try IGF.builder.buildTrunc(val: lhs, size: 16, name: irName)
-        case .trunc32: return try IGF.builder.buildTrunc(val: lhs, size: 32, name: irName)
-        case .sext64: return try IGF.builder.buildSext(val: lhs, size: 64, name: irName)
-        case .zext64: return try IGF.builder.buildZext(val: lhs, size: 64, name: irName)
+        case .trunc8:  return try igf.builder.buildTrunc(val: lhs, size: 8, name: irName)
+        case .trunc16: return try igf.builder.buildTrunc(val: lhs, size: 16, name: irName)
+        case .trunc32: return try igf.builder.buildTrunc(val: lhs, size: 32, name: irName)
+        case .sext64: return try igf.builder.buildSext(val: lhs, size: 64, name: irName)
+        case .zext64: return try igf.builder.buildZext(val: lhs, size: 64, name: irName)
         }
         
         // call the intrinsic
-        let call = try IGF.builder.buildCall(function: intrinsic, args: args, name: irName)
-        if case .trap = inst { try IGF.builder.buildUnreachable() }        
+        let call = try igf.builder.buildCall(function: intrinsic, args: args, name: irName)
+        if case .trap = inst { try igf.builder.buildUnreachable() }        
         return call
     }
 }
@@ -135,20 +135,20 @@ extension BuiltinInstCall: VIRLower {
 extension Function {
     
     /// Constructs a function's faluire landing pad, or returns the one defined
-    func buildCondFailBlock(IGF: inout IRGenFunction) throws -> LLVMBasicBlock {
+    func buildCondFailBlock(igf: inout IRGenFunction) throws -> LLVMBasicBlock {
         // if its there already, we can use it
         if let condFailBlock = _condFailBlock { return condFailBlock }
         
         // make fail block & save current pos
-        let ins = IGF.builder.getInsertBlock()
+        let ins = igf.builder.getInsertBlock()
         let block = try loweredFunction!.appendBasicBlock(named: "\(name.demangleName()).trap")
-        IGF.builder.position(atEndOf: block)
+        igf.builder.position(atEndOf: block)
         
         // Build trap and unreachable
-        _ = try BuiltinInstCall.trapInst().virLower(IGF: &IGF)
+        _ = try BuiltinInstCall.trapInst().virLower(igf: &igf)
         
         // move back; save and return the fail block
-        IGF.builder.position(atEndOf: ins!)
+        igf.builder.position(atEndOf: ins!)
         _condFailBlock = block
         return block
     }
@@ -159,14 +159,14 @@ private extension BasicBlock {
     
     /// Corrects any phi nodes which were changed by splitting the block
     /// - note moves the insert point away from the current position
-    func splitBlock(backEdge new: inout LLVMBasicBlock, IGF: inout IRGenFunction) throws {
+    func splitBlock(backEdge new: inout LLVMBasicBlock, igf: inout IRGenFunction) throws {
         // for each phi which references this block
         for phiOperand in loweredBlock!.phiUses {
             let phi = loweredBlock!.phiUses.remove(phiOperand)!.loweredValue!
             
             // move after it, and build a replacement
-            try IGF.builder.position(after: phi)
-            let newPhi = try IGF.builder.buildPhi(type: phi.type)
+            try igf.builder.position(after: phi)
+            let newPhi = try igf.builder.buildPhi(type: phi.type)
             
             // add the incoming vals
             let range = 0 ..< Int(LLVMCountIncoming(phi._value!))

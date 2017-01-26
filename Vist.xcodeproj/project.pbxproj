@@ -229,8 +229,6 @@
 		D4D31E531D97FED4000832E4 /* PeepholeOpt.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D31E511D97FED4000832E4 /* PeepholeOpt.swift */; };
 		D4D3868A1D39B62700820E43 /* Explosion.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D386891D39B62700820E43 /* Explosion.swift */; };
 		D4D3868B1D39B62700820E43 /* Explosion.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D386891D39B62700820E43 /* Explosion.swift */; };
-		D4D8B25D1D0301BC00D1F455 /* RuntimeObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D8B25C1D0301BC00D1F455 /* RuntimeObject.swift */; };
-		D4D8B25E1D0301BC00D1F455 /* RuntimeObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D8B25C1D0301BC00D1F455 /* RuntimeObject.swift */; };
 		D4DE28191C5969830096E798 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4DE28181C5969830096E798 /* libz.tbd */; };
 		D4E225B61D6C7BCB0055A5CA /* Destructor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E225B51D6C7BCB0055A5CA /* Destructor.swift */; };
 		D4E225B71D6C7BCB0055A5CA /* Destructor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E225B51D6C7BCB0055A5CA /* Destructor.swift */; };
@@ -420,7 +418,6 @@
 		D4D369D91CFC6FFA007E802D /* vir.vim */ = {isa = PBXFileReference; lastKnownFileType = text; name = vir.vim; path = utils/vim/syntax/vir.vim; sourceTree = "<group>"; };
 		D4D369DA1CFC6FFA007E802D /* vist.vim */ = {isa = PBXFileReference; lastKnownFileType = text; name = vist.vim; path = utils/vim/syntax/vist.vim; sourceTree = "<group>"; };
 		D4D386891D39B62700820E43 /* Explosion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Explosion.swift; path = Optimiser/Explosion.swift; sourceTree = "<group>"; };
-		D4D8B25C1D0301BC00D1F455 /* RuntimeObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RuntimeObject.swift; path = lib/VIRLower/RuntimeObject.swift; sourceTree = "<group>"; };
 		D4DB92771C866FF300718B78 /* example.vir */ = {isa = PBXFileReference; lastKnownFileType = text; name = example.vir; path = RUN/example.vir; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		D4DB9D661C1DFFB300503153 /* example.ll */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm.llvm; name = example.ll; path = RUN/example.ll; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		D4DE28181C5969830096E798 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
@@ -504,7 +501,6 @@
 			children = (
 				D43B3A521C8A11410039FB2E /* VIRLower.swift */,
 				D4A0003B1CCA9BC300157D90 /* LLVMWrapper.swift */,
-				D4D8B25C1D0301BC00D1F455 /* RuntimeObject.swift */,
 				D4A000351CCA7FFA00157D90 /* OperandLower.swift */,
 				D4A0002C1CCA7F4F00157D90 /* RefCountingLower.swift */,
 				D4A000201CCA7E4D00157D90 /* LiteralLower.swift */,
@@ -958,7 +954,6 @@
 				D4060DBB1D7CA008009F363A /* MachineFunction.swift in Sources */,
 				D43B39A41C8A0EDF0039FB2E /* VIR.swift in Sources */,
 				D43B39DD1C8A0F3A0039FB2E /* LiteralInst.swift in Sources */,
-				D4D8B25E1D0301BC00D1F455 /* RuntimeObject.swift in Sources */,
 				D4A000311CCA7F7000157D90 /* BuiltinLower.swift in Sources */,
 				D488C2461D40595B000735DA /* RegisterPromotion.swift in Sources */,
 				D43B3A091C8A10390039FB2E /* Token.swift in Sources */,
@@ -1075,7 +1070,6 @@
 				D42814051D7F5F0800B90A09 /* SelectionDAG.swift in Sources */,
 				D43B3A1F1C8A105B0039FB2E /* Print.swift in Sources */,
 				D411C8951C8DB61D00478988 /* BreakInst.swift in Sources */,
-				D4D8B25D1D0301BC00D1F455 /* RuntimeObject.swift in Sources */,
 				D43B3A0C1C8A104F0039FB2E /* ParseError.swift in Sources */,
 				D4F3D7FA1CAC35AE005A3B07 /* Attribute.swift in Sources */,
 				D43FE1CD1D5E86EA003494C9 /* Metadata.swift in Sources */,

@@ -7,20 +7,20 @@
 //
 
 extension IntLiteralInst : VIRLower {
-    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+    func virLower(igf: inout IRGenFunction) throws -> LLVMValue {
         return LLVMValue.constInt(value: value, size: size)
     }
 }
 extension BoolLiteralInst : VIRLower {
-    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+    func virLower(igf: inout IRGenFunction) throws -> LLVMValue {
         return LLVMValue.constBool(value: value)
     }
 }
 
 extension StringLiteralInst : VIRLower {
-    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        let str = try IGF.builder.buildGlobalString(value: value)
-        return try IGF.builder.buildBitcast(value: str, to: .opaquePointer)
+    func virLower(igf: inout IRGenFunction) throws -> LLVMValue {
+        let str = try igf.builder.buildGlobalString(value: value)
+        return try igf.builder.buildBitcast(value: str, to: .opaquePointer)
     }
 }
 

@@ -11,8 +11,14 @@
 
 
 
-const char * _Nonnull vist_demangle(const char * _Nonnull a) {
-    return a;
+const char * _Nullable vist_demangle(const char * _Nonnull a) {
+//    char * out = malloc(strlen(a));
+//    int i = 0;
+//    while a[i] != '.' {
+//        out[i] = a[i];
+//        i += 1;
+//    }
+    return nullptr;
 }
 
 //std::string vist_demangle_typeName(std::string) {

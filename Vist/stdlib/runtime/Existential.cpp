@@ -13,7 +13,7 @@
 
 
 RUNTIME_COMPILER_INTERFACE
-void vist_constructExistential(ConceptConformance *_Nonnull conformance,
+void vist_constructExistential(WitnessTable *_Nonnull *_Nonnull conformances, int numConformances,
                                void *_Nonnull instance, TypeMetadata *_Nonnull metadata,
                                bool isNonLocal, ExistentialObject *_Nullable outExistential) {
     uintptr_t ptr;
@@ -35,8 +35,8 @@ void vist_constructExistential(ConceptConformance *_Nonnull conformance,
 #endif
     }
     
-    *outExistential = ExistentialObject(ptr | isNonLocal, metadata, 1,
-                                        (ConceptConformance **)conformance);
+    *outExistential = ExistentialObject(ptr | isNonLocal, metadata, numConformances,
+                                        conformances); // <hack, should malloc memory to store the witnesses
 }
 
 RUNTIME_COMPILER_INTERFACE
@@ -69,7 +69,7 @@ void vist_deallocExistentialBuffer(ExistentialObject *_Nonnull existential) {
         free(buff);
 #ifdef RUNTIME_DEBUG
     // DEBUGGING: set stack to 0, if not a shared heap ptr
-    else
+    else if (!existential->metadata->isRefCounted)
         memset(buff, 0, existential->metadata->storageSize());
 #endif
 }
@@ -132,23 +132,6 @@ void vist_copyExistentialBuffer(ExistentialObject *_Nonnull existential,
                                         existential->conformances);
 }
 
-ConceptConformance *_Nonnull
-ExistentialObject::getConformance(int32_t index) {
-    return (ConceptConformance *)(conformances) + index;
-}
-
-void *_Nonnull
-WitnessTable::getWitness(int32_t index) {
-    auto witness = witnesses[index];
-    return *(void**)witness->witness;
-}
-
-int32_t ConceptConformance::getOffset(int32_t index) {
-    // the table, get as i32***
-    auto offs = (int32_t ***)propWitnessOffsets;
-    // move to the offset, then load twice
-    return **offs[index];
-}
 
 RUNTIME_COMPILER_INTERFACE
 void *_Nonnull
@@ -156,32 +139,19 @@ vist_getWitnessMethod(ExistentialObject *_Nonnull existential,
                       int32_t conformanceIndex,
                       int32_t methodIndex) {
     return existential
-        ->getConformance(conformanceIndex)
-        ->witnessTable
-        ->getWitness(methodIndex);
+        ->conformances[conformanceIndex]
+        ->witnesses[methodIndex];
 }
-/// EXAMPLE DATA SECTION FOR WITNESS LOOKUP:
-//    @_gYconfXwitnessTablewitnessArr0 = constant { i8* } { i8* bitcast (void (%Y*)* @foo_mY to i8*) }
-//    @_gYconfXwitnessTablewitnessArr03 = constant { i8* }* @_gYconfXwitnessTablewitnessArr0
-//    @_gYconfXwitnessTablewitnessArr = constant [1 x { i8* }**] [{ i8* }** @_gYconfXwitnessTablewitnessArr03]
-//    @_gYconfXwitnessTable = constant { { i8* }*, i32 } { { i8* }* bitcast ([1 x { i8* }**]* @_gYconfXwitnessTablewitnessArr to { i8* }*), i32 1 }
 
 RUNTIME_COMPILER_INTERFACE
 void *_Nonnull
 vist_getPropertyProjection(ExistentialObject *_Nonnull existential,
-                           int32_t conformanceIndex,
-                           int32_t propertyIndex) {
-    auto index = existential
-        ->getConformance(conformanceIndex)
-        ->getOffset(propertyIndex);
-    return (void*)(existential->projectBuffer() + index);
+                           int32_t conformanceIndex, int32_t propertyIndex) {
+    auto offset = existential
+        ->conformances[conformanceIndex]
+        ->propWitnessOffsets[propertyIndex];
+    return (void*)(existential->projectBuffer() + (long)offset);
 }
-/// EXAMPLE DATA SECTION FOR OFFSET LOOKUP:
-//    @_gYconfXpropWitnessOffsetArr0 = constant i32 8
-//    @_gYconfXpropWitnessOffsetArr01 = constant i32* @_gYconfXpropWitnessOffsetArr0
-//    @_gYconfXpropWitnessOffsetArr1 = constant i32 0
-//    @_gYconfXpropWitnessOffsetArr12 = constant i32* @_gYconfXpropWitnessOffsetArr1
-//    @_gYconfXpropWitnessOffsetArr = constant [2 x i32**] [i32** @_gYconfXpropWitnessOffsetArr01, i32** @_gYconfXpropWitnessOffsetArr12]
 
 RUNTIME_COMPILER_INTERFACE
 void *_Nonnull

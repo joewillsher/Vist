@@ -7,26 +7,26 @@
 //
 
 extension ReturnInst : VIRLower {
-    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+    func virLower(igf: inout IRGenFunction) throws -> LLVMValue {
         
         if (returnValue.value as? TupleCreateInst)?.elements.isEmpty ?? false {
-            return try IGF.builder.buildRetVoid()
+            return try igf.builder.buildRetVoid()
         }
         else {
-            return try IGF.builder.buildRet(val: returnValue.loweredValue!)
+            return try igf.builder.buildRet(val: returnValue.loweredValue!)
         }
     }
 }
 
 extension BreakInst : VIRLower {
-    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        return try IGF.builder.buildBr(to: call.block.loweredBlock!)
+    func virLower(igf: inout IRGenFunction) throws -> LLVMValue {
+        return try igf.builder.buildBr(to: call.block.loweredBlock!)
     }
 }
 
 extension CondBreakInst : VIRLower {
-    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        return try IGF.builder.buildCondBr(if: condition.loweredValue!,
+    func virLower(igf: inout IRGenFunction) throws -> LLVMValue {
+        return try igf.builder.buildCondBr(if: condition.loweredValue!,
                                            to: thenCall.block.loweredBlock!,
                                            elseTo: elseCall.block.loweredBlock!)
     }
@@ -35,20 +35,20 @@ extension CheckedCastBreakInst : VIRLower {
     
     /// In the successor block, constructs the value by calling `fn`. This erases the 
     /// phony phi node and replaces its users
-    private func constructInSuccessorBlock(IGF: inout IRGenFunction, with: (inout IRGenFunction) throws -> LLVMValue) rethrows {
-        let ins = IGF.builder.getInsertBlock()!
-        IGF.builder.position(before: successVariable.phi!)
+    private func constructInSuccessorBlock(igf: inout IRGenFunction, with: (inout IRGenFunction) throws -> LLVMValue) rethrows {
+        let ins = igf.builder.getInsertBlock()!
+        igf.builder.position(before: successVariable.phi!)
         
-        let val = try with(&IGF)
+        let val = try with(&igf)
         successVariable.phi!.eraseFromParent(replacingAllUsesWith: val)
         for use in successVariable.uses {
             use.setLoweredValue(val)
         }
         
-        IGF.builder.position(atEndOf: ins)
+        igf.builder.position(atEndOf: ins)
     }
     
-    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
+    func virLower(igf: inout IRGenFunction) throws -> LLVMValue {
         
         let condition: LLVMValue
         
@@ -57,8 +57,8 @@ extension CheckedCastBreakInst : VIRLower {
             // if we are casting concrete type -> concrete type, we don't need to do anything
             // assert they are the same type
             precondition(structType == targetStructType)
-            constructInSuccessorBlock(IGF: &IGF) { _ in val.loweredValue! }
-            return try IGF.builder.buildCondBr(if: LLVMValue.constBool(value: true),
+            constructInSuccessorBlock(igf: &igf) { _ in val.loweredValue! }
+            return try igf.builder.buildCondBr(if: LLVMValue.constBool(value: true),
                                                to: successCall.block.loweredBlock!,
                                                elseTo: failCall.block.loweredBlock!)
             
@@ -67,39 +67,39 @@ extension CheckedCastBreakInst : VIRLower {
             if structType.models(concept: concept) {
                 
                 // if it conforms, we construct an existential
-                try constructInSuccessorBlock(IGF: &IGF) { IGF in
-                    let exMemory = try IGF.builder.buildAlloca(type: Runtime.existentialObjectType.importedType(in: module).lowered(module: module), name: successVariable.paramName)
-                    let bc = try IGF.builder.buildBitcast(value: val.loweredValue!, to: .opaquePointer)
+                try constructInSuccessorBlock(igf: &igf) { igf in
+                    let exMemory = try igf.builder.buildAlloca(type: Runtime.existentialObjectType.importedCanType(in: module), name: successVariable.paramName)
+                    let bc = try igf.builder.buildBitcast(value: val.loweredValue!, to: .opaquePointer)
                     _ = try ExistentialConstructInst.gen(instance: bc, out: exMemory,
                                                          structType: structType, existentialType: concept,
-                                                         isLocal: true, module: module, IGF: &IGF)
+                                                         isLocal: true, module: module, igf: &igf)
                     return exMemory
                 }
                 // and return an unconditionally true branch
-                return try IGF.builder.buildCondBr(if: LLVMValue.constBool(value: true),
+                return try igf.builder.buildCondBr(if: LLVMValue.constBool(value: true),
                                                    to: successCall.block.loweredBlock!,
                                                    elseTo: failCall.block.loweredBlock!)
             }
             else {
                 // otherwise we erase the phi and unconditionally break to the false block
-                constructInSuccessorBlock(IGF: &IGF) { IGF in
+                constructInSuccessorBlock(igf: &igf) { igf in
                     LLVMValue.undef(type: successVariable.type!.lowered(module: module))
                 }
-                return try IGF.builder.buildCondBr(if: LLVMValue.constBool(value: false),
+                return try igf.builder.buildCondBr(if: LLVMValue.constBool(value: false),
                                                    to: successCall.block.loweredBlock!,
                                                    elseTo: failCall.block.loweredBlock!)
             }
             
         case (is ConceptType, let structType as StructType):
-            let outMem = try IGF.builder.buildAlloca(type: structType.importedType(in: module).lowered(module: module), name: successVariable.paramName)
-            let cast = try IGF.builder.buildBitcast(value: outMem, to: LLVMType.opaquePointer)
-            let metadata = try structType.getLLVMTypeMetadata(IGF: &IGF, module: module)
+            let outMem = try igf.builder.buildAlloca(type: structType.importedCanType(in: module), name: successVariable.paramName)
+            let cast = try igf.builder.buildBitcast(value: outMem, to: LLVMType.opaquePointer)
+            let metadata = try structType.getLLVMTypeMetadata(igf: &igf, module: module)
             
-            let ref = module.getRuntimeFunction(.castExistentialToConcrete, IGF: &IGF)
-            let succeeded = try IGF.builder.buildCall(function: ref, args: [val.loweredValue!, metadata, cast])
+            let ref = module.getRuntimeFunction(.castExistentialToConcrete, igf: &igf)
+            let succeeded = try igf.builder.buildCall(function: ref, args: [val.loweredValue!, metadata, cast])
             
             condition = succeeded
-            constructInSuccessorBlock(IGF: &IGF) { _ in outMem }
+            constructInSuccessorBlock(igf: &igf) { _ in outMem }
 
         case (is ConceptType, let targetConceptType as ConceptType):
             
@@ -108,26 +108,24 @@ extension CheckedCastBreakInst : VIRLower {
             for type in module.typeList.values {
                 guard let structType = type.getConcreteNominalType(), !structType.isConceptType() else { continue }
                 guard structType.models(concept: targetConceptType) else { continue }
-                _ = try structType.generateConformanceMetadata(concept: targetConceptType, IGF: &IGF, module: module)
+                _ = try structType.generateConformanceMetadata(concept: targetConceptType, igf: &igf, module: module)
             }
             
-            let outMem = try IGF.builder.buildAlloca(type: Runtime.existentialObjectType
-                .importedType(in: module)
-                .lowered(module: module),
+            let outMem = try igf.builder.buildAlloca(type: Runtime.existentialObjectType.importedCanType(in: module),
                                                      name: successVariable.paramName)
-            let metadata = try targetConceptType.getLLVMTypeMetadata(IGF: &IGF, module: module)
+            let metadata = try targetConceptType.getLLVMTypeMetadata(igf: &igf, module: module)
             
-            let ref = module.getRuntimeFunction(.castExistentialToConcept, IGF: &IGF)
-            let succeeded = try IGF.builder.buildCall(function: ref, args: [val.loweredValue!, metadata, outMem])
+            let ref = module.getRuntimeFunction(.castExistentialToConcept, igf: &igf)
+            let succeeded = try igf.builder.buildCall(function: ref, args: [val.loweredValue!, metadata, outMem])
             
             condition = succeeded
-            constructInSuccessorBlock(IGF: &IGF) { _ in outMem }
+            constructInSuccessorBlock(igf: &igf) { _ in outMem }
 
         default:
             fatalError("Casting to non struct/concept type is not supported")
         }
         
-        return try IGF.builder.buildCondBr(if: condition,
+        return try igf.builder.buildCondBr(if: condition,
                                            to: successCall.block.loweredBlock!,
                                            elseTo: failCall.block.loweredBlock!)
     }
@@ -135,8 +133,8 @@ extension CheckedCastBreakInst : VIRLower {
 
 
 extension VIRFunctionCall {
-    func virLower(IGF: inout IRGenFunction) throws -> LLVMValue {
-        return try IGF.builder.buildCall(function: functionRef,
+    func virLower(igf: inout IRGenFunction) throws -> LLVMValue {
+        return try igf.builder.buildCall(function: functionRef,
                                              args: functionArgs.map { $0.loweredValue! },
                                              name: irName)
     }
