@@ -31,15 +31,21 @@ struct TypeDeclMetadata : RuntimeMetadata {
     let size: Int
     let typeName: String
     let isRefCounted: Bool
+    let destructor: LLVMFunction?, copyConstructor: LLVMFunction?, `deinit`: LLVMFunction?
     
     let globalName: String
     var loweredValue: LLVMValue! = nil
     
-    init(conformances: [WitnessTableMetadata], size: Int, typeName: String, isRefCounted: Bool, module: Module, igf: inout IRGenFunction) throws {
+    init(conformances: [WitnessTableMetadata], size: Int, typeName: String, isRefCounted: Bool,
+         destructor: LLVMFunction?, copyConstructor: LLVMFunction?, `deinit`: LLVMFunction?,
+         module: Module, igf: inout IRGenFunction) throws {
         self.conformances = conformances
         self.size = size
         self.typeName = typeName
         self.isRefCounted = isRefCounted
+        self.destructor = destructor
+        self.copyConstructor = copyConstructor
+        self.`deinit` = `deinit`
         self.globalName = "_g\(typeName)_decl"
         self.loweredValue = try igf.module.globalMetadataMap[globalName]?.value ?? lowerMetadata(igf: &igf, module: module)
     }
@@ -48,7 +54,7 @@ struct TypeDeclMetadata : RuntimeMetadata {
         // get types used
         let declType = TypeDeclMetadata.loweredType.importedCanType(in: module)
         let wtType = WitnessTableMetadata.loweredType.importedCanType(in: module)
-
+        
         // build val and construct
         let val = try LLVMBuilder.constAggregate(type: declType, elements: [
                 LLVMValue.constGlobalArray(of: wtType.getPointerType(), vals: conformances.map { $0.loweredValue },
@@ -58,8 +64,10 @@ struct TypeDeclMetadata : RuntimeMetadata {
                 LLVMValue.constInt(value: size, size: 32),
                 igf.module.getCachedGlobalString(typeName, name: "\(globalName).\(typeName).metadataname", igf: &igf),
                 LLVMValue.constBool(value: isRefCounted),
+                destructor.map { try LLVMBuilder.constBitcast(value: $0.function, to: .opaquePointer) } ?? LLVMValue.constNull(type: .opaquePointer),
+                `deinit`.map { try LLVMBuilder.constBitcast(value: $0.function, to: .opaquePointer) } ?? LLVMValue.constNull(type: .opaquePointer),
+                copyConstructor.map { try LLVMBuilder.constBitcast(value: $0.function, to: .opaquePointer) } ?? LLVMValue.constNull(type: .opaquePointer),
             ])
-        //assert(declType.size(.bits, igf: &igf) == MemoryLayout<TypeMetadata>.size)
         return igf.module.createCachedGlobal(value: val, name: globalName, igf: &igf).value
     }
     

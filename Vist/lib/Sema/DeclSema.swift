@@ -37,7 +37,14 @@ extension TypeDecl : ExprTypeProvider {
         }
         
         // Find conforming concepts
-        let cs = concepts.optionalMap { scope.concept(named: $0) }!
+        var cs: [ConceptType] = []
+        for concept in concepts {
+            guard let c = scope.concept(named: concept) else {
+                try errorCollector.throw(error: semaError(.noTypeNamed(concept)))
+            }
+            cs.append(c)
+        }
+        
         let ty = StructType(members: members, methods: [], name: name, concepts: cs, isHeapAllocated: byRef)
         self.type = ty
         

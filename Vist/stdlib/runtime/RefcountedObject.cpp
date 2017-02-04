@@ -56,16 +56,16 @@ void vist_deallocObject(RefcountedObject *_Nonnull object) {
         destructor(object);
     }
     free(object->object);
-    // this is probably leaking -- `object` is on the heap and we can't dispose of it
+    free(object);
 };
 
 /// Releases this capture. If its now unowned we dealloc
 RUNTIME_COMPILER_INTERFACE
 void vist_releaseObject(RefcountedObject *_Nonnull object) {
 #ifdef RUNTIME_DEBUG
-    printf("→release\t%p %p, rc=%i\n", object->object, object, object->refCount-1);
     assert(object->object && "Null ref counted object");
     assert(object->refCount > 0 && "Ref count should never be less than 0");
+    printf("→release\t%p %p, rc=%i\n", object->object, object, object->refCount-1);
 #endif
     // if no more references, we dealloc it
     if (object->refCount == 1)

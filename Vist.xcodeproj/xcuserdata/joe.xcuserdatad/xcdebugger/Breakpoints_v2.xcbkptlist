@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Vist/lib/VIRLower/Metadata.swift"
-            timestampString = "507076209.839731"
+            timestampString = "507315776.216096"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "54"
-            endingLineNumber = "54"
+            startingLineNumber = "60"
+            endingLineNumber = "60"
             landmarkName = "lowerMetadata(igf:module:)"
             landmarkType = "7">
             <Locations>

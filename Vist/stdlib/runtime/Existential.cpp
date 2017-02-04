@@ -15,8 +15,9 @@
 RUNTIME_COMPILER_INTERFACE
 void vist_constructExistential(WitnessTable *_Nonnull *_Nonnull conformances, int numConformances,
                                void *_Nonnull instance, TypeMetadata *_Nonnull metadata,
-                               bool isNonLocal, ExistentialObject *_Nullable outExistential) {
+                               bool _isNonLocal, ExistentialObject *_Nullable outExistential) {
     uintptr_t ptr;
+    bool isNonLocal = true; // TODO: optimisation to promote to local ones
     if (isNonLocal) {
         auto mem = malloc(metadata->storageSize());
         // copy stack into new buffer
@@ -37,6 +38,8 @@ void vist_constructExistential(WitnessTable *_Nonnull *_Nonnull conformances, in
     
     *outExistential = ExistentialObject(ptr | isNonLocal, metadata, numConformances,
                                         conformances); // <hack, should malloc memory to store the witnesses
+    printf("aaaaa\n");
+    printf("aaaaa %p\n", *((long*)instance));
 }
 
 RUNTIME_COMPILER_INTERFACE
@@ -108,7 +111,7 @@ void vist_copyExistentialBuffer(ExistentialObject *_Nonnull existential,
 #ifdef RUNTIME_DEBUG
         printf("   ↳existential_retain↘︎\n");
 #endif
-        vist_retainObject((RefcountedObject*)existential->projectBuffer());
+        vist_retainObject((RefcountedObject*)in);
         mem = in;
     } else if (auto copyConstructor = existential->metadata->copyConstructor) {
         mem = malloc(existential->metadata->storageSize());
@@ -116,14 +119,14 @@ void vist_copyExistentialBuffer(ExistentialObject *_Nonnull existential,
         printf("   ↳deep_copy %s:\t%p to: %p\n", existential->metadata->name, in, mem);
         printf("       ↳deep_copy_fn=%p\n", copyConstructor);
 #endif
-        copyConstructor((void*)existential->projectBuffer(), mem);
+        copyConstructor(in, mem);
     } else {
         // if there is no copy constructor, we just have to do a shallow copy
         mem = malloc(existential->metadata->storageSize());
 #ifdef RUNTIME_DEBUG
         printf("   ↳copy %s:\t%p to: %p\n", existential->metadata->name, in, mem);
 #endif
-        memcpy(mem, (void*)existential->projectBuffer(), existential->metadata->storageSize());
+        memcpy(mem, in, existential->metadata->storageSize());
     }
     // construct the new existential
     *outExistential = ExistentialObject((uintptr_t)mem | true,
@@ -150,6 +153,7 @@ vist_getPropertyProjection(ExistentialObject *_Nonnull existential,
     auto offset = existential
         ->conformances[conformanceIndex]
         ->propWitnessOffsets[propertyIndex];
+    printf("aaaaa %li\n", *((long*)existential->projectBuffer() + 0));
     return (void*)(existential->projectBuffer() + (long)offset);
 }
 

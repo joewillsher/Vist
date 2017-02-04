@@ -95,7 +95,6 @@ extension Module {
             try type.getLLVMTypeMetadata(igf: &igf, module: self)
         }
         
-//        // TEST: build witness table metadata
 //        for table in witnessTables {
 //            try table.loweredMetadata(igf: &igf)
 //        }

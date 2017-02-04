@@ -126,10 +126,11 @@ extension ExistentialExportBufferInst : VIRLower {
 
 extension NominalType {
     
+    @discardableResult
     func getTypeMetadata(igf: inout IRGenFunction, module: Module) throws -> TypeDeclMetadata {
         
         let confs: [WitnessTableMetadata]
-        if let s = getConcreteNominalType(), !s.isConceptType() {
+        if let s = getConcreteNominalType(), !s.isConceptType(), !s.isRuntimeType() {
             confs = try concepts.map { concept in
                 try self.generateConformanceMetadata(concept: concept, igf: &igf, module: module)
             }
@@ -138,18 +139,21 @@ extension NominalType {
         }
     
         let size = instanceRawType(module: module).size(unit: .bytes, igf: igf)
+        let moduleType = module.type(named: name)!
         
-        return try TypeDeclMetadata(conformances: confs, size: size, typeName: mangleTypeName(),
-                                    isRefCounted: isHeapAllocated, module: module, igf: &igf)
+        return try TypeDeclMetadata(conformances: confs, size: size, typeName: mangleTypeName(), isRefCounted: isHeapAllocated,
+                                    destructor: moduleType.destructor?.loweredFunction, copyConstructor: moduleType.copyConstructor?.loweredFunction,
+                                    deinit: moduleType.deinitialiser?.loweredFunction, module: module, igf: &igf)
     }
     
+    @discardableResult
     func getLLVMTypeMetadata(igf: inout IRGenFunction, module: Module) throws -> LLVMValue {
         return try getTypeMetadata(igf: &igf, module: module).loweredValue
     }
     
     
     private func mangleTypeName() -> String {
-        return "\(name).nominal"
+        return name
     }
     
     @discardableResult

@@ -166,6 +166,18 @@ class ErrorCollector {
             throw error
         }
     }
+    /// Throws all errors collected
+    final func `throw`(error: VistError) throws -> Never {
+        caught = true
+        errors.append(error)
+        do {
+            try errors.throwIfErrors()
+        }
+        catch let error as VistError {
+            throw error
+        }
+        fatalError("Caught error")
+    }
     
     deinit {
         if !caught {

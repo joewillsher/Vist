@@ -114,6 +114,11 @@ extension Type {
         else if self is ConceptType { return true }
         else { return false }
     }
+    func isRuntimeType() -> Bool {
+        if case let s as ModuleType = self { return s.targetType.isRuntimeType() }
+        else if case let s as StructType = self { return Runtime.allRuntimeTypes.contains(where: {$0.name == s.name }) }
+        else { return false }
+    }
     func isStructType() -> Bool {
         if case let s as ModuleType = self { return s.targetType.isStructType() }
         else if self is StructType { return true }

@@ -406,7 +406,7 @@ extension AnyManagedValue {
                 assert(rawType is NominalType)
             }
             let conceptType = try targetType.getBasePointeeType().getAsConceptType()
-            assert((type as! NominalType).models(concept: conceptType))
+            //TODO: assert((type as! NominalType) exists witness table for this conformance)
             // form an existential by forwarding self's cleanup to it
             let ex = try gen.builder.buildManaged(ExistentialConstructInst(value: value,
                                                                            existentialType: conceptType,

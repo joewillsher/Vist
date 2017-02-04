@@ -31,6 +31,8 @@ enum Runtime {
                                                        name: "vist.metadata")
     static let existentialObjectType = StructType.withTypes([BuiltinType.wordType, int32Type, witnessTableType.ptrType().ptrType(), typeMetadataType], name: "vist.existential")
     
+    static let allRuntimeTypes = [refcountedObjectType, witnessTableType, typeMetadataType, existentialObjectType]
+    
     struct Function {
         let name: String, type: FunctionType
         
