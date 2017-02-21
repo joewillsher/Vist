@@ -97,7 +97,7 @@ public func compile(withFlags flags: [String], inDirectory dir: String, out: URL
                                  options: compileOptions)
         }
         else if compileOptions.contains(.buildRuntime) {
-            buildRuntime(debugRuntime: compileOptions.contains(.debugRuntime))
+            try buildRuntime(debugRuntime: compileOptions.contains(.debugRuntime))
         }
         
         #if DEBUG

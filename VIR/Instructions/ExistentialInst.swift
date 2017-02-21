@@ -14,8 +14,8 @@ final class ExistentialProjectPropertyInst : Inst, LValue {
     
     var propertyType: Type { return try! existentialType.propertyType(name: propertyName) }
     
-    var memType: Type? { return propertyType }
-    var type: Type? { return BuiltinType.pointer(to: propertyType) }
+    var memType: Type? { return propertyType.isClassType() ? propertyType.ptrType() : propertyType }
+    var type: Type? { return propertyType.isClassType() ? propertyType.ptrType().ptrType() : propertyType.ptrType() }
     
     var uses: [Operand] = []
     var args: [Operand]

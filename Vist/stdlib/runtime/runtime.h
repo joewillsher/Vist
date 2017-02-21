@@ -155,6 +155,7 @@ struct ExistentialObject {
 public:
     WitnessTable *_Nonnull *_Nullable conformances;
     int32_t numConformances;
+    /// The instance metadata
     TypeMetadata *_Nonnull metadata;
     
     ExistentialObject(uintptr_t object,

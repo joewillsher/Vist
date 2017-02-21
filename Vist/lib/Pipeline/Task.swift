@@ -23,22 +23,25 @@ enum Exec: String {
 }
 
 extension Process {
-    static func execute(execName exec: String, files: [String], outputName: String? = nil, cwd: String, args: [String]) {
+    @discardableResult
+    static func execute(execName exec: String, files: [String], outputName: String? = nil, cwd: String, args: [String]) -> Process {
         
         var a = args
         if let n = outputName { a.append(contentsOf: ["-o", n]) }
         a.append(contentsOf: files)
         
-        let task = Process()
-        task.currentDirectoryPath = cwd
-        task.launchPath = exec
-        task.arguments = a
+        let process = Process()
+        process.currentDirectoryPath = cwd
+        process.launchPath = exec
+        process.arguments = a
         
-        task.launch()
-        task.waitUntilExit()
+        process.launch()
+        process.waitUntilExit()
+        return process
     }
-    static func execute(exec: Exec, files: [String], outputName: String? = nil, cwd: String, args: String...) {
-        Process.execute(execName: exec.rawValue, files: files, outputName: outputName, cwd: cwd, args: args)
+    @discardableResult
+    static func execute(exec: Exec, files: [String], outputName: String? = nil, cwd: String, args: String...) -> Process {
+        return Process.execute(execName: exec.rawValue, files: files, outputName: outputName, cwd: cwd, args: args)
     }
 }
 

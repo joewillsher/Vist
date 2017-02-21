@@ -260,7 +260,7 @@ func compileDocuments(
     
     // MARK: Build runtime
     if options.contains(.buildRuntime) {
-        buildRuntime(debugRuntime: options.contains(.debugRuntime))
+        try buildRuntime(debugRuntime: options.contains(.debugRuntime))
     }
     
     
@@ -403,19 +403,23 @@ func runExecutable(
     }
 }
 
+private struct RuntimeCompilationError : Error {}
 
-func buildRuntime(debugRuntime debug: Bool) {
+func buildRuntime(debugRuntime debug: Bool) throws {
     
     let runtimeDirectory = "\(SOURCE_ROOT)/Vist/stdlib/runtime"
     let libVistRuntimePath = "/usr/local/lib/libvistruntime.dylib"
     
     // .cpp -> .dylib
     // to link against program
-    Process.execute(exec: .clang,
-                    files: ["Existential.cpp", "RefcountedObject.cpp", "Casting.cpp", "Demangle.cpp", "Introspection.cpp"],
-                    outputName: libVistRuntimePath,
-                    cwd: runtimeDirectory,
-                    args: "-dynamiclib", "-std=c++14", "-O3", "-lstdc++", "-includeruntime.h", debug ? "-DRUNTIME_DEBUG" : "")
+    let process = Process.execute(exec: .clang,
+                                  files: ["Existential.cpp", "RefcountedObject.cpp", "Casting.cpp", "Demangle.cpp", "Introspection.cpp"],
+                                  outputName: libVistRuntimePath,
+                                  cwd: runtimeDirectory,
+                                  args: "-dynamiclib", "-std=c++14", "-O3", "-lstdc++", "-includeruntime.h", debug ? "-DRUNTIME_DEBUG" : "")
+    if case let fh as FileHandle = process.standardError, fh.seekToEndOfFile() != 0 {
+        throw RuntimeCompilationError()
+    }
 }
 
 func runPreprocessor(file: inout String, cwd: String) {

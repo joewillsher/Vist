@@ -24,28 +24,23 @@ void vist_constructExistential(WitnessTable *_Nonnull *_Nonnull conformances, in
         memcpy(mem, instance, metadata->storageSize());
         ptr = (uintptr_t)mem;
 #ifdef RUNTIME_DEBUG
-        // DEBUGGING: set stack source to 0, if not a shared heap ptr
-        if (!metadata->isRefCounted)
-            memset(instance, 0, metadata->storageSize());
-        printf("→alloc %s:\t%p\n", metadata->name, mem);
+        printf("→alloc_ex %s:\t%p \tat: %lu\n", metadata->name, instance, ptr);
 #endif
     } else {
         ptr = (uintptr_t)instance;
 #ifdef RUNTIME_DEBUG
-        printf("→alloc_stack %s:\t%p\n", metadata->name, instance);
+        printf("→alloc_stack_ex %s:\t%p\n", metadata->name, instance);
 #endif
     }
     
     *outExistential = ExistentialObject(ptr | isNonLocal, metadata, numConformances,
                                         conformances); // <hack, should malloc memory to store the witnesses
-    printf("aaaaa\n");
-    printf("aaaaa %p\n", *((long*)instance));
 }
 
 RUNTIME_COMPILER_INTERFACE
 void vist_deallocExistentialBuffer(ExistentialObject *_Nonnull existential) {
 #ifdef RUNTIME_DEBUG
-    printf("→dealloc %s:\t%p\n", existential->metadata->name, (void*)existential->projectBuffer());
+    printf("→dealloc_ex %s:\t%p\n", existential->metadata->name, (void*)existential->projectBuffer());
 #endif
     auto buff = (void *)existential->projectBuffer();
     if (!buff)
@@ -128,6 +123,7 @@ void vist_copyExistentialBuffer(ExistentialObject *_Nonnull existential,
 #endif
         memcpy(mem, in, existential->metadata->storageSize());
     }
+
     // construct the new existential
     *outExistential = ExistentialObject((uintptr_t)mem | true,
                                         existential->metadata,
@@ -150,11 +146,25 @@ RUNTIME_COMPILER_INTERFACE
 void *_Nonnull
 vist_getPropertyProjection(ExistentialObject *_Nonnull existential,
                            int32_t conformanceIndex, int32_t propertyIndex) {
-    auto offset = existential
+    long offset = existential
         ->conformances[conformanceIndex]
         ->propWitnessOffsets[propertyIndex];
-    printf("aaaaa %li\n", *((long*)existential->projectBuffer() + 0));
-    return (void*)(existential->projectBuffer() + (long)offset);
+    
+    // we must return the ptr to the property -- for a class this means digging through
+    // the class contianer
+    /*
+     auto buffer = existential->projectBuffer();
+     auto mem = existential->metadata->isRefCounted ? (uintptr_t)(Z((RefcountedObject*)(buffer))->object) : buffer;
+     printf("AAAAaaaaa %p %p\n", buffer, mem);
+     return (void*)(mem + offset);
+     */
+    auto mem = existential->projectBuffer();
+    if (existential->metadata->isRefCounted) {
+        auto base = (uintptr_t)((RefcountedObject*)mem)->object;
+        return (void*)(base + (long)offset);
+    } else {
+        return (void*)(mem + offset);
+    }
 }
 
 RUNTIME_COMPILER_INTERFACE

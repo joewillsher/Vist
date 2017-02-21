@@ -492,7 +492,7 @@ extension PropertyLookupExpr : LValueEmitter {
         case let ty as StructType:
             
             // if the lowered type is a class type
-            if ty.isHeapAllocated {
+            guard !ty.isHeapAllocated else {
                 guard case let lValEmitter as _LValueEmitter = object else { fatalError() }
                 
                 // if self is backed by a ptr, do a GEP then load
